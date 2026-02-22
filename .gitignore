@@ -1,0 +1,11 @@
+node_modules/
+dist/
+
+# env
+.env
+.env.local
+.env*.local
+
+# mkcert local dev certs
+.cert.pem
+.key.pem
