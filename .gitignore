@@ -9,3 +9,4 @@ dist/
 # mkcert local dev certs
 .cert.pem
 .key.pem
+.vercel

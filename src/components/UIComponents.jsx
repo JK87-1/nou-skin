@@ -72,11 +72,11 @@ export function MetricBar({ label, value, unit = '%', color, icon, description, 
     <div
       onClick={onClick}
       style={{
-        marginBottom: 16,
+        marginBottom: 8,
         cursor: onClick ? 'pointer' : 'default',
         padding: '12px 14px',
         borderRadius: 14,
-        border: onClick ? '1px solid rgba(0,0,0,0.04)' : 'none',
+        border: 'none',
         transition: 'background 0.2s',
       }}
     >

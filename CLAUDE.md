@@ -4,9 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-NOU Skin is a client-side AI skin analysis web app. Users upload a selfie (or use demo mode), and the app analyzes 10 skin metrics using Canvas API pixel analysis + MediaPipe Face Mesh for accurate face region detection — no server or external API calls. All processing happens in the browser.
-
-Korean language UI. Brand color: `#FF8C42` (orange gradient palette).
+NOU Skin is a client-side AI skin analysis web app. Users take a selfie (or use demo mode), and the app analyzes 10 skin metrics using Canvas API pixel analysis + MediaPipe Face Mesh + optional GPT-5.2 Vision AI hybrid scoring. Korean language UI. Brand color: `#FF8C42`.
 
 ## Commands
 
@@ -18,56 +16,60 @@ No test framework or linter is configured.
 
 ## Architecture
 
-Single-page React 18 app with Vite. No router — stage-based navigation via `useState` in App.jsx.
+Single-page React 18 app with Vite. No router — dual navigation: **tab-based** (`activeTab` state for 5 tabs) + **stage-based** (`stage` state for home tab sub-flow).
 
-### Data Flow (Level 3: CV + AI Hybrid)
+### Navigation
+
+- **Tab bar** (TabBar.jsx): `home` | `routine` | `history` (gallery) | `analyze` (insights) | `my`
+- **Home tab stages**: `landing` → `camera` → `upload` → `analyzing` → `result` → `detail`
+- TabBar visible on landing, result, and non-home tabs
+
+### Data Flow
 
 ```
-Photo upload → detectLandmarks() [MediaPipe] → analyzePixels(dataUrl, landmarks) [Canvas API]
-             → compressImage()                → normalizeLighting() → pixelsToScores() → CV scores
-                                                                                            ↓
-             → callVisionAI(base64, pixelData) [/api/analyze → GPT-5.2 Vision]         → AI scores
-                                                                                            ↓
-                                                                              hybridMerge(cv, ai) → UI render
-                                                                                       ↑
-Demo mode → generateDemoScores() → fake pixel data ──────────────────────────────────────┘
+Photo → detectLandmarks() [MediaPipe] + estimateAge() [face-api.js]
+      → analyzePixels(dataUrl, landmarks) → pixelsToScores(pixelData, mlAge) → CV scores
+      → callVisionAI(base64, pixelData) [/api/analyze → GPT-5.2]           → AI scores
+      → hybridMerge(cv, ai) → result + auto-save + thumbnail
 
 Fallbacks:
 - AI call fails/timeout → CV-only scores (analysisMode: 'cv_only')
-- Landmark detection fails → null → fixed-ratio regions (v2.1 behavior)
+- Landmark detection fails → fixed-ratio regions
+- ML age estimation fails → null → CV-only skinAge derivation
 ```
-
-### Stage Machine (App.jsx)
-
-`landing` → `upload` (photo preview) → `analyzing` (progress animation) → `result` (scores + advice)
-
-Any stage can transition to `detail` (science explanation page) and back.
 
 ### Key Modules
 
-- **`src/engine/FaceLandmarker.js`** — Lazy singleton wrapper around MediaPipe FaceLandmarker. Loads WASM+model (~5.5MB) from CDN on first use. `detectLandmarks(imgElement)` returns 468 normalized landmarks or null.
+- **`src/engine/FaceLandmarker.js`** — MediaPipe FaceLandmarker singleton. GPU→CPU fallback. 468 landmarks.
+- **`src/engine/FaceAgeEstimator.js`** — @vladmandic/face-api wrapper for ML age estimation. Used to refine skinAge scoring.
+- **`src/engine/PixelAnalysis.js`** — Core CV engine (v3.2). 512px canvas, 27 regions, gray-world normalization, YCbCr filtering. `pixelsToScores(pixelData, mlAge)` accepts optional ML age for calibration.
+- **`src/engine/HybridAnalysis.js`** — GPT-5.2 Vision hybrid. `callVisionAI()` → `/api/analyze` (12s timeout). `hybridMerge()` with AI 0.95 / CV 0.05 weights. Sets `analysisMode: 'hybrid'`, preserves `aiNotes`.
+- **`src/engine/LandmarkRegions.js`** — Converts 468 landmarks to 27 region bounding boxes.
+- **`src/data/ScienceData.js`** — Detail page science data keyed by metric name.
 
-- **`src/engine/LandmarkRegions.js`** — Converts 468 MediaPipe landmarks into 27 analysis-region bounding boxes (pixel coordinates). Maps to the same region names used by PixelAnalysis.js.
+### Pages & Components
 
-- **`src/engine/PixelAnalysis.js`** — Core CV analysis engine (v3.1). Accepts optional landmarks for accurate region placement (falls back to fixed ratios). Includes gray-world white-balance normalization, YCbCr skin pixel filtering, calibration table scoring. Deterministic (no jitter). 27 regions across 10 metrics. Derived: skinAge.
+- **`src/App.jsx`** — Main component. Tab + stage state machine. HybridAnalysis integration with CV fallback. Auto-saves results and thumbnails.
+- **`src/pages/HistoryPage.jsx`** — Calendar + gallery (dual mode: `gallery` / `insights`). Displays thumbnails from SkinStorage.
+- **`src/pages/RoutinePage.jsx`** — Morning/night skincare routine checklist.
+- **`src/pages/MyPage.jsx`** — Profile page with skin type, journey stats.
+- **`src/components/TabBar.jsx`** — 5-tab bottom navigation with center scan button.
+- **`src/components/CameraCapture.jsx`** — Live camera with face guide overlay, objectFit cover coordinate mapping.
+- **`src/components/SkinScoreCircle.jsx`** — Circular score display.
+- **`src/components/AiInsightCard.jsx`** — AI insight card from latest analysis.
+- **`src/components/DailyJourney.jsx`** — 7-day horizontal scroll thumbnails.
 
-- **`src/engine/HybridAnalysis.js`** — GPT-5.2 Vision AI hybrid module. `callVisionAI()` sends compressed photo + CV data to `/api/analyze`. `hybridMerge()` combines AI + CV scores with per-metric weights (AI 0.95 / CV 0.05 for all metrics).
+### Storage (localStorage)
 
-- **`src/data/ScienceData.js`** — Static data for detail pages: methodology descriptions, scientific references, score interpretation ranges, gut-brain-skin axis explanations. Keyed by metric name.
-
-- **`src/components/UIComponents.jsx`** — Reusable UI components: `AnimatedNumber`, `ScoreRing` (SVG circular progress), `MetricBar` (animated bar chart), `Tag`, `DetailPage` (renders science data for a metric).
-
-- **`src/App.jsx`** — Main component containing all stage rendering and state management. Calls `detectLandmarks` on photo upload and passes result to `analyzePixels`. Inline styles throughout (no CSS modules).
-
-- **`src/styles.css`** — Global styles, animations (`fadeIn`, `slideUp`, `ripple`), button/card/tag classes. Mobile-first, max-width 430px.
+- **`src/storage/SkinStorage.js`** — Records, streaks, changes, thumbnails (`nou_thumb_YYYY-MM-DD`), share text generation.
+- **`src/storage/ProfileStorage.js`** — User profile (nickname, birthYear, skinType).
+- **`src/storage/RoutineStorage.js`** — Routine checklist state.
 
 ## Conventions
 
-- Inline styles are used extensively in JSX; CSS classes only for reusable patterns (buttons, cards, tags)
-- Display font: `Outfit` (Google Fonts), body font: `Pretendard` / system fallback
-- All skin metric keys: `skinAge`, `moisture`, `skinTone`, `trouble` (maps to `troubleCount` in scores), `oilBalance`, `wrinkles`, `pores`, `elasticity`, `pigmentation`, `texture`, `darkCircles`
-- Score range: most metrics 0–100; `skinAge` is 16–58; `troubleCount` is 0–20
-- Deterministic: same photo always produces same scores (no jitter in real analysis; demo mode uses random)
-- Privacy: CV analysis is fully browser-side. AI hybrid mode sends compressed photo to `/api/analyze` (Vercel serverless → OpenAI API); photo is not stored.
-- MediaPipe model loaded from CDN at runtime; if offline/blocked, falls back to fixed-ratio regions
-- Vercel deployment: `api/analyze.js` requires `OPENAI_API_KEY` env var. Rate limited to 30 req/IP/day.
+- Inline styles extensively in JSX; CSS classes for reusable patterns (glass-card, tab-bar, orb animations)
+- Fonts: `Outfit` (display), `Noto Sans KR` / `Pretendard` (body)
+- Metric keys: `skinAge`, `moisture`, `skinTone`, `troubleCount`, `oilBalance`, `wrinkleScore`, `poreScore`, `elasticityScore`, `pigmentationScore`, `textureScore`, `darkCircleScore`
+- Score range: 0–100 (most metrics); `skinAge` 16–58; `troubleCount` 0–20
+- Privacy: CV analysis is browser-side. AI hybrid sends compressed photo to `/api/analyze`; photo not stored.
+- Vercel deployment: `api/analyze.js` requires `OPENAI_API_KEY` env var. Rate limited 30 req/IP/day.

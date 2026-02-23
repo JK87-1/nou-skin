@@ -2,13 +2,17 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { compressImage, analyzePixels, pixelsToScores, generateDemoScores, checkPhotoQuality } from './engine/PixelAnalysis';
 import { detectLandmarks } from './engine/FaceLandmarker';
 import { callVisionAI, hybridMerge } from './engine/HybridAnalysis';
+import { estimateAge } from './engine/FaceAgeEstimator';
 import { AnimatedNumber, ScoreRing, MetricBar, Tag, DetailPage } from './components/UIComponents';
 import CameraCapture from './components/CameraCapture';
-import { saveRecord, getRecords, getStreak, getNextMeasurementInfo, getChanges, getSmoothedChanges, generateShareText, getLatestRecord, savePrediction, resolvePrediction, getTodayPendingPrediction, getPredictionAccuracy, getSkinGoal, setSkinGoal, updateSkinGoal, getSkinGoalProgress, getPreviousRecord } from './storage/SkinStorage';
+import { saveRecord, getRecords, getStreak, getNextMeasurementInfo, getChanges, getSmoothedChanges, generateShareText, getLatestRecord, hasTodayRecord, saveThumbnail } from './storage/SkinStorage';
 import HistoryPage from './pages/HistoryPage';
-import SkincareRoutine from './components/SkincareRoutine';
-import { PredictionScreen, PredictionResult, AgeSetupModal, SkinAgeRaceCard, WeeklyReportCard, ShareReportButton } from './components/RetentionFeatures';
-import { generatePersonalizedTips } from './data/BeautyTipsData';
+import TabBar from './components/TabBar';
+import MyPage from './pages/MyPage';
+import RoutinePage from './pages/RoutinePage';
+import DailyJourney from './components/DailyJourney';
+import SkinScoreCircle from './components/SkinScoreCircle';
+import AiInsightCard from './components/AiInsightCard';
 
 export default function App() {
   const [stage, setStage] = useState('landing');
@@ -25,21 +29,17 @@ export default function App() {
   const [showSaveToast, setShowSaveToast] = useState(false);
   const [photoQuality, setPhotoQuality] = useState(null);
   const [tipsOpen, setTipsOpen] = useState(false);
+  const [mlAge, setMlAge] = useState(null);
   const [faceMesh, setFaceMesh] = useState(null);
   const fileRef = useRef(null);
   const photoContainerRef = useRef(null);
   const nativeCameraRef = useRef(null);
 
+  const [activeTab, setActiveTab] = useState('home');
+
   const [recordCount, setRecordCount] = useState(0);
   const [streak, setStreakState] = useState({ count: 0 });
   const [nextInfo, setNextInfo] = useState(null);
-
-  // Retention features state
-  const [showPrediction, setShowPrediction] = useState(false);
-  const [currentPrediction, setCurrentPrediction] = useState(null);
-  const [predictionResult, setPredictionResult] = useState(null);
-  const [showAgeSetup, setShowAgeSetup] = useState(false);
-  const [skinGoal, setSkinGoalState] = useState(null);
 
   useEffect(() => { refreshLandingData(); }, []);
 
@@ -47,7 +47,6 @@ export default function App() {
     setRecordCount(getRecords().length);
     setStreakState(getStreak());
     setNextInfo(getNextMeasurementInfo());
-    setSkinGoalState(getSkinGoalProgress());
   };
 
   // Compute face mesh mapped coordinates for result photo overlay
@@ -79,15 +78,21 @@ export default function App() {
 
   const openDetail = useCallback((key) => { setPrevStage(stage); setDetailKey(key); setStage('detail'); }, [stage]);
   const closeDetail = useCallback(() => { setStage(prevStage); setDetailKey(null); }, [prevStage]);
-  const goToHistory = useCallback(() => { refreshLandingData(); setStage('history'); }, []);
-  const goToLanding = useCallback(() => { refreshLandingData(); setStage('landing'); }, []);
+  const goToHistory = useCallback(() => { refreshLandingData(); setActiveTab('history'); }, []);
+  const goToLanding = useCallback(() => { refreshLandingData(); setActiveTab('home'); setStage('landing'); }, []);
+
+  const switchTab = useCallback((tab) => {
+    setActiveTab(tab);
+    if (tab === 'home') {
+      setStage('landing');
+      refreshLandingData();
+    }
+  }, []);
 
   const reset = useCallback(() => {
-    setStage('landing'); setImage(null); setB64(null); setResult(null);
-    setProgress(0); setDetailKey(null); setPixelData(null); setLandmarks(null); setImageSize('');
-    setSaved(false); setShowSaveToast(false); setPhotoQuality(null);
-    setShowPrediction(false); setCurrentPrediction(null); setPredictionResult(null); setShowAgeSetup(false);
-    refreshLandingData();
+    setActiveTab('home'); setStage('landing'); setImage(null); setB64(null); setResult(null);
+    setProgress(0); setDetailKey(null); setPixelData(null); setLandmarks(null); setMlAge(null); setImageSize('');
+    setSaved(false); setShowSaveToast(false); setPhotoQuality(null); refreshLandingData();
   }, []);
 
   const handleFile = useCallback(async (e) => {
@@ -106,8 +111,12 @@ export default function App() {
       const imgEl = new Image();
       imgEl.src = original;
       await new Promise(r => { imgEl.onload = r; imgEl.onerror = r; });
-      const lm = await detectLandmarks(imgEl);
+      const [lm, ageResult] = await Promise.all([
+        detectLandmarks(imgEl),
+        estimateAge(imgEl),
+      ]);
       setLandmarks(lm);
+      setMlAge(ageResult ? ageResult.age : null);
 
       const px = await analyzePixels(original, lm);
       setPixelData(px);
@@ -119,29 +128,26 @@ export default function App() {
     e.target.value = '';
   }, []);
 
-  // Smart camera opener with prediction flow
-  const openCameraDirectly = useCallback(() => {
+  // Smart camera opener: Face ID guide on secure context, native camera on HTTP mobile
+  const openCamera = useCallback(() => {
+    setActiveTab('home');
     if (window.isSecureContext && navigator.mediaDevices?.getUserMedia) {
       setStage('camera');
     } else {
+      // Mobile HTTP: open native camera via <input capture="user">
       nativeCameraRef.current?.click();
     }
   }, []);
 
-  const openCamera = useCallback(() => {
-    const lastRecord = getLatestRecord();
-    const pendingPrediction = getTodayPendingPrediction();
-    if (lastRecord && !pendingPrediction) {
-      // Has previous records and no prediction today → show prediction screen
-      setShowPrediction(true);
-    } else {
-      openCameraDirectly();
-    }
-  }, [openCameraDirectly]);
-
   const handleCameraCapture = useCallback(async (dataUrl, lm) => {
     setImage(dataUrl);
     setLandmarks(lm);
+    // ML age estimation (parallel with compression + pixel analysis)
+    const imgEl = new Image();
+    imgEl.src = dataUrl;
+    await new Promise(r => { imgEl.onload = r; imgEl.onerror = r; });
+    const ageResult = await estimateAge(imgEl);
+    setMlAge(ageResult ? ageResult.age : null);
     const compressed = await compressImage(dataUrl);
     const data = compressed.split(',')[1];
     setImageSize(`${Math.round(data.length * 3 / 4 / 1024)}KB`);
@@ -156,14 +162,10 @@ export default function App() {
   const startAnalysis = useCallback(async () => {
     if (!pixelData) return;
     setStage('analyzing'); setProgress(0); setSaved(false);
+    const pi = setInterval(() => { setProgress(p => { if (p >= 90) { clearInterval(pi); return 90; } return p + Math.random() * 8 + 2; }); }, 450);
 
-    // Progress animation
-    const pi = setInterval(() => {
-      setProgress(p => { if (p >= 90) { clearInterval(pi); return 90; } return p + Math.random() * 6 + 2; });
-    }, 500);
-
-    // CV scoring (instant)
-    const cvScores = pixelsToScores(pixelData);
+    // CV scoring (with mlAge from FaceAgeEstimator)
+    const cvScores = pixelsToScores(pixelData, mlAge);
 
     // AI scoring (parallel, non-blocking)
     let finalScores = cvScores;
@@ -183,24 +185,22 @@ export default function App() {
       finalScores = { ...cvScores, analysisMode: 'cv_only' };
     }
 
-    clearInterval(pi);
-    setProgress(100);
+    clearInterval(pi); setProgress(100);
     setTimeout(() => {
-      setResult(finalScores);
-      // Resolve prediction if exists
-      const resolved = resolvePrediction(finalScores.overallScore);
-      if (resolved) {
-        setPredictionResult(resolved);
+      setResult(finalScores); setStage('result');
+      // Auto-save record and thumbnail
+      const ok = saveRecord(finalScores);
+      if (ok) {
+        setSaved(true);
+        setShowSaveToast(true);
+        setTimeout(() => setShowSaveToast(false), 2500);
+        if (image) {
+          const today = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
+          saveThumbnail(today, image);
+        }
       }
-      // Update skin goal if exists
-      const goal = getSkinGoal();
-      if (goal) {
-        updateSkinGoal(finalScores.skinAge);
-        setSkinGoalState(getSkinGoalProgress());
-      }
-      setStage('result');
     }, 400);
-  }, [pixelData, b64]);
+  }, [pixelData, mlAge, image, b64]);
 
   const startDemo = useCallback(() => {
     setStage('analyzing'); setProgress(0); setSaved(false);
@@ -208,16 +208,15 @@ export default function App() {
     setTimeout(() => {
       clearInterval(pi); setProgress(100);
       setTimeout(() => {
-        const demoScores = generateDemoScores();
-        setResult(demoScores);
-        const resolved = resolvePrediction(demoScores.overallScore);
-        if (resolved) setPredictionResult(resolved);
-        const goal = getSkinGoal();
-        if (goal) {
-          updateSkinGoal(demoScores.skinAge);
-          setSkinGoalState(getSkinGoalProgress());
+        const scores = generateDemoScores();
+        setResult(scores); setStage('result');
+        // Auto-save demo results
+        const ok = saveRecord(scores);
+        if (ok) {
+          setSaved(true);
+          setShowSaveToast(true);
+          setTimeout(() => setShowSaveToast(false), 2500);
         }
-        setStage('result');
       }, 400);
     }, 2800);
   }, []);
@@ -226,14 +225,16 @@ export default function App() {
     if (!result || saved) return;
     const ok = saveRecord(result);
     if (ok) {
-      setSaved(true); setShowSaveToast(true); setTimeout(() => setShowSaveToast(false), 2500);
-      // Show age setup modal if no goal set yet
-      const goal = getSkinGoal();
-      if (!goal) {
-        setTimeout(() => setShowAgeSetup(true), 600);
+      setSaved(true);
+      setShowSaveToast(true);
+      setTimeout(() => setShowSaveToast(false), 2500);
+      // Save thumbnail for photo gallery / daily journey
+      if (image) {
+        const today = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
+        saveThumbnail(today, image);
       }
     }
-  }, [result, saved]);
+  }, [result, saved, image]);
 
   const handleShare = useCallback(() => {
     if (!result) return;
@@ -258,20 +259,22 @@ export default function App() {
   };
 
   const getProgressText = (p) => {
-    if (p < 10) return '얼굴 영역 감지 중...';
-    if (p < 20) return '밝기·색상 실측 중...';
-    if (p < 28) return '주름 존 분석 중...';
-    if (p < 36) return '모공 텍스처 측정 중...';
-    if (p < 44) return '턱선 탄력 분석 중...';
-    if (p < 52) return '색소 클러스터 감지 중...';
-    if (p < 60) return '피부결 매끄러움 측정 중...';
-    if (p < 68) return '다크서클 밝기·색조 분석 중...';
-    if (p < 76) return 'T/U존 유분 비교 중...';
-    if (p < 88) return 'AI가 정밀 판독하고 있어요...';
+    if (p < 12) return '얼굴 영역 감지 중...';
+    if (p < 22) return '밝기·색상 실측 중...';
+    if (p < 32) return '주름 존 분석 중...';
+    if (p < 42) return '모공 텍스처 측정 중...';
+    if (p < 50) return '턱선 탄력 분석 중...';
+    if (p < 58) return '색소 클러스터 감지 중...';
+    if (p < 66) return '피부결 매끄러움 측정 중...';
+    if (p < 74) return '다크서클 밝기·색조 분석 중...';
+    if (p < 84) return 'T/U존 유분 비교 중...';
+    if (p < 92) return 'AI가 정밀 판독하고 있어요...';
     return '10개 지표 종합 산출 중...';
   };
 
   const changes = getSmoothedChanges() || getChanges();
+
+  const showTabBar = activeTab !== 'home' || stage === 'landing' || stage === 'result';
 
   return (
     <div className="app-container">
@@ -286,7 +289,7 @@ export default function App() {
       )}
 
       {/* ===== DETAIL PAGE ===== */}
-      {stage === 'detail' && (
+      {activeTab === 'home' && stage === 'detail' && (
         <DetailPage
           metricKey={detailKey}
           value={result ? {
@@ -300,325 +303,118 @@ export default function App() {
         />
       )}
 
-      {/* ===== HISTORY PAGE ===== */}
-      {stage === 'history' && (
-        <HistoryPage onBack={goToLanding} onMeasure={openCamera} />
+      {/* ===== HISTORY PAGE (gallery only) ===== */}
+      {activeTab === 'history' && (
+        <HistoryPage mode="gallery" onBack={goToLanding} onMeasure={openCamera} />
       )}
+
+      {/* ===== ANALYZE PAGE (insights only) ===== */}
+      {activeTab === 'analyze' && (
+        <HistoryPage mode="insights" onBack={goToLanding} onMeasure={openCamera} />
+      )}
+
+      {/* ===== ROUTINE PAGE ===== */}
+      {activeTab === 'routine' && <RoutinePage />}
+
+      {/* ===== MY PAGE ===== */}
+      {activeTab === 'my' && <MyPage />}
+
+      {/* ===== HOME TAB (stage-based sub-flow) ===== */}
+      {activeTab === 'home' && <>
 
       {/* ===== LANDING PAGE ===== */}
       {stage === 'landing' && (
-        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh' }}>
+        <div>
           {/* Header */}
-          <div style={{ padding: '24px 24px 0', textAlign: 'center' }}>
-            <span style={{ fontSize: 20, fontWeight: 700, color: '#FF8C42', letterSpacing: 6, fontFamily: "'Outfit', sans-serif" }}>NOU</span>
+          <div style={{ padding: '24px 24px 16px', textAlign: 'center' }}>
+            <div style={{ marginBottom: 10 }}>
+              <div><span style={{ fontSize: 21, fontWeight: 700, color: '#FF8C42', letterSpacing: 8, fontFamily: "'Outfit', sans-serif" }}>NOU</span></div>
+              <div style={{ marginTop: 4 }}><span style={{ fontSize: 10, color: '#FF8C42', background: 'rgba(255,140,66,0.12)', padding: '2px 10px', borderRadius: 10 }}>Beta</span></div>
+            </div>
           </div>
 
-          {/* Center Content */}
-          <div style={{
-            flex: 1, display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center',
-            padding: '0 24px', marginBottom: 80,
-          }}>
-            {/* Orb Button — original blob animation style */}
-            <div
-              className="scan-orb"
-              onClick={openCamera}
-              style={{
-                width: 220, height: 220, borderRadius: '50%',
+          {/* Content */}
+          <div style={{ padding: '20px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ marginBottom: 48 }} />
+
+            {/* Profile Avatar — living breathing orb */}
+            <div onClick={openCamera} style={{
+              position: 'relative', width: 260, height: 260,
+              marginBottom: 58, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              {/* Soft aura pulse */}
+              <div style={{
+                position: 'absolute', width: 440, height: 440, borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(255,160,70,0.35) 0%, rgba(255,150,60,0.2) 15%, rgba(255,170,90,0.1) 30%, rgba(255,140,110,0.04) 50%, rgba(255,130,120,0.01) 70%, transparent 85%)',
+                pointerEvents: 'none',
+              }} />
+
+              {/* Main orb with breathing */}
+              <div style={{
+                width: 226, height: 226, borderRadius: '50%',
                 border: '3px solid rgba(255,255,255,0.7)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                marginBottom: 40,
-              }}
-            >
-              {/* Pulse rings */}
-              <div className="scan-orb-ring" />
-              <div className="scan-orb-ring" />
-              <div className="scan-orb-ring" />
-
-              {/* Blob orb interior */}
-              <div className="voice-orb" style={{
-                width: 214, height: 214, borderRadius: '50%',
-                background: '#FFF8F2',
-                position: 'relative', overflow: 'hidden',
-                clipPath: 'circle(50%)', WebkitClipPath: 'circle(50%)',
+                animation: 'orbBreathe 5s ease-in-out infinite',
+                willChange: 'transform, box-shadow',
               }}>
-                <div className="orb-blob orb-blob-1" />
-                <div className="orb-blob orb-blob-2" />
-                <div className="orb-blob orb-blob-3" />
-                <div className="orb-blob orb-blob-4" />
+                <div className="voice-orb" style={{
+                  width: 220, height: 220, borderRadius: '50%',
+                  background: '#FFF8F2',
+                  position: 'relative', overflow: 'hidden',
+                  clipPath: 'circle(50%)', WebkitClipPath: 'circle(50%)',
+                }}>
+                  <div className="orb-blob orb-blob-1" />
+                  <div className="orb-blob orb-blob-2" />
+                  <div className="orb-blob orb-blob-3" />
+                  <div className="orb-blob orb-blob-4" />
+                  {/* Inner breathing glow */}
+                  <div style={{
+                    position: 'absolute', inset: 0, borderRadius: '50%',
+                    background: 'radial-gradient(circle at 38% 32%, rgba(255,220,180,0.35) 0%, transparent 55%)',
+                    animation: 'orbInnerGlow 4s ease-in-out infinite',
+                    pointerEvents: 'none',
+                  }} />
+                  {image && (
+                    <img src={image} alt="" style={{
+                      width: '100%', height: '100%', objectFit: 'cover',
+                      display: 'block', borderRadius: '50%', position: 'relative', zIndex: 1,
+                    }} />
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Subtitle — crossfade */}
-            <div style={{ position: 'relative', height: 56, width: '100%' }}>
-              <h2 style={{
-                position: 'absolute', width: '100%',
-                fontSize: 20, fontWeight: 700, color: '#2d2520', lineHeight: 1.4,
-                fontFamily: "'Outfit', sans-serif", textAlign: 'center', margin: 0,
-                animation: 'textCrossfade1 5s ease-in-out infinite',
-              }}>
-                당신의 피부를 스캔하세요
-              </h2>
-              <h2 style={{
-                position: 'absolute', width: '100%',
-                fontSize: 20, fontWeight: 700, color: '#2d2520', lineHeight: 1.4,
-                fontFamily: "'Outfit', sans-serif", textAlign: 'center', margin: 0,
-                animation: 'textCrossfade2 5s ease-in-out infinite',
-              }}>
-                탭 눌러서 시작하기
-              </h2>
-            </div>
-            <p style={{ fontSize: 14, color: '#A89890', textAlign: 'center', lineHeight: 1.5, margin: 0 }}>
-              AI가 10개 지표를 정밀 분석합니다
-            </p>
-
-            {/* Quick tips */}
+            {/* Alternating hint text */}
             <div style={{
-              display: 'flex', gap: 12, marginTop: 24,
-              flexWrap: 'wrap', justifyContent: 'center',
+              height: 30, overflow: 'hidden', position: 'relative',
+              marginBottom: 16,
             }}>
-              {['정면 셀카', '자연광', '맨 얼굴'].map(tip => (
-                <span key={tip} style={{
-                  fontSize: 11.5, fontWeight: 500, color: '#b8a594',
-                  background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(0,0,0,0.05)',
-                  padding: '5px 12px', borderRadius: 16,
-                }}>{tip}</span>
+              <div className="orb-hint-slider">
+                <p className="orb-hint-text">당신의 피부를 기록해보세요.</p>
+                <p className="orb-hint-text">탭을 눌러 스캔하기</p>
+                <p className="orb-hint-text">당신의 피부를 기록해보세요.</p>
+              </div>
+            </div>
+            <p style={{ fontSize: 13, fontWeight: 300, color: '#aaa', margin: '0 0 16px', letterSpacing: -0.2 }}>AI가 10개 지표를 정밀 분석합니다.</p>
+
+            {/* Condition tags */}
+            <div style={{ display: 'flex', gap: 8, marginTop: 40, justifyContent: 'center', flexWrap: 'wrap' }}>
+              {['정면 셀카', '밝은 자연광', '맨 얼굴'].map(tag => (
+                <span key={tag} style={{
+                  fontSize: 11, fontWeight: 500, color: '#B8977E',
+                  background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(255,255,255,0.45)',
+                  boxShadow: '0 4px 14px rgba(160,130,100,0.2), inset 0 1px 1px rgba(255,255,255,0.5)',
+                  borderRadius: 50, padding: '4px 10px', letterSpacing: -0.2,
+                }}>{tag}</span>
               ))}
             </div>
           </div>
 
-          {/* Bottom Navigation — Shazam curved pill style */}
-          <nav className="bottom-nav-curved">
-            <button className="bottom-nav-item" onClick={() => setStage('landing')}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke="#FF8C42" strokeWidth="1.8" fill="rgba(255,140,66,0.1)" strokeLinejoin="round"/>
-              </svg>
-              <span style={{ fontSize: 10, fontWeight: 600, color: '#FF8C42' }}>홈</span>
-            </button>
-            <button className="bottom-nav-item" onClick={goToHistory}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="9" stroke="#b8a594" strokeWidth="1.8"/>
-                <path d="M12 7v5l3 3" stroke="#b8a594" strokeWidth="1.8" strokeLinecap="round"/>
-              </svg>
-              <span style={{ fontSize: 10, fontWeight: 600, color: '#b8a594' }}>기록</span>
-            </button>
-            <button className="bottom-nav-item" onClick={() => setStage('tips')}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26z" stroke="#b8a594" strokeWidth="1.8" strokeLinejoin="round" fill="none"/>
-              </svg>
-              <span style={{ fontSize: 10, fontWeight: 600, color: '#b8a594' }}>뷰티팁</span>
-            </button>
-            <button className="bottom-nav-item" onClick={() => { /* search placeholder */ }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <circle cx="11" cy="11" r="7" stroke="#b8a594" strokeWidth="1.8"/>
-                <path d="M16.5 16.5L21 21" stroke="#b8a594" strokeWidth="1.8" strokeLinecap="round"/>
-              </svg>
-              <span style={{ fontSize: 10, fontWeight: 600, color: '#b8a594' }}>검색</span>
-            </button>
-          </nav>
+          {/* bottom spacing */}
+          <div style={{ height: 20 }} />
         </div>
-      )}
-
-      {/* ===== BEAUTY TIPS PAGE ===== */}
-      {stage === 'tips' && (() => {
-        const latestRecord = getLatestRecord();
-        const tipsData = generatePersonalizedTips(latestRecord);
-        const skinTypeLabels = { oily: '지성', dry: '건성', combination: '복합성', sensitive: '민감성', normal: '중성' };
-
-        return (
-        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh' }}>
-          <div style={{ padding: '24px 24px 0', textAlign: 'center' }}>
-            <span style={{ fontSize: 20, fontWeight: 700, color: '#FF8C42', letterSpacing: 6, fontFamily: "'Outfit', sans-serif" }}>NOU</span>
-          </div>
-
-          <div style={{ flex: 1, padding: '24px 20px 100px' }}>
-            <h2 style={{ fontSize: 20, fontWeight: 700, color: '#2d2520', fontFamily: "'Outfit', sans-serif", marginBottom: 4 }}>
-              {latestRecord ? '나만의 맞춤 뷰티 팁' : '뷰티 팁'}
-            </h2>
-
-            {/* Personalization indicator */}
-            {latestRecord ? (
-              <div style={{ marginBottom: 16, animation: 'fadeUp 0.4s ease-out' }}>
-                <p style={{ fontSize: 12, color: '#b8a594', margin: '0 0 12px' }}>
-                  최근 분석 결과 기반 · {new Date(latestRecord.date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })} 측정
-                </p>
-
-                {/* Concern tags */}
-                {tipsData.concerns.length > 0 && (
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 4 }}>
-                    {tipsData.skinType && (
-                      <span style={{
-                        fontSize: 11, fontWeight: 600, padding: '4px 12px', borderRadius: 20,
-                        background: 'linear-gradient(135deg, #FFB347, #FF8C42)', color: '#fff',
-                      }}>
-                        {skinTypeLabels[tipsData.skinType] || tipsData.skinType}
-                      </span>
-                    )}
-                    {tipsData.concerns.map((c, i) => (
-                      <span key={c.key} style={{
-                        fontSize: 11, fontWeight: 600, padding: '4px 12px', borderRadius: 20,
-                        background: i === 0 ? 'rgba(240,96,80,0.1)' : 'rgba(255,140,66,0.1)',
-                        color: i === 0 ? '#e05545' : '#FF8C42',
-                        border: `1px solid ${i === 0 ? 'rgba(240,96,80,0.15)' : 'rgba(255,140,66,0.15)'}`,
-                      }}>
-                        {c.label} {c.score}점
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <p style={{ fontSize: 12, color: '#b8a594', margin: '0 0 16px' }}>
-                측정 후 나만의 맞춤 팁이 표시됩니다
-              </p>
-            )}
-
-            {/* === Personal Tips (based on weak metrics) === */}
-            {tipsData.personalTips.length > 0 && (
-              <>
-                <div style={{
-                  fontSize: 13, fontWeight: 700, color: '#e8845c', marginBottom: 10,
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  animation: 'fadeUp 0.4s ease-out 0.1s both',
-                }}>
-                  <span style={{ fontSize: 16 }}>🎯</span> 내 피부에 필요한 관리
-                </div>
-                {tipsData.personalTips.map((tip, i) => (
-                  <div key={`p-${i}`} className="glass-card" style={{
-                    padding: 16, animation: `fadeUp 0.4s ease-out ${0.1 + i * 0.05}s both`,
-                    borderLeft: '3px solid rgba(255,140,66,0.3)',
-                  }}>
-                    <div style={{ display: 'flex', gap: 12 }}>
-                      <span style={{ fontSize: 24, flexShrink: 0 }}>{tip.icon}</span>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                          <div style={{ fontSize: 14, fontWeight: 700, color: '#2d2520' }}>{tip.title}</div>
-                        </div>
-                        <p style={{ fontSize: 12, color: '#5a4a3a', lineHeight: 1.6, margin: 0 }}>{tip.desc}</p>
-                        <span style={{
-                          display: 'inline-block', marginTop: 6,
-                          fontSize: 10, fontWeight: 600, color: '#FF8C42',
-                          background: 'rgba(255,140,66,0.08)', padding: '2px 8px', borderRadius: 10,
-                        }}>{tip.concern}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </>
-            )}
-
-            {/* === Skin Type Tips === */}
-            {tipsData.skinTypeTips.length > 0 && (
-              <>
-                <div style={{
-                  fontSize: 13, fontWeight: 700, color: '#7C4DFF', marginBottom: 10, marginTop: tipsData.personalTips.length > 0 ? 20 : 0,
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  animation: 'fadeUp 0.4s ease-out 0.4s both',
-                }}>
-                  <span style={{ fontSize: 16 }}>🧬</span> {skinTypeLabels[tipsData.skinType] || ''} 피부 관리법
-                </div>
-                {tipsData.skinTypeTips.map((tip, i) => (
-                  <div key={`st-${i}`} className="glass-card" style={{
-                    padding: 16, animation: `fadeUp 0.4s ease-out ${0.4 + i * 0.05}s both`,
-                    borderLeft: '3px solid rgba(124,77,255,0.2)',
-                  }}>
-                    <div style={{ display: 'flex', gap: 12 }}>
-                      <span style={{ fontSize: 24, flexShrink: 0 }}>{tip.icon}</span>
-                      <div>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: '#2d2520', marginBottom: 4 }}>{tip.title}</div>
-                        <p style={{ fontSize: 12, color: '#5a4a3a', lineHeight: 1.6, margin: 0 }}>{tip.desc}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </>
-            )}
-
-            {/* === General Tips === */}
-            <div style={{
-              fontSize: 13, fontWeight: 700, color: '#b8a594', marginBottom: 10, marginTop: 20,
-              display: 'flex', alignItems: 'center', gap: 6,
-              animation: 'fadeUp 0.4s ease-out 0.55s both',
-            }}>
-              <span style={{ fontSize: 16 }}>💡</span> 기본 스킨케어 상식
-            </div>
-            {tipsData.generalTips.map((tip, i) => (
-              <div key={`g-${i}`} className="glass-card" style={{
-                padding: 16, animation: `fadeUp 0.4s ease-out ${0.55 + i * 0.05}s both`,
-              }}>
-                <div style={{ display: 'flex', gap: 12 }}>
-                  <span style={{ fontSize: 24, flexShrink: 0 }}>{tip.icon}</span>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: '#2d2520', marginBottom: 4 }}>{tip.title}</div>
-                    <p style={{ fontSize: 12, color: '#5a4a3a', lineHeight: 1.6, margin: 0 }}>{tip.desc}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {/* CTA to measure if no record */}
-            {!latestRecord && (
-              <button onClick={openCamera} style={{
-                marginTop: 16, width: '100%', padding: '14px 0', borderRadius: 50,
-                background: 'linear-gradient(135deg, #FFB878, #FF6B4A, #FF3D7F)',
-                boxShadow: '0 4px 20px rgba(255,100,100,0.3)',
-                border: 'none', color: '#fff', fontSize: 15, fontWeight: 700,
-                cursor: 'pointer', fontFamily: 'inherit',
-                animation: 'fadeUp 0.4s ease-out 0.7s both',
-              }}>
-                📸 피부 측정하고 맞춤 팁 받기
-              </button>
-            )}
-          </div>
-
-          {/* Bottom Navigation — Shazam curved pill style */}
-          <nav className="bottom-nav-curved">
-            <button className="bottom-nav-item" onClick={() => setStage('landing')}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke="#b8a594" strokeWidth="1.8" fill="none" strokeLinejoin="round"/>
-              </svg>
-              <span style={{ fontSize: 10, fontWeight: 600, color: '#b8a594' }}>홈</span>
-            </button>
-            <button className="bottom-nav-item" onClick={goToHistory}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="9" stroke="#b8a594" strokeWidth="1.8"/>
-                <path d="M12 7v5l3 3" stroke="#b8a594" strokeWidth="1.8" strokeLinecap="round"/>
-              </svg>
-              <span style={{ fontSize: 10, fontWeight: 600, color: '#b8a594' }}>기록</span>
-            </button>
-            <button className="bottom-nav-item" onClick={() => setStage('tips')}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26z" stroke="#FF8C42" strokeWidth="1.8" strokeLinejoin="round" fill="rgba(255,140,66,0.1)"/>
-              </svg>
-              <span style={{ fontSize: 10, fontWeight: 600, color: '#FF8C42' }}>뷰티팁</span>
-            </button>
-            <button className="bottom-nav-item" onClick={() => { /* search placeholder */ }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <circle cx="11" cy="11" r="7" stroke="#b8a594" strokeWidth="1.8"/>
-                <path d="M16.5 16.5L21 21" stroke="#b8a594" strokeWidth="1.8" strokeLinecap="round"/>
-              </svg>
-              <span style={{ fontSize: 10, fontWeight: 600, color: '#b8a594' }}>검색</span>
-            </button>
-          </nav>
-        </div>
-        );
-      })()}
-
-      {/* ===== PREDICTION SCREEN ===== */}
-      {showPrediction && (
-        <PredictionScreen
-          lastScore={getLatestRecord()?.overallScore ?? 0}
-          onPredict={(direction) => {
-            savePrediction(direction);
-            setCurrentPrediction(direction);
-            setShowPrediction(false);
-            openCameraDirectly();
-          }}
-          onSkip={() => {
-            setShowPrediction(false);
-            openCameraDirectly();
-          }}
-        />
       )}
 
       {/* ===== CAMERA CAPTURE ===== */}
@@ -730,10 +526,10 @@ export default function App() {
             </div>
           </div>
 
-          <h2 style={{ fontSize: 22, fontWeight: 700, fontFamily: 'Outfit, sans-serif', color: '#1a1a1a', letterSpacing: -0.5 }}>
+          <h2 style={{ fontSize: 22, fontWeight: 600, fontFamily: "'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif", color: '#1a1a1a', letterSpacing: -0.3 }}>
             피부 분석중
           </h2>
-          <p style={{ fontSize: 14, color: '#C4A08A', margin: '8px 0 32px' }}>
+          <p style={{ fontSize: 14, fontFamily: "'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif", color: '#C4A08A', margin: '8px 0 32px' }}>
             수분 · 탄력 · 피부결을 분석하고 있어요
           </p>
 
@@ -881,15 +677,6 @@ export default function App() {
               <div style={{ width: 40, height: 5, borderRadius: 3, background: 'rgba(180,165,148,0.3)' }} />
             </div>
 
-            {/* ── Prediction Result ── */}
-            {predictionResult && (
-              <PredictionResult
-                prediction={predictionResult.predicted}
-                previousScore={predictionResult.previousScore}
-                actualScore={predictionResult.actualScore}
-              />
-            )}
-
             {/* ── Header: 피부 컨디션 + 피부 나이 + 종합점수 ── */}
             <div style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -897,7 +684,7 @@ export default function App() {
             }}>
               <div>
                 <span style={{ fontSize: 12, color: '#e8845c', fontWeight: 600, letterSpacing: 0.3 }}>분석 완료</span>
-                <h2 style={{ fontSize: 22, fontWeight: 700, color: '#2d2520', margin: '4px 0 4px', letterSpacing: -0.5 }}>피부 컨디션</h2>
+                <h2 style={{ fontSize: 22, fontWeight: 600, fontFamily: "'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif", color: '#2d2520', margin: '4px 0 4px', letterSpacing: -0.3 }}>피부 컨디션</h2>
                 <span style={{ fontSize: 12, color: '#b8a594', fontWeight: 300 }}>
                   {new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
                 </span>
@@ -1030,30 +817,10 @@ export default function App() {
               </div>
             </div>
 
-            {/* ── GROUP 1: Aging Metrics ── */}
+            {/* ── GROUP 1: Condition Metrics ── */}
             <div className="glass-card" style={{ padding: '18px 10px', animation: 'fadeUp 0.5s ease-out 0.95s both' }}>
-              <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4, paddingLeft: 8, color: '#2d2520' }}>노화 지표 <span style={{ fontSize: 11, color: '#b8a594', fontWeight: 400 }}>피부 나이에 큰 영향</span></div>
+              <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4, paddingLeft: 8, color: '#2d2520' }}>컨디션 지표 <span style={{ fontSize: 11, color: '#b8a594', fontWeight: 400 }}>일상 관리 포인트</span></div>
               <div style={{ fontSize: 10, color: '#c4b5a0', paddingLeft: 8, marginBottom: 14 }}>탭하면 과학적 근거</div>
-              <MetricBar label="주름" value={result.wrinkleScore} unit="점" icon="📐" color="#9575CD"
-                description={result.wrinkleScore >= 75 ? '매끄러운 피부' : result.wrinkleScore >= 50 ? '잔주름 관리 추천' : '주름 집중 관리 필요'}
-                onClick={() => openDetail('wrinkles')} />
-              <MetricBar label="탄력" value={result.elasticityScore} unit="점" icon="💎" color="#F06292" delay={60}
-                description={result.elasticityScore >= 70 ? '턱선 선명' : result.elasticityScore >= 45 ? '탄력 관리 시작' : '탄력 집중 케어 필요'}
-                onClick={() => openDetail('elasticity')} />
-              <MetricBar label="피부결" value={result.textureScore} unit="점" icon="🧴" color="#7986CB" delay={120}
-                description={result.textureScore >= 70 ? '매끈한 피부' : result.textureScore >= 45 ? '각질 케어 추천' : '피부결 집중 관리 필요'}
-                onClick={() => openDetail('texture')} />
-              <MetricBar label="모공" value={result.poreScore} unit="점" icon="🔬" color="#4DB6AC" delay={180}
-                description={result.poreScore >= 70 ? '미세 모공' : result.poreScore >= 45 ? '모공 축소 관리' : '넓은 모공 관리 필요'}
-                onClick={() => openDetail('pores')} />
-              <MetricBar label="색소" value={result.pigmentationScore} unit="점" icon="🎨" color="#A1887F" delay={240}
-                description={result.pigmentationScore >= 70 ? '맑은 피부' : result.pigmentationScore >= 45 ? '미백 관리 추천' : '색소 집중 관리 필요'}
-                onClick={() => openDetail('pigmentation')} />
-            </div>
-
-            {/* ── GROUP 2: Condition Metrics ── */}
-            <div className="glass-card" style={{ padding: '18px 10px', animation: 'fadeUp 0.5s ease-out 1.05s both' }}>
-              <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 14, paddingLeft: 8, color: '#2d2520' }}>컨디션 지표 <span style={{ fontSize: 11, color: '#b8a594', fontWeight: 400 }}>일상 관리 포인트</span></div>
               <MetricBar label="다크서클" value={result.darkCircleScore} unit="점" icon="👁️" color="#78909C"
                 description={result.darkCircleScore >= 70 ? '눈 밑 밝음' : result.darkCircleScore >= 45 ? '아이크림 추천' : '다크서클 집중 관리'}
                 onClick={() => openDetail('darkCircles')} />
@@ -1069,6 +836,26 @@ export default function App() {
               <MetricBar label="트러블" value={Math.max(0, 100 - result.troubleCount * 8.5)} unit="점" icon="🎯" color="#FF8A65" delay={240}
                 description={`${result.troubleCount}개 | ${result.troubleCount <= 2 ? '깨끗' : result.troubleCount <= 5 ? '경증' : '집중관리'}`}
                 onClick={() => openDetail('trouble')} />
+            </div>
+
+            {/* ── GROUP 2: Aging Metrics ── */}
+            <div className="glass-card" style={{ padding: '18px 10px', animation: 'fadeUp 0.5s ease-out 1.05s both' }}>
+              <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 14, paddingLeft: 8, color: '#2d2520' }}>노화 지표 <span style={{ fontSize: 11, color: '#b8a594', fontWeight: 400 }}>피부 나이에 큰 영향</span></div>
+              <MetricBar label="주름" value={result.wrinkleScore} unit="점" icon="📐" color="#9575CD"
+                description={result.wrinkleScore >= 75 ? '매끄러운 피부' : result.wrinkleScore >= 50 ? '잔주름 관리 추천' : '주름 집중 관리 필요'}
+                onClick={() => openDetail('wrinkles')} />
+              <MetricBar label="탄력" value={result.elasticityScore} unit="점" icon="💎" color="#F06292" delay={60}
+                description={result.elasticityScore >= 70 ? '턱선 선명' : result.elasticityScore >= 45 ? '탄력 관리 시작' : '탄력 집중 케어 필요'}
+                onClick={() => openDetail('elasticity')} />
+              <MetricBar label="피부결" value={result.textureScore} unit="점" icon="🧴" color="#7986CB" delay={120}
+                description={result.textureScore >= 70 ? '매끈한 피부' : result.textureScore >= 45 ? '각질 케어 추천' : '피부결 집중 관리 필요'}
+                onClick={() => openDetail('texture')} />
+              <MetricBar label="모공" value={result.poreScore} unit="점" icon="🔬" color="#4DB6AC" delay={180}
+                description={result.poreScore >= 70 ? '미세 모공' : result.poreScore >= 45 ? '모공 축소 관리' : '넓은 모공 관리 필요'}
+                onClick={() => openDetail('pores')} />
+              <MetricBar label="색소" value={result.pigmentationScore} unit="점" icon="🎨" color="#A1887F" delay={240}
+                description={result.pigmentationScore >= 70 ? '맑은 피부' : result.pigmentationScore >= 45 ? '미백 관리 추천' : '색소 집중 관리 필요'}
+                onClick={() => openDetail('pigmentation')} />
             </div>
 
             {/* ── AI Coach ── */}
@@ -1093,38 +880,6 @@ export default function App() {
               )}
             </div>
 
-            {/* ── Skin Age Race ── */}
-            {skinGoal && (
-              <div style={{ animation: 'fadeUp 0.5s ease-out 1.2s both' }}>
-                <SkinAgeRaceCard goal={skinGoal} />
-              </div>
-            )}
-
-            {/* ── Weekly Report Card ── */}
-            <div style={{ animation: 'fadeUp 0.5s ease-out 1.25s both' }}>
-              <WeeklyReportCard
-                current={result}
-                previous={getPreviousRecord()}
-                streak={streak.count}
-                predictionAccuracy={getPredictionAccuracy()}
-              />
-              <ShareReportButton />
-            </div>
-
-            {/* ── Skincare Routine CTA ── */}
-            <button onClick={() => setStage('skincare')} style={{
-              width: '100%', padding: '16px 20px', borderRadius: 22,
-              background: 'linear-gradient(135deg, rgba(124,77,255,0.08), rgba(255,140,66,0.08))',
-              border: '1px solid rgba(124,77,255,0.12)',
-              color: '#5a4a3a', fontSize: 14, fontWeight: 700, cursor: 'pointer',
-              fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              animation: 'fadeUp 0.5s ease-out 1.2s both',
-              transition: 'transform 0.15s, box-shadow 0.15s',
-            }}>
-              <span>🧪</span> 나만의 스킨케어 루틴 보기
-              <span style={{ fontSize: 12, opacity: 0.5 }}>→</span>
-            </button>
-
             {/* ── Re-measure ── */}
             {!saved && (
               <button onClick={handleSave} style={{
@@ -1143,31 +898,24 @@ export default function App() {
               animation: 'fadeUp 0.5s ease-out 1.4s both',
             }}>🔄 다시 측정하기</button>
 
-            <p style={{ textAlign: 'center', fontSize: 11, color: '#b8a594', marginTop: 14 }}>
+            <p style={{ textAlign: 'center', fontSize: 11, color: '#b8a594', marginTop: 14, marginBottom: 0 }}>
               AI 추정치이며 의료 진단이 아닙니다 · NOU © 2026
             </p>
+            {/* Tab bar spacer for result page */}
+            <div className="tab-bar-spacer" />
           </div>
         </div>
       )}
 
-      {/* ══════ AGE SETUP MODAL ══════ */}
-      {showAgeSetup && result && (
-        <AgeSetupModal
-          skinAge={result.skinAge}
-          onComplete={(realAge) => {
-            setSkinGoal(realAge, result.skinAge);
-            setSkinGoalState(getSkinGoalProgress());
-            setShowAgeSetup(false);
-          }}
-          onSkip={() => setShowAgeSetup(false)}
-        />
-      )}
+      </>}
+      {/* End of home tab wrapper */}
 
-      {/* ══════ SKINCARE ROUTINE ══════ */}
-      {stage === 'skincare' && result && (
-        <SkincareRoutine result={result} onBack={() => setStage('result')} />
-      )}
+      {/* Tab bar spacer for pages that show tab bar */}
+      {showTabBar && activeTab !== 'home' && <div className="tab-bar-spacer" />}
+      {showTabBar && activeTab === 'home' && stage === 'landing' && <div className="tab-bar-spacer" />}
+
+      {/* ===== TAB BAR ===== */}
+      {showTabBar && <TabBar activeTab={activeTab} onTabChange={switchTab} onMeasure={openCamera} />}
     </div>
   );
 }
-

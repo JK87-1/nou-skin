@@ -1,21 +1,31 @@
 /**
- * NOU History Page v1.0
- * 
- * "체중계" 패러다임: 측정 → 기록 → 변화 확인 → 동기부여 → 재측정
- * 
- * Sections:
- * 1. Motivation Card (동기부여 메시지)
- * 2. Skin Age Trend Graph (피부나이 변화 그래프)
- * 3. Metric Changes (지표별 변화)
- * 4. Record List (측정 기록 목록)
- * 5. Streak & Stats (연속 측정 & 통계)
+ * NOU History Page v2.0
+ *
+ * Redesigned: compact calendar, trend stats bar, clear photo gallery with hover overlay
+ *
+ * Sections (top - new design):
+ * 1. Page header (Skin Journal)
+ * 2. Month navigator + compact calendar
+ * 3. Trend stats bar (avg score, change, record days)
+ * 4. Photo gallery (3-col grid, score badges, hover overlay)
+ *
+ * Sections (bottom - preserved from v1):
+ * 5. Motivation Card
+ * 6. Skin Age Trend Graph
+ * 7. Metric Changes
+ * 8. Record List
+ * 9. Streak & Stats
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import {
   getRecords, getChanges, getTotalChanges, getTimeSeries,
   getStreak, getMotivation, getNextMeasurementInfo, formatDateFull,
+  getAllThumbnails, saveThumbnail, deleteRecord,
 } from '../storage/SkinStorage';
+import { AnimatedNumber, ScoreRing, MetricBar } from '../components/UIComponents';
+import { getProfile } from '../storage/ProfileStorage';
+import AiInsightCard from '../components/AiInsightCard';
 
 // ===== MINI LINE GRAPH (Canvas-based, no dependencies) =====
 function TrendGraph({ data, color = '#FF8C42', height = 160, metricKey = 'skinAge', inverse = false }) {
@@ -45,7 +55,6 @@ function TrendGraph({ data, color = '#FF8C42', height = 160, metricKey = 'skinAg
     const getX = (i) => padL + (i / (data.length - 1)) * gW;
     const getY = (v) => padT + (1 - (v - minV) / range) * gH;
 
-    // Clear
     ctx.clearRect(0, 0, W, H);
 
     // Grid lines
@@ -55,7 +64,6 @@ function TrendGraph({ data, color = '#FF8C42', height = 160, metricKey = 'skinAg
     for (let i = 0; i <= gridSteps; i++) {
       const y = padT + (i / gridSteps) * gH;
       ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
-      // Y-axis labels
       const val = Math.round(maxV - (i / gridSteps) * range);
       ctx.fillStyle = '#bbb'; ctx.font = '10px sans-serif'; ctx.textAlign = 'right';
       ctx.fillText(val, padL - 6, y + 3);
@@ -95,7 +103,6 @@ function TrendGraph({ data, color = '#FF8C42', height = 160, metricKey = 'skinAg
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Value label on last point
       if (i === data.length - 1) {
         ctx.fillStyle = color;
         ctx.font = 'bold 12px Outfit, sans-serif';
@@ -158,7 +165,7 @@ function ChangeIndicator({ diff, unit = '점', inverse = false, size = 'normal' 
 }
 
 // ===== MAIN HISTORY PAGE =====
-export default function HistoryPage({ onBack, onMeasure }) {
+export default function HistoryPage({ onBack, onMeasure, mode = 'gallery' }) {
   const [records, setRecords] = useState([]);
   const [graphMetric, setGraphMetric] = useState('skinAge');
   const [motivation, setMotivation] = useState(null);
@@ -166,6 +173,9 @@ export default function HistoryPage({ onBack, onMeasure }) {
   const [changes, setChanges] = useState(null);
   const [totalChanges, setTotalChanges] = useState(null);
   const [nextInfo, setNextInfo] = useState(null);
+  const [viewDate, setViewDate] = useState(new Date());
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [thumbs, setThumbs] = useState(getAllThumbnails());
 
   useEffect(() => {
     setRecords(getRecords());
@@ -202,85 +212,191 @@ export default function HistoryPage({ onBack, onMeasure }) {
     { ...changes.darkCircleScore },
   ] : [];
 
+  // Trend bar stats (based on calendar month)
+  const viewYear = viewDate.getFullYear();
+  const viewMonth = viewDate.getMonth();
+  const monthRecords = useMemo(() =>
+    records.filter(r => {
+      const d = new Date(r.date);
+      return d.getFullYear() === viewYear && d.getMonth() === viewMonth;
+    }), [records, viewYear, viewMonth]);
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const avgScore = monthRecords.length > 0
+    ? (monthRecords.reduce((s, r) => s + r.overallScore, 0) / monthRecords.length).toFixed(1) : 0;
+  const scoreChange = monthRecords.length >= 2
+    ? monthRecords[monthRecords.length - 1].overallScore - monthRecords[0].overallScore : 0;
+
+  // Derive selectedDate for calendar highlighting
+  const selectedDate = selectedRecord ? selectedRecord.date : null;
+
+  const handleSelectRecord = (record) => {
+    if (selectedRecord && selectedRecord.date === record.date) {
+      setSelectedRecord(null); // toggle off
+    } else {
+      setSelectedRecord(record);
+    }
+  };
+
+  // Refresh thumbs when gallery uploads
+  const refreshThumbs = () => {
+    setTimeout(() => setThumbs(getAllThumbnails()), 300);
+  };
+
   return (
-    <div className="app-container" style={{ paddingBottom: 40 }}>
-      {/* Header */}
-      <div style={{ background: 'linear-gradient(135deg,#FF8C42,#FF6B35)', padding: '48px 20px 24px', color: '#fff' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <button className="btn-back" onClick={onBack}>←</button>
-          <span style={{ fontSize: 15, fontWeight: 700 }}>📊 내 피부 기록</span>
-          <div style={{ width: 38 }} />
-        </div>
+    <div style={{ paddingBottom: 40 }}>
+      {/* Record Detail Modal */}
+      {selectedRecord && (
+        <RecordDetailModal
+          record={selectedRecord}
+          thumbnail={thumbs[selectedRecord.date]}
+          onClose={() => setSelectedRecord(null)}
+          onDelete={(date) => {
+            deleteRecord(date);
+            setSelectedRecord(null);
+            setRecords(getRecords());
+            refreshThumbs();
+          }}
+        />
+      )}
 
-        {/* Streak + Stats */}
-        <div style={{ display: 'flex', gap: 12, marginBottom: 8 }}>
-          <div style={{ flex: 1, background: 'rgba(255,255,255,0.15)', borderRadius: 14, padding: '12px 14px', textAlign: 'center' }}>
-            <div style={{ fontSize: 28, fontWeight: 900, fontFamily: 'Outfit,sans-serif' }}>{streak.count}</div>
-            <div style={{ fontSize: 10, opacity: 0.8 }}>🔥 연속 주</div>
-          </div>
-          <div style={{ flex: 1, background: 'rgba(255,255,255,0.15)', borderRadius: 14, padding: '12px 14px', textAlign: 'center' }}>
-            <div style={{ fontSize: 28, fontWeight: 900, fontFamily: 'Outfit,sans-serif' }}>{records.length}</div>
-            <div style={{ fontSize: 10, opacity: 0.8 }}>📋 총 측정</div>
-          </div>
-          <div style={{ flex: 1, background: 'rgba(255,255,255,0.15)', borderRadius: 14, padding: '12px 14px', textAlign: 'center' }}>
-            <div style={{ fontSize: 28, fontWeight: 900, fontFamily: 'Outfit,sans-serif' }}>
-              {totalChanges ? `${totalChanges.skinAge > 0 ? '+' : ''}${totalChanges.skinAge}` : '—'}
-            </div>
-            <div style={{ fontSize: 10, opacity: 0.8 }}>🎂 누적 변화</div>
-          </div>
-        </div>
-      </div>
+      {/* ===== GALLERY MODE (Instagram-style profile) ===== */}
+      {mode === 'gallery' && (() => {
+        const latestRecord = records.length > 0 ? records[records.length - 1] : null;
+        const profileImg = getProfile().profileImage;
+        const avatarSrc = profileImg || (latestRecord ? thumbs[latestRecord.date] : null);
+        const avgScore = records.length > 0
+          ? Math.round(records.reduce((s, r) => s + r.overallScore, 0) / records.length) : 0;
+        const sorted = [...records].reverse();
 
-      <div style={{ padding: '16px 16px' }}>
-        {/* Motivation Card */}
-        {motivation && (
-          <div style={{
-            background: 'linear-gradient(135deg,#FFFBF5,#FFF3E6)', border: '1px solid #FFE0B2',
-            borderRadius: 18, padding: '18px 16px', marginBottom: 16,
-          }}>
-            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-              <span style={{ fontSize: 32 }}>{motivation.emoji}</span>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 15, fontWeight: 700, color: '#333', marginBottom: 4 }}>{motivation.title}</div>
-                <div style={{ fontSize: 13, color: '#777', lineHeight: 1.6 }}>{motivation.body}</div>
+        return (
+          <div>
+            {/* Profile header */}
+            <div style={{ padding: '24px 20px 0', animation: 'breatheIn 0.6s ease both' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+                {/* Profile avatar */}
+                <div style={{
+                  width: 80, height: 80, borderRadius: '50%', flexShrink: 0,
+                  background: 'linear-gradient(135deg, #c4705a, #FF8C42)',
+                  padding: 3,
+                }}>
+                  <div style={{
+                    width: '100%', height: '100%', borderRadius: '50%',
+                    overflow: 'hidden', background: '#fdfbf9',
+                  }}>
+                    {avatarSrc ? (
+                      <img src={avatarSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c4b0a0" strokeWidth="1.5">
+                          <circle cx="12" cy="10" r="4" /><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" strokeLinecap="round" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Stats row */}
+                <div style={{ display: 'flex', flex: 1, justifyContent: 'space-around', textAlign: 'center' }}>
+                  <div>
+                    <div style={{ fontFamily: 'Outfit, sans-serif', fontSize: 18, fontWeight: 700, color: '#1a1a1a' }}>{records.length}</div>
+                    <div style={{ fontSize: 11, color: '#8a7a6e', marginTop: 2 }}>기록</div>
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: 'Outfit, sans-serif', fontSize: 18, fontWeight: 700, color: '#1a1a1a' }}>{avgScore}</div>
+                    <div style={{ fontSize: 11, color: '#8a7a6e', marginTop: 2 }}>평균점수</div>
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: 'Outfit, sans-serif', fontSize: 18, fontWeight: 700, color: '#1a1a1a' }}>{streak.count}</div>
+                    <div style={{ fontSize: 11, color: '#8a7a6e', marginTop: 2 }}>연속</div>
+                  </div>
+                </div>
               </div>
-            </div>
-            {motivation.cta && (
-              <button className="btn-primary" onClick={onMeasure} style={{ marginTop: 12, fontSize: 14, padding: 14 }}>
-                {motivation.cta}
-              </button>
-            )}
-          </div>
-        )}
 
-        {/* Next Measurement Reminder */}
-        {nextInfo && records.length > 0 && (
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 10,
-            background: nextInfo.isOverdue ? '#FFF3E0' : '#F3F8FF',
-            border: `1px solid ${nextInfo.isOverdue ? '#FFE0B2' : '#BBDEFB'}`,
-            borderRadius: 14, padding: '12px 14px', marginBottom: 16,
-          }}>
-            <span style={{ fontSize: 20 }}>{nextInfo.isOverdue ? '⏰' : '📅'}</span>
-            <div style={{ flex: 1, fontSize: 13, color: nextInfo.isOverdue ? '#E65100' : '#555' }}>
-              {nextInfo.message}
+              {/* Bio line */}
+              <div style={{ marginTop: 14 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#3d3328' }}>나의 피부 기록</div>
+                {latestRecord && (
+                  <div style={{ fontSize: 12, color: '#a89888', marginTop: 4 }}>
+                    최근 피부나이 {latestRecord.skinAge}세 · {latestRecord.skinType}
+                  </div>
+                )}
+              </div>
+
             </div>
-            {(nextInfo.dueIn <= 1 || nextInfo.isOverdue) && (
-              <button onClick={onMeasure} style={{
-                background: '#FF8C42', color: '#fff', border: 'none', borderRadius: 10,
-                padding: '8px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
-              }}>측정</button>
+
+            <div style={{ marginTop: 20 }} />
+
+            {/* Photo grid */}
+            {records.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px 20px', color: '#c4b0a0' }}>
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#d5ccc4" strokeWidth="1.2" strokeLinecap="round" style={{ marginBottom: 12 }}>
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                  <circle cx="12" cy="13" r="3" />
+                </svg>
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#8a7a6e' }}>아직 기록이 없어요</div>
+                <div style={{ fontSize: 12, marginTop: 6 }}>첫 측정을 시작해보세요</div>
+              </div>
+            ) : (
+              <div style={{
+                display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4, padding: '0 2px',
+              }}>
+                {sorted.map((r) => {
+                  const thumb = thumbs[r.date];
+                  return (
+                    <div key={r.date} onClick={() => handleSelectRecord(r)} style={{
+                      position: 'relative', aspectRatio: '1', cursor: 'pointer',
+                      background: '#eee', overflow: 'hidden', borderRadius: 10,
+                    }}>
+                      {thumb ? (
+                        <img src={thumb} alt={r.date} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      ) : (
+                        <div style={{
+                          width: '100%', height: '100%',
+                          background: 'linear-gradient(135deg, rgba(196,112,90,0.08), rgba(196,112,90,0.15))',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                          <span style={{ fontSize: 11, color: '#a89888' }}>No Photo</span>
+                        </div>
+                      )}
+                      <span style={{
+                        position: 'absolute', bottom: 5, left: 6,
+                        fontSize: 10, fontWeight: 500, color: '#fff',
+                        textShadow: '0 1px 3px rgba(0,0,0,0.6)',
+                        pointerEvents: 'none',
+                      }}>{String(new Date(r.date).getMonth() + 1).padStart(2, '0')}월 {String(new Date(r.date).getDate()).padStart(2, '0')}일</span>
+                      <span style={{
+                        position: 'absolute', bottom: 5, right: 6,
+                        fontSize: 13, fontWeight: 600, color: '#fff',
+                        textShadow: '0 1px 4px rgba(0,0,0,0.6)',
+                        pointerEvents: 'none',
+                      }}>{r.overallScore}</span>
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </div>
-        )}
+        );
+      })()}
+
+      {/* ===== INSIGHTS MODE ===== */}
+      {mode === 'insights' && (
+      <div style={{ padding: '0 16px' }}>
+        <div style={{ padding: '20px 0 20px', animation: 'breatheIn 0.8s ease both' }}>
+          <div style={{
+            fontSize: 18, fontWeight: 600, color: '#e0707a', letterSpacing: -0.2, textAlign: 'center',
+          }}>피부 분석</div>
+        </div>
+
+        {/* AI Insight */}
+        <AiInsightCard />
 
         {/* Trend Graph */}
         <div className="card" style={{ padding: '16px 12px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <span style={{ fontSize: 14, fontWeight: 700 }}>📈 변화 추이</span>
+            <span style={{ fontSize: 15, fontWeight: 600, color: '#5a4a40', letterSpacing: -0.3 }}>Insights</span>
           </div>
 
-          {/* Graph metric selector */}
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
             {graphOptions.map(opt => (
               <button
@@ -306,10 +422,10 @@ export default function HistoryPage({ onBack, onMeasure }) {
           />
         </div>
 
-        {/* Metric Changes (직전 대비) */}
+        {/* Metric Changes */}
         {changes && (
           <div className="card" style={{ padding: '16px 12px' }}>
-            <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 14 }}>📊 지난 측정 대비 변화</div>
+            <div style={{ fontSize: 15, fontWeight: 600, color: '#5a4a40', letterSpacing: -0.3, marginBottom: 14 }}>지난 측정 대비 변화</div>
             {metricChangeList.map((c, i) => (
               <div key={c.key} style={{
                 display: 'flex', alignItems: 'center', padding: '10px 0',
@@ -324,13 +440,13 @@ export default function HistoryPage({ onBack, onMeasure }) {
           </div>
         )}
 
-        {/* Total Progress (첫 측정 대비) */}
+        {/* Total Progress */}
         {totalChanges && totalChanges.totalRecords >= 3 && (
           <div style={{
             background: 'linear-gradient(135deg,#E8F5E9,#C8E6C9)', border: '1px solid #A5D6A7',
             borderRadius: 18, padding: 18, marginBottom: 16,
           }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: '#2E7D32', marginBottom: 8 }}>🌱 전체 기간 변화</div>
+            <div style={{ fontSize: 15, fontWeight: 600, color: '#2E7D32', letterSpacing: -0.3, marginBottom: 8 }}>전체 기간 변화</div>
             <div style={{ fontSize: 12, color: '#555', lineHeight: 1.7 }}>
               <strong>{formatDateFull(totalChanges.startDate)}</strong>부터 <strong>{totalChanges.totalRecords}회</strong> 측정 ({totalChanges.period}일)
             </div>
@@ -359,7 +475,7 @@ export default function HistoryPage({ onBack, onMeasure }) {
 
         {/* Record List */}
         <div className="card" style={{ padding: '16px 12px' }}>
-          <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>🗓 측정 기록</div>
+          <div style={{ fontSize: 15, fontWeight: 600, color: '#5a4a40', letterSpacing: -0.3, marginBottom: 12 }}>History</div>
           {records.length === 0 ? (
             <div style={{ textAlign: 'center', padding: 30, color: '#bbb' }}>
               <div style={{ fontSize: 36, marginBottom: 8 }}>📸</div>
@@ -378,7 +494,7 @@ export default function HistoryPage({ onBack, onMeasure }) {
                   </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 18, fontWeight: 900, fontFamily: 'Outfit,sans-serif', color: '#FF6B35' }}>{r.skinAge}세</div>
+                  <div style={{ fontSize: 18, fontWeight: 700, fontFamily: 'Outfit,sans-serif', color: '#FF6B35' }}>{r.skinAge}세</div>
                   <div style={{ fontSize: 11, color: '#aaa' }}>종합 {r.overallScore}점</div>
                 </div>
               </div>
@@ -386,16 +502,517 @@ export default function HistoryPage({ onBack, onMeasure }) {
           )}
         </div>
 
-        {/* CTA */}
-        <button className="btn-primary" onClick={onMeasure} style={{ marginTop: 8, fontSize: 15 }}>
-          📸 지금 측정하기
-        </button>
 
         {records.length > 0 && (
           <p style={{ textAlign: 'center', fontSize: 11, color: '#ccc', marginTop: 14 }}>
             매주 같은 조건(시간, 조명, 맨얼굴)에서 측정하면 정확도가 높아져요
           </p>
         )}
+      </div>
+      )}
+    </div>
+  );
+}
+
+// ===== CALENDAR COMPONENT (v2 - compact, no card wrapper) =====
+function CalendarSection({ records, viewDate, onViewDateChange, selectedDate, onSelectRecord }) {
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const today = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
+
+  const recordDates = useMemo(() => new Set(records.map(r => r.date)), [records]);
+  const recordMap = useMemo(() => {
+    const m = {};
+    records.forEach(r => { m[r.date] = r; });
+    return m;
+  }, [records]);
+
+  // Calendar grid
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const cells = [];
+  for (let i = 0; i < firstDay; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+
+  const prevMonth = () => onViewDateChange(new Date(year, month - 1, 1));
+  const nextMonth = () => {
+    const next = new Date(year, month + 1, 1);
+    if (next <= new Date()) onViewDateChange(next);
+  };
+
+  const monthName = viewDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  return (
+    <>
+      {/* Month Navigator */}
+      <div className="month-nav" style={{ animation: 'breatheIn 0.8s ease 0.1s both' }}>
+        <div className="month-label">{monthName}</div>
+        <div className="month-arrows">
+          <button className="month-arrow" onClick={prevMonth}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a7a6e" strokeWidth="1.8" strokeLinecap="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <button className="month-arrow" onClick={nextMonth}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a7a6e" strokeWidth="1.8" strokeLinecap="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Calendar Grid */}
+      <div style={{ marginBottom: 24, animation: 'breatheIn 0.8s ease 0.15s both' }}>
+        <div className="cal-weekdays">
+          {['일', '월', '화', '수', '목', '금', '토'].map(d => (
+            <span key={d} className="cal-weekday">{d}</span>
+          ))}
+        </div>
+        <div className="cal-days">
+          {cells.map((day, i) => {
+            if (day === null) return <div key={`e-${i}`} />;
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const isToday = dateStr === today;
+            const isFuture = dateStr > today;
+            const hasRecord = recordDates.has(dateStr);
+            const isSelected = selectedDate === dateStr;
+
+            let className = 'cal-day';
+            if (isToday) className += ' cal-today';
+            else if (isFuture) className += ' future';
+            else if (hasRecord) className += ' recorded';
+            else className += ' missed';
+            if (isSelected && !isToday) className += ' cal-selected';
+
+            return (
+              <div
+                key={dateStr}
+                className={className}
+                onClick={() => {
+                  if (!isFuture && hasRecord) onSelectRecord(recordMap[dateStr]);
+                }}
+              >
+                {day}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ===== PHOTO GALLERY (v2 - clear photos, hover overlay, score badges) =====
+function PhotoGallery({ records, thumbs, onMeasure, onSelectRecord, onThumbsChange }) {
+  const fileRef = useRef(null);
+  const [uploadTarget, setUploadTarget] = useState(null);
+  const [expanded, setExpanded] = useState(false);
+  const today = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
+  const hasTodayRecord = records.some(r => r.date === today);
+
+  const sorted = [...records].reverse();
+  const visiblePhotos = expanded ? sorted : sorted.slice(0, 9);
+  const dayLabels = ['일', '월', '화', '수', '목', '금', '토'];
+
+  const handleUploadClick = (e, dateStr) => {
+    e.stopPropagation(); // prevent triggering record detail
+    setUploadTarget(dateStr);
+    fileRef.current?.click();
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !file.type.startsWith('image/') || !uploadTarget) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      saveThumbnail(uploadTarget, ev.target.result);
+      onThumbsChange();
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  return (
+    <div className="gallery-section" style={{ animation: 'breatheIn 0.8s ease 0.35s both' }}>
+      <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
+
+      <div className="card" style={{ padding: '16px 12px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div style={{ fontSize: 15, fontWeight: 600, color: '#5a4a40', letterSpacing: -0.3 }}>Album</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div onClick={onMeasure} style={{
+            width: 34, height: 34, borderRadius: '50%', cursor: 'pointer',
+            background: 'rgba(196,112,90,0.1)', border: '1.5px solid rgba(196,112,90,0.2)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M12 5v14M5 12h14" stroke="#c4705a" strokeWidth="2.5" strokeLinecap="round" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div className="photo-grid">
+        {visiblePhotos.map((r) => {
+          const thumb = thumbs[r.date];
+          const d = new Date(r.date);
+          const dateLabel = `${d.getMonth() + 1}월 ${d.getDate()}일 ${dayLabels[d.getDay()]}`;
+          const shortDate = `${String(d.getMonth() + 1).padStart(2, '0')}월${String(d.getDate()).padStart(2, '0')}일`;
+
+          return (
+            <div key={r.date} className="photo-cell" onClick={() => onSelectRecord(r)}>
+              {thumb ? (
+                <>
+                  <img src={thumb} alt={r.date} />
+                  <span style={{
+                    position: 'absolute', bottom: 6, left: 6,
+                    fontSize: 10, fontWeight: 600, color: '#fff',
+                    textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+                    zIndex: 2, pointerEvents: 'none',
+                  }}>{shortDate}</span>
+                </>
+              ) : null}
+              <span className="photo-score-badge">{r.overallScore}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      {sorted.length > 9 && (
+        <div onClick={() => setExpanded(v => !v)} style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '10px 0 2px', cursor: 'pointer',
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{
+            transition: 'transform 0.3s ease',
+            transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+          }}>
+            <path d="M6 9l6 6 6-6" stroke="#c4b0a0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+      )}
+
+      <div className="gallery-hint">사진을 탭하면 그날의 상세 분석을 볼 수 있어요</div>
+      </div>
+    </div>
+  );
+}
+
+// ===== RECORD DETAIL MODAL (RPG stat card style) =====
+function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [dragY, setDragY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const dragStart = useRef(null);
+  const sheetRef = useRef(null);
+
+  const handleTouchStart = (e) => {
+    const el = sheetRef.current;
+    if (el && el.scrollTop > 0) return;
+    dragStart.current = e.touches[0].clientY;
+    setIsDragging(true);
+  };
+  const handleTouchMove = (e) => {
+    if (dragStart.current === null) return;
+    const dy = e.touches[0].clientY - dragStart.current;
+    if (dy > 0) setDragY(dy);
+  };
+  const handleTouchEnd = () => {
+    if (dragY > 120) {
+      setClosing(true);
+      setDragY(window.innerHeight);
+      setTimeout(onClose, 250);
+    } else {
+      setDragY(0);
+    }
+    dragStart.current = null;
+    setIsDragging(false);
+  };
+
+  if (!record) return null;
+
+  const dayLabels = ['일', '월', '화', '수', '목', '금', '토'];
+  const d = new Date(record.date);
+  const dateStr = `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 ${dayLabels[d.getDay()]}요일`;
+
+  const getGrade = (score) => {
+    if (score >= 85) return { letter: 'S', label: '최상', gradient: 'linear-gradient(135deg, #FFD700, #FFA500)', color: '#B8860B', bg: 'rgba(255,215,0,0.12)' };
+    if (score >= 70) return { letter: 'A', label: '우수', gradient: 'linear-gradient(135deg, #FF8C42, #FF6B35)', color: '#FF6B35', bg: 'rgba(255,140,66,0.12)' };
+    if (score >= 55) return { letter: 'B', label: '양호', gradient: 'linear-gradient(135deg, #FFD54F, #FFB300)', color: '#F9A825', bg: 'rgba(255,193,7,0.12)' };
+    return { letter: 'C', label: '관리 필요', gradient: 'linear-gradient(135deg, #BDBDBD, #9E9E9E)', color: '#757575', bg: 'rgba(158,158,158,0.12)' };
+  };
+
+  const grade = getGrade(record.overallScore);
+
+  const agingMetrics = [
+    { label: '주름', value: record.wrinkleScore, icon: '📐', color: '#9575CD' },
+    { label: '탄력', value: record.elasticityScore, icon: '💎', color: '#F06292' },
+    { label: '피부결', value: record.textureScore, icon: '🧴', color: '#7986CB' },
+    { label: '모공', value: record.poreScore, icon: '🔬', color: '#4DB6AC' },
+    { label: '색소', value: record.pigmentationScore, icon: '🎨', color: '#FF8A65' },
+  ];
+
+  const conditionMetrics = [
+    { label: '수분도', value: record.moisture, icon: '💧', color: '#4FC3F7', unit: '%' },
+    { label: '피부톤', value: record.skinTone, icon: '✨', color: '#FFB74D' },
+    { label: '다크서클', value: record.darkCircleScore, icon: '👁️', color: '#78909C' },
+    { label: '유분', value: record.oilBalance, icon: '🫧', color: '#81C784', unit: '%' },
+    { label: '트러블', value: record.troubleCount, icon: '🎯', color: '#E57373', unit: '개' },
+  ];
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 200,
+      background: `rgba(0,0,0,${Math.max(0, 0.45 - dragY * 0.003).toFixed(2)})`,
+      display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+      animation: closing ? 'none' : 'fadeIn 0.2s ease',
+    }} onClick={onClose}>
+      <div
+        ref={sheetRef}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        style={{
+          width: '100%', maxWidth: 430,
+          background: '#fdfbf9',
+          borderRadius: '24px 24px 0 0',
+          padding: '12px 20px 40px',
+          maxHeight: '88vh', overflowY: dragY > 0 ? 'hidden' : 'auto',
+          animation: closing ? 'none' : 'slideUp 0.3s ease-out',
+          transform: `translateY(${dragY}px)`,
+          transition: isDragging ? 'none' : 'transform 0.25s ease-out',
+        }} onClick={e => e.stopPropagation()}>
+        {/* Handle bar + back/delete buttons */}
+        <div style={{ display: 'flex', justifyContent: 'center', position: 'relative', marginBottom: 14 }}>
+          <div onClick={onClose} style={{
+            position: 'absolute', left: -4, top: 2,
+            width: 32, height: 32, borderRadius: '50%', cursor: 'pointer',
+            background: 'rgba(180,165,148,0.12)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M15 18l-6-6 6-6" stroke="#a89888" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(180,165,148,0.3)', marginTop: 10 }} />
+          <div onClick={() => setShowConfirm(true)} style={{
+            position: 'absolute', right: -4, top: 2,
+            width: 32, height: 32, borderRadius: '50%', cursor: 'pointer',
+            background: 'rgba(180,165,148,0.12)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M6 12h12" stroke="#a89888" strokeWidth="2.5" strokeLinecap="round" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Delete confirm popup */}
+        {showConfirm && (
+          <div style={{
+            position: 'fixed', inset: 0, zIndex: 300,
+            background: 'rgba(0,0,0,0.4)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            animation: 'fadeIn 0.15s ease',
+          }} onClick={() => setShowConfirm(false)}>
+            <div onClick={e => e.stopPropagation()} style={{
+              background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
+              borderRadius: 20, padding: '28px 24px',
+              width: 280, textAlign: 'center',
+              border: '1px solid rgba(255,255,255,0.5)',
+              boxShadow: '0 8px 40px rgba(0,0,0,0.12), inset 0 1px 1px rgba(255,255,255,0.6)',
+            }}>
+              <div style={{ fontSize: 15, fontWeight: 600, color: '#3d3328', marginBottom: 8 }}>이 기록을 삭제할까요?</div>
+              <div style={{ fontSize: 12, color: '#a89888', marginBottom: 20 }}>삭제된 기록은 복구할 수 없습니다.</div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button onClick={() => setShowConfirm(false)} style={{
+                  flex: 1, padding: '12px 0', borderRadius: 12, border: 'none',
+                  background: '#f0ece8', color: '#5a4a40', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                }}>아니오</button>
+                <button onClick={() => { onDelete(record.date); setShowConfirm(false); }} style={{
+                  flex: 1, padding: '12px 0', borderRadius: 12, border: 'none',
+                  background: '#e05545', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                }}>삭제</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Date + skin type tags */}
+        <div style={{ textAlign: 'center', marginBottom: 6 }}>
+          <div style={{ fontSize: 12, color: '#a89888', fontWeight: 400, letterSpacing: 0.3 }}>{dateStr}</div>
+        </div>
+        <div style={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 18 }}>
+          <span style={{
+            fontSize: 11, color: '#5a4a40', background: 'rgba(196,112,90,0.08)',
+            padding: '3px 10px', borderRadius: 10, fontWeight: 500,
+          }}>{record.skinType}</span>
+          {(record.concerns || []).map((c, i) => (
+            <span key={i} style={{
+              fontSize: 11, color: i === 0 ? '#e05545' : '#d4900a',
+              background: i === 0 ? 'rgba(240,96,80,0.08)' : 'rgba(245,166,35,0.08)',
+              padding: '3px 10px', borderRadius: 10, fontWeight: 500,
+            }}>{c}</span>
+          ))}
+        </div>
+
+        {/* Hero: Photo left + Stats right */}
+        <div style={{
+          display: 'flex', gap: 14, marginBottom: 22,
+          animation: 'fadeUp 0.3s ease 0.1s both',
+        }}>
+          {/* Photo 180x180 */}
+          <div style={{ flexShrink: 0, animation: 'popIn 0.4s ease 0.1s both' }}>
+            {thumbnail ? (
+              <img src={thumbnail} alt="" style={{
+                width: 180, height: 180, borderRadius: 24, objectFit: 'cover',
+                border: '3px solid rgba(196,112,90,0.1)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+              }} />
+            ) : (
+              <div style={{
+                width: 180, height: 180, borderRadius: 24,
+                background: 'linear-gradient(135deg, rgba(196,112,90,0.06), rgba(196,112,90,0.12))',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                border: '3px solid rgba(196,112,90,0.08)',
+              }}>
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#c4b0a0" strokeWidth="1.2" strokeLinecap="round">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                  <circle cx="12" cy="13" r="3" />
+                </svg>
+              </div>
+            )}
+          </div>
+
+          {/* Stats - receipt style */}
+          <div style={{
+            flex: 1, display: 'flex', flexDirection: 'column',
+            animation: 'fadeUp 0.4s ease 0.2s both',
+            background: '#fff',
+            borderRadius: 20,
+            border: '1px solid rgba(0,0,0,0.06)',
+            padding: '14px 16px',
+            minHeight: 180, justifyContent: 'center',
+          }}>
+            {/* Skin type row */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+              <span style={{ fontSize: 11, color: '#8a7a6e', fontWeight: 500 }}>피부타입</span>
+              <span style={{ fontSize: 14, fontWeight: 600, color: '#5a4a40' }}>{record.skinType}</span>
+            </div>
+
+            {/* Skin age row */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+              <span style={{ fontSize: 11, color: '#8a7a6e', fontWeight: 500 }}>피부나이</span>
+              <span style={{ fontFamily: 'Outfit, sans-serif', fontSize: 14, fontWeight: 600, color: '#1a1a1a', lineHeight: 1 }}>
+                <AnimatedNumber target={record.skinAge} suffix="세" duration={1000} />
+              </span>
+            </div>
+
+            {/* Grade row */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+              <span style={{ fontSize: 11, color: '#8a7a6e', fontWeight: 500 }}>등급</span>
+              <span style={{
+                fontSize: 14, fontWeight: 600, lineHeight: 1,
+                background: grade.gradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+              }}>{grade.letter} {grade.label}</span>
+            </div>
+
+            {/* Score row */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <span style={{ fontSize: 11, color: '#8a7a6e', fontWeight: 500 }}>종합점수</span>
+              <span style={{ fontFamily: 'Outfit, sans-serif', fontSize: 28, fontWeight: 700, color: '#1a1a1a', lineHeight: 1 }}>
+                <AnimatedNumber target={record.overallScore} duration={1000} />
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Condition metrics group */}
+        <div style={{
+          animation: 'fadeUp 0.4s ease 0.3s both',
+          background: 'rgba(255,255,255,0.55)',
+          backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          border: '1px solid rgba(255,255,255,0.6)',
+          borderRadius: 22, padding: '14px 6px 2px',
+          marginBottom: 16,
+          boxShadow: '0 4px 24px rgba(0,0,0,0.04), inset 0 1px 2px rgba(255,255,255,0.8)',
+        }}>
+          <div style={{
+            fontSize: 11, fontWeight: 600, color: '#a89888', letterSpacing: 1.5,
+            textTransform: 'uppercase', marginBottom: 4, paddingLeft: 14,
+          }}>컨디션 지표</div>
+          {conditionMetrics.map((m, i) => (
+            <MetricBar
+              key={m.label}
+              label={m.label}
+              value={m.value}
+              unit={m.unit || ''}
+              color={m.color}
+              icon={m.icon}
+              delay={i * 80}
+            />
+          ))}
+        </div>
+
+        {/* Aging metrics group */}
+        <div style={{
+          animation: 'fadeUp 0.4s ease 0.5s both',
+          background: 'rgba(255,255,255,0.55)',
+          backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          border: '1px solid rgba(255,255,255,0.6)',
+          borderRadius: 22, padding: '14px 6px 2px',
+          marginBottom: 12,
+          boxShadow: '0 4px 24px rgba(0,0,0,0.04), inset 0 1px 2px rgba(255,255,255,0.8)',
+        }}>
+          <div style={{
+            fontSize: 11, fontWeight: 600, color: '#a89888', letterSpacing: 1.5,
+            textTransform: 'uppercase', marginBottom: 4, paddingLeft: 14,
+          }}>노화 지표</div>
+          {agingMetrics.map((m, i) => (
+            <MetricBar
+              key={m.label}
+              label={m.label}
+              value={m.value}
+              unit=""
+              color={m.color}
+              icon={m.icon}
+              delay={i * 80}
+            />
+          ))}
+        </div>
+
+        {/* SKIN LEVEL footer */}
+        <div style={{
+          animation: 'fadeUp 0.4s ease 0.7s both',
+          background: 'linear-gradient(135deg, rgba(196,112,90,0.06), rgba(255,180,120,0.1))',
+          borderRadius: 18, padding: '16px 20px',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14,
+          border: '1px solid rgba(196,112,90,0.08)',
+        }}>
+          <div style={{
+            fontSize: 10, fontWeight: 700, color: '#a89888', letterSpacing: 2,
+            textTransform: 'uppercase',
+          }}>SKIN LEVEL</div>
+          <div style={{
+            fontFamily: 'Outfit, sans-serif', fontSize: 28, fontWeight: 900,
+            background: 'linear-gradient(135deg, #FF6B35, #c4705a)',
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            lineHeight: 1,
+          }}>
+            <AnimatedNumber target={record.skinAge} suffix="세" duration={1400} />
+          </div>
+          <div style={{
+            background: grade.gradient, borderRadius: 8,
+            padding: '3px 10px',
+          }}>
+            <span style={{
+              fontFamily: 'Outfit, sans-serif', fontSize: 14, fontWeight: 800,
+              color: '#fff',
+            }}>{grade.letter}</span>
+          </div>
+        </div>
       </div>
     </div>
   );

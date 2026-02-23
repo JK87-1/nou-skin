@@ -23,13 +23,20 @@ async function getInstance() {
   initPromise = (async () => {
     try {
       const vision = await FilesetResolver.forVisionTasks(CDN);
-      instance = await FaceLandmarker.createFromOptions(vision, {
+      const options = {
         baseOptions: { modelAssetPath: MODEL, delegate: 'GPU' },
         runningMode: 'IMAGE',
         numFaces: 1,
         outputFacialTransformationMatrixes: false,
         outputFaceBlendshapes: false,
-      });
+      };
+      try {
+        instance = await FaceLandmarker.createFromOptions(vision, options);
+      } catch (gpuErr) {
+        console.warn('[FaceLandmarker] GPU failed, falling back to CPU:', gpuErr);
+        options.baseOptions.delegate = 'CPU';
+        instance = await FaceLandmarker.createFromOptions(vision, options);
+      }
       currentMode = 'IMAGE';
       return instance;
     } catch (e) {

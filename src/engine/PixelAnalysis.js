@@ -18,6 +18,15 @@
  * ─ Oil balance: multi-signal (shine ratio + total shine + saturation)
  * ─ Elasticity: upper/lower edge ratio for firmness vs sagging distinction
  * ─ Pores: LAB L* based micro-variance (skin-tone independent)
+ *
+ * v3.2 CHANGES (Accuracy overhaul):
+ * ─ Analysis resolution 320→512px (better pore/wrinkle/texture detection)
+ * ─ Moisture: reduced cluster weight 35→15%, increased smoothness 35→45%, sat 30→40%
+ * ─ Lighting normalization 60/40→75/25 blend (stronger color correction)
+ * ─ Scoring recalibration: wrinkles, pores, elasticity, texture, dark circles, skin tone, oil
+ * ─ Skin pixel filter expanded (YCbCr wider range for dark skin tones)
+ * ─ Highlight cluster minimum size 1→3px (noise reduction)
+ * ─ Skin age base 23→25, adjusted penalty weights
  */
 import { landmarksToRegions } from './LandmarkRegions.js';
 import { rgbToLab, labStats } from './ColorSpace.js';
@@ -120,8 +129,8 @@ function normalizeLighting(ctx, W, H) {
   const hi = lumArr[Math.floor(n * 0.95)];
   const range = hi - lo || 1;
 
-  // 3. Apply corrections with soft blending (60% corrected, 40% original)
-  const BLEND = 0.6;
+  // 3. Apply corrections with soft blending (75% corrected, 25% original)
+  const BLEND = 0.75;
   for (let i = 0; i < d.length; i += 4) {
     const origR = d[i], origG = d[i + 1], origB = d[i + 2];
     let r = origR * scaleR, g = origG * scaleG, b = origB * scaleB;
@@ -176,8 +185,8 @@ export function analyzePixels(dataUrl, landmarks = null) {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      const W = Math.min(img.width, 320);
-      const H = Math.min(img.height, 320);
+      const W = Math.min(img.width, 512);
+      const H = Math.min(img.height, 512);
       canvas.width = W; canvas.height = H;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, W, H);
@@ -289,7 +298,7 @@ export function analyzePixels(dataUrl, landmarks = null) {
                 }
               }
             }
-            if (size >= 1) clusterCount++;
+            if (size >= 3) clusterCount++;
           }
         }
 
@@ -347,7 +356,7 @@ export function analyzePixels(dataUrl, landmarks = null) {
               if (cy > 0 && hiMask[cur-w] && !visited[cur-w]) { visited[cur-w]=1; stack.push(cur-w); }
               if (cy < h-1 && hiMask[cur+w] && !visited[cur+w]) { visited[cur+w]=1; stack.push(cur+w); }
             }
-            if (size >= 1 && size <= 20) clusterCount++;
+            if (size >= 3 && size <= 20) clusterCount++;
           }
         }
         const area = w * h;
@@ -380,9 +389,14 @@ export function analyzePixels(dataUrl, landmarks = null) {
         // Low local variance = smooth hydrated skin. Typical range 5-80.
         const smoothness = Math.max(0, Math.min(1, 1 - avgLocalVar / 60));
 
-        // Combined score: sigmoid to map to realistic 25-85 range
-        const raw = clusterDensity * 0.35 + satUniformity * 0.30 + smoothness * 0.35;
-        const score = 25 + 60 / (1 + Math.exp(-(raw - 0.45) * 8));
+        // Brightness correction: in dark environments, boost relative signals
+        const avgLabLNorm = labLSum / n;
+        const brightnessFactor = avgLabLNorm < 40 ? 1 + (40 - avgLabLNorm) * 0.01 : 1;
+
+        // Combined score: sigmoid to map to realistic 20-90 range
+        // Reduced cluster weight (lighting-dependent), increased smoothness & saturation (actual skin state)
+        const raw = (clusterDensity * 0.15 + satUniformity * 0.40 + smoothness * 0.45) * brightnessFactor;
+        const score = 20 + 70 / (1 + Math.exp(-(raw - 0.45) * 8));
 
         return { clusterDensity, satUniformity, smoothness, score };
       }
@@ -498,36 +512,38 @@ export function analyzePixels(dataUrl, landmarks = null) {
         return { clusterCount, totalArea, redSpots, brownSpots, weightedPenalty };
       }
 
-      // === 2-D2. computeTroubleSpots — LAB a* redness-based inflammation detection ===
-      // Unlike computeDarkSpots (which looks for dark pixels), this looks for RED pixels
-      // using LAB a* channel — high a* = red/inflamed (acne, pimples, rosacea)
+      // === 2-D2. computeTroubleSpots — Acne/whitehead-specific detection ===
+      // Detects actual inflammatory acne (red bumps with strong local contrast),
+      // NOT general skin redness or blemishes (잡티).
+      // Key: acne has (1) high absolute a*, (2) strong local a* spike, (3) compact shape.
       function computeTroubleSpots(imageData) {
         if (!imageData) return { count: 0, severity: 0 };
         const d = imageData.data, w = imageData.width, h = imageData.height;
         const n = w * h;
 
-        // Build per-pixel LAB a* map and compute region average
+        // Build per-pixel LAB a* and L* maps
         const mapA = new Float32Array(n);
+        const mapL = new Float32Array(n);
         let sumA = 0;
         for (let i = 0, j = 0; i < d.length; i += 4, j++) {
           const lab = rgbToLab(d[i], d[i + 1], d[i + 2]);
           mapA[j] = lab.a;
+          mapL[j] = lab.L;
           sumA += lab.a;
         }
         const avgA = sumA / n;
 
-        // Mark pixels that are significantly redder than the local average
-        // a* > 0 means red, higher = more red. Trouble = local a* spike above baseline
-        const threshold = Math.max(avgA + 4, 10); // at least 4 above region avg, or a* > 10 absolute
+        // Very strict threshold: normal skin a* is 8-16, acne spikes to 22+
+        const threshold = Math.max(avgA + 10, 20);
         const redMask = new Uint8Array(n);
-        const radius = 3;
+        const radius = 6;
         for (let y = radius; y < h - radius; y++) {
           for (let x = radius; x < w - radius; x++) {
             const idx = y * w + x;
             const ca = mapA[idx];
             if (ca < threshold) continue;
 
-            // Also check local contrast: must be redder than 3px-radius neighbors
+            // Strong local contrast: must be clearly redder than 6px-radius neighbors
             let nSum = 0, nCount = 0;
             for (let dy = -radius; dy <= radius; dy += radius) {
               for (let dx = -radius; dx <= radius; dx += radius) {
@@ -540,32 +556,38 @@ export function analyzePixels(dataUrl, landmarks = null) {
               }
             }
             const nAvg = nSum / nCount;
-            // Pixel must be at least 2.5 a* units redder than neighbors
-            if (ca > nAvg + 2.5) redMask[idx] = 1;
+            // Pixel must be at least 6 a* units redder than neighbors
+            if (ca > nAvg + 6) redMask[idx] = 1;
           }
         }
 
-        // 4-connected clustering — 2px+ clusters = trouble spots
+        // 4-connected clustering — acne-sized clusters only (5-300px at 512px resolution)
         const visited = new Uint8Array(n);
         let count = 0, totalSeverity = 0;
         for (let j = 0; j < n; j++) {
           if (redMask[j] && !visited[j]) {
             const stack = [j];
             visited[j] = 1;
-            let size = 0, sumRedA = 0;
+            let size = 0, sumRedA = 0, sumRedL = 0;
             while (stack.length > 0) {
               const cur = stack.pop();
               size++;
               sumRedA += mapA[cur];
+              sumRedL += mapL[cur];
               const cx = cur % w, cy = (cur - cx) / w;
               if (cx > 0 && redMask[cur - 1] && !visited[cur - 1]) { visited[cur - 1] = 1; stack.push(cur - 1); }
               if (cx < w - 1 && redMask[cur + 1] && !visited[cur + 1]) { visited[cur + 1] = 1; stack.push(cur + 1); }
               if (cy > 0 && redMask[cur - w] && !visited[cur - w]) { visited[cur - w] = 1; stack.push(cur - w); }
               if (cy < h - 1 && redMask[cur + w] && !visited[cur + w]) { visited[cur + w] = 1; stack.push(cur + w); }
             }
-            if (size >= 2) {
-              count++;
-              totalSeverity += Math.sqrt(size) * (sumRedA / size - avgA); // bigger & redder = more severe
+            // Size filter: too small = noise, too large = diffuse redness (not pimple)
+            if (size >= 10 && size <= 300) {
+              const clusterAvgA = sumRedA / size;
+              // Extra check: cluster must have high average a* (inflammatory)
+              if (clusterAvgA >= threshold) {
+                count++;
+                totalSeverity += Math.sqrt(size) * (clusterAvgA - avgA);
+              }
             }
           }
         }
@@ -816,89 +838,28 @@ export function analyzePixels(dataUrl, landmarks = null) {
   });
 }
 
-// ===== CALIBRATION TABLES (Level 3) =====
-// Each table: [rawValue, score] pairs — linear interpolation between points
-const CALIBRATION = {
-  wrinkle: [
-    // [edge energy, score] — lower edge = smoother = higher score
-    [1.0, 96], [2.0, 88], [3.5, 78], [5.0, 66],
-    [7.0, 54], [9.5, 42], [12.0, 32], [15.0, 22], [18.0, 15],
-  ],
-  moisture: [
-    // [avgScore from cluster density, score]
-    [15, 15], [25, 28], [35, 42], [45, 55],
-    [55, 65], [65, 75], [75, 85], [85, 92], [95, 95],
-  ],
-  pore: [
-    // [micro variance, score] — lower variance = finer pores = higher score
-    [20, 95], [60, 85], [120, 72], [200, 58],
-    [300, 44], [420, 32], [550, 20], [700, 15],
-  ],
-  texture: [
-    // [combined mid+high energy, score]
-    [2.0, 95], [4.0, 86], [7.0, 75], [10.0, 65],
-    [14.0, 54], [18.0, 42], [24.0, 30], [30.0, 20],
-  ],
-  darkCircle: [
-    // [severity 0~0.5, score]
-    [0.01, 95], [0.05, 85], [0.10, 72], [0.17, 58],
-    [0.24, 44], [0.32, 32], [0.40, 22], [0.50, 15],
-  ],
-  pigmentation: [
-    // [overall penalty, score]
-    [0.5, 95], [2.0, 85], [4.0, 72], [7.0, 58],
-    [10.0, 46], [14.0, 34], [18.0, 24], [22.0, 15],
-  ],
-  elasticity: [
-    // [overall (edge density * firmness blend), score] — higher = more elastic
-    [1.0, 18], [2.0, 30], [3.0, 42], [4.5, 55],
-    [6.0, 65], [8.0, 76], [10.0, 85], [12.0, 92], [14.0, 96],
-  ],
-};
-
-function calibrate(metric, rawValue) {
-  const table = CALIBRATION[metric];
-  if (!table) return 50;
-  if (rawValue <= table[0][0]) return table[0][1];
-  if (rawValue >= table[table.length - 1][0]) return table[table.length - 1][1];
-  for (let i = 0; i < table.length - 1; i++) {
-    const [x0, y0] = table[i];
-    const [x1, y1] = table[i + 1];
-    if (rawValue >= x0 && rawValue <= x1) {
-      const t = (rawValue - x0) / (x1 - x0);
-      return Math.round(y0 + t * (y1 - y0));
-    }
-  }
-  return 50;
-}
-
 // ===== PIXEL DATA → 10 SCORES + SKIN AGE =====
-export function pixelsToScores(px) {
+export function pixelsToScores(px, mlAge = null) {
   if (!px) return generateDemoScores();
 
-  // ── MOISTURE (calibration table) ──
-  const moisture = clamp(calibrate('moisture', px.moisture.avgScore), 12, 95);
+  // ── MOISTURE (cluster density based) ──
+  const moisture = clamp(px.moisture.avgScore, 12, 95);
 
   // ── SKIN TONE (v3.1: uniformity-centric, reduced brightness bias) ──
   // Brightness accounts for only 30% — skin tone quality is mainly about evenness
   // Uniformity (low stdLabL) = 40%, Symmetry (low cheekAsymmetry) = 20%, Brightness = 30%, Redness = 10% penalty
-  const brightnessComponent = Math.min(30, px.labL * 0.4);  // max 30pts from brightness
+  const brightnessComponent = Math.min(30, 15 + (px.labL - 30) * 0.5);  // max 30pts, fairer for dark skin
   const uniformityComponent = Math.max(0, 40 - px.stdLabL * 3);  // max 40pts from uniformity
   const symmetryComponent = Math.max(0, 20 - px.cheekAsymmetry * 2);  // max 20pts from symmetry
   const rednessPenalty = Math.min(15, Math.max(0, px.cheekLabA - 10) * 1.5);
   const skinTone = clamp(brightnessComponent + uniformityComponent + symmetryComponent - rednessPenalty + 10, 22, 95);
 
-  // ── TROUBLE (v3.2: dedicated redness detection + dark spot + global redness) ──
-  // Signal 1: Dedicated trouble spot detection (LAB a* redness spikes)
+  // ── TROUBLE (v3.3: acne-only detection, separated from 잡티) ──
+  // Only counts inflammatory acne (red bumps with strong local contrast).
+  // 잡티 (blemishes, brown spots) are handled by pigmentation score, NOT here.
   const dedicatedSpots = px.trouble ? px.trouble.totalSpots : 0;
-  // Signal 2: Legacy dark-spot based red spots
-  const legacyRedSpots = px.pigmentation.redSpots;
-  // Signal 3: Global redness (diffuse inflammation / rosacea)
-  const globalRedness = Math.max(0, px.cheekLabA - 8);
-  // Signal 4: RGB red pixel ratio
-  const redRatioSignal = px.redRatio * 30;
-  // Combine: dedicated detection is primary, others supplement
-  const troubleRaw = dedicatedSpots * 0.8 + legacyRedSpots * 1.0 + globalRedness * 0.2 + redRatioSignal;
+  // Combine: only dedicated acne detection counts
+  const troubleRaw = dedicatedSpots;
   const troubleCount = clamp(Math.round(troubleRaw), 0, 20);
 
   // ── OIL BALANCE (v3.1: multi-signal with wider range) ──
@@ -910,28 +871,40 @@ export function pixelsToScores(px) {
   const shineLevel = sigmoid((totalShine - 0.04) * 80);  // 0-1
   // Signal 3: Saturation level — oily skin tends to have lower saturation (washed out by shine)
   const satSignal = 1 - Math.min(1, px.saturation * 3);  // high sat = dry, low sat = oily
-  // Combined: weighted blend, then map to 15-90 range
-  const oilRaw = shineSignal * 0.45 + shineLevel * 0.35 + satSignal * 0.20;
+  // Combined: weighted blend, then map to 15-90 range (increased sat weight for matte-oily detection)
+  const oilRaw = shineSignal * 0.35 + shineLevel * 0.35 + satSignal * 0.30;
   const oilBalance = clamp(15 + oilRaw * 75, 12, 95);
 
-  // ── WRINKLES (calibration table) ──
-  const wrinkleScore = clamp(calibrate('wrinkle', px.wrinkle.overall), 15, 98);
+  // ── WRINKLES (low-frequency energy, calibrated for 512px) ──
+  // At 512px: young smooth skin ~3-7, aged skin ~10-16
+  const wrinkleScore = clamp(100 - (px.wrinkle.overall - 3) * 5, 15, 98);
 
-  // ── PORES (calibration table) ──
-  const poreScore = clamp(calibrate('pore', px.pore.overall), 15, 98);
+  // ── PORES (micro-variance, calibrated for 512px) ──
+  // At 512px: smooth skin ~50-120, visible pores ~150-400+
+  const poreScore = clamp(100 - (px.pore.overall - 60) * 0.18, 15, 98);
 
-  // ── ELASTICITY (calibration table) ──
-  const elasticityScore = clamp(calibrate('elasticity', px.elasticity.overall), 15, 98);
+  // ── ELASTICITY (firmness-ratio centric, calibrated for 512px) ──
+  // At 512px: edge density typically 4-10
+  const edgeDensity = px.elasticity.jawlineEdge || px.elasticity.overall;
+  const firmness = px.elasticity.firmness || 1;
+  const elasticityBase = 92 - (edgeDensity - 4) * 2.5;
+  const firmAdj = Math.max(-20, Math.min(20, (firmness - 1) * 15));
+  const elasticityScore = clamp(elasticityBase + firmAdj, 15, 98);
 
-  // ── PIGMENTATION (calibration table) ──
-  const pigmentationScore = clamp(calibrate('pigmentation', px.pigmentation.overallPenalty), 15, 98);
+  // ── PIGMENTATION (cluster-based weighted penalty) ──
+  const pigmentationScore = clamp(100 - px.pigmentation.overallPenalty * 4.5, 15, 98);
 
-  // ── TEXTURE (calibration table on combined energy) ──
-  const textureCombined = px.texture.overallMid * 0.65 + px.texture.overallHigh * 0.35;
-  const textureScore = clamp(calibrate('texture', textureCombined), 15, 98);
+  // ── TEXTURE (mid-frequency energy, calibrated for 512px) ──
+  // At 512px: smooth skin ~3-7, rough skin ~9-16
+  const textureFromMid = Math.max(0, 100 - (px.texture.overallMid - 3.5) * 4);
+  const textureFromHigh = Math.max(0, 100 - (px.texture.overallHigh - 4) * 2);
+  const textureScore = clamp(textureFromMid * 0.65 + textureFromHigh * 0.35, 15, 98);
 
-  // ── DARK CIRCLES (calibration table) ──
-  const dcScore = clamp(calibrate('darkCircle', px.darkCircle.overall), 15, 98);
+  // ── DARK CIRCLES (LAB 3-component severity) — reduced sensitivity + nonlinear mapping ──
+  const dcSeverity = px.darkCircle.overall;
+  // Nonlinear: sqrt softens penalty for mild dark circles, still penalizes severe ones
+  const dcMapped = dcSeverity < 0.15 ? dcSeverity * 180 : Math.sqrt(dcSeverity) * 100;
+  const dcScore = clamp(100 - dcMapped, 15, 98);
 
   // ── SKIN TYPE ──
   let skinType;
@@ -941,19 +914,24 @@ export function pixelsToScores(px) {
   else if (oilBalance >= 35 && oilBalance <= 55 && moisture >= 55) skinType = '중성';
   else skinType = '복합성';
 
-  // ── SKIN AGE (10-metric weighted penalty model) ──
-  const baseSkinAge = 23;
+  // ── SKIN AGE (hybrid: ML age estimation + pixel penalty fine-tuning) ──
+  const baseSkinAge = 20;
+  const agePenalty = (score, weight) => {
+    const deficit = Math.max(0, (100 - score) / 100);
+    const intensity = score < 55 ? 1 : score < 75 ? 0.5 : 0.15;
+    return deficit * weight * intensity;
+  };
   const penalties = {
-    wrinkle:       (100 - wrinkleScore) / 100 * 7,
-    elasticity:    (100 - elasticityScore) / 100 * 5,
-    texture:       (100 - textureScore) / 100 * 3.5,
-    pore:          (100 - poreScore) / 100 * 3,
-    pigmentation:  (100 - pigmentationScore) / 100 * 3,
-    darkCircle:    (100 - dcScore) / 100 * 2.5,
-    moisture:      (100 - moisture) / 100 * 2.5,
-    skinTone:      (100 - skinTone) / 100 * 2,
+    wrinkle:       agePenalty(wrinkleScore, 8),
+    elasticity:    agePenalty(elasticityScore, 6),
+    texture:       agePenalty(textureScore, 3.5),
+    pore:          agePenalty(poreScore, 3),
+    pigmentation:  agePenalty(pigmentationScore, 3),
+    darkCircle:    agePenalty(dcScore, 2.5),
+    moisture:      agePenalty(moisture, 2.5),
+    skinTone:      agePenalty(skinTone, 2),
     oil:           Math.abs(55 - oilBalance) / 55 * 1.5,
-    trouble:       (100 - Math.max(0, 100-troubleCount*8.5)) / 100 * 2,
+    trouble:       agePenalty(Math.max(0, 100-troubleCount*8.5), 2),
   };
   const totalPenalty = Object.values(penalties).reduce((s,v) => s + Math.max(0,v), 0);
 
@@ -961,7 +939,16 @@ export function pixelsToScores(px) {
   const minScore = Math.min(...allScores);
   const excellenceBonus = minScore > 75 ? -3 - (minScore-75)*0.08 : minScore > 60 ? -1 : 0;
 
-  const skinAge = clamp(baseSkinAge + totalPenalty + excellenceBonus, 16, 58);
+  let skinAge;
+  if (mlAge !== null) {
+    // ML age as anchor, pixel analysis for ±5 fine-tuning
+    // Average penalty ~5; deviation from average adjusts ML age
+    const pixelAdj = (totalPenalty - 5) * 0.3;
+    skinAge = clamp(mlAge + pixelAdj, 16, 58);
+  } else {
+    // Fallback: pixel-only calculation
+    skinAge = clamp(baseSkinAge + totalPenalty + excellenceBonus, 16, 58);
+  }
 
   // ── CONCERNS ──
   const troubleScoreVal = Math.max(0, 100-troubleCount*8.5);
@@ -1033,7 +1020,7 @@ function isSkinPixel(r, g, b) {
   const Y  =  0.299 * r + 0.587 * g + 0.114 * b;
   const Cb = -0.169 * r - 0.331 * g + 0.500 * b + 128;
   const Cr =  0.500 * r - 0.419 * g - 0.081 * b + 128;
-  return Y > 40 && Cb > 77 && Cb < 135 && Cr > 130 && Cr < 180;
+  return Y > 30 && Cb > 70 && Cb < 145 && Cr > 120 && Cr < 190;
 }
 
 // ===== ADVICE =====

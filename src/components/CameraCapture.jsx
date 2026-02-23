@@ -19,13 +19,12 @@ const CHIN = 152;
 
 // Key landmark indices to render as dots (~27 points)
 const KEY_LANDMARKS = [
-  10, 67, 109, 108, 151, 337, 299, 297, 338,
+  10, 67, 109, 108, 69, 151, 337, 299, 297, 338,
   1, 4, 5,
   234, 454,
   152, 148, 377,
   93, 132, 58, 172,
   323, 361, 288, 397,
-  130, 359,
 ];
 
 // Analysis zone definitions with landmark anchor and display config
@@ -35,7 +34,6 @@ const ANALYSIS_ZONES = [
   { label: '왼볼', anchor: 93, offsetX: -0.03, color: 'rgba(100,180,255,0.5)' },
   { label: '오른볼', anchor: 323, offsetX: 0.03, color: 'rgba(100,180,255,0.5)' },
   { label: '턱선', anchor: 152, offsetY: 0.02, color: 'rgba(180,130,255,0.5)' },
-  { label: '눈밑', anchor: 130, offsetY: 0.015, color: 'rgba(255,140,180,0.5)' },
 ];
 
 // Brightness sampling landmarks (14 points across face)
@@ -168,13 +166,31 @@ export default function CameraCapture({ onCapture, onClose, onFallback }) {
   const drawOverlayRef = useRef(null);
 
   // drawOverlay reads statusRef (always fresh) — assigned to ref each render
-  drawOverlayRef.current = function drawOverlay(ctx, W, H, landmarks) {
+  drawOverlayRef.current = function drawOverlay(ctx, W, H, landmarks, videoW, videoH) {
     ctx.clearRect(0, 0, W, H);
 
+    // objectFit: cover coordinate mapping — video normalized coords → display coords
+    const vidAspect = videoW / videoH;
+    const dispAspect = W / H;
+    let mapScale, mapOffX, mapOffY;
+    if (dispAspect > vidAspect) {
+      mapScale = W / videoW;
+      mapOffX = 0;
+      mapOffY = (H - videoH * mapScale) / 2;
+    } else {
+      mapScale = H / videoH;
+      mapOffX = (W - videoW * mapScale) / 2;
+      mapOffY = 0;
+    }
+    function mapX(nx) { return nx * videoW * mapScale + mapOffX; }
+    function mapY(ny) { return ny * videoH * mapScale + mapOffY; }
+
+    // Oval guide — fixed egg-shaped proportions based on display size
     const cx = W * 0.5;
     const cy = H * 0.44;
-    const rx = W * 0.34;
-    const ry = H * 0.42;
+    const baseSize = Math.min(W, H);
+    const rx = baseSize * 0.34;
+    const ry = Math.min(rx * 1.35, H * 0.40);
 
     const curStatus = statusRef.current;
     let guideColor = 'rgba(255,255,255,0.6)';
@@ -216,31 +232,33 @@ export default function CameraCapture({ onCapture, onClose, onFallback }) {
     if (!landmarks) return;
 
     // Layer 3: Analysis zone labels
-    ctx.font = '600 9px Pretendard, system-ui, sans-serif';
+    // Note: canvas has CSS scaleX(-1) for selfie mirror, so we counter-flip
+    // each label with ctx.scale(-1,1) so text reads normally.
+    ctx.font = '600 12px Pretendard, system-ui, sans-serif';
     for (const zone of ANALYSIS_ZONES) {
       if (zone.anchor >= landmarks.length) continue;
       const lm = landmarks[zone.anchor];
-      const zx = (lm.x + (zone.offsetX || 0)) * W;
-      const zy = (lm.y + (zone.offsetY || 0)) * H;
+      const zx = mapX(lm.x + (zone.offsetX || 0));
+      const zy = mapY(lm.y + (zone.offsetY || 0));
 
       ctx.save();
+      ctx.translate(zx, zy);
+      ctx.scale(-1, 1);  // counter CSS scaleX(-1) for readable text
       ctx.fillStyle = zone.color;
-      const textW = ctx.measureText(zone.label).width + 14;
-      const boxW = Math.max(textW, 34);
-      const boxH = 18;
-      const bx = zx - boxW / 2;
-      const by = zy - boxH / 2;
+      const textW = ctx.measureText(zone.label).width + 18;
+      const boxW = Math.max(textW, 42);
+      const boxH = 24;
       if (ctx.roundRect) {
         ctx.beginPath();
-        ctx.roundRect(bx, by, boxW, boxH, 6);
+        ctx.roundRect(-boxW / 2, -boxH / 2, boxW, boxH, 8);
         ctx.fill();
       } else {
-        ctx.fillRect(bx, by, boxW, boxH);
+        ctx.fillRect(-boxW / 2, -boxH / 2, boxW, boxH);
       }
       ctx.fillStyle = '#fff';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(zone.label, zx, zy);
+      ctx.fillText(zone.label, 0, 0);
       ctx.restore();
     }
 
@@ -250,9 +268,66 @@ export default function CameraCapture({ onCapture, onClose, onFallback }) {
       if (idx >= landmarks.length) continue;
       const lm = landmarks[idx];
       ctx.beginPath();
-      ctx.arc(lm.x * W, lm.y * H, 2.5, 0, Math.PI * 2);
+      ctx.arc(mapX(lm.x), mapY(lm.y), 2.5, 0, Math.PI * 2);
       ctx.fillStyle = dotColor;
       ctx.fill();
+    }
+
+    // Layer 5: Under-eye dots — computed from pupil position
+    // Right eye: upper 159, lower 145, inner 133, outer 33
+    // Left eye:  upper 386, lower 374, inner 362, outer 263
+    if (landmarks.length >= 468) {
+      const eyes = [
+        { upper: 159, lower: 145, inner: 133, outer: 33 },   // right eye
+        { upper: 386, lower: 374, inner: 362, outer: 263 },   // left eye
+      ];
+      const underEyeDots = [];
+      for (const eye of eyes) {
+        const inn = landmarks[eye.inner], out = landmarks[eye.outer];
+        // Use eye corners as stable anchor (unaffected by blinking)
+        const ecx = (inn.x + out.x) / 2;
+        const stableY = (inn.y + out.y) / 2;
+        const eyeW = Math.abs(out.x - inn.x);
+        // Fixed offset below eye corners — blink-proof
+        const dotY = stableY + eyeW * 0.55;
+        // 3 dots: center, inner(-spread), outer(+spread)
+        const spread = eyeW * 0.22;
+        underEyeDots.push(
+          { x: ecx - spread, y: dotY },
+          { x: ecx, y: dotY },
+          { x: ecx + spread, y: dotY },
+        );
+      }
+      for (const dot of underEyeDots) {
+        ctx.beginPath();
+        ctx.arc(mapX(dot.x), mapY(dot.y), 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = dotColor;
+        ctx.fill();
+      }
+
+      // '눈밑' label next to right eye under-dots
+      const rEyeCenter = underEyeDots[1]; // right eye center dot
+      const labelX = mapX(rEyeCenter.x);
+      const labelY = mapY(rEyeCenter.y + 0.02);
+      ctx.save();
+      ctx.translate(labelX, labelY);
+      ctx.scale(-1, 1);
+      ctx.font = '600 12px Pretendard, system-ui, sans-serif';
+      ctx.fillStyle = 'rgba(255,140,180,0.5)';
+      const tw = ctx.measureText('눈밑').width + 18;
+      const bw = Math.max(tw, 42), bh = 24;
+      if (ctx.roundRect) {
+        ctx.beginPath();
+        ctx.roundRect(-bw / 2, -bh / 2, bw, bh, 8);
+        ctx.fill();
+      } else {
+        ctx.fillRect(-bw / 2, -bh / 2, bw, bh);
+      }
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('눈밑', 0, 0);
+      ctx.restore();
     }
   };
 
@@ -381,9 +456,13 @@ export default function CameraCapture({ onCapture, onClose, onFallback }) {
         return;
       }
 
-      const W = canvas.width = video.videoWidth || 640;
-      const H = canvas.height = video.videoHeight || 480;
+      // Match canvas to display size (not video resolution) for correct proportions
+      const rect = canvas.getBoundingClientRect();
+      const W = canvas.width = Math.round(rect.width);
+      const H = canvas.height = Math.round(rect.height);
       const ctx = canvas.getContext('2d');
+      const vidW = video.videoWidth || 640;
+      const vidH = video.videoHeight || 480;
 
       const now = performance.now();
       if (landmarkerRef.current && now - lastDetectRef.current > 66) {
@@ -406,7 +485,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback }) {
       }
 
       if (drawOverlayRef.current) {
-        drawOverlayRef.current(ctx, W, H, landmarksRef.current);
+        drawOverlayRef.current(ctx, W, H, landmarksRef.current, vidW, vidH);
       }
 
       rafRef.current = requestAnimationFrame(loop);

@@ -12,13 +12,19 @@
 
 const STORAGE_KEY = 'nou_skin_records';
 const STREAK_KEY = 'nou_skin_streak';
+const THUMB_KEY = 'nou_skin_thumbs';
 const MAX_RECORDS = 52; // 1년치 주간 기록
+
+function getLocalDateStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
 
 // ===== CORE CRUD =====
 
 export function saveRecord(result) {
   const records = getRecords();
-  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  const today = getLocalDateStr(); // YYYY-MM-DD
 
   // 같은 날 기록이 있으면 최신으로 덮어쓰기
   const existingIdx = records.findIndex(r => r.date === today);
@@ -94,6 +100,73 @@ export function deleteRecord(date) {
 export function clearAllRecords() {
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem(STREAK_KEY);
+  localStorage.removeItem(THUMB_KEY);
+}
+
+// ===== THUMBNAIL STORAGE =====
+
+/**
+ * 사진 축소 썸네일 생성 (80x80 JPEG, ~3-5KB)
+ * localStorage에 저장하여 갤러리/여정에서 사용
+ */
+export function saveThumbnail(dateStr, imageDataUrl) {
+  if (!imageDataUrl) return;
+  try {
+    const thumbs = JSON.parse(localStorage.getItem(THUMB_KEY) || '{}');
+    // Canvas로 80x80 리사이즈
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const size = 200;
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      // 중앙 크롭
+      const s = Math.min(img.width, img.height);
+      const sx = (img.width - s) / 2;
+      const sy = (img.height - s) / 2;
+      ctx.drawImage(img, sx, sy, s, s, 0, 0, size, size);
+      thumbs[dateStr] = canvas.toDataURL('image/jpeg', 0.7);
+      // 오래된 썸네일 정리
+      const keys = Object.keys(thumbs).sort();
+      while (keys.length > MAX_RECORDS) {
+        delete thumbs[keys.shift()];
+      }
+      localStorage.setItem(THUMB_KEY, JSON.stringify(thumbs));
+    };
+    img.src = imageDataUrl;
+  } catch (e) {
+    console.warn('NOU: thumbnail save failed', e);
+  }
+}
+
+export function getThumbnail(dateStr) {
+  try {
+    const thumbs = JSON.parse(localStorage.getItem(THUMB_KEY) || '{}');
+    return thumbs[dateStr] || null;
+  } catch {
+    return null;
+  }
+}
+
+export function getAllThumbnails() {
+  try {
+    return JSON.parse(localStorage.getItem(THUMB_KEY) || '{}');
+  } catch {
+    return {};
+  }
+}
+
+// ===== TODAY HELPERS =====
+
+export function getTodayRecord() {
+  const today = getLocalDateStr();
+  const records = getRecords();
+  return records.find(r => r.date === today) || null;
+}
+
+export function hasTodayRecord() {
+  return getTodayRecord() !== null;
 }
 
 // ===== STREAK (연속 측정) =====
@@ -456,129 +529,6 @@ export function generateShareText(result) {
 
   text += '\n\n셀카 한 장으로 피부 나이 측정 → skin.nou.kr';
   return text;
-}
-
-// ===== PREDICTION (예측→확인 루프) =====
-
-const PREDICTION_KEY = 'nou_predictions';
-
-export function savePrediction(predicted) {
-  const data = getPredictions();
-  const lastRecord = getLatestRecord();
-  if (!lastRecord) return;
-
-  const today = new Date().toISOString().slice(0, 10);
-  const existingIdx = data.predictions.findIndex(p => p.date === today);
-  const prediction = {
-    date: today,
-    predicted,
-    previousScore: lastRecord.overallScore,
-    actualScore: null,
-    result: null,
-  };
-
-  if (existingIdx >= 0) {
-    data.predictions[existingIdx] = prediction;
-  } else {
-    data.predictions.push(prediction);
-  }
-
-  localStorage.setItem(PREDICTION_KEY, JSON.stringify(data));
-}
-
-export function resolvePrediction(actualScore) {
-  const data = getPredictions();
-  const today = new Date().toISOString().slice(0, 10);
-  const pred = data.predictions.find(p => p.date === today && p.actualScore === null);
-  if (!pred) return null;
-
-  const diff = actualScore - pred.previousScore;
-  const actualDirection = diff > 2 ? 'up' : diff < -2 ? 'down' : 'same';
-  pred.actualScore = actualScore;
-  pred.result = pred.predicted === actualDirection ? 'correct' : 'wrong';
-
-  const resolved = data.predictions.filter(p => p.result !== null);
-  data.stats.total = resolved.length;
-  data.stats.correct = resolved.filter(p => p.result === 'correct').length;
-  data.stats.accuracy = data.stats.total > 0
-    ? Math.round((data.stats.correct / data.stats.total) * 100)
-    : 0;
-
-  localStorage.setItem(PREDICTION_KEY, JSON.stringify(data));
-  return pred;
-}
-
-export function getPredictions() {
-  try {
-    const raw = localStorage.getItem(PREDICTION_KEY);
-    return raw ? JSON.parse(raw) : { predictions: [], stats: { total: 0, correct: 0, accuracy: 0 } };
-  } catch {
-    return { predictions: [], stats: { total: 0, correct: 0, accuracy: 0 } };
-  }
-}
-
-export function getTodayPendingPrediction() {
-  const data = getPredictions();
-  const today = new Date().toISOString().slice(0, 10);
-  return data.predictions.find(p => p.date === today && p.actualScore === null) || null;
-}
-
-export function getPredictionAccuracy() {
-  return getPredictions().stats.accuracy;
-}
-
-// ===== SKIN AGE RACE (피부나이 레이스) =====
-
-const GOAL_KEY = 'nou_skin_goal';
-
-export function getSkinGoal() {
-  try {
-    const raw = localStorage.getItem(GOAL_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
-
-export function setSkinGoal(realAge, firstSkinAge) {
-  const goal = {
-    realAge,
-    targetSkinAge: realAge,
-    startSkinAge: firstSkinAge,
-    startDate: new Date().toISOString().slice(0, 10),
-    currentSkinAge: firstSkinAge,
-    lastUpdated: new Date().toISOString().slice(0, 10),
-  };
-  localStorage.setItem(GOAL_KEY, JSON.stringify(goal));
-  return goal;
-}
-
-export function updateSkinGoal(newSkinAge) {
-  const goal = getSkinGoal();
-  if (!goal) return null;
-  goal.currentSkinAge = newSkinAge;
-  goal.lastUpdated = new Date().toISOString().slice(0, 10);
-  localStorage.setItem(GOAL_KEY, JSON.stringify(goal));
-  return goal;
-}
-
-export function getSkinGoalProgress() {
-  const goal = getSkinGoal();
-  if (!goal) return null;
-
-  const totalGap = goal.startSkinAge - goal.realAge;
-  const currentGap = goal.currentSkinAge - goal.realAge;
-  const progress = totalGap > 0
-    ? Math.min(100, Math.round(((totalGap - currentGap) / totalGap) * 100))
-    : 100;
-
-  return {
-    ...goal,
-    currentGap,
-    progress,
-    isAchieved: goal.currentSkinAge <= goal.realAge,
-    weeksToGo: currentGap > 0 ? Math.ceil(currentGap / 0.5) : 0,
-  };
 }
 
 // ===== UTILS =====
