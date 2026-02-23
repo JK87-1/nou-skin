@@ -32,18 +32,51 @@ import { landmarksToRegions } from './LandmarkRegions.js';
 import { rgbToLab, labStats } from './ColorSpace.js';
 
 // ===== IMAGE COMPRESSION =====
-export function compressImage(dataUrl, maxSize = 512, quality = 0.4) {
+// Deterministic: same input → same output guaranteed via
+// OffscreenCanvas + imageSmoothingEnabled:false + base64 memoization
+const compressCache = new Map();
+
+export function compressImage(dataUrl, maxSize = 512, quality = 0.7) {
+  // Memo: identical input always returns identical base64
+  if (compressCache.has(dataUrl)) return Promise.resolve(compressCache.get(dataUrl));
+
   return new Promise(resolve => {
     const img = new Image();
     img.onload = () => {
-      const canvas = document.createElement('canvas');
       let w = img.width, h = img.height;
-      if (w > h && w > maxSize) { h = (maxSize / w) * h; w = maxSize; }
-      else if (h > maxSize) { w = (maxSize / h) * w; h = maxSize; }
-      canvas.width = Math.round(w);
-      canvas.height = Math.round(h);
-      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-      resolve(canvas.toDataURL('image/jpeg', quality));
+      // Always normalize to exactly maxSize on the longest side
+      if (w >= h) { h = Math.round((maxSize / w) * h); w = maxSize; }
+      else { w = Math.round((maxSize / h) * w); h = maxSize; }
+
+      // Prefer OffscreenCanvas for deterministic rendering, fallback to Canvas
+      let ctx;
+      let canvas;
+      if (typeof OffscreenCanvas !== 'undefined') {
+        canvas = new OffscreenCanvas(w, h);
+        ctx = canvas.getContext('2d');
+      } else {
+        canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        ctx = canvas.getContext('2d');
+      }
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(img, 0, 0, w, h);
+
+      if (canvas instanceof OffscreenCanvas) {
+        canvas.convertToBlob({ type: 'image/jpeg', quality }).then(blob => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            compressCache.set(dataUrl, reader.result);
+            resolve(reader.result);
+          };
+          reader.readAsDataURL(blob);
+        });
+      } else {
+        const result = canvas.toDataURL('image/jpeg', quality);
+        compressCache.set(dataUrl, result);
+        resolve(result);
+      }
     };
     img.onerror = () => resolve(dataUrl);
     img.src = dataUrl;

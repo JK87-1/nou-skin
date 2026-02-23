@@ -16,22 +16,10 @@ function checkRateLimit(ip) {
   return true;
 }
 
-function buildSkinPrompt(cvData) {
-  return `당신은 피부과 전문의 수준의 AI 피부 분석가입니다. 일관되고 재현 가능한 채점을 해야 합니다.
+const SKIN_PROMPT = `당신은 피부과 전문의 수준의 AI 피부 분석가입니다.
 
-첨부된 셀카의 피부 상태를 아래 채점 기준표에 따라 엄격하게 분석하세요.
-
-## 컴퓨터 비전 사전 측정 (참고 데이터 — 조명·카메라 보정 필요):
-- 수분 점수: ${cvData?.moisture?.avgScore?.toFixed(1) ?? 'N/A'}
-- ITA° 피부톤 밝기: ${cvData?.labL?.toFixed(1) ?? 'N/A'}
-- 적색 비율: ${((cvData?.redRatio ?? 0) * 100).toFixed(1)}%
-- T/U존 광택: ${cvData?.tzoneShine?.toFixed(3) ?? 'N/A'} / ${cvData?.uzoneShine?.toFixed(3) ?? 'N/A'}
-- 주름 에지 에너지: ${cvData?.wrinkle?.overall?.toFixed(1) ?? 'N/A'}
-- 모공 분산: ${cvData?.pore?.overall?.toFixed(0) ?? 'N/A'}
-- 턱선 에지: ${cvData?.elasticity?.overall?.toFixed(1) ?? 'N/A'}
-- 색소 패널티: ${cvData?.pigmentation?.overallPenalty?.toFixed(2) ?? 'N/A'}
-- 피부결 에너지 (mid): ${cvData?.texture?.overallMid?.toFixed(1) ?? 'N/A'}
-- 다크서클 심각도: ${cvData?.darkCircle?.overall?.toFixed(3) ?? 'N/A'}
+첨부된 셀카를 보고 피부 상태를 아래 채점 기준표에 따라 분석하세요.
+오직 사진만 보고 판단하십시오.
 
 ## 채점 기준표 (각 지표 0~100, 높을수록 좋음):
 
@@ -48,11 +36,9 @@ function buildSkinPrompt(cvData) {
 **skinAge:** 피부 나이 (실제 나이 아닌 피부 상태 기반, 10~65 정수).
 **confidence:** 분석 신뢰도 — 조명·각도·해상도·얼굴 크기 고려 (0~100 정수).
 
-## 중요 규칙:
-1. CV 데이터는 참고만 하되, 시각적으로 명백히 다르면 당신의 판단이 우선합니다.
-2. 조명이 과도하게 밝거나 어두우면 confidence를 낮추세요.
-3. 점수를 반올림하여 5 단위로 줄 필요 없습니다. 정확한 정수를 주세요 (예: 63, 71, 48).
-4. 동일 사진이면 항상 동일 점수를 줘야 합니다.
+## 규칙:
+1. 조명이 과도하게 밝거나 어두우면 confidence를 낮추세요.
+2. 정확한 정수를 주세요 (예: 63, 71, 48). 5 단위 반올림 금지.
 
 반드시 아래 JSON 형식만 응답 (다른 텍스트 없이 JSON만):
 {
@@ -70,7 +56,6 @@ function buildSkinPrompt(cvData) {
   "confidence": 정수,
   "notes": "한국어 2줄 요약"
 }`;
-}
 
 export default async function handler(req, res) {
   // CORS
@@ -86,7 +71,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { image, cvData } = req.body;
+    const { image } = req.body;
 
     if (!image) return res.status(400).json({ error: 'No image provided' });
 
@@ -103,7 +88,8 @@ export default async function handler(req, res) {
         model: 'gpt-5.2',
         max_completion_tokens: 800,
         temperature: 0,
-        seed: 42,
+        top_p: 1,
+        seed: 12345,
         messages: [
           {
             role: 'system',
@@ -121,7 +107,7 @@ export default async function handler(req, res) {
               },
               {
                 type: 'text',
-                text: buildSkinPrompt(cvData),
+                text: SKIN_PROMPT,
               },
             ],
           },

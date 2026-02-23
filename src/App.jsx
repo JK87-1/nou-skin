@@ -171,7 +171,7 @@ export default function App() {
     let finalScores = cvScores;
     try {
       if (b64) {
-        const aiScores = await callVisionAI(b64, pixelData);
+        const aiScores = await callVisionAI(b64);
         if (aiScores) {
           finalScores = hybridMerge(cvScores, aiScores);
         } else {
@@ -183,6 +183,53 @@ export default function App() {
     } catch (e) {
       console.warn('Hybrid analysis fallback to CV:', e);
       finalScores = { ...cvScores, analysisMode: 'cv_only' };
+    }
+
+    // Score stabilization: smooth against previous record to reduce variance
+    const prevRecord = getLatestRecord();
+    if (prevRecord && finalScores.analysisMode === 'ai') {
+      const stabilizeKeys = [
+        'moisture', 'skinTone', 'oilBalance',
+        'wrinkleScore', 'poreScore', 'elasticityScore',
+        'pigmentationScore', 'textureScore', 'darkCircleScore',
+      ];
+      for (const key of stabilizeKeys) {
+        if (typeof prevRecord[key] !== 'number' || typeof finalScores[key] !== 'number') continue;
+        const diff = Math.abs(finalScores[key] - prevRecord[key]);
+        if (diff <= 3) {
+          finalScores[key] = prevRecord[key]; // tiny diff → keep previous
+        } else if (diff <= 8) {
+          finalScores[key] = Math.round(prevRecord[key] * 0.3 + finalScores[key] * 0.7);
+        }
+        // diff > 8 → genuine change, use new score as-is
+      }
+      // skinAge stabilization (±3 → keep, ±4~7 → blend, >7 → cap at ±3)
+      if (typeof prevRecord.skinAge === 'number' && typeof finalScores.skinAge === 'number') {
+        const ageDiff = Math.abs(finalScores.skinAge - prevRecord.skinAge);
+        if (ageDiff <= 3) {
+          finalScores.skinAge = prevRecord.skinAge;
+        } else if (ageDiff <= 7) {
+          finalScores.skinAge = Math.round(prevRecord.skinAge * 0.4 + finalScores.skinAge * 0.6);
+        } else {
+          // 급격한 변동 방지: 최대 ±3까지만 이동
+          finalScores.skinAge = prevRecord.skinAge + (finalScores.skinAge > prevRecord.skinAge ? 3 : -3);
+        }
+      }
+      // Recalculate overallScore after stabilization
+      const troubleScoreVal = Math.max(0, 100 - finalScores.troubleCount * 8.5);
+      const oilScoreVal = 100 - Math.abs(55 - finalScores.oilBalance) * 1.4;
+      finalScores.overallScore = Math.max(32, Math.min(96, Math.round(
+        finalScores.wrinkleScore      * 0.16 +
+        finalScores.elasticityScore   * 0.13 +
+        finalScores.moisture          * 0.12 +
+        finalScores.textureScore      * 0.11 +
+        troubleScoreVal               * 0.10 +
+        finalScores.poreScore         * 0.10 +
+        finalScores.pigmentationScore * 0.07 +
+        finalScores.skinTone          * 0.07 +
+        finalScores.darkCircleScore   * 0.07 +
+        Math.max(30, oilScoreVal)     * 0.07
+      )));
     }
 
     clearInterval(pi); setProgress(100);
