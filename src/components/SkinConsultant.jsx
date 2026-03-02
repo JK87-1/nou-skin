@@ -1,8 +1,145 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { getRecords, getSmoothedChanges, getChanges, getStreak } from '../storage/SkinStorage';
+import { getRecords, getSmoothedChanges, getChanges, getStreak, getTodayRecords, getStableSkinAge } from '../storage/SkinStorage';
 import { getProfile } from '../storage/ProfileStorage';
-import { saveConsultSession, loadConsultSession } from '../storage/ConsultStorage';
+import { saveConsultSession, loadConsultSession, clearConsultSession } from '../storage/ConsultStorage';
 import { compressImage } from '../engine/PixelAnalysis';
+import { incrementStat, addXP, checkAndAwardBadges } from '../storage/BadgeStorage';
+import { PRODUCTS, CATEGORY_META, getProductsByCategory, calcMatchScore } from '../data/ProductCatalog';
+import AuraPearl from './icons/AuraPearl';
+
+/** Extract [RECOMMEND:카테고리] tags — only explicit tags from AI, no keyword fallback */
+function extractRecommendTags(text) {
+  if (!text) return { cleanText: '', categories: [] };
+
+  const categories = [];
+  const tagRegex = /\[RECOMMEND:([^\]]+)\]/g;
+  let match;
+  while ((match = tagRegex.exec(text)) !== null) {
+    const cat = match[1].trim();
+    if (CATEGORY_META[cat] && !categories.includes(cat)) {
+      categories.push(cat);
+    }
+  }
+
+  let cleanText = text
+    .replace(/\s*\[RECOMMEND:[^\]]+\]/g, '')
+    .replace(/\s*\[PRODUCT:\d+\]/g, '')
+    .trim();
+
+  return { cleanText, categories: categories.slice(0, 2) };
+}
+
+/** Score ring SVG — small circular progress */
+function MatchScoreRing({ score }) {
+  const r = 16, stroke = 3;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (score / 100) * circ;
+  return (
+    <div style={{ position: 'relative', width: 40, height: 40, flexShrink: 0 }}>
+      <svg width="40" height="40" viewBox="0 0 40 40" style={{ transform: 'rotate(-90deg)' }}>
+        <circle cx="20" cy="20" r={r} fill="none" stroke="rgba(167,139,250,0.12)" strokeWidth={stroke} />
+        <circle cx="20" cy="20" r={r} fill="none" stroke="#818cf8" strokeWidth={stroke}
+          strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
+          style={{ transition: 'stroke-dashoffset 0.8s ease-out' }} />
+      </svg>
+      <div style={{
+        position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 11, fontWeight: 700, color: '#a5b4fc',
+      }}>{score}</div>
+    </div>
+  );
+}
+
+/** Single product item card */
+function ProductItem({ product, matchScore, delay = 0 }) {
+  return (
+    <a href={product.link} target="_blank" rel="noopener noreferrer"
+      className="product-item-card"
+      style={{
+        display: 'flex', alignItems: 'center', gap: 10,
+        padding: '10px 12px', borderRadius: 14,
+        background: 'rgba(255,255,255,0.03)',
+        border: '1px solid rgba(255,255,255,0.06)',
+        textDecoration: 'none', color: 'inherit',
+        animation: `slideInRight 0.4s ease-out ${delay}s both`,
+        cursor: 'pointer',
+        transition: 'background 0.2s, border-color 0.2s',
+      }}>
+      {/* Product icon placeholder */}
+      <div style={{
+        width: 44, height: 44, borderRadius: 10, flexShrink: 0,
+        background: 'linear-gradient(135deg, rgba(167,139,250,0.15), rgba(167,139,250,0.15))',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 18,
+      }}>
+        {product.tags?.[0]?.includes('히알루론') ? '💧' :
+         product.tags?.[0]?.includes('비타민') ? '🍊' :
+         product.tags?.[0]?.includes('레티놀') ? '✨' :
+         product.tags?.[0]?.includes('나이아신') ? '🧪' :
+         product.tags?.[0]?.includes('자외선') ? '☀️' :
+         product.tags?.[0]?.includes('글루타') ? '💎' :
+         product.tags?.[0]?.includes('마스크') ? '🎭' :
+         product.tags?.[0]?.includes('펩타이드') ? '🔬' : '🧴'}
+      </div>
+      {/* Center: name + tags + volume */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: '#e0e0f0',
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {product.brand} {product.name}
+        </div>
+        <div style={{ display: 'flex', gap: 4, marginTop: 4, flexWrap: 'wrap', alignItems: 'center' }}>
+          {product.tags?.slice(0, 2).map((tag, ti) => (
+            <span key={ti} style={{
+              fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 8,
+              background: 'rgba(167,139,250,0.15)', color: '#a78bfa',
+            }}>{tag}</span>
+          ))}
+          <span style={{ fontSize: 10, color: '#66667a' }}>{product.volume}</span>
+        </div>
+      </div>
+      {/* Right: match score ring */}
+      <MatchScoreRing score={matchScore} />
+    </a>
+  );
+}
+
+/** Product recommendation section for a category */
+function ProductRecommendSection({ category, result, delay = 0 }) {
+  const meta = CATEGORY_META[category];
+  if (!meta) return null;
+  const products = getProductsByCategory(category);
+  if (products.length === 0) return null;
+
+  const metricValue = result?.[meta.metricKey] ?? 50;
+  const isInverse = meta.inverse;
+
+  return (
+    <div style={{ margin: '10px 0 6px', animation: `fadeInUp 0.5s ease-out ${delay}s both` }}>
+      {/* Category header */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 8,
+        padding: '10px 14px', borderRadius: 20,
+        background: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        marginBottom: 8,
+      }}>
+        <span style={{ fontSize: 18 }}>{meta.icon}</span>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#e0e0f0' }}>{meta.label}</div>
+          <div style={{ fontSize: 11, color: '#8888a0' }}>{meta.ingredient}</div>
+        </div>
+      </div>
+      {/* Product items */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {products.slice(0, 3).map((product, pi) => (
+          <ProductItem key={product.id} product={product}
+            matchScore={calcMatchScore(metricValue, isInverse)}
+            delay={delay + 0.1 + pi * 0.08} />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 /** Minimal markdown → React: **bold**, \n→<br>, • bullets */
 function renderMarkdown(text) {
@@ -11,30 +148,28 @@ function renderMarkdown(text) {
     const isBullet = line.trimStart().startsWith('• ') || line.trimStart().startsWith('- ');
     const cleanLine = isBullet ? line.replace(/^\s*[•\-]\s*/, '') : line;
 
-    // Bold: **text**
     const parts = cleanLine.split(/(\*\*[^*]+\*\*)/g).map((seg, si) => {
       if (seg.startsWith('**') && seg.endsWith('**')) {
-        return <strong key={si}>{seg.slice(2, -2)}</strong>;
+        return <strong key={si} style={{ color: '#c4b5fd' }}>{seg.slice(2, -2)}</strong>;
       }
       return seg;
     });
 
     if (isBullet) {
-      return <div key={li} style={{ display: 'flex', gap: 6, marginTop: li > 0 ? 2 : 0 }}>
-        <span style={{ flexShrink: 0, opacity: 0.6 }}>•</span>
+      return <div key={li} style={{ display: 'flex', gap: 8, marginTop: li > 0 ? 6 : 0 }}>
+        <span style={{ flexShrink: 0, opacity: 0.5, color: '#818cf8' }}>•</span>
         <span>{parts}</span>
       </div>;
     }
-    // Empty line = paragraph spacing
     if (line.trim() === '') {
-      return <div key={li} style={{ height: 8 }} />;
+      return <div key={li} style={{ height: 14 }} />;
     }
-    return <div key={li}>{parts}</div>;
+    return <div key={li} style={{ marginTop: li > 0 ? 3 : 0 }}>{parts}</div>;
   });
 }
 
 function generateWelcomeMessage(result) {
-  if (!result) return '안녕하세요! 피부 상담을 시작할게요.';
+  if (!result) return '안녕하세요, 당신의 피부 상담사 루아(LUA)에요. 궁금한 점이 있으면 편하게 물어보세요!';
 
   const overall = result.overallScore;
   // Find weakest metric
@@ -51,7 +186,7 @@ function generateWelcomeMessage(result) {
   ];
   const weakest = metrics.reduce((min, m) => m.score < min.score ? m : min, metrics[0]);
 
-  return `안녕하세요! 오늘 피부 분석 결과를 봤어요. 종합 ${overall}점이에요. 가장 신경 쓸 부분은 ${weakest.label}(${weakest.score}점)이에요. 궁금한 점이 있으면 편하게 물어보세요! 화장품 사진을 보내주시면 성분 적합성도 분석해드려요.`;
+  return `안녕하세요, 당신의 피부 상담사 루아(LUA)에요. 오늘 피부 분석 결과를 봤어요. 종합 ${overall}점이에요. 가장 신경 쓸 부분은 ${weakest.label}(${weakest.score}점)이에요. 궁금한 점이 있으면 편하게 물어보세요! 화장품 사진을 보내주시면 성분 적합성도 분석해드려요.`;
 }
 
 export default function SkinConsultant({ result, onClose, isTab = false }) {
@@ -59,10 +194,11 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
-  const [pendingImage, setPendingImage] = useState(null); // { dataUrl, base64 }
+  const [pendingImages, setPendingImages] = useState([]); // [{ dataUrl, base64 }, ...] max 3
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [sttSupported, setSttSupported] = useState(false);
+  const [kbOpen, setKbOpen] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const containerRef = useRef(null);
@@ -76,6 +212,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
     '피부나이 줄이려면?',
     '지금 피부 상태 요약해줘',
     '이 화장품 내 피부에 맞아?',
+    '내 피부에 맞는 화장품 추천해줘',
   ];
 
   // Initialize: load saved session or create welcome message
@@ -111,27 +248,51 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
     }
   }, [messages]);
 
+  // Prevent body scroll when consult is active (iOS bounce fix)
+  useEffect(() => {
+    const orig = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = orig; };
+  }, []);
+
   // Mobile keyboard handling via visualViewport API
-  // Keep overlay full-screen, use paddingBottom to push content above keyboard
+  // Dynamically resize container to fit above the keyboard
   useEffect(() => {
     const vv = window.visualViewport;
     if (!vv || !containerRef.current) return;
 
-    const handleResize = () => {
+    const onViewportChange = () => {
       const container = containerRef.current;
       if (!container) return;
-      const keyboardHeight = Math.max(0, window.innerHeight - vv.height);
-      container.style.paddingBottom = `${keyboardHeight}px`;
-      setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+
+      const kbHeight = Math.round(window.innerHeight - vv.height);
+      const isOpen = kbHeight > 150;
+
+      if (isOpen) {
+        // Keyboard open: fill from top to visual viewport height
+        container.style.height = `${vv.height}px`;
+        container.style.bottom = 'auto';
+      } else {
+        // Keyboard closed: restore CSS defaults
+        container.style.height = '';
+        container.style.bottom = '';
+      }
+
+      setKbOpen(isOpen);
+      requestAnimationFrame(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      });
     };
 
-    vv.addEventListener('resize', handleResize);
-    vv.addEventListener('scroll', handleResize);
+    vv.addEventListener('resize', onViewportChange);
+    vv.addEventListener('scroll', onViewportChange);
     return () => {
-      vv.removeEventListener('resize', handleResize);
-      vv.removeEventListener('scroll', handleResize);
-      if (containerRef.current) {
-        containerRef.current.style.paddingBottom = '';
+      vv.removeEventListener('resize', onViewportChange);
+      vv.removeEventListener('scroll', onViewportChange);
+      const c = containerRef.current;
+      if (c) {
+        c.style.height = '';
+        c.style.bottom = '';
       }
     };
   }, []);
@@ -191,6 +352,9 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
     const streak = getStreak();
     const profile = getProfile();
 
+    const todayRecs = getTodayRecords();
+    const stableSkinAge = getStableSkinAge();
+
     return {
       currentResult: result ? {
         overallScore: result.overallScore,
@@ -211,6 +375,16 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
       history: recentHistory,
       changes,
       streak,
+      stableSkinAge,
+      todayRecords: todayRecs.map(r => ({
+        timestamp: r.timestamp,
+        overallScore: r.overallScore,
+        skinAge: r.skinAge,
+        moisture: r.moisture,
+        oilBalance: r.oilBalance,
+        skinTone: r.skinTone,
+        darkCircleScore: r.darkCircleScore,
+      })),
       profile: {
         birthYear: profile.birthYear,
         gender: profile.gender,
@@ -219,23 +393,34 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
     };
   }, [result]);
 
-  const sendMessage = useCallback(async (text, imageOverride) => {
+  const sendMessage = useCallback(async (text, imagesOverride) => {
     const msgText = (text || '').trim();
-    const imgData = imageOverride || pendingImage;
+    const imgs = imagesOverride || (pendingImages.length > 0 ? pendingImages : null);
 
-    if (!msgText && !imgData && !isLoading) return;
+    if (!msgText && !imgs && !isLoading) return;
     if (isLoading) return;
+
+    const defaultMsg = imgs && imgs.length > 1
+      ? '이 화장품들을 비교 분석해주세요.'
+      : imgs ? '이 화장품 내 피부에 맞는지 분석해주세요.' : '';
 
     const userMsg = {
       role: 'user',
-      content: msgText || (imgData ? '이 화장품 내 피부에 맞는지 분석해주세요.' : ''),
+      content: msgText || defaultMsg,
       timestamp: Date.now(),
-      imageThumb: imgData?.dataUrl || null,
+      imageThumbs: imgs ? imgs.map(img => img.dataUrl) : null,
+      // Legacy single-image compat
+      imageThumb: imgs?.[0]?.dataUrl || null,
     };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
-    setPendingImage(null);
+    setPendingImages([]);
     setIsLoading(true);
+
+    // Track consult usage for badges
+    incrementStat('consultCount');
+    addXP(10, 'AI 상담 이용');
+    checkAndAwardBadges();
 
     // Build conversation history for API (exclude timestamps and images)
     const conversationHistory = messages
@@ -249,8 +434,10 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
         context: buildContext(),
         conversationHistory,
       };
-      if (imgData?.base64) {
-        body.image = imgData.base64;
+      if (imgs && imgs.length === 1) {
+        body.image = imgs[0].base64;
+      } else if (imgs && imgs.length > 1) {
+        body.images = imgs.map(img => img.base64);
       }
 
       const response = await fetch(apiUrl, {
@@ -280,24 +467,38 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
     } finally {
       setIsLoading(false);
     }
-  }, [messages, isLoading, buildContext, pendingImage]);
+  }, [messages, isLoading, buildContext, pendingImages]);
+
+  const MAX_IMAGES = 3;
+
+  const processFile = useCallback((file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        const dataUrl = ev.target.result;
+        const compressed = await compressImage(dataUrl, 1024, 0.85);
+        const base64 = compressed.split(',')[1];
+        resolve({ dataUrl, base64 });
+      };
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(file);
+    });
+  }, []);
 
   const handleFileSelect = useCallback(async (e) => {
-    const file = e.target.files?.[0];
-    if (!file || !file.type.startsWith('image/')) return;
+    const files = Array.from(e.target.files || []).filter(f => f.type.startsWith('image/'));
+    if (files.length === 0) return;
 
-    const reader = new FileReader();
-    reader.onload = async (ev) => {
-      const dataUrl = ev.target.result;
-      // Compress for API (1024px for ingredient label + skin detail readability)
-      const compressed = await compressImage(dataUrl, 1024, 0.85);
-      const base64 = compressed.split(',')[1];
-      setPendingImage({ dataUrl, base64 });
-    };
-    reader.readAsDataURL(file);
     e.target.value = '';
     setShowAttachMenu(false);
-  }, []);
+
+    // Process all selected files (respect MAX_IMAGES limit)
+    const results = await Promise.all(files.slice(0, MAX_IMAGES).map(processFile));
+    const valid = results.filter(Boolean);
+    if (valid.length > 0) {
+      setPendingImages(prev => [...prev, ...valid].slice(0, MAX_IMAGES));
+    }
+  }, [processFile]);
 
   const handleClose = useCallback(() => {
     if (!onClose) return;
@@ -312,7 +513,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
     }
   }, [input, sendMessage]);
 
-  const canSend = (input.trim() || pendingImage) && !isLoading;
+  const canSend = (input.trim() || pendingImages.length > 0) && !isLoading;
 
   return (
     <div
@@ -322,7 +523,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
       {/* Hidden file inputs */}
       <input ref={cameraInputRef} type="file" accept="image/*" capture="environment"
         onChange={handleFileSelect} style={{ display: 'none' }} />
-      <input ref={albumInputRef} type="file" accept="image/*"
+      <input ref={albumInputRef} type="file" accept="image/*" multiple
         onChange={handleFileSelect} style={{ display: 'none' }} />
 
       {/* Header */}
@@ -337,7 +538,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
             width: 36, height: 36, borderRadius: '50%',
-            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+            background: 'linear-gradient(135deg, #9080c8, #6858a8, #483090)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 18,
           }}>
@@ -347,25 +548,42 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
           </div>
           <div>
             <div style={{ fontSize: 16, fontWeight: 700, color: '#f0f0f5', letterSpacing: -0.3 }}>
-              나만의 피부상담사
+              나만의 피부 상담사
             </div>
             <div style={{ fontSize: 11, color: '#8888a0', fontWeight: 400 }}>
-              AI 맞춤 스킨케어 상담
+              AI 맞춤 피부 컨시어지 서비스
             </div>
           </div>
         </div>
-        {!isTab && (
-          <button onClick={handleClose} style={{
-            width: 36, height: 36, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.08)', border: 'none',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', fontSize: 18, color: '#8888a0',
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <button onClick={() => {
+            clearConsultSession();
+            const welcome = { role: 'assistant', content: generateWelcomeMessage(result), timestamp: Date.now() };
+            setMessages([welcome]);
+          }} style={{
+            height: 32, padding: '0 12px', borderRadius: 16, border: 'none',
+            background: 'rgba(255,255,255,0.06)',
+            fontSize: 12, fontWeight: 600, color: '#8888a0', cursor: 'pointer',
+            fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 4,
           }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 105.64-11.36L1 10"/>
             </svg>
+            새 상담
           </button>
-        )}
+          {!isTab && (
+            <button onClick={handleClose} style={{
+              width: 36, height: 36, borderRadius: '50%',
+              background: 'rgba(255,255,255,0.08)', border: 'none',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', fontSize: 18, color: '#8888a0',
+            }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Quick Question Chips */}
@@ -375,7 +593,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
             key={q}
             className="consult-chip"
             onClick={() => {
-              if (q === '이 화장품 내 피부에 맞아?' && !pendingImage) {
+              if (q === '이 화장품 내 피부에 맞아?' && pendingImages.length === 0) {
                 setShowAttachMenu(true);
               } else {
                 sendMessage(q);
@@ -391,20 +609,62 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
 
       {/* Messages */}
       <div className="consult-messages">
-        {messages.map((msg, i) => (
-          <div key={i} className={`consult-bubble ${msg.role === 'user' ? 'user' : 'ai'}`}>
-            {msg.imageThumb && (
-              <img
-                src={msg.imageThumb}
-                alt="첨부 이미지"
-                className="consult-bubble-image"
-              />
-            )}
-            {msg.role === 'ai' || msg.role === 'assistant'
-              ? renderMarkdown(msg.content)
-              : msg.content}
-          </div>
-        ))}
+        {messages.map((msg, i) => {
+          const isAI = msg.role === 'ai' || msg.role === 'assistant';
+          const { cleanText, categories } = isAI
+            ? extractRecommendTags(msg.content)
+            : { cleanText: msg.content, categories: [] };
+
+          // Show products only when AI explicitly included [RECOMMEND:] tags
+          const showProducts = isAI && categories.length > 0;
+
+          // Show AI label if first AI message or previous message was from user
+          const prevMsg = i > 0 ? messages[i - 1] : null;
+          const showAiLabel = isAI && (!prevMsg || prevMsg.role === 'user');
+
+          return (
+            <div key={i}>
+              {showAiLabel && (
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  marginBottom: 6, marginTop: i > 0 ? 12 : 0,
+                  paddingLeft: 2,
+                }}>
+                  <div style={{ flexShrink: 0 }}>
+                    <AuraPearl variant="eternal" size={28} animated />
+                  </div>
+                  <span style={{ fontSize: 11, color: '#8888a0', fontWeight: 400 }}>루아(LUA)</span>
+                </div>
+              )}
+              <div className={`consult-bubble ${msg.role === 'user' ? 'user' : 'ai'}`}>
+                {msg.imageThumbs && msg.imageThumbs.length > 0 ? (
+                  <div className="consult-bubble-images">
+                    {msg.imageThumbs.map((thumb, ti) => (
+                      <img key={ti} src={thumb} alt={`첨부 이미지 ${ti + 1}`} className="consult-bubble-image" />
+                    ))}
+                  </div>
+                ) : msg.imageThumb && (
+                  <img src={msg.imageThumb} alt="첨부 이미지" className="consult-bubble-image" />
+                )}
+                {isAI ? renderMarkdown(cleanText) : msg.content}
+              </div>
+              {/* Product recommendation cards below AI message */}
+              {showProducts && (
+                <div style={{ padding: '0 4px 0 44px' }}>
+                  {categories.map((cat, ci) => (
+                    <ProductRecommendSection key={cat} category={cat} result={result} delay={ci * 0.15} />
+                  ))}
+                  <div style={{
+                    fontSize: 10, color: '#55556a', textAlign: 'center',
+                    padding: '6px 12px 2px', lineHeight: 1.4,
+                  }}>
+                    이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
         {isLoading && (
           <div className="consult-typing">
             <div className="consult-typing-dot" />
@@ -415,27 +675,49 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Image Preview */}
-      {pendingImage && (
+      {/* Image Previews */}
+      {pendingImages.length > 0 && (
         <div className="consult-image-preview">
-          <div style={{ position: 'relative', display: 'inline-block' }}>
-            <img src={pendingImage.dataUrl} alt="첨부할 이미지" />
+          {pendingImages.map((img, idx) => (
+            <div key={idx} style={{ position: 'relative', display: 'inline-block' }}>
+              <img src={img.dataUrl} alt={`첨부할 이미지 ${idx + 1}`} />
+              <button
+                className="consult-image-preview-remove"
+                onClick={() => setPendingImages(prev => prev.filter((_, i) => i !== idx))}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+          ))}
+          {pendingImages.length < MAX_IMAGES && (
             <button
-              className="consult-image-preview-remove"
-              onClick={() => setPendingImage(null)}
+              onClick={() => albumInputRef.current?.click()}
+              style={{
+                width: 72, height: 72, borderRadius: 12,
+                border: '2px dashed rgba(167,139,250,0.4)',
+                background: 'rgba(167,139,250,0.08)',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', gap: 2, flexShrink: 0,
+              }}
             >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round">
-                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
+              <span style={{ fontSize: 10, color: '#a78bfa', fontWeight: 600 }}>추가</span>
             </button>
-          </div>
-          <span style={{ fontSize: 12, color: '#8888a0' }}>사진이 첨부됐어요</span>
+          )}
+          <span style={{ fontSize: 12, color: '#8888a0', width: '100%' }}>
+            {`사진 ${pendingImages.length}/${MAX_IMAGES}장`}
+            {pendingImages.length >= 2 && ' · 비교 분석 가능'}
+          </span>
         </div>
       )}
 
       {/* Input Bar */}
       <div style={{
-        padding: '10px 16px calc(10px + env(safe-area-inset-bottom, 0px))',
+        padding: kbOpen ? '10px 16px' : '10px 16px calc(10px + env(safe-area-inset-bottom, 0px))',
         background: 'rgba(17,17,24,0.95)',
         backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
         borderTop: '1px solid rgba(255,255,255,0.06)',
@@ -446,14 +728,14 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
         {showAttachMenu && (
           <div className="consult-attach-menu" onClick={(e) => e.stopPropagation()}>
             <button className="consult-attach-option" onClick={() => { cameraInputRef.current?.click(); setShowAttachMenu(false); }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
                 <circle cx="12" cy="13" r="4"/>
               </svg>
               카메라로 촬영
             </button>
             <button className="consult-attach-option" onClick={() => { albumInputRef.current?.click(); setShowAttachMenu(false); }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                 <circle cx="8.5" cy="8.5" r="1.5"/>
                 <polyline points="21 15 16 10 5 21"/>
@@ -470,7 +752,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
           disabled={isLoading}
           style={{ opacity: isLoading ? 0.5 : 1 }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="2.5" strokeLinecap="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2.5" strokeLinecap="round">
             <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
         </button>
@@ -481,17 +763,17 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={isListening ? '듣고 있어요...' : pendingImage ? '메시지와 함께 전송...' : '피부 고민을 물어보세요...'}
+          placeholder={isListening ? '듣고 있어요...' : pendingImages.length > 0 ? '메시지와 함께 전송...' : '피부 고민을 물어보세요...'}
           disabled={isLoading}
           style={{
             flex: 1, minWidth: 0, padding: '12px 18px', borderRadius: 24,
-            border: `1px solid ${isListening ? 'rgba(99,102,241,0.5)' : 'rgba(255,255,255,0.08)'}`,
+            border: `1px solid ${isListening ? 'rgba(167,139,250,0.5)' : 'rgba(255,255,255,0.08)'}`,
             background: 'rgba(255,255,255,0.06)',
             fontSize: 14, color: '#f0f0f5',
             fontFamily: 'inherit', outline: 'none',
             transition: 'border-color 0.2s',
           }}
-          onFocus={(e) => e.target.style.borderColor = 'rgba(99,102,241,0.5)'}
+          onFocus={(e) => e.target.style.borderColor = 'rgba(167,139,250,0.5)'}
           onBlur={(e) => { if (!isListening) e.target.style.borderColor = 'rgba(255,255,255,0.08)'; }}
         />
 
@@ -504,7 +786,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
             style={{ opacity: isLoading ? 0.5 : 1 }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-              stroke={isListening ? '#a78bfa' : '#8b5cf6'}
+              stroke={isListening ? '#a78bfa' : '#a78bfa'}
               strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="9" y="1" width="6" height="11" rx="3"/>
               <path d="M19 10v1a7 7 0 01-14 0v-1"/>
@@ -520,7 +802,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
           style={{
             width: 44, height: 44, borderRadius: '50%', border: 'none',
             background: canSend
-              ? 'linear-gradient(135deg, #6366f1, #8b5cf6)'
+              ? 'linear-gradient(135deg, #9080c8, #6858a8, #483090)'
               : 'rgba(255,255,255,0.06)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: canSend ? 'pointer' : 'default',

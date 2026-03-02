@@ -99,3 +99,11 @@ export async function detectLandmarksImage(imgElement) {
 export async function detectLandmarks(imgElement) {
   return detectLandmarksImage(imgElement);
 }
+
+/**
+ * Eagerly start downloading WASM + model in the background.
+ * Call on app mount so they're ready when the camera opens.
+ */
+export function preload() {
+  getInstance();
+}

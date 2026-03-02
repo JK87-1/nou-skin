@@ -10,6 +10,8 @@ const DEFAULTS = {
   sensitivity: '',
   reminderEnabled: false,
   reminderTime: '08:00',
+  tipEnabled: false,
+  tipTime: '20:00',
 };
 
 export function getProfile() {
@@ -25,6 +27,15 @@ export function saveProfile(data) {
   const merged = { ...current, ...data };
   localStorage.setItem(PROFILE_KEY, JSON.stringify(merged));
   return merged;
+}
+
+export function getDeviceId() {
+  let id = localStorage.getItem('nou_device_id');
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem('nou_device_id', id);
+  }
+  return id;
 }
 
 export const SKIN_TYPES = ['건성', '지성', '복합성', '중성', '민감성'];

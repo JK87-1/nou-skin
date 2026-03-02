@@ -36,12 +36,12 @@ export function ScoreRing({ score, size = 110, label = '종합점수' }) {
       <svg width={size} height={size} style={{ transform: 'rotate(-90deg)', position: 'absolute' }}>
         <defs>
           <linearGradient id="scoreRingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#FFB878"/>
-            <stop offset="50%" stopColor="#FF6B4A"/>
-            <stop offset="100%" stopColor="#FF3D7F"/>
+            <stop offset="0%" stopColor="#9080c8"/>
+            <stop offset="50%" stopColor="#a78bfa"/>
+            <stop offset="100%" stopColor="#818cf8"/>
           </linearGradient>
         </defs>
-        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="rgba(200,170,150,0.12)" strokeWidth={11} />
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={11} />
         <circle
           cx={size / 2} cy={size / 2} r={radius} fill="none"
           stroke="url(#scoreRingGrad)" strokeWidth={11} strokeLinecap="round"
@@ -50,10 +50,10 @@ export function ScoreRing({ score, size = 110, label = '종합점수' }) {
         />
       </svg>
       <div style={{ textAlign: 'center', zIndex: 1 }}>
-        <div style={{ fontSize: size * 0.26, fontWeight: 800, color: '#1a1a1a', fontFamily: 'Outfit, sans-serif', lineHeight: 1 }}>
+        <div style={{ fontSize: size * 0.26, fontWeight: 800, color: '#f0f0f5', fontFamily: 'Outfit, sans-serif', lineHeight: 1 }}>
           <AnimatedNumber target={score} />
         </div>
-        <div style={{ fontSize: 10, color: '#888', marginTop: 2 }}>{label}</div>
+        <div style={{ fontSize: 10, color: '#8888a0', marginTop: 2 }}>{label}</div>
       </div>
     </div>
   );
@@ -81,14 +81,14 @@ export function MetricBar({ label, value, unit = '%', color, icon, description, 
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-        <span style={{ fontSize: 14, color: '#555', fontWeight: 600 }}>{icon} {label}</span>
-        <span style={{ fontSize: 15, fontWeight: 700, color: '#1a1a1a', fontFamily: 'Outfit, sans-serif' }}>
+        <span style={{ fontSize: 14, color: '#b0b0c0', fontWeight: 600 }}>{icon} {label}</span>
+        <span style={{ fontSize: 15, fontWeight: 700, color: '#f0f0f5', fontFamily: 'Outfit, sans-serif' }}>
           <AnimatedNumber target={value} suffix={unit} />
-          {onClick && <span style={{ fontSize: 10, color: '#ccc', marginLeft: 5 }}>→</span>}
+          {onClick && <span style={{ fontSize: 10, color: '#555570', marginLeft: 5 }}>→</span>}
         </span>
       </div>
-      {description && <div style={{ fontSize: 11, color: '#aaa', marginBottom: 6 }}>{description}</div>}
-      <div className="metric-bar-track">
+      {description && <div style={{ fontSize: 11, color: '#8888a0', marginBottom: 6 }}>{description}</div>}
+      <div className="metric-bar-track" style={{ position: 'relative' }}>
         <div
           className="metric-bar-fill"
           style={{
@@ -96,6 +96,17 @@ export function MetricBar({ label, value, unit = '%', color, icon, description, 
             width: `${width}%`,
           }}
         />
+        {width > 0 && (
+          <div style={{
+            position: 'absolute', top: '50%', left: `${width}%`,
+            transform: 'translate(-50%, -50%)',
+            width: 3, height: 3, borderRadius: '50%',
+            background: 'rgba(255,255,255,0.5)',
+            boxShadow: '0 0 3px rgba(255,255,255,0.3)',
+            transition: 'left 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            pointerEvents: 'none',
+          }} />
+        )}
       </div>
     </div>
   );
@@ -163,13 +174,13 @@ export function DetailPage({ metricKey, value, onBack }) {
       <div style={{ padding: '20px 16px' }}>
         {/* Methodology */}
         <div className="card">
-          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 10 }}>📐 측정 원리</div>
-          <p style={{ fontSize: 13, color: '#666', lineHeight: 1.85, whiteSpace: 'pre-line' }}>{data.methodology}</p>
+          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 10, color: '#f0f0f5' }}>📐 측정 원리</div>
+          <p style={{ fontSize: 13, color: '#8888a0', lineHeight: 1.85, whiteSpace: 'pre-line' }}>{data.methodology}</p>
         </div>
 
         {/* Analysis Steps */}
         <div className="card">
-          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>⚙️ 분석 과정</div>
+          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: '#f0f0f5' }}>⚙️ 분석 과정</div>
           {data.steps.map((step, i) => (
             <div key={i} style={{ display: 'flex', gap: 14, marginBottom: i < data.steps.length - 1 ? 18 : 0 }}>
               <div style={{
@@ -178,8 +189,8 @@ export function DetailPage({ metricKey, value, onBack }) {
                 color: '#fff', fontSize: 13, fontWeight: 800, flexShrink: 0,
               }}>{i + 1}</div>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#333', marginBottom: 3 }}>{step.title}</div>
-                <div style={{ fontSize: 12, color: '#888', lineHeight: 1.65 }}>{step.desc}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#f0f0f5', marginBottom: 3 }}>{step.title}</div>
+                <div style={{ fontSize: 12, color: '#8888a0', lineHeight: 1.65 }}>{step.desc}</div>
               </div>
             </div>
           ))}
@@ -187,7 +198,7 @@ export function DetailPage({ metricKey, value, onBack }) {
 
         {/* Score Ranges */}
         <div className="card">
-          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 14 }}>📊 결과 해석</div>
+          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 14, color: '#f0f0f5' }}>📊 결과 해석</div>
           {data.ranges.map((r, i) => (
             <div key={i} style={{
               display: 'flex', alignItems: 'center', gap: 10,
@@ -197,23 +208,23 @@ export function DetailPage({ metricKey, value, onBack }) {
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: r.color, flexShrink: 0 }} />
               <span style={{ fontSize: 12, fontWeight: 700, color: r.color, minWidth: 80 }}>{r.range}</span>
               <span style={{ fontSize: 11, color: r.color, background: `${r.color}15`, padding: '2px 10px', borderRadius: 8 }}>{r.label}</span>
-              <span style={{ fontSize: 10, color: '#999', marginLeft: 'auto' }}>{r.description}</span>
+              <span style={{ fontSize: 10, color: '#8888a0', marginLeft: 'auto' }}>{r.description}</span>
             </div>
           ))}
         </div>
 
         {/* Scientific References */}
         <div className="card">
-          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 14 }}>📚 과학적 근거</div>
+          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 14, color: '#f0f0f5' }}>📚 과학적 근거</div>
           {data.references.map((ref, i) => (
             <div key={i} style={{
               marginBottom: i < data.references.length - 1 ? 14 : 0,
-              padding: 14, background: '#F9F9F9', borderRadius: 14,
+              padding: 14, background: 'rgba(255,255,255,0.03)', borderRadius: 14,
             }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: data.color, marginBottom: 5 }}>{ref.name}</div>
-              <p style={{ fontSize: 12, color: '#666', lineHeight: 1.65, marginBottom: 8 }}>{ref.description}</p>
+              <p style={{ fontSize: 12, color: '#8888a0', lineHeight: 1.65, marginBottom: 8 }}>{ref.description}</p>
               <div style={{
-                fontSize: 10, color: '#aaa', fontStyle: 'italic',
+                fontSize: 10, color: '#666680', fontStyle: 'italic',
                 borderLeft: `3px solid ${data.color}40`, paddingLeft: 10,
               }}>{ref.source}</div>
             </div>
@@ -224,16 +235,16 @@ export function DetailPage({ metricKey, value, onBack }) {
         <div className="gbs-box">
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
             <span style={{ fontSize: 20 }}>🧬</span>
-            <span style={{ fontSize: 15, fontWeight: 700, color: '#FF8C42' }}>장-뇌-피부 축 (Gut-Brain-Skin Axis)</span>
+            <span style={{ fontSize: 15, fontWeight: 700, color: '#818cf8' }}>장-뇌-피부 축 (Gut-Brain-Skin Axis)</span>
           </div>
-          <p style={{ fontSize: 13, color: '#555', lineHeight: 1.75, marginBottom: 10 }}>{data.gutBrainSkin}</p>
-          <div style={{ fontSize: 10, color: '#999', fontStyle: 'italic' }}>{data.gutBrainSkinSource}</div>
+          <p style={{ fontSize: 13, color: '#b0b0c0', lineHeight: 1.75, marginBottom: 10 }}>{data.gutBrainSkin}</p>
+          <div style={{ fontSize: 10, color: '#666680', fontStyle: 'italic' }}>{data.gutBrainSkinSource}</div>
         </div>
 
         {/* Disclaimer */}
-        <div style={{ padding: 14, background: '#f8f8f8', borderRadius: 14, marginBottom: 16 }}>
-          <p style={{ fontSize: 11, color: '#999', lineHeight: 1.6 }}>
-            ⚠️ NOU AI 비전 기반 추정치이며, 의료기기 정밀 측정과 차이가 있습니다.
+        <div style={{ padding: 14, background: 'rgba(255,255,255,0.03)', borderRadius: 14, marginBottom: 16 }}>
+          <p style={{ fontSize: 11, color: '#8888a0', lineHeight: 1.6 }}>
+            ⚠️ LUA AI 비전 기반 추정치이며, 의료기기 정밀 측정과 차이가 있습니다.
             정확한 진단은 피부과 전문의와 상담해주세요.
           </p>
         </div>

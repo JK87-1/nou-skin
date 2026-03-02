@@ -1,0 +1,365 @@
+import { useRef } from 'react';
+import { COLORS } from '../../design/tokens';
+
+// ── Theme palettes ──
+const DARK_STOPS = [
+  { offset: '0%', color: COLORS.pearl.lightest },
+  { offset: '20%', color: COLORS.pearl.light },
+  { offset: '45%', color: COLORS.pearl.mid },
+  { offset: '70%', color: COLORS.pearl.darker },
+  { offset: '100%', color: COLORS.pearl.darkest },
+];
+const LIGHT_STOPS = [
+  { offset: '0%', color: '#f4f0ff' },
+  { offset: '20%', color: '#ddd0f4' },
+  { offset: '45%', color: '#b098d8' },
+  { offset: '70%', color: '#8068b8' },
+  { offset: '100%', color: '#503898' },
+];
+const DARK_GLOW = { primary: '#a78bfa', secondary: '#c4b5fd' };
+const LIGHT_GLOW = { primary: '#7c3aed', secondary: '#818cf8' };
+
+// ── Shared SVG fragments ──
+
+function PearlDefs({ id, stops, theme }) {
+  const glow = theme === 'light' ? LIGHT_GLOW : DARK_GLOW;
+  return (
+    <>
+      {/* Pearl body gradient */}
+      <radialGradient id={`${id}-base`} cx="38%" cy="34%" r="58%">
+        {stops.map((s, i) => (
+          <stop key={i} offset={s.offset} stopColor={s.color} />
+        ))}
+      </radialGradient>
+
+      {/* Iridescence layers */}
+      <radialGradient id={`${id}-iri-indigo`} cx="62%" cy="64%" r="38%">
+        <stop offset="0%" stopColor="#818cf8" stopOpacity="0.35" />
+        <stop offset="100%" stopColor="#818cf8" stopOpacity="0" />
+      </radialGradient>
+      <radialGradient id={`${id}-iri-pink`} cx="68%" cy="42%" r="30%">
+        <stop offset="0%" stopColor="#f0abfc" stopOpacity="0.15" />
+        <stop offset="100%" stopColor="#f0abfc" stopOpacity="0" />
+      </radialGradient>
+      <radialGradient id={`${id}-iri-teal`} cx="42%" cy="72%" r="25%">
+        <stop offset="0%" stopColor="#5eead4" stopOpacity="0.08" />
+        <stop offset="100%" stopColor="#5eead4" stopOpacity="0" />
+      </radialGradient>
+
+      {/* Rim light */}
+      <radialGradient id={`${id}-rim`} cx="50%" cy="50%" r="50%">
+        <stop offset="88%" stopColor="transparent" />
+        <stop offset="96%" stopColor={glow.secondary} stopOpacity="0.08" />
+        <stop offset="100%" stopColor="transparent" />
+      </radialGradient>
+
+      {/* Main sheen */}
+      <radialGradient id={`${id}-sheen`} cx="32%" cy="28%" r="32%">
+        <stop offset="0%" stopColor="white" stopOpacity="0.95" />
+        <stop offset="30%" stopColor="white" stopOpacity="0.4" />
+        <stop offset="100%" stopColor="white" stopOpacity="0" />
+      </radialGradient>
+
+      {/* Drop shadow */}
+      <filter id={`${id}-shadow`}>
+        <feDropShadow dx="0" dy="4" stdDeviation="10" floodColor="#6d28d9" floodOpacity="0.3" />
+      </filter>
+
+      {/* Highlight blur */}
+      <filter id={`${id}-hlBlur`}>
+        <feGaussianBlur stdDeviation="2" />
+      </filter>
+    </>
+  );
+}
+
+function PearlBody({ id }) {
+  return (
+    <>
+      {/* Pearl sphere */}
+      <circle cx="100" cy="100" r="56" fill={`url(#${id}-base)`} filter={`url(#${id}-shadow)`} />
+      {/* Iridescence */}
+      <circle cx="100" cy="100" r="56" fill={`url(#${id}-iri-indigo)`} />
+      <circle cx="100" cy="100" r="56" fill={`url(#${id}-iri-pink)`} />
+      <circle cx="100" cy="100" r="56" fill={`url(#${id}-iri-teal)`} />
+      {/* Rim light */}
+      <circle cx="100" cy="100" r="56" fill={`url(#${id}-rim)`} />
+      {/* Sheen */}
+      <circle cx="100" cy="100" r="56" fill={`url(#${id}-sheen)`} />
+      {/* Highlight cluster */}
+      <ellipse cx="78" cy="74" rx="9" ry="7" fill="white" opacity="0.75" filter={`url(#${id}-hlBlur)`} />
+      <circle cx="74" cy="68" r="3.5" fill="white" opacity="0.9" />
+      <circle cx="70" cy="64" r="1.5" fill="white" opacity="0.6" />
+      <circle cx="120" cy="122" r="2.5" fill="white" opacity="0.1" />
+    </>
+  );
+}
+
+// ── Variant: Living Pearl ──
+
+function LivingPearl({ id, animated, stops, theme }) {
+  const glow = theme === 'light' ? LIGHT_GLOW : DARK_GLOW;
+  return (
+    <>
+      <defs>
+        <PearlDefs id={id} stops={stops} theme={theme} />
+        {/* Aura layers */}
+        <radialGradient id={`${id}-aura1`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="transparent" />
+          <stop offset="65%" stopColor={glow.primary} stopOpacity="0.12" />
+          <stop offset="100%" stopColor="transparent" />
+        </radialGradient>
+        <radialGradient id={`${id}-aura2`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="transparent" />
+          <stop offset="60%" stopColor={glow.primary} stopOpacity="0.08" />
+          <stop offset="100%" stopColor="transparent" />
+        </radialGradient>
+        <radialGradient id={`${id}-aura3`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="transparent" />
+          <stop offset="70%" stopColor={glow.primary} stopOpacity="0.05" />
+          <stop offset="100%" stopColor="transparent" />
+        </radialGradient>
+      </defs>
+
+      {/* 3-layer aura */}
+      <circle cx="100" cy="100" r="96" fill={`url(#${id}-aura1)`}
+        className={animated ? 'aura-ring-1' : undefined}
+        style={animated ? { transformOrigin: '100px 100px' } : undefined} />
+      <circle cx="100" cy="100" r="90" fill={`url(#${id}-aura2)`}
+        className={animated ? 'aura-ring-2' : undefined}
+        style={animated ? { transformOrigin: '100px 100px' } : undefined} />
+      <circle cx="100" cy="100" r="82" fill={`url(#${id}-aura3)`}
+        className={animated ? 'aura-ring-3' : undefined}
+        style={animated ? { transformOrigin: '100px 100px' } : undefined} />
+
+      {/* Aura ring lines */}
+      <circle cx="100" cy="100" r="86" fill="none" stroke={glow.primary} strokeWidth="0.6" opacity="0.08" />
+      <circle cx="100" cy="100" r="76" fill="none" stroke={glow.primary} strokeWidth="0.4" opacity="0.06" />
+
+      <PearlBody id={id} />
+    </>
+  );
+}
+
+// ── Variant: Eternal Pearl ──
+
+function EternalPearl({ id, animated, stops, theme }) {
+  const glow = theme === 'light' ? LIGHT_GLOW : DARK_GLOW;
+  return (
+    <>
+      <defs>
+        <PearlDefs id={id} stops={stops} theme={theme} />
+        {/* Halo glow */}
+        <radialGradient id={`${id}-halo`} cx="50%" cy="50%" r="50%">
+          <stop offset="30%" stopColor={glow.primary} stopOpacity="0.18" />
+          <stop offset="50%" stopColor={glow.primary} stopOpacity="0.08" />
+          <stop offset="68%" stopColor={glow.secondary} stopOpacity="0.03" />
+          <stop offset="100%" stopColor="transparent" />
+        </radialGradient>
+        {/* Halo blur filter */}
+        <filter id={`${id}-haloBlur`}>
+          <feGaussianBlur stdDeviation="5" />
+        </filter>
+      </defs>
+
+      {/* Halo glow fill */}
+      <circle cx="100" cy="100" r="98" fill={`url(#${id}-halo)`}
+        className={animated ? 'aura-ring-1' : undefined}
+        style={animated ? { transformOrigin: '100px 100px' } : undefined} />
+
+      {/* Halo rings */}
+      <circle cx="100" cy="100" r="78" fill="none" stroke={glow.primary}
+        strokeWidth="5" opacity="0.04" filter={`url(#${id}-haloBlur)`} />
+      <circle cx="100" cy="100" r="78" fill="none" stroke={glow.primary}
+        strokeWidth="1" opacity="0.1" />
+      <circle cx="100" cy="100" r="70" fill="none" stroke={glow.primary}
+        strokeWidth="0.5" opacity="0.05" />
+
+      <PearlBody id={id} />
+
+      {/* Pearl edge light */}
+      <circle cx="100" cy="100" r="53.5" fill="none" stroke="white" strokeWidth="0.5" opacity="0.05" />
+    </>
+  );
+}
+
+// ── Variant: Aurora Pearl ──
+
+function AuroraPearl({ id, animated, stops, theme }) {
+  const glow = theme === 'light' ? LIGHT_GLOW : DARK_GLOW;
+  return (
+    <>
+      <defs>
+        <PearlDefs id={id} stops={stops} theme={theme} />
+        {/* Aura layers (same as living) */}
+        <radialGradient id={`${id}-aura1`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="transparent" />
+          <stop offset="65%" stopColor={glow.primary} stopOpacity="0.12" />
+          <stop offset="100%" stopColor="transparent" />
+        </radialGradient>
+        <radialGradient id={`${id}-aura2`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="transparent" />
+          <stop offset="60%" stopColor={glow.primary} stopOpacity="0.08" />
+          <stop offset="100%" stopColor="transparent" />
+        </radialGradient>
+        {/* Directional auras */}
+        <radialGradient id={`${id}-dir-purple`} cx="30%" cy="30%" r="40%">
+          <stop offset="0%" stopColor="#a78bfa" stopOpacity="0.1" />
+          <stop offset="100%" stopColor="transparent" />
+        </radialGradient>
+        <radialGradient id={`${id}-dir-teal`} cx="70%" cy="70%" r="40%">
+          <stop offset="0%" stopColor="#5eead4" stopOpacity="0.08" />
+          <stop offset="100%" stopColor="transparent" />
+        </radialGradient>
+        {/* Aurora bands on surface */}
+        <linearGradient id={`${id}-aurora1`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#c084fc" stopOpacity="0.2" />
+          <stop offset="33%" stopColor="#818cf8" stopOpacity="0.15" />
+          <stop offset="66%" stopColor="#2dd4bf" stopOpacity="0.1" />
+          <stop offset="100%" stopColor="#fbbf24" stopOpacity="0.06" />
+        </linearGradient>
+        <linearGradient id={`${id}-aurora2`} x1="100%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#f0abfc" stopOpacity="0.12" />
+          <stop offset="50%" stopColor="#a78bfa" stopOpacity="0.08" />
+          <stop offset="100%" stopColor="#67e8f9" stopOpacity="0.06" />
+        </linearGradient>
+      </defs>
+
+      {/* Aura layers */}
+      <circle cx="100" cy="100" r="96" fill={`url(#${id}-aura1)`}
+        className={animated ? 'aura-ring-1' : undefined}
+        style={animated ? { transformOrigin: '100px 100px' } : undefined} />
+      <circle cx="100" cy="100" r="90" fill={`url(#${id}-aura2)`}
+        className={animated ? 'aura-ring-2' : undefined}
+        style={animated ? { transformOrigin: '100px 100px' } : undefined} />
+
+      {/* Directional auras */}
+      <circle cx="100" cy="100" r="88" fill={`url(#${id}-dir-purple)`}
+        className={animated ? 'aura-ring-3' : undefined}
+        style={animated ? { transformOrigin: '100px 100px' } : undefined} />
+      <circle cx="100" cy="100" r="88" fill={`url(#${id}-dir-teal)`} />
+
+      {/* Aura ring lines */}
+      <circle cx="100" cy="100" r="86" fill="none" stroke={glow.primary} strokeWidth="0.6" opacity="0.08" />
+      <circle cx="100" cy="100" r="76" fill="none" stroke={glow.primary} strokeWidth="0.4" opacity="0.06" />
+
+      <PearlBody id={id} />
+
+      {/* Aurora bands over pearl surface */}
+      <circle cx="100" cy="100" r="56" fill={`url(#${id}-aurora1)`} />
+      <circle cx="100" cy="100" r="56" fill={`url(#${id}-aurora2)`} />
+
+      {/* Surface flow lines */}
+      <path d="M65,85 Q85,75 100,80 T135,90" fill="none" stroke="white" strokeWidth="0.5" opacity="0.05" />
+      <path d="M70,105 Q90,95 110,100 T140,108" fill="none" stroke="#c4b5fd" strokeWidth="0.4" opacity="0.04" />
+      <path d="M60,115 Q80,110 105,112 T145,118" fill="none" stroke="#67e8f9" strokeWidth="0.3" opacity="0.03" />
+    </>
+  );
+}
+
+// ── Variant: Cosmic Pearl ──
+
+const STAR_POINTS = [
+  { cx: 30, cy: 45, r: 0.6, o: 0.2 },
+  { cx: 155, cy: 35, r: 0.5, o: 0.15 },
+  { cx: 170, cy: 120, r: 0.8, o: 0.25 },
+  { cx: 25, cy: 140, r: 0.4, o: 0.12 },
+  { cx: 60, cy: 30, r: 0.7, o: 0.18 },
+  { cx: 145, cy: 165, r: 0.5, o: 0.1 },
+  { cx: 180, cy: 75, r: 0.6, o: 0.22 },
+  { cx: 40, cy: 170, r: 0.4, o: 0.13 },
+  { cx: 120, cy: 25, r: 0.5, o: 0.16 },
+  { cx: 15, cy: 90, r: 0.7, o: 0.2 },
+];
+
+function CosmicPearl({ id, animated, stops, theme }) {
+  const glow = theme === 'light' ? LIGHT_GLOW : DARK_GLOW;
+  return (
+    <>
+      <defs>
+        <PearlDefs id={id} stops={stops} theme={theme} />
+        {/* Nebula cloud blur */}
+        <filter id={`${id}-nebula`}>
+          <feGaussianBlur stdDeviation="10" />
+        </filter>
+        {/* Nebula gradients */}
+        <radialGradient id={`${id}-neb-purple`} cx="25%" cy="28%" r="35%">
+          <stop offset="0%" stopColor="#a78bfa" stopOpacity="0.15" />
+          <stop offset="100%" stopColor="transparent" />
+        </radialGradient>
+        <radialGradient id={`${id}-neb-indigo`} cx="75%" cy="68%" r="30%">
+          <stop offset="0%" stopColor="#818cf8" stopOpacity="0.12" />
+          <stop offset="100%" stopColor="transparent" />
+        </radialGradient>
+        <radialGradient id={`${id}-neb-pink`} cx="65%" cy="25%" r="28%">
+          <stop offset="0%" stopColor="#f0abfc" stopOpacity="0.1" />
+          <stop offset="100%" stopColor="transparent" />
+        </radialGradient>
+        <radialGradient id={`${id}-neb-teal`} cx="30%" cy="75%" r="25%">
+          <stop offset="0%" stopColor="#5eead4" stopOpacity="0.08" />
+          <stop offset="100%" stopColor="transparent" />
+        </radialGradient>
+      </defs>
+
+      {/* Nebula clouds */}
+      <circle cx="100" cy="100" r="98" fill={`url(#${id}-neb-purple)`} filter={`url(#${id}-nebula)`}
+        className={animated ? 'aura-ring-1' : undefined}
+        style={animated ? { transformOrigin: '100px 100px' } : undefined} />
+      <circle cx="100" cy="100" r="98" fill={`url(#${id}-neb-indigo)`} filter={`url(#${id}-nebula)`}
+        className={animated ? 'aura-ring-2' : undefined}
+        style={animated ? { transformOrigin: '100px 100px' } : undefined} />
+      <circle cx="100" cy="100" r="98" fill={`url(#${id}-neb-pink)`} filter={`url(#${id}-nebula)`}
+        className={animated ? 'aura-ring-3' : undefined}
+        style={animated ? { transformOrigin: '100px 100px' } : undefined} />
+      <circle cx="100" cy="100" r="98" fill={`url(#${id}-neb-teal)`} filter={`url(#${id}-nebula)`} />
+
+      {/* Star points */}
+      {STAR_POINTS.map((s, i) => (
+        <circle key={i} cx={s.cx} cy={s.cy} r={s.r} fill="white" opacity={s.o} />
+      ))}
+
+      {/* Pearl body (slightly smaller: r=52) */}
+      <circle cx="100" cy="100" r="52" fill={`url(#${id}-base)`} filter={`url(#${id}-shadow)`} />
+      <circle cx="100" cy="100" r="52" fill={`url(#${id}-iri-indigo)`} />
+      <circle cx="100" cy="100" r="52" fill={`url(#${id}-iri-pink)`} />
+      <circle cx="100" cy="100" r="52" fill={`url(#${id}-iri-teal)`} />
+      <circle cx="100" cy="100" r="52" fill={`url(#${id}-rim)`} />
+      <circle cx="100" cy="100" r="52" fill={`url(#${id}-sheen)`} />
+      {/* Highlight cluster */}
+      <ellipse cx="80" cy="76" rx="8" ry="6.5" fill="white" opacity="0.75" filter={`url(#${id}-hlBlur)`} />
+      <circle cx="76" cy="70" r="3.2" fill="white" opacity="0.9" />
+      <circle cx="72" cy="66" r="1.4" fill="white" opacity="0.6" />
+      <circle cx="118" cy="120" r="2.2" fill="white" opacity="0.1" />
+    </>
+  );
+}
+
+// ── Main Component ──
+
+export default function AuraPearl({ variant = 'living', size = 60, theme = 'dark', animated = false }) {
+  const uid = useRef(Math.random().toString(36).slice(2, 8)).current;
+  const id = `${variant}-${size}-${uid}`;
+  const stops = theme === 'light' ? LIGHT_STOPS : DARK_STOPS;
+  const props = { id, animated, stops, theme };
+
+  const variants = {
+    living: LivingPearl,
+    eternal: EternalPearl,
+    aurora: AuroraPearl,
+    cosmic: CosmicPearl,
+  };
+  const Variant = variants[variant] || LivingPearl;
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 200 200"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      style={{ display: 'block' }}
+    >
+      <Variant {...props} />
+    </svg>
+  );
+}

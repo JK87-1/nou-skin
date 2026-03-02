@@ -1,5 +1,5 @@
 /**
- * NOU Pixel Analysis Engine v3.1
+ * LUA Pixel Analysis Engine v3.1
  *
  * 10-METRIC SYSTEM:
  * ─ moisture, skinTone, trouble, oilBalance (v1)
@@ -31,12 +31,71 @@
 import { landmarksToRegions } from './LandmarkRegions.js';
 import { rgbToLab, labStats } from './ColorSpace.js';
 
+// ===== LIGHTING NORMALIZATION =====
+// Histogram equalization (Y channel) + gray-world white balance
+// Makes photos under different lighting conditions look similar to GPT-5.2
+
+function normalizeImageData(imageData) {
+  const data = imageData.data;
+  const len = data.length;
+
+  // 1. Convert RGB → YCbCr, collect Y histogram
+  const yVals = new Float32Array(len / 4);
+  const hist = new Int32Array(256);
+  for (let i = 0, j = 0; i < len; i += 4, j++) {
+    const r = data[i], g = data[i + 1], b = data[i + 2];
+    const y = 0.299 * r + 0.587 * g + 0.114 * b;
+    yVals[j] = y;
+    hist[Math.min(255, Math.round(y))]++;
+  }
+
+  // 2. Build CDF for histogram equalization
+  const pixelCount = len / 4;
+  const cdf = new Float32Array(256);
+  cdf[0] = hist[0];
+  for (let i = 1; i < 256; i++) cdf[i] = cdf[i - 1] + hist[i];
+  const cdfMin = cdf.find(v => v > 0);
+  const scale = 255 / (pixelCount - cdfMin);
+  const lut = new Uint8Array(256);
+  for (let i = 0; i < 256; i++) {
+    lut[i] = Math.max(0, Math.min(255, Math.round((cdf[i] - cdfMin) * scale)));
+  }
+
+  // 3. Gray-world white balance: compute average R, G, B
+  let avgR = 0, avgG = 0, avgB = 0;
+  for (let i = 0; i < len; i += 4) {
+    avgR += data[i];
+    avgG += data[i + 1];
+    avgB += data[i + 2];
+  }
+  avgR /= pixelCount;
+  avgG /= pixelCount;
+  avgB /= pixelCount;
+  const grayAvg = (avgR + avgG + avgB) / 3;
+  const scaleR = grayAvg / (avgR || 1);
+  const scaleG = grayAvg / (avgG || 1);
+  const scaleB = grayAvg / (avgB || 1);
+
+  // 4. Apply histogram equalization + white balance
+  for (let i = 0, j = 0; i < len; i += 4, j++) {
+    const oldY = yVals[j];
+    const newY = lut[Math.min(255, Math.round(oldY))];
+    const ratio = oldY > 0 ? newY / oldY : 1;
+
+    data[i]     = Math.min(255, Math.max(0, Math.round(data[i] * ratio * scaleR)));
+    data[i + 1] = Math.min(255, Math.max(0, Math.round(data[i + 1] * ratio * scaleG)));
+    data[i + 2] = Math.min(255, Math.max(0, Math.round(data[i + 2] * ratio * scaleB)));
+  }
+
+  return imageData;
+}
+
 // ===== IMAGE COMPRESSION =====
 // Deterministic: same input → same output guaranteed via
-// OffscreenCanvas + imageSmoothingEnabled:false + base64 memoization
+// OffscreenCanvas + imageSmoothingEnabled:false + lighting normalization + memoization
 const compressCache = new Map();
 
-export function compressImage(dataUrl, maxSize = 512, quality = 0.7) {
+export function compressImage(dataUrl, maxSize = 768, quality = 0.85) {
   // Memo: identical input always returns identical base64
   if (compressCache.has(dataUrl)) return Promise.resolve(compressCache.get(dataUrl));
 
@@ -48,35 +107,22 @@ export function compressImage(dataUrl, maxSize = 512, quality = 0.7) {
       if (w >= h) { h = Math.round((maxSize / w) * h); w = maxSize; }
       else { w = Math.round((maxSize / h) * w); h = maxSize; }
 
-      // Prefer OffscreenCanvas for deterministic rendering, fallback to Canvas
-      let ctx;
-      let canvas;
-      if (typeof OffscreenCanvas !== 'undefined') {
-        canvas = new OffscreenCanvas(w, h);
-        ctx = canvas.getContext('2d');
-      } else {
-        canvas = document.createElement('canvas');
-        canvas.width = w;
-        canvas.height = h;
-        ctx = canvas.getContext('2d');
-      }
+      // Use standard Canvas for normalization (need getImageData)
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
       ctx.imageSmoothingEnabled = false;
       ctx.drawImage(img, 0, 0, w, h);
 
-      if (canvas instanceof OffscreenCanvas) {
-        canvas.convertToBlob({ type: 'image/jpeg', quality }).then(blob => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            compressCache.set(dataUrl, reader.result);
-            resolve(reader.result);
-          };
-          reader.readAsDataURL(blob);
-        });
-      } else {
-        const result = canvas.toDataURL('image/jpeg', quality);
-        compressCache.set(dataUrl, result);
-        resolve(result);
-      }
+      // Apply lighting normalization (histogram eq + white balance)
+      const imageData = ctx.getImageData(0, 0, w, h);
+      normalizeImageData(imageData);
+      ctx.putImageData(imageData, 0, 0);
+
+      const result = canvas.toDataURL('image/jpeg', quality);
+      compressCache.set(dataUrl, result);
+      resolve(result);
     };
     img.onerror = () => resolve(dataUrl);
     img.src = dataUrl;
@@ -85,7 +131,7 @@ export function compressImage(dataUrl, maxSize = 512, quality = 0.7) {
 
 // ===== PHOTO QUALITY GATE =====
 // Checks brightness and sharpness before analysis to warn users about poor photos.
-export function checkPhotoQuality(dataUrl) {
+export function checkPhotoQuality(dataUrl, landmarks) {
   return new Promise(resolve => {
     const img = new Image();
     img.onload = () => {
@@ -121,14 +167,24 @@ export function checkPhotoQuality(dataUrl) {
       }
       const sharpness = lapCount > 0 ? lapSum / lapCount : 0;
 
+      // 3. Face size check (landmarks available)
+      let faceRatio = 0;
+      if (landmarks && landmarks.length >= 468) {
+        const earW = Math.abs(landmarks[234].x - landmarks[454].x);
+        const faceH = Math.abs(landmarks[10].y - landmarks[152].y);
+        faceRatio = earW * faceH;
+      }
+
       const issues = [];
       if (brightness < 50) issues.push('too_dark');
       if (brightness > 220) issues.push('too_bright');
       if (sharpness < 3) issues.push('blurry');
+      if (landmarks && landmarks.length >= 468 && faceRatio < 0.04) issues.push('face_too_small');
+      if (!landmarks || landmarks.length < 468) issues.push('no_face');
 
-      resolve({ passed: issues.length === 0, brightness, sharpness, issues });
+      resolve({ passed: issues.length === 0, brightness, sharpness, faceRatio, issues });
     };
-    img.onerror = () => resolve({ passed: true, brightness: 128, sharpness: 10, issues: [] });
+    img.onerror = () => resolve({ passed: true, brightness: 128, sharpness: 10, faceRatio: 0, issues: [] });
     img.src = dataUrl;
   });
 }
@@ -947,41 +1003,10 @@ export function pixelsToScores(px, mlAge = null) {
   else if (oilBalance >= 35 && oilBalance <= 55 && moisture >= 55) skinType = '중성';
   else skinType = '복합성';
 
-  // ── SKIN AGE (hybrid: ML age estimation + pixel penalty fine-tuning) ──
-  const baseSkinAge = 20;
-  const agePenalty = (score, weight) => {
-    const deficit = Math.max(0, (100 - score) / 100);
-    const intensity = score < 55 ? 1 : score < 75 ? 0.5 : 0.15;
-    return deficit * weight * intensity;
-  };
-  const penalties = {
-    wrinkle:       agePenalty(wrinkleScore, 8),
-    elasticity:    agePenalty(elasticityScore, 6),
-    texture:       agePenalty(textureScore, 3.5),
-    pore:          agePenalty(poreScore, 3),
-    pigmentation:  agePenalty(pigmentationScore, 3),
-    darkCircle:    agePenalty(dcScore, 2.5),
-    moisture:      agePenalty(moisture, 2.5),
-    skinTone:      agePenalty(skinTone, 2),
-    oil:           Math.abs(55 - oilBalance) / 55 * 1.5,
-    trouble:       agePenalty(Math.max(0, 100-troubleCount*8.5), 2),
-  };
-  const totalPenalty = Object.values(penalties).reduce((s,v) => s + Math.max(0,v), 0);
-
-  const allScores = [moisture, skinTone, Math.max(0,100-troubleCount*8.5), Math.max(30,100-Math.abs(55-oilBalance)*1.4), wrinkleScore, poreScore, elasticityScore, pigmentationScore, textureScore, dcScore];
-  const minScore = Math.min(...allScores);
-  const excellenceBonus = minScore > 75 ? -3 - (minScore-75)*0.08 : minScore > 60 ? -1 : 0;
-
-  let skinAge;
-  if (mlAge !== null) {
-    // ML age as anchor, pixel analysis for ±5 fine-tuning
-    // Average penalty ~5; deviation from average adjusts ML age
-    const pixelAdj = (totalPenalty - 5) * 0.3;
-    skinAge = clamp(mlAge + pixelAdj, 16, 58);
-  } else {
-    // Fallback: pixel-only calculation
-    skinAge = clamp(baseSkinAge + totalPenalty + excellenceBonus, 16, 58);
-  }
+  // ── SKIN AGE (derived from overallScore — unified across CV/API/Hybrid) ──
+  // 100점→18세, 0점→60세. overallScore와 항상 같은 방향으로 움직임.
+  // NOTE: skinAge is computed AFTER overallScore below, using a forward declaration.
+  let skinAge; // assigned after overallScore calculation
 
   // ── CONCERNS ──
   const troubleScoreVal = Math.max(0, 100-troubleCount*8.5);
@@ -1003,19 +1028,28 @@ export function pixelsToScores(px, mlAge = null) {
   const concerns = concernScores.filter(c => c.score > 4).slice(0,3).map(c => c.name);
   if (concerns.length < 2) concerns.push('수분관리', '피부결');
 
-  // ── OVERALL SCORE (10-metric weighted) ──
+  // ── OVERALL SCORE (10-metric weighted — unified across CV/API/Hybrid) ──
   const overallScore = clamp(
-    wrinkleScore      * 0.16 +
-    elasticityScore   * 0.13 +
+    wrinkleScore      * 0.13 +
+    elasticityScore   * 0.12 +
     moisture          * 0.12 +
-    textureScore      * 0.11 +
-    troubleScoreVal   * 0.10 +
+    textureScore      * 0.10 +
+    troubleScoreVal   * 0.08 +
     poreScore         * 0.10 +
-    pigmentationScore * 0.07 +
-    skinTone          * 0.07 +
-    dcScore           * 0.07 +
-    Math.max(30, oilScoreVal) * 0.07
+    pigmentationScore * 0.09 +
+    skinTone          * 0.09 +
+    dcScore           * 0.09 +
+    Math.max(30, oilScoreVal) * 0.08
   , 32, 96);
+
+  // ── CONDITION SCORE (실시간 컨디션 — 구조 지표 대비 컨디션 편차 반영) ──
+  // 컨디션 민감 5개 평균 vs 구조 5개 평균 → 차이를 증폭해 overallScore와 분리
+  const condAvg = (moisture + skinTone + dcScore + Math.max(30, oilScoreVal) + troubleScoreVal) / 5;
+  const structAvg = (wrinkleScore + elasticityScore + textureScore + poreScore + pigmentationScore) / 5;
+  const conditionScore = clamp(Math.round(condAvg + (condAvg - structAvg) * 1.8), 32, 96);
+
+  // ── SKIN AGE from overallScore ──
+  skinAge = Math.round(60 - (overallScore / 100) * 42);
 
   // ── ADVICE ──
   const metrics = [
@@ -1038,7 +1072,7 @@ export function pixelsToScores(px, mlAge = null) {
     skinAge, moisture, troubleCount, skinTone, oilBalance, skinType,
     wrinkleScore, poreScore, elasticityScore, pigmentationScore,
     textureScore, darkCircleScore: dcScore,
-    concerns: concerns.slice(0, 3), overallScore, advice, confidence,
+    concerns: concerns.slice(0, 3), overallScore, conditionScore, advice, confidence,
     _pixelData: px,
   };
 }
@@ -1057,40 +1091,335 @@ function isSkinPixel(r, g, b) {
 }
 
 // ===== ADVICE =====
+// Pick one random item from array (seed by day so same result within a day)
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
 function generateAdvice(weakKey, m) {
-  const map = {
-    moisture: m.moisture < 40
-      ? `수분도가 ${m.moisture}%로 많이 부족해요. 세라마이드·히알루론산 보습제를 아침저녁 꼼꼼히 바르고, 하루 2L 이상 수분을 섭취하세요. 장 건강이 피부 장벽을 강화해 수분 손실을 막아줍니다.`
-      : `수분도가 ${m.moisture}%로 약간 부족해요. 수분 에센스를 추가하고 미스트로 수시 보충하세요. 프로바이오틱스가 세라마이드 합성을 촉진합니다.`,
-    skinTone: m.skinTone < 50
-      ? `피부톤 균일도가 ${m.skinTone}점. 비타민C(15%) 세럼 + 나이아신아마이드(5%) 병행, SPF50+ 자외선 차단을 철저히 하세요.`
-      : `피부톤 ${m.skinTone}점. SPF50+ 자외선 차단제를 매일 사용하면 톤이 더 밝아질 거예요.`,
-    trouble: m.troubleCount > 7
-      ? `트러블 ${m.troubleCount}개로 피부과 상담을 권합니다. 시카·티트리 진정 케어를 병행하세요. 장내 유해균 감소가 여드름 47% 감소에 기여합니다.`
-      : `트러블 ${m.troubleCount}개. ${m.troubleCount>3?'BHA 각질 케어를 주 2회 해보세요.':'가벼운 수준이에요. 기본 루틴만 유지하세요.'}`,
-    oil: m.oilBalance > 70
-      ? `유분 ${m.oilBalance}%로 T존 기름기가 많아요. 수분 젤 보습제 + 나이아신아마이드 토너를 추천합니다.`
-      : `유분 ${m.oilBalance}%. ${m.oilBalance<35?'건조해요. 스쿠알란 오일을 추가하세요.':'양호해요. 현재 루틴을 유지하세요.'}`,
-    wrinkle: m.wrinkleScore < 50
-      ? `주름 점수 ${m.wrinkleScore}점. 레티놀(0.3~0.5%)을 저녁에 사용하고, SPF50+ 자외선 차단을 꼭 하세요. 비타민C가 콜라겐 생성을 촉진합니다. 장 건강이 좋으면 MMP가 억제됩니다.`
-      : `주름 점수 ${m.wrinkleScore}점. ${m.wrinkleScore<70?'레티놀을 주 2~3회 사용하고 보습에 신경 쓰세요.':'현재 관리를 유지하면서 자외선 차단을 지속하세요.'}`,
-    pore: m.poreScore < 50
-      ? `모공 점수 ${m.poreScore}점. 나이아신아마이드(10%) 세럼 + BHA 토너로 모공 속 피지를 관리하세요. 클레이 마스크도 주 1~2회 추천.`
-      : `모공 점수 ${m.poreScore}점. ${m.poreScore<70?'나이아신아마이드 세럼을 추가하면 모공이 조여질 거예요.':'양호해요. 기본 클렌징만 잘 하세요.'}`,
-    elasticity: m.elasticityScore < 50
-      ? `탄력 점수 ${m.elasticityScore}점. 펩타이드 크림이 콜라겐·엘라스틴 생성을 돕습니다. 얼굴 마사지도 효과적이에요. 장내 유익균이 항산화 효소를 활성화하여 탄력을 보호합니다.`
-      : `탄력 점수 ${m.elasticityScore}점. ${m.elasticityScore<70?'펩타이드 세럼을 저녁 루틴에 추가하세요.':'좋은 상태예요. 꾸준한 보습이 핵심이에요.'}`,
-    pigmentation: m.pigmentationScore < 50
-      ? `색소 점수 ${m.pigmentationScore}점. 알부틴·트라넥삼산 미백 세럼 + SPF50+ 차단제를 반드시 바르세요. 자외선이 가장 큰 원인이에요.`
-      : `색소 점수 ${m.pigmentationScore}점. ${m.pigmentationScore<70?'비타민C 세럼으로 예방하세요.':'맑은 피부예요. 자외선 차단만 꾸준히.'}`,
-    texture: m.textureScore < 50
-      ? `피부결 점수가 ${m.textureScore}점으로 표면이 거칠어요. AHA(글리콜산 5~8%) 각질 케어를 주 2회 하면 피부결이 매끄러워집니다. 저녁에 레티놀을 병행하면 세포 턴오버가 촉진돼요. 장 건강이 좋으면 각질 턴오버가 정상화됩니다.`
-      : `피부결 점수 ${m.textureScore}점. ${m.textureScore<70?'순한 AHA 토너를 주 1~2회 사용하면 더 매끄러워져요.':'피부결이 좋아요. 보습과 자외선 차단을 유지하세요.'}`,
-    darkCircle: m.dcScore < 50
-      ? `다크서클 점수가 ${m.dcScore}점으로 눈 밑이 어두워요. 비타민K + 카페인 함유 아이크림이 혈류 개선에 효과적이에요. 충분한 수면(7~8시간)이 가장 중요합니다. 장 건강이 세로토닌 생산을 돕고, 이는 멜라토닌 전환으로 수면 질을 높여줍니다.`
-      : `다크서클 점수 ${m.dcScore}점. ${m.dcScore<70?'아이크림을 꾸준히 사용하고 수면 시간을 확보하세요.':'눈 밑이 밝아요. 현재 컨디션을 유지하세요.'}`,
+  const month = new Date().getMonth() + 1;
+  const season = month <= 2 || month === 12 ? 'winter' : month <= 5 ? 'spring' : month <= 8 ? 'summer' : 'fall';
+  const seasonTip = {
+    winter: '겨울철 실내 난방은 피부 수분 증발을 2배 이상 가속시켜요.',
+    spring: '봄철 꽃가루와 미세먼지가 피부 장벽을 약화시킬 수 있어요.',
+    summer: '여름철 자외선이 가장 강해요. SPF50+ 차단제를 2시간마다 덧발라주세요.',
+    fall: '가을은 여름 자외선 데미지를 회복할 골든타임이에요.',
+  }[season];
+
+  // 2개의 가장 낮은 지표 찾기
+  const allMetrics = [
+    { key: 'moisture', val: m.moisture, label: '수분도' },
+    { key: 'skinTone', val: m.skinTone, label: '피부톤' },
+    { key: 'wrinkle', val: m.wrinkleScore, label: '주름' },
+    { key: 'pore', val: m.poreScore, label: '모공' },
+    { key: 'elasticity', val: m.elasticityScore, label: '탄력' },
+    { key: 'pigmentation', val: m.pigmentationScore, label: '색소' },
+    { key: 'texture', val: m.textureScore, label: '피부결' },
+    { key: 'darkCircle', val: m.dcScore, label: '다크서클' },
+  ].sort((a, b) => a.val - b.val);
+  const second = allMetrics[1];
+
+  const adviceMap = {
+    moisture: () => {
+      if (m.moisture < 30) return pick([
+        `수분도가 ${m.moisture}%로 심각하게 낮아요. 피부 장벽의 세라마이드·콜레스테롤·지방산 비율(3:1:1)이 무너져 경표피수분손실(TEWL)이 급증하는 상태예요. 세안 직후 30초 이내에 히알루론산 토너를 3겹 레이어링하고, 세라마이드 크림으로 밀봉하세요. ${seasonTip}`,
+        `수분 ${m.moisture}%는 피부가 보내는 SOS 신호예요. 각질층의 천연보습인자(NMF)가 부족하면 피부가 갈라지고 당겨요. 저분자 히알루론산 세럼을 축축한 피부에 바르고 세라마이드 크림으로 잠가주세요. 실내 습도 40~60%도 꼭 유지하세요.`,
+        `수분도 ${m.moisture}%예요. 피부 속 수분이 바닥난 상태라 즉각적인 보습이 필요해요. 세안 후 토너-에센스-크림 3단계를 빠르게 레이어링하고, 밤에는 슬리핑 마스크로 수분 증발을 차단하세요. ${seasonTip}`,
+      ]);
+      if (m.moisture < 50) return pick([
+        `수분도 ${m.moisture}%로 피부가 당기는 느낌이 있을 거예요. 히알루론산(저분자+고분자 혼합) 세럼을 세안 직후 축축한 피부에 바르면 수분 흡수가 300% 올라가요. 수면 중 수분 손실을 막으려면 저녁에 스쿠알란 오일을 마지막 단계로 추가하세요.`,
+        `수분 ${m.moisture}%로 보습이 좀 더 필요한 상태예요. 피부 pH가 약산성(4.5~5.5)을 유지해야 장벽이 건강해지는데, 지금은 수분 보충이 우선이에요. 토너를 3~5겹 얇게 레이어링한 후 크림으로 마무리하면 수분 유지력이 확 올라가요.`,
+        `수분도가 ${m.moisture}%예요. 세안 직후 3분 이내가 수분 흡수의 골든타임인데, 이때 수분 에센스를 충분히 발라주세요. 밤에 가습기를 틀거나 젖은 수건을 걸어두면 수면 중 수분 손실을 줄일 수 있어요.`,
+      ]);
+      return pick([
+        `수분도 ${m.moisture}%로 정상 범위이지만, ${m.oilBalance > 60 ? '유분 대비 수분이 부족한 수지 불균형 상태예요. 수분 젤 제형으로 유수분 밸런스를 맞추세요.' : '환절기에 수분이 빠르게 빠질 수 있어요. 미스트 + 크림 레이어링으로 수분 잠금막을 형성하세요.'}`,
+        `수분 ${m.moisture}%로 나쁘지 않아요. ${m.oilBalance > 60 ? '다만 유분이 높은 편이니 가벼운 수분 젤로 밸런스를 맞춰보세요.' : '지금 상태를 유지하려면 하루 1.5~2L 수분 섭취와 보습 크림을 꾸준히 바르세요.'}`,
+      ]);
+    },
+    skinTone: () => {
+      if (m.skinTone < 40) return pick([
+        `피부톤 균일도 ${m.skinTone}점으로 색 편차가 눈에 띄어요. 자외선에 의한 광노화 신호예요. L-아스코르빈산(비타민C) 15% 세럼을 아침에 바른 뒤, 반드시 SPF50+ 차단제로 마무리하세요. 저녁에는 나이아신아마이드 5%가 멜라닌 이동을 차단해 톤 개선에 효과적이에요.`,
+        `피부톤 ${m.skinTone}점으로 부위별 색 차이가 커요. 멜라닌이 불균일하게 분포된 상태인데, 아침 비타민C + 저녁 알부틴 조합이 가장 효과적이에요. 자외선 차단 없이는 미백 케어 효과가 반감되니 SPF50+는 필수예요.`,
+      ]);
+      if (m.skinTone < 60) return pick([
+        `피부톤 ${m.skinTone}점이에요. 볼과 이마 사이에 미세한 톤 차이가 감지됐어요. 비타민C + 비타민E + 페룰산 조합이 항산화 시너지를 8배까지 높여줘요. 꼭 자외선 차단제를 함께 사용해야 색소 재침착을 막을 수 있어요.`,
+        `피부톤 ${m.skinTone}점이에요. 부분적으로 칙칙한 톤이 보이는데, 나이아신아마이드 5% 세럼을 꾸준히 쓰면 멜라닌 이동이 차단돼요. 트라넥삼산 함유 제품도 색소 개선에 효과적이에요. 자외선 차단제는 2시간마다 덧발라주세요.`,
+      ]);
+      return pick([
+        `피부톤 ${m.skinTone}점으로 양호해요. 현재 톤을 유지하려면 매일 자외선 차단이 핵심이에요. 광노화가 피부 노화의 80%를 차지하거든요. 나이아신아마이드 토너를 꾸준히 쓰면 톤이 더 밝아질 수 있어요.`,
+        `피부톤 ${m.skinTone}점으로 안색이 균일한 편이에요. 이 상태를 오래 유지하려면 자외선 차단이 가장 중요해요. 흐린 날에도 UVA가 80% 통과하니 매일 차단제를 바르는 습관이 필요해요.`,
+      ]);
+    },
+    trouble: () => {
+      if (m.troubleCount > 10) return pick([
+        `트러블 ${m.troubleCount}개가 감지됐어요. 피부 마이크로바이옴 균형이 깨져 여드름균이 과잉 증식하는 상태예요. 살리실산(BHA) 2% 토너로 모공 속 피지를 녹이고, 시카(병풀추출물) 크림으로 진정시키세요. 약산성(pH 5.5) 클렌저로 장벽을 보호하면서 세안하세요.`,
+        `트러블 ${m.troubleCount}개로 피부가 예민해진 상태예요. 자극적인 스크럽은 피하고, BHA 2%를 주 3회 사용해 모공 속 노폐물을 녹여주세요. 티트리 오일 스팟 제품을 염증 부위에 국소 도포하면 빠르게 진정돼요.`,
+      ]);
+      if (m.troubleCount > 5) return pick([
+        `트러블 ${m.troubleCount}개로 중등도 수준이에요. 피지선 활동이 활발하면 모공이 막히면서 염증이 생겨요. BHA 각질 케어를 주 2회하고, 나이아신아마이드로 피지 조절하세요. 트러블 부위에 티트리 스팟 제품을 도포하면 빠르게 가라앉아요.`,
+        `트러블이 ${m.troubleCount}개 보여요. 클렌징이 충분하지 않거나 유분이 과다하면 생기기 쉬워요. 이중 세안으로 모공 속까지 깨끗이 하고, 순한 BHA 토너로 각질을 관리해보세요. 베개 커버도 자주 교체하면 도움돼요.`,
+      ]);
+      return pick([
+        `트러블 ${m.troubleCount}개로 ${m.troubleCount <= 2 ? '양호한 상태예요. 기본 클렌징과 보습만 잘 해주면 돼요.' : '경미한 수준이에요. 순한 BHA 토너를 주 1회 사용하면 예방에 도움돼요.'}`,
+        `트러블 ${m.troubleCount}개로 ${m.troubleCount <= 2 ? '깨끗한 상태예요. 현재 루틴을 유지하세요.' : '가벼운 수준이에요. 자극적인 터치는 피하고, 클렌징에 신경 쓰면 충분히 관리 가능해요.'}`,
+      ]);
+    },
+    oil: () => {
+      if (m.oilBalance > 75) return pick([
+        `유분 ${m.oilBalance}%로 T존 유분이 과다해요. 오히려 보습을 줄이면 피부가 더 많은 유분을 만들어요. 수분 젤 제형으로 충분히 보습하고, 나이아신아마이드 10% 토너가 피지 분비를 효과적으로 조절해요.`,
+        `유분이 ${m.oilBalance}%로 높은 편이에요. 피지선이 과활성화된 상태인데, 클레이 마스크를 주 2회 사용하고 가벼운 수분 에멀전으로 보습하세요. 나이아신아마이드가 피지를 최대 25% 줄여줘요.`,
+      ]);
+      if (m.oilBalance > 60) return pick([
+        `유분 ${m.oilBalance}%로 약간 높아요. 유수분 밸런스가 깨지면 모공이 넓어질 수 있어요. 가벼운 수분 에센스를 기본으로 깔고, 클레이 마스크를 주 1회 사용하면 피지 흡착에 도움돼요.`,
+        `유분이 ${m.oilBalance}%예요. T존 중심으로 번들거림이 있을 수 있는데, 부위별 보습을 다르게 하는 게 좋아요. T존은 가볍게, U존은 크림으로 충분히 보습하세요.`,
+      ]);
+      if (m.oilBalance < 35) return pick([
+        `유분 ${m.oilBalance}%로 피부가 많이 건조해요. 피지막이 부족하면 외부 자극에 취약해져요. 세안 후 스쿠알란 오일 2~3방울을 크림에 섞어 바르면 피지 대체 효과가 있어요.`,
+        `유분이 ${m.oilBalance}%로 낮아요. 피부 장벽이 약해질 수 있으니 크림 타입 보습제를 사용하고, 세안은 순한 밀크 클렌저로 해주세요. 오일 성분이 포함된 세럼도 도움돼요.`,
+      ]);
+      return pick([
+        `유분 ${m.oilBalance}%로 이상적인 밸런스예요. 현재 클렌징과 보습 루틴이 잘 맞고 있어요.`,
+        `유분 ${m.oilBalance}%로 유수분 밸런스가 좋아요. 이 상태를 유지하면 피부결과 모공 관리에도 긍정적이에요.`,
+      ]);
+    },
+    wrinkle: () => {
+      if (m.wrinkleScore < 35) return pick([
+        `주름 점수 ${m.wrinkleScore}점으로 눈가·이마·팔자 주름이 뚜렷해요. 진피층 콜라겐이 얇아진 상태예요. 레티놀 0.3%부터 시작해 저녁에 사용하고, 아침에는 비타민C 세럼 + SPF50+를 바르세요. 레티놀은 세포 턴오버를 28일 → 14일로 앞당겨 콜라겐 재생을 촉진해요.`,
+        `주름 ${m.wrinkleScore}점으로 관리가 필요해요. 엘라스틴이 변성되면 주름이 깊어지는데, 펩타이드(마트릭실 3000) + 레티놀 조합이 콜라겐 재생에 가장 효과적이에요. 자외선이 MMP를 활성화해 콜라겐을 파괴하므로 차단제는 필수예요.`,
+      ]);
+      if (m.wrinkleScore < 55) return pick([
+        `주름 점수 ${m.wrinkleScore}점이에요. 잔주름이 시작되는 단계로, 지금이 관리 골든타임이에요. 펩타이드(아르지릴린, 마트릭실) 세럼이 콜라겐 합성을 촉진해요. 자외선 차단제는 선택이 아닌 필수예요.`,
+        `주름 ${m.wrinkleScore}점으로 초기 잔주름이 보여요. 아데노신 함유 크림을 저녁에 바르고, 레티놀은 주 2회부터 천천히 시작하세요. 눈가에는 펩타이드 아이크림이 효과적이에요.`,
+      ]);
+      if (m.wrinkleScore < 70) return pick([
+        `주름 점수 ${m.wrinkleScore}점으로 눈가에 미세 잔주름이 보여요. 관리하면 충분히 개선 가능해요. 아데노신 아이크림을 저녁에 바르고, 보습 크림이 밤사이 피부 재생을 도와요.`,
+        `주름 ${m.wrinkleScore}점이에요. 가벼운 잔주름이 보이지만 지금부터 관리하면 충분해요. 레티놀을 주 2~3회 저녁에 사용하고, 수분 크림으로 피부 장벽을 강화하세요.`,
+      ]);
+      return pick([
+        `주름 점수 ${m.wrinkleScore}점으로 매끄러운 편이에요. ${m.elasticityScore < 60 ? '다만 탄력이 함께 관리되어야 주름 예방이 완성돼요. 펩타이드 크림을 추가해보세요.' : '현재 상태를 유지하려면 자외선 차단과 보습을 꾸준히 하세요.'}`,
+        `주름 ${m.wrinkleScore}점으로 잘 관리된 피부예요. ${m.elasticityScore < 60 ? '탄력 관리를 병행하면 더욱 효과적이에요.' : '지금 루틴을 꾸준히 유지하세요. SPF 차단이 노화 방지의 핵심이에요.'}`,
+      ]);
+    },
+    pore: () => {
+      if (m.poreScore < 40) return pick([
+        `모공 점수 ${m.poreScore}점으로 모공이 넓은 편이에요. 나이아신아마이드 10% 세럼이 피지를 25% 감소시키고 모공 탄력을 높여줘요. BHA 토너로 모공 속 노폐물을 녹이고, 클레이 마스크를 주 1~2회 병행하세요.`,
+        `모공 ${m.poreScore}점으로 모공 확장이 눈에 띄어요. 피지와 콜라겐 감소가 주원인인데, 이중 세안 후 BHA(살리실산) 2% 토너를 주 2~3회 사용하세요. 나이아신아마이드 세럼이 모공 조임에 효과적이에요.`,
+      ]);
+      if (m.poreScore < 60) return pick([
+        `모공 점수 ${m.poreScore}점이에요. 코 주변과 T존에 모공이 눈에 띄는데, 이중 세안으로 모공 속 피지를 깨끗이 제거하고, 나이아신아마이드 세럼으로 모공 조임 효과를 기대할 수 있어요.`,
+        `모공 ${m.poreScore}점이에요. 피지와 각질이 모공을 확장시킨 상태예요. 순한 BHA 토너를 주 1~2회 사용하고, 클레이 마스크로 피지를 흡착해주세요. 모공 수축 앰플도 도움돼요.`,
+      ]);
+      return pick([
+        `모공 점수 ${m.poreScore}점으로 양호해요. ${m.oilBalance > 60 ? '유분이 조금 높은 편이니 가벼운 BHA 토너를 주 1회 사용해보세요.' : '현재 클렌징 루틴을 유지하세요.'}`,
+        `모공 ${m.poreScore}점으로 깨끗한 편이에요. ${m.oilBalance > 60 ? '유분 관리를 병행하면 모공이 더 깨끗해질 수 있어요.' : '지금 루틴이 잘 맞고 있어요.'}`,
+      ]);
+    },
+    elasticity: () => {
+      if (m.elasticityScore < 40) return pick([
+        `탄력 점수 ${m.elasticityScore}점으로 피부 처짐이 진행되고 있어요. 펩타이드(마트릭실 3000, 아르지릴린) 크림을 아침저녁 바르고, 레티놀을 저녁에 병행하면 콜라겐 재생 시너지가 나요. 얼굴 리프팅 마사지를 하루 3분씩 하면 혈류 개선에 도움돼요.`,
+        `탄력 ${m.elasticityScore}점으로 진피층의 콜라겐·엘라스틴 그물이 약해진 상태예요. 펩타이드 세럼과 레티놀을 꾸준히 사용하면 콜라겐 합성이 촉진돼요. 설탕과 정제 탄수화물을 줄이면 당화 반응도 억제할 수 있어요.`,
+      ]);
+      if (m.elasticityScore < 60) return pick([
+        `탄력 점수 ${m.elasticityScore}점으로 약간의 처짐이 시작되는 단계예요. 펩타이드 세럼을 저녁 루틴에 추가하고, 항산화 성분(비타민C, 레스베라트롤)으로 콜라겐 분해를 막아주세요.`,
+        `탄력 ${m.elasticityScore}점이에요. 콜라겐이 서서히 줄어드는 단계인데, 지금부터 펩타이드와 레티놀을 시작하면 충분히 개선 가능해요. 충분한 수면과 단백질 섭취도 콜라겐 합성에 도움돼요.`,
+      ]);
+      return pick([
+        `탄력 점수 ${m.elasticityScore}점으로 탱탱한 편이에요. 이 상태를 오래 유지하려면 SPF 차단 + 항산화 세럼 + 펩타이드 크림 조합이 가장 효과적이에요.`,
+        `탄력 ${m.elasticityScore}점으로 피부가 탄탄해요. 꾸준한 자외선 차단과 펩타이드 크림이 이 상태를 유지하는 핵심이에요. 콜라겐이 풍부한 음식도 도움돼요.`,
+      ]);
+    },
+    pigmentation: () => {
+      if (m.pigmentationScore < 40) return pick([
+        `색소 점수 ${m.pigmentationScore}점으로 기미·잡티가 뚜렷해요. 아침에 비타민C 10~15% 세럼을 바른 뒤 SPF50+를 사용하고, 저녁에는 알부틴·트라넥삼산 함유 미백 세럼으로 멜라닌 생성을 차단하세요.`,
+        `색소 ${m.pigmentationScore}점으로 색소 침착이 눈에 띄어요. 멜라닌 과잉 생성 상태인데, 비타민C(아침) + 나이아신아마이드(저녁) 시간차 사용이 효과적이에요. 자외선 차단 없는 미백 케어는 의미가 없으니 SPF50+를 꼭 바르세요.`,
+      ]);
+      if (m.pigmentationScore < 60) return pick([
+        `색소 점수 ${m.pigmentationScore}점이에요. 부분적 색소 침착이 보이는데, 나이아신아마이드 5%가 멜라닌 이동을 차단하고, 비타민C가 만들어진 멜라닌을 환원시켜요. 이 두 성분을 시간차로 사용하면 시너지가 좋아요.`,
+        `색소 ${m.pigmentationScore}점이에요. 멜라닌이 표피에서 진피로 떨어지기 전에 관리하는 것이 핵심이에요. 트라넥삼산 + 알부틴 함유 세럼을 저녁에 사용하고, 아침에는 비타민C로 항산화 방어를 해주세요.`,
+      ]);
+      return pick([
+        `색소 점수 ${m.pigmentationScore}점으로 맑은 편이에요. 자외선 차단을 꾸준히 하면 이 상태를 유지할 수 있어요. ${season === 'summer' ? '여름철에는 모자와 차단제를 꼭 병행하세요.' : '흐린 날에도 UVA는 80% 이상 통과하므로 매일 차단제를 바르세요.'}`,
+        `색소 ${m.pigmentationScore}점으로 깨끗한 피부예요. 이 상태를 유지하려면 자외선 차단이 가장 중요해요. ${season === 'summer' ? '여름에는 SPF50+를 2시간마다 덧바르세요.' : '비타민C 세럼을 아침에 꾸준히 발라주면 예방 효과가 뛰어나요.'}`,
+      ]);
+    },
+    texture: () => {
+      if (m.textureScore < 40) return pick([
+        `피부결 점수 ${m.textureScore}점으로 표면이 거친 편이에요. 각질 턴오버가 늦어지면 죽은 세포가 쌓여 칙칙해져요. AHA(글리콜산 5~8%)를 주 2회 저녁에 사용하면 각질을 부드럽게 제거하고 세포 재생을 앞당겨요.`,
+        `피부결 ${m.textureScore}점으로 각질층이 두꺼워진 상태예요. 물리적 스크럽보다는 화학적 각질제거(AHA/PHA)가 안전해요. 주 2회 저녁에 사용하고, 나머지 날에는 수분 에센스로 피부를 촉촉하게 유지하세요.`,
+      ]);
+      if (m.textureScore < 60) return pick([
+        `피부결 점수 ${m.textureScore}점이에요. 미세한 요철이 있는데, 순한 AHA 토너를 주 1~2회 사용하고, 나머지 날에는 히알루론산 에센스로 각질을 부드럽게 유지하세요. 물리적 스크럽은 장벽을 손상시킬 수 있으니 피하세요.`,
+        `피부결 ${m.textureScore}점이에요. 각질층이 불균일하게 쌓인 결과인데, PHA 토너가 민감 피부에도 자극 없이 각질을 녹여줘요. 주 1~2회 저녁에 사용하면 피부결이 매끈해질 거예요.`,
+      ]);
+      return pick([
+        `피부결 점수 ${m.textureScore}점으로 매끄러운 편이에요. ${m.moisture < 50 ? '다만 수분이 부족하면 피부결이 나빠질 수 있으니 보습을 강화하세요.' : '현재 루틴을 유지하면서 부드러운 각질 케어를 주 1회 해보세요.'}`,
+        `피부결 ${m.textureScore}점으로 피부가 부드러워요. ${m.moisture < 50 ? '수분 보충을 더하면 피부결이 더 고와질 거예요.' : '이 상태를 유지하려면 순한 클렌징과 충분한 보습이 핵심이에요.'}`,
+      ]);
+    },
+    darkCircle: () => {
+      if (m.dcScore < 40) return pick([
+        `다크서클 점수 ${m.dcScore}점으로 눈 밑이 많이 어두워요. 눈가 피부는 두께가 0.5mm로 가장 얇아서 혈관이 비쳐 보여요. 비타민K가 혈액 순환을 개선하고, 카페인이 혈관을 수축시켜요. 레티놀 아이크림을 저녁에 바르면 장기적으로 개선돼요. 수면 7~8시간이 가장 중요해요.`,
+        `다크서클 ${m.dcScore}점이에요. 눈 밑 피부가 어두운 상태인데, 수면 부족·스트레스·혈류 정체가 주원인이에요. 카페인 아이크림을 아침에 부드럽게 두드려 바르고, 저녁에는 펩타이드 + 레티놀 아이크림으로 두께를 강화하세요. 차가운 수저 마사지도 즉각적으로 도움돼요.`,
+      ]);
+      if (m.dcScore < 60) return pick([
+        `다크서클 점수 ${m.dcScore}점이에요. 눈 밑에 그림자가 보이는데, 카페인 + 펩타이드 함유 아이크림을 아침저녁 두드려 바르세요. 차가운 스푼 마사지를 아침 1분간 하면 부기와 혈류 정체가 완화돼요.`,
+        `다크서클 ${m.dcScore}점이에요. 색소형·혈관형·구조형 중 어떤 타입인지에 따라 관리법이 다른데, 우선 충분한 수면과 카페인 아이크림으로 시작하세요. 비타민C 아이패치를 주 2~3회 사용하면 밝아지는 효과가 있어요.`,
+      ]);
+      return pick([
+        `다크서클 점수 ${m.dcScore}점으로 눈 밑이 밝은 편이에요. ${m.wrinkleScore < 60 ? '눈가 주름 관리를 함께 하면 더 좋아요. 펩타이드 아이크림을 추천해요.' : '충분한 수면과 가벼운 아이크림만으로 충분해요.'}`,
+        `다크서클 ${m.dcScore}점으로 눈가가 환한 편이에요. ${m.wrinkleScore < 60 ? '눈가 주름 예방을 위해 아이크림을 꾸준히 바르세요.' : '지금 컨디션을 유지하려면 7~8시간 수면이 가장 좋은 관리법이에요.'}`,
+      ]);
+    },
   };
-  return map[weakKey] || '수분 공급과 자외선 차단이 건강한 피부의 기본이에요.';
+
+  const mainAdvice = (adviceMap[weakKey] || (() => `현재 피부에서 가장 신경 쓸 부분은 ${weakKey}이에요.`))();
+
+  // 두 번째 약점 보조 조언
+  let subAdvice = '';
+  if (second && second.val < 60 && second.key !== weakKey) {
+    const subMap = {
+      moisture: `수분도(${m.moisture}%)도 함께 올려야 전체적인 피부 컨디션이 개선돼요.`,
+      skinTone: `피부톤(${m.skinTone}점)도 관리 포인트예요. 자외선 차단을 꼭 병행하세요.`,
+      wrinkle: `주름(${m.wrinkleScore}점)도 관리가 필요해요. 레티놀이나 펩타이드를 추가해보세요.`,
+      pore: `모공(${m.poreScore}점)도 함께 관리하면 좋아요. 나이아신아마이드가 도움돼요.`,
+      elasticity: `탄력(${m.elasticityScore}점)도 함께 올리면 시너지가 나요. 펩타이드 크림을 추천해요.`,
+      pigmentation: `색소(${m.pigmentationScore}점)도 관리해주세요. 비타민C + 자외선 차단 조합이 효과적이에요.`,
+      texture: `피부결(${m.textureScore}점)도 개선하면 좋아요. 순한 AHA 토너를 주 1회 추가하세요.`,
+      darkCircle: `다크서클(${m.dcScore}점)도 신경 쓰이는 부분이에요. 아이크림과 충분한 수면이 도움돼요.`,
+    };
+    subAdvice = ' ' + (subMap[second.key] || '');
+  }
+
+  return mainAdvice + subAdvice;
+}
+
+// ===== SMART ADVICE (uses final hybrid scores + change trends) =====
+
+// Comforting opener when scores drop — reassure user, prevent churn
+const COMFORT_MESSAGES = [
+  '피부는 컨디션에 따라 매일 변해요. 일시적인 변화는 자연스러운 거예요.',
+  '오늘 수치가 조금 내려갔지만, 꾸준히 관리하면 금방 회복돼요.',
+  '하루의 컨디션이 전부가 아니에요. 수면·스트레스·환경에 따라 충분히 달라질 수 있어요.',
+  '일시적인 변동은 누구에게나 있어요. 중요한 건 꾸준한 케어와 관심이에요.',
+  '오늘 결과가 조금 아쉽더라도 괜찮아요. 피부는 회복력이 뛰어나거든요.',
+  '수치가 내려갔을 때가 오히려 관리 효과를 극대화할 수 있는 기회예요.',
+];
+
+// Actionable recovery tips by declined metric
+const RECOVERY_TIPS = {
+  moisture: [
+    '수분이 떨어졌다면, 오늘 저녁 세안 후 히알루론산 토너를 2~3겹 레이어링해보세요.',
+    '수분 보충이 필요해요. 미스트를 수시로 뿌리고, 밤에 수분 크림을 두텁게 발라보세요.',
+    '실내 환기 후 건조해지기 쉬워요. 가습기를 켜고 수분 에센스를 충분히 발라주세요.',
+  ],
+  skinTone: [
+    '톤이 살짝 칙칙해졌다면, 비타민C 세럼을 내일 아침 꼭 챙겨 바르세요.',
+    '자외선 노출이 원인일 수 있어요. 차단제를 꼼꼼히 바르고, 나이아신아마이드로 톤을 관리하세요.',
+  ],
+  wrinkleScore: [
+    '수면 부족이나 건조함이 잔주름을 도드라지게 할 수 있어요. 오늘 밤 충분히 자고, 보습을 강화해보세요.',
+    '주름 수치는 보습만 잘 해줘도 바로 개선돼요. 수분 크림을 충분히 바르고 푹 쉬세요.',
+  ],
+  poreScore: [
+    '모공은 유분과 온도에 민감해요. 순한 클렌징 후 차가운 미스트로 모공을 조여주세요.',
+    '오늘 저녁 이중 세안으로 모공 속 노폐물을 깨끗이 제거해보세요.',
+  ],
+  elasticityScore: [
+    '탄력은 수분과 밀접해요. 보습을 강화하고, 펩타이드 크림을 저녁에 발라보세요.',
+    '충분한 수면과 단백질 섭취가 탄력 회복에 가장 효과적이에요.',
+  ],
+  pigmentationScore: [
+    '색소 변화는 자외선 영향이 커요. 내일부터 차단제를 더 꼼꼼히 발라주세요.',
+    '비타민C 세럼을 아침에 꾸준히 사용하면 색소 수치가 다시 올라갈 거예요.',
+  ],
+  textureScore: [
+    '피부결은 수분과 각질 상태에 따라 달라져요. 순한 보습 제품으로 피부를 진정시켜주세요.',
+    '거친 피부결은 스트레스나 수면 부족이 원인일 수 있어요. 오늘 밤 푹 쉬어보세요.',
+  ],
+  darkCircleScore: [
+    '다크서클은 수면과 직결돼요. 오늘 밤 7시간 이상 푹 자면 내일 눈에 띄게 달라질 거예요.',
+    '차가운 스푼이나 아이패치로 눈가를 5분만 진정시켜도 효과가 있어요.',
+  ],
+  oilBalance: [
+    '유분 변화는 날씨·식단·스트레스에 따라 달라져요. 수분 보습을 충분히 해주면 밸런스가 돌아와요.',
+    '유분이 변했다면, 가벼운 수분 젤로 유수분 밸런스를 맞춰보세요.',
+  ],
+};
+
+export function generateSmartAdvice(scores, changes) {
+  const m = {
+    moisture: scores.moisture,
+    skinTone: scores.skinTone,
+    troubleCount: scores.troubleCount,
+    oilBalance: scores.oilBalance,
+    wrinkleScore: scores.wrinkleScore,
+    poreScore: scores.poreScore,
+    elasticityScore: scores.elasticityScore,
+    pigmentationScore: scores.pigmentationScore,
+    textureScore: scores.textureScore,
+    dcScore: scores.darkCircleScore,
+    skinAge: scores.skinAge,
+  };
+
+  const metrics = [
+    { key:'moisture', val:m.moisture }, { key:'skinTone', val:m.skinTone },
+    { key:'wrinkle', val:m.wrinkleScore }, { key:'pore', val:m.poreScore },
+    { key:'elasticity', val:m.elasticityScore }, { key:'pigmentation', val:m.pigmentationScore },
+    { key:'texture', val:m.textureScore }, { key:'darkCircle', val:m.dcScore },
+  ];
+  const weakest = metrics.sort((a,b)=>a.val-b.val)[0];
+
+  const baseAdvice = generateAdvice(weakest.key, m);
+
+  if (!changes) return baseAdvice;
+
+  const improved = [];
+  const declined = [];
+  const metricLabels = {
+    skinAge: '피부나이', overallScore: '종합점수', moisture: '수분도',
+    skinTone: '피부톤', wrinkleScore: '주름', poreScore: '모공',
+    elasticityScore: '탄력', pigmentationScore: '색소', textureScore: '피부결',
+    darkCircleScore: '다크서클', oilBalance: '유분',
+  };
+
+  for (const [key, c] of Object.entries(changes)) {
+    if (Math.abs(c.diff) < 2) continue;
+    if (c.improved) {
+      improved.push({ text: `${metricLabels[key] || key} ${c.diff > 0 ? '+' : ''}${c.diff}`, key });
+    } else {
+      declined.push({ text: `${metricLabels[key] || key} ${c.diff > 0 ? '+' : ''}${c.diff}`, key });
+    }
+  }
+
+  if (improved.length === 0 && declined.length === 0) return baseAdvice;
+
+  let trend = '';
+
+  if (improved.length > 0) {
+    const phrases = [' 직전 대비 ', ' 지난 측정과 비교해 ', ' 이전 결과보다 '];
+    const ends = ['이 개선되고 있어요!', '이 좋아졌어요!', '이 올라갔어요!'];
+    trend += pick(phrases) + improved.slice(0, 3).map(d => d.text).join(', ') + pick(ends);
+  }
+
+  if (declined.length > 0) {
+    if (improved.length === 0) {
+      // All declined — lead with comfort
+      trend += ' ' + pick(COMFORT_MESSAGES);
+      // Add specific recovery tip for the most declined metric
+      const topDeclined = declined[0].key;
+      const tips = RECOVERY_TIPS[topDeclined];
+      if (tips) trend += ' ' + pick(tips);
+    } else {
+      // Mixed results — softer tone for declined part
+      const softTransitions = [
+        ' 반면 ', ' 다만 ',
+      ];
+      const softEnds = [
+        '은 내일 케어에 집중해보세요.', '은 오늘 저녁 관리로 충분히 회복할 수 있어요.', '은 조금만 신경 쓰면 금방 돌아올 거예요.',
+      ];
+      trend += pick(softTransitions) + declined.slice(0, 2).map(d => d.text).join(', ') + pick(softEnds);
+    }
+  }
+
+  return baseAdvice + trend;
 }
 
 // ===== DEMO =====

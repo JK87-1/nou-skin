@@ -1,91 +1,206 @@
 /**
  * HybridAnalysis.js — GPT-5.2 Vision AI skin analysis
  *
- * Calls the /api/analyze serverless endpoint with the photo only.
- * Uses perceptual image hashing for cache (similar photos → same scores).
+ * Baseline image comparison: first analysis saves a reference photo + scores.
+ * Subsequent analyses send both baseline & new photo to GPT for visual comparison.
  * Falls back to CV-only if AI call fails.
  */
 
-const AI_TIMEOUT_MS = 12000;
+const AI_TIMEOUT_MS = 60000; // 2 images + 3 parallel calls need more time
 
-// ===== PERCEPTUAL HASH CACHE =====
-// Similar images → same cache key → same scores (no API re-call)
-const CACHE_KEY = 'nou_ai_score_cache';
-const MAX_CACHE = 10;
+// ===== BASELINE STORAGE (primary + secondary) =====
+const PRIMARY_IMAGE_KEY = 'baselineImage';
+const PRIMARY_RESULT_KEY = 'baselineResult';
+const PRIMARY_TIMESTAMP_KEY = 'baselineTimestamp';
+const SECONDARY_RESULT_KEY = 'secondaryBaselineResult';
+const SECONDARY_TIMESTAMP_KEY = 'secondaryBaselineTimestamp';
+
+// Score keys used for client-side stabilization
+const STABILIZE_KEYS = [
+  'moisture', 'skinTone', 'troubleCount', 'oilBalance',
+  'wrinkles', 'pores', 'elasticity',
+  'pigmentation', 'texture', 'darkCircles',
+];
+
+export function getBaseline() {
+  try {
+    const image = localStorage.getItem(PRIMARY_IMAGE_KEY);
+    const resultStr = localStorage.getItem(PRIMARY_RESULT_KEY);
+    if (!image || !resultStr) return null;
+    const timestamp = parseInt(localStorage.getItem(PRIMARY_TIMESTAMP_KEY) || '0', 10);
+    return { image, result: JSON.parse(resultStr), timestamp };
+  } catch { return null; }
+}
+
+function getSecondaryBaseline() {
+  try {
+    const resultStr = localStorage.getItem(SECONDARY_RESULT_KEY);
+    if (!resultStr) return null;
+    const timestamp = parseInt(localStorage.getItem(SECONDARY_TIMESTAMP_KEY) || '0', 10);
+    return { result: JSON.parse(resultStr), timestamp };
+  } catch { return null; }
+}
+
+export function saveBaseline(image, result) {
+  try {
+    localStorage.setItem(PRIMARY_IMAGE_KEY, image);
+    localStorage.setItem(PRIMARY_RESULT_KEY, JSON.stringify(result));
+    localStorage.setItem(PRIMARY_TIMESTAMP_KEY, String(Date.now()));
+  } catch (e) { console.warn('Baseline save failed:', e); }
+}
+
+function saveSecondaryBaseline(result) {
+  try {
+    localStorage.setItem(SECONDARY_RESULT_KEY, JSON.stringify(result));
+    localStorage.setItem(SECONDARY_TIMESTAMP_KEY, String(Date.now()));
+  } catch (e) { console.warn('Secondary baseline save failed:', e); }
+}
 
 /**
- * Perceptual hash: downscale to 16x16 grayscale, compare each pixel to average.
- * Visually similar photos produce the same hash → cache hit.
+ * Gradually drift baseline toward current scores.
+ * newBaseline = 0.70 × old + 0.30 × current
  */
-function perceptualHash(base64Image) {
+function driftBaseline(baselineResult, currentScores) {
+  const drifted = { ...baselineResult };
+  for (const key of GPT_SCORE_KEYS) {
+    if (typeof currentScores[key] === 'number' && typeof baselineResult[key] === 'number') {
+      drifted[key] = Math.round(baselineResult[key] * 0.70 + currentScores[key] * 0.30);
+    }
+  }
+  return drifted;
+}
+
+/**
+ * Client-side stabilization for secondary (other person) scores.
+ * Same time-based allowed delta as server.
+ */
+function clientStabilize(scores, baseline, daysSince) {
+  const maxDelta = daysSince < 1 ? 0
+    : daysSince <= 2 ? 2
+    : daysSince <= 5 ? 4
+    : daysSince <= 7 ? 6
+    : daysSince <= 14 ? 9 : 12;
+
+  const stabilized = { ...scores };
+  for (const key of STABILIZE_KEYS) {
+    if (typeof scores[key] === 'number' && typeof baseline[key] === 'number') {
+      const diff = scores[key] - baseline[key];
+      stabilized[key] = baseline[key] + Math.max(-maxDelta, Math.min(maxDelta, diff));
+    }
+  }
+  return stabilized;
+}
+
+/**
+ * Check if two score sets belong to the same person (avgDiff < 15).
+ */
+function isSamePersonScores(a, b) {
+  let total = 0, count = 0;
+  for (const key of STABILIZE_KEYS) {
+    if (typeof a[key] === 'number' && typeof b[key] === 'number') {
+      total += Math.abs(a[key] - b[key]);
+      count++;
+    }
+  }
+  return count > 0 && (total / count) < 15;
+}
+
+export function clearBaseline() {
+  localStorage.removeItem(PRIMARY_IMAGE_KEY);
+  localStorage.removeItem(PRIMARY_RESULT_KEY);
+  localStorage.removeItem(PRIMARY_TIMESTAMP_KEY);
+  localStorage.removeItem(SECONDARY_RESULT_KEY);
+  localStorage.removeItem(SECONDARY_TIMESTAMP_KEY);
+}
+
+export function hasBaseline() {
+  return !!localStorage.getItem(PRIMARY_IMAGE_KEY);
+}
+
+// ===== FACE CROP =====
+function cropFace(base64Image, landmarks) {
+  if (!landmarks || landmarks.length < 10) return Promise.resolve(base64Image);
   return new Promise(resolve => {
     const img = new Image();
     img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = 16;
-      canvas.height = 16;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, 16, 16);
-      const data = ctx.getImageData(0, 0, 16, 16).data;
-
-      // Grayscale values
-      let sum = 0;
-      const grays = [];
-      for (let i = 0; i < data.length; i += 4) {
-        const g = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
-        grays.push(g);
-        sum += g;
+      const w = img.width, h = img.height;
+      let minX = 1, minY = 1, maxX = 0, maxY = 0;
+      for (const lm of landmarks) {
+        if (lm.x < minX) minX = lm.x;
+        if (lm.y < minY) minY = lm.y;
+        if (lm.x > maxX) maxX = lm.x;
+        if (lm.y > maxY) maxY = lm.y;
       }
-      const avg = sum / grays.length;
+      const padX = (maxX - minX) * 0.15;
+      const padY = (maxY - minY) * 0.15;
+      const sx = Math.max(0, Math.floor((minX - padX) * w));
+      const sy = Math.max(0, Math.floor((minY - padY) * h));
+      const sw = Math.min(w - sx, Math.ceil((maxX - minX + padX * 2) * w));
+      const sh = Math.min(h - sy, Math.ceil((maxY - minY + padY * 2) * h));
+      if (sw < 50 || sh < 50) { resolve(base64Image); return; }
 
-      // 256-bit hash: 1 if pixel > average, 0 otherwise
-      let hash = '';
-      for (const g of grays) hash += g > avg ? '1' : '0';
-      resolve('ph_' + hash);
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 512;
+      const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, 512, 512);
+      const cropped = canvas.toDataURL('image/jpeg', 0.7);
+      resolve(cropped.split(',')[1]);
     };
-    img.onerror = () => resolve(null);
+    img.onerror = () => resolve(base64Image);
     img.src = `data:image/jpeg;base64,${base64Image}`;
   });
 }
 
-function loadCache() {
-  try {
-    return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
-  } catch { return {}; }
-}
+// ===== KEY MAPPING =====
+// GPT returns new key names; map to old app keys for compatibility
+const KEY_MAP = {
+  wrinkles: 'wrinkleScore',
+  pores: 'poreScore',
+  elasticity: 'elasticityScore',
+  pigmentation: 'pigmentationScore',
+  texture: 'textureScore',
+  darkCircles: 'darkCircleScore',
+};
 
-function saveToCache(key, scores) {
-  try {
-    const cache = loadCache();
-    cache[key] = scores;
-    const keys = Object.keys(cache);
-    if (keys.length > MAX_CACHE) delete cache[keys[0]];
-    localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
-  } catch { /* quota exceeded — ignore */ }
-}
+// GPT score keys for baseline storage (skinAge computed server-side, not from GPT)
+const GPT_SCORE_KEYS = [
+  'skinAge', 'moisture', 'skinTone', 'oilBalance', 'troubleCount',
+  'wrinkles', 'pores', 'elasticity', 'pigmentation', 'texture',
+  'darkCircles', 'overallScore',
+];
 
 /**
- * Call the GPT-5.2 Vision AI endpoint (pure AI mode — no CV data sent).
- * Uses perceptual hash for caching: similar photos return cached scores.
+ * Call the GPT-5.2 Vision AI endpoint.
+ * - First analysis (no baseline): sends single image, saves baseline after success.
+ * - Subsequent: sends baseline image + new image for visual comparison.
+ *
  * @param {string} base64Image - Base64 encoded JPEG (without data: prefix)
- * @returns {object|null} AI scores object or null on failure
+ * @param {Array|null} landmarks - 468 normalized face landmarks from MediaPipe
+ * @returns {object|null} AI scores object (app keys) or null on failure
  */
-export async function callVisionAI(base64Image) {
-  // Perceptual hash: similar images → same cache key
-  const cacheKey = await perceptualHash(base64Image);
-  if (cacheKey) {
-    const cached = loadCache();
-    if (cached[cacheKey]) {
-      console.log('AI scores from perceptual cache (similar image)');
-      return cached[cacheKey];
-    }
-  }
+export async function callVisionAI(base64Image, landmarks) {
+  // Crop face region
+  const faceImage = await cropFace(base64Image, landmarks);
+
+  // Load baseline for comparison
+  const baseline = getBaseline();
+  const isFirstAnalysis = !baseline;
+
   try {
+    const body = { image: faceImage };
+    if (!isFirstAnalysis) {
+      body.baselineImage = baseline.image;
+      body.baselineResult = baseline.result;
+      body.baselineTimestamp = baseline.timestamp || 0;
+    }
+
     const resp = await Promise.race([
       fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: base64Image }),
+        body: JSON.stringify(body),
       }),
       new Promise((_, reject) =>
         setTimeout(() => reject(new Error('AI timeout')), AI_TIMEOUT_MS)
@@ -107,11 +222,11 @@ export async function callVisionAI(base64Image) {
 
     const parsed = JSON.parse(jsonMatch[0]);
 
-    // Validate required fields exist and are numbers
+    // Validate required fields (GPT returns 10 individual scores only)
     const requiredKeys = [
-      'moisture', 'skinTone', 'wrinkleScore', 'poreScore',
-      'elasticityScore', 'pigmentationScore', 'textureScore',
-      'darkCircleScore', 'skinAge',
+      'moisture', 'skinTone', 'wrinkles', 'pores',
+      'elasticity', 'pigmentation', 'texture',
+      'darkCircles',
     ];
     for (const key of requiredKeys) {
       if (typeof parsed[key] !== 'number') {
@@ -120,10 +235,82 @@ export async function callVisionAI(base64Image) {
       }
     }
 
-    // Cache successful result (persists in localStorage)
-    if (cacheKey) saveToCache(cacheKey, parsed);
+    // Baseline management
+    const isDifferentPerson = parsed.differentPerson === true;
+    if (isFirstAnalysis) {
+      // First ever analysis: save as primary baseline
+      const baselineScores = {};
+      for (const key of GPT_SCORE_KEYS) {
+        if (typeof parsed[key] === 'number') baselineScores[key] = parsed[key];
+      }
+      saveBaseline(faceImage, baselineScores);
+      console.log('Primary baseline saved (first analysis)');
+    } else if (isDifferentPerson) {
+      // Different person: stabilize via secondary baseline, never touch primary
+      const secondary = getSecondaryBaseline();
+      if (secondary && isSamePersonScores(parsed, secondary.result)) {
+        // Returning secondary person: client-side stabilize against their baseline
+        const daysSince = (Date.now() - secondary.timestamp) / 86400000;
+        const stabilized = clientStabilize(parsed, secondary.result, daysSince);
+        for (const key of STABILIZE_KEYS) {
+          if (typeof stabilized[key] === 'number') parsed[key] = stabilized[key];
+        }
+        // Recompute overallScore & skinAge from stabilized scores
+        const weights = {
+          wrinkles: 0.13, elasticity: 0.12, moisture: 0.12,
+          pores: 0.10, texture: 0.10, skinTone: 0.09,
+          pigmentation: 0.09, darkCircles: 0.09,
+          oilBalance: 0.08, troubleCount: 0.08,
+        };
+        let sum = 0;
+        for (const [k, w] of Object.entries(weights)) {
+          sum += (typeof parsed[k] === 'number' ? parsed[k] : 50) * w;
+        }
+        parsed.overallScore = Math.round(sum);
+        // Condition score (real-time: condition vs structural deviation amplified)
+        const cAvg = ((parsed.moisture ?? 50) + (parsed.skinTone ?? 50) + (parsed.darkCircles ?? 50) + (parsed.oilBalance ?? 50) + (parsed.troubleCount ?? 50)) / 5;
+        const sAvg = ((parsed.wrinkles ?? 50) + (parsed.elasticity ?? 50) + (parsed.texture ?? 50) + (parsed.pores ?? 50) + (parsed.pigmentation ?? 50)) / 5;
+        parsed.conditionScore = Math.max(32, Math.min(96, Math.round(cAvg + (cAvg - sAvg) * 1.8)));
+        const age = 60 - (parsed.overallScore / 100) * 42;
+        parsed.skinAge = Math.round(age);
+        // Drift secondary baseline (only once per day)
+        const secDate = new Date(secondary.timestamp).toISOString().slice(0, 10);
+        const secToday = new Date().toISOString().slice(0, 10);
+        if (secDate !== secToday) {
+          const drifted = driftBaseline(secondary.result, parsed);
+          saveSecondaryBaseline(drifted);
+          console.log('Secondary baseline drifted (new day)');
+        } else {
+          console.log('Same-day repeat: secondary baseline kept stable');
+        }
+      } else {
+        // New secondary person: save their scores
+        saveSecondaryBaseline(parsed);
+        console.log('Secondary baseline saved (new person)');
+      }
+    } else {
+      // Same primary person: drift primary baseline (only once per day)
+      const baselineDate = new Date(baseline.timestamp).toISOString().slice(0, 10);
+      const todayDate = new Date().toISOString().slice(0, 10);
+      if (baselineDate !== todayDate) {
+        // New day: drift baseline toward current scores
+        const drifted = driftBaseline(baseline.result, parsed);
+        saveBaseline(baseline.image, drifted);
+        console.log('Primary baseline drifted (new day)');
+      } else {
+        console.log('Same-day repeat: baseline kept stable');
+      }
+    }
 
-    return parsed;
+    // Map GPT keys → app keys for compatibility
+    const mapped = { ...parsed };
+    for (const [newKey, oldKey] of Object.entries(KEY_MAP)) {
+      if (typeof parsed[newKey] === 'number') {
+        mapped[oldKey] = parsed[newKey];
+      }
+    }
+
+    return mapped;
   } catch (e) {
     console.warn('AI analysis failed:', e.message || e);
     return null;
@@ -132,11 +319,7 @@ export async function callVisionAI(base64Image) {
 
 /**
  * Merge: AI 100% mode — GPT-5.2 scores used directly.
- * CV scores only used as fallback structure + overallScore calculation.
- *
- * @param {object} cv - CV-only scores (used for structure/fallback)
- * @param {object} ai - AI scores from GPT-5.2 Vision
- * @returns {object} Final result with AI scores
+ * CV scores only used as fallback structure.
  */
 export function hybridMerge(cv, ai) {
   const scoreKeys = [
@@ -145,38 +328,45 @@ export function hybridMerge(cv, ai) {
     'pigmentationScore', 'textureScore', 'darkCircleScore',
   ];
 
-  const result = { ...cv, analysisMode: 'ai' };
+  const result = { ...cv, analysisMode: 'hybrid' };
 
-  // Use AI scores directly (100%)
   for (const key of scoreKeys) {
     if (typeof ai[key] === 'number') {
       result[key] = Math.round(ai[key]);
     }
   }
 
+  // GPT returns troubleCount as 0-100 score; convert to raw count (0-20)
+  if (typeof ai.troubleCount === 'number') {
+    result.troubleCount = Math.max(0, Math.min(20, Math.round((100 - ai.troubleCount) / 8.5)));
+  }
+
   if (typeof ai.skinAge === 'number') {
     result.skinAge = Math.round(ai.skinAge);
   }
 
-  // Recalculate overallScore
-  const troubleScoreVal = Math.max(0, 100 - result.troubleCount * 8.5);
-  const oilScoreVal = 100 - Math.abs(55 - result.oilBalance) * 1.4;
-  result.overallScore = clamp(
-    result.wrinkleScore      * 0.16 +
-    result.elasticityScore   * 0.13 +
-    result.moisture          * 0.12 +
-    result.textureScore      * 0.11 +
-    troubleScoreVal          * 0.10 +
-    result.poreScore         * 0.10 +
-    result.pigmentationScore * 0.07 +
-    result.skinTone          * 0.07 +
-    result.darkCircleScore   * 0.07 +
-    Math.max(30, oilScoreVal) * 0.07,
-    32, 96
-  );
+  // overallScore: computed server-side from 10 metrics
+  if (typeof ai.overallScore === 'number') {
+    result.overallScore = Math.round(ai.overallScore);
+  }
+
+  // conditionScore: condition vs structural deviation amplified
+  const troubleVal = Math.max(0, 100 - (result.troubleCount || 0) * 8.5);
+  const oilVal = Math.max(30, 100 - Math.abs(55 - (result.oilBalance || 50)) * 1.4);
+  const cAvg = ((result.moisture || 50) + (result.skinTone || 50) + (result.darkCircleScore || 50) + oilVal + troubleVal) / 5;
+  const sAvg = ((result.wrinkleScore || 50) + (result.elasticityScore || 50) + (result.textureScore || 50) + (result.poreScore || 50) + (result.pigmentationScore || 50)) / 5;
+  result.conditionScore = clamp(Math.round(cAvg + (cAvg - sAvg) * 1.8), 32, 96);
+  console.log('[conditionScore]', { cAvg: cAvg.toFixed(1), sAvg: sAvg.toFixed(1), diff: (cAvg - sAvg).toFixed(1), conditionScore: result.conditionScore, overallScore: result.overallScore });
+
+  // Store AI analysis summary & details
+  if (ai.analysis) {
+    if (ai.analysis.summary) result.aiNotes = ai.analysis.summary;
+    if (ai.analysis.details) result.aiDetails = ai.analysis.details;
+  }
 
   if (ai.notes) result.aiNotes = ai.notes;
   if (typeof ai.confidence === 'number') result.confidence = ai.confidence;
+  if (ai.makeupDetected) result.makeupDetected = true;
 
   return result;
 }

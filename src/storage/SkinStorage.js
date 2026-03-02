@@ -1,19 +1,22 @@
 /**
- * NOU Skin Storage v1.0
- * 
+ * LUA Skin Storage v2.0
+ *
  * localStorage 기반 피부 기록 시스템
+ * - 하루 다중 측정 지원 (덮어쓰기 제거)
  * - 측정 결과 저장/조회/삭제
  * - 주간 변화 계산
+ * - 안정적 피부나이 (주간 평균)
  * - 동기부여 코멘트 생성
  * - 연속 측정 스트릭 관리
- * 
+ *
  * Phase 2에서 Supabase로 마이그레이션 시 이 인터페이스 유지
  */
 
 const STORAGE_KEY = 'nou_skin_records';
 const STREAK_KEY = 'nou_skin_streak';
 const THUMB_KEY = 'nou_skin_thumbs';
-const MAX_RECORDS = 52; // 1년치 주간 기록
+const COMPARISON_KEY = 'nou_comparison_photos';
+const MAX_RECORDS = 200; // 하루 3회 × 60일 ≈ 180
 
 function getLocalDateStr() {
   const d = new Date();
@@ -26,10 +29,8 @@ export function saveRecord(result) {
   const records = getRecords();
   const today = getLocalDateStr(); // YYYY-MM-DD
 
-  // 같은 날 기록이 있으면 최신으로 덮어쓰기
-  const existingIdx = records.findIndex(r => r.date === today);
-
   const record = {
+    id: Date.now(),
     date: today,
     timestamp: Date.now(),
     skinAge: result.skinAge,
@@ -44,15 +45,12 @@ export function saveRecord(result) {
     darkCircleScore: result.darkCircleScore,
     troubleCount: result.troubleCount,
     oilBalance: result.oilBalance,
+    conditionScore: result.conditionScore,
     skinType: result.skinType,
     concerns: result.concerns,
   };
 
-  if (existingIdx >= 0) {
-    records[existingIdx] = record;
-  } else {
-    records.push(record);
-  }
+  records.push(record);
 
   // 오래된 기록 제한
   if (records.length > MAX_RECORDS) {
@@ -64,7 +62,7 @@ export function saveRecord(result) {
     updateStreak(today);
     return true;
   } catch (e) {
-    console.warn('NOU: localStorage save failed', e);
+    console.warn('LUA: localStorage save failed', e);
     return false;
   }
 }
@@ -92,54 +90,46 @@ export function getRecordCount() {
   return getRecords().length;
 }
 
-export function deleteRecord(date) {
-  const records = getRecords().filter(r => r.date !== date);
+export function deleteRecord(id) {
+  // id 기반 삭제 (v2.0) — 하위 호환: 날짜 문자열이 들어오면 날짜 기준 삭제
+  const records = getRecords().filter(r =>
+    typeof id === 'number' ? r.id !== id : r.date !== id
+  );
   localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
 }
 
-export function clearAllRecords() {
+export async function clearAllRecords() {
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem(STREAK_KEY);
   localStorage.removeItem(THUMB_KEY);
+  // Clear IndexedDB photos
+  try {
+    const allPhotos = await getAllPhotosDB();
+    for (const date of Object.keys(allPhotos)) {
+      await deletePhotoDB(date);
+    }
+  } catch {}
 }
 
-// ===== THUMBNAIL STORAGE =====
+// ===== THUMBNAIL STORAGE (IndexedDB 고해상도) =====
+
+import { savePhotoDB, getPhotoDB, getAllPhotosDB, deletePhotoDB, resizeImage, migrateFromLocalStorage } from './PhotoDB';
 
 /**
- * 사진 축소 썸네일 생성 (80x80 JPEG, ~3-5KB)
- * localStorage에 저장하여 갤러리/여정에서 사용
+ * 고해상도 사진 저장 (512×512 JPEG → IndexedDB)
+ * 기존 200×200 localStorage 대신 IndexedDB 사용으로 용량 제한 해결
  */
-export function saveThumbnail(dateStr, imageDataUrl) {
+export async function saveThumbnail(dateStr, imageDataUrl) {
   if (!imageDataUrl) return;
   try {
-    const thumbs = JSON.parse(localStorage.getItem(THUMB_KEY) || '{}');
-    // Canvas로 80x80 리사이즈
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const size = 200;
-      canvas.width = size;
-      canvas.height = size;
-      const ctx = canvas.getContext('2d');
-      // 중앙 크롭
-      const s = Math.min(img.width, img.height);
-      const sx = (img.width - s) / 2;
-      const sy = (img.height - s) / 2;
-      ctx.drawImage(img, sx, sy, s, s, 0, 0, size, size);
-      thumbs[dateStr] = canvas.toDataURL('image/jpeg', 0.7);
-      // 오래된 썸네일 정리
-      const keys = Object.keys(thumbs).sort();
-      while (keys.length > MAX_RECORDS) {
-        delete thumbs[keys.shift()];
-      }
-      localStorage.setItem(THUMB_KEY, JSON.stringify(thumbs));
-    };
-    img.src = imageDataUrl;
+    const resized = await resizeImage(imageDataUrl, 512, 0.82);
+    await savePhotoDB(dateStr, resized);
   } catch (e) {
-    console.warn('NOU: thumbnail save failed', e);
+    console.warn('LUA: thumbnail save failed', e);
   }
 }
 
+/** @deprecated sync fallback — 마이그레이션 전 기존 데이터 읽기용 */
 export function getThumbnail(dateStr) {
   try {
     const thumbs = JSON.parse(localStorage.getItem(THUMB_KEY) || '{}');
@@ -149,6 +139,7 @@ export function getThumbnail(dateStr) {
   }
 }
 
+/** @deprecated sync fallback — 마이그레이션 전 기존 데이터 읽기용 */
 export function getAllThumbnails() {
   try {
     return JSON.parse(localStorage.getItem(THUMB_KEY) || '{}');
@@ -157,16 +148,154 @@ export function getAllThumbnails() {
   }
 }
 
+/**
+ * 비동기 전체 사진 조회 (IndexedDB + localStorage 폴백)
+ * @returns {Promise<Object>} { "YYYY-MM-DD": dataUrl }
+ */
+export async function getAllThumbnailsAsync() {
+  await migrateFromLocalStorage();
+  const idbPhotos = await getAllPhotosDB();
+  // localStorage 폴백 (마이그레이션 실패 시)
+  const lsPhotos = getAllThumbnails();
+  return { ...lsPhotos, ...idbPhotos };
+}
+
+/**
+ * 비동기 단일 사진 조회
+ */
+export async function getThumbnailAsync(dateStr) {
+  const idb = await getPhotoDB(dateStr);
+  if (idb) return idb;
+  return getThumbnail(dateStr);
+}
+
+// ===== COMPARISON PHOTOS (Before & After) =====
+
+export async function saveComparisonPhoto(imageDataUrl) {
+  if (!imageDataUrl) return;
+  try {
+    const existing = JSON.parse(localStorage.getItem(COMPARISON_KEY) || '{}');
+    const today = getLocalDateStr();
+    const hiRes = await resizeImage(imageDataUrl, 512, 0.82);
+    if (!existing.earliest) {
+      existing.earliest = { date: today, dataUrl: hiRes };
+    }
+    existing.latest = { date: today, dataUrl: hiRes };
+    try { localStorage.setItem(COMPARISON_KEY, JSON.stringify(existing)); } catch {}
+  } catch (e) {
+    console.warn('Comparison photo save failed:', e);
+  }
+}
+
+export async function getComparisonPhotos() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(COMPARISON_KEY) || '{}');
+    const records = getRecords();
+    if (records.length < 2) return null;
+
+    const firstRecord = records[0];
+    const lastRecord = records[records.length - 1];
+
+    // Before: comparison earliest > IndexedDB first > baseline image
+    let beforeImg = stored.earliest?.dataUrl;
+    let beforeDate = stored.earliest?.date || firstRecord.date;
+    if (!beforeImg) {
+      beforeImg = await getPhotoDB(firstRecord.date);
+      beforeDate = firstRecord.date;
+    }
+    if (!beforeImg) {
+      const baseline = localStorage.getItem('baselineImage');
+      if (baseline) {
+        beforeImg = baseline.startsWith('data:') ? baseline : `data:image/jpeg;base64,${baseline}`;
+        beforeDate = firstRecord.date;
+      }
+    }
+
+    // After: comparison latest > IndexedDB last
+    let afterImg = stored.latest?.dataUrl;
+    let afterDate = stored.latest?.date || lastRecord.date;
+    if (!afterImg) {
+      afterImg = await getPhotoDB(lastRecord.date);
+      afterDate = lastRecord.date;
+    }
+
+    if (!beforeImg || !afterImg) return null;
+    if (beforeDate === afterDate) return null;
+
+    return {
+      before: { date: beforeDate, dataUrl: beforeImg },
+      after: { date: afterDate, dataUrl: afterImg },
+    };
+  } catch {
+    return null;
+  }
+}
+
 // ===== TODAY HELPERS =====
 
 export function getTodayRecord() {
   const today = getLocalDateStr();
   const records = getRecords();
-  return records.find(r => r.date === today) || null;
+  // 오늘의 최신 기록 반환 (다중 측정 시 마지막)
+  const todayRecords = records.filter(r => r.date === today);
+  return todayRecords.length > 0 ? todayRecords[todayRecords.length - 1] : null;
+}
+
+export function getTodayRecords() {
+  const today = getLocalDateStr();
+  return getRecords().filter(r => r.date === today);
+}
+
+export function getRecordsByDate(dateStr) {
+  return getRecords().filter(r => r.date === dateStr);
 }
 
 export function hasTodayRecord() {
   return getTodayRecord() !== null;
+}
+
+// ===== STABLE SKIN AGE (주간 평균) =====
+
+/**
+ * 최근 7일 기록의 skinAge EMA 가중 평균
+ * 하루 내 다중 측정은 해당 일의 평균을 사용
+ * 기록이 1개면 해당 값 그대로 반환
+ */
+export function getStableSkinAge() {
+  const records = getRecords();
+  if (records.length === 0) return null;
+  if (records.length === 1) return records[0].skinAge;
+
+  const now = new Date();
+  const sevenDaysAgo = new Date(now);
+  sevenDaysAgo.setDate(now.getDate() - 7);
+  const cutoff = sevenDaysAgo.toISOString().slice(0, 10);
+
+  // 최근 7일 기록 필터링
+  const recentRecords = records.filter(r => r.date >= cutoff);
+  if (recentRecords.length === 0) {
+    // 7일 내 기록 없으면 최신 기록 사용
+    return records[records.length - 1].skinAge;
+  }
+
+  // 날짜별 평균 skinAge 계산
+  const dailyAvg = {};
+  for (const r of recentRecords) {
+    if (!dailyAvg[r.date]) dailyAvg[r.date] = { sum: 0, count: 0 };
+    dailyAvg[r.date].sum += r.skinAge;
+    dailyAvg[r.date].count++;
+  }
+
+  const dailyValues = Object.keys(dailyAvg).sort().map(d =>
+    Math.round(dailyAvg[d].sum / dailyAvg[d].count)
+  );
+
+  // EMA (alpha=0.4)
+  let ema = dailyValues[0];
+  for (let i = 1; i < dailyValues.length; i++) {
+    ema = 0.4 * dailyValues[i] + 0.6 * ema;
+  }
+  return Math.round(ema);
 }
 
 // ===== STREAK (연속 측정) =====
@@ -240,6 +369,7 @@ export function getChanges() {
     { key: 'textureScore',      label: '피부결',    unit: '점',  icon: '🧴' },
     { key: 'darkCircleScore',   label: '다크서클',  unit: '점',  icon: '👁️' },
     { key: 'oilBalance',        label: '유분',      unit: '%',   icon: '🫧' },
+    { key: 'troubleCount',      label: '트러블',    unit: '개',  icon: '🔴', inverse: true },
   ];
 
   const changes = {};
@@ -247,7 +377,7 @@ export function getChanges() {
     const prevVal = prev[m.key] ?? 0;
     const currVal = curr[m.key] ?? 0;
     const diff = currVal - prevVal;
-    // inverse: 피부나이는 줄어야 개선
+    // inverse: 피부나이, 트러블은 줄어야 개선
     const improved = m.inverse ? diff < 0 : diff > 0;
     changes[m.key] = { ...m, prev: prevVal, curr: currVal, diff, improved };
   }
@@ -276,6 +406,7 @@ export function getSmoothedChanges(alpha = 0.4) {
     { key: 'textureScore',      label: '피부결',    unit: '점',  icon: '🧴' },
     { key: 'darkCircleScore',   label: '다크서클',  unit: '점',  icon: '👁️' },
     { key: 'oilBalance',        label: '유분',      unit: '%',   icon: '🫧' },
+    { key: 'troubleCount',      label: '트러블',    unit: '개',  icon: '🔴', inverse: true },
   ];
 
   const changes = {};
@@ -509,7 +640,7 @@ export function generateShareText(result) {
   const streak = getStreak();
   const changes = getChanges();
 
-  let text = `🧬 NOU 피부 나이: ${result.skinAge}세 (종합 ${result.overallScore}점)`;
+  let text = `🧬 LUA 피부 나이: ${result.skinAge}세 (종합 ${result.overallScore}점)`;
 
   if (changes && changes.skinAge.diff !== 0) {
     const diff = changes.skinAge.diff;

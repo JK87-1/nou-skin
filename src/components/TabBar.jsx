@@ -1,7 +1,9 @@
-export default function TabBar({ activeTab, onTabChange, onMeasure }) {
-  const c = (active) => active ? '#FF8C42' : '#c4b0a0';
+import AuraPearl from './icons/AuraPearl';
 
-  const tabs = [
+export default function TabBar({ activeTab, onTabChange, onMeasure }) {
+  const c = (active) => active ? '#a78bfa' : '#8888a0';
+
+  const leftTabs = [
     {
       key: 'home',
       label: '홈',
@@ -12,29 +14,20 @@ export default function TabBar({ activeTab, onTabChange, onMeasure }) {
       ),
     },
     {
-      key: 'routine',
-      label: '루틴',
+      key: 'consult',
+      label: '상담',
       icon: (active) => (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <rect x="3.5" y="3.5" width="17" height="17" rx="3.5" stroke={c(active)} strokeWidth="1.5" />
-          <path d="M7.5 11.5l3 3 6-6" stroke={c(active)} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <svg width="22" height="22" viewBox="0 0 24 24" fill={active ? c(active) : 'none'} fillOpacity={active ? 0.15 : 0}>
+          <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"
+            stroke={c(active)} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       ),
     },
+  ];
+
+  const rightTabs = [
     {
       key: 'history',
-      label: '앨범',
-      icon: (active) => (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <rect x="3" y="3" width="8" height="8" rx="2.5" stroke={c(active)} strokeWidth="1.5" />
-          <rect x="13" y="3" width="8" height="8" rx="2.5" stroke={c(active)} strokeWidth="1.5" />
-          <rect x="3" y="13" width="8" height="8" rx="2.5" stroke={c(active)} strokeWidth="1.5" />
-          <rect x="13" y="13" width="8" height="8" rx="2.5" stroke={c(active)} strokeWidth="1.5" />
-        </svg>
-      ),
-    },
-    {
-      key: 'analyze',
       label: '기록',
       icon: (active) => (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -55,40 +48,37 @@ export default function TabBar({ activeTab, onTabChange, onMeasure }) {
     },
   ];
 
+  const renderTab = (tab) => (
+    <div key={tab.key} style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+      <button
+        className={`tab-bar-item${activeTab === tab.key ? ' active' : ''}`}
+        onClick={() => onTabChange(tab.key)}
+      >
+        {tab.icon(activeTab === tab.key)}
+        <span className="tab-bar-label">{tab.label}</span>
+      </button>
+    </div>
+  );
+
   return (
     <nav className="tab-bar">
-      {tabs.map((tab) => (
-        <div key={tab.key} style={{ flex: 1, position: 'relative', display: 'flex', justifyContent: 'center' }}>
-          {/* Floating + button above album tab */}
-          {tab.key === 'history' && activeTab === 'history' && onMeasure && (
-            <div
-              onClick={(e) => { e.stopPropagation(); onMeasure(); }}
-              style={{
-                position: 'absolute', top: -52,
-                width: 44, height: 44, borderRadius: '50%',
-                background: 'rgba(255,255,255,0.6)',
-                backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255,255,255,0.5)',
-                boxShadow: '0 4px 20px rgba(196,112,90,0.2), inset 0 1px 1px rgba(255,255,255,0.5)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', zIndex: 10,
-                animation: 'popIn 0.3s ease',
-              }}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <path d="M12 5v14M5 12h14" stroke="#c4705a" strokeWidth="2.5" strokeLinecap="round" />
-              </svg>
-            </div>
-          )}
-          <button
-            className={`tab-bar-item${activeTab === tab.key ? ' active' : ''}`}
-            onClick={() => onTabChange(tab.key)}
-          >
-            {tab.icon(activeTab === tab.key)}
-            <span className="tab-bar-label">{tab.label}</span>
-          </button>
+      {leftTabs.map(renderTab)}
+
+      {/* Center Scan Button */}
+      <div style={{ flex: 1, display: 'flex', justifyContent: 'center', position: 'relative' }}>
+        <div
+          onClick={(e) => { e.stopPropagation(); onMeasure?.(); }}
+          style={{
+            position: 'absolute', top: -24,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', zIndex: 10,
+          }}
+        >
+          <AuraPearl variant="living" size={52} animated />
         </div>
-      ))}
+      </div>
+
+      {rightTabs.map(renderTab)}
     </nav>
   );
 }

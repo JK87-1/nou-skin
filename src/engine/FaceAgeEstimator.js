@@ -76,3 +76,10 @@ export async function estimateAge(imgElement) {
     return null;
   }
 }
+
+/**
+ * Eagerly start downloading models in the background.
+ */
+export function preload() {
+  ensureModels();
+}

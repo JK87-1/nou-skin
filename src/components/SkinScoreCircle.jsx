@@ -32,9 +32,9 @@ export default function SkinScoreCircle({ score, change, onTap }) {
         }}>
           <defs>
             <linearGradient id="homeScoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#c4705a" stopOpacity="0.15" />
-              <stop offset="50%" stopColor="#d4856c" stopOpacity="0.08" />
-              <stop offset="100%" stopColor="#c4705a" stopOpacity="0.15" />
+              <stop offset="0%" stopColor="#9080c8" stopOpacity="0.15" />
+              <stop offset="50%" stopColor="#a78bfa" stopOpacity="0.08" />
+              <stop offset="100%" stopColor="#818cf8" stopOpacity="0.15" />
             </linearGradient>
           </defs>
           <circle cx="70" cy="70" r="65" fill="none" stroke="url(#homeScoreGrad)" strokeWidth="2"
@@ -45,11 +45,12 @@ export default function SkinScoreCircle({ score, change, onTap }) {
         <svg width="140" height="140" style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}>
           <defs>
             <linearGradient id="homeProgressGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#c4705a" />
-              <stop offset="100%" stopColor="#d4856c" />
+              <stop offset="0%" stopColor="#9080c8" />
+              <stop offset="50%" stopColor="#a78bfa" />
+              <stop offset="100%" stopColor="#818cf8" />
             </linearGradient>
           </defs>
-          <circle cx="70" cy="70" r={radius} fill="none" stroke="rgba(196,112,90,0.08)" strokeWidth="8" />
+          <circle cx="70" cy="70" r={radius} fill="none" stroke="rgba(167,139,250,0.06)" strokeWidth="8" />
           <circle cx="70" cy="70" r={radius} fill="none" stroke="url(#homeProgressGrad)" strokeWidth="8"
             strokeLinecap="round"
             strokeDasharray={circumference} strokeDashoffset={offset}
@@ -60,12 +61,14 @@ export default function SkinScoreCircle({ score, change, onTap }) {
         <div style={{
           position: 'absolute', inset: 0,
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          background: 'radial-gradient(circle, rgba(167,139,250,0.04) 0%, transparent 60%)',
+          borderRadius: '50%',
         }}>
           <span style={{
-            fontSize: 38, fontWeight: 300, color: '#5a4a40', lineHeight: 1,
-            fontFamily: "'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif",
+            fontSize: 38, fontWeight: 300, color: '#f0f0f5', lineHeight: 1,
+            fontFamily: "'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif",
           }}>{score}</span>
-          <span style={{ fontSize: 10, color: '#a89888', marginTop: 4, letterSpacing: 1 }}>skin score</span>
+          <span style={{ fontSize: 10, color: '#8888a0', marginTop: 4, letterSpacing: 1 }}>skin score</span>
         </div>
       </div>
 
@@ -74,7 +77,7 @@ export default function SkinScoreCircle({ score, change, onTap }) {
         <div style={{
           marginTop: 10,
           fontSize: 12, fontWeight: 600,
-          color: change > 0 ? '#8aad8c' : '#d4a040',
+          color: change > 0 ? '#4ade80' : '#fbbf24',
         }}>
           지난주 대비 {change > 0 ? '+' : ''}{change}점
         </div>

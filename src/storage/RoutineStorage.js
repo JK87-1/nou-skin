@@ -1,5 +1,5 @@
 /**
- * NOU Routine Storage v1.0
+ * LUA Routine Storage v1.0
  *
  * localStorage 기반 루틴 체크리스트 시스템
  * - 모닝/나이트 루틴 체크 상태 관리
