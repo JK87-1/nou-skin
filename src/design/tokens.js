@@ -4,40 +4,40 @@
 const COLORS = {
   // 배경
   bg: {
-    primary: '#0a0a0f',
-    secondary: '#111118',
+    primary: '#000000',
+    secondary: '#08080c',
     card: 'rgba(255,255,255,0.03)',
     cardHover: 'rgba(255,255,255,0.05)',
     cardBorder: 'rgba(255,255,255,0.06)',
     elevated: 'rgba(255,255,255,0.04)',
   },
 
-  // 진주 컬러 팔레트 (Pearl Palette)
+  // 진주 컬러 팔레트 (Lemon-Mango-Peach)
   pearl: {
-    lightest: '#ede4ff',
-    light: '#d4c8f0',
-    mid: '#b0a0d8',
-    deep: '#9080c8',
-    darker: '#6858a8',
-    darkest: '#483090',
+    lightest: '#FFF9D0',  // 레몬 크림
+    light: '#FFE566',     // 레몬
+    mid: '#FFD060',       // 레몬-망고
+    deep: '#FFB347',      // 망고
+    darker: '#FFA870',    // 망고-피치
+    darkest: '#F08050',   // 딥 피치
   },
 
   // 이리데선트 악센트 (진주 표면에서 비치는 색)
   iridescent: {
-    indigo: '#818cf8',
-    purple: '#a78bfa',
-    pink: '#f0abfc',
-    teal: '#5eead4',
-    gold: '#fbbf24',
+    indigo: '#FFD060',    // 망고 옐로
+    purple: '#FFB347',    // 망고
+    pink: '#FFA870',      // 피치
+    teal: '#FFE566',      // 레몬
+    gold: '#FFCC44',      // 골드 레몬
   },
 
   // 오라 발광
   glow: {
-    primary: '#a78bfa',
-    secondary: '#c4b5fd',
-    subtle: '#e0e7ff',
-    pink: '#f0abfc',
-    teal: '#5eead4',
+    primary: '#FFB347',   // 망고
+    secondary: '#FFD88A', // 라이트 망고
+    subtle: '#FFF9D0',    // 레몬 크림
+    pink: '#FFA870',      // 피치
+    teal: '#FFE566',      // 레몬
   },
 
   // 텍스트
@@ -46,13 +46,13 @@ const COLORS = {
     secondary: '#e0e0e8',
     muted: '#8888a0',
     dim: '#555568',
-    accent: '#a78bfa',
+    accent: '#FFB347',    // 망고
   },
 
   // 시맨틱
   semantic: {
     success: '#34d399',
-    warning: '#fbbf24',
+    warning: '#FFD060',   // 레몬-망고
     danger: '#ef4444',
     info: '#38bdf8',
   },
@@ -74,28 +74,28 @@ const GRADIENTS = {
   },
 
   // 버튼/활성 상태
-  pearlButton: 'linear-gradient(135deg, #9080c8, #6858a8, #483090)',
-  pearlButtonHover: 'linear-gradient(135deg, #b0a0d8, #9080c8, #6858a8)',
+  pearlButton: 'linear-gradient(135deg, #FFD060, #FFB347, #F08050)',
+  pearlButtonHover: 'linear-gradient(135deg, #FFE566, #FFD060, #FFB347)',
 
   // 카드 배경 오라
-  cardGlow: 'radial-gradient(ellipse at 50% 0%, rgba(167,139,250,0.06) 0%, transparent 70%)',
+  cardGlow: 'radial-gradient(ellipse at 50% 0%, rgba(255,179,71,0.06) 0%, transparent 70%)',
 
   // 탭바
   tabBarBg: 'linear-gradient(180deg, rgba(10,10,15,0) 0%, rgba(10,10,15,0.95) 20%)',
 
   // 활성 상태 이리데선트
-  activeGlow: 'linear-gradient(135deg, rgba(167,139,250,0.15), rgba(129,140,248,0.08))',
-  activeBorder: '1px solid rgba(167,139,250,0.2)',
+  activeGlow: 'linear-gradient(135deg, rgba(255,179,71,0.15), rgba(255,216,138,0.08))',
+  activeBorder: '1px solid rgba(255,179,71,0.2)',
 
   // 배경 오라 (페이지 배경에 깔리는 은은한 빛)
-  bgAura: 'radial-gradient(ellipse at 50% 20%, rgba(167,139,250,0.06) 0%, rgba(129,140,248,0.03) 40%, transparent 70%)',
+  bgAura: 'radial-gradient(ellipse at 50% 20%, rgba(255,179,71,0.06) 0%, rgba(255,216,138,0.03) 40%, transparent 70%)',
 };
 
 const SHADOWS = {
-  pearl: '0 4px 20px rgba(109,40,217,0.2)',
-  pearlStrong: '0 8px 32px rgba(109,40,217,0.3)',
-  glow: '0 0 20px rgba(167,139,250,0.15)',
-  glowStrong: '0 0 40px rgba(167,139,250,0.25)',
+  pearl: '0 4px 20px rgba(240,128,80,0.2)',
+  pearlStrong: '0 8px 32px rgba(240,128,80,0.3)',
+  glow: '0 0 20px rgba(255,179,71,0.15)',
+  glowStrong: '0 0 40px rgba(255,179,71,0.25)',
   card: '0 2px 12px rgba(0,0,0,0.2)',
 };
 
