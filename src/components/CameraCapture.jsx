@@ -55,32 +55,33 @@ const STATUS_TEXT = {
 };
 
 // ===== Error Screen (camera unavailable) =====
-function CameraErrorScreen({ reason, onFallback, onClose, onRetry }) {
+function CameraErrorScreen({ reason, onFallback, onClose, onRetry, colorMode }) {
   const isInsecure = reason === 'insecure';
   const isDenied = reason === 'denied';
+  const isL = colorMode === 'light';
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: '#111', zIndex: 200,
+      position: 'fixed', inset: 0, background: isL ? '#F7F8FA' : '#111', zIndex: 200,
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       padding: '40px 24px', textAlign: 'center',
     }}>
       <div style={{
-        width: 80, height: 80, borderRadius: '50%', marginBottom: 24,
-        background: 'rgba(255,140,66,0.15)',
+        width: 80, height: 80, borderRadius: isL ? 24 : '50%', marginBottom: 24,
+        background: isL ? 'rgba(124,92,252,0.08)' : 'rgba(255,140,66,0.15)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 36,
       }}>
         {isInsecure ? '🔒' : isDenied ? '🚫' : '📷'}
       </div>
 
-      <h2 style={{ color: '#fff', fontSize: 20, fontWeight: 700, marginBottom: 8 }}>
+      <h2 style={{ color: isL ? '#191F28' : '#fff', fontSize: 20, fontWeight: 700, marginBottom: 8 }}>
         {isInsecure ? '보안 연결이 필요합니다' :
          isDenied ? '카메라 권한이 거부되었습니다' :
          '카메라를 사용할 수 없습니다'}
       </h2>
 
-      <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, lineHeight: 1.6, marginBottom: 32, maxWidth: 300 }}>
+      <p style={{ color: isL ? '#8B95A1' : 'rgba(255,255,255,0.6)', fontSize: 14, lineHeight: 1.6, marginBottom: 32, maxWidth: 300 }}>
         {isInsecure
           ? '모바일에서 카메라를 사용하려면 HTTPS 연결이 필요합니다. 앨범에서 사진을 선택해주세요.'
           : isDenied
@@ -89,8 +90,9 @@ function CameraErrorScreen({ reason, onFallback, onClose, onRetry }) {
       </p>
 
       <button onClick={onFallback} style={{
-        width: '100%', maxWidth: 300, padding: 16, borderRadius: 14, border: 'none',
-        background: 'linear-gradient(135deg, #FFB347, #FF8C42)',
+        width: '100%', maxWidth: 300, padding: 16, borderRadius: isL ? 12 : 14, border: 'none',
+        background: isL ? '#F09070' : 'linear-gradient(135deg, #FFB347, #FF8C42)',
+        boxShadow: isL ? '0 2px 8px rgba(124,92,252,0.25)' : 'none',
         color: '#fff', fontSize: 16, fontWeight: 700, cursor: 'pointer', marginBottom: 12,
       }}>
         앨범에서 사진 선택
@@ -98,16 +100,18 @@ function CameraErrorScreen({ reason, onFallback, onClose, onRetry }) {
 
       {isDenied && (
         <button onClick={onRetry} style={{
-          width: '100%', maxWidth: 300, padding: 14, borderRadius: 14,
-          background: 'transparent', border: '1.5px solid rgba(255,255,255,0.3)',
-          color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', marginBottom: 12,
+          width: '100%', maxWidth: 300, padding: 14, borderRadius: isL ? 12 : 14,
+          background: isL ? '#F2F3F5' : 'transparent',
+          border: isL ? 'none' : '1.5px solid rgba(255,255,255,0.3)',
+          color: isL ? '#4E5968' : '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', marginBottom: 12,
         }}>
           다시 시도
         </button>
       )}
 
       <button onClick={onClose} style={{
-        background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)',
+        background: 'none', border: 'none',
+        color: isL ? '#B0B8C1' : 'rgba(255,255,255,0.4)',
         fontSize: 14, cursor: 'pointer', padding: '8px 16px',
       }}>
         돌아가기
@@ -117,7 +121,7 @@ function CameraErrorScreen({ reason, onFallback, onClose, onRetry }) {
 }
 
 // ===== Main CameraCapture Component =====
-export default function CameraCapture({ onCapture, onClose, onFallback }) {
+export default function CameraCapture({ onCapture, onClose, onFallback, colorMode }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const brightnessCanvasRef = useRef(null);
@@ -193,20 +197,25 @@ export default function CameraCapture({ onCapture, onClose, onFallback }) {
     const ry = Math.min(rx * 1.35, H * 0.40);
 
     const curStatus = statusRef.current;
-    let guideColor = 'rgba(255,255,255,0.6)';
+    // Unified purple palette for both modes
+    const readyColor = 'rgba(124,92,252,0.85)';
+    const readyGlow = 'rgba(124,92,252,0.25)';
+    const pendingColor = 'rgba(255,255,255,0.7)';
+
+    let guideColor = pendingColor;
     let glowColor = null;
     if (landmarks) {
       if (curStatus === 'ready') {
-        guideColor = 'rgba(76,175,80,0.9)';
-        glowColor = 'rgba(76,175,80,0.3)';
+        guideColor = readyColor;
+        glowColor = readyGlow;
       } else {
-        guideColor = 'rgba(255,193,7,0.8)';
+        guideColor = 'rgba(240,144,112,0.7)';
       }
     }
 
     // Layer 1: Vignette mask
     ctx.save();
-    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fillStyle = 'rgba(0,0,0,0.45)';
     ctx.fillRect(0, 0, W, H);
     ctx.globalCompositeOperation = 'destination-out';
     ctx.beginPath();
@@ -218,11 +227,11 @@ export default function CameraCapture({ onCapture, onClose, onFallback }) {
     ctx.save();
     if (glowColor) {
       ctx.shadowColor = glowColor;
-      ctx.shadowBlur = 20;
+      ctx.shadowBlur = 24;
     }
     ctx.strokeStyle = guideColor;
-    ctx.lineWidth = 3;
-    if (!landmarks) ctx.setLineDash([12, 8]);
+    ctx.lineWidth = 2.5;
+    if (!landmarks) ctx.setLineDash([10, 8]);
     ctx.beginPath();
     ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
     ctx.stroke();
@@ -231,66 +240,73 @@ export default function CameraCapture({ onCapture, onClose, onFallback }) {
 
     if (!landmarks) return;
 
-    // Layer 3: Analysis zone labels
-    // Note: canvas has CSS scaleX(-1) for selfie mirror, so we counter-flip
-    // each label with ctx.scale(-1,1) so text reads normally.
-    ctx.font = '600 12px Pretendard, system-ui, sans-serif';
+    // Shared label drawing helper
+    const drawLabel = (x, y, label, bgColor) => {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(-1, 1);  // counter CSS scaleX(-1) for readable text
+      ctx.font = '600 13px "Pretendard Variable", Pretendard, -apple-system, system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const textW = ctx.measureText(label).width + 20;
+      const boxW = Math.max(textW, 48);
+      const boxH = 28;
+      const rad = 10;
+      // Background pill with slight shadow
+      ctx.shadowColor = 'rgba(0,0,0,0.15)';
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetY = 2;
+      ctx.fillStyle = bgColor;
+      ctx.beginPath();
+      ctx.roundRect(-boxW / 2, -boxH / 2, boxW, boxH, rad);
+      ctx.fill();
+      // Text
+      ctx.shadowColor = 'transparent';
+      ctx.fillStyle = '#fff';
+      ctx.fillText(label, 0, 0.5);
+      ctx.restore();
+    };
+
+    // Layer 3: Analysis zone labels — refined palette
+    const ZONE_COLORS = {
+      '이마': 'rgba(124,92,252,0.75)',
+      'T존': 'rgba(99,102,241,0.75)',
+      '왼볼': 'rgba(79,70,229,0.65)',
+      '오른볼': 'rgba(79,70,229,0.65)',
+      '턱선': 'rgba(139,92,246,0.7)',
+    };
     for (const zone of ANALYSIS_ZONES) {
       if (zone.anchor >= landmarks.length) continue;
       const lm = landmarks[zone.anchor];
       const zx = mapX(lm.x + (zone.offsetX || 0));
       const zy = mapY(lm.y + (zone.offsetY || 0));
-
-      ctx.save();
-      ctx.translate(zx, zy);
-      ctx.scale(-1, 1);  // counter CSS scaleX(-1) for readable text
-      ctx.fillStyle = zone.color;
-      const textW = ctx.measureText(zone.label).width + 18;
-      const boxW = Math.max(textW, 42);
-      const boxH = 24;
-      if (ctx.roundRect) {
-        ctx.beginPath();
-        ctx.roundRect(-boxW / 2, -boxH / 2, boxW, boxH, 8);
-        ctx.fill();
-      } else {
-        ctx.fillRect(-boxW / 2, -boxH / 2, boxW, boxH);
-      }
-      ctx.fillStyle = '#fff';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(zone.label, 0, 0);
-      ctx.restore();
+      drawLabel(zx, zy, zone.label, ZONE_COLORS[zone.label] || 'rgba(124,92,252,0.7)');
     }
 
-    // Layer 4: Landmark dots
-    const dotColor = curStatus === 'ready' ? 'rgba(76,175,80,0.8)' : 'rgba(255,193,7,0.7)';
+    // Layer 4: Landmark dots — subtle, refined
+    const dotColor = curStatus === 'ready' ? 'rgba(124,92,252,0.7)' : 'rgba(240,144,112,0.6)';
     for (const idx of KEY_LANDMARKS) {
       if (idx >= landmarks.length) continue;
       const lm = landmarks[idx];
       ctx.beginPath();
-      ctx.arc(mapX(lm.x), mapY(lm.y), 2.5, 0, Math.PI * 2);
+      ctx.arc(mapX(lm.x), mapY(lm.y), 2, 0, Math.PI * 2);
       ctx.fillStyle = dotColor;
       ctx.fill();
     }
 
-    // Layer 5: Under-eye dots — computed from pupil position
-    // Right eye: upper 159, lower 145, inner 133, outer 33
-    // Left eye:  upper 386, lower 374, inner 362, outer 263
+    // Layer 5: Under-eye dots
     if (landmarks.length >= 468) {
       const eyes = [
-        { upper: 159, lower: 145, inner: 133, outer: 33 },   // right eye
-        { upper: 386, lower: 374, inner: 362, outer: 263 },   // left eye
+        { upper: 159, lower: 145, inner: 133, outer: 33 },
+        { upper: 386, lower: 374, inner: 362, outer: 263 },
       ];
       const underEyeDots = [];
       for (const eye of eyes) {
         const inn = landmarks[eye.inner], out = landmarks[eye.outer];
-        // Use eye corners as stable anchor (unaffected by blinking)
         const ecx = (inn.x + out.x) / 2;
         const stableY = (inn.y + out.y) / 2;
         const eyeW = Math.abs(out.x - inn.x);
-        // Fixed offset below eye corners — blink-proof
         const dotY = stableY + eyeW * 0.55;
-        // 3 dots: center, inner(-spread), outer(+spread)
         const spread = eyeW * 0.22;
         underEyeDots.push(
           { x: ecx - spread, y: dotY },
@@ -300,34 +316,14 @@ export default function CameraCapture({ onCapture, onClose, onFallback }) {
       }
       for (const dot of underEyeDots) {
         ctx.beginPath();
-        ctx.arc(mapX(dot.x), mapY(dot.y), 2.5, 0, Math.PI * 2);
+        ctx.arc(mapX(dot.x), mapY(dot.y), 2, 0, Math.PI * 2);
         ctx.fillStyle = dotColor;
         ctx.fill();
       }
 
-      // '눈밑' label next to right eye under-dots
-      const rEyeCenter = underEyeDots[1]; // right eye center dot
-      const labelX = mapX(rEyeCenter.x);
-      const labelY = mapY(rEyeCenter.y + 0.02);
-      ctx.save();
-      ctx.translate(labelX, labelY);
-      ctx.scale(-1, 1);
-      ctx.font = '600 12px Pretendard, system-ui, sans-serif';
-      ctx.fillStyle = 'rgba(255,140,180,0.5)';
-      const tw = ctx.measureText('눈밑').width + 18;
-      const bw = Math.max(tw, 42), bh = 24;
-      if (ctx.roundRect) {
-        ctx.beginPath();
-        ctx.roundRect(-bw / 2, -bh / 2, bw, bh, 8);
-        ctx.fill();
-      } else {
-        ctx.fillRect(-bw / 2, -bh / 2, bw, bh);
-      }
-      ctx.fillStyle = '#fff';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('눈밑', 0, 0);
-      ctx.restore();
+      // '눈밑' label
+      const rEyeCenter = underEyeDots[1];
+      drawLabel(mapX(rEyeCenter.x), mapY(rEyeCenter.y + 0.02), '눈밑', 'rgba(168,85,247,0.7)');
     }
   };
 
@@ -456,11 +452,17 @@ export default function CameraCapture({ onCapture, onClose, onFallback }) {
         return;
       }
 
-      // Match canvas to display size (not video resolution) for correct proportions
+      // Match canvas to display size × devicePixelRatio for Retina sharpness
       const rect = canvas.getBoundingClientRect();
-      const W = canvas.width = Math.round(rect.width);
-      const H = canvas.height = Math.round(rect.height);
+      const dpr = window.devicePixelRatio || 1;
+      const W = Math.round(rect.width);
+      const H = Math.round(rect.height);
+      if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {
+        canvas.width = Math.round(W * dpr);
+        canvas.height = Math.round(H * dpr);
+      }
       const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       const vidW = video.videoWidth || 640;
       const vidH = video.videoHeight || 480;
 
@@ -571,6 +573,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback }) {
         onFallback={() => { cleanup(); onFallback(); }}
         onClose={() => { cleanup(); onClose(); }}
         onRetry={handleRetry}
+        colorMode={colorMode}
       />
     );
   }
@@ -578,14 +581,16 @@ export default function CameraCapture({ onCapture, onClose, onFallback }) {
   const isReady = status === 'ready';
   const isCapturing = status === 'capturing' || status === 'captured';
   const canCapture = isReady || !mediapipeReady;
+  const isL = colorMode === 'light';
+  const accentOk = isL ? '#F09070' : '#4CAF50';
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: '#000', zIndex: 200,
+      position: 'fixed', inset: 0, background: isL ? '#F7F8FA' : '#000', zIndex: 200,
       display: 'flex', flexDirection: 'column',
     }}>
       {/* Camera preview */}
-      <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+      <div style={{ flex: 1, position: 'relative', overflow: 'hidden', borderRadius: isL ? '0 0 24px 24px' : 0 }}>
         <video
           ref={videoRef}
           autoPlay
@@ -614,7 +619,9 @@ export default function CameraCapture({ onCapture, onClose, onFallback }) {
             position: 'absolute',
             left: '16%', right: '16%',
             height: 2,
-            background: 'linear-gradient(90deg, transparent, rgba(76,175,80,0.6), transparent)',
+            background: isL
+              ? 'linear-gradient(90deg, transparent, rgba(124,92,252,0.5), transparent)'
+              : 'linear-gradient(90deg, transparent, rgba(76,175,80,0.6), transparent)',
             animation: 'scanLine 2.5s ease-in-out infinite',
             pointerEvents: 'none',
           }} />
@@ -636,9 +643,10 @@ export default function CameraCapture({ onCapture, onClose, onFallback }) {
           style={{
             position: 'absolute', top: 'calc(16px + env(safe-area-inset-top, 0px))', left: 16,
             width: 40, height: 40, borderRadius: '50%',
-            background: 'rgba(0,0,0,0.35)', border: 'none',
-            color: '#fff', fontSize: 20, cursor: 'pointer',
+            background: isL ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.35)', border: 'none',
+            color: isL ? '#191F28' : '#fff', fontSize: 20, cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: isL ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
             zIndex: 10,
           }}
         >
@@ -650,9 +658,10 @@ export default function CameraCapture({ onCapture, onClose, onFallback }) {
           onClick={() => { cleanup(); onFallback(); }}
           style={{
             position: 'absolute', top: 'calc(16px + env(safe-area-inset-top, 0px))', right: 16,
-            padding: '8px 14px', borderRadius: 20,
-            background: 'rgba(0,0,0,0.35)', border: 'none',
-            color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            padding: '8px 14px', borderRadius: isL ? 10 : 20,
+            background: isL ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.35)', border: 'none',
+            color: isL ? '#191F28' : '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            boxShadow: isL ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
             zIndex: 10,
           }}
         >
@@ -665,13 +674,13 @@ export default function CameraCapture({ onCapture, onClose, onFallback }) {
 
       {/* Bottom controls */}
       <div style={{
-        background: 'rgba(0,0,0,0.85)',
+        background: isL ? '#F7F8FA' : 'rgba(0,0,0,0.85)',
         padding: '16px 20px calc(20px + env(safe-area-inset-bottom, 0px))',
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14,
       }}>
         {/* Status text */}
         <p style={{
-          color: isReady ? '#4CAF50' : '#fff',
+          color: isReady ? accentOk : (isL ? '#191F28' : '#fff'),
           fontSize: 15, fontWeight: 600, textAlign: 'center',
           margin: 0, minHeight: 20,
           transition: 'color 0.3s',
@@ -690,8 +699,8 @@ export default function CameraCapture({ onCapture, onClose, onFallback }) {
             <div key={key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
               <div style={{
                 width: 24, height: 24, borderRadius: '50%',
-                background: conditions[key] ? '#4CAF50' : 'transparent',
-                border: `2px solid ${conditions[key] ? '#4CAF50' : 'rgba(255,255,255,0.3)'}`,
+                background: conditions[key] ? accentOk : 'transparent',
+                border: `2px solid ${conditions[key] ? accentOk : (isL ? '#D1D6DB' : 'rgba(255,255,255,0.3)')}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 transition: 'all 0.3s',
               }}>
@@ -699,7 +708,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback }) {
                   <span style={{ color: '#fff', fontSize: 12, fontWeight: 700 }}>&#10003;</span>
                 )}
               </div>
-              <span style={{ color: conditions[key] ? '#4CAF50' : 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: 600 }}>
+              <span style={{ color: conditions[key] ? accentOk : (isL ? '#B0B8C1' : 'rgba(255,255,255,0.5)'), fontSize: 10, fontWeight: 600 }}>
                 {label}
               </span>
             </div>
@@ -713,9 +722,10 @@ export default function CameraCapture({ onCapture, onClose, onFallback }) {
           style={{
             width: 72, height: 72, borderRadius: '50%',
             background: canCapture
-              ? 'linear-gradient(135deg, #FFB347, #FF8C42)'
-              : 'rgba(255,255,255,0.15)',
-            border: `4px solid ${canCapture ? '#fff' : 'rgba(255,255,255,0.2)'}`,
+              ? (isL ? '#F09070' : 'linear-gradient(135deg, #FFB347, #FF8C42)')
+              : (isL ? '#EAEBED' : 'rgba(255,255,255,0.15)'),
+            border: `4px solid ${canCapture ? '#fff' : (isL ? '#D1D6DB' : 'rgba(255,255,255,0.2)')}`,
+            boxShadow: canCapture && isL ? '0 4px 16px rgba(124,92,252,0.3)' : 'none',
             cursor: canCapture && !isCapturing ? 'pointer' : 'default',
             transition: 'all 0.3s',
             opacity: isCapturing ? 0.5 : 1,

@@ -179,6 +179,120 @@ export async function migrateFromLocalStorage() {
  * @param {number} quality - JPEG 품질 (기본 0.82)
  * @returns {Promise<string>} resized dataUrl
  */
+/**
+ * 백업용: 전체 사진을 raw 배열로 반환
+ * @returns {Promise<Array<{date: string, dataUrl: string, timestamp: number}>>}
+ */
+export async function getAllPhotosRaw() {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const req = tx.objectStore(STORE_NAME).getAll();
+    return new Promise((resolve) => {
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => resolve([]);
+    });
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * 백업 복원: 사진 배열을 IndexedDB에 일괄 저장 (기존 데이터 덮어쓰기)
+ * @param {Array<{date: string, dataUrl: string, timestamp?: number}>} photos
+ * @returns {Promise<number>} 복원된 사진 수
+ */
+export async function restorePhotos(photos) {
+  if (!photos || photos.length === 0) return 0;
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const store = tx.objectStore(STORE_NAME);
+    for (const photo of photos) {
+      store.put({
+        date: photo.date,
+        dataUrl: photo.dataUrl,
+        timestamp: photo.timestamp || Date.now(),
+      });
+    }
+    await new Promise((resolve, reject) => {
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+    return photos.length;
+  } catch (e) {
+    console.warn('PhotoDB: restore failed', e);
+    return 0;
+  }
+}
+
+// ===== COMPARISON PHOTOS (Before & After) =====
+// 기존 localStorage 저장 대신 IndexedDB에 저장하여 용량 초과 문제 방지
+
+const COMPARISON_EARLIEST_KEY = '__comparison_earliest';
+const COMPARISON_LATEST_KEY = '__comparison_latest';
+
+/**
+ * 비교 사진 저장 (earliest + latest)
+ */
+export async function saveComparisonPhotoDB(earliest, latest) {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const store = tx.objectStore(STORE_NAME);
+    if (earliest) {
+      store.put({
+        date: COMPARISON_EARLIEST_KEY,
+        dataUrl: earliest.dataUrl,
+        timestamp: Date.now(),
+        originalDate: earliest.date,
+      });
+    }
+    if (latest) {
+      store.put({
+        date: COMPARISON_LATEST_KEY,
+        dataUrl: latest.dataUrl,
+        timestamp: Date.now(),
+        originalDate: latest.date,
+      });
+    }
+    await new Promise((resolve, reject) => {
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch (e) {
+    console.warn('PhotoDB: comparison save failed', e);
+  }
+}
+
+/**
+ * 비교 사진 조회
+ * @returns {Promise<{earliest: {date, dataUrl}|null, latest: {date, dataUrl}|null}>}
+ */
+export async function getComparisonPhotoDB() {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const store = tx.objectStore(STORE_NAME);
+    const eReq = store.get(COMPARISON_EARLIEST_KEY);
+    const lReq = store.get(COMPARISON_LATEST_KEY);
+
+    return new Promise((resolve) => {
+      tx.oncomplete = () => {
+        const e = eReq.result;
+        const l = lReq.result;
+        resolve({
+          earliest: e ? { date: e.originalDate, dataUrl: e.dataUrl } : null,
+          latest: l ? { date: l.originalDate, dataUrl: l.dataUrl } : null,
+        });
+      };
+      tx.onerror = () => resolve({ earliest: null, latest: null });
+    });
+  } catch {
+    return { earliest: null, latest: null };
+  }
+}
+
 export function resizeImage(imageDataUrl, size = 512, quality = 0.82) {
   return new Promise((resolve, reject) => {
     const img = new Image();

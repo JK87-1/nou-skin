@@ -91,9 +91,9 @@ export default function BeforeAfterSlider() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         marginBottom: 10,
       }}>
-        <span style={{ fontSize: 14, fontWeight: 700, color: '#f0f0f5' }}>Before & After</span>
+        <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>Before & After</span>
         {period > 0 && (
-          <span style={{ fontSize: 11, color: '#8888a0' }}>{period}일간의 변화</span>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{period}일간의 변화</span>
         )}
       </div>
 
@@ -113,8 +113,8 @@ export default function BeforeAfterSlider() {
           touchAction: 'none',
           userSelect: 'none',
           WebkitUserSelect: 'none',
-          background: '#1a1a28',
-          border: '1px solid rgba(255,255,255,0.08)',
+          background: 'var(--bg-modal)',
+          border: '1px solid var(--border-subtle)',
         }}
       >
         {/* After image (full background) */}
@@ -196,7 +196,7 @@ export default function BeforeAfterSlider() {
         {/* AFTER label */}
         <div style={{
           position: 'absolute', top: 12, right: 12,
-          background: 'rgba(167,139,250,0.75)', backdropFilter: 'blur(8px)',
+          background: 'rgba(240,144,112,0.75)', backdropFilter: 'blur(8px)',
           WebkitBackdropFilter: 'blur(8px)',
           borderRadius: 8, padding: '4px 10px',
           zIndex: 5, pointerEvents: 'none',
@@ -210,7 +210,7 @@ export default function BeforeAfterSlider() {
           <div style={{
             position: 'absolute', bottom: 12, left: '50%',
             transform: 'translateX(-50%)',
-            background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(12px)',
+            background: 'var(--bg-modal-overlay)', backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
             borderRadius: 14, padding: '8px 20px',
             display: 'flex', gap: 20, alignItems: 'center',

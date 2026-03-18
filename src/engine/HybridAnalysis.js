@@ -235,8 +235,14 @@ export async function callVisionAI(base64Image, landmarks) {
       }
     }
 
-    // Baseline management
-    const isDifferentPerson = parsed.differentPerson === true;
+    // Baseline management — server + client backup detection
+    let isDifferentPerson = parsed.differentPerson === true;
+    // Client-side backup: if server didn't flag but scores deviate significantly from baseline
+    if (!isDifferentPerson && !isFirstAnalysis && !isSamePersonScores(parsed, baseline.result)) {
+      isDifferentPerson = true;
+      parsed.differentPerson = true;
+      console.log('Client backup: score deviation detected different person');
+    }
     if (isFirstAnalysis) {
       // First ever analysis: save as primary baseline
       const baselineScores = {};
@@ -246,48 +252,11 @@ export async function callVisionAI(base64Image, landmarks) {
       saveBaseline(faceImage, baselineScores);
       console.log('Primary baseline saved (first analysis)');
     } else if (isDifferentPerson) {
-      // Different person: stabilize via secondary baseline, never touch primary
-      const secondary = getSecondaryBaseline();
-      if (secondary && isSamePersonScores(parsed, secondary.result)) {
-        // Returning secondary person: client-side stabilize against their baseline
-        const daysSince = (Date.now() - secondary.timestamp) / 86400000;
-        const stabilized = clientStabilize(parsed, secondary.result, daysSince);
-        for (const key of STABILIZE_KEYS) {
-          if (typeof stabilized[key] === 'number') parsed[key] = stabilized[key];
-        }
-        // Recompute overallScore & skinAge from stabilized scores
-        const weights = {
-          wrinkles: 0.13, elasticity: 0.12, moisture: 0.12,
-          pores: 0.10, texture: 0.10, skinTone: 0.09,
-          pigmentation: 0.09, darkCircles: 0.09,
-          oilBalance: 0.08, troubleCount: 0.08,
-        };
-        let sum = 0;
-        for (const [k, w] of Object.entries(weights)) {
-          sum += (typeof parsed[k] === 'number' ? parsed[k] : 50) * w;
-        }
-        parsed.overallScore = Math.round(sum);
-        // Condition score (real-time: condition vs structural deviation amplified)
-        const cAvg = ((parsed.moisture ?? 50) + (parsed.skinTone ?? 50) + (parsed.darkCircles ?? 50) + (parsed.oilBalance ?? 50) + (parsed.troubleCount ?? 50)) / 5;
-        const sAvg = ((parsed.wrinkles ?? 50) + (parsed.elasticity ?? 50) + (parsed.texture ?? 50) + (parsed.pores ?? 50) + (parsed.pigmentation ?? 50)) / 5;
-        parsed.conditionScore = Math.max(32, Math.min(96, Math.round(cAvg + (cAvg - sAvg) * 1.8)));
-        const age = 60 - (parsed.overallScore / 100) * 42;
-        parsed.skinAge = Math.round(age);
-        // Drift secondary baseline (only once per day)
-        const secDate = new Date(secondary.timestamp).toISOString().slice(0, 10);
-        const secToday = new Date().toISOString().slice(0, 10);
-        if (secDate !== secToday) {
-          const drifted = driftBaseline(secondary.result, parsed);
-          saveSecondaryBaseline(drifted);
-          console.log('Secondary baseline drifted (new day)');
-        } else {
-          console.log('Same-day repeat: secondary baseline kept stable');
-        }
-      } else {
-        // New secondary person: save their scores
-        saveSecondaryBaseline(parsed);
-        console.log('Secondary baseline saved (new person)');
-      }
+      // Different person detected by GPT:
+      // Do NOT apply any client-side stabilization — use raw AI scores as-is.
+      // Save as secondary baseline for future visits by this person.
+      saveSecondaryBaseline(parsed);
+      console.log('Different person detected — raw scores used, saved as secondary baseline');
     } else {
       // Same primary person: drift primary baseline (only once per day)
       const baselineDate = new Date(baseline.timestamp).toISOString().slice(0, 10);
@@ -367,6 +336,7 @@ export function hybridMerge(cv, ai) {
   if (ai.notes) result.aiNotes = ai.notes;
   if (typeof ai.confidence === 'number') result.confidence = ai.confidence;
   if (ai.makeupDetected) result.makeupDetected = true;
+  if (ai.differentPerson) result.differentPerson = true;
 
   return result;
 }

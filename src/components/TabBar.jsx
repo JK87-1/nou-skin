@@ -1,7 +1,8 @@
-import AuraPearl from './icons/AuraPearl';
+import SoftCloverIcon from './icons/SoftCloverIcon';
 
-export default function TabBar({ activeTab, onTabChange, onMeasure }) {
-  const c = (active) => active ? '#a78bfa' : '#8888a0';
+export default function TabBar({ activeTab, onTabChange, onMeasure, themeColors, colorMode }) {
+  const accent = themeColors?.accent || '#F09070';
+  const c = (active) => active ? accent : 'var(--tab-inactive)';
 
   const leftTabs = [
     {
@@ -54,27 +55,72 @@ export default function TabBar({ activeTab, onTabChange, onMeasure }) {
         className={`tab-bar-item${activeTab === tab.key ? ' active' : ''}`}
         onClick={() => onTabChange(tab.key)}
       >
+        <div className="tab-bar-glow" />
         {tab.icon(activeTab === tab.key)}
         <span className="tab-bar-label">{tab.label}</span>
+        <div className="tab-bar-dot" />
       </button>
     </div>
   );
 
   return (
-    <nav className="tab-bar">
+    <nav className="tab-bar" style={{
+      '--tab-accent': `${accent}14`,
+      '--tab-glow': `${accent}33`,
+      '--tab-label': themeColors?.sub || '#FFD4B8',
+      '--tab-dot': accent,
+      '--tab-shimmer-edge': `${accent}00`,
+      '--tab-shimmer-mid': `${accent}40`,
+      '--tab-shimmer-peak': `${themeColors?.sub || accent}80`,
+    }}>
       {leftTabs.map(renderTab)}
 
-      {/* Center Scan Button */}
-      <div style={{ flex: 1, display: 'flex', justifyContent: 'center', position: 'relative' }}>
+      {/* Center Pearl Button */}
+      <div style={{ flex: 1, display: 'flex', justifyContent: 'center', position: 'relative', zIndex: 10 }}>
+        {/* Pearl shadow on bar */}
+        <div style={{
+          position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
+          width: 60, height: 8,
+          background: `radial-gradient(ellipse, ${accent}26 0%, transparent 80%)`,
+          pointerEvents: 'none',
+        }} />
         <div
           onClick={(e) => { e.stopPropagation(); onMeasure?.(); }}
           style={{
             position: 'absolute', top: -24,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', zIndex: 10,
+            cursor: 'pointer',
           }}
         >
-          <AuraPearl variant="living" size={52} animated />
+          {/* Pulse rings */}
+          <div style={{
+            position: 'absolute', width: 68, height: 68, borderRadius: '50%',
+            border: `1.5px solid ${accent}33`,
+            animation: 'pearlCenterRing 3s ease-in-out infinite',
+          }} />
+          <div style={{
+            position: 'absolute', width: 80, height: 80, borderRadius: '50%',
+            border: `1.5px solid ${accent}14`,
+            animation: 'pearlCenterRing 3s ease-in-out 0.8s infinite',
+          }} />
+          {/* Platform glow */}
+          <div style={{
+            position: 'absolute', width: 72, height: 72, borderRadius: '50%',
+            background: `radial-gradient(circle, ${accent}26 0%, ${accent}14 40%, transparent 70%)`,
+            animation: 'pearlPlatformGlow 4s ease-in-out infinite',
+          }} />
+          <style>{`
+            @keyframes pearlCenterRing { 0%,100% { transform:scale(0.95); opacity:0.4; } 50% { transform:scale(1.06); opacity:1; } }
+            @keyframes pearlPlatformGlow { 0%,100% { opacity:0.6; transform:scale(0.95); } 50% { opacity:1; transform:scale(1.05); } }
+          `}</style>
+          <div style={{
+            position: 'relative', zIndex: 2,
+            animation: 'pearlCenterFloat 4s ease-in-out infinite',
+            filter: `drop-shadow(0 4px 16px ${accent}59)`,
+          }}>
+            <style>{`@keyframes pearlCenterFloat { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-2px); } }`}</style>
+            <SoftCloverIcon theme={themeColors?.cloverTheme || 'navySapphire'} size={54} animate />
+          </div>
         </div>
       </div>
 

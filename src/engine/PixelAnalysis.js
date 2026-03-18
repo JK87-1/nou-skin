@@ -95,6 +95,11 @@ function normalizeImageData(imageData) {
 // OffscreenCanvas + imageSmoothingEnabled:false + lighting normalization + memoization
 const compressCache = new Map();
 
+/** Clear compression cache between analyses to prevent cross-person contamination */
+export function clearCompressCache() {
+  compressCache.clear();
+}
+
 export function compressImage(dataUrl, maxSize = 768, quality = 0.85) {
   // Memo: identical input always returns identical base64
   if (compressCache.has(dataUrl)) return Promise.resolve(compressCache.get(dataUrl));
@@ -1377,15 +1382,20 @@ export function generateSmartAdvice(scores, changes) {
     skinAge: '피부나이', overallScore: '종합점수', moisture: '수분도',
     skinTone: '피부톤', wrinkleScore: '주름', poreScore: '모공',
     elasticityScore: '탄력', pigmentationScore: '색소', textureScore: '피부결',
-    darkCircleScore: '다크서클', oilBalance: '유분',
+    darkCircleScore: '다크서클', oilBalance: '유분', troubleCount: '트러블',
   };
 
   for (const [key, c] of Object.entries(changes)) {
     if (Math.abs(c.diff) < 2) continue;
+    const label = metricLabels[key] || key;
+    // For inverse metrics (skinAge, troubleCount), show absolute value with direction
+    const displayDiff = c.inverse
+      ? `${Math.abs(c.diff)}${c.improved ? ' 감소' : ' 증가'}`
+      : `${c.diff > 0 ? '+' : ''}${c.diff}`;
     if (c.improved) {
-      improved.push({ text: `${metricLabels[key] || key} ${c.diff > 0 ? '+' : ''}${c.diff}`, key });
+      improved.push({ text: `${label} ${displayDiff}`, key });
     } else {
-      declined.push({ text: `${metricLabels[key] || key} ${c.diff > 0 ? '+' : ''}${c.diff}`, key });
+      declined.push({ text: `${label} ${displayDiff}`, key });
     }
   }
 

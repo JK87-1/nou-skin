@@ -10,13 +10,24 @@ export default defineConfig({
     react(),
     ...(useSSL ? [basicSsl()] : []),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       workbox: {
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         skipWaiting: true,
         clientsClaim: true,
+        cleanupOutdatedCaches: true,
         importScripts: ['/push-sw.js'],
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        globPatterns: ['**/*.{js,css,ico,png,svg,woff2}'],
+        navigateFallback: null,
         runtimeCaching: [
+          {
+            urlPattern: ({request}) => request.mode === 'navigate',
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'html-pages',
+              expiration: { maxEntries: 5, maxAgeSeconds: 60 * 60 },
+            },
+          },
           {
             urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
             handler: 'CacheFirst',
@@ -44,11 +55,11 @@ export default defineConfig({
         ],
       },
       manifest: {
-        name: 'LUA - Your Inner Glow',
-        short_name: 'LUA',
+        name: '루아 — 피부 여정의 시작',
+        short_name: '루아',
         description: 'AI 기반 웰니스 솔루션',
-        theme_color: '#483090',
-        background_color: '#0a0a0f',
+        theme_color: '#000000',
+        background_color: '#000000',
         display: 'standalone',
         orientation: 'portrait',
         scope: '/',

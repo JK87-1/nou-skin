@@ -145,6 +145,21 @@ export function checkAndAwardBadges() {
       case 'shareCount':
         met = (stats.shareCount || 0) >= value;
         break;
+      case 'morningMeasure':
+        met = (stats.morningMeasure || 0) >= value;
+        break;
+      case 'allMetricsAbove': {
+        if (!latestRecord) break;
+        const amKeys = ['moisture', 'skinTone', 'wrinkleScore', 'poreScore', 'elasticityScore', 'pigmentationScore', 'textureScore', 'darkCircleScore'];
+        met = amKeys.every(k => (latestRecord[k] || 0) >= value);
+        break;
+      }
+      case 'levelReach':
+        met = calculateLevel(getTotalXP()) >= value;
+        break;
+      case 'totalXP':
+        met = getTotalXP() >= value;
+        break;
     }
 
     if (met) {
@@ -216,6 +231,15 @@ export function getBadgeProgress(badgeId) {
     case 'consultCount': current = stats.consultCount || 0; break;
     case 'nightMeasure': current = stats.nightMeasure || 0; break;
     case 'shareCount': current = stats.shareCount || 0; break;
+    case 'morningMeasure': current = stats.morningMeasure || 0; break;
+    case 'allMetricsAbove': {
+      if (!latestRecord) { current = 0; break; }
+      const amKeys = ['moisture', 'skinTone', 'wrinkleScore', 'poreScore', 'elasticityScore', 'pigmentationScore', 'textureScore', 'darkCircleScore'];
+      const aboveCount = amKeys.filter(k => (latestRecord[k] || 0) >= value).length;
+      return { current: aboveCount, target: amKeys.length, progress: Math.min(1, aboveCount / amKeys.length) };
+    }
+    case 'levelReach': current = calculateLevel(getTotalXP()); break;
+    case 'totalXP': current = getTotalXP(); break;
   }
 
   return { current: Math.max(0, current), target: value, progress: Math.min(1, Math.max(0, current) / value) };

@@ -3,26 +3,24 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import './styles.css';
 import { registerSW } from 'virtual:pwa-register';
+import { createAutoBackup } from './storage/AutoBackup';
 
-// Register service worker with auto-update
-// In iOS PWA standalone mode, there's no pull-to-refresh or address bar.
-// We check for SW updates whenever the app returns to foreground,
-// and auto-reload when a new version activates.
-registerSW({
-  immediate: true,
-  onRegisteredSW(swUrl, registration) {
-    if (!registration) return;
-
-    // Check for updates when app returns to foreground
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
-        registration.update();
-      }
-    });
-
-    // Also check periodically (every 60 minutes) for long sessions
-    setInterval(() => { registration.update(); }, 60 * 60 * 1000);
+// SW 업데이트 시 데이터 백업 후 활성화
+const updateSW = registerSW({
+  onNeedRefresh() {
+    // 새 SW가 설치되면 먼저 데이터를 백업한 후 업데이트 적용
+    createAutoBackup()
+      .then(() => {
+        sessionStorage.setItem('nou_sw_updating', '1');
+        updateSW(true);
+      })
+      .catch(() => {
+        // 백업 실패해도 업데이트는 진행
+        sessionStorage.setItem('nou_sw_updating', '1');
+        updateSW(true);
+      });
   },
+  onOfflineReady() {},
 });
 
 ReactDOM.createRoot(document.getElementById('root')).render(

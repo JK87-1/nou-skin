@@ -42,7 +42,7 @@ export const ALERT_RULES = [
     condition: (weather) => weather.uv >= 3,
     priority: (weather) => weather.uv >= 6 ? 'high' : 'medium',
     icon: '☀️',
-    color: '#a78bfa',
+    color: '#F09070',
     title: (weather) => `자외선 지수 ${weather.uvLabel}`,
     subtitle: (weather, skin) => `UV ${weather.uv} · 색소 점수 ${skin.pigment}점`,
     description: (weather, skin) =>
@@ -77,7 +77,7 @@ export const ALERT_RULES = [
     condition: (weather, skin) => weather.humidity > 70 && skin.oil > 60,
     priority: () => 'medium',
     icon: '💦',
-    color: '#818cf8',
+    color: '#F0A878',
     title: () => '고습도 유분 관리',
     subtitle: (weather, skin) => `습도 ${weather.humidity}% · 유분 점수 ${skin.oil}점`,
     description: (weather, skin) =>

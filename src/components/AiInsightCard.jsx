@@ -62,21 +62,19 @@ export default function AiInsightCard() {
   }
 
   return (
-    <div className="card" style={{ padding: '16px 12px' }}>
-      <div style={{ fontSize: 15, fontWeight: 600, color: '#e0e0e8', letterSpacing: -0.3, marginBottom: 12 }}>Today's Insight</div>
-      <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-        <span style={{ fontSize: 24, flexShrink: 0 }}>{icon}</span>
-        <div>
-          <div style={{ fontSize: 13, fontWeight: 500, color: '#e0e0e8', lineHeight: 1.7 }}>
+    <div style={{
+      padding: '20px',
+      borderRadius: 16,
+      background: '#FFFFFF',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(124,92,252,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>✨</div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 13, color: '#8B95A1' }}>AI 인사이트</div>
+          <div style={{ fontSize: 14, color: '#4E5968', marginTop: 4, lineHeight: 1.5 }}>
             {insight}
-          </div>
-          {sub && (
-            <div style={{ fontSize: 12, color: '#a5b4fc', marginTop: 6, fontWeight: 500 }}>
-              {sub}
-            </div>
-          )}
-          <div style={{ fontSize: 10, color: '#8888a0', marginTop: 8 }}>
-            LUA 피부 분석 · {new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })}
+            {sub && <span style={{ fontWeight: 600, color: '#F09070' }}> {sub}</span>}
           </div>
         </div>
       </div>

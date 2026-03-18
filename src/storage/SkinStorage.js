@@ -48,6 +48,12 @@ export function saveRecord(result) {
     conditionScore: result.conditionScore,
     skinType: result.skinType,
     concerns: result.concerns,
+    // AI 분석 결과 보존
+    ...(result.advice ? { advice: result.advice } : {}),
+    ...(result.aiNotes ? { aiNotes: result.aiNotes } : {}),
+    ...(result.analysisMode ? { analysisMode: result.analysisMode } : {}),
+    // Tag records from different people so comparisons only use same-person records
+    ...(result.differentPerson ? { differentPerson: true } : {}),
   };
 
   records.push(record);
@@ -60,7 +66,9 @@ export function saveRecord(result) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
     updateStreak(today);
-    return true;
+    // 측정 저장 성공 후 자동 백업
+    createAutoBackup().catch(() => {});
+    return record.id; // 썸네일 키로 사용할 record ID 반환
   } catch (e) {
     console.warn('LUA: localStorage save failed', e);
     return false;
@@ -90,6 +98,17 @@ export function getRecordCount() {
   return getRecords().length;
 }
 
+export function updateRecord(id, fields) {
+  const records = getRecords();
+  const idx = records.findIndex(r => r.id === id);
+  if (idx === -1) return false;
+  Object.assign(records[idx], fields);
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+    return true;
+  } catch { return false; }
+}
+
 export function deleteRecord(id) {
   // id 기반 삭제 (v2.0) — 하위 호환: 날짜 문자열이 들어오면 날짜 기준 삭제
   const records = getRecords().filter(r =>
@@ -113,17 +132,21 @@ export async function clearAllRecords() {
 
 // ===== THUMBNAIL STORAGE (IndexedDB 고해상도) =====
 
-import { savePhotoDB, getPhotoDB, getAllPhotosDB, deletePhotoDB, resizeImage, migrateFromLocalStorage } from './PhotoDB';
+import { savePhotoDB, getPhotoDB, getAllPhotosDB, deletePhotoDB, resizeImage, migrateFromLocalStorage, saveComparisonPhotoDB, getComparisonPhotoDB } from './PhotoDB';
+import { createAutoBackup } from './AutoBackup';
 
 /**
  * 고해상도 사진 저장 (512×512 JPEG → IndexedDB)
  * 기존 200×200 localStorage 대신 IndexedDB 사용으로 용량 제한 해결
+ *
+ * @param {string} key - record.id (timestamp) 또는 날짜 문자열
+ * @param {string} imageDataUrl - 원본 이미지 dataUrl
  */
-export async function saveThumbnail(dateStr, imageDataUrl) {
+export async function saveThumbnail(key, imageDataUrl) {
   if (!imageDataUrl) return;
   try {
     const resized = await resizeImage(imageDataUrl, 512, 0.82);
-    await savePhotoDB(dateStr, resized);
+    await savePhotoDB(String(key), resized);
   } catch (e) {
     console.warn('LUA: thumbnail save failed', e);
   }
@@ -170,18 +193,23 @@ export async function getThumbnailAsync(dateStr) {
 }
 
 // ===== COMPARISON PHOTOS (Before & After) =====
+// v2: IndexedDB 저장으로 마이그레이션 (localStorage 용량 초과 방지)
 
 export async function saveComparisonPhoto(imageDataUrl) {
   if (!imageDataUrl) return;
   try {
-    const existing = JSON.parse(localStorage.getItem(COMPARISON_KEY) || '{}');
     const today = getLocalDateStr();
     const hiRes = await resizeImage(imageDataUrl, 512, 0.82);
-    if (!existing.earliest) {
-      existing.earliest = { date: today, dataUrl: hiRes };
-    }
-    existing.latest = { date: today, dataUrl: hiRes };
-    try { localStorage.setItem(COMPARISON_KEY, JSON.stringify(existing)); } catch {}
+
+    // IndexedDB에서 기존 earliest 확인
+    const existing = await getComparisonPhotoDB();
+    const earliest = existing.earliest || { date: today, dataUrl: hiRes };
+    const latest = { date: today, dataUrl: hiRes };
+
+    await saveComparisonPhotoDB(earliest, latest);
+
+    // 마이그레이션: localStorage에 남아있으면 제거 (용량 확보)
+    try { localStorage.removeItem(COMPARISON_KEY); } catch {}
   } catch (e) {
     console.warn('Comparison photo save failed:', e);
   }
@@ -189,12 +217,27 @@ export async function saveComparisonPhoto(imageDataUrl) {
 
 export async function getComparisonPhotos() {
   try {
-    const stored = JSON.parse(localStorage.getItem(COMPARISON_KEY) || '{}');
     const records = getRecords();
     if (records.length < 2) return null;
 
     const firstRecord = records[0];
     const lastRecord = records[records.length - 1];
+
+    // IndexedDB에서 비교 사진 조회 (localStorage 폴백 포함)
+    let stored = await getComparisonPhotoDB();
+
+    // localStorage 폴백 (마이그레이션 전 데이터)
+    if (!stored.earliest && !stored.latest) {
+      try {
+        const lsStored = JSON.parse(localStorage.getItem(COMPARISON_KEY) || '{}');
+        if (lsStored.earliest || lsStored.latest) {
+          stored = lsStored;
+          // 자동 마이그레이션: localStorage → IndexedDB
+          await saveComparisonPhotoDB(lsStored.earliest, lsStored.latest);
+          try { localStorage.removeItem(COMPARISON_KEY); } catch {}
+        }
+      } catch {}
+    }
 
     // Before: comparison earliest > IndexedDB first > baseline image
     let beforeImg = stored.earliest?.dataUrl;
@@ -262,7 +305,8 @@ export function hasTodayRecord() {
  * 기록이 1개면 해당 값 그대로 반환
  */
 export function getStableSkinAge() {
-  const records = getRecords();
+  // Only use primary user records for stable skin age
+  const records = getRecords().filter(r => !r.differentPerson);
   if (records.length === 0) return null;
   if (records.length === 1) return records[0].skinAge;
 
@@ -346,6 +390,20 @@ export function getStreak() {
 
 // ===== CHANGE CALCULATION =====
 
+const COMPARE_KEYS = ['moisture', 'skinTone', 'wrinkleScore', 'poreScore', 'elasticityScore',
+  'pigmentationScore', 'textureScore', 'darkCircleScore', 'oilBalance'];
+
+function computeAvgDiff(a, b) {
+  let total = 0, count = 0;
+  for (const key of COMPARE_KEYS) {
+    if (typeof a[key] === 'number' && typeof b[key] === 'number') {
+      total += Math.abs(a[key] - b[key]);
+      count++;
+    }
+  }
+  return count > 0 ? total / count : 0;
+}
+
 /**
  * 직전 기록 대비 변화량 계산
  * @returns {Object|null} { metric: { prev, curr, diff, improved } } or null
@@ -355,7 +413,31 @@ export function getChanges() {
   if (records.length < 2) return null;
 
   const curr = records[records.length - 1];
-  const prev = records[records.length - 2];
+
+  // Find the most recent SAME-PERSON record before current
+  // Uses differentPerson flag; avgDiff is a soft heuristic only
+  let prev = null;
+  let fallbackPrev = null; // fallback if avgDiff filter skips all
+  for (let i = records.length - 2; i >= 0; i--) {
+    const r = records[i];
+    const currIsDiff = !!curr.differentPerson;
+    const rIsDiff = !!r.differentPerson;
+
+    if (currIsDiff === rIsDiff) {
+      if (!currIsDiff && !rIsDiff) {
+        // Both unflagged: save first match as fallback
+        if (!fallbackPrev) fallbackPrev = r;
+        // Soft check: skip only if scores are VERY different (likely different person)
+        const avgDiff = computeAvgDiff(curr, r);
+        if (avgDiff > 25) continue;
+      }
+      prev = r;
+      break;
+    }
+  }
+  // If avgDiff filter skipped all records, use fallback (same user, different analysis mode)
+  if (!prev) prev = fallbackPrev;
+  if (!prev) return null;
 
   const metrics = [
     { key: 'skinAge',           label: '피부나이',  unit: '세',  icon: '🎂', inverse: true },
@@ -391,7 +473,8 @@ export function getChanges() {
  * 측정 간 조명/컨디션 차이로 인한 일시적 변동을 완화하여 추세를 정확히 표시
  */
 export function getSmoothedChanges(alpha = 0.4) {
-  const records = getRecords();
+  // Only use primary user records (exclude different-person measurements)
+  const records = getRecords().filter(r => !r.differentPerson);
   if (records.length < 2) return null;
 
   const metrics = [
@@ -430,7 +513,8 @@ export function getSmoothedChanges(alpha = 0.4) {
  * 전체 기간 변화 (첫 기록 → 최신 기록)
  */
 export function getTotalChanges() {
-  const records = getRecords();
+  // Only use primary user records
+  const records = getRecords().filter(r => !r.differentPerson);
   if (records.length < 2) return null;
 
   const first = records[0];
@@ -465,7 +549,7 @@ export function getTimeSeries(metricKey = 'skinAge') {
  * 모든 지표의 최신 vs 이전 비교 (레이더 차트용)
  */
 export function getComparisonData() {
-  const records = getRecords();
+  const records = getRecords().filter(r => !r.differentPerson);
   if (records.length < 2) return null;
 
   const curr = records[records.length - 1];
@@ -640,7 +724,7 @@ export function generateShareText(result) {
   const streak = getStreak();
   const changes = getChanges();
 
-  let text = `🧬 LUA 피부 나이: ${result.skinAge}세 (종합 ${result.overallScore}점)`;
+  let text = `🧬 루아 피부 나이: ${result.skinAge}세 (종합 ${result.overallScore}점)`;
 
   if (changes && changes.skinAge.diff !== 0) {
     const diff = changes.skinAge.diff;

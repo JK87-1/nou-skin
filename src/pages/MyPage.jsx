@@ -15,8 +15,9 @@ import {
 import { getLatestRecord } from '../storage/SkinStorage';
 import { getGoal, saveGoal, clearGoal, getDaysRemaining, getGoalProgress, getOverallProgress, METRIC_META } from '../storage/GoalStorage';
 import BadgeRanking from '../components/BadgeRanking';
+import { getAllPhotosRaw, restorePhotos } from '../storage/PhotoDB';
 
-export default function MyPage() {
+export default function MyPage({ colorMode, setColorMode }) {
   const [profile, setProfile] = useState(getProfile);
   const [toast, setToast] = useState(false);
   const [toastMsg, setToastMsg] = useState('저장되었습니다');
@@ -38,17 +39,27 @@ export default function MyPage() {
       <div style={{ padding: '0 24px 0' }}>
 
         {/* Badge & Ranking UI (gear icon inside profile header) */}
-        <BadgeRanking onSettingsClick={() => setSettingsOpen(true)} />
+        <BadgeRanking onSettingsClick={() => setSettingsOpen(true)} colorMode={colorMode} />
 
-        {/* App Info */}
+        {/* App Info / Version Footer */}
         <div style={{
-          textAlign: 'center', padding: '12px 0 0',
+          textAlign: 'center',
+          padding: colorMode === 'light' ? '20px 0 8px' : '12px 0 0',
           animation: 'breatheIn 0.8s ease 0.55s both',
         }}>
-          <div style={{ fontSize: 11, color: '#8888a0', fontWeight: 300, marginBottom: 4 }}>LUA Beta v1.0.2</div>
+          <div style={{
+            fontSize: 11, fontWeight: 300, marginBottom: 4,
+            color: colorMode === 'light' ? '#B0B8C1' : 'var(--text-muted)',
+          }}>루아 Beta v1.0.2</div>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 16 }}>
-            <span style={{ fontSize: 11, color: '#8888a0', fontWeight: 300, cursor: 'pointer' }}>이용약관</span>
-            <span style={{ fontSize: 11, color: '#8888a0', fontWeight: 300, cursor: 'pointer' }}>개인정보처리방침</span>
+            <span style={{
+              fontSize: 11, cursor: 'pointer', fontWeight: 300,
+              color: colorMode === 'light' ? '#B0B8C1' : 'var(--text-muted)',
+            }}>이용약관</span>
+            <span style={{
+              fontSize: 11, cursor: 'pointer', fontWeight: 300,
+              color: colorMode === 'light' ? '#B0B8C1' : 'var(--text-muted)',
+            }}>개인정보처리방침</span>
           </div>
         </div>
       </div>
@@ -60,6 +71,8 @@ export default function MyPage() {
           update={update}
           onClose={() => setSettingsOpen(false)}
           showToast={showToast}
+          colorMode={colorMode}
+          setColorMode={setColorMode}
         />,
         document.body,
       )}
@@ -68,7 +81,7 @@ export default function MyPage() {
       {toast && (
         <div style={{
           position: 'fixed', bottom: 100, left: '50%', transform: 'translateX(-50%)',
-          background: 'rgba(167,139,250,0.9)', color: '#fff', padding: '10px 24px',
+          background: 'rgba(240,144,112,0.9)', color: '#fff', padding: '10px 24px',
           borderRadius: 20, fontSize: 13, fontWeight: 500, zIndex: 999,
           animation: 'fadeIn 0.2s ease',
         }}>{toastMsg}</div>
@@ -79,14 +92,15 @@ export default function MyPage() {
 
 // ===== Settings Modal =====
 
-function SettingsModal({ profile, update, onClose, showToast }) {
+function SettingsModal({ profile, update, onClose, showToast, colorMode, setColorMode }) {
   const [editingProfile, setEditingProfile] = useState(false);
   const [editingSkin, setEditingSkin] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
   const [goalModalOpen, setGoalModalOpen] = useState(false);
   const [baselineExists, setBaselineExists] = useState(() => hasBaseline());
-  const [importMode, setImportMode] = useState(false);
-  const [importCode, setImportCode] = useState('');
+  const [restoreConfirm, setRestoreConfirm] = useState(null); // { localStorage: {}, photos: [], stats }
+  const [restoring, setRestoring] = useState(false);
+  const [backupGuide, setBackupGuide] = useState(null); // { json, photoCount, lsCount }
+  const fileInputRef = useRef(null);
 
   const currentYear = new Date().getFullYear();
   const age = profile.birthYear ? currentYear - parseInt(profile.birthYear) : null;
@@ -107,7 +121,7 @@ function SettingsModal({ profile, update, onClose, showToast }) {
       onClick={onClose}
       style={{
         position: 'fixed', inset: 0, zIndex: 1000,
-        background: 'rgba(0,0,0,0.6)',
+        background: 'var(--bg-modal-overlay)',
         display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
         animation: 'fadeIn 0.2s ease',
       }}
@@ -117,19 +131,19 @@ function SettingsModal({ profile, update, onClose, showToast }) {
         style={{
           width: '100%', maxWidth: 430,
           maxHeight: '90vh', overflowY: 'auto',
-          background: '#1a1a28', borderRadius: '24px 24px 0 0',
+          background: 'var(--bg-modal)', borderRadius: '24px 24px 0 0',
           padding: '24px 24px 40px',
-          border: '1px solid rgba(255,255,255,0.08)',
+          border: '1px solid var(--border-subtle)',
           borderBottom: 'none',
           animation: 'slideUp 0.3s ease',
         }}
       >
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-          <div style={{ fontSize: 18, fontWeight: 700, color: '#f0f0f5' }}>설정</div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>설정</div>
           <button onClick={onClose} style={{
             width: 32, height: 32, borderRadius: '50%', border: 'none',
-            background: 'rgba(255,255,255,0.08)', color: '#8888a0',
+            background: 'var(--bg-input)', color: 'var(--text-muted)',
             fontSize: 16, cursor: 'pointer', display: 'flex',
             alignItems: 'center', justifyContent: 'center',
           }}>✕</button>
@@ -145,15 +159,15 @@ function SettingsModal({ profile, update, onClose, showToast }) {
               width: 36, height: 36, borderRadius: 12,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 17, flexShrink: 0,
-              background: 'rgba(167,139,250,0.08)',
+              background: 'rgba(240,144,112,0.08)',
             }}>👤</div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 400, color: '#e0e0e8' }}>프로필 편집</div>
-              <div style={{ fontSize: 11, color: '#8888a0', fontWeight: 300, marginTop: 2 }}>
+              <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>프로필 편집</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, marginTop: 2 }}>
                 {profile.nickname || '사용자'} · {age ? `만 ${age}세` : '나이 미설정'}
               </div>
             </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555570" strokeWidth="1.5" strokeLinecap="round"
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" strokeWidth="1.5" strokeLinecap="round"
               style={{ transform: editingProfile ? 'rotate(90deg)' : 'none', transition: 'transform 0.3s' }}>
               <polyline points="9 18 15 12 9 6" />
             </svg>
@@ -182,7 +196,7 @@ function SettingsModal({ profile, update, onClose, showToast }) {
                     style={{ ...inputStyle, flex: 1 }}
                   />
                   {age !== null && age > 0 && (
-                    <span style={{ fontSize: 13, color: '#818cf8', fontWeight: 600, whiteSpace: 'nowrap' }}>만 {age}세</span>
+                    <span style={{ fontSize: 13, color: '#F0A878', fontWeight: 600, whiteSpace: 'nowrap' }}>만 {age}세</span>
                   )}
                 </div>
               </Section>
@@ -200,21 +214,21 @@ function SettingsModal({ profile, update, onClose, showToast }) {
           <div style={{
             display: 'flex', alignItems: 'center', gap: 14,
             padding: '16px 20px', cursor: 'pointer',
-            borderTop: '1px solid rgba(255,255,255,0.04)',
+            borderTop: '1px solid var(--border-separator)',
           }} onClick={() => setEditingSkin(!editingSkin)}>
             <div style={{
               width: 36, height: 36, borderRadius: 12,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 17, flexShrink: 0,
-              background: 'rgba(167,139,250,0.08)',
+              background: 'rgba(240,144,112,0.08)',
             }}>{skinTypeEmoji[profile.skinType] || '🧬'}</div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 400, color: '#e0e0e8' }}>피부 타입</div>
-              <div style={{ fontSize: 11, color: '#8888a0', fontWeight: 300, marginTop: 2 }}>
+              <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>피부 타입</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, marginTop: 2 }}>
                 {profile.skinType || '미설정'}{profile.sensitivity ? ` · ${profile.sensitivity}` : ''}
               </div>
             </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555570" strokeWidth="1.5" strokeLinecap="round"
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" strokeWidth="1.5" strokeLinecap="round"
               style={{ transform: editingSkin ? 'rotate(90deg)' : 'none', transition: 'transform 0.3s' }}>
               <polyline points="9 18 15 12 9 6" />
             </svg>
@@ -247,9 +261,9 @@ function SettingsModal({ profile, update, onClose, showToast }) {
                         style={{
                           padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 400,
                           cursor: 'pointer', transition: 'all 0.2s',
-                          background: active ? 'rgba(167,139,250,0.08)' : 'rgba(255,255,255,0.04)',
-                          color: active ? '#818cf8' : '#8888a0',
-                          border: active ? '1px solid rgba(167,139,250,0.2)' : '1px solid rgba(255,255,255,0.06)',
+                          background: active ? 'rgba(240,144,112,0.08)' : 'var(--bg-card)',
+                          color: active ? '#F0A878' : 'var(--text-muted)',
+                          border: active ? '1px solid rgba(240,144,112,0.2)' : '1px solid var(--border-light)',
                         }}
                       >{c}</div>
                     );
@@ -280,6 +294,41 @@ function SettingsModal({ profile, update, onClose, showToast }) {
             reminderEnabled={profile.reminderEnabled}
             showToast={showToast}
           />
+          {/* Light/Dark Mode Toggle */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 14,
+            padding: '16px 20px', cursor: 'pointer',
+            borderTop: '1px solid var(--border-separator)',
+          }} onClick={() => setColorMode(colorMode === 'dark' ? 'light' : 'dark')}>
+            <div style={{
+              width: 36, height: 36, borderRadius: 12,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 17, flexShrink: 0,
+              background: 'rgba(240,144,112,0.08)',
+            }}>{colorMode === 'dark' ? '🌙' : '☀️'}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>화면 모드</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, marginTop: 2 }}>
+                {colorMode === 'dark' ? '다크 모드' : '라이트 모드'}
+              </div>
+            </div>
+            {/* iOS-style toggle */}
+            <div style={{
+              width: 50, height: 28, borderRadius: 14, padding: 2,
+              background: colorMode === 'light' ? 'rgba(240,144,112,0.8)' : 'rgba(255,255,255,0.12)',
+              transition: 'background 0.3s',
+              position: 'relative',
+            }}>
+              <div style={{
+                width: 24, height: 24, borderRadius: 12,
+                background: '#fff',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                transition: 'transform 0.3s',
+                transform: colorMode === 'light' ? 'translateX(22px)' : 'translateX(0)',
+              }} />
+            </div>
+          </div>
+
           <div
             onClick={() => {
               if (!baselineExists) return;
@@ -292,7 +341,7 @@ function SettingsModal({ profile, update, onClose, showToast }) {
             style={{
               display: 'flex', alignItems: 'center', gap: 14,
               padding: '16px 20px', cursor: baselineExists ? 'pointer' : 'default',
-              borderTop: '1px solid rgba(255,255,255,0.04)',
+              borderTop: '1px solid var(--border-separator)',
               opacity: baselineExists ? 1 : 0.45,
             }}
           >
@@ -300,11 +349,11 @@ function SettingsModal({ profile, update, onClose, showToast }) {
               width: 36, height: 36, borderRadius: 12,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 17, flexShrink: 0,
-              background: 'rgba(167,139,250,0.08)',
+              background: 'rgba(240,144,112,0.08)',
             }}>📷</div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 400, color: '#e0e0e8' }}>기준 측정 초기화</div>
-              <div style={{ fontSize: 11, color: '#8888a0', fontWeight: 300, marginTop: 2 }}>
+              <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>기준 측정 초기화</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, marginTop: 2 }}>
                 {baselineExists ? '다음 분석이 새 기준이 됩니다' : '기준 사진 없음 (첫 분석 시 자동 저장)'}
               </div>
             </div>
@@ -327,71 +376,135 @@ function SettingsModal({ profile, update, onClose, showToast }) {
 
         {/* 데이터 */}
         <SettingsSection label="데이터">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json"
+            style={{ display: 'none' }}
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              try {
+                const text = await file.text();
+                const parsed = JSON.parse(text);
+                // v2 format: { version, timestamp, localStorage, photos }
+                if (parsed.version === 2 && parsed.localStorage) {
+                  const lsCount = Object.keys(parsed.localStorage).length;
+                  const photoCount = parsed.photos?.length || 0;
+                  setRestoreConfirm({
+                    localStorage: parsed.localStorage,
+                    photos: parsed.photos || [],
+                    stats: { lsCount, photoCount, date: new Date(parsed.timestamp).toLocaleDateString('ko-KR') },
+                  });
+                } else if (parsed.version === undefined && typeof parsed === 'object') {
+                  // v1 legacy: plain localStorage object (nou_* keys only)
+                  const lsCount = Object.keys(parsed).length;
+                  if (lsCount === 0) throw new Error('empty');
+                  setRestoreConfirm({
+                    localStorage: parsed,
+                    photos: [],
+                    stats: { lsCount, photoCount: 0, date: '알 수 없음' },
+                  });
+                } else {
+                  throw new Error('invalid format');
+                }
+              } catch {
+                showToast('유효하지 않은 백업 파일입니다');
+              }
+              e.target.value = '';
+            }}
+          />
           <div
             onClick={async () => {
               try {
-                const data = {};
+                showToast('백업 준비 중...');
+                const lsData = {};
                 for (let i = 0; i < localStorage.length; i++) {
                   const key = localStorage.key(i);
-                  if (key && key.startsWith('nou_')) {
-                    data[key] = localStorage.getItem(key);
-                  }
+                  if (key) lsData[key] = localStorage.getItem(key);
                 }
-                const json = JSON.stringify(data);
-                const encoded = btoa(unescape(encodeURIComponent(json)));
-                await navigator.clipboard.writeText(encoded);
-                showToast('데이터가 클립보드에 복사되었습니다');
+                const photos = await getAllPhotosRaw();
+                const backup = {
+                  version: 2,
+                  timestamp: Date.now(),
+                  localStorage: lsData,
+                  photos,
+                };
+                const json = JSON.stringify(backup);
+                const photoCount = photos.length;
+                const lsCount = Object.keys(lsData).length;
+
+                // 모바일: 안내 모달 → 사용자 확인 후 공유 시트
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                if (isMobile) {
+                  setBackupGuide({ json, photoCount, lsCount });
+                  return;
+                }
+
+                // 데스크톱: 직접 다운로드
+                const dateStr = new Date().toISOString().slice(0, 10);
+                const blob = new Blob([json], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `lua-backup-${dateStr}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                localStorage.setItem('nou_last_manual_backup', String(Date.now()));
+                showToast(`백업 완료 (${lsCount}개 항목, ${photoCount}장 사진)`);
               } catch {
-                showToast('복사 실패 — 수동으로 시도해주세요');
+                showToast('백업 실패 — 다시 시도해주세요');
               }
             }}
             style={{
               display: 'flex', alignItems: 'center', gap: 14,
               padding: '16px 20px', cursor: 'pointer',
-              borderTop: '1px solid rgba(255,255,255,0.04)',
+              borderTop: '1px solid var(--border-separator)',
             }}
           >
             <div style={{
               width: 36, height: 36, borderRadius: 12,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 17, flexShrink: 0,
-              background: 'rgba(167,139,250,0.08)',
+              background: 'rgba(240,144,112,0.08)',
             }}>
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-              </svg>
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 400, color: '#e0e0e8' }}>데이터 내보내기</div>
-              <div style={{ fontSize: 11, color: '#8888a0', fontWeight: 300, marginTop: 2 }}>클립보드에 복사 (앱 설치 전 백업)</div>
-            </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555570" strokeWidth="1.5" strokeLinecap="round">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </div>
-          <div
-            onClick={() => setImportMode(true)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 14,
-              padding: '16px 20px', cursor: 'pointer',
-              borderTop: '1px solid rgba(255,255,255,0.04)',
-            }}
-          >
-            <div style={{
-              width: 36, height: 36, borderRadius: 12,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 17, flexShrink: 0,
-              background: 'rgba(167,139,250,0.08)',
-            }}>
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F0A878" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
               </svg>
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 400, color: '#e0e0e8' }}>데이터 가져오기</div>
-              <div style={{ fontSize: 11, color: '#8888a0', fontWeight: 300, marginTop: 2 }}>Safari 기록을 앱으로 복원</div>
+              <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>전체 백업 다운로드</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, marginTop: 2 }}>기록, 사진, 뱃지를 파일로 저장</div>
             </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555570" strokeWidth="1.5" strokeLinecap="round">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" strokeWidth="1.5" strokeLinecap="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </div>
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 14,
+              padding: '16px 20px', cursor: 'pointer',
+              borderTop: '1px solid var(--border-separator)',
+            }}
+          >
+            <div style={{
+              width: 36, height: 36, borderRadius: 12,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 17, flexShrink: 0,
+              background: 'rgba(240,144,112,0.08)',
+            }}>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F0A878" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>백업에서 복원</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, marginTop: 2 }}>백업 파일 선택하여 복원</div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" strokeWidth="1.5" strokeLinecap="round">
               <polyline points="9 18 15 12 9 6" />
             </svg>
           </div>
@@ -399,10 +512,6 @@ function SettingsModal({ profile, update, onClose, showToast }) {
 
         {/* 설정 */}
         <SettingsSection label="설정">
-          <DarkModeItem enabled={darkMode} onToggle={(v) => {
-            if (!v) { showToast('현재 다크모드만 지원돼요'); return; }
-            setDarkMode(v);
-          }} />
           <SettingsMenuItem icon="🌐" label="언어" desc="한국어" right="arrow" onTap={() => showToast('현재 한국어만 지원돼요')} />
           <SettingsMenuItem icon="🔒" label="개인정보 관리" right="arrow" onTap={() => showToast('모든 데이터는 기기에만 저장돼요')} />
         </SettingsSection>
@@ -410,26 +519,179 @@ function SettingsModal({ profile, update, onClose, showToast }) {
         {/* 지원 */}
         <SettingsSection label="지원">
           <SettingsMenuItem icon="💬" label="피드백 보내기" right="arrow" onTap={() => {
-            const subject = encodeURIComponent('LUA 피드백');
+            const subject = encodeURIComponent('루아 피드백');
             window.open(`mailto:luaskin.co@gmail.com?subject=${subject}`, '_blank');
           }} />
           <SettingsMenuItem icon="❓" label="자주 묻는 질문" right="arrow" onTap={() => showToast('FAQ는 준비 중이에요')} />
         </SettingsSection>
 
         <div style={{ marginTop: 10, textAlign: 'center' }}>
-          <p style={{ fontSize: 11, color: '#8888a0' }}>
+          <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
             설정한 정보는 기기에만 저장되며 외부로 전송되지 않아요
           </p>
         </div>
       </div>
 
-      {/* Import Modal */}
-      {importMode && (
+      {/* Backup Guide Modal — 공유 시트 띄우기 전 안내 */}
+      {backupGuide && (
         <div
-          onClick={(e) => { e.stopPropagation(); setImportMode(false); }}
+          onClick={() => setBackupGuide(null)}
           style={{
             position: 'fixed', inset: 0, zIndex: 1001,
-            background: 'rgba(0,0,0,0.5)',
+            background: 'var(--bg-modal-overlay)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 24,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: 340, width: '100%',
+              background: 'var(--bg-modal)', borderRadius: 24, padding: 28,
+              border: '1px solid var(--border-subtle)',
+            }}
+          >
+            <div style={{ textAlign: 'center', marginBottom: 16 }}>
+              <div style={{ fontSize: 44, marginBottom: 4 }}>💾</div>
+              <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
+                백업 파일 저장하기
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                {backupGuide.lsCount}개 항목 · {backupGuide.photoCount}장 사진
+              </div>
+            </div>
+
+            {/* 시각적 안내 */}
+            <div style={{
+              background: 'rgba(240,144,112,0.06)', borderRadius: 16, padding: '18px 16px',
+              marginBottom: 20,
+            }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 14 }}>
+                다음 화면에서 이렇게 해주세요
+              </div>
+              {/* 가짜 공유 시트 미리보기 */}
+              <div style={{
+                background: 'var(--bg-card, #fff)', borderRadius: 12, padding: '12px 14px',
+                border: '1px solid var(--border-subtle, #e5e7eb)',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 8 }}>
+                  {['AirDrop', '메시지', 'Mail', '메모'].map(label => (
+                    <div key={label} style={{ textAlign: 'center', opacity: 0.35 }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 10, background: '#ddd', marginBottom: 4 }} />
+                      <div style={{ fontSize: 9 }}>{label}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 16 }}>
+                  {[
+                    { label: '복사', highlight: false },
+                    { label: '빠른 메모', highlight: false },
+                    { label: '파일에 저장', highlight: true },
+                    { label: '더 보기', highlight: false },
+                  ].map(item => (
+                    <div key={item.label} style={{ textAlign: 'center', position: 'relative' }}>
+                      <div style={{
+                        width: 44, height: 44, borderRadius: 22,
+                        background: item.highlight ? '#F09070' : '#ddd',
+                        marginBottom: 4,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        boxShadow: item.highlight ? '0 0 0 3px rgba(240,144,112,0.3)' : 'none',
+                        transition: 'all 0.3s',
+                      }}>
+                        {item.highlight && (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round">
+                            <path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/>
+                          </svg>
+                        )}
+                      </div>
+                      <div style={{
+                        fontSize: 9,
+                        fontWeight: item.highlight ? 700 : 400,
+                        color: item.highlight ? '#F09070' : 'var(--text-muted)',
+                      }}>{item.label}</div>
+                      {item.highlight && (
+                        <div style={{
+                          position: 'absolute', top: -8, left: '50%', transform: 'translateX(-50%)',
+                          fontSize: 14,
+                        }}>👆</div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div style={{
+                marginTop: 12, fontSize: 13, color: '#F09070', fontWeight: 600, textAlign: 'center',
+              }}>
+                "파일에 저장"을 눌러주세요!
+              </div>
+            </div>
+
+            <button
+              onClick={async () => {
+                const { json, lsCount, photoCount } = backupGuide;
+                setBackupGuide(null);
+                const dateStr = new Date().toISOString().slice(0, 10);
+                const fileName = `lua-backup-${dateStr}.json`;
+                const blob = new Blob([json], { type: 'application/json' });
+
+                try {
+                  const file = new File([blob], fileName, { type: 'application/json', lastModified: Date.now() });
+                  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({ files: [file] });
+                    localStorage.setItem('nou_last_manual_backup', String(Date.now()));
+                    showToast(`백업 완료! (${lsCount}개 항목, ${photoCount}장 사진)`);
+                    return;
+                  }
+                } catch (e) {
+                  if (e.name === 'AbortError') return;
+                }
+
+                // share 미지원 폴백: 서버 경유
+                try {
+                  const resp = await fetch('/api/backup-download', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: json,
+                  });
+                  if (resp.ok) {
+                    const dlBlob = await resp.blob();
+                    const dlUrl = URL.createObjectURL(dlBlob);
+                    window.location.href = dlUrl;
+                    setTimeout(() => URL.revokeObjectURL(dlUrl), 10000);
+                  }
+                } catch {}
+                localStorage.setItem('nou_last_manual_backup', String(Date.now()));
+                showToast(`백업 완료! (${lsCount}개 항목, ${photoCount}장 사진)`);
+              }}
+              style={{
+                width: '100%', padding: 15, borderRadius: 14, border: 'none',
+                background: 'var(--btn-primary-bg, linear-gradient(135deg, #F09070, #F09070))',
+                color: '#fff', fontSize: 15, fontWeight: 700,
+                cursor: 'pointer', fontFamily: 'inherit',
+                boxShadow: '0 4px 16px rgba(124,92,252,0.3)',
+                marginBottom: 10,
+              }}
+            >확인 — 저장 화면 열기</button>
+            <button
+              onClick={() => setBackupGuide(null)}
+              style={{
+                width: '100%', padding: 12, borderRadius: 14,
+                border: '1px solid var(--border-subtle)', background: 'transparent',
+                color: 'var(--text-muted)', fontSize: 13, fontWeight: 500,
+                cursor: 'pointer', fontFamily: 'inherit',
+              }}
+            >취소</button>
+          </div>
+        </div>
+      )}
+
+      {/* Restore Confirmation Modal */}
+      {restoreConfirm && (
+        <div
+          onClick={(e) => { e.stopPropagation(); if (!restoring) setRestoreConfirm(null); }}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 1001,
+            background: 'var(--bg-modal-overlay)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             padding: 24,
           }}
@@ -438,63 +700,73 @@ function SettingsModal({ profile, update, onClose, showToast }) {
             onClick={(e) => e.stopPropagation()}
             style={{
               width: '100%', maxWidth: 360,
-              background: '#1e1e2a', borderRadius: 24, padding: 24,
-              border: '1px solid rgba(255,255,255,0.08)',
+              background: 'var(--bg-modal)', borderRadius: 24, padding: 24,
+              border: '1px solid var(--border-subtle)',
             }}
           >
-            <div style={{ fontSize: 16, fontWeight: 600, color: '#f0f0f5', marginBottom: 6 }}>데이터 가져오기</div>
-            <div style={{ fontSize: 12, color: '#8888a0', marginBottom: 16, lineHeight: 1.5 }}>
-              Safari에서 내보낸 코드를 붙여넣기 해주세요.
+            <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>
+              {restoring ? '복원 중...' : '백업 복원'}
             </div>
-            <textarea
-              value={importCode}
-              onChange={(e) => setImportCode(e.target.value)}
-              placeholder="여기에 붙여넣기..."
-              style={{
-                width: '100%', height: 80, padding: 14, borderRadius: 14,
-                border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.06)',
-                fontSize: 13, color: '#f0f0f5', fontFamily: 'monospace',
-                outline: 'none', resize: 'none',
-              }}
-            />
-            <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
-              <button
-                onClick={() => { setImportMode(false); setImportCode(''); }}
-                style={{
-                  flex: 1, padding: 12, borderRadius: 14, border: '1px solid rgba(255,255,255,0.08)',
-                  background: 'transparent', color: '#8888a0', fontSize: 14, fontWeight: 500,
-                  cursor: 'pointer', fontFamily: 'inherit',
-                }}
-              >취소</button>
-              <button
-                onClick={() => {
-                  try {
-                    const json = decodeURIComponent(escape(atob(importCode.trim())));
-                    const data = JSON.parse(json);
-                    let count = 0;
-                    for (const [key, value] of Object.entries(data)) {
-                      if (key.startsWith('nou_')) {
-                        localStorage.setItem(key, value);
-                        count++;
+            {!restoring ? (
+              <>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16, lineHeight: 1.6 }}>
+                  기존 데이터를 백업 파일로 대체합니다.<br />
+                  <span style={{ color: 'var(--text-secondary)' }}>
+                    {restoreConfirm.stats.lsCount}개 항목, {restoreConfirm.stats.photoCount}장 사진
+                  </span>
+                  <br />백업 날짜: {restoreConfirm.stats.date}
+                </div>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button
+                    onClick={() => setRestoreConfirm(null)}
+                    style={{
+                      flex: 1, padding: 12, borderRadius: 14, border: '1px solid var(--border-subtle)',
+                      background: 'transparent', color: 'var(--text-muted)', fontSize: 14, fontWeight: 500,
+                      cursor: 'pointer', fontFamily: 'inherit',
+                    }}
+                  >취소</button>
+                  <button
+                    onClick={async () => {
+                      setRestoring(true);
+                      try {
+                        // Restore localStorage
+                        const lsData = restoreConfirm.localStorage;
+                        for (const [key, value] of Object.entries(lsData)) {
+                          localStorage.setItem(key, value);
+                        }
+                        // Restore IndexedDB photos
+                        const photoCount = await restorePhotos(restoreConfirm.photos);
+                        const lsCount = Object.keys(lsData).length;
+                        setRestoring(false);
+                        setRestoreConfirm(null);
+                        showToast(`${lsCount}개 항목, ${photoCount}장 사진 복원 완료!`);
+                        setTimeout(() => window.location.reload(), 1200);
+                      } catch {
+                        setRestoring(false);
+                        showToast('복원 실패 — 다시 시도해주세요');
                       }
-                    }
-                    if (count === 0) throw new Error('no data');
-                    setImportMode(false);
-                    setImportCode('');
-                    showToast(`${count}개 항목 복원 완료!`);
-                    setTimeout(() => window.location.reload(), 1000);
-                  } catch {
-                    showToast('유효하지 않은 코드입니다');
-                  }
-                }}
-                style={{
-                  flex: 1, padding: 12, borderRadius: 14, border: 'none',
-                  background: 'linear-gradient(135deg, #9080c8, #6858a8, #483090)',
-                  color: '#fff', fontSize: 14, fontWeight: 600,
-                  cursor: 'pointer', fontFamily: 'inherit',
-                }}
-              >복원하기</button>
-            </div>
+                    }}
+                    style={{
+                      flex: 1, padding: 12, borderRadius: 14, border: 'none',
+                      background: 'var(--btn-primary-bg)',
+                      color: '#fff', fontSize: 14, fontWeight: 600,
+                      cursor: 'pointer', fontFamily: 'inherit',
+                    }}
+                  >복원하기</button>
+                </div>
+              </>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                <div style={{
+                  width: 32, height: 32, border: '3px solid rgba(240,144,112,0.2)',
+                  borderTopColor: '#F09070', borderRadius: '50%',
+                  animation: 'spin 0.8s linear infinite',
+                  margin: '0 auto 12px',
+                }} />
+                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+                <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>데이터를 복원하고 있어요...</div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -586,7 +858,7 @@ function GoalSettingModal({ onClose, showToast }) {
       onClick={onClose}
       style={{
         position: 'fixed', inset: 0, zIndex: 1002,
-        background: 'rgba(0,0,0,0.6)',
+        background: 'var(--bg-modal-overlay)',
         display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
         animation: 'fadeIn 0.2s ease',
       }}
@@ -596,9 +868,9 @@ function GoalSettingModal({ onClose, showToast }) {
         style={{
           width: '100%', maxWidth: 420,
           maxHeight: '85vh', overflowY: 'auto',
-          background: '#1a1a28', borderRadius: '24px 24px 0 0',
+          background: 'var(--bg-modal)', borderRadius: '24px 24px 0 0',
           padding: '24px 24px 40px',
-          border: '1px solid rgba(255,255,255,0.08)',
+          border: '1px solid var(--border-subtle)',
           borderBottom: 'none',
           animation: 'slideUp 0.3s ease',
         }}
@@ -606,12 +878,12 @@ function GoalSettingModal({ onClose, showToast }) {
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
           <div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: '#f0f0f5' }}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>
               {step === 1 && '지표 선택'}
               {step === 2 && '목표 설정'}
               {step === 3 && '목표 확인'}
             </div>
-            <div style={{ fontSize: 12, color: '#8888a0', marginTop: 2 }}>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
               {step === 1 && '개선하고 싶은 지표를 선택하세요 (최대 3개)'}
               {step === 2 && '목표 점수와 기간을 설정하세요'}
               {step === 3 && '설정한 목표를 확인하세요'}
@@ -619,7 +891,7 @@ function GoalSettingModal({ onClose, showToast }) {
           </div>
           <button onClick={onClose} style={{
             width: 32, height: 32, borderRadius: '50%', border: 'none',
-            background: 'rgba(255,255,255,0.08)', color: '#8888a0',
+            background: 'var(--bg-input)', color: 'var(--text-muted)',
             fontSize: 16, cursor: 'pointer', display: 'flex',
             alignItems: 'center', justifyContent: 'center',
           }}>✕</button>
@@ -630,7 +902,7 @@ function GoalSettingModal({ onClose, showToast }) {
           {[1, 2, 3].map((s) => (
             <div key={s} style={{
               flex: 1, height: 3, borderRadius: 2,
-              background: s <= step ? '#818cf8' : 'rgba(255,255,255,0.08)',
+              background: s <= step ? '#F0A878' : 'var(--bg-input)',
               transition: 'background 0.3s',
             }} />
           ))}
@@ -659,8 +931,8 @@ function GoalSettingModal({ onClose, showToast }) {
                     style={{
                       display: 'flex', alignItems: 'center', gap: 12,
                       padding: '14px 16px', borderRadius: 16,
-                      background: selected ? 'rgba(167,139,250,0.1)' : 'rgba(255,255,255,0.04)',
-                      border: selected ? '1px solid rgba(167,139,250,0.3)' : '1px solid rgba(255,255,255,0.06)',
+                      background: selected ? 'rgba(240,144,112,0.1)' : 'var(--bg-card)',
+                      border: selected ? '1px solid rgba(240,144,112,0.3)' : '1px solid var(--border-light)',
                       cursor: latestRecord ? 'pointer' : 'default',
                       opacity: latestRecord ? 1 : 0.5,
                       transition: 'all 0.2s',
@@ -669,7 +941,7 @@ function GoalSettingModal({ onClose, showToast }) {
                     <span style={{ fontSize: 20 }}>{m.icon}</span>
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontSize: 14, fontWeight: 500, color: '#e0e0e8' }}>{m.label}</span>
+                        <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-secondary)' }}>{m.label}</span>
                         {idx < 3 && latestRecord && (
                           <span style={{
                             fontSize: 10, padding: '1px 6px', borderRadius: 6,
@@ -677,14 +949,14 @@ function GoalSettingModal({ onClose, showToast }) {
                           }}>추천</span>
                         )}
                       </div>
-                      <div style={{ fontSize: 12, color: '#8888a0', marginTop: 2 }}>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
                         현재 {m.value}점
                       </div>
                     </div>
                     <div style={{
                       width: 22, height: 22, borderRadius: 6,
                       border: selected ? 'none' : '1.5px solid rgba(255,255,255,0.15)',
-                      background: selected ? '#818cf8' : 'transparent',
+                      background: selected ? '#F0A878' : 'transparent',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       flexShrink: 0, transition: 'all 0.2s',
                     }}>
@@ -715,12 +987,12 @@ function GoalSettingModal({ onClose, showToast }) {
                   onClick={() => applyPreset(p.delta)}
                   style={{
                     flex: 1, padding: '10px 8px', borderRadius: 14,
-                    border: '1px solid rgba(167,139,250,0.2)',
-                    background: 'rgba(167,139,250,0.06)',
-                    color: '#a78bfa', fontSize: 12, fontWeight: 600,
+                    border: '1px solid rgba(240,144,112,0.2)',
+                    background: 'rgba(240,144,112,0.06)',
+                    color: '#F09070', fontSize: 12, fontWeight: 600,
                     cursor: 'pointer', fontFamily: 'inherit',
                   }}
-                >+{p.delta}<br/><span style={{ fontSize: 10, fontWeight: 400, color: '#8888a0' }}>{p.label}</span></button>
+                >+{p.delta}<br/><span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>{p.label}</span></button>
               ))}
             </div>
 
@@ -733,31 +1005,31 @@ function GoalSettingModal({ onClose, showToast }) {
                 return (
                   <div key={key} style={{
                     padding: '16px', borderRadius: 16,
-                    background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid rgba(255,255,255,0.06)',
+                    background: 'var(--bg-card)',
+                    border: '1px solid var(--border-light)',
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <span style={{ fontSize: 16 }}>{meta.icon}</span>
-                        <span style={{ fontSize: 14, fontWeight: 500, color: '#e0e0e8' }}>{meta.label}</span>
+                        <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-secondary)' }}>{meta.label}</span>
                       </div>
-                      <span style={{ fontSize: 13, color: '#818cf8', fontWeight: 600 }}>
+                      <span style={{ fontSize: 13, color: '#F0A878', fontWeight: 600 }}>
                         {current} → {target}
                       </span>
                     </div>
                     <div style={{
                       width: '100%', height: 8, borderRadius: 4,
-                      background: 'rgba(255,255,255,0.06)', position: 'relative',
+                      background: 'var(--bg-card-hover)', position: 'relative',
                       marginBottom: 10,
                     }}>
                       <div style={{
                         width: `${current}%`, height: '100%', borderRadius: 4,
-                        background: 'rgba(255,255,255,0.12)',
+                        background: 'var(--bg-input)',
                       }} />
                       <div style={{
                         position: 'absolute', top: 0, left: 0,
                         width: `${target}%`, height: '100%', borderRadius: 4,
-                        background: 'linear-gradient(90deg, #6858a8, #9080c8, #a78bfa)',
+                        background: 'linear-gradient(90deg, #E87080, #F09070, #F09070)',
                         opacity: 0.6,
                       }} />
                     </div>
@@ -767,7 +1039,7 @@ function GoalSettingModal({ onClose, showToast }) {
                       max={100}
                       value={target}
                       onChange={(e) => setTargets((prev) => ({ ...prev, [key]: parseInt(e.target.value) }))}
-                      style={{ width: '100%', accentColor: '#818cf8' }}
+                      style={{ width: '100%', accentColor: '#F0A878' }}
                     />
                   </div>
                 );
@@ -775,7 +1047,7 @@ function GoalSettingModal({ onClose, showToast }) {
             </div>
 
             <div style={{ marginTop: 20 }}>
-              <div style={{ fontSize: 13, fontWeight: 500, color: '#e0e0e8', marginBottom: 10 }}>목표 기간</div>
+              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 10 }}>목표 기간</div>
               <div style={{ display: 'flex', gap: 8 }}>
                 {[30, 60, 90].map((d) => (
                   <button
@@ -783,9 +1055,9 @@ function GoalSettingModal({ onClose, showToast }) {
                     onClick={() => setDuration(d)}
                     style={{
                       flex: 1, padding: '10px 0', borderRadius: 14,
-                      border: duration === d ? '1px solid #818cf8' : '1px solid rgba(255,255,255,0.08)',
-                      background: duration === d ? 'rgba(167,139,250,0.12)' : 'transparent',
-                      color: duration === d ? '#818cf8' : '#8888a0',
+                      border: duration === d ? '1px solid #F0A878' : '1px solid var(--border-subtle)',
+                      background: duration === d ? 'rgba(240,144,112,0.12)' : 'transparent',
+                      color: duration === d ? '#F0A878' : 'var(--text-muted)',
                       fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
                     }}
                   >{d}일</button>
@@ -800,12 +1072,12 @@ function GoalSettingModal({ onClose, showToast }) {
           <div>
             <div style={{
               padding: 20, borderRadius: 20,
-              background: 'rgba(167,139,250,0.06)',
-              border: '1px solid rgba(167,139,250,0.15)',
+              background: 'rgba(240,144,112,0.06)',
+              border: '1px solid rgba(240,144,112,0.15)',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                <span style={{ fontSize: 14, fontWeight: 600, color: '#f0f0f5' }}>목표 요약</span>
-                <span style={{ fontSize: 12, color: '#818cf8', fontWeight: 500 }}>{duration}일</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>목표 요약</span>
+                <span style={{ fontSize: 12, color: '#F0A878', fontWeight: 500 }}>{duration}일</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {selectedMetrics.map((key) => {
@@ -816,12 +1088,12 @@ function GoalSettingModal({ onClose, showToast }) {
                     <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <span style={{ fontSize: 16 }}>{meta.icon}</span>
-                        <span style={{ fontSize: 13, color: '#e0e0e8' }}>{meta.label}</span>
+                        <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{meta.label}</span>
                       </div>
-                      <div style={{ fontSize: 13, color: '#8888a0' }}>
-                        <span style={{ color: '#8888a0' }}>{current}</span>
-                        <span style={{ color: '#555570', margin: '0 6px' }}>→</span>
-                        <span style={{ color: '#818cf8', fontWeight: 600 }}>{target}</span>
+                      <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>{current}</span>
+                        <span style={{ color: 'var(--text-dim)', margin: '0 6px' }}>→</span>
+                        <span style={{ color: '#F0A878', fontWeight: 600 }}>{target}</span>
                       </div>
                     </div>
                   );
@@ -849,8 +1121,8 @@ function GoalSettingModal({ onClose, showToast }) {
               onClick={() => setStep(step - 1)}
               style={{
                 flex: 1, padding: 14, borderRadius: 16,
-                border: '1px solid rgba(255,255,255,0.08)',
-                background: 'transparent', color: '#8888a0',
+                border: '1px solid var(--border-subtle)',
+                background: 'transparent', color: 'var(--text-muted)',
                 fontSize: 15, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
               }}
             >이전</button>
@@ -873,8 +1145,8 @@ function GoalSettingModal({ onClose, showToast }) {
               style={{
                 flex: 1, padding: 14, borderRadius: 16, border: 'none',
                 background: (step === 1 && selectedMetrics.length === 0)
-                  ? 'rgba(255,255,255,0.08)' : 'linear-gradient(135deg, #9080c8, #6858a8, #483090)',
-                color: (step === 1 && selectedMetrics.length === 0) ? '#555570' : '#fff',
+                  ? 'var(--bg-input)' : 'var(--btn-primary-bg)',
+                color: (step === 1 && selectedMetrics.length === 0) ? 'var(--text-dim)' : '#fff',
                 fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
               }}
             >다음</button>
@@ -884,10 +1156,10 @@ function GoalSettingModal({ onClose, showToast }) {
               onClick={handleSave}
               style={{
                 flex: 1, padding: 14, borderRadius: 16, border: 'none',
-                background: 'linear-gradient(135deg, #9080c8, #6858a8, #483090)',
+                background: 'var(--btn-primary-bg)',
                 color: '#fff', fontSize: 15, fontWeight: 700,
                 cursor: 'pointer', fontFamily: 'inherit',
-                boxShadow: '0 4px 20px rgba(167,139,250,0.35)',
+                boxShadow: 'var(--btn-primary-shadow)',
               }}
             >목표 시작하기</button>
           )}
@@ -914,7 +1186,7 @@ function GoalSettingModal({ onClose, showToast }) {
 function Section({ label, children }) {
   return (
     <div style={{ marginBottom: 20 }}>
-      <div style={{ fontSize: 13, fontWeight: 600, color: '#e0e0e8', marginBottom: 8 }}>{label}</div>
+      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 8 }}>{label}</div>
       {children}
     </div>
   );
@@ -932,9 +1204,9 @@ function ChipGroup({ options, selected, onSelect }) {
             style={{
               padding: '7px 16px', borderRadius: 20, fontSize: 13, fontWeight: 500,
               cursor: 'pointer', transition: 'all 0.2s',
-              background: active ? '#818cf8' : 'rgba(255,255,255,0.04)',
-              color: active ? '#fff' : '#8888a0',
-              border: active ? '1px solid #818cf8' : '1px solid rgba(255,255,255,0.08)',
+              background: active ? '#F0A878' : 'var(--bg-card)',
+              color: active ? '#fff' : 'var(--text-muted)',
+              border: active ? '1px solid #F0A878' : '1px solid var(--border-subtle)',
             }}
           >
             {opt}
@@ -951,17 +1223,17 @@ function JourneyStat({ value, unit, label, hasDivider }) {
       {hasDivider && (
         <div style={{
           position: 'absolute', left: 0, top: '15%', height: '70%',
-          width: 1, background: 'rgba(167,139,250,0.1)',
+          width: 1, background: 'rgba(240,144,112,0.1)',
         }} />
       )}
       <div style={{
         fontFamily: 'inherit',
-        fontSize: 28, fontWeight: 400, color: '#818cf8',
+        fontSize: 28, fontWeight: 400, color: '#F0A878',
         lineHeight: 1, marginBottom: 6,
       }}>
-        {value}{unit && <span style={{ fontSize: 14, color: '#8888a0' }}>{unit}</span>}
+        {value}{unit && <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>{unit}</span>}
       </div>
-      <div style={{ fontSize: 11, color: '#8888a0', fontWeight: 300, letterSpacing: 0.3 }}>{label}</div>
+      <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, letterSpacing: 0.3 }}>{label}</div>
     </div>
   );
 }
@@ -970,13 +1242,13 @@ function SettingsSection({ label, children }) {
   return (
     <div style={{ marginBottom: 20 }}>
       <div style={{
-        fontSize: 11, fontWeight: 400, color: '#8888a0',
+        fontSize: 11, fontWeight: 400, color: 'var(--text-muted)',
         letterSpacing: 2, textTransform: 'uppercase', marginBottom: 10,
       }}>{label}</div>
       <div style={{
         display: 'flex', flexDirection: 'column', gap: 0,
-        background: 'rgba(255,255,255,0.04)', borderRadius: 20, overflow: 'hidden',
-        border: '1px solid rgba(255,255,255,0.04)',
+        background: 'var(--bg-card)', borderRadius: 20, overflow: 'hidden',
+        border: '1px solid var(--border-separator)',
       }}>
         {children}
       </div>
@@ -989,20 +1261,20 @@ function SettingsMenuItem({ icon, label, desc, right, onTap }) {
     <div onClick={onTap} style={{
       display: 'flex', alignItems: 'center', gap: 14,
       padding: '16px 20px', cursor: 'pointer',
-      borderTop: '1px solid rgba(255,255,255,0.04)',
+      borderTop: '1px solid var(--border-separator)',
     }}>
       <div style={{
         width: 36, height: 36, borderRadius: 12,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 17, flexShrink: 0,
-        background: 'rgba(167,139,250,0.08)',
+        background: 'rgba(240,144,112,0.08)',
       }}>{icon}</div>
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 14, fontWeight: 400, color: '#e0e0e8' }}>{label}</div>
-        {desc && <div style={{ fontSize: 11, color: '#8888a0', fontWeight: 300, marginTop: 2 }}>{desc}</div>}
+        <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>{label}</div>
+        {desc && <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, marginTop: 2 }}>{desc}</div>}
       </div>
       {right === 'arrow' && (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555570" strokeWidth="1.5" strokeLinecap="round">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" strokeWidth="1.5" strokeLinecap="round">
           <polyline points="9 18 15 12 9 6" />
         </svg>
       )}
@@ -1081,7 +1353,7 @@ function ReminderItem({ enabled, time, onToggle, onTimeChange, profile, tipEnabl
   };
 
   return (
-    <div style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+    <div style={{ borderTop: '1px solid var(--border-separator)' }}>
       <div style={{
         display: 'flex', alignItems: 'center', gap: 14,
         padding: '16px 20px',
@@ -1090,27 +1362,27 @@ function ReminderItem({ enabled, time, onToggle, onTimeChange, profile, tipEnabl
           width: 36, height: 36, borderRadius: 12,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 17, flexShrink: 0,
-          background: 'rgba(167,139,250,0.08)',
+          background: 'rgba(240,144,112,0.08)',
         }}>🔔</div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 14, fontWeight: 400, color: '#e0e0e8' }}>진단 리마인더</div>
+          <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>진단 리마인더</div>
           {enabled && (
             <div
               onClick={() => setShowPicker(true)}
-              style={{ fontSize: 11, color: '#818cf8', fontWeight: 400, marginTop: 2, cursor: 'pointer' }}
+              style={{ fontSize: 11, color: '#F0A878', fontWeight: 400, marginTop: 2, cursor: 'pointer' }}
             >
               {formatTime(time)} ✎
             </div>
           )}
           {!enabled && (
-            <div style={{ fontSize: 11, color: '#8888a0', fontWeight: 300, marginTop: 2 }}>꺼짐</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, marginTop: 2 }}>꺼짐</div>
           )}
         </div>
         <div
           onClick={subscribing ? undefined : handleToggle}
           style={{
             width: 44, height: 26, borderRadius: 13,
-            background: enabled ? '#818cf8' : 'rgba(255,255,255,0.15)',
+            background: enabled ? '#F0A878' : 'rgba(255,255,255,0.15)',
             position: 'relative', flexShrink: 0, cursor: subscribing ? 'wait' : 'pointer',
             transition: 'background 0.3s',
             opacity: subscribing ? 0.6 : 1,
@@ -1213,7 +1485,7 @@ function BeautyTipItem({ enabled, time, onToggle, onTimeChange, profile, reminde
   };
 
   return (
-    <div style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+    <div style={{ borderTop: '1px solid var(--border-separator)' }}>
       <div style={{
         display: 'flex', alignItems: 'center', gap: 14,
         padding: '16px 20px',
@@ -1222,19 +1494,19 @@ function BeautyTipItem({ enabled, time, onToggle, onTimeChange, profile, reminde
           width: 36, height: 36, borderRadius: 12,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 17, flexShrink: 0,
-          background: 'rgba(167,139,250,0.08)',
+          background: 'rgba(240,144,112,0.08)',
         }}>💡</div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 14, fontWeight: 400, color: '#e0e0e8' }}>뷰티 팁 알림</div>
+          <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>뷰티 팁 알림</div>
           {enabled ? (
             <div
               onClick={() => setShowPicker(true)}
-              style={{ fontSize: 11, color: '#818cf8', fontWeight: 400, marginTop: 2, cursor: 'pointer' }}
+              style={{ fontSize: 11, color: '#F0A878', fontWeight: 400, marginTop: 2, cursor: 'pointer' }}
             >
               {formatTime(time)} ✎
             </div>
           ) : (
-            <div style={{ fontSize: 11, color: '#8888a0', fontWeight: 300, marginTop: 2 }}>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, marginTop: 2 }}>
               내 피부에 맞는 뷰티 팁을 매일 받아보세요
             </div>
           )}
@@ -1243,7 +1515,7 @@ function BeautyTipItem({ enabled, time, onToggle, onTimeChange, profile, reminde
           onClick={subscribing ? undefined : handleToggle}
           style={{
             width: 44, height: 26, borderRadius: 13,
-            background: enabled ? '#818cf8' : 'rgba(255,255,255,0.15)',
+            background: enabled ? '#F0A878' : 'rgba(255,255,255,0.15)',
             position: 'relative', flexShrink: 0,
             cursor: subscribing ? 'wait' : 'pointer',
             transition: 'background 0.3s',
@@ -1319,7 +1591,7 @@ function TimePicker({ value, onChange, onClose }) {
   const itemStyle = (active) => ({
     height: ITEM_H, display: 'flex', alignItems: 'center', justifyContent: 'center',
     fontSize: active ? 22 : 16, fontWeight: active ? 600 : 300,
-    color: active ? '#818cf8' : '#555570',
+    color: active ? '#F0A878' : 'var(--text-dim)',
     scrollSnapAlign: 'center', transition: 'all 0.15s',
     cursor: 'pointer',
   });
@@ -1329,7 +1601,7 @@ function TimePicker({ value, onChange, onClose }) {
       onClick={onClose}
       style={{
         position: 'fixed', inset: 0, zIndex: 1100,
-        background: 'rgba(0,0,0,0.35)',
+        background: 'var(--bg-modal-overlay)',
         display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
         animation: 'fadeIn 0.2s ease',
       }}
@@ -1338,27 +1610,27 @@ function TimePicker({ value, onChange, onClose }) {
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxWidth: 430,
-          background: '#1e1e2a', borderRadius: '24px 24px 0 0',
+          background: 'var(--bg-modal)', borderRadius: '24px 24px 0 0',
           padding: '20px 20px calc(20px + env(safe-area-inset-bottom, 0px))',
           animation: 'slideUp 0.3s ease',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <span onClick={onClose} style={{ fontSize: 14, color: '#8888a0', cursor: 'pointer', fontWeight: 400 }}>취소</span>
-          <span style={{ fontSize: 15, fontWeight: 600, color: '#f0f0f5' }}>알림 시간</span>
-          <span onClick={handleConfirm} style={{ fontSize: 14, color: '#818cf8', cursor: 'pointer', fontWeight: 600 }}>확인</span>
+          <span onClick={onClose} style={{ fontSize: 14, color: 'var(--text-muted)', cursor: 'pointer', fontWeight: 400 }}>취소</span>
+          <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>알림 시간</span>
+          <span onClick={handleConfirm} style={{ fontSize: 14, color: '#F0A878', cursor: 'pointer', fontWeight: 600 }}>확인</span>
         </div>
 
         <div style={{
           display: 'flex', alignItems: 'flex-start', gap: 0,
-          background: 'rgba(255,255,255,0.04)', borderRadius: 20, overflow: 'hidden',
-          border: '1px solid rgba(255,255,255,0.06)',
+          background: 'var(--bg-card)', borderRadius: 20, overflow: 'hidden',
+          border: '1px solid var(--border-light)',
           position: 'relative',
         }}>
           <div style={{
             position: 'absolute', left: 8, right: 8,
             top: ITEM_H, height: ITEM_H,
-            background: 'rgba(167,139,250,0.08)', borderRadius: 12,
+            background: 'rgba(240,144,112,0.08)', borderRadius: 12,
             pointerEvents: 'none', zIndex: 0,
           }} />
 
@@ -1370,7 +1642,7 @@ function TimePicker({ value, onChange, onClose }) {
                 style={{
                   height: ITEM_H, display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: ampm === v ? 18 : 15, fontWeight: ampm === v ? 600 : 300,
-                  color: ampm === v ? '#818cf8' : '#555570',
+                  color: ampm === v ? '#F0A878' : 'var(--text-dim)',
                   cursor: 'pointer', transition: 'all 0.15s',
                 }}
               >{v === 'AM' ? '오전' : '오후'}</div>
@@ -1392,7 +1664,7 @@ function TimePicker({ value, onChange, onClose }) {
             <div style={{ height: ITEM_H }} />
           </div>
 
-          <div style={{ fontSize: 22, fontWeight: 600, color: '#818cf8', zIndex: 1 }}>:</div>
+          <div style={{ fontSize: 22, fontWeight: 600, color: '#F0A878', zIndex: 1 }}>:</div>
 
           <div
             ref={minRef}
@@ -1421,21 +1693,21 @@ function DarkModeItem({ enabled, onToggle }) {
       style={{
         display: 'flex', alignItems: 'center', gap: 14,
         padding: '16px 20px', cursor: 'pointer',
-        borderTop: '1px solid rgba(255,255,255,0.04)',
+        borderTop: '1px solid var(--border-separator)',
       }}
     >
       <div style={{
         width: 36, height: 36, borderRadius: 12,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 17, flexShrink: 0,
-        background: 'rgba(255,255,255,0.06)',
+        background: 'var(--bg-card-hover)',
       }}>🌙</div>
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 14, fontWeight: 400, color: '#e0e0e8' }}>다크모드</div>
+        <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>다크모드</div>
       </div>
       <div style={{
         width: 44, height: 26, borderRadius: 13,
-        background: enabled ? '#818cf8' : 'rgba(255,255,255,0.15)',
+        background: enabled ? '#F0A878' : 'rgba(255,255,255,0.15)',
         position: 'relative', flexShrink: 0,
         transition: 'background 0.3s',
       }}>
@@ -1443,7 +1715,7 @@ function DarkModeItem({ enabled, onToggle }) {
           position: 'absolute', top: 3,
           left: enabled ? 21 : 3,
           width: 20, height: 20, borderRadius: '50%',
-          background: '#e0e0e8', boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+          background: 'var(--text-secondary)', boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
           transition: 'left 0.3s',
         }} />
       </div>
@@ -1453,8 +1725,8 @@ function DarkModeItem({ enabled, onToggle }) {
 
 const inputStyle = {
   width: '100%', padding: '12px 14px', borderRadius: 14,
-  border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.06)',
-  fontSize: 14, color: '#f0f0f5', outline: 'none',
+  border: '1px solid var(--border-subtle)', background: 'var(--bg-card-hover)',
+  fontSize: 14, color: 'var(--text-primary)', outline: 'none',
   fontFamily: 'inherit',
   transition: 'border-color 0.2s',
 };

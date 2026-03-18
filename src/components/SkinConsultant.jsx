@@ -5,7 +5,8 @@ import { saveConsultSession, loadConsultSession, clearConsultSession } from '../
 import { compressImage } from '../engine/PixelAnalysis';
 import { incrementStat, addXP, checkAndAwardBadges } from '../storage/BadgeStorage';
 import { PRODUCTS, CATEGORY_META, getProductsByCategory, calcMatchScore } from '../data/ProductCatalog';
-import AuraPearl from './icons/AuraPearl';
+import { getProducts } from '../storage/TrackerStorage';
+import SoftCloverIcon from './icons/SoftCloverIcon';
 
 /** Extract [RECOMMEND:카테고리] tags — only explicit tags from AI, no keyword fallback */
 function extractRecommendTags(text) {
@@ -37,8 +38,8 @@ function MatchScoreRing({ score }) {
   return (
     <div style={{ position: 'relative', width: 40, height: 40, flexShrink: 0 }}>
       <svg width="40" height="40" viewBox="0 0 40 40" style={{ transform: 'rotate(-90deg)' }}>
-        <circle cx="20" cy="20" r={r} fill="none" stroke="rgba(167,139,250,0.12)" strokeWidth={stroke} />
-        <circle cx="20" cy="20" r={r} fill="none" stroke="#818cf8" strokeWidth={stroke}
+        <circle cx="20" cy="20" r={r} fill="none" stroke="rgba(240,144,112,0.12)" strokeWidth={stroke} />
+        <circle cx="20" cy="20" r={r} fill="none" stroke="#F0A878" strokeWidth={stroke}
           strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
           style={{ transition: 'stroke-dashoffset 0.8s ease-out' }} />
       </svg>
@@ -58,8 +59,8 @@ function ProductItem({ product, matchScore, delay = 0 }) {
       style={{
         display: 'flex', alignItems: 'center', gap: 10,
         padding: '10px 12px', borderRadius: 14,
-        background: 'rgba(255,255,255,0.03)',
-        border: '1px solid rgba(255,255,255,0.06)',
+        background: 'var(--bg-card)',
+        border: '1px solid var(--border-light)',
         textDecoration: 'none', color: 'inherit',
         animation: `slideInRight 0.4s ease-out ${delay}s both`,
         cursor: 'pointer',
@@ -68,7 +69,7 @@ function ProductItem({ product, matchScore, delay = 0 }) {
       {/* Product icon placeholder */}
       <div style={{
         width: 44, height: 44, borderRadius: 10, flexShrink: 0,
-        background: 'linear-gradient(135deg, rgba(167,139,250,0.15), rgba(167,139,250,0.15))',
+        background: 'linear-gradient(135deg, rgba(240,144,112,0.15), rgba(240,144,112,0.15))',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 18,
       }}>
@@ -83,7 +84,7 @@ function ProductItem({ product, matchScore, delay = 0 }) {
       </div>
       {/* Center: name + tags + volume */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: '#e0e0f0',
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)',
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {product.brand} {product.name}
         </div>
@@ -91,10 +92,10 @@ function ProductItem({ product, matchScore, delay = 0 }) {
           {product.tags?.slice(0, 2).map((tag, ti) => (
             <span key={ti} style={{
               fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 8,
-              background: 'rgba(167,139,250,0.15)', color: '#a78bfa',
+              background: 'rgba(240,144,112,0.15)', color: '#F09070',
             }}>{tag}</span>
           ))}
-          <span style={{ fontSize: 10, color: '#66667a' }}>{product.volume}</span>
+          <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{product.volume}</span>
         </div>
       </div>
       {/* Right: match score ring */}
@@ -119,14 +120,14 @@ function ProductRecommendSection({ category, result, delay = 0 }) {
       <div style={{
         display: 'flex', alignItems: 'center', gap: 8,
         padding: '10px 14px', borderRadius: 20,
-        background: 'rgba(255,255,255,0.04)',
-        border: '1px solid rgba(255,255,255,0.08)',
+        background: 'var(--bg-card)',
+        border: '1px solid var(--border-subtle)',
         marginBottom: 8,
       }}>
         <span style={{ fontSize: 18 }}>{meta.icon}</span>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: '#e0e0f0' }}>{meta.label}</div>
-          <div style={{ fontSize: 11, color: '#8888a0' }}>{meta.ingredient}</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)' }}>{meta.label}</div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{meta.ingredient}</div>
         </div>
       </div>
       {/* Product items */}
@@ -150,14 +151,14 @@ function renderMarkdown(text) {
 
     const parts = cleanLine.split(/(\*\*[^*]+\*\*)/g).map((seg, si) => {
       if (seg.startsWith('**') && seg.endsWith('**')) {
-        return <strong key={si} style={{ color: '#c4b5fd' }}>{seg.slice(2, -2)}</strong>;
+        return <strong key={si} style={{ color: 'var(--accent-secondary)' }}>{seg.slice(2, -2)}</strong>;
       }
       return seg;
     });
 
     if (isBullet) {
       return <div key={li} style={{ display: 'flex', gap: 8, marginTop: li > 0 ? 6 : 0 }}>
-        <span style={{ flexShrink: 0, opacity: 0.5, color: '#818cf8' }}>•</span>
+        <span style={{ flexShrink: 0, opacity: 0.5, color: 'var(--accent-primary)' }}>•</span>
         <span>{parts}</span>
       </div>;
     }
@@ -169,7 +170,7 @@ function renderMarkdown(text) {
 }
 
 function generateWelcomeMessage(result) {
-  if (!result) return '안녕하세요, 당신의 피부 상담사 루아(LUA)에요. 궁금한 점이 있으면 편하게 물어보세요!';
+  if (!result) return '안녕하세요, 당신의 피부 상담사 루아에요. 궁금한 점이 있으면 편하게 물어보세요!';
 
   const overall = result.overallScore;
   // Find weakest metric
@@ -186,7 +187,7 @@ function generateWelcomeMessage(result) {
   ];
   const weakest = metrics.reduce((min, m) => m.score < min.score ? m : min, metrics[0]);
 
-  return `안녕하세요, 당신의 피부 상담사 루아(LUA)에요. 오늘 피부 분석 결과를 봤어요. 종합 ${overall}점이에요. 가장 신경 쓸 부분은 ${weakest.label}(${weakest.score}점)이에요. 궁금한 점이 있으면 편하게 물어보세요! 화장품 사진을 보내주시면 성분 적합성도 분석해드려요.`;
+  return `안녕하세요, 당신의 피부 상담사 루아에요. 오늘 피부 분석 결과를 봤어요. 종합 ${overall}점이에요. 가장 신경 쓸 부분은 ${weakest.label}(${weakest.score}점)이에요. 궁금한 점이 있으면 편하게 물어보세요! 화장품 사진을 보내주시면 성분 적합성도 분석해드려요.`;
 }
 
 export default function SkinConsultant({ result, onClose, isTab = false }) {
@@ -208,11 +209,12 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
 
   const quickQuestions = [
     '내 피부 최대 약점은?',
-    '추천 스킨케어 루틴은?',
+    '내 루틴 분석해줘',
     '피부나이 줄이려면?',
     '지금 피부 상태 요약해줘',
     '이 화장품 내 피부에 맞아?',
     '내 피부에 맞는 화장품 추천해줘',
+    '맞춤 피부 시술 추천해줘',
   ];
 
   // Initialize: load saved session or create welcome message
@@ -390,6 +392,14 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
         gender: profile.gender,
         skinType: profile.skinType,
       },
+      products: getProducts().map(p => ({
+        brand: p.brand,
+        name: p.name,
+        category: p.category,
+        timeSlot: p.timeSlot,
+        ingredients: p.ingredients,
+        startDate: p.startDate,
+      })),
     };
   }, [result]);
 
@@ -530,15 +540,15 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: isTab ? '20px 20px 14px' : '52px 20px 14px',
-        background: isTab ? 'transparent' : 'rgba(17,17,24,0.95)',
-        backdropFilter: isTab ? 'none' : 'blur(12px)', WebkitBackdropFilter: isTab ? 'none' : 'blur(12px)',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        background: isTab ? 'transparent' : 'var(--consult-header-bg)',
+        backdropFilter: isTab ? 'none' : 'var(--card-backdrop)', WebkitBackdropFilter: isTab ? 'none' : 'var(--card-backdrop)',
+        borderBottom: '1px solid var(--border-separator)',
         flexShrink: 0,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
             width: 36, height: 36, borderRadius: '50%',
-            background: 'linear-gradient(135deg, #9080c8, #6858a8, #483090)',
+            background: 'var(--btn-primary-bg)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 18,
           }}>
@@ -547,10 +557,10 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
             </svg>
           </div>
           <div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: '#f0f0f5', letterSpacing: -0.3 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: -0.3 }}>
               나만의 피부 상담사
             </div>
-            <div style={{ fontSize: 11, color: '#8888a0', fontWeight: 400 }}>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 400 }}>
               AI 맞춤 피부 컨시어지 서비스
             </div>
           </div>
@@ -562,8 +572,8 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
             setMessages([welcome]);
           }} style={{
             height: 32, padding: '0 12px', borderRadius: 16, border: 'none',
-            background: 'rgba(255,255,255,0.06)',
-            fontSize: 12, fontWeight: 600, color: '#8888a0', cursor: 'pointer',
+            background: 'var(--bg-card-hover)',
+            fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', cursor: 'pointer',
             fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 4,
           }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -574,9 +584,9 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
           {!isTab && (
             <button onClick={handleClose} style={{
               width: 36, height: 36, borderRadius: '50%',
-              background: 'rgba(255,255,255,0.08)', border: 'none',
+              background: 'var(--bg-input)', border: 'none',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', fontSize: 18, color: '#8888a0',
+              cursor: 'pointer', fontSize: 18, color: 'var(--text-muted)',
             }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -631,9 +641,9 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
                   paddingLeft: 2,
                 }}>
                   <div style={{ flexShrink: 0 }}>
-                    <AuraPearl variant="eternal" size={28} animated />
+                    <SoftCloverIcon theme="verteDeH" size={28} animate />
                   </div>
-                  <span style={{ fontSize: 11, color: '#8888a0', fontWeight: 400 }}>루아(LUA)</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 400 }}>루아</span>
                 </div>
               )}
               <div className={`consult-bubble ${msg.role === 'user' ? 'user' : 'ai'}`}>
@@ -655,7 +665,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
                     <ProductRecommendSection key={cat} category={cat} result={result} delay={ci * 0.15} />
                   ))}
                   <div style={{
-                    fontSize: 10, color: '#55556a', textAlign: 'center',
+                    fontSize: 10, color: 'var(--text-dim)', textAlign: 'center',
                     padding: '6px 12px 2px', lineHeight: 1.4,
                   }}>
                     이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
@@ -696,19 +706,19 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
               onClick={() => albumInputRef.current?.click()}
               style={{
                 width: 72, height: 72, borderRadius: 12,
-                border: '2px dashed rgba(167,139,250,0.4)',
-                background: 'rgba(167,139,250,0.08)',
+                border: '2px dashed rgba(240,144,112,0.4)',
+                background: 'rgba(240,144,112,0.08)',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 cursor: 'pointer', gap: 2, flexShrink: 0,
               }}
             >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F09070" strokeWidth="2" strokeLinecap="round">
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
-              <span style={{ fontSize: 10, color: '#a78bfa', fontWeight: 600 }}>추가</span>
+              <span style={{ fontSize: 10, color: '#F09070', fontWeight: 600 }}>추가</span>
             </button>
           )}
-          <span style={{ fontSize: 12, color: '#8888a0', width: '100%' }}>
+          <span style={{ fontSize: 12, color: 'var(--text-muted)', width: '100%' }}>
             {`사진 ${pendingImages.length}/${MAX_IMAGES}장`}
             {pendingImages.length >= 2 && ' · 비교 분석 가능'}
           </span>
@@ -718,9 +728,9 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
       {/* Input Bar */}
       <div style={{
         padding: kbOpen ? '10px 16px' : '10px 16px calc(10px + env(safe-area-inset-bottom, 0px))',
-        background: 'rgba(17,17,24,0.95)',
-        backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-        borderTop: '1px solid rgba(255,255,255,0.06)',
+        background: 'var(--consult-header-bg)',
+        backdropFilter: 'var(--card-backdrop)', WebkitBackdropFilter: 'var(--card-backdrop)',
+        borderTop: '1px solid var(--border-separator)',
         display: 'flex', gap: 8, alignItems: 'flex-end',
         flexShrink: 0, position: 'relative',
       }}>
@@ -728,14 +738,14 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
         {showAttachMenu && (
           <div className="consult-attach-menu" onClick={(e) => e.stopPropagation()}>
             <button className="consult-attach-option" onClick={() => { cameraInputRef.current?.click(); setShowAttachMenu(false); }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F09070" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
                 <circle cx="12" cy="13" r="4"/>
               </svg>
               카메라로 촬영
             </button>
             <button className="consult-attach-option" onClick={() => { albumInputRef.current?.click(); setShowAttachMenu(false); }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F09070" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                 <circle cx="8.5" cy="8.5" r="1.5"/>
                 <polyline points="21 15 16 10 5 21"/>
@@ -752,7 +762,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
           disabled={isLoading}
           style={{ opacity: isLoading ? 0.5 : 1 }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2.5" strokeLinecap="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F09070" strokeWidth="2.5" strokeLinecap="round">
             <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
         </button>
@@ -767,14 +777,14 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
           disabled={isLoading}
           style={{
             flex: 1, minWidth: 0, padding: '12px 18px', borderRadius: 24,
-            border: `1px solid ${isListening ? 'rgba(167,139,250,0.5)' : 'rgba(255,255,255,0.08)'}`,
-            background: 'rgba(255,255,255,0.06)',
-            fontSize: 14, color: '#f0f0f5',
+            border: `1px solid ${isListening ? 'rgba(240,144,112,0.5)' : 'var(--border-subtle)'}`,
+            background: 'var(--bg-card-hover)',
+            fontSize: 14, color: 'var(--text-primary)',
             fontFamily: 'inherit', outline: 'none',
             transition: 'border-color 0.2s',
           }}
-          onFocus={(e) => e.target.style.borderColor = 'rgba(167,139,250,0.5)'}
-          onBlur={(e) => { if (!isListening) e.target.style.borderColor = 'rgba(255,255,255,0.08)'; }}
+          onFocus={(e) => e.target.style.borderColor = 'rgba(240,144,112,0.5)'}
+          onBlur={(e) => { if (!isListening) e.target.style.borderColor = 'var(--border-subtle)'; }}
         />
 
         {/* Mic STT Button */}
@@ -786,7 +796,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
             style={{ opacity: isLoading ? 0.5 : 1 }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-              stroke={isListening ? '#a78bfa' : '#a78bfa'}
+              stroke={isListening ? '#F09070' : '#F09070'}
               strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="9" y="1" width="6" height="11" rx="3"/>
               <path d="M19 10v1a7 7 0 01-14 0v-1"/>
@@ -802,8 +812,8 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
           style={{
             width: 44, height: 44, borderRadius: '50%', border: 'none',
             background: canSend
-              ? 'linear-gradient(135deg, #9080c8, #6858a8, #483090)'
-              : 'rgba(255,255,255,0.06)',
+              ? 'var(--btn-primary-bg)'
+              : 'var(--bg-card-hover)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: canSend ? 'pointer' : 'default',
             flexShrink: 0,
@@ -811,7 +821,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
           }}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-            stroke={canSend ? '#fff' : '#555570'}
+            stroke={canSend ? '#fff' : 'var(--text-dim)'}
             strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
           </svg>

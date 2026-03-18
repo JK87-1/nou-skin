@@ -12,6 +12,9 @@ const DEFAULTS = {
   reminderTime: '08:00',
   tipEnabled: false,
   tipTime: '20:00',
+  selectedTitleLevel: null,
+  activeTheme: null,
+  colorMode: 'light',
 };
 
 export function getProfile() {
