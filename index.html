@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#F7F8FA" />
+  <meta name="theme-color" content="#483090" />
   <meta name="description" content="AI가 비추는 당신의 건강 리듬. 피부 분석부터 웰니스까지." />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="루아" />
-  <title>루아 — 피부 여정의 시작</title>
+  <meta name="apple-mobile-web-app-title" content="LUA" />
+  <title>LUA - Your Inner Glow</title>
 
   <!-- Favicons -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -17,31 +17,24 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180x180.png" />
 
   <!-- Open Graph -->
-  <meta property="og:title" content="루아 — 피부 여정의 시작" />
+  <meta property="og:title" content="LUA - Your Inner Glow" />
   <meta property="og:description" content="AI가 비추는 당신의 건강 리듬" />
   <meta property="og:image" content="https://luaskin.co/og-image.png" />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="루아 — 피부 여정의 시작" />
+  <meta name="twitter:title" content="LUA - Your Inner Glow" />
   <meta name="twitter:description" content="AI가 비추는 당신의 건강 리듬" />
   <meta name="twitter:image" content="https://luaskin.co/og-image.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Noto+Sans+KR:wght@200;300;400;500;600;700&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
-  <!-- Toss Product Sans (light mode) -->
-  <link rel="stylesheet" href="https://static.toss.im/tps/main.css" />
-  <link rel="stylesheet" href="https://static.toss.im/tps/others.css" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Pretendard Variable', 'Pretendard', 'Noto Sans KR', 'Apple SD Gothic Neo', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #F7F8FA;
+      background: #111118;
       -webkit-font-smoothing: antialiased;
-      color: #191F28;
-    }
-    html[data-theme="dark"] body, html:not([data-theme]) body.dark-mode {
-      background: #000000;
       color: #f0f0f5;
     }
     #root { min-height: 100dvh; }
@@ -49,35 +42,6 @@
 </head>
 <body>
   <div id="root"></div>
-  <script>
-    // Dev: force unregister all service workers and clear caches
-    if ('caches' in window) {
-      caches.keys().then(function(names) {
-        names.forEach(function(n) { caches.delete(n); });
-      });
-    }
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(regs) {
-        regs.forEach(function(r) { r.unregister(); });
-      });
-    }
-    // Apply theme BEFORE React loads to prevent flash
-    try {
-      var p = JSON.parse(localStorage.getItem('nou_profile') || '{}');
-      var mode = p.colorMode || 'light';
-      if (mode === 'light') {
-        document.documentElement.setAttribute('data-theme', 'light');
-        document.querySelector('meta[name="theme-color"]').content = '#F7F8FA';
-      } else {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        document.body.style.background = '#000000';
-        document.body.style.color = '#f0f0f5';
-        document.querySelector('meta[name="theme-color"]').content = '#000000';
-      }
-    } catch(e) {
-      document.documentElement.setAttribute('data-theme', 'light');
-    }
-  </script>
   <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>
