@@ -764,13 +764,6 @@ export default function RoutineTracker({ colorMode, themeColors, onBack }) {
             </div>
           </div>
 
-          {products.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '40px 0 20px' }}>
-              <div style={{ marginBottom: 12 }}><LotionIcon size={40} /></div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: isLight ? '#191F28' : '#f0f0f5', marginBottom: 4 }}>아직 등록된 제품이 없어요</div>
-              <div style={{ fontSize: 13, color: isLight ? '#8B95A1' : '#8888a0' }}>사용중인 스킨케어 제품을 등록해보세요</div>
-            </div>
-          )}
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12, alignItems: 'stretch' }}>
             {products.map((p, i) => {

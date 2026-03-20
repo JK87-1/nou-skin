@@ -328,6 +328,49 @@ export const BottleIcon = ({ size = s }) => (
   </svg>
 );
 
+// 💬 말풍선 — 파스텔 민트
+export const ChatIcon = ({ size = s }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <defs><linearGradient id="chat-g" x1="20%" y1="0%" x2="80%" y2="100%"><stop offset="0%" stopColor="#C8F0E0"/><stop offset="100%" stopColor="#A0E0C8"/></linearGradient></defs>
+    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" fill="url(#chat-g)"/>
+    <ellipse cx="10" cy="9" rx="3" ry="2" fill="white" opacity="0.25"/>
+  </svg>
+);
+
+// ❓ 물음표 — 파스텔 블루
+export const QuestionIcon = ({ size = s }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <defs><linearGradient id="que-g" x1="20%" y1="0%" x2="80%" y2="100%"><stop offset="0%" stopColor="#C8D8F0"/><stop offset="100%" stopColor="#A8C0E0"/></linearGradient></defs>
+    <circle cx="12" cy="12" r="10" fill="url(#que-g)"/>
+    <path d="M9.5 9a2.5 2.5 0 015 0c0 1.5-2.5 2-2.5 3.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
+    <circle cx="12" cy="16.5" r="1" fill="white"/>
+  </svg>
+);
+
+// 🌐 지구본 — 파스텔 시안
+export const GlobeIcon = ({ size = s }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <defs><linearGradient id="glb-g" x1="20%" y1="0%" x2="80%" y2="100%"><stop offset="0%" stopColor="#C0E8F0"/><stop offset="100%" stopColor="#90D0E0"/></linearGradient></defs>
+    <circle cx="12" cy="12" r="10" fill="url(#glb-g)"/>
+    <ellipse cx="12" cy="12" rx="4" ry="10" stroke="white" strokeWidth="1" fill="none" opacity="0.3"/>
+    <line x1="2" y1="12" x2="22" y2="12" stroke="white" strokeWidth="1" opacity="0.3"/>
+    <ellipse cx="10" cy="8" rx="3" ry="2" fill="white" opacity="0.2"/>
+  </svg>
+);
+
+// 🪞 거울 — 파스텔 스카이블루 (클래식 벽거울)
+export const MirrorIcon = ({ size = s }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <defs><linearGradient id="mir-g" x1="20%" y1="0%" x2="80%" y2="100%"><stop offset="0%" stopColor="#D0E8F8"/><stop offset="100%" stopColor="#A8D0E8"/></linearGradient></defs>
+    {/* 프레임 — 위가 둥글고 아래가 평평한 아치형 */}
+    <path d="M5 22 L5 8 C5 4, 8 1, 12 1 C16 1, 19 4, 19 8 L19 22 Z" fill="#C8B8A8" opacity="0.3"/>
+    {/* 거울 면 */}
+    <path d="M7 21 L7 9 C7 5.5, 9 3, 12 3 C15 3, 17 5.5, 17 9 L17 21 Z" fill="url(#mir-g)"/>
+    {/* 반사 하이라이트 */}
+    <path d="M9 7 C9 5.5, 10 4.5, 11 5 L9 12" stroke="white" strokeWidth="1.2" strokeLinecap="round" fill="none" opacity="0.3"/>
+  </svg>
+);
+
 // 🔥 불꽃 — 파스텔 오렌지
 export const FlameIcon = ({ size = s }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -372,6 +415,10 @@ export function PastelIcon({ emoji, size = 18 }) {
     '🌠': StarIcon,
     '🔥': FlameIcon,
     '🚀': ChartIcon,
+    '💬': ChatIcon,
+    '❓': QuestionIcon,
+    '🌐': GlobeIcon,
+    '🪞': MirrorIcon,
     '🌡': ThermometerIcon,
     '🖼️': PhotoIcon,
     '🪄': WandIcon,

@@ -651,7 +651,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
                     transition: 'all 0.25s',
                     display: 'flex', alignItems: 'center', gap: 6,
                   }}>
-                    <span>{cat.icon}{cat.label}</span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><PastelIcon emoji={cat.icon} size={14} />{cat.label}</span>
                     <span style={{
                       fontSize: 10, opacity: 0.7,
                       color: active ? cat.color : 'var(--text-dim)',
@@ -681,9 +681,9 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
                   }}
                 >
                   <div style={{
-                    fontSize: 36, marginBottom: 8,
+                    fontSize: 36, marginBottom: 8, display: 'flex', justifyContent: 'center',
                     filter: badge.earned ? 'none' : 'grayscale(1) opacity(0.4)',
-                  }}>{badge.icon}</div>
+                  }}><PastelIcon emoji={badge.icon} size={36} /></div>
                   <div style={{
                     fontSize: 13, fontWeight: 600,
                     color: badge.earned ? '#191F28' : '#B0B8C1',
@@ -748,7 +748,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
                         filter: badge.earned ? 'none' : 'grayscale(1) brightness(0.35)',
                         animation: badge.earned ? 'brBadgeShine 3s ease infinite' : 'none',
                         boxShadow: 'none',
-                      }}>{badge.icon}</div>
+                      }}><PastelIcon emoji={badge.icon} size={28} /></div>
                       {badge.earned && (
                         <div style={{
                           position: 'absolute', bottom: -3, right: -3,
@@ -1550,7 +1550,7 @@ function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#FBEC5D' 
                 border: active ? `1px solid ${cat.color}40` : '1px solid var(--border-separator)',
                 display: 'flex', alignItems: 'center', gap: 4,
               }}>
-                <span>{cat.icon}</span>
+                <span style={{ display: 'inline-flex' }}><PastelIcon emoji={cat.icon} size={13} /></span>
                 <span>{catEarned}/{cat.badges.length}</span>
               </button>
             );
@@ -1569,7 +1569,7 @@ function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#FBEC5D' 
                   fontSize: 12, fontWeight: 600, color: cat.color, marginBottom: 10,
                   display: 'flex', alignItems: 'center', gap: 6,
                 }}>
-                  <span>{cat.icon}</span> {cat.label}
+                  <span style={{ display: 'inline-flex' }}><PastelIcon emoji={cat.icon} size={13} /></span> {cat.label}
                   <span style={{ fontSize: 10, color: 'var(--text-dim)', fontWeight: 400 }}>
                     {cat.badges.filter(b => b.earned).length}/{cat.badges.length}
                   </span>
@@ -1609,7 +1609,7 @@ function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#FBEC5D' 
                             : 'rgba(255,255,255,0.02)',
                           filter: badge.earned ? 'none' : 'grayscale(1) brightness(0.35)',
                           boxShadow: 'none',
-                        }}>{badge.icon}</div>
+                        }}><PastelIcon emoji={badge.icon} size={22} /></div>
                         {badge.earned && (
                           <div style={{
                             position: 'absolute', bottom: -2, right: -2,
@@ -1761,7 +1761,7 @@ export function BadgeCelebration({ badge, onClose, accent = '#FBEC5D' }) {
           animation: 'brScaleUp 0.4s ease both',
         }}
       >
-        <div style={{ fontSize: 48, marginBottom: 12 }}>{badge.icon}</div>
+        <div style={{ fontSize: 48, marginBottom: 12, display: 'flex', justifyContent: 'center' }}><PastelIcon emoji={badge.icon} size={48} /></div>
         <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>
           🎉 새 뱃지 획득!
         </div>

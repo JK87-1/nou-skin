@@ -997,10 +997,7 @@ export default function App() {
                   display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
                   padding: '4px 20px 16px',
                 }}>
-                  <div>
-                    <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-dim)', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 3 }}>SKIN WEATHER</div>
-                    <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>오늘의 피부 날씨</div>
-                  </div>
+                  <div></div>
                   <button onClick={() => setWeatherSheet(false)} style={{
                     width: 32, height: 32, borderRadius: '50%',
                     background: 'var(--bg-card-hover)', border: 'none',

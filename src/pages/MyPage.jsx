@@ -16,7 +16,7 @@ import { getLatestRecord } from '../storage/SkinStorage';
 import { getGoal, saveGoal, clearGoal, getDaysRemaining, getGoalProgress, getOverallProgress, METRIC_META } from '../storage/GoalStorage';
 import BadgeRanking from '../components/BadgeRanking';
 import { getAllPhotosRaw, restorePhotos } from '../storage/PhotoDB';
-import { MoonIcon, SunIcon, CameraIcon, SaveIcon } from '../components/icons/PastelIcons';
+import { MoonIcon, SunIcon, CameraIcon, SaveIcon, PastelIcon } from '../components/icons/PastelIcons';
 
 export default function MyPage({ colorMode, setColorMode }) {
   const [profile, setProfile] = useState(getProfile);
@@ -1267,9 +1267,9 @@ function SettingsMenuItem({ icon, label, desc, right, onTap }) {
       <div style={{
         width: 36, height: 36, borderRadius: 12,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 17, flexShrink: 0,
-        background: 'rgba(240,144,112,0.08)',
-      }}>{icon}</div>
+        flexShrink: 0,
+        background: 'transparent',
+      }}><PastelIcon emoji={icon} size={20} /></div>
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>{label}</div>
         {desc && <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, marginTop: 2 }}>{desc}</div>}
