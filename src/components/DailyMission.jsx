@@ -11,7 +11,7 @@ import {
 } from '../storage/MissionStorage';
 import { addXP as addBadgeXP, incrementStat, checkAndAwardBadges } from '../storage/BadgeStorage';
 import SoftCloverIcon from './icons/SoftCloverIcon';
-import { TargetIcon, SparkleIcon, CheckIcon } from './icons/PastelIcons';
+import { TargetIcon, SparkleIcon, CheckIcon, PastelIcon } from './icons/PastelIcons';
 
 const ANIM_CSS = `
 @keyframes missionFadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
@@ -415,16 +415,14 @@ export default function DailyMission() {
             <div className={isLight ? 'sec-icon' : ''} style={{
               ...(isLight ? {
                 width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-                background: 'rgba(59,130,246,0.08)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20,
+                background: 'transparent',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
               } : {
                 width: 52, height: 52, borderRadius: 16, flexShrink: 0,
-                background: progress.mainCompleted
-                  ? 'linear-gradient(135deg, rgba(52,211,153,0.15), rgba(52,211,153,0.08))'
-                  : 'linear-gradient(135deg, rgba(240,144,112,0.15), rgba(240,144,112,0.08))',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26,
+                background: 'transparent',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
               }),
-            }}>{missions.main.icon}</div>
+            }}><PastelIcon emoji={missions.main.icon} size={isLight ? 20 : 26} /></div>
 
             <div style={{ flex: 1 }}>
               {/* Tags */}
@@ -476,13 +474,13 @@ export default function DailyMission() {
                 </span>
                 {/* Track button */}
                 <button onClick={handleTrackIncrement} style={{
-                  padding: '6px 16px', border: 'none',
+                  padding: '6px 12px', border: '1px solid #E8E8E8',
                   borderRadius: isLight ? 8 : 14,
-                  background: isLight ? '#FBEC5D' : 'var(--btn-primary-bg)',
-                  color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                  background: '#FFFFFF',
+                  color: '#333', fontSize: 13, fontWeight: 600, cursor: 'pointer',
                   boxShadow: 'none',
                   whiteSpace: 'nowrap',
-                }}>{missions.main.buttonText || '완료!'}</button>
+                }}>{missions.main.icon && <span style={{ display: 'inline-flex', verticalAlign: 'middle', marginRight: 4 }}><PastelIcon emoji={missions.main.icon} size={14} /></span>}{(missions.main.buttonText || '완료!').replace(/[\u{1F300}-\u{1FAF8}]/gu, '').trim()}</button>
               </div>
             </div>
           )}
@@ -618,7 +616,7 @@ export default function DailyMission() {
                   color: completed ? '#fff' : undefined,
                   animation: completed && celebrating === i ? 'missionCheckPop 0.3s ease' : undefined,
                 }}>
-                  {completed ? '\u2713' : b.icon}
+                  {completed ? '\u2713' : <PastelIcon emoji={b.icon} size={18} />}
                 </div>
 
                 {/* Content */}
@@ -684,7 +682,7 @@ export default function DailyMission() {
                 <div style={{
                   fontSize: 24, marginBottom: 4,
                   filter: badge.achieved ? 'none' : 'grayscale(1) brightness(0.4)',
-                }}>{badge.icon}</div>
+                }}><PastelIcon emoji={badge.icon} size={24} /></div>
                 <div style={{
                   fontSize: 10, fontWeight: 600, lineHeight: 1.3,
                   color: badge.achieved ? 'var(--text-secondary)' : 'var(--text-dim)',
@@ -726,34 +724,34 @@ export default function DailyMission() {
       {/* === 3-7. AI SKIN COACH === */}
       <div className={isLight ? 'card' : ''} style={{
         ...(isLight ? {
-          background: 'rgba(124,92,252,0.04)',
+          background: '#E0EBE7',
           borderRadius: 16, border: 'none', padding: 16, margin: 0,
           boxShadow: 'none',
         } : {
-          background: 'linear-gradient(135deg, rgba(240,144,112,0.06), rgba(240,144,112,0.03))',
+          background: '#E0EBE7',
           borderRadius: 18, border: 'none', padding: 16,
         }),
         boxShadow: 'none', border: 'none',
         ...fadeUp(0.5),
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: isLight ? 12 : 10, marginBottom: isLight ? 0 : 10 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: isLight ? 12 : 10, marginBottom: isLight ? 0 : 10 }}>
           {isLight ? (
             <div style={{
               width: 40, height: 40, borderRadius: 12, flexShrink: 0,
-              background: 'rgba(124,92,252,0.08)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
-            }}><SparkleIcon size={18} /></div>
+              background: 'transparent',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}><SparkleIcon size={24} /></div>
           ) : (
             <div style={{
               width: 28, height: 28, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #ADEBB3, #FBEC5D)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14,
-            }}><SparkleIcon size={14} /></div>
+              background: 'transparent',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}><SparkleIcon size={20} /></div>
           )}
           <div style={{ flex: 1 }}>
             <div style={{
               fontSize: 12, fontWeight: 600, marginBottom: isLight ? 4 : 0,
-              color: isLight ? '#FBEC5D' : '#FBEC5D',
+              color: isLight ? '#2EAA7B' : '#2EAA7B',
             }}>AI 피부 코치</div>
             {isLight && (
               <div style={{ fontSize: 14, color: '#4E5968', lineHeight: 1.5 }}>{coachComment}</div>

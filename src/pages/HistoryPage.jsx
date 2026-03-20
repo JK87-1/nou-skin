@@ -444,14 +444,14 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
         };
         const compareMetrics = [
           { key: 'moisture', label: '수분', icon: <DropletIcon size={16} /> },
-          { key: 'skinTone', label: '피부톤', icon: <SparkleIcon size={16} /> },
-          { key: 'wrinkleScore', label: '주름', icon: <RulerIcon size={16} /> },
-          { key: 'poreScore', label: '모공', icon: <MicroscopeIcon size={16} /> },
-          { key: 'elasticityScore', label: '탄력', icon: <DiamondIcon size={16} /> },
-          { key: 'pigmentationScore', label: '색소', icon: <PaletteIcon size={16} /> },
-          { key: 'textureScore', label: '피부결', icon: <LotionIcon size={16} /> },
-          { key: 'darkCircleScore', label: '다크서클', icon: <EyeIcon size={16} /> },
           { key: 'oilBalance', label: '유분', icon: <BubbleIcon size={16} /> },
+          { key: 'elasticityScore', label: '탄력', icon: <DiamondIcon size={16} /> },
+          { key: 'wrinkleScore', label: '주름', icon: <RulerIcon size={16} /> },
+          { key: 'textureScore', label: '피부결', icon: <LotionIcon size={16} /> },
+          { key: 'poreScore', label: '모공', icon: <MicroscopeIcon size={16} /> },
+          { key: 'skinTone', label: '피부톤', icon: <SparkleIcon size={16} /> },
+          { key: 'pigmentationScore', label: '색소', icon: <PaletteIcon size={16} /> },
+          { key: 'darkCircleScore', label: '다크서클', icon: <EyeIcon size={16} /> },
         ];
         const sorted = [...records].reverse();
 
@@ -576,8 +576,8 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                       <div key={r.id || r.timestamp} className="history-record-item" onClick={() => handleSelectRecord(r)} style={{
                         display: 'flex', alignItems: 'center', gap: 14,
                         padding: '14px 16px', marginBottom: 8,
-                        background: isLatest ? 'rgba(240,144,112,0.06)' : 'rgba(255,255,255,0.03)',
-                        border: isLatest ? '1px solid rgba(240,144,112,0.2)' : '1px solid var(--border-light)',
+                        background: isLatest ? 'rgba(129,228,189,0.08)' : 'rgba(255,255,255,0.03)',
+                        border: isLatest ? '1px solid rgba(129,228,189,0.25)' : '1px solid var(--border-light)',
                         borderRadius: 16, cursor: 'pointer',
                         transition: 'border-color 0.2s',
                       }}>
@@ -753,7 +753,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                           borderBottom: i < compareMetrics.length - 1 ? '1px solid var(--border-separator)' : 'none',
                         }}>
                           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
-                            <span style={{ fontSize: 16, width: 26 }}>{m.icon}</span>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', width: 26 }}>{m.icon}</span>
                             <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', flex: 1 }}>{m.label}</span>
                             <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{firstVal}</span>
                             <span style={{ fontSize: 12, color: 'var(--text-dim)', margin: '0 4px' }}>→</span>

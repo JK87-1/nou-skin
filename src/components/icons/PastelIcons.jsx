@@ -18,22 +18,24 @@ export const DropletIcon = ({ size = s }) => (
 export const SparkleIcon = ({ size = s }) => (
   <svg width={size} height={size} viewBox="0 0 36 36" fill="none">
     <defs><linearGradient id="spk-g" x1="20%" y1="0%" x2="80%" y2="100%"><stop offset="0%" stopColor="#FFF3B0"/><stop offset="100%" stopColor="#FFE082"/></linearGradient><linearGradient id="spk-g2" x1="20%" y1="0%" x2="80%" y2="100%"><stop offset="0%" stopColor="#FFF9D0"/><stop offset="100%" stopColor="#FFF3B0"/></linearGradient></defs>
-    <path d="M18 2 L21 12 L31 15.5 L21 19 L18 29 L15 19 L5 15.5 L15 12 Z" fill="url(#spk-g)"/>
-    <path d="M28 3 L29 6.5 L32.5 7.5 L29 8.5 L28 12 L27 8.5 L23.5 7.5 L27 6.5 Z" fill="url(#spk-g2)"/>
-    <path d="M8 24 L9 27 L12 28 L9 29 L8 32 L7 29 L4 28 L7 27 Z" fill="url(#spk-g2)"/>
+    {/* 큰 별 — 끝이 둥근 하나의 경로 */}
+    <path d="M18 2 C19.5 7, 20 11, 22 13 C26 14, 30 14.5, 33 15.5 C30 16.5, 26 17, 22 18 C20 20, 19.5 24, 18 29 C16.5 24, 16 20, 14 18 C10 17, 6 16.5, 3 15.5 C6 14.5, 10 14, 14 13 C16 11, 16.5 7, 18 2Z" fill="url(#spk-g)"/>
+    {/* 작은 별 우상단 */}
+    <path d="M28 3 C28.5 5, 29 6.5, 32.5 7.5 C29 8.5, 28.5 10, 28 12 C27.5 10, 27 8.5, 23.5 7.5 C27 6.5, 27.5 5, 28 3Z" fill="url(#spk-g2)"/>
+    {/* 작은 별 좌하단 */}
+    <path d="M8 24 C8.3 26, 8.5 27, 12 28 C8.5 29, 8.3 30, 8 32 C7.7 30, 7.5 29, 4 28 C7.5 27, 7.7 26, 8 24Z" fill="url(#spk-g2)"/>
     <ellipse cx="15" cy="12" rx="3" ry="2" fill="white" opacity="0.3"/>
   </svg>
 );
 
-// 🧴 피부결 — (( 가로로 눕힌 형태, 연한 핑크
+// 🧴 피부결 — (( 가로로 눕힌 형태, 파스텔 코랄
 export const LotionIcon = ({ size = s }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <defs><linearGradient id="lot-g1" x1="20%" y1="0%" x2="80%" y2="100%"><stop offset="0%" stopColor="#FFE0E8"/><stop offset="100%" stopColor="#FFC0D0"/></linearGradient></defs>
-    <line x1="9" y1="4" x2="7" y2="20" stroke="#FDDCCC" strokeWidth="2.5" strokeLinecap="round"/>
-    <line x1="17" y1="4" x2="15" y2="20" stroke="#FDDCCC" strokeWidth="2.5" strokeLinecap="round"/>
-    <line x1="4" y1="9" x2="20" y2="9" stroke="#FDDCCC" strokeWidth="2.5" strokeLinecap="round"/>
-    <line x1="4" y1="15" x2="20" y2="15" stroke="#FDDCCC" strokeWidth="2.5" strokeLinecap="round"/>
-    <line x1="9" y1="4" x2="7" y2="20" stroke="white" strokeWidth="1" strokeLinecap="round" opacity="0.25"/>
+    <defs><linearGradient id="lot-g1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#F8C8B8"/><stop offset="100%" stopColor="#E8A898"/></linearGradient></defs>
+    <path d="M6 14 C9 11, 15 11, 18 14" stroke="url(#lot-g1)" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+    <path d="M6 20 C9 17, 15 17, 18 20" stroke="url(#lot-g1)" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+    <path d="M6 14 C9 11, 15 11, 18 14" stroke="white" strokeWidth="1" strokeLinecap="round" fill="none" opacity="0.3"/>
+    <path d="M6 20 C9 17, 15 17, 18 20" stroke="white" strokeWidth="0.8" strokeLinecap="round" fill="none" opacity="0.2"/>
   </svg>
 );
 
@@ -52,42 +54,47 @@ export const DiamondIcon = ({ size = s }) => (
   </svg>
 );
 
-// 🎨 색소 — 물방울 형태, 채도 낮은 다크브라운
+// 🎨 색소 — 작은 둥근 6각형 + 입체감, 다크브라운
 export const PaletteIcon = ({ size = s }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <defs><linearGradient id="pal-g" x1="30%" y1="0%" x2="70%" y2="100%"><stop offset="0%" stopColor="#D0BCA8"/><stop offset="100%" stopColor="#B8A088"/></linearGradient></defs>
-    <path d="M12 2C12 2 5 10 5 15a7 7 0 0014 0c0-5-7-13-7-13z" fill="url(#pal-g)"/>
-    <ellipse cx="9.5" cy="14" rx="2" ry="1.5" fill="white" opacity="0.25"/>
+    <defs><linearGradient id="pal-g" x1="30%" y1="10%" x2="70%" y2="90%"><stop offset="0%" stopColor="#DCCAB8"/><stop offset="100%" stopColor="#C0A890"/></linearGradient></defs>
+    <path d="M12 5 L17.5 8 Q18 8.3, 18 9 L18 15 Q18 15.7, 17.5 16 L12 19 Q12 19, 12 19 L6.5 16 Q6 15.7, 6 15 L6 9 Q6 8.3, 6.5 8 Z" fill="url(#pal-g)"/>
+    <path d="M12 5 L17.5 8 Q18 8.3, 18 9 L18 12 L6 12 L6 9 Q6 8.3, 6.5 8 Z" fill="white" opacity="0.12"/>
   </svg>
 );
 
-// 🔬 모공 — 파스텔 갈색 점 4개
+// 🔬 모공 — 살구색 점 4개 + 입체감
 export const MicroscopeIcon = ({ size = s }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <defs><linearGradient id="mic-g" x1="20%" y1="0%" x2="80%" y2="100%"><stop offset="0%" stopColor="#E8D4C0"/><stop offset="100%" stopColor="#D4B89C"/></linearGradient></defs>
-    <circle cx="8" cy="8" r="2.8" fill="url(#mic-g)"/>
-    <circle cx="16" cy="8" r="2.8" fill="url(#mic-g)"/>
-    <circle cx="8" cy="16" r="2.8" fill="url(#mic-g)"/>
-    <circle cx="16" cy="16" r="2.8" fill="url(#mic-g)"/>
+    <defs><radialGradient id="mic-rg" cx="38%" cy="35%" r="55%"><stop offset="0%" stopColor="#FFD8C0"/><stop offset="100%" stopColor="#F0B898"/></radialGradient></defs>
+    <circle cx="8" cy="8" r="2.8" fill="url(#mic-rg)"/>
+    <circle cx="16" cy="8" r="2.8" fill="url(#mic-rg)"/>
+    <circle cx="8" cy="16" r="2.8" fill="url(#mic-rg)"/>
+    <circle cx="16" cy="16" r="2.8" fill="url(#mic-rg)"/>
+    <ellipse cx="7" cy="7" rx="1" ry="0.7" fill="white" opacity="0.3"/>
+    <ellipse cx="15" cy="7" rx="1" ry="0.7" fill="white" opacity="0.3"/>
+    <ellipse cx="7" cy="15" rx="1" ry="0.7" fill="white" opacity="0.3"/>
+    <ellipse cx="15" cy="15" rx="1" ry="0.7" fill="white" opacity="0.3"/>
   </svg>
 );
 
-// 📐 주름 — 파스텔 살색 물결 두 줄
+// 📐 주름 — 파스텔 로즈 물결 두 줄 + 입체감
 export const RulerIcon = ({ size = s }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <defs><linearGradient id="rul-g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#FDDCCC"/><stop offset="100%" stopColor="#F4BCA8"/></linearGradient></defs>
+    <defs><linearGradient id="rul-g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#F0C8D0"/><stop offset="100%" stopColor="#E0A8B8"/></linearGradient></defs>
     <path d="M6 9 C9 4, 15 14, 18 9" stroke="url(#rul-g)" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
     <path d="M6 15 C9 10, 15 20, 18 15" stroke="url(#rul-g)" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-    <path d="M6 9 C9 4, 15 14, 18 9" stroke="white" strokeWidth="1" strokeLinecap="round" fill="none" opacity="0.3"/>
+    <path d="M6 9 C9 4, 15 14, 18 9" stroke="white" strokeWidth="1" strokeLinecap="round" fill="none" opacity="0.35"/>
+    <path d="M6 15 C9 10, 15 20, 18 15" stroke="white" strokeWidth="0.8" strokeLinecap="round" fill="none" opacity="0.2"/>
   </svg>
 );
 
-// 👁️ 다크서클 — 아래로 누운 반원
+// 👁️ 다크서클 — 아래로 누운 반원 + 양끝 둥글게 + 입체감
 export const EyeIcon = ({ size = s }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <defs><linearGradient id="eye-g" x1="20%" y1="0%" x2="80%" y2="100%"><stop offset="0%" stopColor="#D0D8F0"/><stop offset="100%" stopColor="#B0B8D8"/></linearGradient></defs>
-    <path d="M4 10 A8 8 0 0 0 20 10" fill="url(#eye-g)"/>
-    <ellipse cx="10" cy="9" rx="3" ry="1.5" fill="white" opacity="0.25"/>
+    <path d="M4 11 C6 10, 9 9, 12 9 C15 9, 18 10, 20 11 C18 16, 15 19, 12 19 C9 19, 6 16, 4 11Z" fill="url(#eye-g)"/>
+    <ellipse cx="9.5" cy="13" rx="3" ry="1.5" fill="white" opacity="0.25"/>
   </svg>
 );
 
@@ -305,12 +312,37 @@ export const ClockIcon = ({ size = s }) => (
   </svg>
 );
 
+// 🧴 보틀 로션 — 파스텔 핑크
+export const BottleIcon = ({ size = s }) => (
+  <svg width={size} height={size} viewBox="0 0 36 36" fill="none">
+    <defs>
+      <linearGradient id="bot-g1" x1="30%" y1="0%" x2="70%" y2="100%"><stop offset="0%" stopColor="#FFF0F3"/><stop offset="100%" stopColor="#FFD0DA"/></linearGradient>
+      <linearGradient id="bot-g2" x1="30%" y1="0%" x2="70%" y2="100%"><stop offset="0%" stopColor="#FFE0E8"/><stop offset="100%" stopColor="#FFC0CC"/></linearGradient>
+    </defs>
+    <rect x="13" y="3" width="10" height="4" rx="1.5" fill="url(#bot-g2)"/>
+    <rect x="16.5" y="1" width="3" height="3" rx="1" fill="url(#bot-g2)"/>
+    <rect x="14" y="0.5" width="8" height="1.5" rx="0.75" fill="url(#bot-g2)"/>
+    <rect x="11" y="7" width="14" height="20" rx="4" fill="url(#bot-g1)"/>
+    <rect x="13" y="13" width="10" height="8" rx="2" fill="white" opacity="0.3"/>
+    <rect x="12.5" y="9" width="3" height="12" rx="1.5" fill="white" opacity="0.2"/>
+  </svg>
+);
+
+// 🔥 불꽃 — 파스텔 오렌지
+export const FlameIcon = ({ size = s }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <defs><linearGradient id="flm-g" x1="30%" y1="0%" x2="70%" y2="100%"><stop offset="0%" stopColor="#FFE0A0"/><stop offset="50%" stopColor="#FFB880"/><stop offset="100%" stopColor="#F0A070"/></linearGradient></defs>
+    <path d="M12 2 C12 2, 8 8, 8 12 C8 14, 9 16, 10 17 C9 15, 10 12, 12 10 C14 12, 15 15, 14 17 C15 16, 16 14, 16 12 C16 8, 12 2, 12 2Z" fill="url(#flm-g)"/>
+    <ellipse cx="11" cy="9" rx="1.5" ry="2" fill="white" opacity="0.25"/>
+  </svg>
+);
+
 // Emoji → Pastel Icon 매핑
 export function PastelIcon({ emoji, size = 18 }) {
   const map = {
     '💧': DropletIcon,
     '✨': SparkleIcon,
-    '🧴': LotionIcon,
+    '🧴': BottleIcon,
     '💎': DiamondIcon,
     '🎨': PaletteIcon,
     '🔬': MicroscopeIcon,
@@ -334,6 +366,12 @@ export function PastelIcon({ emoji, size = 18 }) {
     '📚': BooksIcon,
     '💾': SaveIcon,
     '📈': ChartIcon,
+    '📊': ChartIcon,
+    '⭐': StarIcon,
+    '💫': StarIcon,
+    '🌠': StarIcon,
+    '🔥': FlameIcon,
+    '🚀': ChartIcon,
     '🌡': ThermometerIcon,
     '🖼️': PhotoIcon,
     '🪄': WandIcon,

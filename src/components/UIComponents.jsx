@@ -82,7 +82,7 @@ export function MetricBar({ label, value, unit = '%', color, icon, description, 
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-        <span style={{ fontSize: 14, color: 'var(--text-secondary)', fontWeight: 600 }}>{icon} {label}</span>
+        <span style={{ fontSize: 14, color: 'var(--text-secondary)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6 }}>{icon} {label}</span>
         <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
           <AnimatedNumber target={value} suffix={unit} />
           {onClick && <span style={{ fontSize: 10, color: 'var(--text-dim)', marginLeft: 5 }}>→</span>}

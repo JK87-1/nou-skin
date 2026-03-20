@@ -10,7 +10,7 @@ const MISSION_DATABASE = {
       title: '물 8잔 마시기',
       description: '수분 점수가 낮은 편이에요. 충분한 수분 섭취가 피부 수분 유지의 첫걸음이에요.',
       xp: 30, trackable: true, trackTotal: 8, trackUnit: '잔',
-      buttonText: '💧 물 한 잔 마셨어요!',
+      buttonText: '물 한 잔 마셨어요!',
     },
     bonus: [
       { icon: '🧴', category: '스킨케어', title: '세럼 후 크림으로 수분 잠금', description: '세럼만으로는 수분이 날아가요. 크림으로 덮어줘야 효과가 유지돼요.', xp: 20 },
@@ -23,7 +23,7 @@ const MISSION_DATABASE = {
       title: '선크림 2시간마다 덧바르기',
       description: '색소 점수가 낮아요. 자외선 차단이 색소 침착 예방의 가장 중요한 습관이에요.',
       xp: 30, trackable: true, trackTotal: 3, trackUnit: '회',
-      buttonText: '☀️ 선크림 발랐어요!',
+      buttonText: '선크림 발랐어요!',
     },
     bonus: [
       { icon: '✨', category: '미백 케어', title: '비타민C 세럼 바르기', description: '비타민C는 멜라닌 생성을 억제하는 대표 미백 성분이에요.', xp: 20 },

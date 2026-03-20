@@ -8,7 +8,7 @@ import {
 import { getRecords, getStreak, getLatestRecord } from '../storage/SkinStorage';
 import { getProfile, saveProfile, getDeviceId } from '../storage/ProfileStorage';
 import SoftCloverIcon from './icons/SoftCloverIcon';
-import { TargetIcon, CrownIcon, TrophyIcon, CheckIcon, LockIcon } from './icons/PastelIcons';
+import { TargetIcon, CrownIcon, TrophyIcon, CheckIcon, LockIcon, PastelIcon } from './icons/PastelIcons';
 
 // ===== 랭킹 API 호출 =====
 async function fetchRanking(deviceId, nickname, score, xp, level) {
@@ -590,7 +590,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
                   animation: 'brFadeInUp 0.5s ease 0.15s both',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-                    <span style={{ fontSize: 28 }}>{g.icon}</span>
+                    <span style={{ fontSize: 28, display: 'inline-flex' }}><PastelIcon emoji={g.icon} size={28} /></span>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 14, fontWeight: 600, color: '#191F28' }}>{g.name}</div>
                       <div style={{ fontSize: 12, color: '#8B95A1', marginTop: 4 }}>{g.desc}</div>
@@ -841,7 +841,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
                     flex: 1, textAlign: 'center', padding: '12px 6px 10px',
                     background: 'var(--bg-card)', borderRadius: 14,
                   }}>
-                    <div style={{ fontSize: 22, marginBottom: 4 }}>{g.icon}</div>
+                    <div style={{ fontSize: 22, marginBottom: 4, display: 'flex', justifyContent: 'center' }}><PastelIcon emoji={g.icon} size={22} /></div>
                     <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4 }}>{g.name}</div>
                     <div style={{ fontSize: 11, fontWeight: 700, color: activeTheme.accent, marginBottom: 6 }}>
                       {Math.round(g.progress * 100)}%

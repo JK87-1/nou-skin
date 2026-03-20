@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { SunIcon, MoonIcon, LotionIcon } from '../components/icons/PastelIcons';
+import { SunIcon, MoonIcon, LotionIcon, PastelIcon } from '../components/icons/PastelIcons';
 import {
   TRACKER_CATEGORIES, getProducts, saveProduct, deleteProduct,
   getProductsForMode, getTrackerChecks, toggleTrackerCheck,
@@ -747,7 +747,7 @@ export default function RoutineTracker({ colorMode, themeColors, onBack }) {
               color: active ? accent : (isLight ? '#6B7684' : '#8888a0'),
               borderRadius: 50, padding: '8px 18px', fontSize: 13, fontWeight: active ? 600 : 500,
               cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, transition: 'all 0.2s',
-            }}>{s.icon} {s.label}</button>
+            }}><span style={{ display: 'inline-flex', verticalAlign: 'middle', marginRight: 4 }}><PastelIcon emoji={s.icon} size={14} /></span>{s.label}</button>
           );
         })}
       </div>
