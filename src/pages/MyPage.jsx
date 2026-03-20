@@ -16,6 +16,7 @@ import { getLatestRecord } from '../storage/SkinStorage';
 import { getGoal, saveGoal, clearGoal, getDaysRemaining, getGoalProgress, getOverallProgress, METRIC_META } from '../storage/GoalStorage';
 import BadgeRanking from '../components/BadgeRanking';
 import { getAllPhotosRaw, restorePhotos } from '../storage/PhotoDB';
+import { MoonIcon, SunIcon, CameraIcon, SaveIcon } from '../components/icons/PastelIcons';
 
 export default function MyPage({ colorMode, setColorMode }) {
   const [profile, setProfile] = useState(getProfile);
@@ -196,7 +197,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                     style={{ ...inputStyle, flex: 1 }}
                   />
                   {age !== null && age > 0 && (
-                    <span style={{ fontSize: 13, color: '#F0A878', fontWeight: 600, whiteSpace: 'nowrap' }}>만 {age}세</span>
+                    <span style={{ fontSize: 13, color: '#ADEBB3', fontWeight: 600, whiteSpace: 'nowrap' }}>만 {age}세</span>
                   )}
                 </div>
               </Section>
@@ -262,7 +263,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                           padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 400,
                           cursor: 'pointer', transition: 'all 0.2s',
                           background: active ? 'rgba(240,144,112,0.08)' : 'var(--bg-card)',
-                          color: active ? '#F0A878' : 'var(--text-muted)',
+                          color: active ? '#ADEBB3' : 'var(--text-muted)',
                           border: active ? '1px solid rgba(240,144,112,0.2)' : '1px solid var(--border-light)',
                         }}
                       >{c}</div>
@@ -305,7 +306,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 17, flexShrink: 0,
               background: 'rgba(240,144,112,0.08)',
-            }}>{colorMode === 'dark' ? '🌙' : '☀️'}</div>
+            }}>{colorMode === 'dark' ? <MoonIcon size={17} /> : <SunIcon size={17} />}</div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>화면 모드</div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, marginTop: 2 }}>
@@ -322,7 +323,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               <div style={{
                 width: 24, height: 24, borderRadius: 12,
                 background: '#fff',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                boxShadow: 'none',
                 transition: 'transform 0.3s',
                 transform: colorMode === 'light' ? 'translateX(22px)' : 'translateX(0)',
               }} />
@@ -350,7 +351,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 17, flexShrink: 0,
               background: 'rgba(240,144,112,0.08)',
-            }}>📷</div>
+            }}><CameraIcon size={17} /></div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>기준 측정 초기화</div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, marginTop: 2 }}>
@@ -470,7 +471,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               fontSize: 17, flexShrink: 0,
               background: 'rgba(240,144,112,0.08)',
             }}>
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F0A878" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ADEBB3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
               </svg>
             </div>
@@ -496,7 +497,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               fontSize: 17, flexShrink: 0,
               background: 'rgba(240,144,112,0.08)',
             }}>
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F0A878" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ADEBB3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
               </svg>
             </div>
@@ -552,7 +553,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
             }}
           >
             <div style={{ textAlign: 'center', marginBottom: 16 }}>
-              <div style={{ fontSize: 44, marginBottom: 4 }}>💾</div>
+              <div style={{ marginBottom: 4 }}><SaveIcon size={44} /></div>
               <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
                 백업 파일 저장하기
               </div>
@@ -592,10 +593,10 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                     <div key={item.label} style={{ textAlign: 'center', position: 'relative' }}>
                       <div style={{
                         width: 44, height: 44, borderRadius: 22,
-                        background: item.highlight ? '#F09070' : '#ddd',
+                        background: item.highlight ? '#FBEC5D' : '#ddd',
                         marginBottom: 4,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        boxShadow: item.highlight ? '0 0 0 3px rgba(240,144,112,0.3)' : 'none',
+                        boxShadow: 'none',
                         transition: 'all 0.3s',
                       }}>
                         {item.highlight && (
@@ -607,7 +608,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                       <div style={{
                         fontSize: 9,
                         fontWeight: item.highlight ? 700 : 400,
-                        color: item.highlight ? '#F09070' : 'var(--text-muted)',
+                        color: item.highlight ? '#FBEC5D' : 'var(--text-muted)',
                       }}>{item.label}</div>
                       {item.highlight && (
                         <div style={{
@@ -620,7 +621,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                 </div>
               </div>
               <div style={{
-                marginTop: 12, fontSize: 13, color: '#F09070', fontWeight: 600, textAlign: 'center',
+                marginTop: 12, fontSize: 13, color: '#FBEC5D', fontWeight: 600, textAlign: 'center',
               }}>
                 "파일에 저장"을 눌러주세요!
               </div>
@@ -665,10 +666,10 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               }}
               style={{
                 width: '100%', padding: 15, borderRadius: 14, border: 'none',
-                background: 'var(--btn-primary-bg, linear-gradient(135deg, #F09070, #F09070))',
+                background: 'var(--btn-primary-bg, linear-gradient(135deg, #FBEC5D, #FBEC5D))',
                 color: '#fff', fontSize: 15, fontWeight: 700,
                 cursor: 'pointer', fontFamily: 'inherit',
-                boxShadow: '0 4px 16px rgba(124,92,252,0.3)',
+                boxShadow: 'none',
                 marginBottom: 10,
               }}
             >확인 — 저장 화면 열기</button>
@@ -759,7 +760,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               <div style={{ textAlign: 'center', padding: '20px 0' }}>
                 <div style={{
                   width: 32, height: 32, border: '3px solid rgba(240,144,112,0.2)',
-                  borderTopColor: '#F09070', borderRadius: '50%',
+                  borderTopColor: '#FBEC5D', borderRadius: '50%',
                   animation: 'spin 0.8s linear infinite',
                   margin: '0 auto 12px',
                 }} />
@@ -902,7 +903,7 @@ function GoalSettingModal({ onClose, showToast }) {
           {[1, 2, 3].map((s) => (
             <div key={s} style={{
               flex: 1, height: 3, borderRadius: 2,
-              background: s <= step ? '#F0A878' : 'var(--bg-input)',
+              background: s <= step ? '#ADEBB3' : 'var(--bg-input)',
               transition: 'background 0.3s',
             }} />
           ))}
@@ -956,7 +957,7 @@ function GoalSettingModal({ onClose, showToast }) {
                     <div style={{
                       width: 22, height: 22, borderRadius: 6,
                       border: selected ? 'none' : '1.5px solid rgba(255,255,255,0.15)',
-                      background: selected ? '#F0A878' : 'transparent',
+                      background: selected ? '#ADEBB3' : 'transparent',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       flexShrink: 0, transition: 'all 0.2s',
                     }}>
@@ -989,7 +990,7 @@ function GoalSettingModal({ onClose, showToast }) {
                     flex: 1, padding: '10px 8px', borderRadius: 14,
                     border: '1px solid rgba(240,144,112,0.2)',
                     background: 'rgba(240,144,112,0.06)',
-                    color: '#F09070', fontSize: 12, fontWeight: 600,
+                    color: '#FBEC5D', fontSize: 12, fontWeight: 600,
                     cursor: 'pointer', fontFamily: 'inherit',
                   }}
                 >+{p.delta}<br/><span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>{p.label}</span></button>
@@ -1013,7 +1014,7 @@ function GoalSettingModal({ onClose, showToast }) {
                         <span style={{ fontSize: 16 }}>{meta.icon}</span>
                         <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-secondary)' }}>{meta.label}</span>
                       </div>
-                      <span style={{ fontSize: 13, color: '#F0A878', fontWeight: 600 }}>
+                      <span style={{ fontSize: 13, color: '#ADEBB3', fontWeight: 600 }}>
                         {current} → {target}
                       </span>
                     </div>
@@ -1029,7 +1030,7 @@ function GoalSettingModal({ onClose, showToast }) {
                       <div style={{
                         position: 'absolute', top: 0, left: 0,
                         width: `${target}%`, height: '100%', borderRadius: 4,
-                        background: 'linear-gradient(90deg, #E87080, #F09070, #F09070)',
+                        background: 'linear-gradient(90deg, #E87080, #FBEC5D, #FBEC5D)',
                         opacity: 0.6,
                       }} />
                     </div>
@@ -1039,7 +1040,7 @@ function GoalSettingModal({ onClose, showToast }) {
                       max={100}
                       value={target}
                       onChange={(e) => setTargets((prev) => ({ ...prev, [key]: parseInt(e.target.value) }))}
-                      style={{ width: '100%', accentColor: '#F0A878' }}
+                      style={{ width: '100%', accentColor: '#ADEBB3' }}
                     />
                   </div>
                 );
@@ -1055,9 +1056,9 @@ function GoalSettingModal({ onClose, showToast }) {
                     onClick={() => setDuration(d)}
                     style={{
                       flex: 1, padding: '10px 0', borderRadius: 14,
-                      border: duration === d ? '1px solid #F0A878' : '1px solid var(--border-subtle)',
+                      border: duration === d ? '1px solid #ADEBB3' : '1px solid var(--border-subtle)',
                       background: duration === d ? 'rgba(240,144,112,0.12)' : 'transparent',
-                      color: duration === d ? '#F0A878' : 'var(--text-muted)',
+                      color: duration === d ? '#ADEBB3' : 'var(--text-muted)',
                       fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
                     }}
                   >{d}일</button>
@@ -1077,7 +1078,7 @@ function GoalSettingModal({ onClose, showToast }) {
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                 <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>목표 요약</span>
-                <span style={{ fontSize: 12, color: '#F0A878', fontWeight: 500 }}>{duration}일</span>
+                <span style={{ fontSize: 12, color: '#ADEBB3', fontWeight: 500 }}>{duration}일</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {selectedMetrics.map((key) => {
@@ -1093,7 +1094,7 @@ function GoalSettingModal({ onClose, showToast }) {
                       <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
                         <span style={{ color: 'var(--text-muted)' }}>{current}</span>
                         <span style={{ color: 'var(--text-dim)', margin: '0 6px' }}>→</span>
-                        <span style={{ color: '#F0A878', fontWeight: 600 }}>{target}</span>
+                        <span style={{ color: '#ADEBB3', fontWeight: 600 }}>{target}</span>
                       </div>
                     </div>
                   );
@@ -1159,7 +1160,7 @@ function GoalSettingModal({ onClose, showToast }) {
                 background: 'var(--btn-primary-bg)',
                 color: '#fff', fontSize: 15, fontWeight: 700,
                 cursor: 'pointer', fontFamily: 'inherit',
-                boxShadow: 'var(--btn-primary-shadow)',
+                boxShadow: 'none',
               }}
             >목표 시작하기</button>
           )}
@@ -1204,9 +1205,9 @@ function ChipGroup({ options, selected, onSelect }) {
             style={{
               padding: '7px 16px', borderRadius: 20, fontSize: 13, fontWeight: 500,
               cursor: 'pointer', transition: 'all 0.2s',
-              background: active ? '#F0A878' : 'var(--bg-card)',
+              background: active ? '#ADEBB3' : 'var(--bg-card)',
               color: active ? '#fff' : 'var(--text-muted)',
-              border: active ? '1px solid #F0A878' : '1px solid var(--border-subtle)',
+              border: active ? '1px solid #ADEBB3' : '1px solid var(--border-subtle)',
             }}
           >
             {opt}
@@ -1228,7 +1229,7 @@ function JourneyStat({ value, unit, label, hasDivider }) {
       )}
       <div style={{
         fontFamily: 'inherit',
-        fontSize: 28, fontWeight: 400, color: '#F0A878',
+        fontSize: 28, fontWeight: 400, color: '#ADEBB3',
         lineHeight: 1, marginBottom: 6,
       }}>
         {value}{unit && <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>{unit}</span>}
@@ -1369,7 +1370,7 @@ function ReminderItem({ enabled, time, onToggle, onTimeChange, profile, tipEnabl
           {enabled && (
             <div
               onClick={() => setShowPicker(true)}
-              style={{ fontSize: 11, color: '#F0A878', fontWeight: 400, marginTop: 2, cursor: 'pointer' }}
+              style={{ fontSize: 11, color: '#ADEBB3', fontWeight: 400, marginTop: 2, cursor: 'pointer' }}
             >
               {formatTime(time)} ✎
             </div>
@@ -1382,7 +1383,7 @@ function ReminderItem({ enabled, time, onToggle, onTimeChange, profile, tipEnabl
           onClick={subscribing ? undefined : handleToggle}
           style={{
             width: 44, height: 26, borderRadius: 13,
-            background: enabled ? '#F0A878' : 'rgba(255,255,255,0.15)',
+            background: enabled ? '#ADEBB3' : 'rgba(255,255,255,0.15)',
             position: 'relative', flexShrink: 0, cursor: subscribing ? 'wait' : 'pointer',
             transition: 'background 0.3s',
             opacity: subscribing ? 0.6 : 1,
@@ -1392,7 +1393,7 @@ function ReminderItem({ enabled, time, onToggle, onTimeChange, profile, tipEnabl
             position: 'absolute', top: 3,
             left: enabled ? 21 : 3,
             width: 20, height: 20, borderRadius: '50%',
-            background: '#e0e0e8', boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+            background: '#e0e0e8', boxShadow: 'none',
             transition: 'left 0.3s',
           }} />
         </div>
@@ -1501,7 +1502,7 @@ function BeautyTipItem({ enabled, time, onToggle, onTimeChange, profile, reminde
           {enabled ? (
             <div
               onClick={() => setShowPicker(true)}
-              style={{ fontSize: 11, color: '#F0A878', fontWeight: 400, marginTop: 2, cursor: 'pointer' }}
+              style={{ fontSize: 11, color: '#ADEBB3', fontWeight: 400, marginTop: 2, cursor: 'pointer' }}
             >
               {formatTime(time)} ✎
             </div>
@@ -1515,7 +1516,7 @@ function BeautyTipItem({ enabled, time, onToggle, onTimeChange, profile, reminde
           onClick={subscribing ? undefined : handleToggle}
           style={{
             width: 44, height: 26, borderRadius: 13,
-            background: enabled ? '#F0A878' : 'rgba(255,255,255,0.15)',
+            background: enabled ? '#ADEBB3' : 'rgba(255,255,255,0.15)',
             position: 'relative', flexShrink: 0,
             cursor: subscribing ? 'wait' : 'pointer',
             transition: 'background 0.3s',
@@ -1526,7 +1527,7 @@ function BeautyTipItem({ enabled, time, onToggle, onTimeChange, profile, reminde
             position: 'absolute', top: 3,
             left: enabled ? 21 : 3,
             width: 20, height: 20, borderRadius: '50%',
-            background: '#e0e0e8', boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+            background: '#e0e0e8', boxShadow: 'none',
             transition: 'left 0.3s',
           }} />
         </div>
@@ -1591,7 +1592,7 @@ function TimePicker({ value, onChange, onClose }) {
   const itemStyle = (active) => ({
     height: ITEM_H, display: 'flex', alignItems: 'center', justifyContent: 'center',
     fontSize: active ? 22 : 16, fontWeight: active ? 600 : 300,
-    color: active ? '#F0A878' : 'var(--text-dim)',
+    color: active ? '#ADEBB3' : 'var(--text-dim)',
     scrollSnapAlign: 'center', transition: 'all 0.15s',
     cursor: 'pointer',
   });
@@ -1618,7 +1619,7 @@ function TimePicker({ value, onChange, onClose }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <span onClick={onClose} style={{ fontSize: 14, color: 'var(--text-muted)', cursor: 'pointer', fontWeight: 400 }}>취소</span>
           <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>알림 시간</span>
-          <span onClick={handleConfirm} style={{ fontSize: 14, color: '#F0A878', cursor: 'pointer', fontWeight: 600 }}>확인</span>
+          <span onClick={handleConfirm} style={{ fontSize: 14, color: '#ADEBB3', cursor: 'pointer', fontWeight: 600 }}>확인</span>
         </div>
 
         <div style={{
@@ -1642,7 +1643,7 @@ function TimePicker({ value, onChange, onClose }) {
                 style={{
                   height: ITEM_H, display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: ampm === v ? 18 : 15, fontWeight: ampm === v ? 600 : 300,
-                  color: ampm === v ? '#F0A878' : 'var(--text-dim)',
+                  color: ampm === v ? '#ADEBB3' : 'var(--text-dim)',
                   cursor: 'pointer', transition: 'all 0.15s',
                 }}
               >{v === 'AM' ? '오전' : '오후'}</div>
@@ -1664,7 +1665,7 @@ function TimePicker({ value, onChange, onClose }) {
             <div style={{ height: ITEM_H }} />
           </div>
 
-          <div style={{ fontSize: 22, fontWeight: 600, color: '#F0A878', zIndex: 1 }}>:</div>
+          <div style={{ fontSize: 22, fontWeight: 600, color: '#ADEBB3', zIndex: 1 }}>:</div>
 
           <div
             ref={minRef}
@@ -1701,13 +1702,13 @@ function DarkModeItem({ enabled, onToggle }) {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 17, flexShrink: 0,
         background: 'var(--bg-card-hover)',
-      }}>🌙</div>
+      }}><MoonIcon size={17} /></div>
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>다크모드</div>
       </div>
       <div style={{
         width: 44, height: 26, borderRadius: 13,
-        background: enabled ? '#F0A878' : 'rgba(255,255,255,0.15)',
+        background: enabled ? '#ADEBB3' : 'rgba(255,255,255,0.15)',
         position: 'relative', flexShrink: 0,
         transition: 'background 0.3s',
       }}>
@@ -1715,7 +1716,7 @@ function DarkModeItem({ enabled, onToggle }) {
           position: 'absolute', top: 3,
           left: enabled ? 21 : 3,
           width: 20, height: 20, borderRadius: '50%',
-          background: 'var(--text-secondary)', boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+          background: 'var(--text-secondary)', boxShadow: 'none',
           transition: 'left 0.3s',
         }} />
       </div>

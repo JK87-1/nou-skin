@@ -8,6 +8,7 @@ import {
 import { getRecords, getStreak, getLatestRecord } from '../storage/SkinStorage';
 import { getProfile, saveProfile, getDeviceId } from '../storage/ProfileStorage';
 import SoftCloverIcon from './icons/SoftCloverIcon';
+import { TargetIcon, CrownIcon, TrophyIcon, CheckIcon, LockIcon } from './icons/PastelIcons';
 
 // ===== 랭킹 API 호출 =====
 async function fetchRanking(deviceId, nickname, score, xp, level) {
@@ -225,7 +226,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
         /* ===== LIGHT MODE: Toss-style centered profile card ===== */
         <div style={{
           background: '#FFFFFF', borderRadius: 16, padding: '28px 20px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.06)', marginBottom: 12,
+          boxShadow: 'none', marginBottom: 12,
           textAlign: 'center', position: 'relative',
           animation: 'brFadeInUp 0.5s ease both',
         }}>
@@ -251,7 +252,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
             <input ref={photoInputRef} type="file" accept="image/*" onChange={handlePhotoSelect} style={{ display: 'none' }} />
             <div style={{
               width: 80, height: 80, borderRadius: 24,
-              background: `linear-gradient(135deg, #FFD4B8, #F09070)`,
+              background: `linear-gradient(135deg, #FFD4B8, #FBEC5D)`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               overflow: 'hidden', margin: '0 auto',
             }}>
@@ -306,7 +307,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
             <button
               onClick={(e) => { e.stopPropagation(); setShowTitleModal(true); }}
               style={{
-                fontSize: 11, fontWeight: 600, color: '#F09070',
+                fontSize: 11, fontWeight: 600, color: '#FBEC5D',
                 background: 'rgba(124,92,252,0.08)', padding: '4px 12px', borderRadius: 8,
                 border: 'none', cursor: 'pointer', fontFamily: 'inherit',
                 display: 'inline-flex', alignItems: 'center', gap: 4,
@@ -326,7 +327,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
             <div style={{ height: 6, background: '#F2F3F5', borderRadius: 3, overflow: 'hidden' }}>
               <div style={{
                 width: `${levelProgress}%`, height: '100%', borderRadius: 3,
-                background: 'linear-gradient(90deg, #F09070, #F09070)',
+                background: 'linear-gradient(90deg, #FBEC5D, #FBEC5D)',
                 transition: 'width 1s ease-out',
               }} />
             </div>
@@ -546,7 +547,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
               border: 'none',
               background: tab === t.key ? '#FFFFFF' : 'transparent',
               color: tab === t.key ? '#191F28' : '#8B95A1',
-              boxShadow: tab === t.key ? '0 1px 2px rgba(0,0,0,0.09)' : 'none',
+              boxShadow: 'none',
               cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s',
             }}>{t.label}</button>
           ))}
@@ -585,7 +586,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
               {nextGoals.slice(0, 1).map((g) => (
                 <div key={g.id} style={{
                   background: '#FFFFFF', borderRadius: 16, padding: 20,
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.06)', marginBottom: 16,
+                  boxShadow: 'none', marginBottom: 16,
                   animation: 'brFadeInUp 0.5s ease 0.15s both',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
@@ -594,14 +595,14 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
                       <div style={{ fontSize: 14, fontWeight: 600, color: '#191F28' }}>{g.name}</div>
                       <div style={{ fontSize: 12, color: '#8B95A1', marginTop: 4 }}>{g.desc}</div>
                     </div>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: '#F09070' }}>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: '#FBEC5D' }}>
                       {g.current}/{g.target}
                     </span>
                   </div>
                   <div style={{ height: 6, background: '#F2F3F5', borderRadius: 3, overflow: 'hidden' }}>
                     <div style={{
                       width: `${g.progress * 100}%`, height: '100%', borderRadius: 3,
-                      background: 'linear-gradient(90deg, #F09070, #F09070)',
+                      background: 'linear-gradient(90deg, #FBEC5D, #FBEC5D)',
                     }} />
                   </div>
                 </div>
@@ -622,7 +623,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
                     padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600,
                     whiteSpace: 'nowrap', flexShrink: 0, cursor: 'pointer', fontFamily: 'inherit',
                     background: active ? 'rgba(124,92,252,0.08)' : '#F2F3F5',
-                    color: active ? '#F09070' : '#4E5968',
+                    color: active ? '#FBEC5D' : '#4E5968',
                     border: 'none', transition: 'all 0.25s',
                   }}>
                     {cat.label}
@@ -675,7 +676,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
                     textAlign: 'center', padding: 16, borderRadius: 16,
                     cursor: 'pointer', transition: 'all 0.25s',
                     background: badge.earned ? '#FFFFFF' : '#F7F8FA',
-                    boxShadow: badge.earned ? '0 1px 3px rgba(0,0,0,0.06)' : 'none',
+                    boxShadow: 'none',
                     animation: `brFadeInUp 0.4s ease-out ${bi * 0.06}s both`,
                   }}
                 >
@@ -695,7 +696,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
                         <div style={{ height: 4, background: '#F2F3F5', borderRadius: 2, overflow: 'hidden' }}>
                           <div style={{
                             width: `${badge.progress * 100}%`, height: '100%', borderRadius: 2,
-                            background: 'linear-gradient(90deg, #F09070, #F09070)',
+                            background: 'linear-gradient(90deg, #FBEC5D, #FBEC5D)',
                           }} />
                         </div>
                       </div>
@@ -746,7 +747,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
                           : '1px solid var(--border-separator)',
                         filter: badge.earned ? 'none' : 'grayscale(1) brightness(0.35)',
                         animation: badge.earned ? 'brBadgeShine 3s ease infinite' : 'none',
-                        boxShadow: badge.earned ? `0 0 12px ${color}25` : 'none',
+                        boxShadow: 'none',
                       }}>{badge.icon}</div>
                       {badge.earned && (
                         <div style={{
@@ -832,7 +833,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
               animation: 'brFadeInUp 0.5s ease 0.3s both',
             }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span>🎯</span> 다음 목표
+                <span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><TargetIcon size={13} /></span> 다음 목표
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
                 {nextGoals.map((g) => (
@@ -888,7 +889,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
                   style={{
                     padding: '14px 16px', borderRadius: 16,
                     background: isActive ? '#FFFFFF' : '#FFFFFF',
-                    boxShadow: isActive ? `0 0 0 1.5px ${t.accent}, 0 2px 8px rgba(0,0,0,0.06)` : '0 1px 3px rgba(0,0,0,0.06)',
+                    boxShadow: 'none',
                     cursor: unlocked ? 'pointer' : 'default',
                     opacity: unlocked ? 1 : 0.4,
                     transition: 'all 0.25s ease',
@@ -949,7 +950,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
             return (
               <div style={{
                 padding: 14, background: '#FFFFFF', borderRadius: 16,
-                boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                boxShadow: 'none',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
                   <span style={{ fontSize: 12 }}>🔮</span>
@@ -986,7 +987,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
                     <div key={i} style={{
                       width: 14, height: 14, borderRadius: '50%',
                       background: c, border: '1px solid rgba(255,255,255,0.1)',
-                      boxShadow: `0 0 6px ${c}30`,
+                      boxShadow: 'none',
                     }} />
                   ))}
                 </div>
@@ -1107,7 +1108,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
           {/* Loading */}
           {rankLoading && (
             <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)', fontSize: 13 }}>
-              <div style={{ fontSize: 28, marginBottom: 12, animation: 'brBadgeShine 1s ease infinite' }}>👑</div>
+              <div style={{ fontSize: 28, marginBottom: 12, animation: 'brBadgeShine 1s ease infinite' }}><CrownIcon size={28} /></div>
               랭킹을 불러오는 중...
             </div>
           )}
@@ -1143,7 +1144,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
             {/* 2nd place */}
             {ranking.length >= 2 && <PodiumCard user={ranking[1]} medal="🥈" accent={activeTheme.accent} />}
             {/* 1st place */}
-            {ranking.length >= 1 && <PodiumCard user={ranking[0]} medal="🏆" isFirst accent={activeTheme.accent} />}
+            {ranking.length >= 1 && <PodiumCard user={ranking[0]} medal={<TrophyIcon size={28} />} isFirst accent={activeTheme.accent} />}
             {/* 3rd place */}
             {ranking.length >= 3 && <PodiumCard user={ranking[2]} medal="🥉" accent={activeTheme.accent} />}
           </div>
@@ -1269,7 +1270,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
           background: 'rgba(240,144,112,0.9)', color: '#fff',
           padding: '10px 24px', borderRadius: 20, fontSize: 13, fontWeight: 500,
           zIndex: 999, animation: 'brFadeInDown 0.3s ease-out both',
-        }}>✅ {toast}</div>
+        }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><CheckIcon size={13} /></span> {toast}</div>
       )}
 
       {/* Modals */}
@@ -1289,7 +1290,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
 }
 
 // ===== Podium Card =====
-function PodiumCard({ user, medal, isFirst, accent = '#F09070' }) {
+function PodiumCard({ user, medal, isFirst, accent = '#FBEC5D' }) {
   return (
     <div style={{
       flex: 1, maxWidth: isFirst ? 130 : 110,
@@ -1473,7 +1474,7 @@ function TitleSelectionSheet({ currentLevel, totalXP, activeTheme, selectedTitle
 }
 
 // ===== Badge Collection Modal =====
-function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#F09070' }) {
+function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#FBEC5D' }) {
   const [modalCat, setModalCat] = useState('all');
   const [detailBadge, setDetailBadge] = useState(null);
 
@@ -1607,7 +1608,7 @@ function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#F09070' 
                             ? `linear-gradient(135deg, ${cat.color}18, ${cat.color}08)`
                             : 'rgba(255,255,255,0.02)',
                           filter: badge.earned ? 'none' : 'grayscale(1) brightness(0.35)',
-                          boxShadow: badge.earned ? `0 0 10px ${cat.color}20` : 'none',
+                          boxShadow: 'none',
                         }}>{badge.icon}</div>
                         {badge.earned && (
                           <div style={{
@@ -1642,7 +1643,7 @@ function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#F09070' 
                         </div>
                       )}
                       {!badge.earned && badge.progress === 0 && (
-                        <div style={{ fontSize: 8, color: '#444458', marginTop: 3 }}>🔒</div>
+                        <div style={{ fontSize: 8, color: '#444458', marginTop: 3 }}><LockIcon size={8} /></div>
                       )}
                     </div>
                   );
@@ -1677,7 +1678,7 @@ function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#F09070' 
                       ? `linear-gradient(135deg, ${badgeCatColor}18, ${badgeCatColor}08)`
                       : 'rgba(255,255,255,0.02)',
                     filter: detailBadge.earned ? 'none' : 'grayscale(1) brightness(0.35)',
-                    boxShadow: detailBadge.earned ? `0 0 12px ${badgeCatColor}25` : 'none',
+                    boxShadow: 'none',
                   }}>{detailBadge.icon}</div>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
@@ -1736,7 +1737,7 @@ function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#F09070' 
 }
 
 // ===== Badge Celebration Popup =====
-export function BadgeCelebration({ badge, onClose, accent = '#F09070' }) {
+export function BadgeCelebration({ badge, onClose, accent = '#FBEC5D' }) {
   if (!badge) return null;
 
   return createPortal(

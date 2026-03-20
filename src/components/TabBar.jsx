@@ -1,8 +1,8 @@
 import SoftCloverIcon from './icons/SoftCloverIcon';
 
 export default function TabBar({ activeTab, onTabChange, onMeasure, themeColors, colorMode }) {
-  const accent = themeColors?.accent || '#F09070';
-  const c = (active) => active ? accent : 'var(--tab-inactive)';
+  const accent = themeColors?.accent || '#FBEC5D';
+  const c = (active) => active ? '#81E4BD' : 'var(--tab-inactive)';
 
   const leftTabs = [
     {
@@ -77,48 +77,17 @@ export default function TabBar({ activeTab, onTabChange, onMeasure, themeColors,
 
       {/* Center Pearl Button */}
       <div style={{ flex: 1, display: 'flex', justifyContent: 'center', position: 'relative', zIndex: 10 }}>
-        {/* Pearl shadow on bar */}
-        <div style={{
-          position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
-          width: 60, height: 8,
-          background: `radial-gradient(ellipse, ${accent}26 0%, transparent 80%)`,
-          pointerEvents: 'none',
-        }} />
         <div
           onClick={(e) => { e.stopPropagation(); onMeasure?.(); }}
           style={{
-            position: 'absolute', top: -24,
+            position: 'absolute', top: '50%', transform: 'translateY(-50%)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer',
           }}
         >
-          {/* Pulse rings */}
-          <div style={{
-            position: 'absolute', width: 68, height: 68, borderRadius: '50%',
-            border: `1.5px solid ${accent}33`,
-            animation: 'pearlCenterRing 3s ease-in-out infinite',
-          }} />
-          <div style={{
-            position: 'absolute', width: 80, height: 80, borderRadius: '50%',
-            border: `1.5px solid ${accent}14`,
-            animation: 'pearlCenterRing 3s ease-in-out 0.8s infinite',
-          }} />
-          {/* Platform glow */}
-          <div style={{
-            position: 'absolute', width: 72, height: 72, borderRadius: '50%',
-            background: `radial-gradient(circle, ${accent}26 0%, ${accent}14 40%, transparent 70%)`,
-            animation: 'pearlPlatformGlow 4s ease-in-out infinite',
-          }} />
-          <style>{`
-            @keyframes pearlCenterRing { 0%,100% { transform:scale(0.95); opacity:0.4; } 50% { transform:scale(1.06); opacity:1; } }
-            @keyframes pearlPlatformGlow { 0%,100% { opacity:0.6; transform:scale(0.95); } 50% { opacity:1; transform:scale(1.05); } }
-          `}</style>
           <div style={{
             position: 'relative', zIndex: 2,
-            animation: 'pearlCenterFloat 4s ease-in-out infinite',
-            filter: `drop-shadow(0 4px 16px ${accent}59)`,
           }}>
-            <style>{`@keyframes pearlCenterFloat { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-2px); } }`}</style>
             <SoftCloverIcon theme={themeColors?.cloverTheme || 'navySapphire'} size={54} animate />
           </div>
         </div>

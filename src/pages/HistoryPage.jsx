@@ -28,9 +28,10 @@ import { getProfile } from '../storage/ProfileStorage';
 import AiInsightCard from '../components/AiInsightCard';
 import BeforeAfterSlider from '../components/BeforeAfterSlider';
 import DailyMission from '../components/DailyMission';
+import { ChartIcon, CameraIcon, MicroscopeIcon, SparkleIcon, DiamondIcon, DropletIcon, RulerIcon, PaletteIcon, LotionIcon, EyeIcon, BubbleIcon, TargetIcon, ClockIcon } from '../components/icons/PastelIcons';
 
 // ===== MINI LINE GRAPH (Canvas-based, no dependencies) =====
-function TrendGraph({ data, color = '#F0A878', height = 160, metricKey = 'skinAge', inverse = false, showAllLabels = false }) {
+function TrendGraph({ data, color = '#ADEBB3', height = 160, metricKey = 'skinAge', inverse = false, showAllLabels = false }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -155,7 +156,7 @@ function TrendGraph({ data, color = '#F0A878', height = 160, metricKey = 'skinAg
   if (data.length < 2) {
     return (
       <div style={{ height, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-dim)', fontSize: 13 }}>
-        2회 이상 측정하면 그래프가 나타나요 📈
+        2회 이상 측정하면 그래프가 나타나요 <span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><ChartIcon size={13} /></span>
       </div>
     );
   }
@@ -205,8 +206,8 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
 
   const graphData = getTimeSeries(graphMetric);
   const graphOptions = [
-    { key: 'skinAge', label: '피부나이', color: '#F0A878', inverse: true },
-    { key: 'overallScore', label: '종합점수', color: '#F0A878', inverse: false },
+    { key: 'skinAge', label: '피부나이', color: '#ADEBB3', inverse: true },
+    { key: 'overallScore', label: '종합점수', color: '#ADEBB3', inverse: false },
     { key: 'moisture', label: '수분도', color: '#4FC3F7', inverse: false },
     { key: 'wrinkleScore', label: '주름', color: '#9575CD', inverse: false },
     { key: 'elasticityScore', label: '탄력', color: '#F06292', inverse: false },
@@ -442,15 +443,15 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
           return `${d.getMonth() + 1}월 ${d.getDate()}일`;
         };
         const compareMetrics = [
-          { key: 'moisture', label: '수분', icon: '💧' },
-          { key: 'skinTone', label: '피부톤', icon: '✨' },
-          { key: 'wrinkleScore', label: '주름', icon: '📐' },
-          { key: 'poreScore', label: '모공', icon: '🔬' },
-          { key: 'elasticityScore', label: '탄력', icon: '💎' },
-          { key: 'pigmentationScore', label: '색소', icon: '🎨' },
-          { key: 'textureScore', label: '피부결', icon: '🧴' },
-          { key: 'darkCircleScore', label: '다크서클', icon: '👁️' },
-          { key: 'oilBalance', label: '유분', icon: '🫧' },
+          { key: 'moisture', label: '수분', icon: <DropletIcon size={16} /> },
+          { key: 'skinTone', label: '피부톤', icon: <SparkleIcon size={16} /> },
+          { key: 'wrinkleScore', label: '주름', icon: <RulerIcon size={16} /> },
+          { key: 'poreScore', label: '모공', icon: <MicroscopeIcon size={16} /> },
+          { key: 'elasticityScore', label: '탄력', icon: <DiamondIcon size={16} /> },
+          { key: 'pigmentationScore', label: '색소', icon: <PaletteIcon size={16} /> },
+          { key: 'textureScore', label: '피부결', icon: <LotionIcon size={16} /> },
+          { key: 'darkCircleScore', label: '다크서클', icon: <EyeIcon size={16} /> },
+          { key: 'oilBalance', label: '유분', icon: <BubbleIcon size={16} /> },
         ];
         const sorted = [...records].reverse();
 
@@ -465,7 +466,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                     fontSize: 11, fontWeight: 600, color: '#fff',
                     background: 'rgba(255,120,50,0.2)', border: '1px solid rgba(255,120,50,0.3)',
                     borderRadius: 20, padding: '2px 10px',
-                  }}>🔥 {period}일째</span>
+                  }}><span style={{ color: '#FF6B35' }}>●</span> {period}일째</span>
                 )}
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -491,14 +492,14 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
               <div style={{ display: 'flex', gap: 12, marginBottom: 16, animation: 'breatheIn 0.6s ease 0.1s both' }}>
                 <div style={{
                   flex: 1, background: 'var(--bg-card)',
-                  border: '1px solid var(--border-subtle)', borderRadius: 16, padding: '14px 16px',
+                  border: 'none', borderRadius: 16, padding: '14px 16px',
                   display: 'flex', alignItems: 'center', gap: 12,
                 }}>
                   <div style={{
                     width: 44, height: 44, borderRadius: 12,
-                    background: overallDiff >= 0 ? 'rgba(74,222,128,0.08)' : 'rgba(240,160,80,0.08)',
+                    background: 'transparent',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22,
-                  }}>📈</div>
+                  }}><ChartIcon size={26} /></div>
                   <div>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>총 변화</div>
                     <div style={{
@@ -509,14 +510,14 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                 </div>
                 <div style={{
                   flex: 1, background: 'var(--bg-card)',
-                  border: '1px solid var(--border-subtle)', borderRadius: 16, padding: '14px 16px',
+                  border: 'none', borderRadius: 16, padding: '14px 16px',
                   display: 'flex', alignItems: 'center', gap: 12,
                 }}>
                   <div style={{
                     width: 44, height: 44, borderRadius: 12,
-                    background: skinAgeDiff <= 0 ? 'rgba(240,144,112,0.08)' : 'rgba(240,160,80,0.08)',
+                    background: 'transparent',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22,
-                  }}>⏳</div>
+                  }}><ClockIcon size={26} /></div>
                   <div>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>피부나이</div>
                     <div style={{
@@ -529,7 +530,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
             )}
 
             {/* === TREND GRAPH === */}
-            <div className="card" style={{ padding: '16px 12px', marginBottom: 16, animation: 'breatheIn 0.6s ease 0.15s both' }}>
+            <div className="card" style={{ padding: '16px 12px', marginBottom: 16, animation: 'breatheIn 0.6s ease 0.15s both', boxShadow: 'none', border: 'none' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                 <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}>종합 점수 추이</span>
                 {improvementPct !== null && Number(improvementPct) !== 0 && (
@@ -543,7 +544,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
               </div>
               <TrendGraph
                 data={getTimeSeries('overallScore')}
-                color="#F0A878"
+                color="#ADEBB3"
                 height={180}
                 showAllLabels
               />
@@ -597,7 +598,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                           {thumb ? (
                             <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           ) : (
-                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>📷</div>
+                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CameraIcon size={18} /></div>
                           )}
                         </div>
 
@@ -615,8 +616,8 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                             {diff > 0 && (
                               <div style={{
                                 width: 4, height: 4, borderRadius: '50%',
-                                background: '#F09070',
-                                boxShadow: '0 0 4px rgba(240,144,112,0.4)',
+                                background: '#FBEC5D',
+                                boxShadow: 'none',
                                 flexShrink: 0,
                               }} />
                             )}
@@ -630,7 +631,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                         <div style={{ position: 'relative', width: 42, height: 42, flexShrink: 0 }}>
                           <svg width="42" height="42" viewBox="0 0 42 42">
                             <circle cx="21" cy="21" r={ringR} fill="none" stroke="var(--border-light)" strokeWidth="3" />
-                            <circle cx="21" cy="21" r={ringR} fill="none" stroke="#F0A878" strokeWidth="3"
+                            <circle cx="21" cy="21" r={ringR} fill="none" stroke="#ADEBB3" strokeWidth="3"
                               strokeDasharray={`${(r.overallScore / 100) * circ} ${circ}`}
                               strokeLinecap="round" transform="rotate(-90 21 21)"
                             />
@@ -722,7 +723,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                       <div style={{ position: 'relative', width: 80, height: 80, margin: '0 auto 6px' }}>
                         <svg width="80" height="80" viewBox="0 0 80 80">
                           <circle cx="40" cy="40" r={bigR} fill="none" stroke="rgba(240,144,112,0.12)" strokeWidth="5" />
-                          <circle cx="40" cy="40" r={bigR} fill="none" stroke="#F0A878" strokeWidth="5"
+                          <circle cx="40" cy="40" r={bigR} fill="none" stroke="#ADEBB3" strokeWidth="5"
                             strokeDasharray={`${(lastRecord.overallScore / 100) * bigCirc} ${bigCirc}`}
                             strokeLinecap="round" transform="rotate(-90 40 40)"
                           />
@@ -733,7 +734,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                           fontSize: 24, fontWeight: 800, fontFamily: 'var(--font-display)', color: 'var(--text-primary)',
                         }}>{lastRecord.overallScore}</div>
                       </div>
-                      <div style={{ fontSize: 11, color: '#F0A878', fontWeight: 600 }}>현재</div>
+                      <div style={{ fontSize: 11, color: '#ADEBB3', fontWeight: 600 }}>현재</div>
                     </div>
                   </div>
 
@@ -773,7 +774,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                             <div style={{
                               height: '100%', borderRadius: 2,
                               width: `${Math.min(100, Math.max(0, lastVal))}%`,
-                              background: improved || diff === 0 ? '#F0A878' : 'var(--text-dim)',
+                              background: improved || diff === 0 ? '#ADEBB3' : 'var(--text-dim)',
                               transition: 'width 0.8s ease',
                             }} />
                           </div>
@@ -929,7 +930,7 @@ function PhotoGallery({ records, thumbs, onMeasure, onSelectRecord, onThumbsChan
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M12 5v14M5 12h14" stroke="#F0A878" strokeWidth="2.5" strokeLinecap="round" />
+              <path d="M12 5v14M5 12h14" stroke="#ADEBB3" strokeWidth="2.5" strokeLinecap="round" />
             </svg>
           </div>
         </div>
@@ -1021,28 +1022,28 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
   const dateStr = `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 ${dayLabels[d.getDay()]}요일${timeStr ? ` ${timeStr}` : ''}`;
 
   const getGrade = (score) => {
-    if (score >= 85) return { letter: 'S', label: '최상', gradient: 'linear-gradient(135deg, #FFD700, #FFA500)', color: '#B8860B', bg: 'rgba(255,215,0,0.12)' };
-    if (score >= 70) return { letter: 'A', label: '우수', gradient: 'linear-gradient(135deg, #F09070, #E87080, #D05878)', color: '#F0A878', bg: 'rgba(240,144,112,0.12)' };
-    if (score >= 55) return { letter: 'B', label: '양호', gradient: 'linear-gradient(135deg, #FFD54F, #FFB300)', color: '#F9A825', bg: 'rgba(255,193,7,0.12)' };
+    if (score >= 85) return { letter: 'S', label: '최상', gradient: 'linear-gradient(135deg, #FBEC5D, #98FBCB)', color: '#FBEC5D', bg: 'rgba(251,236,93,0.12)' };
+    if (score >= 70) return { letter: 'A', label: '우수', gradient: 'linear-gradient(135deg, #ADEBB3, #98FBCB)', color: '#ADEBB3', bg: 'rgba(173,235,179,0.12)' };
+    if (score >= 55) return { letter: 'B', label: '양호', gradient: 'linear-gradient(135deg, #FBEC5D, #ADEBB3)', color: '#FBEC5D', bg: 'rgba(251,236,93,0.12)' };
     return { letter: 'C', label: '관리 필요', gradient: 'linear-gradient(135deg, #BDBDBD, #9E9E9E)', color: '#757575', bg: 'rgba(158,158,158,0.12)' };
   };
 
   const grade = getGrade(record.overallScore);
 
   const agingMetrics = [
-    { label: '주름', value: record.wrinkleScore, icon: '📐', color: '#9575CD' },
-    { label: '탄력', value: record.elasticityScore, icon: '💎', color: '#F06292' },
-    { label: '피부결', value: record.textureScore, icon: '🧴', color: '#7986CB' },
-    { label: '모공', value: record.poreScore, icon: '🔬', color: '#4DB6AC' },
-    { label: '색소', value: record.pigmentationScore, icon: '🎨', color: '#FF8A65' },
+    { label: '주름', value: record.wrinkleScore, icon: <RulerIcon size={16} />, color: '#9575CD' },
+    { label: '탄력', value: record.elasticityScore, icon: <DiamondIcon size={16} />, color: '#F06292' },
+    { label: '피부결', value: record.textureScore, icon: <LotionIcon size={16} />, color: '#7986CB' },
+    { label: '모공', value: record.poreScore, icon: <MicroscopeIcon size={16} />, color: '#4DB6AC' },
+    { label: '색소', value: record.pigmentationScore, icon: <PaletteIcon size={16} />, color: '#FF8A65' },
   ];
 
   const conditionMetrics = [
-    { label: '수분도', value: record.moisture, icon: '💧', color: '#4FC3F7', unit: '%' },
-    { label: '피부톤', value: record.skinTone, icon: '✨', color: '#FFB74D' },
-    { label: '다크서클', value: record.darkCircleScore, icon: '👁️', color: '#78909C' },
-    { label: '유분', value: record.oilBalance, icon: '🫧', color: '#81C784', unit: '%' },
-    { label: '트러블', value: record.troubleCount, icon: '🎯', color: '#E57373', unit: '개' },
+    { label: '수분도', value: record.moisture, icon: <DropletIcon size={16} />, color: '#4FC3F7', unit: '%' },
+    { label: '피부톤', value: record.skinTone, icon: <SparkleIcon size={16} />, color: '#FFB74D' },
+    { label: '다크서클', value: record.darkCircleScore, icon: <EyeIcon size={16} />, color: '#78909C' },
+    { label: '유분', value: record.oilBalance, icon: <BubbleIcon size={16} />, color: '#81C784', unit: '%' },
+    { label: '트러블', value: record.troubleCount, icon: <TargetIcon size={16} />, color: '#E57373', unit: '개' },
   ];
 
   return (
@@ -1105,7 +1106,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
               borderRadius: 20, padding: '28px 24px',
               width: 280, textAlign: 'center',
               border: '1px solid var(--border-subtle)',
-              boxShadow: '0 8px 40px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.03)',
+              boxShadow: 'none',
             }}>
               <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>이 기록을 삭제할까요?</div>
               <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 20 }}>삭제된 기록은 복구할 수 없습니다.</div>
@@ -1160,7 +1161,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
             <img src={thumbnail} alt="" style={{
               width: '100%', maxWidth: 320, height: 'auto', aspectRatio: '1/1', borderRadius: 24, objectFit: 'cover',
               border: '3px solid rgba(240,144,112,0.15)',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+              boxShadow: 'none',
             }} />
           </div>
         )}
@@ -1170,10 +1171,10 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
           animation: 'fadeUp 0.3s ease 0.2s both',
           background: 'var(--bg-card)', borderRadius: 22, padding: '16px 18px',
           border: '1px solid var(--border-subtle)', marginBottom: 12,
-          boxShadow: 'var(--shadow-elevated), inset 0 1px 1px rgba(255,255,255,0.05)',
+          boxShadow: 'none',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(124,92,252,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>🔬</div>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(124,92,252,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><MicroscopeIcon size={16} /></div>
             <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>피부 타입 정보</span>
           </div>
           {/* Skin type */}
@@ -1190,7 +1191,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
               </div>
               <span style={{
                 fontSize: 11, fontWeight: 600,
-                color: record.analysisMode === 'hybrid' ? '#F09070' : 'var(--text-muted)',
+                color: record.analysisMode === 'hybrid' ? '#FBEC5D' : 'var(--text-muted)',
                 background: record.analysisMode === 'hybrid' ? 'rgba(124,92,252,0.12)' : 'rgba(184,137,110,0.1)',
                 padding: '3px 10px', borderRadius: 10,
               }}>{record.analysisMode === 'hybrid' ? 'AI + CV 하이브리드' : 'CV 비전 분석'}</span>
@@ -1235,7 +1236,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
         {(() => {
           const cScore = record.conditionScore ?? record.overallScore;
           const cGrade = cScore >= 85 ? { letter: 'S', color: '#FFD700', bg: 'rgba(255,215,0,0.15)', border: 'rgba(255,215,0,0.3)' }
-            : cScore >= 70 ? { letter: 'A', color: '#F09070', bg: 'rgba(124,92,252,0.15)', border: 'rgba(124,92,252,0.3)' }
+            : cScore >= 70 ? { letter: 'A', color: '#FBEC5D', bg: 'rgba(124,92,252,0.15)', border: 'rgba(124,92,252,0.3)' }
             : cScore >= 55 ? { letter: 'B', color: '#f59e0b', bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.3)' }
             : cScore >= 40 ? { letter: 'C', color: '#8888a0', bg: 'rgba(136,136,160,0.12)', border: 'rgba(136,136,160,0.2)' }
             : { letter: 'D', color: '#f06050', bg: 'rgba(240,96,80,0.12)', border: 'rgba(240,96,80,0.2)' };
@@ -1244,10 +1245,10 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
               animation: 'fadeUp 0.3s ease 0.3s both',
               background: 'var(--bg-card)', borderRadius: 22, padding: '16px 18px',
               border: '1px solid var(--border-subtle)', marginBottom: 12,
-              boxShadow: 'var(--shadow-elevated), inset 0 1px 1px rgba(255,255,255,0.05)',
+              boxShadow: 'none',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(124,92,252,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>✨</div>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(124,92,252,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><SparkleIcon size={16} /></div>
                 <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>컨디션 브리핑</span>
                 <div style={{ marginLeft: 'auto', padding: '4px 10px', borderRadius: 8, background: cGrade.bg, border: `1px solid ${cGrade.border}`, display: 'flex', alignItems: 'center', gap: 4 }}>
                   <span style={{ fontSize: 14, fontWeight: 800, color: cGrade.color, fontFamily: 'var(--font-display)' }}>{cGrade.letter}</span>
@@ -1271,7 +1272,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
             animation: 'fadeUp 0.3s ease 0.4s both',
             background: 'var(--bg-card)', borderRadius: 22, padding: '16px 18px',
             border: '1px solid var(--border-subtle)', marginBottom: 12,
-            boxShadow: 'var(--shadow-elevated), inset 0 1px 1px rgba(255,255,255,0.05)',
+            boxShadow: 'none',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
               <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(124,92,252,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>🧠</div>
@@ -1290,7 +1291,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
                   background: 'linear-gradient(135deg, rgba(240,144,112,0.08), rgba(240,144,112,0.04))',
                   border: '1px solid rgba(240,144,112,0.15)',
                 }}>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: '#F09070', marginBottom: 4 }}>AI 정밀 판독</div>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: '#FBEC5D', marginBottom: 4 }}>AI 정밀 판독</div>
                   <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>{filtered}</p>
                 </div>
               );
@@ -1305,7 +1306,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
           border: '1px solid var(--border-subtle)',
           borderRadius: 22, padding: '14px 6px 2px',
           marginBottom: 12,
-          boxShadow: 'var(--shadow-elevated), inset 0 1px 1px rgba(255,255,255,0.05)',
+          boxShadow: 'none',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingLeft: 14, marginBottom: 4 }}>
             <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(59,130,246,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>📊</div>
@@ -1331,10 +1332,10 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
           border: '1px solid var(--border-subtle)',
           borderRadius: 22, padding: '14px 6px 2px',
           marginBottom: 12,
-          boxShadow: 'var(--shadow-elevated), inset 0 1px 1px rgba(255,255,255,0.05)',
+          boxShadow: 'none',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingLeft: 14, marginBottom: 4 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(236,72,153,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>💎</div>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(236,72,153,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><DiamondIcon size={16} /></div>
             <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>노화 지표</span>
           </div>
           {agingMetrics.map((m, i) => (

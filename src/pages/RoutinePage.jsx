@@ -9,6 +9,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { SunIcon, MoonIcon } from '../components/icons/PastelIcons';
 import { getLatestRecord } from '../storage/SkinStorage';
 import {
   getChecks, toggleCheck, getProgress,
@@ -63,11 +64,11 @@ export default function RoutinePage() {
           <button
             className={`segment-btn${mode === 'morning' ? ' active' : ''}`}
             onClick={() => setMode('morning')}
-          >☀️ 모닝 케어</button>
+          ><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><SunIcon size={16} /></span> 모닝 케어</button>
           <button
             className={`segment-btn${mode === 'night' ? ' active' : ''}`}
             onClick={() => setMode('night')}
-          >🌙 나이트 케어</button>
+          ><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><MoonIcon size={16} /></span> 나이트 케어</button>
         </div>
 
         {/* AI Context Card */}
@@ -90,7 +91,7 @@ export default function RoutinePage() {
             <span style={{ fontSize: 13, fontWeight: 600, color: '#e0e0e8' }}>
               오늘 진행률
             </span>
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#F0A878' }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#ADEBB3' }}>
               {progress.done}/{progress.total} 완료
             </span>
           </div>
@@ -100,7 +101,7 @@ export default function RoutinePage() {
           }}>
             <div style={{
               height: '100%', borderRadius: 4,
-              background: 'linear-gradient(90deg, #E87080, #F09070, #F09070)',
+              background: 'linear-gradient(90deg, #E87080, #FBEC5D, #FBEC5D)',
               width: `${(progress.done / progress.total) * 100}%`,
               transition: 'width 0.4s ease',
             }} />
@@ -154,13 +155,13 @@ export default function RoutinePage() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
                     <span style={{ fontSize: 22, flexShrink: 0 }}>{ing.icon}</span>
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: '#F0A878' }}>{ing.nameKo}</div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: '#ADEBB3' }}>{ing.nameKo}</div>
                       <div style={{ fontSize: 11, color: '#8888a0' }}>{ing.name}</div>
                     </div>
                     {ing.score != null && (
                       <span style={{
                         flexShrink: 0, marginLeft: 'auto', marginRight: 8,
-                        fontSize: 10, fontWeight: 600, color: '#F0A878',
+                        fontSize: 10, fontWeight: 600, color: '#ADEBB3',
                         background: 'rgba(240,144,112,0.1)', borderRadius: 20,
                         padding: '3px 8px',
                       }}>{ing.reason}</span>
@@ -170,7 +171,7 @@ export default function RoutinePage() {
                     flexShrink: 0, transition: 'transform 0.3s',
                     transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                   }}>
-                    <path d="M6 9l6 6 6-6" stroke="#F0A878" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M6 9l6 6 6-6" stroke="#ADEBB3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
                 <div style={{
@@ -191,7 +192,7 @@ export default function RoutinePage() {
                     background: 'rgba(240,144,112,0.06)', borderRadius: 10,
                     padding: '10px 12px', border: '1px solid rgba(240,144,112,0.08)',
                   }}>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: '#F0A878', marginBottom: 4 }}>사용 팁</div>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: '#ADEBB3', marginBottom: 4 }}>사용 팁</div>
                     <p style={{ fontSize: 12, color: '#8888a0', lineHeight: 1.6, margin: 0 }}>{ing.tip}</p>
                   </div>
                 </div>
@@ -220,23 +221,23 @@ export default function RoutinePage() {
                   width: 32, height: 32, borderRadius: '50%',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   marginBottom: 4,
-                  background: day.completed ? '#F0A878'
+                  background: day.completed ? '#ADEBB3'
                     : day.isToday ? 'rgba(240,144,112,0.15)'
                     : day.partial ? 'rgba(240,144,112,0.08)'
                     : 'rgba(255,255,255,0.04)',
-                  border: day.isToday && !day.completed ? '2px solid #F0A878' : 'none',
+                  border: day.isToday && !day.completed ? '2px solid #ADEBB3' : 'none',
                 }}>
                   {day.completed ? (
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                       <path d="M5 12l5 5L20 7" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   ) : day.partial ? (
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#F0A878' }} />
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#ADEBB3' }} />
                   ) : null}
                 </div>
                 <span style={{
                   fontSize: 10, fontWeight: day.isToday ? 600 : 400,
-                  color: day.isToday ? '#F0A878' : '#8888a0',
+                  color: day.isToday ? '#ADEBB3' : '#8888a0',
                 }}>{day.dayLabel}</span>
               </div>
             ))}

@@ -7,6 +7,7 @@ import { incrementStat, addXP, checkAndAwardBadges } from '../storage/BadgeStora
 import { PRODUCTS, CATEGORY_META, getProductsByCategory, calcMatchScore } from '../data/ProductCatalog';
 import { getProducts } from '../storage/TrackerStorage';
 import SoftCloverIcon from './icons/SoftCloverIcon';
+import { DropletIcon, SparkleIcon, TestTubeIcon, SunIcon, DiamondIcon, PaletteIcon, MicroscopeIcon, LotionIcon } from './icons/PastelIcons';
 
 /** Extract [RECOMMEND:카테고리] tags — only explicit tags from AI, no keyword fallback */
 function extractRecommendTags(text) {
@@ -39,7 +40,7 @@ function MatchScoreRing({ score }) {
     <div style={{ position: 'relative', width: 40, height: 40, flexShrink: 0 }}>
       <svg width="40" height="40" viewBox="0 0 40 40" style={{ transform: 'rotate(-90deg)' }}>
         <circle cx="20" cy="20" r={r} fill="none" stroke="rgba(240,144,112,0.12)" strokeWidth={stroke} />
-        <circle cx="20" cy="20" r={r} fill="none" stroke="#F0A878" strokeWidth={stroke}
+        <circle cx="20" cy="20" r={r} fill="none" stroke="#ADEBB3" strokeWidth={stroke}
           strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
           style={{ transition: 'stroke-dashoffset 0.8s ease-out' }} />
       </svg>
@@ -73,14 +74,14 @@ function ProductItem({ product, matchScore, delay = 0 }) {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 18,
       }}>
-        {product.tags?.[0]?.includes('히알루론') ? '💧' :
+        {product.tags?.[0]?.includes('히알루론') ? <DropletIcon size={18} /> :
          product.tags?.[0]?.includes('비타민') ? '🍊' :
-         product.tags?.[0]?.includes('레티놀') ? '✨' :
-         product.tags?.[0]?.includes('나이아신') ? '🧪' :
-         product.tags?.[0]?.includes('자외선') ? '☀️' :
-         product.tags?.[0]?.includes('글루타') ? '💎' :
-         product.tags?.[0]?.includes('마스크') ? '🎭' :
-         product.tags?.[0]?.includes('펩타이드') ? '🔬' : '🧴'}
+         product.tags?.[0]?.includes('레티놀') ? <SparkleIcon size={18} /> :
+         product.tags?.[0]?.includes('나이아신') ? <TestTubeIcon size={18} /> :
+         product.tags?.[0]?.includes('자외선') ? <SunIcon size={18} /> :
+         product.tags?.[0]?.includes('글루타') ? <DiamondIcon size={18} /> :
+         product.tags?.[0]?.includes('마스크') ? <PaletteIcon size={18} /> :
+         product.tags?.[0]?.includes('펩타이드') ? <MicroscopeIcon size={18} /> : <LotionIcon size={18} />}
       </div>
       {/* Center: name + tags + volume */}
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -92,7 +93,7 @@ function ProductItem({ product, matchScore, delay = 0 }) {
           {product.tags?.slice(0, 2).map((tag, ti) => (
             <span key={ti} style={{
               fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 8,
-              background: 'rgba(240,144,112,0.15)', color: '#F09070',
+              background: 'rgba(240,144,112,0.15)', color: '#FBEC5D',
             }}>{tag}</span>
           ))}
           <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{product.volume}</span>
@@ -712,10 +713,10 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
                 cursor: 'pointer', gap: 2, flexShrink: 0,
               }}
             >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F09070" strokeWidth="2" strokeLinecap="round">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FBEC5D" strokeWidth="2" strokeLinecap="round">
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
-              <span style={{ fontSize: 10, color: '#F09070', fontWeight: 600 }}>추가</span>
+              <span style={{ fontSize: 10, color: '#FBEC5D', fontWeight: 600 }}>추가</span>
             </button>
           )}
           <span style={{ fontSize: 12, color: 'var(--text-muted)', width: '100%' }}>
@@ -738,14 +739,14 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
         {showAttachMenu && (
           <div className="consult-attach-menu" onClick={(e) => e.stopPropagation()}>
             <button className="consult-attach-option" onClick={() => { cameraInputRef.current?.click(); setShowAttachMenu(false); }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F09070" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FBEC5D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
                 <circle cx="12" cy="13" r="4"/>
               </svg>
               카메라로 촬영
             </button>
             <button className="consult-attach-option" onClick={() => { albumInputRef.current?.click(); setShowAttachMenu(false); }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F09070" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FBEC5D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                 <circle cx="8.5" cy="8.5" r="1.5"/>
                 <polyline points="21 15 16 10 5 21"/>
@@ -762,7 +763,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
           disabled={isLoading}
           style={{ opacity: isLoading ? 0.5 : 1 }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F09070" strokeWidth="2.5" strokeLinecap="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FBEC5D" strokeWidth="2.5" strokeLinecap="round">
             <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
         </button>
@@ -796,7 +797,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
             style={{ opacity: isLoading ? 0.5 : 1 }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-              stroke={isListening ? '#F09070' : '#F09070'}
+              stroke={isListening ? '#FBEC5D' : '#FBEC5D'}
               strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="9" y="1" width="6" height="11" rx="3"/>
               <path d="M19 10v1a7 7 0 01-14 0v-1"/>

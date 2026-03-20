@@ -31,6 +31,7 @@ import { addXP, checkAndAwardBadges, incrementStat, getTotalXP, getLevel } from 
 import { calculateLevel, getThemeForLevel, getLevelTitleData, THEMES } from './data/BadgeData';
 import { BadgeCelebration } from './components/BadgeRanking';
 import SplashScreen from './components/SplashScreen';
+import { DropletIcon, SparkleIcon, LotionIcon, DiamondIcon, PaletteIcon, MicroscopeIcon, RulerIcon, EyeIcon, BubbleIcon, TargetIcon, SunIcon, MoonIcon, CameraIcon, TestTubeIcon, StarIcon, ShieldIcon, WandIcon, PhotoIcon, CheckIcon, SaveIcon } from './components/icons/PastelIcons';
 import SoftCloverIcon from './components/icons/SoftCloverIcon';
 import EternalPearl from './components/icons/EternalPearl';
 
@@ -639,7 +640,7 @@ export default function App() {
             border: '1px solid var(--border-subtle, #e5e7eb)',
             textAlign: 'center',
           }}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>🛡️</div>
+            <div style={{ fontSize: 40, marginBottom: 12 }}><ShieldIcon size={40} /></div>
             <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>
               데이터 복구 가능
             </div>
@@ -670,10 +671,10 @@ export default function App() {
                 }}
                 style={{
                   flex: 1, padding: 13, borderRadius: 14, border: 'none',
-                  background: 'linear-gradient(135deg, #F09070, #F09070)',
+                  background: 'linear-gradient(135deg, #FBEC5D, #FBEC5D)',
                   color: '#fff', fontSize: 14, fontWeight: 700,
                   cursor: 'pointer', fontFamily: 'inherit',
-                  boxShadow: '0 4px 16px rgba(124,92,252,0.3)',
+                  boxShadow: 'none',
                 }}
               >복원하기</button>
             </div>
@@ -689,7 +690,7 @@ export default function App() {
           padding: '14px 20px',
           display: 'flex', alignItems: 'center', gap: 12,
           backdropFilter: 'blur(10px)',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+          boxShadow: 'none',
         }}>
           <span style={{ fontSize: 20, flexShrink: 0 }}>🔒</span>
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -720,8 +721,8 @@ export default function App() {
 
       {/* Save Toast */}
       {showSaveToast && (
-        <div style={{ position: 'fixed', top: 60, left: '50%', transform: 'translateX(-50%)', background: 'rgba(240,144,112,0.9)', color: '#fff', padding: '10px 22px', borderRadius: 30, fontSize: 13, fontWeight: 600, zIndex: 999, boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
-          ✅ 기록이 저장되었어요!
+        <div style={{ position: 'fixed', top: 60, left: '50%', transform: 'translateX(-50%)', background: 'rgba(240,144,112,0.9)', color: '#fff', padding: '10px 22px', borderRadius: 30, fontSize: 13, fontWeight: 600, zIndex: 999, boxShadow: 'none' }}>
+          <span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><CheckIcon size={18} /></span> 기록이 저장되었어요!
         </div>
       )}
 
@@ -778,7 +779,7 @@ export default function App() {
             }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
                 <span style={{ fontSize: 20, lineHeight: 1, flexShrink: 0, marginTop: 1 }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F0A878" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ADEBB3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
                   </svg>
                 </span>
@@ -802,7 +803,7 @@ export default function App() {
                       setActiveTab('my');
                     }} style={{
                       padding: '6px 14px', borderRadius: 10, border: 'none',
-                      background: 'rgba(240,144,112,0.15)', color: '#F0A878',
+                      background: 'rgba(240,144,112,0.15)', color: '#ADEBB3',
                       fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
                     }}>마이페이지로 이동</button>
                   </div>
@@ -813,17 +814,11 @@ export default function App() {
           {/* First screen — fills full viewport */}
           <div style={{ height: 'calc(100dvh - 72px)', display: 'flex', flexDirection: 'column', overflow: colorMode === 'light' ? 'auto' : 'hidden' }}>
           {/* Header with Weather Chip */}
-          <div style={{ padding: '24px 24px 16px', position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div style={{ padding: '24px 24px 16px', position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              <div style={{ fontSize: 13, fontWeight: 400, color: 'var(--text-muted)', marginBottom: 4 }}>
-                {(() => { const h = new Date().getHours(); return h < 6 ? '편안한 밤이에요' : h < 12 ? '좋은 아침이에요' : h < 18 ? '좋은 오후예요' : '좋은 저녁이에요'; })()}
-              </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: 6, fontFamily: 'var(--font-display)' }}>루아</span>
+                <span style={{ fontSize: 20, fontWeight: 700, color: '#81E4BD', letterSpacing: 6, fontFamily: 'var(--font-display)' }}>LUA</span>
                 <span style={{ fontSize: 9, color: colorMode === 'light' ? 'var(--text-dim)' : activeThemeColors.accent, background: colorMode === 'light' ? 'var(--chip-bg)' : `${activeThemeColors.accent}1a`, padding: '2px 8px', borderRadius: 'var(--chip-radius)', fontWeight: 500 }}>Beta</span>
-              </div>
-              <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 6 }}>
-                {new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })}
               </div>
             </div>
             {/* Weather Chip */}
@@ -847,7 +842,7 @@ export default function App() {
             <div style={{
               background: colorMode === 'light' ? 'var(--bg-card)' : 'transparent',
               borderRadius: colorMode === 'light' ? 'var(--card-border-radius)' : 0,
-              boxShadow: colorMode === 'light' ? 'var(--shadow-card)' : 'none',
+              boxShadow: 'none',
               padding: colorMode === 'light' ? '32px 20px 28px' : '0 4px',
               width: '100%',
               textAlign: 'center',
@@ -865,7 +860,7 @@ export default function App() {
                     : undefined,
                 } : {}),
               }}>
-                <EternalPearl size={colorMode === 'light' ? 286 : 416} animated colors={activeThemeColors} theme={colorMode} />
+                <EternalPearl size={colorMode === 'light' ? 200 : 291} animated colors={activeThemeColors} theme={colorMode} />
               </div>
 
               {/* CTA text inside card for light, below for dark */}
@@ -912,7 +907,7 @@ export default function App() {
 
           {/* AI Insight Card — only on landing when there's data */}
           {colorMode === 'light' && getLatestRecord() && (
-            <div style={{ padding: '10px 20px 0' }}>
+            <div style={{ padding: '17px 20px 0' }}>
               <AiInsightCard colorMode={colorMode} />
             </div>
           )}
@@ -921,12 +916,12 @@ export default function App() {
           <div
             onClick={() => setStage('routineTracker')}
             style={{
-              margin: colorMode === 'light' ? '10px 20px 0' : '20px 20px 0',
+              margin: colorMode === 'light' ? '17px 20px 0' : '34px 20px 0',
               padding: 20,
               borderRadius: 20,
               background: colorMode === 'light' ? '#FFFFFF' : 'var(--bg-card)',
               border: colorMode === 'light' ? 'none' : '1px solid var(--border-subtle)',
-              boxShadow: colorMode === 'light' ? '0 2px 8px rgba(0,0,0,0.04)' : 'var(--shadow-card)',
+              boxShadow: 'none',
               cursor: 'pointer',
               animation: 'breatheIn 0.5s ease 0.3s both',
             }}
@@ -934,9 +929,32 @@ export default function App() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{
                 width: 40, height: 40, borderRadius: 14,
-                background: `${activeThemeColors.accent}12`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
-              }}>🧴</div>
+                background: 'transparent',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <svg width="26" height="26" viewBox="0 0 36 36" fill="none">
+                  <defs>
+                    <linearGradient id="lotion-g1" x1="30%" y1="0%" x2="70%" y2="100%">
+                      <stop offset="0%" stopColor="#FFF0F3" />
+                      <stop offset="100%" stopColor="#FFD0DA" />
+                    </linearGradient>
+                    <linearGradient id="lotion-g2" x1="30%" y1="0%" x2="70%" y2="100%">
+                      <stop offset="0%" stopColor="#FFE0E8" />
+                      <stop offset="100%" stopColor="#FFC0CC" />
+                    </linearGradient>
+                  </defs>
+                  {/* 캡 */}
+                  <rect x="13" y="3" width="10" height="4" rx="1.5" fill="url(#lotion-g2)" />
+                  {/* 펌프 */}
+                  <rect x="16.5" y="1" width="3" height="3" rx="1" fill="url(#lotion-g2)" />
+                  <rect x="14" y="0.5" width="8" height="1.5" rx="0.75" fill="url(#lotion-g2)" />
+                  {/* 몸통 */}
+                  <rect x="11" y="7" width="14" height="20" rx="4" fill="url(#lotion-g1)" />
+                  {/* 라벨 영역 */}
+                  <rect x="13" y="13" width="10" height="8" rx="2" fill="white" opacity="0.3" />
+                  {/* 하이라이트 */}
+                  <rect x="12.5" y="9" width="3" height="12" rx="1.5" fill="white" opacity="0.2" />
+                </svg></div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>스킨케어 트래커</div>
                 <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>제품 등록 · 루틴 관리 · 효과 분석</div>
@@ -946,34 +964,6 @@ export default function App() {
               </svg>
             </div>
           </div>
-
-          {/* 최근 기록 — light mode only, horizontal score tiles */}
-          {colorMode === 'light' && (() => {
-            const recs = getRecords();
-            if (!recs || recs.length === 0) return null;
-            const recent = recs.slice(-5).reverse();
-            return (
-              <div style={{ padding: '10px 20px 16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: '#191F28' }}>최근 기록</span>
-                  <span onClick={() => { setHistoryInitMode('insights'); setActiveTab('history'); }} style={{ fontSize: 12, color: '#8B95A1', cursor: 'pointer' }}>더보기 ›</span>
-                </div>
-                <div style={{ display: 'flex', gap: 8, overflowX: 'auto' }}>
-                  {recent.map((r, i) => (
-                    <div key={r.date + i} style={{
-                      width: 56, height: 56, borderRadius: 16, flexShrink: 0,
-                      background: i === 0 ? 'linear-gradient(135deg, #e8ddf8, #FFD4B8)' : '#F2F4F6',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: i === 0 ? '#fff' : '#8B95A1' }}>
-                        {r.overallScore || '—'}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })()}
 
           </div>{/* end first screen wrapper */}
 
@@ -1054,7 +1044,7 @@ export default function App() {
           <div style={{
             width: 300, height: 300, borderRadius: '50%', overflow: 'hidden',
             border: isL ? '3px solid #EAEBED' : '3px solid rgba(255,255,255,0.1)',
-            boxShadow: isL ? '0 4px 20px rgba(0,0,0,0.08)' : '0 10px 40px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.05)',
+            boxShadow: 'none',
             position: 'relative',
           }}>
             <img src={image} alt="selfie" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
@@ -1089,22 +1079,22 @@ export default function App() {
                 border: isL ? 'none' : '1px solid rgba(255,255,255,0.08)',
                 background: isBlocked
                   ? (isL ? '#D1D6DB' : 'linear-gradient(135deg, #444, #333)')
-                  : (isL ? '#F09070' : 'linear-gradient(135deg, #F09070, #E87080, #D05878)'),
+                  : (isL ? '#FBEC5D' : 'linear-gradient(135deg, #FBEC5D, #E87080, #D05878)'),
                 backdropFilter: isL ? 'none' : 'blur(12px)', WebkitBackdropFilter: isL ? 'none' : 'blur(12px)',
-                boxShadow: isBlocked ? 'none' : (isL ? '0 2px 8px rgba(124,92,252,0.25)' : '0 4px 20px rgba(240,144,112,0.35), inset 0 1px 1px rgba(255,255,255,0.05)'),
+                boxShadow: 'none',
                 color: '#fff', fontSize: 16, fontWeight: 700,
                 cursor: isBlocked ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
                 opacity: isBlocked ? 0.6 : 1,
-              }}><span style={{marginRight:6,fontSize:21,verticalAlign:'middle'}}>{isBlocked ? '📷' : '🪄'}</span>{isBlocked ? '다시 촬영해주세요' : 'AI 피부 분석 시작'}</button>;
+              }}><span style={{marginRight:6,fontSize:21,verticalAlign:'middle',display:'inline-flex'}}>{isBlocked ? <CameraIcon size={21} /> : <WandIcon size={21} />}</span>{isBlocked ? '다시 촬영해주세요' : 'AI 피부 분석 시작'}</button>;
             })()}
             <button onClick={() => fileRef.current?.click()} style={{
               width: '100%', padding: 12, borderRadius: isL ? 16 : 50,
               background: isL ? '#F2F3F5' : 'rgba(255,255,255,0.04)',
               border: isL ? 'none' : '1px solid rgba(255,255,255,0.08)',
               backdropFilter: isL ? 'none' : 'blur(12px)', WebkitBackdropFilter: isL ? 'none' : 'blur(12px)',
-              boxShadow: isL ? 'none' : '0 2px 10px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.05)',
+              boxShadow: 'none',
               color: isL ? '#4E5968' : '#8888a0', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-            }}><span style={{marginRight:6,fontSize:21,verticalAlign:'middle'}}>🖼️</span>다른 사진 선택</button>
+            }}><span style={{marginRight:6,fontSize:21,verticalAlign:'middle',display:'inline-flex'}}><PhotoIcon size={21} /></span>다른 사진 선택</button>
           </div>
         </div>
         );
@@ -1153,7 +1143,7 @@ export default function App() {
             <div style={{
               width: 220, height: 220, borderRadius: '50%', overflow: 'hidden',
               border: isL ? '3px solid #EAEBED' : '3px solid rgba(255,255,255,0.1)',
-              boxShadow: isL ? '0 4px 20px rgba(0,0,0,0.08)' : '0 8px 32px rgba(0,0,0,0.3)',
+              boxShadow: 'none',
               position: 'relative', zIndex: 1,
             }}>
               {image ? (
@@ -1163,7 +1153,7 @@ export default function App() {
                   width: '100%', height: '100%',
                   background: isL ? '#FFFFFF' : '#0e0e14',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 44,
-                }}>✨</div>
+                }}><SparkleIcon size={44} /></div>
               )}
             </div>
           </div>
@@ -1183,7 +1173,7 @@ export default function App() {
               <div style={{
                 height: '100%', borderRadius: 3,
                 background: isL
-                  ? 'linear-gradient(90deg, #F09070, #F09070)'
+                  ? 'linear-gradient(90deg, #FBEC5D, #FBEC5D)'
                   : `linear-gradient(90deg, ${activeThemeColors.pearl[2]}, ${activeThemeColors.pearl[1]}, ${activeThemeColors.accent})`,
                 width: `${Math.min(progress, 100)}%`,
                 transition: 'width 0.4s',
@@ -1228,7 +1218,7 @@ export default function App() {
                 width: 42, height: 42, borderRadius: '50%',
                 background: 'rgba(240,144,112,0.9)', border: 'none', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 4px 16px rgba(240,144,112,0.3)',
+                boxShadow: 'none',
               }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
               </button>
@@ -1236,7 +1226,7 @@ export default function App() {
                 width: 42, height: 42, borderRadius: '50%',
                 background: 'rgba(240,144,112,0.9)', border: 'none', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 4px 16px rgba(240,144,112,0.3)', fontSize: 16,
+                boxShadow: 'none', fontSize: 16,
               }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
               </button>
@@ -1307,7 +1297,7 @@ export default function App() {
                 position: 'absolute', ...l.pos, zIndex: 8,
                 background: 'var(--float-pill-bg)', backdropFilter: 'var(--card-backdrop)', WebkitBackdropFilter: 'var(--card-backdrop)',
                 borderRadius: 50, padding: '7px 16px',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+                boxShadow: 'none',
                 animation: `popIn 0.5s ease-out ${0.8 + i * 0.12}s both`,
               }}>
                 <span style={{ fontSize: 12.5, color: 'var(--text-secondary)', fontWeight: 500 }}>
@@ -1323,7 +1313,7 @@ export default function App() {
             background: colorMode === 'light' ? '#F7F8FA' : `linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%)`,
             borderRadius: '24px 24px 0 0',
             marginTop: -28, padding: colorMode === 'light' ? '0 20px 28px' : '0 22px 28px', zIndex: 5,
-            boxShadow: colorMode === 'light' ? 'none' : 'var(--shadow-elevated)',
+            boxShadow: 'none',
             animation: 'slideUp 0.6s ease-out 0.4s both',
           }}>
             {/* Handle bar */}
@@ -1369,7 +1359,7 @@ export default function App() {
                     background: '#F2F4F6', borderRadius: 16,
                   }}>
                     <div style={{ fontSize: 11, color: '#8B95A1', marginBottom: 6 }}>종합 점수</div>
-                    <div style={{ fontSize: 30, fontWeight: 700, color: '#F09070', fontFamily: 'var(--font-display)', lineHeight: 1 }}>
+                    <div style={{ fontSize: 30, fontWeight: 700, color: '#FBEC5D', fontFamily: 'var(--font-display)', lineHeight: 1 }}>
                       <AnimatedNumber target={result.overallScore} />
                       <span style={{ fontSize: 14, fontWeight: 500, color: '#FFD4B8', marginLeft: 2 }}>점</span>
                     </div>
@@ -1413,7 +1403,7 @@ export default function App() {
                     background: 'var(--bg-card)', backdropFilter: 'var(--card-backdrop)', WebkitBackdropFilter: 'var(--card-backdrop)',
                     border: '1px solid var(--border-subtle)',
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: 'var(--shadow-card), var(--glass-inset)',
+                    boxShadow: 'none',
                     cursor: 'pointer',
                   }}>
                     <span style={{ fontSize: 24, fontWeight: 650, color: activeThemeColors.accent, lineHeight: 1, fontFamily: 'var(--font-display)' }}>
@@ -1428,7 +1418,7 @@ export default function App() {
                     background: 'var(--bg-card)', backdropFilter: 'var(--card-backdrop)', WebkitBackdropFilter: 'var(--card-backdrop)',
                     border: '1px solid var(--border-subtle)',
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: 'var(--shadow-card), var(--glass-inset)',
+                    boxShadow: 'none',
                     position: 'relative',
                   }}>
                     {/* Mini circular gauge */}
@@ -1480,9 +1470,9 @@ export default function App() {
                 cursor: saved ? 'default' : 'pointer', fontFamily: 'inherit',
                 background: saved ? 'rgba(74,222,128,0.15)' : 'var(--btn-primary-bg)',
                 color: saved ? '#4ade80' : '#fff',
-                boxShadow: saved ? 'none' : `0 4px 16px ${activeThemeColors.accent}59`,
+                boxShadow: 'none',
               }}>
-                {saved ? '✅ 저장 완료' : '💾 기록 저장'}
+                {saved ? <><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><CheckIcon size={18} /></span> 저장 완료</> : <><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><SaveIcon size={18} /></span> 기록 저장</>}
               </button>
               <button onClick={handleShare} style={{
                 padding: '12px 20px', borderRadius: 'var(--btn-radius)', fontFamily: 'inherit',
@@ -1497,7 +1487,7 @@ export default function App() {
               {/* Section icon header — light mode only */}
               {colorMode === 'light' && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: 14, background: 'rgba(124,92,252,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>🔬</div>
+                  <div style={{ width: 40, height: 40, borderRadius: 14, background: 'rgba(124,92,252,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}><MicroscopeIcon size={18} /></div>
                   <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>피부 타입 정보</h2>
                 </div>
               )}
@@ -1587,14 +1577,14 @@ export default function App() {
                 {/* Section icon header — light mode */}
                 {colorMode === 'light' && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-                    <div style={{ width: 40, height: 40, borderRadius: 14, background: 'rgba(124,92,252,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>✨</div>
+                    <div style={{ width: 40, height: 40, borderRadius: 14, background: 'rgba(124,92,252,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}><SparkleIcon size={18} /></div>
                     <div style={{ flex: 1 }}>
                       <h2 style={{ fontSize: 15, fontWeight: 700, color: '#191F28', margin: 0 }}>컨디션 브리핑</h2>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <div style={{ padding: '4px 10px', borderRadius: 8, background: 'rgba(124,92,252,0.08)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <span style={{ fontSize: 15, fontWeight: 800, color: '#F09070', fontFamily: 'var(--font-display)' }}>{grade.letter}</span>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: '#F09070' }}>{score}점</span>
+                        <span style={{ fontSize: 15, fontWeight: 800, color: '#FBEC5D', fontFamily: 'var(--font-display)' }}>{grade.letter}</span>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: '#FBEC5D' }}>{score}점</span>
                       </div>
                     </div>
                   </div>
@@ -1646,7 +1636,7 @@ export default function App() {
             })()}
 
             {/* ── AI Analysis ── */}
-            <div className="glass-card" style={{ animation: 'fadeUp 0.5s ease-out 0.9s both', boxShadow: colorMode === 'light' ? 'var(--shadow-card)' : `var(--shadow-elevated), var(--glass-inset), inset 0 0 20px ${activeThemeColors.accent}08` }}>
+            <div className="glass-card" style={{ animation: 'fadeUp 0.5s ease-out 0.9s both', boxShadow: 'none' }}>
               {colorMode === 'light' ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
                   <div style={{ width: 40, height: 40, borderRadius: 14, background: 'rgba(124,92,252,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>🧠</div>
@@ -1675,7 +1665,7 @@ export default function App() {
                   border: colorMode === 'light' ? 'none' : `1px solid ${activeThemeColors.accent}1f`,
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                    <span style={{ fontSize: 12 }}>🔬</span>
+                    <span style={{ fontSize: 12, display: 'inline-flex', verticalAlign: 'middle' }}><MicroscopeIcon size={12} /></span>
                     <span style={{ fontSize: 11, fontWeight: 700, color: activeThemeColors.accent }}>AI 정밀 판독</span>
                   </div>
                   <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>{filtered}</p>
@@ -1755,19 +1745,19 @@ export default function App() {
                   <div style={{ fontSize: 10, color: 'var(--text-muted)', paddingLeft: 8, marginBottom: 14 }}>탭하면 과학적 근거</div>
                 </>
               )}
-              <MetricBar label="다크서클" value={result.darkCircleScore} unit="점" icon="👁️" color="#78909C"
+              <MetricBar label="다크서클" value={result.darkCircleScore} unit="점" icon={<EyeIcon size={18} />} color="#78909C"
                 description={result.darkCircleScore >= 70 ? '눈 밑 밝음' : result.darkCircleScore >= 45 ? '아이크림 추천' : '다크서클 집중 관리'}
                 onClick={() => openDetail('darkCircles')} />
-              <MetricBar label="수분도" value={result.moisture} unit="%" icon="💧" color="#4FC3F7" delay={60}
+              <MetricBar label="수분도" value={result.moisture} unit="%" icon={<DropletIcon size={18} />} color="#4FC3F7" delay={60}
                 description={result.moisture >= 60 ? '정상 범위' : '보습 강화 필요'}
                 onClick={() => openDetail('moisture')} />
-              <MetricBar label="피부톤" value={result.skinTone} unit="점" icon="✨" color="#FFB347" delay={120}
+              <MetricBar label="피부톤" value={result.skinTone} unit="점" icon={<SparkleIcon size={18} />} color="#98FBCB" delay={120}
                 description={result.skinTone >= 70 ? '균일하고 밝은 톤' : '색소 관리 추천'}
                 onClick={() => openDetail('skinTone')} />
-              <MetricBar label="유분" value={result.oilBalance} unit="%" icon="🫧" color="#81C784" delay={180}
+              <MetricBar label="유분" value={result.oilBalance} unit="%" icon={<BubbleIcon size={18} />} color="#81C784" delay={180}
                 description={result.oilBalance >= 45 && result.oilBalance <= 65 ? '균형 상태' : result.oilBalance > 65 ? '유분 조절 필요' : '유분 보충 필요'}
                 onClick={() => openDetail('oilBalance')} />
-              <MetricBar label="트러블" value={Math.max(0, 100 - result.troubleCount * 8.5)} unit="점" icon="🎯" color="#FF8A65" delay={240}
+              <MetricBar label="트러블" value={Math.max(0, 100 - result.troubleCount * 8.5)} unit="점" icon={<TargetIcon size={18} />} color="#FF8A65" delay={240}
                 description={`${result.troubleCount}개 | ${result.troubleCount <= 2 ? '깨끗' : result.troubleCount <= 5 ? '경증' : '집중관리'}`}
                 onClick={() => openDetail('trouble')} />
             </div>
@@ -1776,7 +1766,7 @@ export default function App() {
             <div className="glass-card" style={{ padding: colorMode === 'light' ? '24px' : '18px 10px', animation: 'fadeUp 0.5s ease-out 1.1s both' }}>
               {colorMode === 'light' ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: 14, background: 'rgba(236,72,153,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>💎</div>
+                  <div style={{ width: 40, height: 40, borderRadius: 14, background: 'rgba(236,72,153,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}><DiamondIcon size={18} /></div>
                   <div>
                     <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>노화 지표</h2>
                     <div style={{ fontSize: 11, color: '#8B95A1', marginTop: 1 }}>피부 나이에 큰 영향</div>
@@ -1785,19 +1775,19 @@ export default function App() {
               ) : (
                 <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 14, paddingLeft: 8, color: 'var(--text-primary)' }}>노화 지표 <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 400 }}>피부 나이에 큰 영향</span></div>
               )}
-              <MetricBar label="주름" value={result.wrinkleScore} unit="점" icon="📐" color="#9575CD"
+              <MetricBar label="주름" value={result.wrinkleScore} unit="점" icon={<RulerIcon size={18} />} color="#9575CD"
                 description={result.wrinkleScore >= 75 ? '매끄러운 피부' : result.wrinkleScore >= 50 ? '잔주름 관리 추천' : '주름 집중 관리 필요'}
                 onClick={() => openDetail('wrinkles')} />
-              <MetricBar label="탄력" value={result.elasticityScore} unit="점" icon="💎" color="#F06292" delay={60}
+              <MetricBar label="탄력" value={result.elasticityScore} unit="점" icon={<DiamondIcon size={18} />} color="#F06292" delay={60}
                 description={result.elasticityScore >= 70 ? '턱선 선명' : result.elasticityScore >= 45 ? '탄력 관리 시작' : '탄력 집중 케어 필요'}
                 onClick={() => openDetail('elasticity')} />
-              <MetricBar label="피부결" value={result.textureScore} unit="점" icon="🧴" color="#7986CB" delay={120}
+              <MetricBar label="피부결" value={result.textureScore} unit="점" icon={<LotionIcon size={18} />} color="#7986CB" delay={120}
                 description={result.textureScore >= 70 ? '매끈한 피부' : result.textureScore >= 45 ? '각질 케어 추천' : '피부결 집중 관리 필요'}
                 onClick={() => openDetail('texture')} />
-              <MetricBar label="모공" value={result.poreScore} unit="점" icon="🔬" color="#4DB6AC" delay={180}
+              <MetricBar label="모공" value={result.poreScore} unit="점" icon={<MicroscopeIcon size={18} />} color="#4DB6AC" delay={180}
                 description={result.poreScore >= 70 ? '미세 모공' : result.poreScore >= 45 ? '모공 축소 관리' : '넓은 모공 관리 필요'}
                 onClick={() => openDetail('pores')} />
-              <MetricBar label="색소" value={result.pigmentationScore} unit="점" icon="🎨" color="#A1887F" delay={240}
+              <MetricBar label="색소" value={result.pigmentationScore} unit="점" icon={<PaletteIcon size={18} />} color="#A1887F" delay={240}
                 description={result.pigmentationScore >= 70 ? '맑은 피부' : result.pigmentationScore >= 45 ? '미백 관리 추천' : '색소 집중 관리 필요'}
                 onClick={() => openDetail('pigmentation')} />
             </div>
@@ -1849,11 +1839,11 @@ export default function App() {
                               background: 'linear-gradient(135deg, rgba(240,144,112,0.15), rgba(240,144,112,0.15))',
                               display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16,
                             }}>
-                              {product.tags?.[0]?.includes('히알루론') ? '💧' :
+                              {product.tags?.[0]?.includes('히알루론') ? <DropletIcon size={16} /> :
                                product.tags?.[0]?.includes('비타민') ? '🍊' :
-                               product.tags?.[0]?.includes('레티놀') ? '✨' :
-                               product.tags?.[0]?.includes('나이아신') ? '🧪' :
-                               product.tags?.[0]?.includes('글루타') ? '💎' : '🧴'}
+                               product.tags?.[0]?.includes('레티놀') ? <SparkleIcon size={16} /> :
+                               product.tags?.[0]?.includes('나이아신') ? <TestTubeIcon size={16} /> :
+                               product.tags?.[0]?.includes('글루타') ? <DiamondIcon size={16} /> : <LotionIcon size={16} />}
                             </div>
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)',
@@ -1919,7 +1909,7 @@ export default function App() {
                         }}>
                           <div style={{
                             width: 38, height: 38, borderRadius: 10, flexShrink: 0,
-                            background: `${catMeta?.color || '#F0A878'}18`,
+                            background: `${catMeta?.color || '#ADEBB3'}18`,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             fontSize: 18,
                           }}>{t.icon}</div>
@@ -1930,8 +1920,8 @@ export default function App() {
                               </span>
                               <span style={{
                                 fontSize: 10, fontWeight: 600, padding: '1px 7px', borderRadius: 6,
-                                background: `${catMeta?.color || '#F0A878'}18`,
-                                color: catMeta?.color || '#F0A878',
+                                background: `${catMeta?.color || '#ADEBB3'}18`,
+                                color: catMeta?.color || '#ADEBB3',
                               }}>{catMeta?.label}</span>
                             </div>
                             <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2, lineHeight: 1.3 }}>
@@ -1966,7 +1956,7 @@ export default function App() {
                       💬 시술에 대해 루아에게 물어보기
                     </button>
                     <div style={{ fontSize: 9, color: 'var(--text-dim)', textAlign: 'center', marginTop: 6, lineHeight: 1.4 }}>
-                      ⚕️ 의료 행위가 아닌 정보 제공 목적입니다. 시술은 전문 의료진과 상담 후 결정하세요.
+                      <span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><ShieldIcon size={12} /></span> 의료 행위가 아닌 정보 제공 목적입니다. 시술은 전문 의료진과 상담 후 결정하세요.
                     </div>
                   </div>
                 </div>
@@ -1976,15 +1966,15 @@ export default function App() {
             {/* ── Skin Consultant CTA ── */}
             <button onClick={() => setActiveTab('consult')} style={{
               width: '100%', padding: '14px 0', borderRadius: colorMode === 'light' ? 12 : 'var(--btn-radius)', border: 'none',
-              background: colorMode === 'light' ? '#F09070' : 'linear-gradient(135deg, rgba(240,144,112,0.12), rgba(240,144,112,0.12))',
+              background: colorMode === 'light' ? '#FBEC5D' : 'linear-gradient(135deg, rgba(240,144,112,0.12), rgba(240,144,112,0.12))',
               backdropFilter: colorMode === 'light' ? 'none' : 'var(--card-backdrop)', WebkitBackdropFilter: colorMode === 'light' ? 'none' : 'var(--card-backdrop)',
-              color: colorMode === 'light' ? '#fff' : '#F0A878', fontSize: 15, fontWeight: 700, cursor: 'pointer',
+              color: colorMode === 'light' ? '#fff' : '#ADEBB3', fontSize: 15, fontWeight: 700, cursor: 'pointer',
               fontFamily: 'inherit', marginBottom: 14,
-              boxShadow: colorMode === 'light' ? '0 2px 8px rgba(0,0,0,0.08)' : '0 2px 12px rgba(240,144,112,0.12)',
+              boxShadow: 'none',
               animation: 'fadeUp 0.5s ease-out 1.25s both',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={colorMode === 'light' ? '#fff' : '#F0A878'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={colorMode === 'light' ? '#fff' : '#ADEBB3'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
               </svg>
               루아에게 물어보기
@@ -1995,10 +1985,10 @@ export default function App() {
               <button onClick={handleSave} style={{
                 marginBottom: 10, width: '100%', padding: 14, borderRadius: 'var(--btn-radius)', border: 'none',
                 background: 'var(--btn-primary-bg)',
-                boxShadow: '0 6px 24px rgba(240,144,112,0.35), inset 0 1px 1px rgba(255,255,255,0.05)',
+                boxShadow: 'none',
                 color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
                 animation: 'fadeUp 0.5s ease-out 1.35s both',
-              }}>💾 이 결과 기록하기</button>
+              }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><SaveIcon size={18} /></span> 이 결과 기록하기</button>
             )}
             <button onClick={reset} style={{
               width: '100%', padding: 14, borderRadius: 'var(--btn-radius)', fontFamily: 'inherit',

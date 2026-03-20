@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { SunIcon, MoonIcon, LotionIcon } from '../components/icons/PastelIcons';
 import {
   TRACKER_CATEGORIES, getProducts, saveProduct, deleteProduct,
   getProductsForMode, getTrackerChecks, toggleTrackerCheck,
@@ -652,7 +653,7 @@ export default function RoutineTracker({ colorMode, themeColors, onBack }) {
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   const isLight = colorMode === 'light';
-  const accent = themeColors?.accent || '#F09070';
+  const accent = themeColors?.accent || '#FBEC5D';
   const getCat = (cat) => TRACKER_CATEGORIES[cat] || TRACKER_CATEGORIES['기타'];
 
   // 루틴 데이터
@@ -765,7 +766,7 @@ export default function RoutineTracker({ colorMode, themeColors, onBack }) {
 
           {products.length === 0 && (
             <div style={{ textAlign: 'center', padding: '40px 0 20px' }}>
-              <div style={{ fontSize: 40, marginBottom: 12 }}>🧴</div>
+              <div style={{ marginBottom: 12 }}><LotionIcon size={40} /></div>
               <div style={{ fontSize: 15, fontWeight: 600, color: isLight ? '#191F28' : '#f0f0f5', marginBottom: 4 }}>아직 등록된 제품이 없어요</div>
               <div style={{ fontSize: 13, color: isLight ? '#8B95A1' : '#8888a0' }}>사용중인 스킨케어 제품을 등록해보세요</div>
             </div>
@@ -825,8 +826,8 @@ export default function RoutineTracker({ colorMode, themeColors, onBack }) {
       {section === 'routine' && (
         <div style={{ padding: '20px 20px 0', animation: 'fadeUp 0.3s ease-out' }}>
           <div className="segment-control" style={{ marginBottom: 20 }}>
-            <button className={`segment-btn${routineMode === 'morning' ? ' active' : ''}`} onClick={() => setRoutineMode('morning')}>☀️ 모닝 케어</button>
-            <button className={`segment-btn${routineMode === 'night' ? ' active' : ''}`} onClick={() => setRoutineMode('night')}>🌙 나이트 케어</button>
+            <button className={`segment-btn${routineMode === 'morning' ? ' active' : ''}`} onClick={() => setRoutineMode('morning')}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><SunIcon size={14} /></span> 모닝 케어</button>
+            <button className={`segment-btn${routineMode === 'night' ? ' active' : ''}`} onClick={() => setRoutineMode('night')}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><MoonIcon size={14} /></span> 나이트 케어</button>
           </div>
 
           {modeProducts.length === 0 ? (
@@ -872,7 +873,7 @@ export default function RoutineTracker({ colorMode, themeColors, onBack }) {
                       <button onClick={() => handleToggleCheck(p.id)} style={{
                         width: 26, height: 26, borderRadius: 8, border: 'none', cursor: 'pointer', flexShrink: 0,
                         background: isChecked ? `linear-gradient(135deg, ${accent}cc, ${accent})` : isLight ? '#F2F3F5' : 'rgba(255,255,255,0.06)',
-                        ...(isChecked ? {} : { boxShadow: isLight ? 'inset 0 0 0 2px #ddd' : 'inset 0 0 0 2px rgba(255,255,255,0.12)' }),
+                        ...(isChecked ? {} : { boxShadow: 'none' }),
                         display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s',
                       }}>
                         {isChecked && <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 7" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" /></svg>}

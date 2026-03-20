@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { SCIENCE } from '../data/ScienceData';
+import { RulerIcon, GearIcon, BooksIcon } from './icons/PastelIcons';
 
 /* ===== Animated Number Counter ===== */
 export function AnimatedNumber({ target, suffix = '', duration = 1200 }) {
@@ -36,9 +37,9 @@ export function ScoreRing({ score, size = 110, label = '종합점수' }) {
       <svg width={size} height={size} style={{ transform: 'rotate(-90deg)', position: 'absolute' }}>
         <defs>
           <linearGradient id="scoreRingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#F09070"/>
-            <stop offset="50%" stopColor="#F09070"/>
-            <stop offset="100%" stopColor="#F0A878"/>
+            <stop offset="0%" stopColor="#FBEC5D"/>
+            <stop offset="50%" stopColor="#FBEC5D"/>
+            <stop offset="100%" stopColor="#ADEBB3"/>
           </linearGradient>
         </defs>
         <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="var(--border-light)" strokeWidth={11} />
@@ -174,13 +175,13 @@ export function DetailPage({ metricKey, value, onBack }) {
       <div style={{ padding: '20px 16px' }}>
         {/* Methodology */}
         <div className="card">
-          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 10, color: 'var(--text-primary)' }}>📐 측정 원리</div>
+          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 10, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><RulerIcon size={15} /></span> 측정 원리</div>
           <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.85, whiteSpace: 'pre-line' }}>{data.methodology}</p>
         </div>
 
         {/* Analysis Steps */}
         <div className="card">
-          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: 'var(--text-primary)' }}>⚙️ 분석 과정</div>
+          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><GearIcon size={15} /></span> 분석 과정</div>
           {data.steps.map((step, i) => (
             <div key={i} style={{ display: 'flex', gap: 14, marginBottom: i < data.steps.length - 1 ? 18 : 0 }}>
               <div style={{
@@ -215,7 +216,7 @@ export function DetailPage({ metricKey, value, onBack }) {
 
         {/* Scientific References */}
         <div className="card">
-          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 14, color: 'var(--text-primary)' }}>📚 과학적 근거</div>
+          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 14, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><BooksIcon size={15} /></span> 과학적 근거</div>
           {data.references.map((ref, i) => (
             <div key={i} style={{
               marginBottom: i < data.references.length - 1 ? 14 : 0,
@@ -235,7 +236,7 @@ export function DetailPage({ metricKey, value, onBack }) {
         <div className="gbs-box">
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
             <span style={{ fontSize: 20 }}>🧬</span>
-            <span style={{ fontSize: 15, fontWeight: 700, color: '#F0A878' }}>장-뇌-피부 축 (Gut-Brain-Skin Axis)</span>
+            <span style={{ fontSize: 15, fontWeight: 700, color: '#ADEBB3' }}>장-뇌-피부 축 (Gut-Brain-Skin Axis)</span>
           </div>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.75, marginBottom: 10 }}>{data.gutBrainSkin}</p>
           <div style={{ fontSize: 10, color: 'var(--text-dim)', fontStyle: 'italic' }}>{data.gutBrainSkinSource}</div>

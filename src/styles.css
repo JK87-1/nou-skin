@@ -22,9 +22,9 @@
   --text-muted: #8888a0;
   --text-dim: #555568;
   /* Shadows */
-  --shadow-card: 0 2px 16px rgba(0,0,0,0.2);
-  --shadow-elevated: 0 4px 24px rgba(0,0,0,0.3);
-  --shadow-float: 0 8px 32px rgba(0,0,0,0.4);
+  --shadow-card: none;
+  --shadow-elevated: none;
+  --shadow-float: none;
   /* Tab bar */
   --tab-bg: rgba(8,8,14,0.88);
   --tab-border: rgba(255,255,255,0.06);
@@ -35,15 +35,15 @@
   --glass-inset: inset 0 1px 1px rgba(255,255,255,0.05);
   --glass-accent-inset: inset 0 1px 0 rgba(240,144,112,0.06);
   /* Accents (theme system overrides these dynamically) */
-  --accent-primary: #F0A878;
-  --accent-secondary: #F09070;
-  --accent-gradient: linear-gradient(135deg, #F09070, #E87080, #D05878);
+  --accent-primary: #FBEC5D;
+  --accent-secondary: #ADEBB3;
+  --accent-gradient: linear-gradient(135deg, #FBEC5D, #E87080, #D05878);
   --text-disabled: rgba(255,255,255,0.15);
   --consult-bg: linear-gradient(180deg, #08080c 0%, #0c0c10 100%);
 
   /* Structural variables (dark defaults) */
   --btn-radius: 50px;
-  --btn-primary-bg: linear-gradient(135deg, #F09070, #E87080, #D05878);
+  --btn-primary-bg: linear-gradient(135deg, #FBEC5D, #E87080, #D05878);
   --btn-primary-shadow: 0 4px 20px rgba(240,144,112,0.35), inset 0 1px 1px rgba(255,255,255,0.05);
   --btn-secondary-bg: var(--bg-card);
   --btn-secondary-border: 1px solid var(--border-subtle);
@@ -84,9 +84,9 @@
   --text-dim: #B0B8C1;
   --text-disabled: #D1D6DB;
   /* Shadows — Toss/Karrot soft */
-  --shadow-card: 0 2px 8px 0 rgba(0,0,0,0.04);
-  --shadow-elevated: 0 4px 12px 0 rgba(0,0,0,0.06);
-  --shadow-float: 0 8px 24px 0 rgba(0,0,0,0.08);
+  --shadow-card: none;
+  --shadow-elevated: none;
+  --shadow-float: none;
   /* Tab bar */
   --tab-bg: #FFFFFF;
   --tab-border: rgba(0,0,0,0.06);
@@ -169,7 +169,7 @@
   line-height: 30px;
   font-size: 20px;
   font-weight: 600;
-  color: #F09070;
+  color: #FBEC5D;
   text-align: center;
   letter-spacing: -0.2px;
   margin: 0;
@@ -327,10 +327,10 @@
 /* Cards */
 .card {
   background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
+  border: none;
   border-radius: 20px;
   padding: 22px;
-  box-shadow: var(--shadow-card);
+  box-shadow: none;
   margin-bottom: 15px;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -437,7 +437,7 @@
 .orb-blob-1 {
   width: 55%;
   height: 55%;
-  background: radial-gradient(circle, #F09070, #E87080);
+  background: radial-gradient(circle, #FBEC5D, #E87080);
   top: 10%;
   left: 15%;
   animation: orbFloat1 4s ease-in-out infinite;
@@ -445,7 +445,7 @@
 .orb-blob-2 {
   width: 50%;
   height: 50%;
-  background: radial-gradient(circle, #F09070, #F09070);
+  background: radial-gradient(circle, #FBEC5D, #FBEC5D);
   bottom: 10%;
   right: 10%;
   animation: orbFloat2 5s ease-in-out infinite;
@@ -453,7 +453,7 @@
 .orb-blob-3 {
   width: 45%;
   height: 45%;
-  background: radial-gradient(circle, #F09070, #F0A878);
+  background: radial-gradient(circle, #FBEC5D, #ADEBB3);
   top: 35%;
   left: 35%;
   animation: orbFloat3 3.5s ease-in-out infinite;
@@ -461,7 +461,7 @@
 .orb-blob-4 {
   width: 40%;
   height: 40%;
-  background: radial-gradient(circle, #F0A878, #F09070);
+  background: radial-gradient(circle, #ADEBB3, #FBEC5D);
   top: 5%;
   right: 15%;
   animation: orbFloat4 5.5s ease-in-out infinite;
@@ -867,35 +867,15 @@
   background: var(--tab-bg);
   backdrop-filter: blur(28px);
   -webkit-backdrop-filter: blur(28px);
-  border: 1px solid var(--tab-border);
-  box-shadow: var(--tab-shadow), var(--glass-inset);
-  border-radius: 28px;
+  border: none;
+  box-shadow: none;
+  border-radius: 16px;
   z-index: 100;
 }
 
-/* Top light shimmer */
+/* Top light shimmer — disabled */
 .tab-bar::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    var(--tab-shimmer-edge, rgba(240,144,112,0.0)) 20%,
-    var(--tab-shimmer-mid, rgba(240,144,112,0.25)) 40%,
-    var(--tab-shimmer-peak, rgba(200,180,255,0.5)) 50%,
-    var(--tab-shimmer-mid, rgba(240,144,112,0.25)) 60%,
-    var(--tab-shimmer-edge, rgba(240,144,112,0.0)) 80%,
-    transparent 100%
-  );
-  background-size: 200% 100%;
-  animation: tabShimmer 6s ease-in-out infinite;
-  border-radius: 28px 28px 0 0;
-  pointer-events: none;
-}
-@keyframes tabShimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  display: none;
 }
 
 /* Center ambient glow */
@@ -912,19 +892,20 @@
 .tab-bar-item {
   flex: 1;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
   padding: 0;
   height: 100%;
   background: none;
   border: none;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: transform 0.2s ease;
   position: relative;
   z-index: 2;
+}
+.tab-bar-item svg {
+  width: 24px;
+  height: 24px;
 }
 
 .tab-bar-item:active {
@@ -935,7 +916,7 @@
 .tab-bar-glow {
   position: absolute;
   top: 50%; left: 50%;
-  transform: translate(-50%, -60%);
+  transform: translate(-50%, -50%);
   width: 36px; height: 36px;
   border-radius: 50%;
   background: radial-gradient(circle, var(--tab-glow, rgba(240,144,112,0.2)) 0%, transparent 70%);
@@ -946,12 +927,7 @@
 .tab-bar-item.active .tab-bar-glow { opacity: 1; }
 
 .tab-bar-label {
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--tab-inactive);
-  font-family: inherit;
-  letter-spacing: -0.2px;
-  transition: color 0.25s ease;
+  display: none;
 }
 
 .tab-bar-item.active .tab-bar-label {
@@ -961,18 +937,7 @@
 
 /* Active dot indicator — sits right below label in normal flow */
 .tab-bar-dot {
-  width: 4px; height: 4px;
-  border-radius: 50%;
-  background: var(--tab-dot, #F09070);
-  opacity: 0;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  transform: scale(0);
-  box-shadow: 0 0 8px rgba(240,144,112,0.6);
-  flex-shrink: 0;
-}
-.tab-bar-item.active .tab-bar-dot {
-  opacity: 1;
-  transform: scale(1);
+  display: none;
 }
 
 .tab-bar-spacer {
@@ -1626,7 +1591,7 @@
   border-radius: 4px 20px 20px 20px;
 }
 [data-theme="light"] .consult-bubble.user {
-  background: #F09070;
+  background: #FBEC5D;
   border: none;
   color: #FFFFFF;
   border-radius: 20px 4px 20px 20px;

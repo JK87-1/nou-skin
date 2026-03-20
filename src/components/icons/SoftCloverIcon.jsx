@@ -243,28 +243,20 @@ export default function SoftCloverIcon({
     cp:  `${uid}cp`,
     pgl: `${uid}pgl`,
     sh:  `${uid}sh`,
+    leafShade: `${uid}ls`,
+    centerShade: `${uid}cs`,
   };
 
-  // 4잎 좌표 — angle offset -45°, D=38
+  // 4잎 좌표 — 좌우 대칭 배치 (상, 하, 좌, 우)
   const D = 38;
-  const leaves = [0, 90, 180, 270].map((angle) => {
-    const rad = (angle - 45) * (Math.PI / 180);
-    return {
-      cx:  parseFloat((100 + Math.cos(rad) * D).toFixed(3)),
-      cy:  parseFloat((100 + Math.sin(rad) * D).toFixed(3)),
-      rot: angle,
-    };
-  });
+  const leaves = [
+    { cx: 100,     cy: 100 - D, rot: 0   },  // 상
+    { cx: 100 + D, cy: 100,     rot: 0   },  // 우
+    { cx: 100,     cy: 100 + D, rot: 0   },  // 하
+    { cx: 100 - D, cy: 100,     rot: 0   },  // 좌
+  ];
 
-  const floatAnim = animate ? (
-    <animateTransform
-      attributeName="transform"
-      type="translate"
-      values="0,0;0,-3;0,0"
-      dur="5s"
-      repeatCount="indefinite"
-    />
-  ) : null;
+  const floatAnim = null;
 
   const svgEl = (
     <svg
@@ -326,54 +318,48 @@ export default function SoftCloverIcon({
             floodColor={p.sh} floodOpacity="0.32"
           />
         </filter>
+        {/* 잎 음영 */}
+        <radialGradient id={id.leafShade} cx="35%" cy="30%" r="65%">
+          <stop offset="0%" stopColor="white" stopOpacity="0" />
+          <stop offset="60%" stopColor="#e0e0e0" stopOpacity="0.08" />
+          <stop offset="100%" stopColor="#c0c0c0" stopOpacity="0.18" />
+        </radialGradient>
+
+        {/* 중앙 원 음영 */}
+        <radialGradient id={id.centerShade} cx="38%" cy="35%" r="60%">
+          <stop offset="0%" stopColor="white" stopOpacity="0.3" />
+          <stop offset="50%" stopColor="#FBEC5D" stopOpacity="0" />
+          <stop offset="100%" stopColor="#70D4A8" stopOpacity="0.15" />
+        </radialGradient>
       </defs>
 
       <g filter={`url(#${id.sh})`}>
         {floatAnim}
 
-        {/* 레이어 1 — 프레임 rx=38 */}
+        {/* 레이어 1 — 잎 베이스 (흰색) */}
         {leaves.map((l, i) => (
           <ellipse key={`f${i}`}
-            cx={l.cx} cy={l.cy} rx="38" ry="38"
-            fill={`url(#${id.rg})`}
-            transform={`rotate(${l.rot},100,100)`}
-          />
-        ))}
-
-        {/* 레이어 2 — MoP 인레이 rx=34 */}
-        {leaves.map((l, i) => (
-          <ellipse key={`m${i}`}
             cx={l.cx} cy={l.cy} rx="34" ry="34"
-            fill={`url(#${id.mop})`}
+            fill="white"
           />
         ))}
 
-        {/* 레이어 3 — 이리데슨트 시머 rx=34 */}
+        {/* 레이어 2 — 은은한 음영 */}
         {leaves.map((l, i) => (
-          <ellipse key={`i${i}`}
+          <ellipse key={`s${i}`}
             cx={l.cx} cy={l.cy} rx="34" ry="34"
-            fill={`url(#${id.iri})`}
+            fill={`url(#${id.leafShade})`}
           />
         ))}
 
-        {/* 하이라이트 — 좌상단 잎 */}
-        <ellipse cx="53" cy="50" rx="14" ry="11" fill="white" opacity="0.35" />
-        <ellipse cx="50" cy="47" rx="7"  ry="5"  fill="white" opacity="0.6"  />
-        <ellipse cx="48" cy="45" rx="3"  ry="2.5" fill="white" opacity="0.85" />
+        {/* 잎 하이라이트 */}
+        <ellipse cx="100" cy="52" rx="12" ry="9" fill="white" opacity="0.6" />
+        <ellipse cx="62" cy="100" rx="9" ry="12" fill="white" opacity="0.4" />
 
-        {/* 미세 하이라이트 — 우상단·좌하단 잎 */}
-        <ellipse cx="145" cy="58"  rx="8" ry="6" fill="white" opacity="0.12" />
-        <ellipse cx="140" cy="145" rx="6" ry="8" fill="white" opacity="0.08" />
-
-        {/* 중앙 진주 + 글로우 */}
-        <g filter={`url(#${id.pgl})`}>
-          <circle cx="100" cy="100" r="20" fill={`url(#${id.cp})`} />
-        </g>
-        <circle cx="100" cy="100" r="20"
-          fill="none" stroke={`url(#${id.rg})`} strokeWidth="3" />
-        <ellipse cx="94" cy="93" rx="8"   ry="5.5" fill="white" opacity="0.5"  />
-        <ellipse cx="92" cy="91" rx="4"   ry="3"   fill="white" opacity="0.8"  />
-        <ellipse cx="91" cy="90" rx="2"   ry="1.5" fill="white" opacity="0.95" />
+        {/* 중앙 원 — 민트색 + 약간의 입체감 (1.3배) */}
+        <circle cx="100" cy="100" r="26" fill="#FBEC5D" />
+        <circle cx="100" cy="100" r="26" fill={`url(#${id.centerShade})`} />
+        <ellipse cx="95" cy="93" rx="8" ry="5" fill="white" opacity="0.4" />
       </g>
     </svg>
   );

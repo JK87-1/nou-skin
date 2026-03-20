@@ -17,7 +17,7 @@ const BADGE_DATABASE = {
     ],
   },
   score: {
-    label: '점수 달성', icon: '⭐', color: '#F09070',
+    label: '점수 달성', icon: '⭐', color: '#FBEC5D',
     badges: [
       { id: 'score_50', icon: '⭐', name: '50점 돌파', desc: '종합 점수 50점 이상 달성', condition: { type: 'score', value: 50 } },
       { id: 'score_60', icon: '⭐', name: '60점 돌파', desc: '종합 점수 60점 이상 달성', condition: { type: 'score', value: 60 } },
@@ -147,7 +147,7 @@ const LEVEL_TITLES = [
 const THEMES = [
   // ── 기본 (Lv 1~8) ─────────────────────────────────────────
   { id: 'warmSand',  name: 'Moonlight Silver',  kr: '웜 샌드',    range: [1, 3],   accent: '#D0A080', sub: '#fdd8b0', pearl: ['#F0D0B0', '#D0A080', '#906040'], cloverTheme: 'warmSand',  desc: '은빛 달빛의 고요함' },
-  { id: 'obsidianGray',     name: 'Obsidian Gray',     kr: '오브시디언 그레이', range: [4, 5],   accent: '#F0A878', sub: '#A0A0BC', pearl: ['#D4D4E4', '#808080', '#383838'], cloverTheme: 'obsidianGray',     desc: '흑요석의 깊은 광택' },
+  { id: 'obsidianGray',     name: 'Obsidian Gray',     kr: '오브시디언 그레이', range: [4, 5],   accent: '#ADEBB3', sub: '#A0A0BC', pearl: ['#D4D4E4', '#808080', '#383838'], cloverTheme: 'obsidianGray',     desc: '흑요석의 깊은 광택' },
   { id: 'navySapphire',     name: 'Navy Sapphire',     kr: '네이비 사파이어',   range: [6, 8],   accent: '#6898E8', sub: '#fde0c0', pearl: ['#FFD8C0', '#6898E8', '#2858C8'], cloverTheme: 'navySapphire',     desc: '사파이어의 심해 빛' },
   // ── 내추럴 (Lv 9~17) ──────────────────────────────────────
   { id: 'aquaMint',          name: 'Aqua Mint',         kr: '아쿠아 민트',      range: [9, 11],  accent: '#20A898', sub: '#6ee7b7', pearl: ['#B8ECE4', '#70D8C8', '#20A898'], cloverTheme: 'aquaMint',         desc: '상쾌한 민트 바다' },
@@ -164,7 +164,7 @@ const THEMES = [
   // ── 럭셔리 (Lv 36~43) ────────────────────────────────────
   { id: 'cherryBlossom',     name: 'Cherry Blossom',    kr: '체리 블라썸',      range: [36, 38], accent: '#D85898', sub: '#f9a8d4', pearl: ['#FBE0EE', '#F4A8C8', '#D85898'], cloverTheme: 'cherryBlossom',    desc: '벚꽃이 흩날리는 봄' },
   { id: 'roseGold',          name: 'Rose Gold',         kr: '로즈 골드',        range: [39, 40], accent: '#c48878', sub: '#fbcfe8', pearl: ['#f8ece0', '#dca894', '#c48878'], cloverTheme: 'roseGold',         desc: '로즈골드의 우아한 빛' },
-  { id: 'onyxBlack',         name: 'Onyx Black',        kr: '오닉스 블랙',      range: [41, 43], accent: '#F09070', sub: '#F0A878', pearl: ['#C8C8DC', '#5A5A5A', '#141414'], cloverTheme: 'onyxBlack',        desc: '칠흑 속 보랏빛 광채' },
+  { id: 'onyxBlack',         name: 'Onyx Black',        kr: '오닉스 블랙',      range: [41, 43], accent: '#FBEC5D', sub: '#ADEBB3', pearl: ['#C8C8DC', '#5A5A5A', '#141414'], cloverTheme: 'onyxBlack',        desc: '칠흑 속 보랏빛 광채' },
   // ── 전설 (Lv 44~50) ──────────────────────────────────────
   { id: 'lunaWhite',         name: 'Luna White',        kr: '루나 화이트',      range: [44, 45], accent: '#9898C0', sub: '#FFF5E8', pearl: ['#FAFAFA', '#E4E4E4', '#CCCCCC'], cloverTheme: 'lunaWhite',        desc: '달의 순백한 빛' },
   { id: 'pureIvory',         name: 'Pure Ivory',        kr: '퓨어 아이보리',    range: [46, 47], accent: '#D8D0A8', sub: '#fef9c3', pearl: ['#FBF8EC', '#EDE8C4', '#D8D0A8'], cloverTheme: 'pureIvory',        desc: '순수한 상아빛 광택' },

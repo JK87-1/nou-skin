@@ -17,15 +17,15 @@ const COLORS = {
     lightest: '#FFF0D4',
     light: '#FFCFAA',
     mid: '#FFAA85',
-    deep: '#F09070',
+    deep: '#FBEC5D',
     darker: '#E87080',
     darkest: '#D05878',
   },
 
   // 이리데선트 악센트 (진주 표면에서 비치는 색)
   iridescent: {
-    indigo: '#F0A878',
-    purple: '#F09070',
+    indigo: '#ADEBB3',
+    purple: '#FBEC5D',
     pink: '#E06888',
     teal: '#F0C878',
     gold: '#F0B870',
@@ -33,7 +33,7 @@ const COLORS = {
 
   // 오라 발광
   glow: {
-    primary: '#F09070',
+    primary: '#FBEC5D',
     secondary: '#FFD4B8',
     subtle: '#FFF5E8',
     pink: '#E06888',
@@ -46,7 +46,7 @@ const COLORS = {
     secondary: '#e0e0e8',
     muted: '#8888a0',
     dim: '#555568',
-    accent: '#F09070',
+    accent: '#FBEC5D',
   },
 
   // 시맨틱
@@ -74,8 +74,8 @@ const GRADIENTS = {
   },
 
   // 버튼/활성 상태
-  pearlButton: 'linear-gradient(135deg, #F09070, #E87080, #D05878)',
-  pearlButtonHover: 'linear-gradient(135deg, #FFAA85, #F09070, #E87080)',
+  pearlButton: 'linear-gradient(135deg, #FBEC5D, #E87080, #D05878)',
+  pearlButtonHover: 'linear-gradient(135deg, #FFAA85, #FBEC5D, #E87080)',
 
   // 카드 배경 오라
   cardGlow: 'radial-gradient(ellipse at 50% 0%, rgba(240,144,112,0.06) 0%, transparent 70%)',

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import GlobalStyles from '../design/GlobalStyles';
+import { DropletIcon, SparkleIcon, MicroscopeIcon, CheckIcon, MemoIcon, TargetIcon, ChartIcon, CameraIcon } from '../components/icons/PastelIcons';
 
 /* ══════════════════════════════════════════════════════════════
    LUA 스킨 다이어리 — 통합 목업 v2
@@ -31,7 +32,7 @@ const CONDITIONS = RECORDS.map((_, i) => ({
 }));
 
 const PRODUCTS = [
-  { id: 1, name: "시카플라스트 밤 B5+", brand: "라로슈포제", startDay: 1, endDay: null, color: "#F09070" },
+  { id: 1, name: "시카플라스트 밤 B5+", brand: "라로슈포제", startDay: 1, endDay: null, color: "#FBEC5D" },
   { id: 2, name: "스네일 뮤신 에센스", brand: "코스알엑스", startDay: 35, endDay: null, color: "#34d399" },
   { id: 3, name: "그린티 세럼", brand: "이니스프리", startDay: 10, endDay: 34, color: "#F0B870" },
 ];
@@ -46,7 +47,7 @@ const CORRELATIONS = [
   { factor: "스트레스", icon: "😰", corr: 0.38, dir: "-", insight: "데이터 수집 중...", source: "manual", dataCount: 15, minRequired: 21 },
 ];
 
-function MiniChart({ data, h = 50, color = "#F09070", markers = [], products = [] }) {
+function MiniChart({ data, h = 50, color = "#FBEC5D", markers = [], products = [] }) {
   if (!data || data.length < 2) return null;
   const max = Math.max(...data) + 3, min = Math.min(...data) - 3;
   const range = max - min || 1;
@@ -71,7 +72,7 @@ function MiniChart({ data, h = 50, color = "#F09070", markers = [], products = [
   );
 }
 
-function Bar({ value, max = 1, color = "#F09070", h = 4 }) {
+function Bar({ value, max = 1, color = "#FBEC5D", h = 4 }) {
   return (
     <div style={{ height: h, borderRadius: h / 2, background: 'var(--bar-track)', overflow: "hidden" }}>
       <div style={{ width: `${Math.min(100, Math.abs(value / max) * 100)}%`, height: "100%", borderRadius: h / 2, background: color, transition: "width 0.8s ease-out" }} />
@@ -137,7 +138,7 @@ export default function DiaryMockup() {
   const chartData = RECORDS.map(r => r[activeMetric]);
   const latestRecord = RECORDS[RECORDS.length - 1];
 
-  const accentColor = '#F0A878';
+  const accentColor = '#ADEBB3';
 
   return (
     <div className="app-container">
@@ -161,7 +162,7 @@ export default function DiaryMockup() {
               flex: 1, padding: '7px 6px', borderRadius: 8,
               border: screen === t.id ? '1.5px solid rgba(240,144,112,0.4)' : '1.5px solid rgba(255,255,255,0.1)',
               background: screen === t.id ? 'rgba(240,144,112,0.15)' : 'transparent',
-              color: screen === t.id ? '#F09070' : '#666',
+              color: screen === t.id ? '#FBEC5D' : '#666',
               fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
             }}
           >{t.label}</button>
@@ -192,7 +193,7 @@ export default function DiaryMockup() {
                 width: 42, height: 42, borderRadius: '50%',
                 background: 'rgba(240,144,112,0.9)', border: 'none', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 4px 16px rgba(240,144,112,0.3)',
+                boxShadow: 'none',
               }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
               </button>
@@ -200,7 +201,7 @@ export default function DiaryMockup() {
                 width: 42, height: 42, borderRadius: '50%',
                 background: 'rgba(240,144,112,0.9)', border: 'none', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 4px 16px rgba(240,144,112,0.3)',
+                boxShadow: 'none',
               }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
               </button>
@@ -228,7 +229,7 @@ export default function DiaryMockup() {
                 position: 'absolute', ...l.pos, zIndex: 8,
                 background: 'var(--float-pill-bg)', backdropFilter: 'var(--card-backdrop)', WebkitBackdropFilter: 'var(--card-backdrop)',
                 borderRadius: 50, padding: '7px 16px',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+                boxShadow: 'none',
                 animation: `popIn 0.5s ease-out ${0.8 + i * 0.12}s both`,
               }}>
                 <span style={{ fontSize: 12.5, color: 'var(--text-secondary)', fontWeight: 500 }}>
@@ -244,7 +245,7 @@ export default function DiaryMockup() {
             background: 'linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%)',
             borderRadius: '24px 24px 0 0',
             marginTop: -28, padding: '0 22px 28px', zIndex: 5,
-            boxShadow: 'var(--shadow-elevated)',
+            boxShadow: 'none',
             animation: 'slideUp 0.6s ease-out 0.4s both',
           }}>
             {/* Handle bar */}
@@ -271,7 +272,7 @@ export default function DiaryMockup() {
                   background: 'var(--bg-card)', backdropFilter: 'var(--card-backdrop)',
                   border: '1px solid var(--border-subtle)',
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                  boxShadow: 'var(--shadow-card), var(--glass-inset)',
+                  boxShadow: 'none',
                 }}>
                   <span style={{ fontSize: 24, fontWeight: 650, color: accentColor, lineHeight: 1, fontFamily: 'var(--font-display)' }}>33</span>
                   <span style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 500, marginTop: 2 }}>피부나이</span>
@@ -283,7 +284,7 @@ export default function DiaryMockup() {
                   background: 'var(--bg-card)', backdropFilter: 'var(--card-backdrop)',
                   border: '1px solid var(--border-subtle)',
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                  boxShadow: 'var(--shadow-card), var(--glass-inset)',
+                  boxShadow: 'none',
                   position: 'relative',
                 }}>
                   <svg width={62} height={62} style={{ transform: 'rotate(-90deg)', position: 'absolute' }}>
@@ -311,7 +312,7 @@ export default function DiaryMockup() {
                 flex: 1, padding: '12px 0', borderRadius: 'var(--btn-radius)', border: 'none',
                 fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
                 background: 'rgba(74,222,128,0.15)', color: '#4ade80',
-              }}>✅ 저장 완료</button>
+              }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><CheckIcon size={14} /></span> 저장 완료</button>
               <button style={{
                 padding: '12px 20px', borderRadius: 'var(--btn-radius)', fontFamily: 'inherit',
                 background: 'var(--bg-card)', border: '1px solid var(--border-subtle)',
@@ -337,9 +338,9 @@ export default function DiaryMockup() {
                 전체적으로 안정적이에요. 수분과 피부톤이 개선되고 있어요. 모공 점수만 소폭 하락했는데, 꾸준한 관리로 충분히 회복할 수 있어요.
               </p>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
-                <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 20, background: 'rgba(78,203,113,0.1)', color: '#4ecb71' }}>💧 수분 +3점</span>
-                <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 20, background: 'rgba(78,203,113,0.1)', color: '#4ecb71' }}>✨ 피부톤 +2점</span>
-                <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 20, background: 'rgba(240,160,80,0.1)', color: '#f0a050' }}>🔬 모공 -1점</span>
+                <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 20, background: 'rgba(78,203,113,0.1)', color: '#4ecb71' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><DropletIcon size={12} /></span> 수분 +3점</span>
+                <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 20, background: 'rgba(78,203,113,0.1)', color: '#4ecb71' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><SparkleIcon size={12} /></span> 피부톤 +2점</span>
+                <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 20, background: 'rgba(240,160,80,0.1)', color: '#f0a050' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><MicroscopeIcon size={12} /></span> 모공 -1점</span>
               </div>
             </div>
 
@@ -360,7 +361,7 @@ export default function DiaryMockup() {
                 style={{ padding: '16px 18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: 16 }}>{conditionSaved ? "✅" : "📝"}</span>
+                  <span style={{ fontSize: 16 }}>{conditionSaved ? <CheckIcon size={16} /> : <MemoIcon size={16} />}</span>
                   <div>
                     <div style={{ fontSize: 14, fontWeight: 600, color: conditionSaved ? '#34d399' : 'var(--text-primary)' }}>
                       {conditionSaved ? "오늘 컨디션 기록 완료" : "오늘 컨디션도 기록할래요?"}
@@ -407,7 +408,7 @@ export default function DiaryMockup() {
                     아래 항목은 선택이에요 (기록하면 분석이 더 풍부해져요)
                   </div>
 
-                  <QuickSlider icon="😴" label="수면" min={3} max={10} step={0.5} def={7} unit="h" color="#F09070" />
+                  <QuickSlider icon="😴" label="수면" min={3} max={10} step={0.5} def={7} unit="h" color="#FBEC5D" />
 
                   {/* Alcohol */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, padding: '8px 0' }}>
@@ -475,7 +476,7 @@ export default function DiaryMockup() {
                 ══════════════════════════════════════════════ */}
 
             {/* ── AI Analysis (App.jsx 동일) ── */}
-            <div className="glass-card" style={{ animation: 'fadeUp 0.5s ease-out 0.9s both', boxShadow: `var(--shadow-elevated), var(--glass-inset), inset 0 0 20px ${accentColor}08` }}>
+            <div className="glass-card" style={{ animation: 'fadeUp 0.5s ease-out 0.9s both', boxShadow: 'none' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
                 <span style={{ fontSize: 14 }}>🧠</span>
                 <span style={{ fontSize: 14, fontWeight: 700, color: accentColor }}>전체 피부 분석</span>
@@ -492,14 +493,14 @@ export default function DiaryMockup() {
                 <div style={{ marginBottom: 4 }}>
                   <div style={{ fontSize: 11, color: '#4ecb71', fontWeight: 600, marginBottom: 6 }}>개선됨</div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                    <span style={{ fontSize: 12, padding: '4px 10px', borderRadius: 20, background: 'rgba(78,203,113,0.1)', color: '#4ecb71' }}>💧 수분 +3점</span>
-                    <span style={{ fontSize: 12, padding: '4px 10px', borderRadius: 20, background: 'rgba(78,203,113,0.1)', color: '#4ecb71' }}>✨ 피부톤 +2점</span>
+                    <span style={{ fontSize: 12, padding: '4px 10px', borderRadius: 20, background: 'rgba(78,203,113,0.1)', color: '#4ecb71' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><DropletIcon size={12} /></span> 수분 +3점</span>
+                    <span style={{ fontSize: 12, padding: '4px 10px', borderRadius: 20, background: 'rgba(78,203,113,0.1)', color: '#4ecb71' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><SparkleIcon size={12} /></span> 피부톤 +2점</span>
                   </div>
                 </div>
                 <div>
                   <div style={{ fontSize: 11, color: '#f0a050', fontWeight: 600, marginBottom: 6 }}>케어 포인트</div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                    <span style={{ fontSize: 12, padding: '4px 10px', borderRadius: 20, background: 'rgba(240,160,80,0.1)', color: '#f0a050' }}>🔬 모공 -1점</span>
+                    <span style={{ fontSize: 12, padding: '4px 10px', borderRadius: 20, background: 'rgba(240,160,80,0.1)', color: '#f0a050' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><MicroscopeIcon size={12} /></span> 모공 -1점</span>
                   </div>
                 </div>
               </div>
@@ -513,7 +514,7 @@ export default function DiaryMockup() {
               <div style={{ fontSize: 10, color: 'var(--text-muted)', paddingLeft: 8, marginBottom: 14 }}>탭하면 과학적 근거</div>
               <MockMetricBar label="다크서클" value={72} icon="👁️" color="#78909C" description="눈 밑 밝음" />
               <MockMetricBar label="수분도" value={75} unit="%" icon="💧" color="#4FC3F7" description="정상 범위" />
-              <MockMetricBar label="피부톤" value={68} icon="✨" color="#FFB347" description="색소 관리 추천" />
+              <MockMetricBar label="피부톤" value={68} icon="✨" color="#98FBCB" description="색소 관리 추천" />
               <MockMetricBar label="유분" value={58} unit="%" icon="🫧" color="#81C784" description="균형 상태" />
               <MockMetricBar label="트러블" value={83} icon="🎯" color="#FF8A65" description="2개 | 깨끗" />
             </div>
@@ -535,12 +536,12 @@ export default function DiaryMockup() {
               width: '100%', padding: '14px 0', borderRadius: 'var(--btn-radius)', border: 'none',
               background: 'linear-gradient(135deg, rgba(240,144,112,0.12), rgba(240,144,112,0.12))',
               backdropFilter: 'var(--card-backdrop)',
-              color: '#F0A878', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
-              marginBottom: 14, boxShadow: '0 2px 12px rgba(240,144,112,0.12)',
+              color: '#ADEBB3', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+              marginBottom: 14, boxShadow: 'none',
               animation: 'fadeUp 0.5s ease-out 1.25s both',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F0A878" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ADEBB3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
               </svg>
               루아에게 물어보기
@@ -587,7 +588,7 @@ export default function DiaryMockup() {
             <div style={{ padding: '0 20px' }}>
               <div className="glass-card" style={{ textAlign: 'center', padding: '50px 20px' }}>
                 <div style={{ fontSize: 40, marginBottom: 12 }}>
-                  {historyMode === "mission" ? "🎯" : historyMode === "insights" ? "📈" : "📷"}
+                  {historyMode === "mission" ? <TargetIcon size={40} /> : historyMode === "insights" ? <ChartIcon size={40} /> : <CameraIcon size={40} />}
                 </div>
                 <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>
                   {historyMode === "mission" ? "미션" : historyMode === "insights" ? "분석" : "앨범"}
@@ -752,7 +753,7 @@ export default function DiaryMockup() {
         position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
         background: 'var(--tab-bg)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
         borderTop: '1px solid var(--tab-border)',
-        boxShadow: 'var(--tab-shadow)',
+        boxShadow: 'none',
         padding: '8px 0 env(safe-area-inset-bottom, 0)',
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', padding: '4px 8px' }}>
@@ -767,7 +768,7 @@ export default function DiaryMockup() {
               width: 52, height: 52, borderRadius: '50%',
               background: 'var(--btn-primary-bg)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              marginTop: -20, boxShadow: '0 4px 20px rgba(240,144,112,0.4)',
+              marginTop: -20, boxShadow: 'none',
             }}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round">
                 <circle cx="12" cy="12" r="3" /><path d="M5 12h14M12 5v14" />

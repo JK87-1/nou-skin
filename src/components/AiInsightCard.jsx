@@ -66,15 +66,36 @@ export default function AiInsightCard() {
       padding: '20px',
       borderRadius: 16,
       background: '#FFFFFF',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+      boxShadow: 'none',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(124,92,252,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>✨</div>
+        <div style={{ width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <svg width="26" height="26" viewBox="0 0 36 36" fill="none">
+            <defs>
+              <linearGradient id="ai-g1" x1="20%" y1="0%" x2="80%" y2="100%">
+                <stop offset="0%" stopColor="#FFF3B0" />
+                <stop offset="100%" stopColor="#FFE082" />
+              </linearGradient>
+              <linearGradient id="ai-g2" x1="20%" y1="0%" x2="80%" y2="100%">
+                <stop offset="0%" stopColor="#FFF9D0" />
+                <stop offset="100%" stopColor="#FFF3B0" />
+              </linearGradient>
+            </defs>
+            {/* 큰 별 */}
+            <path d="M18 2 L21 12 L31 15.5 L21 19 L18 29 L15 19 L5 15.5 L15 12 Z" fill="url(#ai-g1)" />
+            {/* 작은 별 우상단 */}
+            <path d="M28 3 L29 6.5 L32.5 7.5 L29 8.5 L28 12 L27 8.5 L23.5 7.5 L27 6.5 Z" fill="url(#ai-g2)" />
+            {/* 작은 별 좌하단 */}
+            <path d="M8 24 L9 27 L12 28 L9 29 L8 32 L7 29 L4 28 L7 27 Z" fill="url(#ai-g2)" />
+            {/* 하이라이트 */}
+            <ellipse cx="15" cy="12" rx="3" ry="2" fill="white" opacity="0.3" />
+          </svg>
+        </div>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 13, color: '#8B95A1' }}>AI 인사이트</div>
           <div style={{ fontSize: 14, color: '#4E5968', marginTop: 4, lineHeight: 1.5 }}>
             {insight}
-            {sub && <span style={{ fontWeight: 600, color: '#F09070' }}> {sub}</span>}
+            {sub && <span style={{ fontWeight: 600, color: '#FBEC5D' }}> {sub}</span>}
           </div>
         </div>
       </div>

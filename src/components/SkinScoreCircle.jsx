@@ -1,87 +1,88 @@
 /**
  * 피부 점수 원형 표시 (홈 탭)
- * 큰 숫자 + "skin score" 라벨 + 회전 링 애니메이션 + 지난주 대비 변화
+ * 평면 그라데이션 오브 + 은은한 움직임 효과
+ * 레몬 80% · 민트 20% · 하늘 10% 그라데이션
  */
 import { useState, useEffect } from 'react';
 
+const orbKeyframes = `
+@keyframes orbGradientShift {
+  0%   { background-position: 0% 50%; }
+  25%  { background-position: 100% 25%; }
+  50%  { background-position: 50% 100%; }
+  75%  { background-position: 0% 75%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes orbGlow {
+  0%, 100% { box-shadow: 0 0 40px rgba(250,240,140,0.25), 0 0 80px rgba(250,240,140,0.08); }
+  50%      { box-shadow: 0 0 50px rgba(186,230,210,0.3), 0 0 90px rgba(186,230,210,0.1); }
+}
+`;
+
 export default function SkinScoreCircle({ score, change, onTap }) {
-  const [offset, setOffset] = useState(314);
-  const radius = 50;
-  const circumference = radius * 2 * Math.PI;
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setOffset(circumference - (score / 100) * circumference);
-    }, 300);
+    const timer = setTimeout(() => setMounted(true), 100);
     return () => clearTimeout(timer);
-  }, [score, circumference]);
+  }, []);
 
   if (score == null) return null;
 
   return (
-    <div onClick={onTap} style={{
-      display: 'flex', flexDirection: 'column', alignItems: 'center',
-      cursor: onTap ? 'pointer' : 'default', marginTop: 28, padding: '0 20px',
-    }}>
-      <div className="section-label" style={{ marginBottom: 14 }}>TODAY'S CONDITION</div>
-      <div style={{ position: 'relative', width: 140, height: 140 }}>
-        {/* 은은하게 회전하는 외곽 링 */}
-        <svg width="140" height="140" style={{
-          position: 'absolute', top: 0, left: 0,
-          animation: 'ringRotate 20s linear infinite',
-        }}>
-          <defs>
-            <linearGradient id="homeScoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#F09070" stopOpacity="0.15" />
-              <stop offset="50%" stopColor="#F09070" stopOpacity="0.08" />
-              <stop offset="100%" stopColor="#F0A878" stopOpacity="0.15" />
-            </linearGradient>
-          </defs>
-          <circle cx="70" cy="70" r="65" fill="none" stroke="url(#homeScoreGrad)" strokeWidth="2"
-            strokeDasharray="8 6" />
-        </svg>
+    <>
+      <style>{orbKeyframes}</style>
+      <div onClick={onTap} style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        cursor: onTap ? 'pointer' : 'default', marginTop: 28, padding: '0 20px',
+      }}>
+        <div className="section-label" style={{ marginBottom: 14 }}>TODAY'S CONDITION</div>
+        <div style={{ position: 'relative', width: 160, height: 160 }}>
+          {/* 평면 그라데이션 오브 */}
+          <div style={{
+            position: 'absolute', inset: 0, borderRadius: '50%',
+            background: 'linear-gradient(135deg, #FDF6B2 0%, #FAF08C 30%, #D4F5E0 65%, #BAE6D2 80%, #B8E4F0 95%)',
+            backgroundSize: '300% 300%',
+            animation: 'orbGradientShift 8s ease-in-out infinite, orbGlow 6s ease-in-out infinite',
+            opacity: mounted ? 1 : 0,
+            transform: mounted ? 'scale(1)' : 'scale(0.9)',
+            transition: 'opacity 0.8s ease, transform 0.8s ease',
+          }} />
 
-        {/* 점수 프로그레스 링 */}
-        <svg width="140" height="140" style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}>
-          <defs>
-            <linearGradient id="homeProgressGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#F09070" />
-              <stop offset="50%" stopColor="#F09070" />
-              <stop offset="100%" stopColor="#F0A878" />
-            </linearGradient>
-          </defs>
-          <circle cx="70" cy="70" r={radius} fill="none" stroke="rgba(240,144,112,0.06)" strokeWidth="8" />
-          <circle cx="70" cy="70" r={radius} fill="none" stroke="url(#homeProgressGrad)" strokeWidth="8"
-            strokeLinecap="round"
-            strokeDasharray={circumference} strokeDashoffset={offset}
-            style={{ transition: 'stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1)' }} />
-        </svg>
+          {/* 내부 은은한 레이어 */}
+          <div style={{
+            position: 'absolute', inset: '8px', borderRadius: '50%',
+            background: 'radial-gradient(circle at 40% 35%, rgba(255,255,255,0.5) 0%, rgba(253,246,178,0.2) 40%, transparent 70%)',
+            pointerEvents: 'none',
+          }} />
 
-        {/* 중앙 텍스트 */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          background: 'radial-gradient(circle, rgba(240,144,112,0.04) 0%, transparent 60%)',
-          borderRadius: '50%',
-        }}>
-          <span style={{
-            fontSize: 38, fontWeight: 300, color: 'var(--text-primary)', lineHeight: 1,
-            fontFamily: "'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif",
-          }}>{score}</span>
-          <span style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4, letterSpacing: 1 }}>skin score</span>
+          {/* 중앙 텍스트 */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <span style={{
+              fontSize: 42, fontWeight: 300, color: '#1a1a2e', lineHeight: 1,
+              fontFamily: "'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif",
+              opacity: 0.85,
+            }}>{score}</span>
+            <span style={{
+              fontSize: 10, color: '#4a5568', marginTop: 4, letterSpacing: 1, opacity: 0.7,
+            }}>skin score</span>
+          </div>
         </div>
+
+        {/* 변화량 표시 */}
+        {change != null && change !== 0 && (
+          <div style={{
+            marginTop: 12,
+            fontSize: 12, fontWeight: 600,
+            color: change > 0 ? '#4ade80' : '#F0B870',
+          }}>
+            지난주 대비 {change > 0 ? '+' : ''}{change}점
+          </div>
+        )}
       </div>
-
-      {/* 변화량 표시 */}
-      {change != null && change !== 0 && (
-        <div style={{
-          marginTop: 10,
-          fontSize: 12, fontWeight: 600,
-          color: change > 0 ? '#4ade80' : '#F0B870',
-        }}>
-          지난주 대비 {change > 0 ? '+' : ''}{change}점
-        </div>
-      )}
-    </div>
+    </>
   );
 }

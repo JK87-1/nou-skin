@@ -11,6 +11,7 @@ import {
 } from '../storage/MissionStorage';
 import { addXP as addBadgeXP, incrementStat, checkAndAwardBadges } from '../storage/BadgeStorage';
 import SoftCloverIcon from './icons/SoftCloverIcon';
+import { TargetIcon, SparkleIcon, CheckIcon } from './icons/PastelIcons';
 
 const ANIM_CSS = `
 @keyframes missionFadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
@@ -196,11 +197,12 @@ export default function DailyMission() {
             borderRadius: 16, padding: '32px 20px', textAlign: 'center', margin: 0,
           } : {
             background: 'rgba(255,255,255,0.03)', borderRadius: 20,
-            border: '1px solid var(--border-light)', padding: '32px 20px',
+            border: 'none', padding: '32px 20px',
             textAlign: 'center',
           }),
+          boxShadow: 'none', border: 'none',
         }}>
-          <div style={{ fontSize: 36, marginBottom: 10 }}>🎯</div>
+          <div style={{ fontSize: 36, marginBottom: 10 }}><TargetIcon size={36} /></div>
           <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>오늘의 피부 미션</div>
           <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>먼저 피부 측정을 해주세요.<br />분석 결과에 맞는 맞춤 미션이 생성돼요!</div>
         </div>
@@ -237,7 +239,7 @@ export default function DailyMission() {
               border: 'none', borderRadius: 8, padding: '6px 12px',
             } : {
               background: 'linear-gradient(135deg, rgba(251,191,36,0.12), rgba(251,146,36,0.08))',
-              border: '1px solid rgba(251,191,36,0.2)', borderRadius: 20, padding: '8px 14px',
+              border: 'none', borderRadius: 20, padding: '8px 14px',
             }),
             display: 'flex', alignItems: 'center', gap: 6,
             position: 'relative', overflow: 'hidden',
@@ -268,26 +270,24 @@ export default function DailyMission() {
               background: day.isToday
                 ? '#FFFFFF'
                 : day.completed ? 'transparent' : 'transparent',
-              boxShadow: day.isToday ? '0 1px 3px rgba(0,0,0,0.06)' : 'none',
+              boxShadow: 'none',
               border: 'none',
             } : {
               background: day.isToday
                 ? 'linear-gradient(135deg, rgba(240,144,112,0.15), rgba(240,144,112,0.1))'
                 : day.completed ? 'rgba(52,211,153,0.06)' : 'rgba(255,255,255,0.02)',
-              border: day.isToday
-                ? '1px solid rgba(240,144,112,0.3)'
-                : day.completed ? '1px solid rgba(52,211,153,0.15)' : '1px solid var(--border-separator)',
+              border: 'none',
             }),
           }}>
             <div style={{
               fontSize: isLight ? 11 : 10,
-              color: day.isToday ? (isLight ? '#8B95A1' : '#F09070') : 'var(--text-muted)',
+              color: day.isToday ? (isLight ? '#8B95A1' : '#FBEC5D') : 'var(--text-muted)',
               fontWeight: 600, marginBottom: 2,
             }}>{day.dayLabel}</div>
             <div style={{
               fontSize: isLight ? 15 : 13, fontWeight: 700,
               color: day.isToday
-                ? (isLight ? '#F09070' : 'var(--text-primary)')
+                ? (isLight ? '#FBEC5D' : 'var(--text-primary)')
                 : day.completed ? (isLight ? '#22C55E' : '#34d399') : (isLight ? '#191F28' : 'var(--text-dim)'),
             }}>
               {new Date(day.date).getDate()}
@@ -305,7 +305,7 @@ export default function DailyMission() {
             )}
             {day.isToday && (
               <div style={{
-                width: 4, height: 4, borderRadius: '50%', background: isLight ? '#F09070' : '#F0A878',
+                width: 4, height: 4, borderRadius: '50%', background: isLight ? '#FBEC5D' : '#ADEBB3',
                 margin: '4px auto 0',
               }} />
             )}
@@ -321,9 +321,10 @@ export default function DailyMission() {
           margin: '0 0 18px',
         } : {
           background: 'rgba(255,255,255,0.03)', borderRadius: 20,
-          border: '1px solid var(--border-light)', padding: '16px 18px',
+          border: 'none', padding: '16px 18px',
           display: 'flex', alignItems: 'center', gap: 16, marginBottom: 18,
         }),
+        boxShadow: 'none', border: 'none',
         ...fadeUp(0.15),
       }}>
         {/* Progress ring */}
@@ -331,7 +332,7 @@ export default function DailyMission() {
           <svg width="50" height="50" viewBox="0 0 50 50">
             <circle cx="25" cy="25" r="22" fill="none" stroke={isLight ? '#F2F3F5' : 'var(--border-light)'} strokeWidth="4" />
             <circle cx="25" cy="25" r="22" fill="none"
-              stroke={isLight ? '#F09070' : 'url(#missionGrad)'} strokeWidth="4"
+              stroke={isLight ? '#FBEC5D' : 'url(#missionGrad)'} strokeWidth="4"
               strokeDasharray={`${(completionPct / 100) * 138.23} 138.23`}
               strokeLinecap="round" transform="rotate(-90 25 25)"
               style={{ transition: 'stroke-dasharray 0.6s ease' }}
@@ -339,8 +340,8 @@ export default function DailyMission() {
             {!isLight && (
               <defs>
                 <linearGradient id="missionGrad" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stopColor="#F0A878" />
-                  <stop offset="100%" stopColor="#F09070" />
+                  <stop offset="0%" stopColor="#ADEBB3" />
+                  <stop offset="100%" stopColor="#FBEC5D" />
                 </linearGradient>
               </defs>
             )}
@@ -361,12 +362,12 @@ export default function DailyMission() {
           fontSize: 11, fontWeight: 600, borderRadius: isLight ? 8 : 12, padding: '5px 10px',
           ...(isLight ? {
             background: remainingCount === 0 ? 'rgba(34,197,94,0.08)' : 'rgba(124,92,252,0.08)',
-            color: remainingCount === 0 ? '#22C55E' : '#F09070',
+            color: remainingCount === 0 ? '#22C55E' : '#FBEC5D',
             border: 'none',
           } : {
             background: remainingCount === 0 ? 'rgba(52,211,153,0.12)' : 'var(--bg-card)',
             color: remainingCount === 0 ? '#34d399' : 'var(--text-muted)',
-            border: remainingCount === 0 ? '1px solid rgba(52,211,153,0.2)' : '1px solid var(--border-light)',
+            border: 'none',
           }),
         }}>
           {remainingCount === 0 ? '올클리어!' : `+${progress.earnedXP || 0} XP`}
@@ -378,7 +379,7 @@ export default function DailyMission() {
         {!isLight && (
           <div style={{
             fontSize: 13, fontWeight: 700, marginBottom: 10,
-            background: 'linear-gradient(90deg, #E87080, #F09070, #F09070)',
+            background: 'linear-gradient(90deg, #E87080, #FBEC5D, #FBEC5D)',
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           }}>★ 오늘의 메인 미션</div>
         )}
@@ -386,17 +387,16 @@ export default function DailyMission() {
         <div className={isLight ? 'card' : ''} style={{
           ...(isLight ? {
             padding: 20, borderRadius: 16, position: 'relative', overflow: 'hidden',
-            borderLeft: '3px solid #F09070',
+            borderLeft: 'none',
             margin: 0,
           } : {
             padding: 20, borderRadius: 22, position: 'relative', overflow: 'hidden',
             background: progress.mainCompleted
               ? 'linear-gradient(135deg, rgba(52,211,153,0.08), rgba(52,211,153,0.03))'
               : 'linear-gradient(135deg, rgba(240,144,112,0.08), rgba(240,144,112,0.04))',
-            border: progress.mainCompleted
-              ? '1px solid rgba(52,211,153,0.2)'
-              : '1px solid rgba(240,144,112,0.15)',
+            border: 'none',
           }),
+          boxShadow: 'none', border: 'none',
           animation: celebrating === 'main' ? 'missionCelebrate 0.5s ease' : undefined,
         }}>
           {/* Radial glow (dark mode only) */}
@@ -432,7 +432,7 @@ export default function DailyMission() {
                 <span style={{
                   fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: isLight ? 8 : 6,
                   background: isLight ? 'rgba(124,92,252,0.08)' : 'rgba(240,144,112,0.1)',
-                  color: isLight ? '#F09070' : '#F09070',
+                  color: isLight ? '#FBEC5D' : '#FBEC5D',
                 }}>{missions.main.category}</span>
                 <span style={{
                   fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: isLight ? 8 : 6,
@@ -466,7 +466,7 @@ export default function DailyMission() {
                   <div style={{
                     height: '100%', borderRadius: 3,
                     width: `${((progress.trackProgress || 0) / missions.main.trackTotal) * 100}%`,
-                    background: isLight ? 'linear-gradient(90deg, #F09070, #F09070)' : 'linear-gradient(90deg, #E87080, #F09070, #F09070)',
+                    background: isLight ? 'linear-gradient(90deg, #FBEC5D, #FBEC5D)' : 'linear-gradient(90deg, #E87080, #FBEC5D, #FBEC5D)',
                     transition: 'width 0.3s ease',
                   }} />
                 </div>
@@ -478,9 +478,9 @@ export default function DailyMission() {
                 <button onClick={handleTrackIncrement} style={{
                   padding: '6px 16px', border: 'none',
                   borderRadius: isLight ? 8 : 14,
-                  background: isLight ? '#F09070' : 'var(--btn-primary-bg)',
+                  background: isLight ? '#FBEC5D' : 'var(--btn-primary-bg)',
                   color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                  boxShadow: isLight ? 'none' : 'var(--btn-primary-shadow)',
+                  boxShadow: 'none',
                   whiteSpace: 'nowrap',
                 }}>{missions.main.buttonText || '완료!'}</button>
               </div>
@@ -493,7 +493,7 @@ export default function DailyMission() {
               width: '100%', padding: 12, border: 'none', borderRadius: 14, marginTop: 16,
               background: 'var(--btn-primary-bg)',
               color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-              boxShadow: 'var(--btn-primary-shadow)',
+              boxShadow: 'none',
             }}>미션 완료!</button>
           )}
 
@@ -518,7 +518,7 @@ export default function DailyMission() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, position: 'relative', zIndex: 1 }}>
                 <span>🎉 메인 미션 완료! +{missions.main.xp} XP 획득</span>
                 <button onClick={(e) => { e.stopPropagation(); handleUndoMain(); }} style={{
-                  background: 'var(--bg-input)', border: '1px solid var(--border-subtle)',
+                  background: 'var(--bg-input)', border: 'none',
                   borderRadius: 8, padding: '3px 10px', fontSize: 11, fontWeight: 600,
                   color: 'var(--text-muted)', cursor: 'pointer', whiteSpace: 'nowrap',
                 }}>되돌리기</button>
@@ -546,7 +546,7 @@ export default function DailyMission() {
 
         {isLight ? (
           /* Light mode: single card with dividers (Toss style) */
-          <div className="card" style={{ padding: 0, margin: 0 }}>
+          <div className="card" style={{ padding: 0, margin: 0, boxShadow: 'none', border: 'none' }}>
             {missions.bonus.map((b, i) => {
               const completed = progress.bonusCompleted?.[i];
               return (
@@ -602,7 +602,7 @@ export default function DailyMission() {
                 display: 'flex', alignItems: 'center', gap: 14, padding: 16, marginBottom: 8,
                 borderRadius: 18, cursor: completed ? 'default' : 'pointer',
                 background: completed ? 'rgba(52,211,153,0.04)' : 'rgba(255,255,255,0.02)',
-                border: completed ? '1px solid rgba(52,211,153,0.12)' : '1px solid rgba(255,255,255,0.05)',
+                border: 'none',
                 animation: celebrating === i ? 'missionCelebrate 0.5s ease' : `missionFadeUp 0.4s ease-out ${0.3 + i * 0.08}s both`,
                 transition: 'background 0.2s, border-color 0.2s',
               }}>
@@ -613,7 +613,7 @@ export default function DailyMission() {
                   background: completed
                     ? 'linear-gradient(135deg, #34d399, #059669)'
                     : 'var(--bg-card)',
-                  border: completed ? 'none' : '1.5px solid var(--border-subtle)',
+                  border: 'none',
                   fontSize: completed ? 16 : 18,
                   color: completed ? '#fff' : undefined,
                   animation: completed && celebrating === i ? 'missionCheckPop 0.3s ease' : undefined,
@@ -631,7 +631,7 @@ export default function DailyMission() {
                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                     <span style={{
                       fontSize: 9, fontWeight: 600, padding: '1px 6px', borderRadius: 5,
-                      background: 'rgba(240,144,112,0.08)', color: '#F09070',
+                      background: 'rgba(240,144,112,0.08)', color: '#FBEC5D',
                     }}>{b.category}</span>
                     <span style={{
                       fontSize: 9, fontWeight: 600, padding: '1px 6px', borderRadius: 5,
@@ -645,7 +645,7 @@ export default function DailyMission() {
                   <button onClick={(e) => { e.stopPropagation(); handleUndoBonus(i); }} style={{
                     fontSize: 10, fontWeight: 600, color: 'var(--text-muted)',
                     background: 'var(--bg-card-hover)', padding: '4px 10px', borderRadius: 8,
-                    border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer',
+                    border: 'none', cursor: 'pointer',
                   }}>되돌리기</button>
                 ) : (
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
@@ -678,9 +678,7 @@ export default function DailyMission() {
                   background: badge.achieved
                     ? 'linear-gradient(135deg, rgba(240,144,112,0.08), rgba(240,144,112,0.04))'
                     : 'rgba(255,255,255,0.02)',
-                  border: badge.achieved
-                    ? '1px solid rgba(240,144,112,0.15)'
-                    : '1px solid var(--border-separator)',
+                  border: 'none',
                 }}
               >
                 <div style={{
@@ -701,7 +699,7 @@ export default function DailyMission() {
                     <div style={{
                       height: '100%', borderRadius: 2,
                       width: `${badge.progress * 100}%`,
-                      background: 'linear-gradient(90deg, #E87080, #F09070, #F09070)',
+                      background: 'linear-gradient(90deg, #E87080, #FBEC5D, #FBEC5D)',
                     }} />
                   </div>
                 )}
@@ -712,8 +710,8 @@ export default function DailyMission() {
                     position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)',
                     background: 'rgba(20,20,35,0.95)', borderRadius: 10, padding: '8px 12px',
                     fontSize: 10, color: 'var(--text-secondary)', whiteSpace: 'nowrap', marginBottom: 6,
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    boxShadow: '0 4px 16px rgba(0,0,0,0.4)', zIndex: 10,
+                    border: 'none',
+                    boxShadow: 'none', zIndex: 10,
                   }}>
                     <div style={{ fontWeight: 600, marginBottom: 2 }}>{badge.description}</div>
                     <div style={{ color: 'var(--text-muted)' }}>{badge.current}/{badge.target}</div>
@@ -733,8 +731,9 @@ export default function DailyMission() {
           boxShadow: 'none',
         } : {
           background: 'linear-gradient(135deg, rgba(240,144,112,0.06), rgba(240,144,112,0.03))',
-          borderRadius: 18, border: '1px solid rgba(240,144,112,0.1)', padding: 16,
+          borderRadius: 18, border: 'none', padding: 16,
         }),
+        boxShadow: 'none', border: 'none',
         ...fadeUp(0.5),
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: isLight ? 12 : 10, marginBottom: isLight ? 0 : 10 }}>
@@ -743,18 +742,18 @@ export default function DailyMission() {
               width: 40, height: 40, borderRadius: 12, flexShrink: 0,
               background: 'rgba(124,92,252,0.08)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
-            }}>✨</div>
+            }}><SparkleIcon size={18} /></div>
           ) : (
             <div style={{
               width: 28, height: 28, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #F0A878, #F09070)',
+              background: 'linear-gradient(135deg, #ADEBB3, #FBEC5D)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14,
-            }}>✨</div>
+            }}><SparkleIcon size={14} /></div>
           )}
           <div style={{ flex: 1 }}>
             <div style={{
               fontSize: 12, fontWeight: 600, marginBottom: isLight ? 4 : 0,
-              color: isLight ? '#F09070' : '#F09070',
+              color: isLight ? '#FBEC5D' : '#FBEC5D',
             }}>AI 피부 코치</div>
             {isLight && (
               <div style={{ fontSize: 14, color: '#4E5968', lineHeight: 1.5 }}>{coachComment}</div>
@@ -772,19 +771,19 @@ export default function DailyMission() {
           position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)',
           ...(isLight ? {
             background: '#FFFFFF', borderRadius: 12, padding: '12px 20px',
-            border: '1px solid #F2F3F5',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+            border: 'none',
+            boxShadow: 'none',
           } : {
             background: 'rgba(20,20,35,0.95)', borderRadius: 16, padding: '12px 20px',
-            border: '1px solid rgba(240,144,112,0.2)',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+            border: 'none',
+            boxShadow: 'none',
             backdropFilter: 'var(--card-backdrop)', WebkitBackdropFilter: 'var(--card-backdrop)',
           }),
           display: 'flex', alignItems: 'center', gap: 12,
           animation: 'missionToastIn 0.3s ease-out',
           zIndex: 1000,
         }}>
-          <span style={{ fontSize: 20 }}>✅</span>
+          <span style={{ fontSize: 20 }}><CheckIcon size={20} /></span>
           <span style={{ fontSize: 13, color: isLight ? '#191F28' : 'var(--text-secondary)', fontWeight: 500 }}>{undoToast.label}</span>
           <button onClick={() => {
             if (undoToast.type === 'main') handleUndoMain();
@@ -792,10 +791,10 @@ export default function DailyMission() {
           }} style={{
             ...(isLight ? {
               background: 'rgba(124,92,252,0.08)', border: 'none',
-              color: '#F09070',
+              color: '#FBEC5D',
             } : {
-              background: 'rgba(240,144,112,0.15)', border: '1px solid rgba(240,144,112,0.3)',
-              color: '#F09070',
+              background: 'rgba(240,144,112,0.15)', border: 'none',
+              color: '#FBEC5D',
             }),
             borderRadius: 10, padding: '6px 14px', fontSize: 12, fontWeight: 600,
             cursor: 'pointer', whiteSpace: 'nowrap',

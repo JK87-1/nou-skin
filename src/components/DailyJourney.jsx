@@ -56,12 +56,12 @@ export default function DailyJourney({ onTodayTap, onPastTap }) {
               /* 오늘 미진단: + 아이콘 */
               <div style={{
                 width: 56, height: 56, borderRadius: '50%',
-                border: '2px dashed #F0A878',
+                border: '2px dashed #ADEBB3',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 background: 'rgba(240,144,112,0.06)',
               }}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 5v14M5 12h14" stroke="#F0A878" strokeWidth="2" strokeLinecap="round" />
+                  <path d="M12 5v14M5 12h14" stroke="#ADEBB3" strokeWidth="2" strokeLinecap="round" />
                 </svg>
               </div>
             ) : day.thumb ? (
@@ -76,7 +76,7 @@ export default function DailyJourney({ onTodayTap, onPastTap }) {
               <div className={`journey-thumb${day.isToday ? ' today-border' : ''}`} style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 background: 'linear-gradient(135deg, rgba(240,144,112,0.1), rgba(240,144,112,0.05))',
-                fontSize: 16, fontWeight: 700, color: '#F0A878',
+                fontSize: 16, fontWeight: 700, color: '#ADEBB3',
                 fontFamily: "'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif",
               }}>
                 {day.record.overallScore}

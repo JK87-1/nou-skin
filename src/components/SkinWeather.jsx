@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { generateAlerts, getSeasonalTip, getScheduledNotifications } from '../data/EnvironmentAlertData';
 import { getWeatherData, saveWeatherData, isStale, getUserLocation, saveUserLocation } from '../storage/WeatherStorage';
+import { MicroscopeIcon, PastelIcon } from './icons/PastelIcons';
 
 // ===== Fallback dummy data =====
 const DUMMY_WEATHER = {
@@ -44,12 +45,12 @@ function humidityInfo(val) {
   if (val < 40) return { color: '#F0B870', label: '낮음' };
   if (val <= 60) return { color: '#34d399', label: '적정' };
   if (val <= 70) return { color: '#38bdf8', label: '높음' };
-  return { color: '#F0A878', label: '매우 높음' };
+  return { color: '#ADEBB3', label: '매우 높음' };
 }
 
 function airInfo(val) {
   if (val <= 30) return { color: '#34d399', label: '좋음' };
-  if (val <= 50) return { color: '#F0A878', label: '보통' };
+  if (val <= 50) return { color: '#ADEBB3', label: '보통' };
   if (val <= 80) return { color: '#F0B870', label: '나쁨' };
   return { color: '#ef4444', label: '매우나쁨' };
 }
@@ -198,13 +199,13 @@ export default function SkinWeather({ skinResult }) {
               <span style={{ fontSize: 52, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>{weather.temp}</span>
               <span style={{ fontSize: 20, color: 'var(--text-muted)', marginTop: 6 }}>°C</span>
             </div>
-            <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 4 }}>{weather.conditionIcon} {weather.condition}</div>
+            <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}><PastelIcon emoji={weather.conditionIcon} size={14} /> {weather.condition}</div>
             <div style={{ fontSize: 12, color: 'var(--text-dim)', marginTop: 2 }}>최저 {weather.tempMin}° / 최고 {weather.tempMax}°</div>
             <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 2 }}>{weather.date}</div>
           </div>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 56, filter: 'drop-shadow(0 4px 12px rgba(56,189,248,0.2))', lineHeight: 1 }}>
-              {weather.conditionIcon}
+            <div style={{ fontSize: 56, filter: 'drop-shadow(0 4px 12px rgba(56,189,248,0.2))', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <PastelIcon emoji={weather.conditionIcon} size={56} />
             </div>
             <div style={{ fontSize: 10, color: 'var(--text-dim)', marginTop: 4 }}>바람 {weather.wind}km/h</div>
           </div>
@@ -221,7 +222,7 @@ export default function SkinWeather({ skinResult }) {
               animation: `swFadeIn 0.3s ease ${i * 0.08}s both`,
             }}>
               <div style={{ fontSize: 10, color: 'var(--text-dim)', marginBottom: 4 }}>{f.time}</div>
-              <div style={{ fontSize: 20, marginBottom: 2 }}>{f.icon}</div>
+              <div style={{ fontSize: 20, marginBottom: 2, display: 'flex', justifyContent: 'center' }}><PastelIcon emoji={f.icon} size={20} /></div>
               <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>{f.temp}°</div>
               {f.uv > 0 && (
                 <div style={{ fontSize: 9, color: uvColor(f.uv), marginTop: 2 }}>UV {f.uv}</div>
@@ -352,7 +353,7 @@ export default function SkinWeather({ skinResult }) {
                     background: `${alert.color}15`,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 22,
-                  }}>{alert.icon}</div>
+                  }}><PastelIcon emoji={alert.icon} size={22} /></div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{alert.title}</span>
@@ -390,7 +391,7 @@ export default function SkinWeather({ skinResult }) {
                         marginBottom: 4,
                         animation: `swSlideInRight 0.3s ease ${j * 0.08}s both`,
                       }}>
-                        <span style={{ fontSize: 16, flexShrink: 0 }}>{tip.icon}</span>
+                        <span style={{ fontSize: 16, flexShrink: 0, display: 'inline-flex' }}><PastelIcon emoji={tip.icon} size={16} /></span>
                         <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{tip.text}</span>
                       </div>
                     ))}
@@ -410,7 +411,7 @@ export default function SkinWeather({ skinResult }) {
           marginBottom: 16, textAlign: 'center',
           animation: 'swFadeInUp 0.5s ease 0.15s both',
         }}>
-          <div style={{ fontSize: 24, marginBottom: 8 }}>🔬</div>
+          <div style={{ fontSize: 24, marginBottom: 8 }}><MicroscopeIcon size={24} /></div>
           <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4 }}>피부 측정 후 맞춤 알림을 받아보세요</div>
           <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>분석 결과를 기반으로 오늘 환경에 맞는 케어 팁을 드려요</div>
         </div>
@@ -439,7 +440,7 @@ export default function SkinWeather({ skinResult }) {
                   animation: `swFadeInUp 0.3s ease ${i * 0.06}s both`,
                 }}>
                   <span style={{ fontSize: 13, color: 'var(--text-muted)', width: 22, flexShrink: 0 }}>{day.day}</span>
-                  <span style={{ fontSize: 22, width: 30, textAlign: 'center', flexShrink: 0 }}>{day.icon}</span>
+                  <span style={{ fontSize: 22, width: 30, textAlign: 'center', flexShrink: 0, display: 'inline-flex', justifyContent: 'center' }}><PastelIcon emoji={day.icon} size={22} /></span>
                   {/* Temp range bar */}
                   <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ fontSize: 12, color: 'var(--text-dim)', width: 28, textAlign: 'right' }}>{day.min}°</span>
@@ -449,7 +450,7 @@ export default function SkinWeather({ skinResult }) {
                     }}>
                       <div style={{
                         position: 'absolute', height: '100%', borderRadius: 2,
-                        background: 'linear-gradient(90deg, #38bdf8, #F0A878)',
+                        background: 'linear-gradient(90deg, #38bdf8, #ADEBB3)',
                         left: `${Math.max(0, Math.min(barLeft, 85))}%`,
                         width: `${Math.min(barWidth, 100 - barLeft)}%`,
                       }} />
@@ -479,7 +480,7 @@ export default function SkinWeather({ skinResult }) {
             width: 32, height: 32, borderRadius: 10, fontSize: 18,
             background: 'var(--bg-card-hover)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>{seasonal.icon}</div>
+          }}><PastelIcon emoji={seasonal.icon} size={18} /></div>
           <div>
             <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{seasonal.title}</div>
             <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{seasonal.season} 시즌 가이드</div>
@@ -494,7 +495,7 @@ export default function SkinWeather({ skinResult }) {
               flex: 1, textAlign: 'center', padding: '12px 8px 10px',
               background: 'rgba(255,255,255,0.03)', borderRadius: 14,
             }}>
-              <div style={{ fontSize: 18, marginBottom: 4 }}>{kp.icon}</div>
+              <div style={{ fontSize: 18, marginBottom: 4, display: 'flex', justifyContent: 'center' }}><PastelIcon emoji={kp.icon} size={18} /></div>
               <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 2 }}>{kp.label}</div>
               <div style={{ fontSize: 9, color: 'var(--text-dim)', lineHeight: 1.4 }}>{kp.desc}</div>
             </div>
@@ -519,7 +520,7 @@ export default function SkinWeather({ skinResult }) {
             }}>
               <div style={{
                 width: 8, height: 8, borderRadius: '50%', flexShrink: 0, marginTop: 4,
-                background: i === 0 ? '#F0A878' : 'rgba(255,255,255,0.1)',
+                background: i === 0 ? '#ADEBB3' : 'rgba(255,255,255,0.1)',
               }} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>{n.title}</div>
