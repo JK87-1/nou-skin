@@ -460,7 +460,7 @@ export default function SkinWeather({ skinResult }) {
 
       {/* ── Seasonal Guide ── */}
       <div style={{
-        background: 'rgba(255,182,193,0.2)',
+        background: 'linear-gradient(135deg, rgba(255,250,180,0.3), rgba(255,255,255,0.3))',
         borderRadius: 22, border: 'none', padding: 18,
         marginBottom: 16, animation: 'swFadeInUp 0.5s ease 0.3s both',
       }}>
@@ -503,7 +503,7 @@ export default function SkinWeather({ skinResult }) {
               display: 'flex', alignItems: 'flex-start', gap: 12,
               padding: '12px 14px', borderRadius: 14,
               opacity: i === 0 ? 1 : 0.5,
-              background: i === 0 ? 'rgba(255,250,180,0.3)' : 'transparent',
+              background: i === 0 ? '#FFFFFF' : 'transparent',
               marginBottom: 4,
               animation: `swFadeInUp 0.3s ease ${0.4 + i * 0.06}s both`,
             }}>
