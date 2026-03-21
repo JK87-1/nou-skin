@@ -686,7 +686,8 @@ export default function App() {
       {showBackupReminder && !showDataRecovery && (
         <div style={{
           position: 'fixed', top: 12, left: 16, right: 16, zIndex: 1050,
-          background: '#F2F3F5',
+          background: 'rgba(242, 243, 245, 0.8)',
+          backdropFilter: 'blur(10px)',
           padding: '16px 18px',
           display: 'flex', alignItems: 'center', gap: 12,
           borderRadius: 16,
