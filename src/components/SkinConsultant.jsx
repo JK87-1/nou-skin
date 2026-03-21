@@ -731,7 +731,6 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
         padding: kbOpen ? '10px 16px' : '10px 16px calc(10px + env(safe-area-inset-bottom, 0px))',
         background: 'transparent',
         borderTop: 'none',
-        display: 'flex', gap: 8, alignItems: 'flex-end',
         flexShrink: 0, position: 'relative',
       }}>
         {/* Attach Menu */}
@@ -756,9 +755,9 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
         )}
 
         <div style={{
-          display: 'flex', gap: 8, alignItems: 'center', flex: 1,
+          display: 'flex', gap: 8, alignItems: 'center', width: '100%',
           background: 'rgba(255,255,255,0.9)', borderRadius: 28,
-          padding: '6px 6px 6px 12px',
+          padding: '6px 6px 6px 12px', boxSizing: 'border-box',
         }}>
         {/* + Attach Button */}
         <button
