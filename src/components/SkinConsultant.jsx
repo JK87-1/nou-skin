@@ -728,7 +728,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
 
       {/* Input Bar */}
       <div style={{
-        padding: kbOpen ? '10px 16px' : '10px 16px calc(10px + env(safe-area-inset-bottom, 0px))',
+        padding: kbOpen ? '2px 16px' : '2px 16px calc(2px + env(safe-area-inset-bottom, 0px))',
         background: 'transparent',
         borderTop: 'none',
         flexShrink: 0, position: 'relative',
