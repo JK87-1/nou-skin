@@ -900,7 +900,7 @@ export default function App() {
 
           {/* Goal Progress Card */}
           {getGoal()?.status === 'active' && (
-            <div style={{ padding: colorMode === 'light' ? '10px 0 0' : '24px 0 0' }}>
+            <div style={{ padding: '17px 0 0' }}>
               <GoalProgressCard onTap={() => setActiveTab('my')} colorMode={colorMode} />
             </div>
           )}
@@ -916,7 +916,7 @@ export default function App() {
           <div
             onClick={() => setStage('routineTracker')}
             style={{
-              margin: colorMode === 'light' ? '17px 20px 0' : '34px 20px 0',
+              margin: '17px 20px 0',
               padding: 20,
               borderRadius: 20,
               background: colorMode === 'light' ? '#FFFFFF' : 'var(--bg-card)',
