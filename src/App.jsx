@@ -686,11 +686,12 @@ export default function App() {
       {showBackupReminder && !showDataRecovery && (
         <div style={{
           position: 'fixed', top: 12, left: 16, right: 16, zIndex: 1050,
-          background: 'rgba(242, 243, 245, 0.8)',
+          background: 'rgba(200, 200, 200, 0.1)',
           backdropFilter: 'blur(10px)',
           padding: '16px 18px',
           display: 'flex', alignItems: 'center', gap: 12,
           borderRadius: 16,
+          border: '0.5px solid rgba(255,255,255,0.6)',
           boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
         }}>
           <span style={{ fontSize: 20, flexShrink: 0 }}>🔒</span>
