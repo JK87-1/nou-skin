@@ -152,7 +152,7 @@ function renderMarkdown(text) {
 
     const parts = cleanLine.split(/(\*\*[^*]+\*\*)/g).map((seg, si) => {
       if (seg.startsWith('**') && seg.endsWith('**')) {
-        return <strong key={si} style={{ color: '#FFF3B0' }}>{seg.slice(2, -2)}</strong>;
+        return <strong key={si} style={{ color: '#FFF3B0', fontWeight: 500 }}>{seg.slice(2, -2)}</strong>;
       }
       return seg;
     });
@@ -188,7 +188,7 @@ function generateWelcomeMessage(result) {
   ];
   const weakest = metrics.reduce((min, m) => m.score < min.score ? m : min, metrics[0]);
 
-  return `안녕하세요, 당신의 피부 상담사 루아에요. 오늘 피부 분석 결과를 봤어요. 종합 ${overall}점이에요. 가장 신경 쓸 부분은 ${weakest.label}(${weakest.score}점)이에요. 궁금한 점이 있으면 편하게 물어보세요! 화장품 사진을 보내주시면 성분 적합성도 분석해드려요.`;
+  return `안녕하세요, 당신의 피부 상담사 루아에요. 오늘 피부 분석 결과를 봤어요. **종합 ${overall}점**이에요. 가장 신경 쓸 부분은 **${weakest.label}(${weakest.score}점)**이에요. 궁금한 점이 있으면 편하게 물어보세요! 화장품 사진을 보내주시면 성분 적합성도 분석해드려요.`;
 }
 
 export default function SkinConsultant({ result, onClose, isTab = false }) {
