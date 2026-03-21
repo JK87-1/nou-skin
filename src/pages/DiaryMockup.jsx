@@ -512,11 +512,11 @@ export default function DiaryMockup() {
                 컨디션 지표 <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 400 }}>일상 관리 포인트</span>
               </div>
               <div style={{ fontSize: 10, color: 'var(--text-muted)', paddingLeft: 8, marginBottom: 14 }}>탭하면 과학적 근거</div>
-              <MockMetricBar label="다크서클" value={72} icon="👁️" color="#78909C" description="눈 밑 밝음" />
-              <MockMetricBar label="수분도" value={75} unit="%" icon="💧" color="#4FC3F7" description="정상 범위" />
-              <MockMetricBar label="피부톤" value={68} icon="✨" color="#98FBCB" description="색소 관리 추천" />
-              <MockMetricBar label="유분" value={58} unit="%" icon="🫧" color="#81C784" description="균형 상태" />
-              <MockMetricBar label="트러블" value={83} icon="🎯" color="#FF8A65" description="2개 | 깨끗" />
+              <MockMetricBar label="수분도" value={75} unit="%" icon="💧" color="#A8DEFF" description="정상 범위" />
+              <MockMetricBar label="유분" value={58} unit="%" icon="🫧" color="#F0E0A8" description="균형 상태" />
+              <MockMetricBar label="피부톤" value={68} icon="✨" color="#FFE082" description="색소 관리 추천" />
+              <MockMetricBar label="트러블" value={83} icon="🎯" color="#FFB0B0" description="2개 | 깨끗" />
+              <MockMetricBar label="다크서클" value={72} icon="👁️" color="#C8B8E8" description="눈 밑 밝음" />
             </div>
 
             {/* ── GROUP 2: 노화 지표 ── */}
@@ -524,11 +524,11 @@ export default function DiaryMockup() {
               <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 14, paddingLeft: 8, color: 'var(--text-primary)' }}>
                 노화 지표 <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 400 }}>피부 나이에 큰 영향</span>
               </div>
-              <MockMetricBar label="주름" value={70} icon="📐" color="#9575CD" description="매끄러운 피부" />
-              <MockMetricBar label="탄력" value={72} icon="💎" color="#F06292" description="턱선 선명" />
-              <MockMetricBar label="피부결" value={80} icon="🧴" color="#7986CB" description="매끈한 피부" />
-              <MockMetricBar label="모공" value={65} icon="🔬" color="#4DB6AC" description="모공 축소 관리" />
-              <MockMetricBar label="색소" value={74} icon="🎨" color="#A1887F" description="맑은 피부" />
+              <MockMetricBar label="피부결" value={80} icon="🧴" color="#FFB0C8" description="매끈한 피부" />
+              <MockMetricBar label="탄력" value={72} icon="💎" color="#FFD080" description="턱선 선명" />
+              <MockMetricBar label="주름" value={70} icon="📐" color="#F5D0B8" description="매끄러운 피부" />
+              <MockMetricBar label="모공" value={65} icon="🔬" color="#E8D8C8" description="모공 축소 관리" />
+              <MockMetricBar label="색소" value={74} icon="🎨" color="#C0A890" description="맑은 피부" />
             </div>
 
             {/* ── CTA buttons (App.jsx 동일) ── */}

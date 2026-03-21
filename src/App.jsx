@@ -31,7 +31,7 @@ import { addXP, checkAndAwardBadges, incrementStat, getTotalXP, getLevel } from 
 import { calculateLevel, getThemeForLevel, getLevelTitleData, THEMES } from './data/BadgeData';
 import { BadgeCelebration } from './components/BadgeRanking';
 import SplashScreen from './components/SplashScreen';
-import { DropletIcon, SparkleIcon, LotionIcon, DiamondIcon, PaletteIcon, MicroscopeIcon, RulerIcon, EyeIcon, BubbleIcon, TargetIcon, SunIcon, MoonIcon, CameraIcon, TestTubeIcon, StarIcon, ShieldIcon, WandIcon, PhotoIcon, CheckIcon, SaveIcon } from './components/icons/PastelIcons';
+import { DropletIcon, SparkleIcon, LotionIcon, DiamondIcon, PaletteIcon, MicroscopeIcon, RulerIcon, EyeIcon, BubbleIcon, TargetIcon, SunIcon, MoonIcon, CameraIcon, TestTubeIcon, StarIcon, ShieldIcon, WandIcon, PhotoIcon, CheckIcon, SaveIcon, PastelIcon, LuaMiniIcon } from './components/icons/PastelIcons';
 import SoftCloverIcon from './components/icons/SoftCloverIcon';
 import EternalPearl from './components/icons/EternalPearl';
 
@@ -1213,7 +1213,7 @@ export default function App() {
             }}>
               <button onClick={reset} style={{
                 width: 42, height: 42, borderRadius: '50%',
-                background: 'rgba(240,144,112,0.9)', border: 'none', cursor: 'pointer',
+                background: 'rgba(200,200,200,0.45)', border: 'none', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 boxShadow: 'none',
               }}>
@@ -1221,7 +1221,7 @@ export default function App() {
               </button>
               <button onClick={handleShare} style={{
                 width: 42, height: 42, borderRadius: '50%',
-                background: 'rgba(240,144,112,0.9)', border: 'none', cursor: 'pointer',
+                background: 'rgba(200,200,200,0.45)', border: 'none', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 boxShadow: 'none', fontSize: 16,
               }}>
@@ -1483,9 +1483,9 @@ export default function App() {
             <div className="glass-card" style={{ padding: colorMode === 'light' ? '24px' : '4px 0', animation: 'fadeUp 0.5s ease-out 0.85s both' }}>
               {/* Section icon header — light mode only */}
               {colorMode === 'light' && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: 14, background: 'rgba(124,92,252,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}><MicroscopeIcon size={18} /></div>
-                  <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>피부 타입 정보</h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+                  <LuaMiniIcon size={14} />
+                  <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>피부 타입 정보</h2>
                 </div>
               )}
               {/* Skin type */}
@@ -1523,10 +1523,12 @@ export default function App() {
                 </div>
               )}
               {/* Concerns */}
-              <div style={{ padding: '8px 20px', display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: 15 }}>⚡</span>
-                <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>관심 사항</span>
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginLeft: 'auto' }}>
+              <div style={{ padding: '8px 20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                  <span style={{ fontSize: 15 }}>⚡</span>
+                  <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>관심 사항</span>
+                </div>
+                <div style={{ display: 'flex', gap: 6 }}>
                   {result.concerns?.map((concern, i) => (
                     <span key={i} style={{
                       fontSize: 11.5, fontWeight: 500,
@@ -1573,8 +1575,8 @@ export default function App() {
               }}>
                 {/* Section icon header — light mode */}
                 {colorMode === 'light' && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-                    <div style={{ width: 40, height: 40, borderRadius: 14, background: 'rgba(124,92,252,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}><SparkleIcon size={18} /></div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+                    <LuaMiniIcon size={14} />
                     <div style={{ flex: 1 }}>
                       <h2 style={{ fontSize: 15, fontWeight: 700, color: '#191F28', margin: 0 }}>컨디션 브리핑</h2>
                     </div>
@@ -1635,8 +1637,8 @@ export default function App() {
             {/* ── AI Analysis ── */}
             <div className="glass-card" style={{ animation: 'fadeUp 0.5s ease-out 0.9s both', boxShadow: 'none' }}>
               {colorMode === 'light' ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: 14, background: 'rgba(124,92,252,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>🧠</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+                  <LuaMiniIcon size={14} />
                   <div>
                     <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>전체 피부 분석</div>
                     <div style={{ fontSize: 11, color: '#8B95A1', marginTop: 1 }}>AI 맞춤 리포트</div>
@@ -1727,10 +1729,10 @@ export default function App() {
             </div>
 
             {/* ── GROUP 1: Condition Metrics ── */}
-            <div className="glass-card" style={{ padding: colorMode === 'light' ? '24px' : '18px 10px', animation: 'fadeUp 0.5s ease-out 1.0s both' }}>
+            <div className="glass-card" style={{ padding: colorMode === 'light' ? '24px' : '18px 10px', animation: 'fadeUp 0.5s ease-out 1.0s both', boxShadow: 'none' }}>
               {colorMode === 'light' ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: 14, background: 'rgba(59,130,246,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>📊</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+                  <LuaMiniIcon size={14} />
                   <div>
                     <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>컨디션 지표</h2>
                     <div style={{ fontSize: 11, color: '#8B95A1', marginTop: 1 }}>일상 관리 포인트</div>
@@ -1742,28 +1744,28 @@ export default function App() {
                   <div style={{ fontSize: 10, color: 'var(--text-muted)', paddingLeft: 8, marginBottom: 14 }}>탭하면 과학적 근거</div>
                 </>
               )}
-              <MetricBar label="다크서클" value={result.darkCircleScore} unit="점" icon={<EyeIcon size={18} />} color="#78909C"
-                description={result.darkCircleScore >= 70 ? '눈 밑 밝음' : result.darkCircleScore >= 45 ? '아이크림 추천' : '다크서클 집중 관리'}
-                onClick={() => openDetail('darkCircles')} />
-              <MetricBar label="수분도" value={result.moisture} unit="%" icon={<DropletIcon size={18} />} color="#4FC3F7" delay={60}
+              <MetricBar label="수분도" value={result.moisture} unit="%" icon={<DropletIcon size={18} />} color="#A8DEFF"
                 description={result.moisture >= 60 ? '정상 범위' : '보습 강화 필요'}
                 onClick={() => openDetail('moisture')} />
-              <MetricBar label="피부톤" value={result.skinTone} unit="점" icon={<SparkleIcon size={18} />} color="#98FBCB" delay={120}
-                description={result.skinTone >= 70 ? '균일하고 밝은 톤' : '색소 관리 추천'}
-                onClick={() => openDetail('skinTone')} />
-              <MetricBar label="유분" value={result.oilBalance} unit="%" icon={<BubbleIcon size={18} />} color="#81C784" delay={180}
+              <MetricBar label="유분" value={result.oilBalance} unit="%" icon={<BubbleIcon size={18} />} color="#F0E0A8" delay={60}
                 description={result.oilBalance >= 45 && result.oilBalance <= 65 ? '균형 상태' : result.oilBalance > 65 ? '유분 조절 필요' : '유분 보충 필요'}
                 onClick={() => openDetail('oilBalance')} />
-              <MetricBar label="트러블" value={Math.max(0, 100 - result.troubleCount * 8.5)} unit="점" icon={<TargetIcon size={18} />} color="#FF8A65" delay={240}
+              <MetricBar label="피부톤" value={result.skinTone} unit="점" icon={<SparkleIcon size={18} />} color="#FFE082" delay={120}
+                description={result.skinTone >= 70 ? '균일하고 밝은 톤' : '색소 관리 추천'}
+                onClick={() => openDetail('skinTone')} />
+              <MetricBar label="트러블" value={Math.max(0, 100 - result.troubleCount * 8.5)} unit="점" icon={<TargetIcon size={14} />} color="#FFB0B0" delay={180}
                 description={`${result.troubleCount}개 | ${result.troubleCount <= 2 ? '깨끗' : result.troubleCount <= 5 ? '경증' : '집중관리'}`}
                 onClick={() => openDetail('trouble')} />
+              <MetricBar label="다크서클" value={result.darkCircleScore} unit="점" icon={<EyeIcon size={18} />} color="#C8B8E8" delay={240}
+                description={result.darkCircleScore >= 70 ? '눈 밑 밝음' : result.darkCircleScore >= 45 ? '아이크림 추천' : '다크서클 집중 관리'}
+                onClick={() => openDetail('darkCircles')} />
             </div>
 
             {/* ── GROUP 2: Aging Metrics ── */}
-            <div className="glass-card" style={{ padding: colorMode === 'light' ? '24px' : '18px 10px', animation: 'fadeUp 0.5s ease-out 1.1s both' }}>
+            <div className="glass-card" style={{ padding: colorMode === 'light' ? '24px' : '18px 10px', animation: 'fadeUp 0.5s ease-out 1.1s both', boxShadow: 'none' }}>
               {colorMode === 'light' ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: 14, background: 'rgba(236,72,153,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}><DiamondIcon size={18} /></div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+                  <LuaMiniIcon size={14} />
                   <div>
                     <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>노화 지표</h2>
                     <div style={{ fontSize: 11, color: '#8B95A1', marginTop: 1 }}>피부 나이에 큰 영향</div>
@@ -1772,19 +1774,19 @@ export default function App() {
               ) : (
                 <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 14, paddingLeft: 8, color: 'var(--text-primary)' }}>노화 지표 <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 400 }}>피부 나이에 큰 영향</span></div>
               )}
-              <MetricBar label="주름" value={result.wrinkleScore} unit="점" icon={<RulerIcon size={18} />} color="#9575CD"
-                description={result.wrinkleScore >= 75 ? '매끄러운 피부' : result.wrinkleScore >= 50 ? '잔주름 관리 추천' : '주름 집중 관리 필요'}
-                onClick={() => openDetail('wrinkles')} />
-              <MetricBar label="탄력" value={result.elasticityScore} unit="점" icon={<DiamondIcon size={18} />} color="#F06292" delay={60}
-                description={result.elasticityScore >= 70 ? '턱선 선명' : result.elasticityScore >= 45 ? '탄력 관리 시작' : '탄력 집중 케어 필요'}
-                onClick={() => openDetail('elasticity')} />
-              <MetricBar label="피부결" value={result.textureScore} unit="점" icon={<LotionIcon size={18} />} color="#7986CB" delay={120}
+              <MetricBar label="피부결" value={result.textureScore} unit="점" icon={<LotionIcon size={18} />} color="#FFB0C8"
                 description={result.textureScore >= 70 ? '매끈한 피부' : result.textureScore >= 45 ? '각질 케어 추천' : '피부결 집중 관리 필요'}
                 onClick={() => openDetail('texture')} />
-              <MetricBar label="모공" value={result.poreScore} unit="점" icon={<MicroscopeIcon size={18} />} color="#4DB6AC" delay={180}
+              <MetricBar label="탄력" value={result.elasticityScore} unit="점" icon={<DiamondIcon size={18} />} color="#FFD080" delay={60}
+                description={result.elasticityScore >= 70 ? '턱선 선명' : result.elasticityScore >= 45 ? '탄력 관리 시작' : '탄력 집중 케어 필요'}
+                onClick={() => openDetail('elasticity')} />
+              <MetricBar label="주름" value={result.wrinkleScore} unit="점" icon={<RulerIcon size={18} />} color="#F5D0B8" delay={120}
+                description={result.wrinkleScore >= 75 ? '매끄러운 피부' : result.wrinkleScore >= 50 ? '잔주름 관리 추천' : '주름 집중 관리 필요'}
+                onClick={() => openDetail('wrinkles')} />
+              <MetricBar label="모공" value={result.poreScore} unit="점" icon={<MicroscopeIcon size={18} />} color="#E8D8C8" delay={180}
                 description={result.poreScore >= 70 ? '미세 모공' : result.poreScore >= 45 ? '모공 축소 관리' : '넓은 모공 관리 필요'}
                 onClick={() => openDetail('pores')} />
-              <MetricBar label="색소" value={result.pigmentationScore} unit="점" icon={<PaletteIcon size={18} />} color="#A1887F" delay={240}
+              <MetricBar label="색소" value={result.pigmentationScore} unit="점" icon={<PaletteIcon size={18} />} color="#C0A890" delay={240}
                 description={result.pigmentationScore >= 70 ? '맑은 피부' : result.pigmentationScore >= 45 ? '미백 관리 추천' : '색소 집중 관리 필요'}
                 onClick={() => openDetail('pigmentation')} />
             </div>
@@ -1794,11 +1796,11 @@ export default function App() {
               const weakCats = getWeakestCategories(result);
               if (weakCats.length === 0) return null;
               return (
-                <div className="glass-card" style={{ padding: '18px 14px', animation: 'fadeUp 0.5s ease-out 1.15s both' }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4, color: 'var(--text-primary)' }}>
-                    맞춤 추천 제품 <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 400 }}>내 피부에 딱 맞는</span>
+                <div className="glass-card" style={{ padding: '24px', animation: 'fadeUp 0.5s ease-out 1.15s both', boxShadow: 'none', borderRadius: 16 }}>
+                  <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4, color: 'var(--text-primary)' }}>
+                    맞춤 추천 제품
                   </div>
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 14 }}>쿠팡에서 바로 구매 가능</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 14 }}>내 피부에 딱 맞는 제품 바로 구매 가능</div>
                   {weakCats.slice(0, 2).map((cat) => {
                     const meta = CATEGORY_META[cat];
                     if (!meta) return null;
@@ -1806,44 +1808,35 @@ export default function App() {
                     if (products.length === 0) return null;
                     const metricValue = result?.[meta.metricKey] ?? 50;
                     return (
-                      <div key={cat} style={{ marginBottom: 12 }}>
+                      <div key={cat} style={{
+                        marginBottom: 12, borderRadius: 16,
+                        background: 'var(--bg-card)',
+                        border: '1px solid var(--border-subtle)',
+                        overflow: 'hidden',
+                      }}>
                         <div style={{
                           display: 'flex', alignItems: 'center', gap: 8,
-                          padding: '8px 12px', borderRadius: 16,
-                          background: 'var(--bg-card)',
-                          border: '1px solid var(--border-subtle)',
-                          marginBottom: 8,
+                          padding: '12px 14px',
                         }}>
-                          <span style={{ fontSize: 16 }}>{meta.icon}</span>
+                          <span style={{ fontSize: 16, display: 'inline-flex' }}><PastelIcon emoji={meta.icon} size={16} /></span>
                           <div>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)' }}>{meta.label}</div>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{meta.label}</div>
                             <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{meta.ingredient}</div>
                           </div>
                         </div>
-                        {products.map((product) => (
+                        {products.map((product, pi) => (
                           <a key={product.id} href={product.link} target="_blank" rel="noopener noreferrer"
                             className="product-item-card"
                             style={{
                               display: 'flex', alignItems: 'center', gap: 10,
-                              padding: '10px 12px', borderRadius: 14, marginBottom: 6,
-                              background: 'var(--bg-card)',
-                              border: '1px solid var(--border-light)',
+                              padding: '10px 14px 10px 24px',
+                              marginLeft: 14, marginRight: 14,
+                              borderTop: '1px solid var(--border-separator)',
                               textDecoration: 'none', color: 'inherit',
-                              transition: 'background 0.2s, border-color 0.2s',
+                              transition: 'background 0.2s',
                             }}>
-                            <div style={{
-                              width: 40, height: 40, borderRadius: 10, flexShrink: 0,
-                              background: 'linear-gradient(135deg, rgba(240,144,112,0.15), rgba(240,144,112,0.15))',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16,
-                            }}>
-                              {product.tags?.[0]?.includes('히알루론') ? <DropletIcon size={16} /> :
-                               product.tags?.[0]?.includes('비타민') ? '🍊' :
-                               product.tags?.[0]?.includes('레티놀') ? <SparkleIcon size={16} /> :
-                               product.tags?.[0]?.includes('나이아신') ? <TestTubeIcon size={16} /> :
-                               product.tags?.[0]?.includes('글루타') ? <DiamondIcon size={16} /> : <LotionIcon size={16} />}
-                            </div>
                             <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)',
+                              <div style={{ fontSize: 12, fontWeight: 600, color: '#555555',
                                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                 {product.brand} {product.name}
                               </div>
@@ -1880,68 +1873,84 @@ export default function App() {
               if (treatments.length === 0) return null;
               return (
                 <div style={{
-                  marginBottom: 14, borderRadius: 'var(--card-radius)',
+                  marginBottom: 14, borderRadius: 16,
                   background: 'var(--bg-card)',
-                  border: '1px solid var(--border-subtle)',
+                  border: 'none',
                   backdropFilter: 'var(--card-backdrop)', WebkitBackdropFilter: 'var(--card-backdrop)',
-                  overflow: 'hidden',
+                  overflow: 'hidden', boxShadow: 'none',
                   animation: 'fadeUp 0.5s ease-out 1.2s both',
                 }}>
-                  <div style={{ padding: '14px 16px 10px', borderBottom: '1px solid var(--border-separator)' }}>
+                  <div style={{ padding: '24px 24px 10px' }}>
                     <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: -0.3 }}>
-                      💉 추천 피부 시술
+                      맞춤 추천 시술
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
                       내 피부 데이터 기반 맞춤 추천
                     </div>
                   </div>
                   <div style={{ padding: '6px 12px' }}>
-                    {treatments.map((t, ti) => {
-                      const catMeta = TREATMENT_CATEGORIES[t.category];
-                      return (
-                        <div key={t.id} style={{
-                          display: 'flex', alignItems: 'center', gap: 10,
-                          padding: '10px 4px',
-                          borderBottom: ti < treatments.length - 1 ? '1px solid var(--border-separator)' : 'none',
-                        }}>
-                          <div style={{
-                            width: 38, height: 38, borderRadius: 10, flexShrink: 0,
-                            background: `${catMeta?.color || '#ADEBB3'}18`,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 18,
-                          }}>{t.icon}</div>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
-                                {t.name}
-                              </span>
-                              <span style={{
-                                fontSize: 10, fontWeight: 600, padding: '1px 7px', borderRadius: 6,
-                                background: `${catMeta?.color || '#ADEBB3'}18`,
-                                color: catMeta?.color || '#ADEBB3',
-                              }}>{catMeta?.label}</span>
-                            </div>
-                            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2, lineHeight: 1.3 }}>
-                              {t.mechanism.length > 28 ? t.mechanism.slice(0, 28) + '…' : t.mechanism}
-                            </div>
-                            {t.weakestMetric && (
-                              <div style={{
-                                display: 'inline-block', marginTop: 3,
-                                fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 8,
-                                background: 'rgba(239,68,68,0.12)', color: '#ef4444',
-                              }}>
-                                {t.weakestMetric.label} {t.weakestMetric.value}점
+                    {(() => {
+                      // 카테고리별로 그룹핑
+                      const grouped = {};
+                      treatments.forEach(t => {
+                        if (!grouped[t.category]) grouped[t.category] = [];
+                        grouped[t.category].push(t);
+                      });
+                      return Object.entries(grouped).map(([cat, items]) => {
+                        const catMeta = TREATMENT_CATEGORIES[cat];
+                        return (
+                          <div key={cat} style={{
+                            marginBottom: 12, borderRadius: 16,
+                            background: 'var(--bg-card)',
+                            border: '1px solid var(--border-subtle)',
+                            overflow: 'hidden',
+                          }}>
+                            <div style={{
+                              display: 'flex', alignItems: 'center', gap: 8,
+                              padding: '12px 14px',
+                            }}>
+                              <span style={{ fontSize: 16, display: 'inline-flex' }}><PastelIcon emoji={catMeta?.icon || '✨'} size={16} /></span>
+                              <div>
+                                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{catMeta?.label}</div>
+                                {items[0]?.weakestMetric && (
+                                  <div style={{ fontSize: 10, fontWeight: 400, color: '#ef4444', marginTop: 2 }}>
+                                    {items[0].weakestMetric.label} {items[0].weakestMetric.value}점
+                                  </div>
+                                )}
                               </div>
-                            )}
-                            <div style={{ display: 'flex', gap: 8, marginTop: 4, fontSize: 10, color: 'var(--text-dim)' }}>
-                              <span>💰 {t.costRange}</span>
-                              <span>⏱ {t.downtime}</span>
-                              <span>🔄 {t.frequency}</span>
                             </div>
+                            {items.map((t, ti) => (
+                              <div key={t.id} style={{
+                                padding: '10px 14px 10px 24px',
+                                marginLeft: 14, marginRight: 14,
+                                borderTop: '1px solid var(--border-separator)',
+                              }}>
+                                <div style={{ fontSize: 13, fontWeight: 700, color: '#555555' }}>
+                                  {t.name}
+                                </div>
+                                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2, lineHeight: 1.3 }}>
+                                  {t.mechanism.length > 35 ? t.mechanism.slice(0, 35) + '…' : t.mechanism}
+                                </div>
+                                <div style={{ display: 'flex', gap: 8, marginTop: 4, fontSize: 10, color: 'var(--text-dim)' }}>
+                                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                                    {t.costRange}
+                                  </span>
+                                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                    {t.downtime}
+                                  </span>
+                                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                                    {t.frequency}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      });
+                    })()}
                   </div>
                   <div style={{ padding: '6px 16px 12px' }}>
                     <button onClick={() => setActiveTab('consult')} style={{
@@ -1961,39 +1970,33 @@ export default function App() {
             })()}
 
             {/* ── Skin Consultant CTA ── */}
-            <button onClick={() => setActiveTab('consult')} style={{
-              width: '100%', padding: '14px 0', borderRadius: colorMode === 'light' ? 12 : 'var(--btn-radius)', border: 'none',
-              background: colorMode === 'light' ? '#81E4BD' : 'linear-gradient(135deg, rgba(240,144,112,0.12), rgba(240,144,112,0.12))',
-              backdropFilter: colorMode === 'light' ? 'none' : 'var(--card-backdrop)', WebkitBackdropFilter: colorMode === 'light' ? 'none' : 'var(--card-backdrop)',
-              color: colorMode === 'light' ? '#fff' : '#ADEBB3', fontSize: 15, fontWeight: 700, cursor: 'pointer',
-              fontFamily: 'inherit', marginBottom: 14,
-              boxShadow: 'none',
-              animation: 'fadeUp 0.5s ease-out 1.25s both',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={colorMode === 'light' ? '#fff' : '#ADEBB3'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-              </svg>
-              루아에게 물어보기
-            </button>
-
-            {/* ── Re-measure ── */}
-            {!saved && (
-              <button onClick={handleSave} style={{
-                marginBottom: 10, width: '100%', padding: 14, borderRadius: 'var(--btn-radius)', border: 'none',
-                background: 'var(--btn-primary-bg)',
+            <div style={{ display: 'flex', gap: 10, marginBottom: 10, animation: 'fadeUp 0.5s ease-out 1.25s both' }}>
+              <button onClick={() => setActiveTab('consult')} style={{
+                flex: 1, padding: 14, borderRadius: 12, fontFamily: 'inherit',
+                background: 'var(--bg-card)', border: '1px solid var(--border-subtle)',
+                color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
                 boxShadow: 'none',
-                color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
-                animation: 'fadeUp 0.5s ease-out 1.35s both',
-              }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><SaveIcon size={18} /></span> 이 결과 기록하기</button>
-            )}
+              }}>루아에게 물어보기</button>
+              {!saved && (
+                <button onClick={handleSave} style={{
+                  flex: 1, padding: 14, borderRadius: 12, fontFamily: 'inherit',
+                  background: 'var(--bg-card)', border: '1px solid var(--border-subtle)',
+                  color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                  boxShadow: 'none',
+                }}>이 결과 기록하기</button>
+              )}
+            </div>
             <button onClick={reset} style={{
-              width: '100%', padding: 14, borderRadius: 'var(--btn-radius)', fontFamily: 'inherit',
+              width: '100%', padding: 14, borderRadius: 12, fontFamily: 'inherit',
               background: 'var(--bg-card)', border: '1px solid var(--border-subtle)',
-              backdropFilter: 'var(--card-backdrop)', WebkitBackdropFilter: 'var(--card-backdrop)',
               color: 'var(--text-secondary)', fontSize: 15, fontWeight: 600, cursor: 'pointer',
+              boxShadow: 'none',
               animation: 'fadeUp 0.5s ease-out 1.4s both',
-            }}>🔄 다시 측정하기</button>
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="url(#refreshGrad)" strokeWidth="3" strokeLinecap="round"><defs><linearGradient id="refreshGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#6DD8A8"/><stop offset="100%" stopColor="#81E4BD"/></linearGradient></defs><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+              다시 측정하기
+            </button>
 
             <p style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-muted)', marginTop: 14, marginBottom: 0 }}>
               AI 추정치이며 의료 진단이 아닙니다 · 루아 © 2026

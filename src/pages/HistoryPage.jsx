@@ -28,7 +28,7 @@ import { getProfile } from '../storage/ProfileStorage';
 import AiInsightCard from '../components/AiInsightCard';
 import BeforeAfterSlider from '../components/BeforeAfterSlider';
 import DailyMission from '../components/DailyMission';
-import { ChartIcon, CameraIcon, MicroscopeIcon, SparkleIcon, DiamondIcon, DropletIcon, RulerIcon, PaletteIcon, LotionIcon, EyeIcon, BubbleIcon, TargetIcon, ClockIcon } from '../components/icons/PastelIcons';
+import { ChartIcon, CameraIcon, MicroscopeIcon, SparkleIcon, DiamondIcon, DropletIcon, RulerIcon, PaletteIcon, LotionIcon, EyeIcon, BubbleIcon, TargetIcon, ClockIcon, LuaMiniIcon } from '../components/icons/PastelIcons';
 
 // ===== MINI LINE GRAPH (Canvas-based, no dependencies) =====
 function TrendGraph({ data, color = '#ADEBB3', height = 160, metricKey = 'skinAge', inverse = false, showAllLabels = false }) {
@@ -208,11 +208,11 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
   const graphOptions = [
     { key: 'skinAge', label: '피부나이', color: '#ADEBB3', inverse: true },
     { key: 'overallScore', label: '종합점수', color: '#ADEBB3', inverse: false },
-    { key: 'moisture', label: '수분도', color: '#4FC3F7', inverse: false },
-    { key: 'wrinkleScore', label: '주름', color: '#9575CD', inverse: false },
-    { key: 'elasticityScore', label: '탄력', color: '#F06292', inverse: false },
-    { key: 'textureScore', label: '피부결', color: '#7986CB', inverse: false },
-    { key: 'darkCircleScore', label: '다크서클', color: '#78909C', inverse: false },
+    { key: 'moisture', label: '수분도', color: '#A8DEFF', inverse: false },
+    { key: 'wrinkleScore', label: '주름', color: '#F5D0B8', inverse: false },
+    { key: 'elasticityScore', label: '탄력', color: '#FFD080', inverse: false },
+    { key: 'textureScore', label: '피부결', color: '#FFB0C8', inverse: false },
+    { key: 'darkCircleScore', label: '다크서클', color: '#C8B8E8', inverse: false },
   ];
   const currentGraphOption = graphOptions.find(o => o.key === graphMetric) || graphOptions[0];
 
@@ -1031,19 +1031,19 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
   const grade = getGrade(record.overallScore);
 
   const agingMetrics = [
-    { label: '주름', value: record.wrinkleScore, icon: <RulerIcon size={16} />, color: '#9575CD' },
-    { label: '탄력', value: record.elasticityScore, icon: <DiamondIcon size={16} />, color: '#F06292' },
-    { label: '피부결', value: record.textureScore, icon: <LotionIcon size={16} />, color: '#7986CB' },
-    { label: '모공', value: record.poreScore, icon: <MicroscopeIcon size={16} />, color: '#4DB6AC' },
-    { label: '색소', value: record.pigmentationScore, icon: <PaletteIcon size={16} />, color: '#FF8A65' },
+    { label: '피부결', value: record.textureScore, icon: <LotionIcon size={16} />, color: '#FFB0C8' },
+    { label: '탄력', value: record.elasticityScore, icon: <DiamondIcon size={16} />, color: '#FFD080' },
+    { label: '주름', value: record.wrinkleScore, icon: <RulerIcon size={16} />, color: '#F5D0B8' },
+    { label: '모공', value: record.poreScore, icon: <MicroscopeIcon size={16} />, color: '#E8D8C8' },
+    { label: '색소', value: record.pigmentationScore, icon: <PaletteIcon size={16} />, color: '#C0A890' },
   ];
 
   const conditionMetrics = [
-    { label: '수분도', value: record.moisture, icon: <DropletIcon size={16} />, color: '#4FC3F7', unit: '%' },
-    { label: '피부톤', value: record.skinTone, icon: <SparkleIcon size={16} />, color: '#FFB74D' },
-    { label: '다크서클', value: record.darkCircleScore, icon: <EyeIcon size={16} />, color: '#78909C' },
-    { label: '유분', value: record.oilBalance, icon: <BubbleIcon size={16} />, color: '#81C784', unit: '%' },
-    { label: '트러블', value: record.troubleCount, icon: <TargetIcon size={16} />, color: '#E57373', unit: '개' },
+    { label: '수분도', value: record.moisture, icon: <DropletIcon size={16} />, color: '#A8DEFF', unit: '%' },
+    { label: '유분', value: record.oilBalance, icon: <BubbleIcon size={16} />, color: '#F0E0A8', unit: '%' },
+    { label: '피부톤', value: record.skinTone, icon: <SparkleIcon size={16} />, color: '#FFE082' },
+    { label: '트러블', value: record.troubleCount, icon: <TargetIcon size={14} />, color: '#FFB0B0', unit: '개' },
+    { label: '다크서클', value: record.darkCircleScore, icon: <EyeIcon size={16} />, color: '#C8B8E8' },
   ];
 
   return (
@@ -1173,8 +1173,8 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
           border: '1px solid var(--border-subtle)', marginBottom: 12,
           boxShadow: 'none',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(124,92,252,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><MicroscopeIcon size={16} /></div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+            <LuaMiniIcon size={14} />
             <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>피부 타입 정보</span>
           </div>
           {/* Skin type */}
@@ -1247,8 +1247,8 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
               border: '1px solid var(--border-subtle)', marginBottom: 12,
               boxShadow: 'none',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(124,92,252,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><SparkleIcon size={16} /></div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                <LuaMiniIcon size={14} />
                 <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>컨디션 브리핑</span>
                 <div style={{ marginLeft: 'auto', padding: '4px 10px', borderRadius: 8, background: cGrade.bg, border: `1px solid ${cGrade.border}`, display: 'flex', alignItems: 'center', gap: 4 }}>
                   <span style={{ fontSize: 14, fontWeight: 800, color: cGrade.color, fontFamily: 'var(--font-display)' }}>{cGrade.letter}</span>
@@ -1274,8 +1274,8 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
             border: '1px solid var(--border-subtle)', marginBottom: 12,
             boxShadow: 'none',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(124,92,252,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>🧠</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+              <LuaMiniIcon size={14} />
               <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>전체 피부 분석</span>
             </div>
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.75, margin: 0 }}>{record.advice}</p>
@@ -1308,8 +1308,8 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
           marginBottom: 12,
           boxShadow: 'none',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingLeft: 14, marginBottom: 4 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(59,130,246,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>📊</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingLeft: 14, marginBottom: 4 }}>
+            <LuaMiniIcon size={14} />
             <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>컨디션 지표</span>
           </div>
           {conditionMetrics.map((m, i) => (
@@ -1334,8 +1334,8 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
           marginBottom: 12,
           boxShadow: 'none',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingLeft: 14, marginBottom: 4 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(236,72,153,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><DiamondIcon size={16} /></div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingLeft: 14, marginBottom: 4 }}>
+            <LuaMiniIcon size={14} />
             <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>노화 지표</span>
           </div>
           {agingMetrics.map((m, i) => (
