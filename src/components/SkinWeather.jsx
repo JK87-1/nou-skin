@@ -155,7 +155,7 @@ export default function SkinWeather({ skinResult }) {
           <div style={{
             display: 'flex', alignItems: 'center', gap: 4,
             background: 'var(--bg-card)', border: '1px solid var(--border-light)',
-            borderRadius: 12, padding: '6px 10px', fontSize: 11, color: 'var(--text-secondary)',
+            borderRadius: 999, padding: '6px 14px', fontSize: 11, color: 'var(--text-secondary)',
           }}>
             📍 {weather.location}
           </div>
@@ -180,15 +180,15 @@ export default function SkinWeather({ skinResult }) {
 
       {/* ── Weather Overview Card ── */}
       <div style={{
-        background: 'linear-gradient(135deg, rgba(56,189,248,0.08), rgba(240,144,112,0.06), rgba(240,144,112,0.04))',
-        borderRadius: 24, border: '1px solid rgba(56,189,248,0.12)', padding: 20,
+        background: 'linear-gradient(135deg, rgba(135,206,235,0.3), rgba(152,232,193,0.3), rgba(255,243,176,0.3))',
+        borderRadius: 24, border: 'none', padding: 20,
         position: 'relative', overflow: 'hidden',
         marginBottom: 12, animation: 'swFadeInUp 0.5s ease 0.05s both',
       }}>
         {/* Glow */}
         <div style={{
           position: 'absolute', top: -30, right: -30, width: 140, height: 140,
-          background: 'radial-gradient(circle, rgba(56,189,248,0.1) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(135,206,235,0.12) 0%, transparent 70%)',
           pointerEvents: 'none',
         }} />
 
@@ -199,13 +199,13 @@ export default function SkinWeather({ skinResult }) {
               <span style={{ fontSize: 52, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>{weather.temp}</span>
               <span style={{ fontSize: 20, color: 'var(--text-muted)', marginTop: 6 }}>°C</span>
             </div>
-            <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}><PastelIcon emoji={weather.conditionIcon} size={14} /> {weather.condition}</div>
+            <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ fontSize: 14 }}>{weather.conditionIcon}</span> {weather.condition}</div>
             <div style={{ fontSize: 12, color: 'var(--text-dim)', marginTop: 2 }}>최저 {weather.tempMin}° / 최고 {weather.tempMax}°</div>
             <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 2 }}>{weather.date}</div>
           </div>
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 56, filter: 'drop-shadow(0 4px 12px rgba(56,189,248,0.2))', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <PastelIcon emoji={weather.conditionIcon} size={56} />
+              {weather.conditionIcon}
             </div>
             <div style={{ fontSize: 10, color: 'var(--text-dim)', marginTop: 4 }}>바람 {weather.wind}km/h</div>
           </div>
@@ -222,7 +222,7 @@ export default function SkinWeather({ skinResult }) {
               animation: `swFadeIn 0.3s ease ${i * 0.08}s both`,
             }}>
               <div style={{ fontSize: 10, color: 'var(--text-dim)', marginBottom: 4 }}>{f.time}</div>
-              <div style={{ fontSize: 20, marginBottom: 2, display: 'flex', justifyContent: 'center' }}><PastelIcon emoji={f.icon} size={20} /></div>
+              <div style={{ fontSize: 20, marginBottom: 2, display: 'flex', justifyContent: 'center' }}>{f.icon}</div>
               <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>{f.temp}°</div>
               {f.uv > 0 && (
                 <div style={{ fontSize: 9, color: uvColor(f.uv), marginTop: 2 }}>UV {f.uv}</div>
@@ -237,42 +237,13 @@ export default function SkinWeather({ skinResult }) {
         display: 'flex', gap: 8, marginBottom: 16,
         animation: 'swFadeInUp 0.5s ease 0.1s both',
       }}>
-        {/* UV */}
-        <div style={{
-          flex: 1, padding: 14, borderRadius: 18,
-          background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-light)',
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>자외선</span>
-            <span style={{
-              fontSize: 9, fontWeight: 600, color: uvColor(weather.uv),
-              background: `${uvColor(weather.uv)}15`, padding: '2px 6px', borderRadius: 6,
-            }}>{weather.uvLabel}</span>
-          </div>
-          <div style={{ fontSize: 24, fontWeight: 700, color: uvColor(weather.uv), marginBottom: 8 }}>{weather.uv}</div>
-          {/* UV meter */}
-          <div style={{ display: 'flex', gap: 2, alignItems: 'flex-end' }}>
-            {Array.from({ length: 11 }, (_, i) => {
-              const barColor = i <= 2 ? '#34d399' : i <= 5 ? '#F0B870' : i <= 7 ? '#f97316' : '#ef4444';
-              return (
-                <div key={i} style={{
-                  width: 6, borderRadius: 2,
-                  height: 8 + i * 2.5,
-                  background: i < weather.uv ? barColor : 'var(--bg-card-hover)',
-                  transition: 'background 0.3s',
-                }} />
-              );
-            })}
-          </div>
-        </div>
-
         {/* Humidity */}
         {(() => {
           const hi = humidityInfo(weather.humidity);
           return (
             <div style={{
               flex: 1, padding: 14, borderRadius: 18,
-              background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-light)',
+              background: 'linear-gradient(135deg, rgba(135,206,235,0.2), rgba(152,232,193,0.2))', border: 'none',
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                 <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>습도</span>
@@ -282,7 +253,7 @@ export default function SkinWeather({ skinResult }) {
                 }}>{hi.label}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
-                <span style={{ fontSize: 24, fontWeight: 700, color: hi.color }}>{weather.humidity}</span>
+                <span style={{ fontSize: 24, fontWeight: 700, color: hi.color, filter: 'brightness(0.7)' }}>{weather.humidity}</span>
                 <span style={{ fontSize: 12, color: 'var(--text-dim)', marginBottom: 2 }}>%</span>
               </div>
             </div>
@@ -295,7 +266,7 @@ export default function SkinWeather({ skinResult }) {
           return (
             <div style={{
               flex: 1, padding: 14, borderRadius: 18,
-              background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-light)',
+              background: 'linear-gradient(135deg, rgba(152,232,193,0.2), rgba(255,243,176,0.2))', border: 'none',
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                 <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>미세먼지</span>
@@ -305,12 +276,30 @@ export default function SkinWeather({ skinResult }) {
                 }}>{ai.label}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
-                <span style={{ fontSize: 24, fontWeight: 700, color: ai.color }}>{weather.airQuality}</span>
+                <span style={{ fontSize: 24, fontWeight: 700, color: ai.color, filter: 'brightness(0.7)' }}>{weather.airQuality}</span>
                 <span style={{ fontSize: 9, color: 'var(--text-dim)', marginBottom: 3, marginLeft: 2 }}>AQI</span>
               </div>
             </div>
           );
         })()}
+
+        {/* UV */}
+        <div style={{
+          flex: 1, padding: 14, borderRadius: 18,
+          background: 'linear-gradient(135deg, rgba(152,232,193,0.08) 0%, rgba(255,243,176,0.18) 50%, rgba(255,223,140,0.2) 100%)', border: 'none',
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>자외선</span>
+            <span style={{
+              fontSize: 9, fontWeight: 600, color: uvColor(weather.uv),
+              background: `${uvColor(weather.uv)}15`, padding: '2px 6px', borderRadius: 6,
+            }}>{weather.uvLabel}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'baseline' }}>
+            <span style={{ fontSize: 24, fontWeight: 700, color: uvColor(weather.uv), filter: 'brightness(0.7)' }}>{weather.uv}</span>
+            <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-dim)', opacity: 0.35 }}>/10</span>
+          </div>
+        </div>
       </div>
 
       {/* ── Skin Alerts ── */}
@@ -333,9 +322,9 @@ export default function SkinWeather({ skinResult }) {
               <div key={alert.id} style={{
                 marginBottom: 8,
                 background: isOpen
-                  ? `linear-gradient(135deg, ${alert.color}08, ${alert.color}04)`
-                  : 'rgba(255,255,255,0.02)',
-                border: `1px solid ${isOpen ? `${alert.color}20` : 'rgba(255,255,255,0.05)'}`,
+                  ? 'rgba(255,255,255,0.55)'
+                  : 'rgba(255,255,255,0.5)',
+                border: 'none',
                 borderRadius: 20, overflow: 'hidden',
                 animation: `swFadeInUp 0.4s ease ${i * 0.08}s both`,
                 transition: 'background 0.3s, border-color 0.3s',
@@ -350,7 +339,7 @@ export default function SkinWeather({ skinResult }) {
                 >
                   <div style={{
                     width: 44, height: 44, borderRadius: 14, flexShrink: 0,
-                    background: `${alert.color}15`,
+                    background: 'transparent',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 22,
                   }}><PastelIcon emoji={alert.icon} size={22} /></div>
@@ -424,8 +413,8 @@ export default function SkinWeather({ skinResult }) {
             5일간 피부 환경 예보
           </div>
           <div style={{
-            background: 'rgba(255,255,255,0.03)', borderRadius: 20,
-            border: '1px solid var(--border-light)', padding: 6,
+            background: 'rgba(255,255,255,0.5)', borderRadius: 20,
+            border: 'none', padding: 6,
           }}>
             {weather.weekForecast.map((day, i) => {
               const ht = weekHumidityTag(day.humidity);
@@ -440,7 +429,7 @@ export default function SkinWeather({ skinResult }) {
                   animation: `swFadeInUp 0.3s ease ${i * 0.06}s both`,
                 }}>
                   <span style={{ fontSize: 13, color: 'var(--text-muted)', width: 22, flexShrink: 0 }}>{day.day}</span>
-                  <span style={{ fontSize: 22, width: 30, textAlign: 'center', flexShrink: 0, display: 'inline-flex', justifyContent: 'center' }}><PastelIcon emoji={day.icon} size={22} /></span>
+                  <span style={{ fontSize: 22, width: 30, textAlign: 'center', flexShrink: 0, display: 'inline-flex', justifyContent: 'center' }}>{day.icon}</span>
                   {/* Temp range bar */}
                   <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ fontSize: 12, color: 'var(--text-dim)', width: 28, textAlign: 'right' }}>{day.min}°</span>
@@ -450,7 +439,7 @@ export default function SkinWeather({ skinResult }) {
                     }}>
                       <div style={{
                         position: 'absolute', height: '100%', borderRadius: 2,
-                        background: 'linear-gradient(90deg, #38bdf8, #ADEBB3)',
+                        background: 'linear-gradient(90deg, #87CEEB, #98E8C1, #FFF3B0)',
                         left: `${Math.max(0, Math.min(barLeft, 85))}%`,
                         width: `${Math.min(barWidth, 100 - barLeft)}%`,
                       }} />
@@ -471,14 +460,14 @@ export default function SkinWeather({ skinResult }) {
 
       {/* ── Seasonal Guide ── */}
       <div style={{
-        background: 'linear-gradient(135deg, rgba(56,189,248,0.06), rgba(240,144,112,0.04), rgba(240,144,112,0.03))',
-        borderRadius: 22, border: '1px solid rgba(56,189,248,0.1)', padding: 18,
+        background: 'rgba(255,182,193,0.2)',
+        borderRadius: 22, border: 'none', padding: 18,
         marginBottom: 16, animation: 'swFadeInUp 0.5s ease 0.3s both',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
           <div style={{
             width: 32, height: 32, borderRadius: 10, fontSize: 18,
-            background: 'var(--bg-card-hover)',
+            background: 'transparent',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}><PastelIcon emoji={seasonal.icon} size={18} /></div>
           <div>
@@ -505,16 +494,16 @@ export default function SkinWeather({ skinResult }) {
 
       {/* ── Scheduled Notifications ── */}
       {notifications.length > 0 && (
-        <div style={{ marginBottom: 8, animation: 'swFadeInUp 0.5s ease 0.4s both' }}>
+        <div style={{ marginBottom: 8, animation: 'swFadeInUp 0.5s ease 0.4s both', background: 'rgba(255,255,255,0.3)', borderRadius: 20, padding: 16 }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 12 }}>
-            🔔 오늘 예정된 알림
+            오늘 예정된 알림
           </div>
           {notifications.map((n, i) => (
             <div key={i} style={{
               display: 'flex', alignItems: 'flex-start', gap: 12,
               padding: '12px 14px', borderRadius: 14,
               opacity: i === 0 ? 1 : 0.5,
-              background: i === 0 ? 'rgba(240,144,112,0.06)' : 'transparent',
+              background: i === 0 ? 'rgba(255,250,180,0.3)' : 'transparent',
               marginBottom: 4,
               animation: `swFadeInUp 0.3s ease ${0.4 + i * 0.06}s both`,
             }}>
