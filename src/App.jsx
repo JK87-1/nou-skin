@@ -685,17 +685,17 @@ export default function App() {
       {/* Backup Reminder Banner */}
       {showBackupReminder && !showDataRecovery && (
         <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1050,
-          background: 'linear-gradient(135deg, rgba(124,92,252,0.95), rgba(240,144,112,0.95))',
-          padding: '14px 20px',
+          position: 'fixed', top: 12, left: 16, right: 16, zIndex: 1050,
+          background: '#F2F3F5',
+          padding: '16px 18px',
           display: 'flex', alignItems: 'center', gap: 12,
-          backdropFilter: 'blur(10px)',
-          boxShadow: 'none',
+          borderRadius: 16,
+          boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
         }}>
           <span style={{ fontSize: 20, flexShrink: 0 }}>🔒</span>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>데이터 백업을 권장해요</div>
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)', marginTop: 2 }}>만약을 위해 백업 파일을 다운로드하세요</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: '#333' }}>데이터 백업을 권장해요</div>
+            <div style={{ fontSize: 11, color: '#8B95A1', marginTop: 2 }}>만약을 위해 백업 파일을 다운로드하세요</div>
           </div>
           <button
             onClick={() => {
@@ -703,8 +703,8 @@ export default function App() {
               setActiveTab('my');
             }}
             style={{
-              padding: '7px 14px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.3)',
-              background: 'rgba(255,255,255,0.15)', color: '#fff',
+              padding: '7px 14px', borderRadius: 12, border: 'none',
+              background: '#E0E0E0', color: '#333',
               fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
               flexShrink: 0, whiteSpace: 'nowrap',
             }}
@@ -712,7 +712,7 @@ export default function App() {
           <button
             onClick={() => setShowBackupReminder(false)}
             style={{
-              background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)',
+              background: 'none', border: 'none', color: '#999',
               fontSize: 18, cursor: 'pointer', padding: 4, flexShrink: 0, lineHeight: 1,
             }}
           >&times;</button>
