@@ -17,7 +17,7 @@ const BADGE_DATABASE = {
     ],
   },
   score: {
-    label: '점수 달성', icon: '⭐', color: '#FBEC5D',
+    label: '점수 달성', icon: '⭐', color: '#81E4BD',
     badges: [
       { id: 'score_50', icon: '⭐', name: '50점 돌파', desc: '종합 점수 50점 이상 달성', condition: { type: 'score', value: 50 } },
       { id: 'score_60', icon: '⭐', name: '60점 돌파', desc: '종합 점수 60점 이상 달성', condition: { type: 'score', value: 60 } },
@@ -164,7 +164,7 @@ const THEMES = [
   // ── 럭셔리 (Lv 36~43) ────────────────────────────────────
   { id: 'cherryBlossom',     name: 'Cherry Blossom',    kr: '체리 블라썸',      range: [36, 38], accent: '#D85898', sub: '#f9a8d4', pearl: ['#FBE0EE', '#F4A8C8', '#D85898'], cloverTheme: 'cherryBlossom',    desc: '벚꽃이 흩날리는 봄' },
   { id: 'roseGold',          name: 'Rose Gold',         kr: '로즈 골드',        range: [39, 40], accent: '#c48878', sub: '#fbcfe8', pearl: ['#f8ece0', '#dca894', '#c48878'], cloverTheme: 'roseGold',         desc: '로즈골드의 우아한 빛' },
-  { id: 'onyxBlack',         name: 'Onyx Black',        kr: '오닉스 블랙',      range: [41, 43], accent: '#FBEC5D', sub: '#ADEBB3', pearl: ['#C8C8DC', '#5A5A5A', '#141414'], cloverTheme: 'onyxBlack',        desc: '칠흑 속 보랏빛 광채' },
+  { id: 'onyxBlack',         name: 'Onyx Black',        kr: '오닉스 블랙',      range: [41, 43], accent: '#81E4BD', sub: '#ADEBB3', pearl: ['#C8C8DC', '#5A5A5A', '#141414'], cloverTheme: 'onyxBlack',        desc: '칠흑 속 보랏빛 광채' },
   // ── 전설 (Lv 44~50) ──────────────────────────────────────
   { id: 'lunaWhite',         name: 'Luna White',        kr: '루나 화이트',      range: [44, 45], accent: '#9898C0', sub: '#FFF5E8', pearl: ['#FAFAFA', '#E4E4E4', '#CCCCCC'], cloverTheme: 'lunaWhite',        desc: '달의 순백한 빛' },
   { id: 'pureIvory',         name: 'Pure Ivory',        kr: '퓨어 아이보리',    range: [46, 47], accent: '#D8D0A8', sub: '#fef9c3', pearl: ['#FBF8EC', '#EDE8C4', '#D8D0A8'], cloverTheme: 'pureIvory',        desc: '순수한 상아빛 광택' },

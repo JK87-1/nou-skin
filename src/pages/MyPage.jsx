@@ -593,7 +593,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                     <div key={item.label} style={{ textAlign: 'center', position: 'relative' }}>
                       <div style={{
                         width: 44, height: 44, borderRadius: 22,
-                        background: item.highlight ? '#FBEC5D' : '#ddd',
+                        background: item.highlight ? '#81E4BD' : '#ddd',
                         marginBottom: 4,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         boxShadow: 'none',
@@ -608,7 +608,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                       <div style={{
                         fontSize: 9,
                         fontWeight: item.highlight ? 700 : 400,
-                        color: item.highlight ? '#FBEC5D' : 'var(--text-muted)',
+                        color: item.highlight ? '#81E4BD' : 'var(--text-muted)',
                       }}>{item.label}</div>
                       {item.highlight && (
                         <div style={{
@@ -621,7 +621,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                 </div>
               </div>
               <div style={{
-                marginTop: 12, fontSize: 13, color: '#FBEC5D', fontWeight: 600, textAlign: 'center',
+                marginTop: 12, fontSize: 13, color: '#81E4BD', fontWeight: 600, textAlign: 'center',
               }}>
                 "파일에 저장"을 눌러주세요!
               </div>
@@ -666,7 +666,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               }}
               style={{
                 width: '100%', padding: 15, borderRadius: 14, border: 'none',
-                background: 'var(--btn-primary-bg, linear-gradient(135deg, #FBEC5D, #FBEC5D))',
+                background: 'var(--btn-primary-bg, linear-gradient(135deg, #81E4BD, #81E4BD))',
                 color: '#fff', fontSize: 15, fontWeight: 700,
                 cursor: 'pointer', fontFamily: 'inherit',
                 boxShadow: 'none',
@@ -760,7 +760,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               <div style={{ textAlign: 'center', padding: '20px 0' }}>
                 <div style={{
                   width: 32, height: 32, border: '3px solid rgba(240,144,112,0.2)',
-                  borderTopColor: '#FBEC5D', borderRadius: '50%',
+                  borderTopColor: '#81E4BD', borderRadius: '50%',
                   animation: 'spin 0.8s linear infinite',
                   margin: '0 auto 12px',
                 }} />
@@ -990,7 +990,7 @@ function GoalSettingModal({ onClose, showToast }) {
                     flex: 1, padding: '10px 8px', borderRadius: 14,
                     border: '1px solid rgba(240,144,112,0.2)',
                     background: 'rgba(240,144,112,0.06)',
-                    color: '#FBEC5D', fontSize: 12, fontWeight: 600,
+                    color: '#81E4BD', fontSize: 12, fontWeight: 600,
                     cursor: 'pointer', fontFamily: 'inherit',
                   }}
                 >+{p.delta}<br/><span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>{p.label}</span></button>
@@ -1030,7 +1030,7 @@ function GoalSettingModal({ onClose, showToast }) {
                       <div style={{
                         position: 'absolute', top: 0, left: 0,
                         width: `${target}%`, height: '100%', borderRadius: 4,
-                        background: 'linear-gradient(90deg, #E87080, #FBEC5D, #FBEC5D)',
+                        background: 'linear-gradient(90deg, #E87080, #81E4BD, #81E4BD)',
                         opacity: 0.6,
                       }} />
                     </div>

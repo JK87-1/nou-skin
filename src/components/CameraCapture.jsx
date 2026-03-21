@@ -92,7 +92,7 @@ function CameraErrorScreen({ reason, onFallback, onClose, onRetry, colorMode }) 
 
       <button onClick={onFallback} style={{
         width: '100%', maxWidth: 300, padding: 16, borderRadius: isL ? 12 : 14, border: 'none',
-        background: isL ? '#FBEC5D' : 'linear-gradient(135deg, #98FBCB, #FF8C42)',
+        background: isL ? '#81E4BD' : 'linear-gradient(135deg, #98FBCB, #FF8C42)',
         boxShadow: isL ? '0 2px 8px rgba(124,92,252,0.25)' : 'none',
         color: '#fff', fontSize: 16, fontWeight: 700, cursor: 'pointer', marginBottom: 12,
       }}>
@@ -583,7 +583,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
   const isCapturing = status === 'capturing' || status === 'captured';
   const canCapture = isReady || !mediapipeReady;
   const isL = colorMode === 'light';
-  const accentOk = isL ? '#FBEC5D' : '#4CAF50';
+  const accentOk = isL ? '#81E4BD' : '#4CAF50';
 
   return (
     <div style={{
@@ -723,7 +723,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
           style={{
             width: 72, height: 72, borderRadius: '50%',
             background: canCapture
-              ? (isL ? '#FBEC5D' : 'linear-gradient(135deg, #98FBCB, #FF8C42)')
+              ? (isL ? '#81E4BD' : 'linear-gradient(135deg, #98FBCB, #FF8C42)')
               : (isL ? '#EAEBED' : 'rgba(255,255,255,0.15)'),
             border: `4px solid ${canCapture ? '#fff' : (isL ? '#D1D6DB' : 'rgba(255,255,255,0.2)')}`,
             boxShadow: canCapture && isL ? '0 4px 16px rgba(124,92,252,0.3)' : 'none',

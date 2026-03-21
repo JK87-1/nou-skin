@@ -117,7 +117,7 @@ export default function InstallBanner() {
               background: 'linear-gradient(135deg, rgba(240,144,112,0.2), rgba(240,144,112,0.2))',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <span style={{ fontSize: 13, fontWeight: 800, color: '#FBEC5D', fontFamily: "'Outfit', sans-serif", letterSpacing: 2 }}>루아</span>
+              <span style={{ fontSize: 13, fontWeight: 800, color: '#81E4BD', fontFamily: "'Outfit', sans-serif", letterSpacing: 2 }}>루아</span>
             </div>
             <div>
               <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 2px' }}>Safari에서 열어주세요</p>
@@ -186,7 +186,7 @@ export default function InstallBanner() {
             background: 'linear-gradient(135deg, rgba(240,144,112,0.2), rgba(240,144,112,0.2))',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <span style={{ fontSize: 13, fontWeight: 800, color: '#FBEC5D', fontFamily: "'Outfit', sans-serif", letterSpacing: 2 }}>루아</span>
+            <span style={{ fontSize: 13, fontWeight: 800, color: '#81E4BD', fontFamily: "'Outfit', sans-serif", letterSpacing: 2 }}>루아</span>
           </div>
           <div style={{ flex: 1 }}>
             <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 2px' }}>홈 화면에 추가</p>
@@ -209,7 +209,7 @@ export default function InstallBanner() {
               background: 'linear-gradient(135deg, rgba(240,144,112,0.2), rgba(240,144,112,0.2))',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <span style={{ fontSize: 13, fontWeight: 800, color: '#FBEC5D', fontFamily: "'Outfit', sans-serif", letterSpacing: 2 }}>루아</span>
+              <span style={{ fontSize: 13, fontWeight: 800, color: '#81E4BD', fontFamily: "'Outfit', sans-serif", letterSpacing: 2 }}>루아</span>
             </div>
             <div>
               <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 2px' }}>홈 화면에 추가하기</p>

@@ -357,8 +357,8 @@ export default function SoftCloverIcon({
         <ellipse cx="62" cy="100" rx="9" ry="12" fill="white" opacity="0.4" />
 
         {/* 중앙 원 — 민트색 + 약간의 입체감 (1.3배) */}
-        <circle cx="100" cy="100" r="26" fill="#FBEC5D" />
-        <circle cx="100" cy="100" r="26" fill={`url(#${id.centerShade})`} />
+        <circle cx="100" cy="100" r="28.6" fill="#FBEC5D" />
+        <circle cx="100" cy="100" r="28.6" fill={`url(#${id.centerShade})`} />
         <ellipse cx="95" cy="93" rx="8" ry="5" fill="white" opacity="0.4" />
       </g>
     </svg>

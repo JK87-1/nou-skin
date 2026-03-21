@@ -26,7 +26,7 @@ const LIGHT_STOPS = [
   { offset: '88%', color: '#7c66ac' },
   { offset: '100%', color: '#503898' },
 ];
-const DARK_GLOW = { primary: '#FBEC5D', secondary: '#FFD4B8' };
+const DARK_GLOW = { primary: '#81E4BD', secondary: '#FFD4B8' };
 const LIGHT_GLOW = { primary: '#7c3aed', secondary: '#ADEBB3' };
 
 // ── Shared SVG fragments ──
@@ -260,7 +260,7 @@ function AuroraPearl({ id, animated, stops, theme, glow }) {
         </radialGradient>
         {/* Directional auras */}
         <radialGradient id={`${id}-dir-purple`} cx="30%" cy="30%" r="40%">
-          <stop offset="0%" stopColor="#FBEC5D" stopOpacity="0.1" />
+          <stop offset="0%" stopColor="#81E4BD" stopOpacity="0.1" />
           <stop offset="100%" stopColor="transparent" />
         </radialGradient>
         <radialGradient id={`${id}-dir-teal`} cx="70%" cy="70%" r="40%">
@@ -276,7 +276,7 @@ function AuroraPearl({ id, animated, stops, theme, glow }) {
         </linearGradient>
         <linearGradient id={`${id}-aurora2`} x1="100%" y1="0%" x2="0%" y2="100%">
           <stop offset="0%" stopColor="#E06888" stopOpacity="0.12" />
-          <stop offset="50%" stopColor="#FBEC5D" stopOpacity="0.08" />
+          <stop offset="50%" stopColor="#81E4BD" stopOpacity="0.08" />
           <stop offset="100%" stopColor="#67e8f9" stopOpacity="0.06" />
         </linearGradient>
       </defs>
@@ -339,7 +339,7 @@ function CosmicPearl({ id, animated, stops, theme, glow }) {
         </filter>
         {/* Nebula gradients */}
         <radialGradient id={`${id}-neb-purple`} cx="25%" cy="28%" r="35%">
-          <stop offset="0%" stopColor="#FBEC5D" stopOpacity="0.15" />
+          <stop offset="0%" stopColor="#81E4BD" stopOpacity="0.15" />
           <stop offset="100%" stopColor="transparent" />
         </radialGradient>
         <radialGradient id={`${id}-neb-indigo`} cx="75%" cy="68%" r="30%">

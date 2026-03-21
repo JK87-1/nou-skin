@@ -35,15 +35,15 @@
   --glass-inset: inset 0 1px 1px rgba(255,255,255,0.05);
   --glass-accent-inset: inset 0 1px 0 rgba(240,144,112,0.06);
   /* Accents (theme system overrides these dynamically) */
-  --accent-primary: #FBEC5D;
+  --accent-primary: #81E4BD;
   --accent-secondary: #ADEBB3;
-  --accent-gradient: linear-gradient(135deg, #FBEC5D, #E87080, #D05878);
+  --accent-gradient: linear-gradient(135deg, #81E4BD, #E87080, #D05878);
   --text-disabled: rgba(255,255,255,0.15);
   --consult-bg: linear-gradient(180deg, #08080c 0%, #0c0c10 100%);
 
   /* Structural variables (dark defaults) */
   --btn-radius: 50px;
-  --btn-primary-bg: linear-gradient(135deg, #FBEC5D, #E87080, #D05878);
+  --btn-primary-bg: linear-gradient(135deg, #81E4BD, #E87080, #D05878);
   --btn-primary-shadow: 0 4px 20px rgba(240,144,112,0.35), inset 0 1px 1px rgba(255,255,255,0.05);
   --btn-secondary-bg: var(--bg-card);
   --btn-secondary-border: 1px solid var(--border-subtle);
@@ -169,7 +169,7 @@
   line-height: 30px;
   font-size: 20px;
   font-weight: 600;
-  color: #FBEC5D;
+  color: #81E4BD;
   text-align: center;
   letter-spacing: -0.2px;
   margin: 0;
@@ -437,7 +437,7 @@
 .orb-blob-1 {
   width: 55%;
   height: 55%;
-  background: radial-gradient(circle, #FBEC5D, #E87080);
+  background: radial-gradient(circle, #81E4BD, #E87080);
   top: 10%;
   left: 15%;
   animation: orbFloat1 4s ease-in-out infinite;
@@ -445,7 +445,7 @@
 .orb-blob-2 {
   width: 50%;
   height: 50%;
-  background: radial-gradient(circle, #FBEC5D, #FBEC5D);
+  background: radial-gradient(circle, #81E4BD, #81E4BD);
   bottom: 10%;
   right: 10%;
   animation: orbFloat2 5s ease-in-out infinite;
@@ -453,7 +453,7 @@
 .orb-blob-3 {
   width: 45%;
   height: 45%;
-  background: radial-gradient(circle, #FBEC5D, #ADEBB3);
+  background: radial-gradient(circle, #81E4BD, #ADEBB3);
   top: 35%;
   left: 35%;
   animation: orbFloat3 3.5s ease-in-out infinite;
@@ -461,7 +461,7 @@
 .orb-blob-4 {
   width: 40%;
   height: 40%;
-  background: radial-gradient(circle, #ADEBB3, #FBEC5D);
+  background: radial-gradient(circle, #ADEBB3, #81E4BD);
   top: 5%;
   right: 15%;
   animation: orbFloat4 5.5s ease-in-out infinite;
@@ -1591,7 +1591,7 @@
   border-radius: 4px 20px 20px 20px;
 }
 [data-theme="light"] .consult-bubble.user {
-  background: #FBEC5D;
+  background: #81E4BD;
   border: none;
   color: #FFFFFF;
   border-radius: 20px 4px 20px 20px;

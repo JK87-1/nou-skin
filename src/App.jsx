@@ -671,7 +671,7 @@ export default function App() {
                 }}
                 style={{
                   flex: 1, padding: 13, borderRadius: 14, border: 'none',
-                  background: 'linear-gradient(135deg, #FBEC5D, #FBEC5D)',
+                  background: 'linear-gradient(135deg, #81E4BD, #81E4BD)',
                   color: '#fff', fontSize: 14, fontWeight: 700,
                   cursor: 'pointer', fontFamily: 'inherit',
                   boxShadow: 'none',
@@ -817,7 +817,7 @@ export default function App() {
           <div style={{ padding: '24px 24px 16px', position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 20, fontWeight: 700, color: '#81E4BD', letterSpacing: 6, fontFamily: 'var(--font-display)' }}>LUA</span>
+                <span style={{ fontSize: 20, fontWeight: 700, color: '#81E4BD', letterSpacing: 6, fontFamily: "'Fredoka', sans-serif" }}>LUA</span>
                 <span style={{ fontSize: 9, color: colorMode === 'light' ? 'var(--text-dim)' : activeThemeColors.accent, background: colorMode === 'light' ? 'var(--chip-bg)' : `${activeThemeColors.accent}1a`, padding: '2px 8px', borderRadius: 'var(--chip-radius)', fontWeight: 500 }}>Beta</span>
               </div>
             </div>
@@ -1076,7 +1076,7 @@ export default function App() {
                 border: isL ? 'none' : '1px solid rgba(255,255,255,0.08)',
                 background: isBlocked
                   ? (isL ? '#D1D6DB' : 'linear-gradient(135deg, #444, #333)')
-                  : (isL ? '#FBEC5D' : 'linear-gradient(135deg, #FBEC5D, #E87080, #D05878)'),
+                  : (isL ? '#81E4BD' : 'linear-gradient(135deg, #81E4BD, #E87080, #D05878)'),
                 backdropFilter: isL ? 'none' : 'blur(12px)', WebkitBackdropFilter: isL ? 'none' : 'blur(12px)',
                 boxShadow: 'none',
                 color: '#fff', fontSize: 16, fontWeight: 700,
@@ -1170,7 +1170,7 @@ export default function App() {
               <div style={{
                 height: '100%', borderRadius: 3,
                 background: isL
-                  ? 'linear-gradient(90deg, #FBEC5D, #FBEC5D)'
+                  ? 'linear-gradient(90deg, #81E4BD, #81E4BD)'
                   : `linear-gradient(90deg, ${activeThemeColors.pearl[2]}, ${activeThemeColors.pearl[1]}, ${activeThemeColors.accent})`,
                 width: `${Math.min(progress, 100)}%`,
                 transition: 'width 0.4s',
@@ -1356,7 +1356,7 @@ export default function App() {
                     background: '#F2F4F6', borderRadius: 16,
                   }}>
                     <div style={{ fontSize: 11, color: '#8B95A1', marginBottom: 6 }}>종합 점수</div>
-                    <div style={{ fontSize: 30, fontWeight: 700, color: '#FBEC5D', fontFamily: 'var(--font-display)', lineHeight: 1 }}>
+                    <div style={{ fontSize: 30, fontWeight: 700, color: '#81E4BD', fontFamily: 'var(--font-display)', lineHeight: 1 }}>
                       <AnimatedNumber target={result.overallScore} />
                       <span style={{ fontSize: 14, fontWeight: 500, color: '#FFD4B8', marginLeft: 2 }}>점</span>
                     </div>
@@ -1560,7 +1560,7 @@ export default function App() {
             {/* ── 오늘의 피부 컨디션 ── */}
             {conditionBriefing && (() => {
               const score = result.conditionScore ?? result.overallScore;
-              const grade = score >= 85 ? { letter: 'S', label: '최상', color: '#FFD700', bg: 'rgba(255,215,0,0.15)', border: 'rgba(255,215,0,0.3)' }
+              const grade = score >= 85 ? { letter: 'S', label: '최상', color: '#81E4BD', bg: 'rgba(125,255,192,0.15)', border: 'rgba(125,255,192,0.3)' }
                 : score >= 70 ? { letter: 'A', label: '우수', color: activeThemeColors.accent, bg: `${activeThemeColors.accent}26`, border: `${activeThemeColors.accent}4d` }
                 : score >= 55 ? { letter: 'B', label: '양호', color: '#f59e0b', bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.3)' }
                 : score >= 40 ? { letter: 'C', label: '보통', color: '#8888a0', bg: 'rgba(136,136,160,0.12)', border: 'rgba(136,136,160,0.2)' }
@@ -1580,8 +1580,8 @@ export default function App() {
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <div style={{ padding: '4px 10px', borderRadius: 8, background: 'rgba(124,92,252,0.08)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <span style={{ fontSize: 15, fontWeight: 800, color: '#FBEC5D', fontFamily: 'var(--font-display)' }}>{grade.letter}</span>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: '#FBEC5D' }}>{score}점</span>
+                        <span style={{ fontSize: 15, fontWeight: 800, color: '#81E4BD', fontFamily: 'var(--font-display)' }}>{grade.letter}</span>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: '#81E4BD' }}>{score}점</span>
                       </div>
                     </div>
                   </div>
@@ -1963,7 +1963,7 @@ export default function App() {
             {/* ── Skin Consultant CTA ── */}
             <button onClick={() => setActiveTab('consult')} style={{
               width: '100%', padding: '14px 0', borderRadius: colorMode === 'light' ? 12 : 'var(--btn-radius)', border: 'none',
-              background: colorMode === 'light' ? '#FBEC5D' : 'linear-gradient(135deg, rgba(240,144,112,0.12), rgba(240,144,112,0.12))',
+              background: colorMode === 'light' ? '#81E4BD' : 'linear-gradient(135deg, rgba(240,144,112,0.12), rgba(240,144,112,0.12))',
               backdropFilter: colorMode === 'light' ? 'none' : 'var(--card-backdrop)', WebkitBackdropFilter: colorMode === 'light' ? 'none' : 'var(--card-backdrop)',
               color: colorMode === 'light' ? '#fff' : '#ADEBB3', fontSize: 15, fontWeight: 700, cursor: 'pointer',
               fontFamily: 'inherit', marginBottom: 14,

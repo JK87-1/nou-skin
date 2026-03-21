@@ -101,7 +101,7 @@ export default function RoutinePage() {
           }}>
             <div style={{
               height: '100%', borderRadius: 4,
-              background: 'linear-gradient(90deg, #E87080, #FBEC5D, #FBEC5D)',
+              background: 'linear-gradient(90deg, #E87080, #81E4BD, #81E4BD)',
               width: `${(progress.done / progress.total) * 100}%`,
               transition: 'width 0.4s ease',
             }} />

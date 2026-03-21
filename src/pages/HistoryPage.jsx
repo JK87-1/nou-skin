@@ -616,7 +616,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                             {diff > 0 && (
                               <div style={{
                                 width: 4, height: 4, borderRadius: '50%',
-                                background: '#FBEC5D',
+                                background: '#81E4BD',
                                 boxShadow: 'none',
                                 flexShrink: 0,
                               }} />
@@ -1022,9 +1022,9 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
   const dateStr = `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 ${dayLabels[d.getDay()]}요일${timeStr ? ` ${timeStr}` : ''}`;
 
   const getGrade = (score) => {
-    if (score >= 85) return { letter: 'S', label: '최상', gradient: 'linear-gradient(135deg, #FBEC5D, #98FBCB)', color: '#FBEC5D', bg: 'rgba(251,236,93,0.12)' };
+    if (score >= 85) return { letter: 'S', label: '최상', gradient: 'linear-gradient(135deg, #81E4BD, #98FBCB)', color: '#81E4BD', bg: 'rgba(125,255,192,0.12)' };
     if (score >= 70) return { letter: 'A', label: '우수', gradient: 'linear-gradient(135deg, #ADEBB3, #98FBCB)', color: '#ADEBB3', bg: 'rgba(173,235,179,0.12)' };
-    if (score >= 55) return { letter: 'B', label: '양호', gradient: 'linear-gradient(135deg, #FBEC5D, #ADEBB3)', color: '#FBEC5D', bg: 'rgba(251,236,93,0.12)' };
+    if (score >= 55) return { letter: 'B', label: '양호', gradient: 'linear-gradient(135deg, #81E4BD, #ADEBB3)', color: '#81E4BD', bg: 'rgba(125,255,192,0.12)' };
     return { letter: 'C', label: '관리 필요', gradient: 'linear-gradient(135deg, #BDBDBD, #9E9E9E)', color: '#757575', bg: 'rgba(158,158,158,0.12)' };
   };
 
@@ -1191,7 +1191,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
               </div>
               <span style={{
                 fontSize: 11, fontWeight: 600,
-                color: record.analysisMode === 'hybrid' ? '#FBEC5D' : 'var(--text-muted)',
+                color: record.analysisMode === 'hybrid' ? '#81E4BD' : 'var(--text-muted)',
                 background: record.analysisMode === 'hybrid' ? 'rgba(124,92,252,0.12)' : 'rgba(184,137,110,0.1)',
                 padding: '3px 10px', borderRadius: 10,
               }}>{record.analysisMode === 'hybrid' ? 'AI + CV 하이브리드' : 'CV 비전 분석'}</span>
@@ -1235,8 +1235,8 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
         {/* 컨디션 브리핑 */}
         {(() => {
           const cScore = record.conditionScore ?? record.overallScore;
-          const cGrade = cScore >= 85 ? { letter: 'S', color: '#FFD700', bg: 'rgba(255,215,0,0.15)', border: 'rgba(255,215,0,0.3)' }
-            : cScore >= 70 ? { letter: 'A', color: '#FBEC5D', bg: 'rgba(124,92,252,0.15)', border: 'rgba(124,92,252,0.3)' }
+          const cGrade = cScore >= 85 ? { letter: 'S', color: '#81E4BD', bg: 'rgba(125,255,192,0.15)', border: 'rgba(125,255,192,0.3)' }
+            : cScore >= 70 ? { letter: 'A', color: '#81E4BD', bg: 'rgba(124,92,252,0.15)', border: 'rgba(124,92,252,0.3)' }
             : cScore >= 55 ? { letter: 'B', color: '#f59e0b', bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.3)' }
             : cScore >= 40 ? { letter: 'C', color: '#8888a0', bg: 'rgba(136,136,160,0.12)', border: 'rgba(136,136,160,0.2)' }
             : { letter: 'D', color: '#f06050', bg: 'rgba(240,96,80,0.12)', border: 'rgba(240,96,80,0.2)' };
@@ -1291,7 +1291,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
                   background: 'linear-gradient(135deg, rgba(240,144,112,0.08), rgba(240,144,112,0.04))',
                   border: '1px solid rgba(240,144,112,0.15)',
                 }}>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: '#FBEC5D', marginBottom: 4 }}>AI 정밀 판독</div>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: '#81E4BD', marginBottom: 4 }}>AI 정밀 판독</div>
                   <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>{filtered}</p>
                 </div>
               );

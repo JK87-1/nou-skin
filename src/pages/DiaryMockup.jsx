@@ -32,7 +32,7 @@ const CONDITIONS = RECORDS.map((_, i) => ({
 }));
 
 const PRODUCTS = [
-  { id: 1, name: "시카플라스트 밤 B5+", brand: "라로슈포제", startDay: 1, endDay: null, color: "#FBEC5D" },
+  { id: 1, name: "시카플라스트 밤 B5+", brand: "라로슈포제", startDay: 1, endDay: null, color: "#81E4BD" },
   { id: 2, name: "스네일 뮤신 에센스", brand: "코스알엑스", startDay: 35, endDay: null, color: "#34d399" },
   { id: 3, name: "그린티 세럼", brand: "이니스프리", startDay: 10, endDay: 34, color: "#F0B870" },
 ];
@@ -47,7 +47,7 @@ const CORRELATIONS = [
   { factor: "스트레스", icon: "😰", corr: 0.38, dir: "-", insight: "데이터 수집 중...", source: "manual", dataCount: 15, minRequired: 21 },
 ];
 
-function MiniChart({ data, h = 50, color = "#FBEC5D", markers = [], products = [] }) {
+function MiniChart({ data, h = 50, color = "#81E4BD", markers = [], products = [] }) {
   if (!data || data.length < 2) return null;
   const max = Math.max(...data) + 3, min = Math.min(...data) - 3;
   const range = max - min || 1;
@@ -72,7 +72,7 @@ function MiniChart({ data, h = 50, color = "#FBEC5D", markers = [], products = [
   );
 }
 
-function Bar({ value, max = 1, color = "#FBEC5D", h = 4 }) {
+function Bar({ value, max = 1, color = "#81E4BD", h = 4 }) {
   return (
     <div style={{ height: h, borderRadius: h / 2, background: 'var(--bar-track)', overflow: "hidden" }}>
       <div style={{ width: `${Math.min(100, Math.abs(value / max) * 100)}%`, height: "100%", borderRadius: h / 2, background: color, transition: "width 0.8s ease-out" }} />
@@ -162,7 +162,7 @@ export default function DiaryMockup() {
               flex: 1, padding: '7px 6px', borderRadius: 8,
               border: screen === t.id ? '1.5px solid rgba(240,144,112,0.4)' : '1.5px solid rgba(255,255,255,0.1)',
               background: screen === t.id ? 'rgba(240,144,112,0.15)' : 'transparent',
-              color: screen === t.id ? '#FBEC5D' : '#666',
+              color: screen === t.id ? '#81E4BD' : '#666',
               fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
             }}
           >{t.label}</button>
@@ -408,7 +408,7 @@ export default function DiaryMockup() {
                     아래 항목은 선택이에요 (기록하면 분석이 더 풍부해져요)
                   </div>
 
-                  <QuickSlider icon="😴" label="수면" min={3} max={10} step={0.5} def={7} unit="h" color="#FBEC5D" />
+                  <QuickSlider icon="😴" label="수면" min={3} max={10} step={0.5} def={7} unit="h" color="#81E4BD" />
 
                   {/* Alcohol */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, padding: '8px 0' }}>

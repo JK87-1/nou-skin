@@ -42,7 +42,7 @@ export const ALERT_RULES = [
     condition: (weather) => weather.uv >= 3,
     priority: (weather) => weather.uv >= 6 ? 'high' : 'medium',
     icon: '☀️',
-    color: '#FBEC5D',
+    color: '#81E4BD',
     title: (weather) => `자외선 지수 ${weather.uvLabel}`,
     subtitle: (weather, skin) => `UV ${weather.uv} · 색소 점수 ${skin.pigment}점`,
     description: (weather, skin) =>

@@ -281,13 +281,13 @@ export default function DailyMission() {
           }}>
             <div style={{
               fontSize: isLight ? 11 : 10,
-              color: day.isToday ? (isLight ? '#8B95A1' : '#FBEC5D') : 'var(--text-muted)',
+              color: day.isToday ? (isLight ? '#8B95A1' : '#81E4BD') : 'var(--text-muted)',
               fontWeight: 600, marginBottom: 2,
             }}>{day.dayLabel}</div>
             <div style={{
               fontSize: isLight ? 15 : 13, fontWeight: 700,
               color: day.isToday
-                ? (isLight ? '#FBEC5D' : 'var(--text-primary)')
+                ? (isLight ? '#81E4BD' : 'var(--text-primary)')
                 : day.completed ? (isLight ? '#22C55E' : '#34d399') : (isLight ? '#191F28' : 'var(--text-dim)'),
             }}>
               {new Date(day.date).getDate()}
@@ -305,7 +305,7 @@ export default function DailyMission() {
             )}
             {day.isToday && (
               <div style={{
-                width: 4, height: 4, borderRadius: '50%', background: isLight ? '#FBEC5D' : '#ADEBB3',
+                width: 4, height: 4, borderRadius: '50%', background: isLight ? '#81E4BD' : '#ADEBB3',
                 margin: '4px auto 0',
               }} />
             )}
@@ -332,7 +332,7 @@ export default function DailyMission() {
           <svg width="50" height="50" viewBox="0 0 50 50">
             <circle cx="25" cy="25" r="22" fill="none" stroke={isLight ? '#F2F3F5' : 'var(--border-light)'} strokeWidth="4" />
             <circle cx="25" cy="25" r="22" fill="none"
-              stroke={isLight ? '#FBEC5D' : 'url(#missionGrad)'} strokeWidth="4"
+              stroke={isLight ? '#81E4BD' : 'url(#missionGrad)'} strokeWidth="4"
               strokeDasharray={`${(completionPct / 100) * 138.23} 138.23`}
               strokeLinecap="round" transform="rotate(-90 25 25)"
               style={{ transition: 'stroke-dasharray 0.6s ease' }}
@@ -341,7 +341,7 @@ export default function DailyMission() {
               <defs>
                 <linearGradient id="missionGrad" x1="0" y1="0" x2="1" y2="1">
                   <stop offset="0%" stopColor="#ADEBB3" />
-                  <stop offset="100%" stopColor="#FBEC5D" />
+                  <stop offset="100%" stopColor="#81E4BD" />
                 </linearGradient>
               </defs>
             )}
@@ -362,7 +362,7 @@ export default function DailyMission() {
           fontSize: 11, fontWeight: 600, borderRadius: isLight ? 8 : 12, padding: '5px 10px',
           ...(isLight ? {
             background: remainingCount === 0 ? 'rgba(34,197,94,0.08)' : 'rgba(124,92,252,0.08)',
-            color: remainingCount === 0 ? '#22C55E' : '#FBEC5D',
+            color: remainingCount === 0 ? '#22C55E' : '#81E4BD',
             border: 'none',
           } : {
             background: remainingCount === 0 ? 'rgba(52,211,153,0.12)' : 'var(--bg-card)',
@@ -379,7 +379,7 @@ export default function DailyMission() {
         {!isLight && (
           <div style={{
             fontSize: 13, fontWeight: 700, marginBottom: 10,
-            background: 'linear-gradient(90deg, #E87080, #FBEC5D, #FBEC5D)',
+            background: 'linear-gradient(90deg, #E87080, #81E4BD, #81E4BD)',
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           }}>★ 오늘의 메인 미션</div>
         )}
@@ -430,7 +430,7 @@ export default function DailyMission() {
                 <span style={{
                   fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: isLight ? 8 : 6,
                   background: isLight ? 'rgba(124,92,252,0.08)' : 'rgba(240,144,112,0.1)',
-                  color: isLight ? '#FBEC5D' : '#FBEC5D',
+                  color: isLight ? '#81E4BD' : '#81E4BD',
                 }}>{missions.main.category}</span>
                 <span style={{
                   fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: isLight ? 8 : 6,
@@ -464,7 +464,7 @@ export default function DailyMission() {
                   <div style={{
                     height: '100%', borderRadius: 3,
                     width: `${((progress.trackProgress || 0) / missions.main.trackTotal) * 100}%`,
-                    background: isLight ? 'linear-gradient(90deg, #FBEC5D, #FBEC5D)' : 'linear-gradient(90deg, #E87080, #FBEC5D, #FBEC5D)',
+                    background: isLight ? 'linear-gradient(90deg, #81E4BD, #81E4BD)' : 'linear-gradient(90deg, #E87080, #81E4BD, #81E4BD)',
                     transition: 'width 0.3s ease',
                   }} />
                 </div>
@@ -629,7 +629,7 @@ export default function DailyMission() {
                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                     <span style={{
                       fontSize: 9, fontWeight: 600, padding: '1px 6px', borderRadius: 5,
-                      background: 'rgba(240,144,112,0.08)', color: '#FBEC5D',
+                      background: 'rgba(240,144,112,0.08)', color: '#81E4BD',
                     }}>{b.category}</span>
                     <span style={{
                       fontSize: 9, fontWeight: 600, padding: '1px 6px', borderRadius: 5,
@@ -697,7 +697,7 @@ export default function DailyMission() {
                     <div style={{
                       height: '100%', borderRadius: 2,
                       width: `${badge.progress * 100}%`,
-                      background: 'linear-gradient(90deg, #E87080, #FBEC5D, #FBEC5D)',
+                      background: 'linear-gradient(90deg, #E87080, #81E4BD, #81E4BD)',
                     }} />
                   </div>
                 )}
@@ -789,10 +789,10 @@ export default function DailyMission() {
           }} style={{
             ...(isLight ? {
               background: 'rgba(124,92,252,0.08)', border: 'none',
-              color: '#FBEC5D',
+              color: '#81E4BD',
             } : {
               background: 'rgba(240,144,112,0.15)', border: 'none',
-              color: '#FBEC5D',
+              color: '#81E4BD',
             }),
             borderRadius: 10, padding: '6px 14px', fontSize: 12, fontWeight: 600,
             cursor: 'pointer', whiteSpace: 'nowrap',

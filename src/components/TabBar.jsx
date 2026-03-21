@@ -1,7 +1,7 @@
 import SoftCloverIcon from './icons/SoftCloverIcon';
 
 export default function TabBar({ activeTab, onTabChange, onMeasure, themeColors, colorMode }) {
-  const accent = themeColors?.accent || '#FBEC5D';
+  const accent = themeColors?.accent || '#81E4BD';
   const c = (active) => active ? '#81E4BD' : 'var(--tab-inactive)';
 
   const leftTabs = [

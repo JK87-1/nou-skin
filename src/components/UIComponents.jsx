@@ -37,8 +37,8 @@ export function ScoreRing({ score, size = 110, label = '종합점수' }) {
       <svg width={size} height={size} style={{ transform: 'rotate(-90deg)', position: 'absolute' }}>
         <defs>
           <linearGradient id="scoreRingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#FBEC5D"/>
-            <stop offset="50%" stopColor="#FBEC5D"/>
+            <stop offset="0%" stopColor="#81E4BD"/>
+            <stop offset="50%" stopColor="#81E4BD"/>
             <stop offset="100%" stopColor="#ADEBB3"/>
           </linearGradient>
         </defs>

@@ -44,7 +44,7 @@ export default function GoalProgressCard({ onTap, colorMode }) {
               {metrics?.[0]?.label || '수분'} {metrics?.[0]?.currentValue || '?'} → {metrics?.[0]?.targetValue || '?'}
             </div>
           </div>
-          <div style={{ fontSize: 22, fontWeight: 700, color: isCompleted ? '#34d399' : '#FBEC5D', flexShrink: 0 }}>
+          <div style={{ fontSize: 22, fontWeight: 700, color: isCompleted ? '#34d399' : '#81E4BD', flexShrink: 0 }}>
             {overall}%
           </div>
         </div>
@@ -55,7 +55,7 @@ export default function GoalProgressCard({ onTap, colorMode }) {
             height: '100%', borderRadius: 3,
             background: isCompleted
               ? 'linear-gradient(90deg, #34d399, #10b981)'
-              : 'linear-gradient(90deg, #FBEC5D, #FBEC5D)',
+              : 'linear-gradient(90deg, #81E4BD, #81E4BD)',
             transition: 'width 0.6s ease',
           }} />
         </div>
@@ -125,7 +125,7 @@ export default function GoalProgressCard({ onTap, colorMode }) {
                   height: '100%', borderRadius: 3,
                   background: achieved
                     ? 'linear-gradient(90deg, #34d399, #10b981)'
-                    : 'linear-gradient(90deg, #E87080, #FBEC5D, #FBEC5D)',
+                    : 'linear-gradient(90deg, #E87080, #81E4BD, #81E4BD)',
                   transition: 'width 0.6s ease',
                 }} />
               </div>

@@ -16,7 +16,7 @@ export const TRACKER_CATEGORIES = {
   '클렌저':   { emoji: '🫧', color: '#F0C878' },
   '토너':     { emoji: '🍵', color: '#38bdf8' },
   '세럼':     { emoji: '💧', color: '#ADEBB3' },
-  '에센스':   { emoji: '✨', color: '#FBEC5D' },
+  '에센스':   { emoji: '✨', color: '#81E4BD' },
   '크림':     { emoji: '🧴', color: '#E06888' },
   '선크림':   { emoji: '☀️', color: '#F0B870' },
   '마스크팩': { emoji: '🎭', color: '#34d399' },

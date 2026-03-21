@@ -653,7 +653,7 @@ export default function RoutineTracker({ colorMode, themeColors, onBack }) {
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   const isLight = colorMode === 'light';
-  const accent = themeColors?.accent || '#FBEC5D';
+  const accent = themeColors?.accent || '#81E4BD';
   const getCat = (cat) => TRACKER_CATEGORIES[cat] || TRACKER_CATEGORIES['기타'];
 
   // 루틴 데이터

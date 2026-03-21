@@ -95,7 +95,7 @@ export default function AiInsightCard() {
           <div style={{ fontSize: 13, color: '#8B95A1' }}>AI 인사이트</div>
           <div style={{ fontSize: 14, color: '#4E5968', marginTop: 4, lineHeight: 1.5 }}>
             {insight}
-            {sub && <span style={{ fontWeight: 600, color: '#FBEC5D' }}> {sub}</span>}
+            {sub && <span style={{ fontWeight: 600, color: '#81E4BD' }}> {sub}</span>}
           </div>
         </div>
       </div>

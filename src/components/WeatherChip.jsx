@@ -117,7 +117,7 @@ export default function WeatherChip({ onTap }) {
       <div style={{ width: 1, height: 16, background: 'var(--border-subtle)' }} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         <div style={{ display: 'flex', gap: 5 }}>
-          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#FBEC5D' }} title="UV" />
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#81E4BD' }} title="UV" />
           <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#ADEBB3' }} title="습도" />
           <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#98FBCB' }} title="미세먼지" />
         </div>
