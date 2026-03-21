@@ -832,7 +832,7 @@ export default function App() {
 
           {/* Eternal Pearl Hero */}
           <div onClick={openCamera} style={{
-            flex: 1, display: 'flex', flexDirection: 'column',
+            flex: colorMode === 'light' ? 'none' : 1, display: 'flex', flexDirection: 'column',
             alignItems: 'center', justifyContent: 'center',
             padding: '0 20px', position: 'relative', zIndex: 2,
             cursor: 'pointer',
