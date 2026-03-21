@@ -380,6 +380,48 @@ export const FlameIcon = ({ size = s }) => (
   </svg>
 );
 
+// 🥶 추위 — 파스텔 아이스블루 온도계+눈
+export const SnowflakeIcon = ({ size = s }) => (
+  <svg width={size} height={size} viewBox="0 0 20 20" fill="none">
+    <defs><linearGradient id="cold-g" x1="50%" y1="0%" x2="50%" y2="100%"><stop offset="0%" stopColor="#BFE9FF"/><stop offset="100%" stopColor="#7FD3FF"/></linearGradient></defs>
+    {/* 온도계 몸통 */}
+    <rect x="8" y="0.5" width="4" height="14.5" rx="2" fill="url(#cold-g)" opacity="0.35"/>
+    {/* 온도계 하단 구 */}
+    <circle cx="10" cy="16" r="3.8" fill="url(#cold-g)" opacity="0.5"/>
+{/* 수은 기둥 (낮은 온도) */}
+    <rect x="8.8" y="10" width="2.4" height="6" rx="1.2" fill="url(#cold-g)"/>
+    <circle cx="10" cy="16" r="2.5" fill="url(#cold-g)"/>
+    {/* 작은 눈 결정 * 모양 */}
+    <g stroke="#BFE9FF" strokeWidth="0.7" strokeLinecap="round" opacity="0.7">
+      <line x1="16" y1="1.5" x2="16" y2="5.5"/><line x1="14" y1="3.5" x2="18" y2="3.5"/><line x1="14.6" y1="2.1" x2="17.4" y2="4.9"/><line x1="17.4" y1="2.1" x2="14.6" y2="4.9"/>
+    </g>
+    <g stroke="#BFE9FF" strokeWidth="0.6" strokeLinecap="round" opacity="0.5">
+      <line x1="3" y1="5" x2="3" y2="8"/><line x1="1.5" y1="6.5" x2="4.5" y2="6.5"/><line x1="1.9" y1="5.4" x2="4.1" y2="7.6"/><line x1="4.1" y1="5.4" x2="1.9" y2="7.6"/>
+    </g>
+    <g stroke="#BFE9FF" strokeWidth="0.6" strokeLinecap="round" opacity="0.45">
+      <line x1="16.5" y1="8" x2="16.5" y2="11"/><line x1="15" y1="9.5" x2="18" y2="9.5"/><line x1="15.4" y1="8.4" x2="17.6" y2="10.6"/><line x1="17.6" y1="8.4" x2="15.4" y2="10.6"/>
+    </g>
+  </svg>
+);
+
+// 🌸 벚꽃 — 파스텔 핑크
+export const CherryBlossomIcon = ({ size = s }) => {
+  const r = 7.5;
+  const petals = [0, 72, 144, 216, 288].map(a => {
+    const rad = (a - 90) * Math.PI / 180;
+    return { cx: 12 + Math.cos(rad) * r, cy: 12 + Math.sin(rad) * r, rot: a };
+  });
+  return (
+    <svg width={size} height={size} viewBox="-1 -1 26 26" fill="none">
+      <defs><radialGradient id="blossom-g" cx="50%" cy="40%" r="55%"><stop offset="0%" stopColor="#FFF0F3"/><stop offset="100%" stopColor="#FFB0C8"/></radialGradient></defs>
+      {petals.map((p, i) => (
+        <ellipse key={i} cx={p.cx} cy={p.cy} rx="4.2" ry="5.5" fill="url(#blossom-g)" transform={`rotate(${p.rot} ${p.cx} ${p.cy})`}/>
+      ))}
+      <circle cx="12" cy="12" r="3" fill="#FFEEF2"/>
+    </svg>
+  );
+};
+
 // Emoji → Pastel Icon 매핑
 export function PastelIcon({ emoji, size = 18 }) {
   const map = {
@@ -424,6 +466,8 @@ export function PastelIcon({ emoji, size = 18 }) {
     '🪄': WandIcon,
     '⏳': ClockIcon,
     '🎂': ClockIcon,
+    '🥶': SnowflakeIcon,
+    '🌸': CherryBlossomIcon,
   };
   const Comp = map[emoji];
   if (Comp) return <Comp size={size} />;

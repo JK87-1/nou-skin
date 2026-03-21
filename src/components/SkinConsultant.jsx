@@ -729,9 +729,8 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
       {/* Input Bar */}
       <div style={{
         padding: kbOpen ? '10px 16px' : '10px 16px calc(10px + env(safe-area-inset-bottom, 0px))',
-        background: 'var(--consult-header-bg)',
-        backdropFilter: 'var(--card-backdrop)', WebkitBackdropFilter: 'var(--card-backdrop)',
-        borderTop: '1px solid var(--border-separator)',
+        background: 'transparent',
+        borderTop: 'none',
         display: 'flex', gap: 8, alignItems: 'flex-end',
         flexShrink: 0, position: 'relative',
       }}>
@@ -756,6 +755,11 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
           </div>
         )}
 
+        <div style={{
+          display: 'flex', gap: 8, alignItems: 'center', flex: 1,
+          background: 'rgba(255,255,255,0.9)', borderRadius: 28,
+          padding: '6px 6px 6px 12px',
+        }}>
         {/* + Attach Button */}
         <button
           className="consult-attach-btn"
@@ -777,15 +781,12 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
           placeholder={isListening ? '듣고 있어요...' : pendingImages.length > 0 ? '메시지와 함께 전송...' : '피부 고민을 물어보세요...'}
           disabled={isLoading}
           style={{
-            flex: 1, minWidth: 0, padding: '12px 18px', borderRadius: 24,
-            border: `1px solid ${isListening ? 'rgba(240,144,112,0.5)' : 'var(--border-subtle)'}`,
-            background: 'var(--bg-card-hover)',
-            fontSize: 14, color: 'var(--text-primary)',
+            flex: 1, minWidth: 0, padding: '10px 4px', borderRadius: 0,
+            border: 'none',
+            background: 'transparent',
+            fontSize: 14, color: '#333',
             fontFamily: 'inherit', outline: 'none',
-            transition: 'border-color 0.2s',
           }}
-          onFocus={(e) => e.target.style.borderColor = 'rgba(240,144,112,0.5)'}
-          onBlur={(e) => { if (!isListening) e.target.style.borderColor = 'var(--border-subtle)'; }}
         />
 
         {/* Mic STT Button */}
@@ -827,6 +828,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
             <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
           </svg>
         </button>
+        </div>
       </div>
     </div>
   );

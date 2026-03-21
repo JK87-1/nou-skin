@@ -49,7 +49,6 @@ export const ALERT_RULES = [
       `자외선 지수가 ${weather.uvLabel} 수준이에요. 색소 점수가 ${skin.pigment}점이라 기미·잡티가 생기기 쉬운 상태예요.`,
     tips: [
       { icon: '🧴', text: 'SPF50+ 선크림을 꼼꼼히 바르세요' },
-      { icon: '⏰', text: '2시간마다 덧바르세요' },
       { icon: '🧢', text: '모자나 양산을 쓰세요' },
     ],
     matchScore: (weather, skin) =>

@@ -65,7 +65,7 @@ function weekHumidityTag(h) {
 export default function SkinWeather({ skinResult }) {
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [openAlert, setOpenAlert] = useState(0);
+  const [openAlert, setOpenAlert] = useState(-1);
 
   const skinProfile = skinResult ? {
     moisture: skinResult.moisture ?? 50,
@@ -380,7 +380,7 @@ export default function SkinWeather({ skinResult }) {
                         marginBottom: 4,
                         animation: `swSlideInRight 0.3s ease ${j * 0.08}s both`,
                       }}>
-                        <span style={{ fontSize: 16, flexShrink: 0, display: 'inline-flex' }}><PastelIcon emoji={tip.icon} size={16} /></span>
+                        <span style={{ fontSize: 16, flexShrink: 0, display: 'inline-flex' }}>{tip.icon}</span>
                         <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{tip.text}</span>
                       </div>
                     ))}
@@ -484,7 +484,7 @@ export default function SkinWeather({ skinResult }) {
               flex: 1, textAlign: 'center', padding: '12px 8px 10px',
               background: 'rgba(255,255,255,0.03)', borderRadius: 14,
             }}>
-              <div style={{ fontSize: 18, marginBottom: 4, display: 'flex', justifyContent: 'center' }}><PastelIcon emoji={kp.icon} size={18} /></div>
+              <div style={{ fontSize: 18, marginBottom: 4, display: 'flex', justifyContent: 'center' }}>{kp.icon}</div>
               <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 2 }}>{kp.label}</div>
               <div style={{ fontSize: 9, color: 'var(--text-dim)', lineHeight: 1.4 }}>{kp.desc}</div>
             </div>
