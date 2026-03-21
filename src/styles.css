@@ -1166,13 +1166,13 @@
   top: 0;
   left: 0;
   right: 0;
-  bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+  bottom: 76px;
   display: flex;
   flex-direction: column;
   background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
   max-width: 430px;
   margin: 0 auto;
-  overflow: hidden;
+  overflow: visible;
   overscroll-behavior: none;
   z-index: 50;
 }

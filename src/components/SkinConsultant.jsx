@@ -728,11 +728,11 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
 
       {/* Input Bar */}
       <div style={{
-        padding: kbOpen ? '2px 16px' : '2px 16px calc(2px + env(safe-area-inset-bottom, 0px))',
-        background: 'none',
+        padding: '8px 16px',
+        background: 'transparent',
         borderTop: 'none',
-        flexShrink: 0, position: 'relative',
-        backdropFilter: 'none', WebkitBackdropFilter: 'none',
+        position: 'absolute', bottom: 6, left: 0, right: 0,
+        zIndex: 60,
       }}>
         {/* Attach Menu */}
         {showAttachMenu && (
@@ -757,8 +757,9 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
 
         <div style={{
           display: 'flex', gap: 8, alignItems: 'center', width: '100%',
-          background: 'rgba(255,255,255,0.9)', borderRadius: 28,
+          background: '#FFFFFF', borderRadius: 28,
           padding: '6px 6px 6px 12px', boxSizing: 'border-box',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
         }}>
         {/* + Attach Button */}
         <button
