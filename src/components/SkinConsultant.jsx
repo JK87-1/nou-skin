@@ -152,7 +152,7 @@ function renderMarkdown(text) {
 
     const parts = cleanLine.split(/(\*\*[^*]+\*\*)/g).map((seg, si) => {
       if (seg.startsWith('**') && seg.endsWith('**')) {
-        return <strong key={si} style={{ color: 'var(--accent-secondary)' }}>{seg.slice(2, -2)}</strong>;
+        return <strong key={si} style={{ color: '#FFF3B0' }}>{seg.slice(2, -2)}</strong>;
       }
       return seg;
     });
