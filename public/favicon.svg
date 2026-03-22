@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#5EC6B0"/>
-      <stop offset="52%" stop-color="#3AA888"/>
-      <stop offset="100%" stop-color="#2A8A70"/>
+      <stop offset="0%" stop-color="#B8FFDE"/>
+      <stop offset="52%" stop-color="#98FBCB"/>
+      <stop offset="100%" stop-color="#78E0B0"/>
     </linearGradient>
     <!-- Gloss overlay -->
     <linearGradient id="gloss" x1="0%" y1="0%" x2="50%" y2="100%">
