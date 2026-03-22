@@ -54,7 +54,7 @@
     </filter>
   </defs>
 
-  <g transform="translate(256,256) scale(2.8) translate(-100,-100)" filter="url(#outerShadow)">
+  <g transform="translate(256,256) scale(2.52) translate(-100,-100)" filter="url(#outerShadow)">
 
     <!-- ═══ PETALS (glass body) ═══ -->
     <!-- Base fill -->
