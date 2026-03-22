@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Monochrome: black clover silhouette on transparent background -->
+  <!-- iOS 18 tinted mode uses the alpha/luminance of this icon -->
+  <g transform="translate(256,256) scale(2.8) translate(-100,-100)">
+    <!-- Leaves -->
+    <ellipse cx="100" cy="62" rx="34" ry="34" fill="#000"/>
+    <ellipse cx="138" cy="100" rx="34" ry="34" fill="#000"/>
+    <ellipse cx="100" cy="138" rx="34" ry="34" fill="#000"/>
+    <ellipse cx="62" cy="100" rx="34" ry="34" fill="#000"/>
+    <!-- Center circle -->
+    <circle cx="100" cy="100" r="30" fill="#000"/>
+  </g>
+</svg>
