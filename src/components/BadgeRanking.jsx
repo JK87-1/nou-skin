@@ -319,7 +319,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
           <div style={{ margin: '0 auto', maxWidth: 240 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
               <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Level {level}</span>
-              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{totalXP - currentLevelXP} / {nextLevelXP - currentLevelXP} XP</span>
+              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{totalXP - currentLevelXP} / {nextLevelXP - currentLevelXP} P</span>
             </div>
             <div style={{ height: 6, background: 'var(--progress-track)', borderRadius: 3, overflow: 'hidden' }}>
               <div style={{
@@ -502,7 +502,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
         <div style={{ animation: 'brFadeInUp 0.5s ease 0.1s both' }}>
           {/* What theme changes — horizontal scroll chips */}
           <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
-            {['액센트 컬러', '루아 아이콘', '분석 오라', '칭호 뱃지', 'XP 바', '랭킹 명함'].map((item, i) => (
+            {['액센트 컬러', '루아 아이콘', '분석 오라', '칭호 뱃지', '포인트 바', '랭킹 명함'].map((item, i) => (
               <div key={i} style={{
                 padding: '5px 10px', borderRadius: 8,
                 background: 'var(--tag-bg)',
@@ -520,6 +520,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
                   onClick={() => {
                     const updated = saveProfile({ activeTheme: t.id });
                     setProfile(updated);
+                    onThemeChange?.(t.id);
                   }}
                   style={{
                     padding: '14px 16px', borderRadius: 16,
@@ -667,7 +668,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
                       }}>나</span>
                     )}
                   </div>
-                  <div style={{ fontSize: 10, color: 'var(--text-dim)', marginTop: 1 }}>Lv.{user.level} · {user.xp.toLocaleString()} XP</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-dim)', marginTop: 1 }}>Lv.{user.level} · {user.xp.toLocaleString()} P</div>
                 </div>
 
                 {/* Score */}
@@ -1235,7 +1236,7 @@ export function BadgeCelebration({ badge, onClose, accent = '#81E4BD' }) {
           display: 'inline-block', padding: '4px 14px', borderRadius: 10,
           background: 'rgba(251,191,36,0.1)', marginBottom: 20,
         }}>
-          <span style={{ fontSize: 14, fontWeight: 700, color: '#F0B870' }}>+100 XP</span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: '#F0B870' }}>+100 P</span>
         </div>
         <br />
         <button
