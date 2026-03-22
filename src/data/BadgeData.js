@@ -1,182 +1,101 @@
 /**
  * 뱃지 & 레벨 시스템 데이터
- * 8개 카테고리 57개 뱃지, 36개 레벨 칭호, 19개 테마
+ * 5개 카테고리 30개 뱃지, 10개 레벨 칭호, 4개 테마
  */
 
 const BADGE_DATABASE = {
   streak: {
-    label: '꾸준함', icon: '🔥', color: '#F0B870',
+    label: '계절의 약속', subtitle: '연속 피부 측정', icon: '🌿', color: '#A8D8B4',
     badges: [
-      { id: 'streak_3', icon: '🔥', name: '3일 연속', desc: '3일 연속 측정 완료', condition: { type: 'streak', value: 3 } },
-      { id: 'streak_7', icon: '🔥', name: '7일 연속', desc: '7일 연속 측정 완료', condition: { type: 'streak', value: 7 } },
-      { id: 'streak_14', icon: '🔥', name: '14일 연속', desc: '14일 연속 측정 완료', condition: { type: 'streak', value: 14 } },
-      { id: 'streak_30', icon: '🔥', name: '30일 연속', desc: '30일 연속 측정 완료', condition: { type: 'streak', value: 30 } },
-      { id: 'streak_50', icon: '🔥', name: '50일 연속', desc: '50일 연속 측정! 대단한 끈기', condition: { type: 'streak', value: 50 } },
-      { id: 'streak_100', icon: '💎', name: '100일 연속', desc: '100일 연속 측정! 전설의 시작', condition: { type: 'streak', value: 100 } },
-      { id: 'streak_200', icon: '👑', name: '200일 연속', desc: '200일 연속! 불멸의 기록', condition: { type: 'streak', value: 200 } },
+      { id: 'streak_3', icon: '🌱', name: '새싹의 속삭임', desc: '피부 측정 3일 연속 달성 · 작은 씨앗이 흙을 밀어올렸어요', condition: { type: 'streak', value: 3 } },
+      { id: 'streak_7', icon: '🍀', name: '일곱 잎 클로버', desc: '피부 측정 7일 연속 달성 · 행운의 잎이 하나씩 피어났어요', condition: { type: 'streak', value: 7 } },
+      { id: 'streak_14', icon: '🦋', name: '나비의 첫 날갯짓', desc: '피부 측정 14일 연속 달성 · 고치 속에서 드디어 날개를 펼쳤어요', condition: { type: 'streak', value: 14 } },
+      { id: 'streak_30', icon: '🌙', name: '한 달의 서약', desc: '피부 측정 30일 연속 달성 · 달이 한 바퀴 도는 동안 약속을 지켰어요', condition: { type: 'streak', value: 30 } },
+      { id: 'streak_100', icon: '❄️', name: '백일의 겨울정원', desc: '피부 측정 100일 연속 달성 · 눈 위에 핀 꽃, 백 번의 아침', condition: { type: 'streak', value: 100 } },
+      { id: 'streak_200', icon: '🏔️', name: '산 너머의 약속', desc: '피부 측정 200일 연속 달성 · 끝이 보이지 않아도 걸어온 길이 빛나요', condition: { type: 'streak', value: 200 } },
     ],
   },
   score: {
-    label: '점수 달성', icon: '⭐', color: '#81E4BD',
+    label: '빛의 여정', subtitle: '피부 종합점수 달성', icon: '🕯️', color: '#F0D8A8',
     badges: [
-      { id: 'score_50', icon: '⭐', name: '50점 돌파', desc: '종합 점수 50점 이상 달성', condition: { type: 'score', value: 50 } },
-      { id: 'score_60', icon: '⭐', name: '60점 돌파', desc: '종합 점수 60점 이상 달성', condition: { type: 'score', value: 60 } },
-      { id: 'score_70', icon: '⭐', name: '70점 돌파', desc: '종합 점수 70점 이상 달성', condition: { type: 'score', value: 70 } },
-      { id: 'score_80', icon: '🌟', name: '80점 돌파', desc: '종합 점수 80점 이상 달성', condition: { type: 'score', value: 80 } },
-      { id: 'score_90', icon: '💫', name: '90점 돌파', desc: '종합 점수 90점 이상 달성', condition: { type: 'score', value: 90 } },
-      { id: 'score_95', icon: '🌠', name: '95점 돌파', desc: '종합 점수 95점 이상! 거의 완벽', condition: { type: 'score', value: 95 } },
+      { id: 'score_50', icon: '🕯️', name: '첫 번째 촛불', desc: '피부 종합점수 50점 이상 달성 · 어둠 속에 작은 빛이 켜졌어요', condition: { type: 'score', value: 50 } },
+      { id: 'score_60', icon: '🌅', name: '새벽빛', desc: '피부 종합점수 60점 이상 달성 · 수평선 너머로 빛이 번져가요', condition: { type: 'score', value: 60 } },
+      { id: 'score_70', icon: '🌤️', name: '구름 위의 햇살', desc: '피부 종합점수 70점 이상 달성 · 구름을 뚫고 따스한 빛이 내려와요', condition: { type: 'score', value: 70 } },
+      { id: 'score_80', icon: '✨', name: '별의 조각', desc: '피부 종합점수 80점 이상 달성 · 하늘에서 별 한 조각이 내려왔어요', condition: { type: 'score', value: 80 } },
+      { id: 'score_90', icon: '🌕', name: '보름달의 축복', desc: '피부 종합점수 90점 이상 달성 · 온전한 달빛이 당신을 비추어요', condition: { type: 'score', value: 90 } },
+      { id: 'score_95', icon: '💎', name: '수정궁의 열쇠', desc: '피부 종합점수 95점 이상 달성 · 거의 완벽한 빛, 수정궁의 문이 열려요', condition: { type: 'score', value: 95 } },
     ],
   },
   improvement: {
-    label: '피부 개선', icon: '📈', color: '#34d399',
+    label: '변신의 숲', subtitle: '피부 개선 & 회춘', icon: '🦋', color: '#B8E0D0',
     badges: [
-      { id: 'improve_5', icon: '📈', name: '첫 번째 변화', desc: '종합 점수 5점 이상 상승', condition: { type: 'improvement', value: 5 } },
-      { id: 'improve_10', icon: '📈', name: '10점 상승', desc: '종합 점수 10점 이상 상승', condition: { type: 'improvement', value: 10 } },
-      { id: 'improve_20', icon: '🚀', name: '대변신', desc: '종합 점수 20점 이상 상승', condition: { type: 'improvement', value: 20 } },
-      { id: 'improve_30', icon: '🚀', name: '30점 대도약', desc: '종합 점수 30점 이상 상승', condition: { type: 'improvement', value: 30 } },
-      { id: 'skinAge_3', icon: '⏳', name: '시간 역행', desc: '피부나이 3세 이상 감소', condition: { type: 'skinAge', value: 3 } },
-      { id: 'skinAge_5', icon: '⏳', name: '회춘의 비밀', desc: '피부나이 5세 이상 감소', condition: { type: 'skinAge', value: 5 } },
-      { id: 'skinAge_10', icon: '⏳', name: '10세 회춘', desc: '피부나이 10세 이상 감소! 경이로운 변화', condition: { type: 'skinAge', value: 10 } },
+      { id: 'improve_5', icon: '🌸', name: '첫 꽃잎', desc: '피부 종합점수 5점 이상 상승 · 봄바람에 첫 꽃잎이 떨어졌어요', condition: { type: 'improvement', value: 5 } },
+      { id: 'improve_10', icon: '🦢', name: '백조의 호수', desc: '피부 종합점수 10점 이상 상승 · 물 위에 비친 모습이 달라졌어요', condition: { type: 'improvement', value: 10 } },
+      { id: 'improve_20', icon: '🌈', name: '무지개 다리', desc: '피부 종합점수 20점 이상 상승 · 비 갠 뒤 무지개가 나타났어요', condition: { type: 'improvement', value: 20 } },
+      { id: 'improve_30', icon: '🦋', name: '황금 나비', desc: '피부 종합점수 30점 이상 상승 · 눈부신 날개를 달고 날아올라요', condition: { type: 'improvement', value: 30 } },
+      { id: 'skinAge_3', icon: '🍃', name: '바람의 시간', desc: '피부나이 3세 이상 감소 · 시간의 바람이 거꾸로 불어요', condition: { type: 'skinAge', value: 3 } },
+      { id: 'skinAge_10', icon: '🪄', name: '마법사의 모래시계', desc: '피부나이 10세 이상 감소 · 모래가 거꾸로 흐르기 시작했어요', condition: { type: 'skinAge', value: 10 } },
     ],
   },
   mission: {
-    label: '미션 달인', icon: '🎯', color: '#f472b6',
+    label: '요정의 심부름', subtitle: '데일리 미션 완료', icon: '🍄', color: '#F4B8D4',
     badges: [
-      { id: 'mission_10', icon: '🎯', name: '미션 10회', desc: '미션 10회 완료', condition: { type: 'missionCount', value: 10 } },
-      { id: 'mission_30', icon: '🎯', name: '미션 30회', desc: '미션 30회 완료', condition: { type: 'missionCount', value: 30 } },
-      { id: 'mission_50', icon: '🎯', name: '미션 50회', desc: '미션 50회 완료', condition: { type: 'missionCount', value: 50 } },
-      { id: 'mission_100', icon: '🎯', name: '미션 100회', desc: '미션 100회 완료! 미션의 왕', condition: { type: 'missionCount', value: 100 } },
-      { id: 'allclear_5', icon: '🏆', name: '올클리어 ×5', desc: '하루 미션 전체 완료 5회', condition: { type: 'allClear', value: 5 } },
-      { id: 'allclear_20', icon: '🏆', name: '올클리어 ×20', desc: '하루 미션 전체 완료 20회', condition: { type: 'allClear', value: 20 } },
-      { id: 'allclear_50', icon: '🏆', name: '올클리어 ×50', desc: '하루 미션 전체 완료 50회! 완벽주의자', condition: { type: 'allClear', value: 50 } },
+      { id: 'mission_10', icon: '🍄', name: '버섯 마을의 첫 심부름', desc: '데일리 미션 누적 10회 완료 · 작은 요정이 열 가지 부탁을 들어줬어요', condition: { type: 'missionCount', value: 10 } },
+      { id: 'mission_30', icon: '🧵', name: '요정의 실타래', desc: '데일리 미션 누적 30회 완료 · 서른 가닥 실로 무언가를 짜고 있어요', condition: { type: 'missionCount', value: 30 } },
+      { id: 'mission_50', icon: '🗝️', name: '비밀의 열쇠', desc: '데일리 미션 누적 50회 완료 · 숨겨진 문이 하나씩 열려요', condition: { type: 'missionCount', value: 50 } },
+      { id: 'mission_100', icon: '👑', name: '요정의 대관식', desc: '데일리 미션 누적 100회 완료 · 백 번의 여정 끝에 왕관을 받아요', condition: { type: 'missionCount', value: 100 } },
+      { id: 'allclear_5', icon: '🌟', name: '완벽한 하루', desc: '하루 미션 전체 완료 5일 달성 · 별들이 모두 제자리에 놓인 날', condition: { type: 'allClear', value: 5 } },
+      { id: 'allclear_20', icon: '🏰', name: '동화의 성', desc: '하루 미션 전체 완료 20일 달성 · 하나도 빠짐없이, 동화가 완성되었어요', condition: { type: 'allClear', value: 20 } },
     ],
   },
   special: {
-    label: '특별 뱃지', icon: '💎', color: '#38bdf8',
+    label: '숨겨진 이야기', subtitle: '특별 활동 달성', icon: '🪞', color: '#A8C8F0',
     badges: [
-      { id: 'first_analysis', icon: '🪞', name: '첫 측정', desc: '첫 번째 피부 분석 완료', condition: { type: 'measureCount', value: 1 } },
-      { id: 'moisture_master', icon: '💧', name: '수분 마스터', desc: '수분 점수 80점 이상 달성', condition: { type: 'itemScore', item: 'moisture', value: 80 } },
-      { id: 'consult_10', icon: '💬', name: '상담 매니아', desc: 'AI 상담 10회 이용', condition: { type: 'consultCount', value: 10 } },
-      { id: 'consult_30', icon: '💬', name: '상담 고수', desc: 'AI 상담 30회 이용', condition: { type: 'consultCount', value: 30 } },
-      { id: 'night_owl', icon: '🌙', name: '나이트 케어', desc: '밤 10시 이후 측정 5회', condition: { type: 'nightMeasure', value: 5 } },
-      { id: 'share_first', icon: '📤', name: '소문내기', desc: '첫 번째 결과 공유', condition: { type: 'shareCount', value: 1 } },
-      { id: 'share_5', icon: '📤', name: '공유 달인', desc: '결과 공유 5회', condition: { type: 'shareCount', value: 5 } },
-      { id: 'share_20', icon: '📤', name: '인플루언서', desc: '결과 공유 20회', condition: { type: 'shareCount', value: 20 } },
-    ],
-  },
-  measurement: {
-    label: '측정 마일스톤', icon: '🪞', color: '#60a5fa',
-    badges: [
-      { id: 'measure_5', icon: '🪞', name: '5회 측정', desc: '피부 측정 5회 완료', condition: { type: 'measureCount', value: 5 } },
-      { id: 'measure_10', icon: '🪞', name: '10회 측정', desc: '피부 측정 10회 완료', condition: { type: 'measureCount', value: 10 } },
-      { id: 'measure_30', icon: '🪞', name: '30회 측정', desc: '피부 측정 30회 완료', condition: { type: 'measureCount', value: 30 } },
-      { id: 'measure_50', icon: '📊', name: '50회 측정', desc: '피부 측정 50회! 데이터 수집가', condition: { type: 'measureCount', value: 50 } },
-      { id: 'measure_100', icon: '📊', name: '100회 측정', desc: '피부 측정 100회! 스킨 연구원', condition: { type: 'measureCount', value: 100 } },
-      { id: 'morning_10', icon: '🌅', name: '모닝 케어러', desc: '오전 5~9시 측정 10회', condition: { type: 'morningMeasure', value: 10 } },
-    ],
-  },
-  mastery: {
-    label: '지표 마스터', icon: '🏅', color: '#f59e0b',
-    badges: [
-      { id: 'master_skinTone', icon: '✨', name: '피부톤 마스터', desc: '피부톤 80점 이상 달성', condition: { type: 'itemScore', item: 'skinTone', value: 80 } },
-      { id: 'master_wrinkle', icon: '📐', name: '주름 마스터', desc: '주름 점수 80점 이상 달성', condition: { type: 'itemScore', item: 'wrinkleScore', value: 80 } },
-      { id: 'master_pore', icon: '🔬', name: '모공 마스터', desc: '모공 점수 80점 이상 달성', condition: { type: 'itemScore', item: 'poreScore', value: 80 } },
-      { id: 'master_elasticity', icon: '💎', name: '탄력 마스터', desc: '탄력 점수 80점 이상 달성', condition: { type: 'itemScore', item: 'elasticityScore', value: 80 } },
-      { id: 'master_pigment', icon: '🎨', name: '색소 마스터', desc: '색소 점수 80점 이상 달성', condition: { type: 'itemScore', item: 'pigmentationScore', value: 80 } },
-      { id: 'master_texture', icon: '🧴', name: '피부결 마스터', desc: '피부결 80점 이상 달성', condition: { type: 'itemScore', item: 'textureScore', value: 80 } },
-      { id: 'master_darkCircle', icon: '👁️', name: '다크서클 마스터', desc: '다크서클 80점 이상 달성', condition: { type: 'itemScore', item: 'darkCircleScore', value: 80 } },
-      { id: 'master_all', icon: '🌈', name: '올 마스터', desc: '모든 지표 70점 이상 달성', condition: { type: 'allMetricsAbove', value: 70 } },
-    ],
-  },
-  milestone: {
-    label: '레벨 달성', icon: '🎖️', color: '#e879f9',
-    badges: [
-      { id: 'level_5', icon: '🎖️', name: 'Lv.5 달성', desc: '레벨 5 도달', condition: { type: 'levelReach', value: 5 } },
-      { id: 'level_10', icon: '🎖️', name: 'Lv.10 달성', desc: '레벨 10 도달', condition: { type: 'levelReach', value: 10 } },
-      { id: 'level_20', icon: '🏅', name: 'Lv.20 달성', desc: '레벨 20 도달', condition: { type: 'levelReach', value: 20 } },
-      { id: 'level_30', icon: '👑', name: 'Lv.30 달성', desc: '레벨 30 도달', condition: { type: 'levelReach', value: 30 } },
-      { id: 'level_40', icon: '🎖️', name: 'Lv.40 달성', desc: '레벨 40 도달', condition: { type: 'levelReach', value: 40 } },
-      { id: 'level_50', icon: '👑', name: 'Lv.50 달성', desc: '레벨 50 도달! 궁극의 경지', condition: { type: 'levelReach', value: 50 } },
-      { id: 'xp_1000', icon: '💰', name: 'XP 1,000', desc: '누적 XP 1,000 돌파', condition: { type: 'totalXP', value: 1000 } },
-      { id: 'xp_5000', icon: '💰', name: 'XP 5,000', desc: '누적 XP 5,000 돌파', condition: { type: 'totalXP', value: 5000 } },
+      { id: 'first_analysis', icon: '🪞', name: '거울 속 첫 만남', desc: '첫 번째 피부 분석 완료 · 거울이 당신에게 처음으로 인사해요', condition: { type: 'measureCount', value: 1 } },
+      { id: 'moisture_master', icon: '💧', name: '이슬의 요정', desc: '수분 지표 80점 이상 달성 · 아침 이슬처럼 촉촉한 빛이 감돌아요', condition: { type: 'itemScore', item: 'moisture', value: 80 } },
+      { id: 'consult_10', icon: '🦉', name: '숲의 현자', desc: 'AI 피부 상담 10회 이용 · 부엉이에게 열 번째 질문을 건넸어요', condition: { type: 'consultCount', value: 10 } },
+      { id: 'night_owl', icon: '🌙', name: '달빛 정원사', desc: '밤 10시 이후 피부 측정 5회 달성 · 달빛 아래 피부를 가꾸는 사람', condition: { type: 'nightMeasure', value: 5 } },
+      { id: 'share_first', icon: '🕊️', name: '첫 번째 편지', desc: '분석 결과 첫 공유 · 비둘기가 소식을 전해요', condition: { type: 'shareCount', value: 1 } },
+      { id: 'share_20', icon: '🌸', name: '꽃잎 편지', desc: '분석 결과 20회 공유 · 꽃잎마다 이야기가 적혀 있어요', condition: { type: 'shareCount', value: 20 } },
     ],
   },
 };
 
-// ===== 36개 칭호 (레벨 1~30 매 레벨 + 32/35/38/40/45/50) =====
+// ===== 10개 칭호 (Lv 1~10) =====
 const LEVEL_TITLES = [
-  { level: 1,  title: '피부 초보',         icon: '🌱', minXP: 0 },
-  { level: 2,  title: '세안 입문자',       icon: '🧼', minXP: 200 },
-  { level: 3,  title: '보습 탐구자',       icon: '💦', minXP: 400 },
-  { level: 4,  title: '스킨케어 견습생',   icon: '📖', minXP: 600 },
-  { level: 5,  title: '스킨케어 입문자',   icon: '🧴', minXP: 800 },
-  { level: 6,  title: '성분 해독가',       icon: '🧪', minXP: 1000 },
-  { level: 7,  title: '루틴 수호자',       icon: '🛡️', minXP: 1200 },
-  { level: 8,  title: '컨디션 리더',       icon: '📊', minXP: 1400 },
-  { level: 9,  title: '피부 탐험가',       icon: '🔍', minXP: 1600 },
-  { level: 10, title: '스킨케어 루키',     icon: '⭐', minXP: 1800 },
-  { level: 11, title: '글로우 시커',       icon: '🔆', minXP: 2000 },
-  { level: 12, title: '글로우 워리어',     icon: '⚔️', minXP: 2200 },
-  { level: 13, title: '피부 전략가',       icon: '📋', minXP: 2400 },
-  { level: 14, title: '뷰티 연구원',       icon: '🔬', minXP: 2600 },
-  { level: 15, title: '뷰티 마스터',       icon: '🎓', minXP: 2800 },
-  { level: 16, title: '루틴 디자이너',     icon: '✏️', minXP: 3000 },
-  { level: 17, title: '스킨 아티스트',     icon: '🎨', minXP: 3200 },
-  { level: 18, title: '글로우 크래프터',   icon: '🌟', minXP: 3400 },
-  { level: 19, title: '피부 연금술사',     icon: '⚗️', minXP: 3600 },
-  { level: 20, title: '스킨 전문가',       icon: '🏅', minXP: 3800 },
-  { level: 21, title: '래디언스 멘토',     icon: '✨', minXP: 4000 },
-  { level: 22, title: '스킨 오라클',       icon: '🔮', minXP: 4200 },
-  { level: 23, title: '뷰티 현자',         icon: '🧙', minXP: 4400 },
-  { level: 24, title: '글로우 스칼라',     icon: '📜', minXP: 4600 },
-  { level: 25, title: '피부 과학자',       icon: '🔭', minXP: 4800 },
-  { level: 26, title: '루미너스 세이지',   icon: '💫', minXP: 5000 },
-  { level: 27, title: '펄 마에스트로',     icon: '💠', minXP: 5200 },
-  { level: 28, title: '스킨 그랜드마스터', icon: '💎', minXP: 5400 },
-  { level: 29, title: '이터널 가디언',     icon: '🛡️', minXP: 5600 },
-  { level: 30, title: '글로우 레전드',     icon: '👑', minXP: 5800 },
-  { level: 32, title: '문라이트 어센던트', icon: '🌕', minXP: 6200 },
-  { level: 35, title: '셀레스티얼 가이드', icon: '🌠', minXP: 6800 },
-  { level: 38, title: '코스믹 하모니스트', icon: '🪐', minXP: 7400 },
-  { level: 40, title: '인피니트 래디언스', icon: '∞',  minXP: 7800 },
-  { level: 45, title: '에테르 아키텍트',   icon: '✦',  minXP: 8800 },
-  { level: 50, title: '유니버설 글로우',   icon: '☀️', minXP: 9800 },
+  { level: 1,  title: '피부 초심자',       icon: '🌱', minXP: 0 },
+  { level: 2,  title: '스킨케어 견습생',   icon: '🧴', minXP: 200 },
+  { level: 3,  title: '루틴 실천가',       icon: '🛡️', minXP: 400 },
+  { level: 4,  title: '피부 분석가',       icon: '🔍', minXP: 800 },
+  { level: 5,  title: '글로우 탐험가',     icon: '🔆', minXP: 1400 },
+  { level: 6,  title: '스킨케어 장인',     icon: '🎓', minXP: 2200 },
+  { level: 7,  title: '피부 연금술사',     icon: '⚗️', minXP: 3200 },
+  { level: 8,  title: '뷰티 현자',         icon: '🧙', minXP: 4600 },
+  { level: 9,  title: '스킨케어 거장',     icon: '👑', minXP: 6400 },
+  { level: 10, title: '영원한 빛',         icon: '☀️', minXP: 9000 },
 ];
 
-// ===== 19개 테마 (레벨 구간별 · 심미적 순서) =====
+// ===== 4개 테마 (취향 선택 · 모드별 2개) =====
 const THEMES = [
   // ── 기본 (Lv 1~8) ─────────────────────────────────────────
-  { id: 'warmSand',  name: 'Moonlight Silver',  kr: '웜 샌드',    range: [1, 3],   accent: '#D0A080', sub: '#fdd8b0', pearl: ['#F0D0B0', '#D0A080', '#906040'], cloverTheme: 'warmSand',  desc: '은빛 달빛의 고요함' },
-  { id: 'obsidianGray',     name: 'Obsidian Gray',     kr: '오브시디언 그레이', range: [4, 5],   accent: '#ADEBB3', sub: '#A0A0BC', pearl: ['#D4D4E4', '#808080', '#383838'], cloverTheme: 'obsidianGray',     desc: '흑요석의 깊은 광택' },
-  { id: 'navySapphire',     name: 'Navy Sapphire',     kr: '네이비 사파이어',   range: [6, 8],   accent: '#6898E8', sub: '#fde0c0', pearl: ['#FFD8C0', '#6898E8', '#2858C8'], cloverTheme: 'navySapphire',     desc: '사파이어의 심해 빛' },
-  // ── 내추럴 (Lv 9~17) ──────────────────────────────────────
-  { id: 'aquaMint',          name: 'Aqua Mint',         kr: '아쿠아 민트',      range: [9, 11],  accent: '#20A898', sub: '#6ee7b7', pearl: ['#B8ECE4', '#70D8C8', '#20A898'], cloverTheme: 'aquaMint',         desc: '상쾌한 민트 바다' },
-  { id: 'deepOcean',         name: 'Deep Ocean',        kr: '딥 오션',          range: [12, 14], accent: '#5098D0', sub: '#7dd3fc', pearl: ['#C0DCF4', '#5098D0', '#1058A8'], cloverTheme: 'deepOcean',        desc: '심해의 푸른 신비' },
-  { id: 'coralBlush',        name: 'Coral Blush',       kr: '코랄 블러쉬',      range: [15, 17], accent: '#E87050', sub: '#fed7aa', pearl: ['#F8D0C0', '#E87050', '#C03828'], cloverTheme: 'coralBlush',       desc: '산호빛 따스한 온기' },
-  // ── 비비드 (Lv 18~26) ─────────────────────────────────────
-  { id: 'sunsetAmber',       name: 'Sunset Amber',      kr: '선셋 앰버',        range: [18, 20], accent: '#E89018', sub: '#fde68a', pearl: ['#F8E8A0', '#E89018', '#A85C00'], cloverTheme: 'sunsetAmber',      desc: '석양의 황금빛 잔영' },
-  { id: 'sunrisePeach',      name: 'Sunrise Peach',     kr: '선라이즈 피치',    range: [21, 23], accent: '#F8C080', sub: '#fdba74', pearl: ['#FEEBD0', '#F8C080', '#E88038'], cloverTheme: 'sunrisePeach',     desc: '여명의 복숭아빛 온기' },
-  { id: 'sunsetPeach',     name: 'Lavender Bloom',    kr: '선셋 피치',      range: [24, 26], accent: '#E88050', sub: '#fde0c0', pearl: ['#FFD8C0', '#FFBF90', '#E88050'], cloverTheme: 'sunsetPeach',    desc: '라벤더 꽃밭의 향기' },
-  // ── 프리미엄 (Lv 27~35) ───────────────────────────────────
-  { id: 'verteDeH',          name: 'Vert de H',         kr: '베르도',           range: [27, 29], accent: '#6A9A6A', sub: '#6EE7B7', pearl: ['#D8EEDC', '#6A9A6A', '#3A6A44'], cloverTheme: 'verteDeH',         desc: '에르메스 그린의 품격' },
-  { id: 'smokyMauve',        name: 'Smoky Mauve',       kr: '스모키 모브',      range: [30, 32], accent: '#906090', sub: '#e879f9', pearl: ['#E8D0E8', '#C098C0', '#906090'], cloverTheme: 'smokyMauve',       desc: '자줏빛 안개의 신비' },
-  { id: 'deepEmerald',       name: 'Deep Emerald',      kr: '딥 에메랄드',      range: [33, 35], accent: '#1A8850', sub: '#34d399', pearl: ['#C8F0DC', '#50C888', '#1A8850'], cloverTheme: 'deepEmerald',      desc: '에메랄드 원석의 깊이' },
-  // ── 럭셔리 (Lv 36~43) ────────────────────────────────────
-  { id: 'cherryBlossom',     name: 'Cherry Blossom',    kr: '체리 블라썸',      range: [36, 38], accent: '#D85898', sub: '#f9a8d4', pearl: ['#FBE0EE', '#F4A8C8', '#D85898'], cloverTheme: 'cherryBlossom',    desc: '벚꽃이 흩날리는 봄' },
-  { id: 'roseGold',          name: 'Rose Gold',         kr: '로즈 골드',        range: [39, 40], accent: '#c48878', sub: '#fbcfe8', pearl: ['#f8ece0', '#dca894', '#c48878'], cloverTheme: 'roseGold',         desc: '로즈골드의 우아한 빛' },
-  { id: 'onyxBlack',         name: 'Onyx Black',        kr: '오닉스 블랙',      range: [41, 43], accent: '#81E4BD', sub: '#ADEBB3', pearl: ['#C8C8DC', '#5A5A5A', '#141414'], cloverTheme: 'onyxBlack',        desc: '칠흑 속 보랏빛 광채' },
-  // ── 전설 (Lv 44~50) ──────────────────────────────────────
-  { id: 'lunaWhite',         name: 'Luna White',        kr: '루나 화이트',      range: [44, 45], accent: '#9898C0', sub: '#FFF5E8', pearl: ['#FAFAFA', '#E4E4E4', '#CCCCCC'], cloverTheme: 'lunaWhite',        desc: '달의 순백한 빛' },
-  { id: 'pureIvory',         name: 'Pure Ivory',        kr: '퓨어 아이보리',    range: [46, 47], accent: '#D8D0A8', sub: '#fef9c3', pearl: ['#FBF8EC', '#EDE8C4', '#D8D0A8'], cloverTheme: 'pureIvory',        desc: '순수한 상아빛 광택' },
-  { id: 'cashmereBeige',     name: 'Cashmere Beige',    kr: '캐시미어 베이지',  range: [48, 49], accent: '#B09878', sub: '#fde68a', pearl: ['#EAE0CC', '#D0BC9C', '#B09878'], cloverTheme: 'cashmereBeige',    desc: '캐시미어의 부드러운 결' },
-  { id: 'champagneGold',     name: 'Champagne Gold',    kr: '샴페인 골드',      range: [50, 50], accent: '#D8B060', sub: '#fef3c7', pearl: ['#FBF3D4', '#F0D898', '#D8B060'], cloverTheme: 'champagneGold',    desc: '최상의 샴페인 골드' },
+  // ── 라이트모드 ──────────────────────────────────────────────
+  { id: 'morningLight',    name: 'Morning Light',    kr: '모닝 라이트',      mode: 'light', accent: '#5EC6B0', sub: '#FEF9C3', pearl: ['#F0FFF8', '#A8E6CF', '#5EC6B0'], cloverTheme: 'morningLight',    desc: '아침 빛의 청량한 민트' },
+  { id: 'springBlossom',   name: 'Spring Blossom',   kr: '스프링 블라썸',    mode: 'light', accent: '#E890B0', sub: '#BAE6FD', pearl: ['#FFF0F5', '#F4A8C8', '#A8D8F0'], cloverTheme: 'springBlossom',   desc: '봄꽃의 신비로운 개화' },
+  // ── 다크모드 ────────────────────────────────────────────────
+  { id: 'midnightMoon',    name: 'Midnight Moon',    kr: '미드나이트 문',    mode: 'dark',  accent: '#9AC8E8', sub: '#FFF5E8', pearl: ['#FFF5E8', '#9AC8E8', '#1A2A40'], cloverTheme: 'midnightMoon',    desc: '달빛 아래 고요한 밤' },
+  { id: 'mysticNight',     name: 'Mystic Night',     kr: '미스틱 나이트',    mode: 'dark',  accent: '#B898D8', sub: '#6898E8', pearl: ['#E0D0F0', '#B898D8', '#1A1830'], cloverTheme: 'mysticNight',     desc: '신비로운 밤의 라벤더' },
 ];
 
 /**
- * XP -> 레벨 계산 (200 XP당 1레벨)
+ * XP -> 레벨 계산 (LEVEL_TITLES의 minXP 기준)
  */
 export function calculateLevel(totalXP) {
-  return Math.floor(totalXP / 200) + 1;
+  let level = 1;
+  for (const lt of LEVEL_TITLES) {
+    if (totalXP >= lt.minXP) level = lt.level;
+    else break;
+  }
+  return level;
 }
 
 /**
@@ -204,13 +123,24 @@ export function getLevelTitleData(level) {
 }
 
 /**
- * 레벨에 맞는 테마 반환
+ * 모드에 맞는 기본 테마 반환
  */
-export function getThemeForLevel(level) {
-  for (let i = THEMES.length - 1; i >= 0; i--) {
-    if (level >= THEMES[i].range[0]) return THEMES[i];
-  }
-  return THEMES[0];
+export function getDefaultTheme(mode = 'light') {
+  return THEMES.find(t => t.mode === mode) || THEMES[0];
+}
+
+/**
+ * ID로 테마 찾기
+ */
+export function getThemeById(id) {
+  return THEMES.find(t => t.id === id) || THEMES[0];
+}
+
+/**
+ * 모드에 해당하는 테마 목록 반환
+ */
+export function getThemesForMode(mode = 'light') {
+  return THEMES.filter(t => t.mode === mode);
 }
 
 export { BADGE_DATABASE, LEVEL_TITLES, THEMES };

@@ -3,7 +3,7 @@
  * 접두사: lua_badge_
  */
 
-import { BADGE_DATABASE, calculateLevel } from '../data/BadgeData';
+import { BADGE_DATABASE, LEVEL_TITLES, calculateLevel } from '../data/BadgeData';
 import { getRecords, getStreak } from './SkinStorage';
 
 const XP_KEY = 'lua_badge_xp';
@@ -53,9 +53,12 @@ export function getLevel() {
 export function getLevelProgress() {
   const xp = getTotalXP();
   const level = calculateLevel(xp);
-  const currentLevelXP = (level - 1) * 200;
-  const nextLevelXP = level * 200;
-  return Math.min(100, Math.round(((xp - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100));
+  const titles = LEVEL_TITLES;
+  const currentIdx = titles.findIndex(t => t.level === level);
+  const currentMinXP = titles[currentIdx]?.minXP || 0;
+  const nextMinXP = titles[currentIdx + 1]?.minXP;
+  if (nextMinXP == null) return 100; // max level
+  return Math.min(100, Math.round(((xp - currentMinXP) / (nextMinXP - currentMinXP)) * 100));
 }
 
 function getXPLog() {
@@ -255,6 +258,7 @@ export function getAllBadgesWithStatus() {
   for (const [catKey, cat] of Object.entries(BADGE_DATABASE)) {
     result[catKey] = {
       label: cat.label,
+      subtitle: cat.subtitle,
       icon: cat.icon,
       color: cat.color,
       badges: cat.badges.map(badge => {

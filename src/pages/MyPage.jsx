@@ -18,7 +18,7 @@ import BadgeRanking from '../components/BadgeRanking';
 import { getAllPhotosRaw, restorePhotos } from '../storage/PhotoDB';
 import { MoonIcon, SunIcon, CameraIcon, SaveIcon, PastelIcon } from '../components/icons/PastelIcons';
 
-export default function MyPage({ colorMode, setColorMode }) {
+export default function MyPage({ colorMode, setColorMode, onThemeChange }) {
   const [profile, setProfile] = useState(getProfile);
   const [toast, setToast] = useState(false);
   const [toastMsg, setToastMsg] = useState('저장되었습니다');
@@ -40,7 +40,7 @@ export default function MyPage({ colorMode, setColorMode }) {
       <div style={{ padding: '0 24px 0' }}>
 
         {/* Badge & Ranking UI (gear icon inside profile header) */}
-        <BadgeRanking onSettingsClick={() => setSettingsOpen(true)} colorMode={colorMode} />
+        <BadgeRanking onSettingsClick={() => setSettingsOpen(true)} colorMode={colorMode} onThemeChange={onThemeChange} />
 
         {/* App Info / Version Footer */}
         <div style={{

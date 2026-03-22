@@ -75,6 +75,7 @@ export default function App() {
   const [showBackupReminder, setShowBackupReminder] = useState(false);
   const [colorMode, setColorModeState] = useState(() => getProfile().colorMode || 'light');
   const [userLevel, setUserLevel] = useState(() => calculateLevel(getTotalXP()));
+  const [activeThemeId, setActiveThemeId] = useState(() => getProfile().activeTheme || null);
 
   // Apply data-theme attribute for light/dark CSS variables
   useEffect(() => {
@@ -93,13 +94,12 @@ export default function App() {
 
   // Active theme — reactive to colorMode + user preference
   const activeThemeColors = useMemo(() => {
-    const prof = getProfile();
-    if (prof.activeTheme) {
-      const t = getThemeById(prof.activeTheme);
+    if (activeThemeId) {
+      const t = getThemeById(activeThemeId);
       if (t.mode === colorMode) return t;
     }
     return getDefaultTheme(colorMode);
-  }, [colorMode, activeTab]);
+  }, [colorMode, activeThemeId]);
 
   // Local fallback briefing when API fails
   const generateLocalBriefing = useCallback((scores) => {
@@ -753,7 +753,7 @@ export default function App() {
       )}
 
       {/* ===== MY PAGE ===== */}
-      {activeTab === 'my' && <MyPage colorMode={colorMode} setColorMode={setColorMode} />}
+      {activeTab === 'my' && <MyPage colorMode={colorMode} setColorMode={setColorMode} onThemeChange={setActiveThemeId} />}
 
       {/* ===== HOME TAB (stage-based sub-flow) ===== */}
       {activeTab === 'home' && <>

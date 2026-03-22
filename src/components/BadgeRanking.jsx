@@ -48,7 +48,7 @@ function MiniPearl({ size = 24, colors, glow, id: pid, cloverTheme }) {
 }
 
 // ===== Main Component =====
-export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode }) {
+export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, onThemeChange }) {
   const [tab, setTab] = useState('badges'); // 'badges' | 'theme' | 'ranking'
   const [selectedCat, setSelectedCat] = useState('streak');
   const [selectedBadge, setSelectedBadge] = useState(null);
