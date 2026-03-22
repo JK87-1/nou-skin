@@ -48,9 +48,9 @@
       <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#1a3a2a" flood-opacity="0.35"/>
     </filter>
 
-    <!-- Inner shadow for center circle recess -->
-    <filter id="centerShadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#8a7a20" flood-opacity="0.3"/>
+    <!-- Elevated center shadow (stronger, offset down for floating feel) -->
+    <filter id="centerShadow" x="-30%" y="-20%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#5a4a00" flood-opacity="0.4"/>
     </filter>
   </defs>
 
@@ -75,16 +75,23 @@
     <ellipse cx="100" cy="138" rx="34" ry="34" fill="none" stroke="black" stroke-width="0.8" opacity="0.08"/>
     <ellipse cx="62" cy="100" rx="34" ry="34" fill="none" stroke="black" stroke-width="0.8" opacity="0.08"/>
 
-    <!-- ═══ CENTER CIRCLE (raised button) ═══ -->
+    <!-- ═══ CENTER CIRCLE (elevated button with thickness) ═══ -->
     <g filter="url(#centerShadow)">
+      <!-- Thickness layer: slightly offset darker bottom to simulate side edge -->
+      <ellipse cx="100" cy="103" rx="26" ry="26" fill="#C8A820" opacity="0.5"/>
+      <ellipse cx="100" cy="102" rx="26" ry="26" fill="#D8B828" opacity="0.4"/>
+
+      <!-- Main circle face -->
       <circle cx="100" cy="100" r="26" fill="url(#centerBase)"/>
       <circle cx="100" cy="100" r="26" fill="url(#centerGloss)"/>
-      <!-- Bright highlight spot -->
-      <ellipse cx="94" cy="91" rx="11" ry="7" fill="white" opacity="0.5"/>
-      <ellipse cx="93" cy="89" rx="6" ry="3.5" fill="white" opacity="0.35"/>
-      <!-- Edge ring -->
-      <circle cx="100" cy="100" r="25.5" fill="none" stroke="white" stroke-width="0.8" opacity="0.4"/>
-      <circle cx="100" cy="100" r="26.5" fill="none" stroke="black" stroke-width="0.5" opacity="0.1"/>
+
+      <!-- Top highlight (glass shine) -->
+      <ellipse cx="94" cy="90" rx="13" ry="8" fill="white" opacity="0.5"/>
+      <ellipse cx="93" cy="88" rx="7" ry="4" fill="white" opacity="0.4"/>
+
+      <!-- Edge rings: bright top-left, dark bottom-right -->
+      <circle cx="100" cy="100" r="25.5" fill="none" stroke="white" stroke-width="1" opacity="0.5"/>
+      <circle cx="100" cy="100" r="26.5" fill="none" stroke="black" stroke-width="0.6" opacity="0.15"/>
     </g>
   </g>
 </svg>
