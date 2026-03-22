@@ -1,97 +1,59 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
-    <!-- Clover shape -->
-    <clipPath id="clover">
-      <ellipse cx="100" cy="62" rx="34" ry="34"/>
-      <ellipse cx="138" cy="100" rx="34" ry="34"/>
-      <ellipse cx="100" cy="138" rx="34" ry="34"/>
-      <ellipse cx="62" cy="100" rx="34" ry="34"/>
+    <path id="cloverPath" d="
+      M100 33.7 A31.3 31.3 0 0 1 131.3 65 A31.3 31.3 0 0 1 135 68.7
+      A31.3 31.3 0 0 1 166.3 100 A31.3 31.3 0 0 1 135 131.3
+      A31.3 31.3 0 0 1 131.3 135 A31.3 31.3 0 0 1 100 166.3
+      A31.3 31.3 0 0 1 68.7 135 A31.3 31.3 0 0 1 65 131.3
+      A31.3 31.3 0 0 1 33.7 100 A31.3 31.3 0 0 1 65 68.7
+      A31.3 31.3 0 0 1 68.7 65 A31.3 31.3 0 0 1 100 33.7 Z"/>
+    <clipPath id="clover"><use href="#cloverPath"/></clipPath>
+    <clipPath id="topLeftHalf">
+      <rect x="0" y="0" width="200" height="200" transform="rotate(-45,100,100)"/>
+    </clipPath>
+    <clipPath id="bottomRightHalf">
+      <rect x="0" y="0" width="200" height="200" transform="rotate(135,100,100)"/>
     </clipPath>
 
-    <!-- Petal glass: top-left bright → bottom-right darker -->
-    <linearGradient id="petalGlass" x1="15%" y1="10%" x2="85%" y2="90%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.85"/>
-      <stop offset="35%" stop-color="#f4f4f4" stop-opacity="0.7"/>
-      <stop offset="65%" stop-color="#e0e0e0" stop-opacity="0.58"/>
-      <stop offset="100%" stop-color="#c8c8c8" stop-opacity="0.48"/>
-    </linearGradient>
-
-    <!-- Top shine: curved glass reflection -->
-    <radialGradient id="topShine" cx="40%" cy="18%" r="45%">
-      <stop offset="0%" stop-color="white" stop-opacity="0.95"/>
-      <stop offset="50%" stop-color="white" stop-opacity="0.25"/>
-      <stop offset="100%" stop-color="white" stop-opacity="0"/>
-    </radialGradient>
-
-    <!-- Bottom edge darken -->
-    <linearGradient id="bottomEdge" x1="50%" y1="50%" x2="50%" y2="100%">
-      <stop offset="0%" stop-color="black" stop-opacity="0"/>
-      <stop offset="60%" stop-color="black" stop-opacity="0.04"/>
-      <stop offset="100%" stop-color="black" stop-opacity="0.18"/>
-    </linearGradient>
-
-    <!-- Center button: raised yellow pill -->
-    <radialGradient id="centerBase" cx="42%" cy="38%" r="52%">
-      <stop offset="0%" stop-color="#FFF8B0"/>
-      <stop offset="35%" stop-color="#FBEC5D"/>
-      <stop offset="75%" stop-color="#F0D830"/>
-      <stop offset="100%" stop-color="#D8B820"/>
-    </radialGradient>
-    <linearGradient id="centerGloss" x1="50%" y1="0%" x2="50%" y2="100%">
-      <stop offset="0%" stop-color="white" stop-opacity="0.55"/>
-      <stop offset="45%" stop-color="white" stop-opacity="0.08"/>
-      <stop offset="100%" stop-color="black" stop-opacity="0.15"/>
-    </linearGradient>
-
-    <!-- Drop shadow for whole clover -->
-    <filter id="outerShadow" x="-18%" y="-10%" width="136%" height="136%">
-      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#1a3a2a" flood-opacity="0.35"/>
+    <filter id="softShadow" x="-12%" y="-6%" width="124%" height="124%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#2a4a3a" flood-opacity="0.2"/>
     </filter>
-
-    <!-- Elevated center shadow (stronger, offset down for floating feel) -->
-    <filter id="centerShadow" x="-30%" y="-20%" width="160%" height="160%">
-      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#5a4a00" flood-opacity="0.4"/>
+    <filter id="discShadow" x="-25%" y="-15%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#8a7a20" flood-opacity="0.25"/>
     </filter>
   </defs>
 
-  <g transform="translate(256,256) scale(2.52) translate(-100,-100)" filter="url(#outerShadow)">
+  <g transform="translate(256,256) scale(2.52) translate(-100,-100)" filter="url(#softShadow)">
 
-    <!-- ═══ PETALS (glass body) ═══ -->
-    <!-- Base fill -->
-    <rect x="20" y="20" width="160" height="160" fill="url(#petalGlass)" clip-path="url(#clover)"/>
-    <!-- Top shine -->
-    <rect x="20" y="20" width="160" height="160" fill="url(#topShine)" clip-path="url(#clover)"/>
-    <!-- Bottom edge shadow -->
-    <rect x="20" y="20" width="160" height="160" fill="url(#bottomEdge)" clip-path="url(#clover)"/>
+    <!-- Petal: glass tile with subtle thickness -->
+    <!-- Side/thickness (slightly offset down, slightly darker) -->
+    <g transform="translate(0,1.8)">
+      <use href="#cloverPath" fill="white" opacity="0.2"/>
+    </g>
+    <!-- Main glass face -->
+    <use href="#cloverPath" fill="white" opacity="0.45"/>
 
-    <!-- Petal edge strokes (thin glass border for each petal) -->
-    <ellipse cx="100" cy="62" rx="33.5" ry="33.5" fill="none" stroke="white" stroke-width="1.2" opacity="0.5"/>
-    <ellipse cx="138" cy="100" rx="33.5" ry="33.5" fill="none" stroke="white" stroke-width="1.2" opacity="0.5"/>
-    <ellipse cx="100" cy="138" rx="33.5" ry="33.5" fill="none" stroke="white" stroke-width="1.2" opacity="0.5"/>
-    <ellipse cx="62" cy="100" rx="33.5" ry="33.5" fill="none" stroke="white" stroke-width="1.2" opacity="0.5"/>
-    <!-- Bottom-right dark edge per petal for thickness -->
-    <ellipse cx="100" cy="62" rx="34" ry="34" fill="none" stroke="black" stroke-width="0.8" opacity="0.08"/>
-    <ellipse cx="138" cy="100" rx="34" ry="34" fill="none" stroke="black" stroke-width="0.8" opacity="0.08"/>
-    <ellipse cx="100" cy="138" rx="34" ry="34" fill="none" stroke="black" stroke-width="0.8" opacity="0.08"/>
-    <ellipse cx="62" cy="100" rx="34" ry="34" fill="none" stroke="black" stroke-width="0.8" opacity="0.08"/>
+    <!-- Thin edge light lines -->
+    <g clip-path="url(#topLeftHalf)">
+      <use href="#cloverPath" fill="none" stroke="white" stroke-width="1.2" opacity="1"/>
+    </g>
+    <g clip-path="url(#bottomRightHalf)">
+      <use href="#cloverPath" fill="none" stroke="rgba(0,0,0,0.2)" stroke-width="0.8"/>
+    </g>
 
-    <!-- ═══ CENTER CIRCLE (elevated button with thickness) ═══ -->
-    <g filter="url(#centerShadow)">
-      <!-- Thickness layer: slightly offset darker bottom to simulate side edge -->
-      <ellipse cx="100" cy="103" rx="26" ry="26" fill="#C8A820" opacity="0.5"/>
-      <ellipse cx="100" cy="102" rx="26" ry="26" fill="#D8B828" opacity="0.4"/>
-
-      <!-- Main circle face -->
-      <circle cx="100" cy="100" r="26" fill="url(#centerBase)"/>
-      <circle cx="100" cy="100" r="26" fill="url(#centerGloss)"/>
-
-      <!-- Top highlight (glass shine) -->
-      <ellipse cx="94" cy="90" rx="13" ry="8" fill="white" opacity="0.5"/>
-      <ellipse cx="93" cy="88" rx="7" ry="4" fill="white" opacity="0.4"/>
-
-      <!-- Edge rings: bright top-left, dark bottom-right -->
-      <circle cx="100" cy="100" r="25.5" fill="none" stroke="white" stroke-width="1" opacity="0.5"/>
-      <circle cx="100" cy="100" r="26.5" fill="none" stroke="black" stroke-width="0.6" opacity="0.15"/>
+    <!-- Center disc -->
+    <g filter="url(#discShadow)">
+      <!-- Side/thickness -->
+      <circle cx="100" cy="101.5" r="26" fill="#E8D040" opacity="0.35"/>
+      <!-- Main face -->
+      <circle cx="100" cy="100" r="26" fill="#FBEC5D" opacity="0.85"/>
+      <!-- Thin edge lines -->
+      <g clip-path="url(#topLeftHalf)">
+        <circle cx="100" cy="100" r="25.5" fill="none" stroke="white" stroke-width="1.2" opacity="1"/>
+      </g>
+      <g clip-path="url(#bottomRightHalf)">
+        <circle cx="100" cy="100" r="25.5" fill="none" stroke="rgba(0,0,0,0.18)" stroke-width="0.8"/>
+      </g>
     </g>
   </g>
 </svg>
