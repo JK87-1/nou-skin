@@ -1,6 +1,6 @@
 /**
  * 뱃지 & 레벨 시스템 데이터
- * 5개 카테고리 30개 뱃지, 10개 레벨 칭호, 4개 테마
+ * 5개 카테고리 40개 뱃지, 10개 레벨 칭호, 4개 테마
  */
 
 const BADGE_DATABASE = {
@@ -11,17 +11,21 @@ const BADGE_DATABASE = {
       { id: 'streak_7', icon: '📖', name: '일주일의 기록', desc: '피부 측정 7일 연속 달성 · 한 주의 이야기가 채워졌어요', condition: { type: 'streak', value: 7 } },
       { id: 'streak_14', icon: '🔖', name: '보름의 책갈피', desc: '피부 측정 14일 연속 달성 · 반달이 지나도록 빠짐없이 기록했어요', condition: { type: 'streak', value: 14 } },
       { id: 'streak_30', icon: '📚', name: '한 달의 일기장', desc: '피부 측정 30일 연속 달성 · 첫 번째 일기장이 완성되었어요', condition: { type: 'streak', value: 30 } },
+      { id: 'streak_60', icon: '📕', name: '두 번째 일기장', desc: '피부 측정 60일 연속 달성 · 두 번째 권이 시작되었어요', condition: { type: 'streak', value: 60 } },
       { id: 'streak_100', icon: '🏛️', name: '기억의 서재', desc: '피부 측정 100일 연속 달성 · 백 페이지의 이야기가 서재를 채워요', condition: { type: 'streak', value: 100 } },
       { id: 'streak_200', icon: '📜', name: '전설의 기록', desc: '피부 측정 200일 연속 달성 · 누구도 쓰지 못한 이야기를 써냈어요', condition: { type: 'streak', value: 200 } },
+      { id: 'streak_365', icon: '🌟', name: '일 년의 서사', desc: '피부 측정 365일 연속 달성 · 사계절을 담은 대서사시', condition: { type: 'streak', value: 365 } },
     ],
   },
   score: {
     label: '피부의 빛', subtitle: '피부 종합점수 달성', icon: '✨', color: '#F0D8A8',
     badges: [
+      { id: 'score_40', icon: '🔥', name: '첫 번째 불씨', desc: '피부 종합점수 40점 이상 달성 · 아주 작은 불씨가 피어났어요', condition: { type: 'score', value: 40 } },
       { id: 'score_50', icon: '🕯️', name: '작은 불꽃', desc: '피부 종합점수 50점 이상 달성 · 어둠 속에 첫 빛이 켜졌어요', condition: { type: 'score', value: 50 } },
       { id: 'score_60', icon: '🌅', name: '새벽빛', desc: '피부 종합점수 60점 이상 달성 · 수평선 너머로 빛이 번져가요', condition: { type: 'score', value: 60 } },
       { id: 'score_70', icon: '🌤️', name: '맑은 햇살', desc: '피부 종합점수 70점 이상 달성 · 구름 위로 따스한 빛이 내려와요', condition: { type: 'score', value: 70 } },
       { id: 'score_80', icon: '✨', name: '별의 조각', desc: '피부 종합점수 80점 이상 달성 · 하늘에서 별 한 조각이 내려왔어요', condition: { type: 'score', value: 80 } },
+      { id: 'score_85', icon: '🌙', name: '초승달', desc: '피부 종합점수 85점 이상 달성 · 달빛이 차오르고 있어요', condition: { type: 'score', value: 85 } },
       { id: 'score_90', icon: '🌕', name: '보름달', desc: '피부 종합점수 90점 이상 달성 · 온전한 달빛이 당신을 비추어요', condition: { type: 'score', value: 90 } },
       { id: 'score_95', icon: '💎', name: '다이아몬드', desc: '피부 종합점수 95점 이상 달성 · 완벽에 가까운 빛이 나요', condition: { type: 'score', value: 95 } },
     ],
@@ -29,11 +33,13 @@ const BADGE_DATABASE = {
   improvement: {
     label: '새싹에서 숲으로', subtitle: '피부 개선 & 회춘', icon: '🌳', color: '#B8E0D0',
     badges: [
+      { id: 'improve_3', icon: '🌰', name: '씨앗', desc: '피부 종합점수 3점 이상 상승 · 땅속에서 무언가 움직여요', condition: { type: 'improvement', value: 3 } },
       { id: 'improve_5', icon: '🌱', name: '첫 새싹', desc: '피부 종합점수 5점 이상 상승 · 작은 싹이 올라왔어요', condition: { type: 'improvement', value: 5 } },
       { id: 'improve_10', icon: '🌿', name: '푸른 잎', desc: '피부 종합점수 10점 이상 상승 · 잎이 하나둘 펼쳐져요', condition: { type: 'improvement', value: 10 } },
       { id: 'improve_20', icon: '🌸', name: '첫 번째 꽃', desc: '피부 종합점수 20점 이상 상승 · 드디어 꽃이 피었어요', condition: { type: 'improvement', value: 20 } },
       { id: 'improve_30', icon: '🌳', name: '든든한 나무', desc: '피부 종합점수 30점 이상 상승 · 어느새 나무로 자라났어요', condition: { type: 'improvement', value: 30 } },
       { id: 'skinAge_3', icon: '🍃', name: '봄바람', desc: '피부나이 3세 이상 감소 · 시간이 거꾸로 부는 바람', condition: { type: 'skinAge', value: 3 } },
+      { id: 'skinAge_5', icon: '🍀', name: '되돌린 계절', desc: '피부나이 5세 이상 감소 · 계절이 한 바퀴 되돌아갔어요', condition: { type: 'skinAge', value: 5 } },
       { id: 'skinAge_10', icon: '🌲', name: '깊은 숲', desc: '피부나이 10세 이상 감소 · 울창한 숲이 되었어요', condition: { type: 'skinAge', value: 10 } },
     ],
   },
@@ -44,17 +50,21 @@ const BADGE_DATABASE = {
       { id: 'mission_30', icon: '🧭', name: '나침반', desc: '데일리 미션 누적 30회 완료 · 방향을 찾아가고 있어요', condition: { type: 'missionCount', value: 30 } },
       { id: 'mission_50', icon: '🗝️', name: '비밀의 열쇠', desc: '데일리 미션 누적 50회 완료 · 숨겨진 문이 열려요', condition: { type: 'missionCount', value: 50 } },
       { id: 'mission_100', icon: '🏆', name: '모험의 왕관', desc: '데일리 미션 누적 100회 완료 · 백 번의 모험을 완수했어요', condition: { type: 'missionCount', value: 100 } },
+      { id: 'mission_200', icon: '⚔️', name: '전설의 모험가', desc: '데일리 미션 누적 200회 완료 · 이 길의 끝을 아는 사람', condition: { type: 'missionCount', value: 200 } },
       { id: 'allclear_5', icon: '⭐', name: '완벽한 하루', desc: '하루 미션 전체 완료 5일 달성 · 모든 별을 모은 날', condition: { type: 'allClear', value: 5 } },
       { id: 'allclear_20', icon: '🏰', name: '모험의 성', desc: '하루 미션 전체 완료 20일 달성 · 모험이 전설이 되었어요', condition: { type: 'allClear', value: 20 } },
+      { id: 'allclear_50', icon: '🌈', name: '무지개 너머', desc: '하루 미션 전체 완료 50일 달성 · 완벽한 하루가 일상이 되었어요', condition: { type: 'allClear', value: 50 } },
     ],
   },
   special: {
     label: '숨겨진 보물', subtitle: '특별 활동 달성', icon: '🔮', color: '#A8C8F0',
     badges: [
       { id: 'first_analysis', icon: '🔮', name: '수정구슬', desc: '첫 번째 피부 분석 완료 · 첫 번째 보물을 발견했어요', condition: { type: 'measureCount', value: 1 } },
+      { id: 'measure_10', icon: '🗺️', name: '보물 지도', desc: '피부 측정 누적 10회 달성 · 보물이 묻힌 곳이 보여요', condition: { type: 'measureCount', value: 10 } },
       { id: 'moisture_master', icon: '💧', name: '이슬의 보석', desc: '수분 지표 80점 이상 달성 · 촉촉한 보물을 찾았어요', condition: { type: 'itemScore', item: 'moisture', value: 80 } },
       { id: 'consult_10', icon: '🦉', name: '현자의 깃털', desc: 'AI 피부 상담 10회 이용 · 지혜로운 보물을 얻었어요', condition: { type: 'consultCount', value: 10 } },
       { id: 'night_owl', icon: '🌙', name: '달빛 보석', desc: '밤 10시 이후 피부 측정 5회 달성 · 밤에만 빛나는 보물', condition: { type: 'nightMeasure', value: 5 } },
+      { id: 'morning_star', icon: '🌅', name: '새벽의 보석', desc: '오전 5~9시 피부 측정 10회 달성 · 아침에만 빛나는 보물', condition: { type: 'morningMeasure', value: 10 } },
       { id: 'share_first', icon: '🕊️', name: '날개의 편지', desc: '분석 결과 첫 공유 · 소식을 전하는 보물', condition: { type: 'shareCount', value: 1 } },
       { id: 'share_20', icon: '👑', name: '나눔의 왕관', desc: '분석 결과 20회 공유 · 나눔이 만든 빛나는 보물', condition: { type: 'shareCount', value: 20 } },
     ],
