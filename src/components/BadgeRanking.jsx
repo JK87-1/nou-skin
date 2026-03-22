@@ -5,7 +5,7 @@ import {
   getTotalXP, getLevel, getLevelProgress,
   getAllBadgesWithStatus, checkAndAwardBadges, getStats,
 } from '../storage/BadgeStorage';
-import { getRecords, getStreak, getLatestRecord } from '../storage/SkinStorage';
+import { getRecords, getLatestRecord } from '../storage/SkinStorage';
 import { getProfile, saveProfile, getDeviceId } from '../storage/ProfileStorage';
 import SoftCloverIcon from './icons/SoftCloverIcon';
 import { TargetIcon, CrownIcon, TrophyIcon, CheckIcon, LockIcon, PastelIcon } from './icons/PastelIcons';
@@ -50,7 +50,7 @@ function MiniPearl({ size = 24, colors, glow, id: pid, cloverTheme }) {
 // ===== Main Component =====
 export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, onThemeChange }) {
   const [tab, setTab] = useState('badges'); // 'badges' | 'theme' | 'ranking'
-  const [selectedCat, setSelectedCat] = useState('streak');
+  const [selectedCat, setSelectedCat] = useState('score');
   const [selectedBadge, setSelectedBadge] = useState(null);
   const [toast, setToast] = useState(null);
   const [showTitleModal, setShowTitleModal] = useState(false);
@@ -63,7 +63,6 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
   // Data
   const [profile, setProfile] = useState(getProfile);
   const records = getRecords();
-  const streak = getStreak();
   const stats = getStats();
   const latestRecord = getLatestRecord();
   const totalXP = getTotalXP();
@@ -334,7 +333,6 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
           <div style={{ display: 'flex', marginTop: 16, gap: 0 }}>
             {[
               { value: records.length, label: '기록' },
-              { value: streak.count, label: '스트릭' },
               { value: level, label: '레벨' },
               { value: earnedCount, label: '뱃지', onClick: () => setShowBadgeModal(true) },
             ].map((s, i, arr) => (

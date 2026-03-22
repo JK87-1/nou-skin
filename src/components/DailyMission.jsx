@@ -7,7 +7,7 @@ import { getLatestRecord } from '../storage/SkinStorage';
 import { getTodayMissions } from '../data/MissionData';
 import {
   loadMissionProgress, saveMissionProgress, initMissionState,
-  getMissionStreak, getWeeklyStatus, getTotalXP, getBadges,
+  getWeeklyStatus, getTotalXP, getBadges,
 } from '../storage/MissionStorage';
 import { addXP as addBadgeXP, incrementStat, checkAndAwardBadges } from '../storage/BadgeStorage';
 import SoftCloverIcon from './icons/SoftCloverIcon';
@@ -26,7 +26,7 @@ const fadeUp = (delay = 0) => ({
 });
 
 // AI 코치 코멘트 생성
-function getCoachComment(streak, category) {
+function getCoachComment(category) {
   const base = {
     수분부족: '오늘 수분 케어에 집중하면 피부 수분도가 빠르게 올라갈 수 있어요.',
     색소침착: '자외선 차단을 꾸준히 하면 색소 개선 효과를 볼 수 있어요.',
@@ -35,9 +35,6 @@ function getCoachComment(streak, category) {
     민감도: '자극을 줄이고 보습에 집중하면 피부 장벽이 회복돼요.',
     기본: '피부 상태가 좋을 때 기본 루틴을 유지하는 게 가장 중요해요!',
   };
-
-  if (streak >= 7) return `${streak}일 연속 미션 달성 중이에요! 꾸준함이 가장 좋은 스킨케어예요. ${base[category] || base.기본}`;
-  if (streak >= 3) return `${streak}일 연속 달성! 습관이 만들어지고 있어요. ${base[category] || base.기본}`;
   return base[category] || base.기본;
 }
 
@@ -205,15 +202,13 @@ export default function DailyMission() {
 
   if (!missions || !progress) return null;
 
-  const streak = getMissionStreak();
-  const displayStreak = progress.mainCompleted ? streak + 1 : streak;
   const weeklyStatus = getWeeklyStatus();
   const badges = getBadges();
   const totalCompleted = (progress.mainCompleted ? 1 : 0) + (progress.bonusCompleted?.filter(Boolean).length || 0);
   const totalMissions = 1 + missions.bonus.length;
   const completionPct = Math.round((totalCompleted / totalMissions) * 100);
   const remainingCount = totalMissions - totalCompleted;
-  const coachComment = getCoachComment(displayStreak, missions.category);
+  const coachComment = getCoachComment(missions.category);
 
   return (
     <div style={{ padding: '0 20px', marginTop: 24 }}>
@@ -225,21 +220,6 @@ export default function DailyMission() {
           <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1, color: 'var(--text-muted)', marginBottom: 4 }}>DAILY MISSION</div>
           <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)' }}>오늘의 피부 미션</div>
         </div>
-        {displayStreak > 0 && (
-          <div style={{
-            background: 'var(--accent-streak-bg)',
-            border: 'none', borderRadius: 8, padding: '6px 12px',
-            display: 'flex', alignItems: 'center', gap: 6,
-            position: 'relative', overflow: 'hidden',
-          }}>
-            <span style={{ fontSize: 14, position: 'relative' }}>🔥</span>
-            <span style={{
-              fontSize: 13, fontWeight: 600,
-              fontFamily: 'var(--font-display)',
-              color: 'var(--accent-streak)', position: 'relative',
-            }}>{displayStreak}일 연속</span>
-          </div>
-        )}
       </div>
 
       {/* === 3-2. WEEKLY CALENDAR === */}

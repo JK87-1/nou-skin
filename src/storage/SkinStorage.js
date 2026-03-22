@@ -7,13 +7,11 @@
  * - 주간 변화 계산
  * - 안정적 피부나이 (주간 평균)
  * - 동기부여 코멘트 생성
- * - 연속 측정 스트릭 관리
  *
  * Phase 2에서 Supabase로 마이그레이션 시 이 인터페이스 유지
  */
 
 const STORAGE_KEY = 'nou_skin_records';
-const STREAK_KEY = 'nou_skin_streak';
 const THUMB_KEY = 'nou_skin_thumbs';
 const COMPARISON_KEY = 'nou_comparison_photos';
 const MAX_RECORDS = 200; // 하루 3회 × 60일 ≈ 180
@@ -65,7 +63,6 @@ export function saveRecord(result) {
 
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
-    updateStreak(today);
     // 측정 저장 성공 후 자동 백업
     createAutoBackup().catch(() => {});
     return record.id; // 썸네일 키로 사용할 record ID 반환
@@ -119,7 +116,6 @@ export function deleteRecord(id) {
 
 export async function clearAllRecords() {
   localStorage.removeItem(STORAGE_KEY);
-  localStorage.removeItem(STREAK_KEY);
   localStorage.removeItem(THUMB_KEY);
   // Clear IndexedDB photos
   try {
@@ -342,52 +338,6 @@ export function getStableSkinAge() {
   return Math.round(ema);
 }
 
-// ===== STREAK (연속 측정) =====
-
-function updateStreak(today) {
-  try {
-    const streak = JSON.parse(localStorage.getItem(STREAK_KEY) || '{}');
-    const lastDate = streak.lastDate || '';
-    const lastStreak = streak.count || 0;
-
-    // 지난주 날짜 계산 (7일 전 ~ 오늘 범위)
-    const todayMs = new Date(today).getTime();
-    const lastMs = lastDate ? new Date(lastDate).getTime() : 0;
-    const daysDiff = Math.floor((todayMs - lastMs) / (1000 * 60 * 60 * 24));
-
-    let newCount;
-    if (daysDiff === 0) {
-      newCount = lastStreak; // 같은 날 재측정
-    } else if (daysDiff >= 5 && daysDiff <= 9) {
-      // 주간 측정 범위 (5~9일 간격 = 주 1회)
-      newCount = lastStreak + 1;
-    } else if (daysDiff < 5) {
-      newCount = lastStreak; // 너무 빠른 재측정 — 스트릭 유지
-    } else {
-      newCount = 1; // 10일+ 공백 — 스트릭 리셋
-    }
-
-    localStorage.setItem(STREAK_KEY, JSON.stringify({
-      count: newCount,
-      lastDate: today,
-      bestStreak: Math.max(newCount, streak.bestStreak || 0),
-    }));
-  } catch {}
-}
-
-export function getStreak() {
-  try {
-    const streak = JSON.parse(localStorage.getItem(STREAK_KEY) || '{}');
-    return {
-      count: streak.count || 0,
-      bestStreak: streak.bestStreak || 0,
-      lastDate: streak.lastDate || null,
-    };
-  } catch {
-    return { count: 0, bestStreak: 0, lastDate: null };
-  }
-}
-
 // ===== CHANGE CALCULATION =====
 
 const COMPARE_KEYS = ['moisture', 'skinTone', 'wrinkleScore', 'poreScore', 'elasticityScore',
@@ -572,7 +522,6 @@ export function getComparisonData() {
  */
 export function getMotivation() {
   const records = getRecords();
-  const streak = getStreak();
   const changes = getChanges();
   const total = getTotalChanges();
 
@@ -608,7 +557,7 @@ export function getMotivation() {
     return {
       emoji: '🏆',
       title: `피부나이 ${Math.abs(skinAgeDiff)}세 감소!`,
-      body: `놀라운 변화예요! ${streak.count >= 3 ? `${streak.count}주 연속 측정의 성과가 나타나고 있어요.` : '꾸준히 측정하면 더 큰 변화를 확인할 수 있어요.'}`,
+      body: '놀라운 변화예요! 꾸준히 측정하면 더 큰 변화를 확인할 수 있어요.',
       cta: null,
     };
   }
@@ -657,16 +606,6 @@ export function getMotivation() {
       emoji: '💡',
       title: '이번 주는 피부가 조금 힘들었나봐요',
       body: `피부나이가 ${skinAgeDiff}세 올랐지만 걱정 마세요. ${getWeakestPoint(changes)} 다음 주에 다시 도전!`,
-      cta: null,
-    };
-  }
-
-  // 스트릭 기반
-  if (streak.count >= 4) {
-    return {
-      emoji: '🔥',
-      title: `${streak.count}주 연속 측정!`,
-      body: `꾸준함이 최고의 스킨케어예요. ${total ? `첫 측정 대비 종합점수 ${total.overallScore > 0 ? '+' : ''}${total.overallScore}점.` : ''}`,
       cta: null,
     };
   }
@@ -721,7 +660,6 @@ export function getNextMeasurementInfo() {
 
 export function generateShareText(result) {
   const records = getRecords();
-  const streak = getStreak();
   const changes = getChanges();
 
   let text = `🧬 루아 피부 나이: ${result.skinAge}세 (종합 ${result.overallScore}점)`;
@@ -729,10 +667,6 @@ export function generateShareText(result) {
   if (changes && changes.skinAge.diff !== 0) {
     const diff = changes.skinAge.diff;
     text += `\n${diff < 0 ? `📉 지난주 대비 ${Math.abs(diff)}세 젊어짐!` : `📈 지난주 대비 ${diff}세 변화`}`;
-  }
-
-  if (streak.count >= 2) {
-    text += `\n🔥 ${streak.count}주 연속 측정 중`;
   }
 
   if (records.length >= 2) {

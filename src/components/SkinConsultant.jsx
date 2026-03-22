@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { getRecords, getSmoothedChanges, getChanges, getStreak, getTodayRecords, getStableSkinAge } from '../storage/SkinStorage';
+import { getRecords, getSmoothedChanges, getChanges, getTodayRecords, getStableSkinAge } from '../storage/SkinStorage';
 import { getProfile } from '../storage/ProfileStorage';
 import { saveConsultSession, loadConsultSession, clearConsultSession } from '../storage/ConsultStorage';
 import { compressImage } from '../engine/PixelAnalysis';
@@ -352,7 +352,6 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
       elasticityScore: r.elasticityScore,
     }));
     const changes = getSmoothedChanges() || getChanges();
-    const streak = getStreak();
     const profile = getProfile();
 
     const todayRecs = getTodayRecords();
@@ -377,7 +376,6 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
       } : null,
       history: recentHistory,
       changes,
-      streak,
       stableSkinAge,
       todayRecords: todayRecs.map(r => ({
         timestamp: r.timestamp,

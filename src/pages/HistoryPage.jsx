@@ -20,7 +20,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import {
   getRecords, getChanges, getTotalChanges, getTimeSeries,
-  getStreak, getMotivation, getNextMeasurementInfo, formatDateFull,
+  getMotivation, getNextMeasurementInfo, formatDateFull,
   getAllThumbnailsAsync, saveThumbnail, deleteRecord,
 } from '../storage/SkinStorage';
 import { AnimatedNumber, ScoreRing, MetricBar } from '../components/UIComponents';
@@ -185,7 +185,6 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
   const [records, setRecords] = useState([]);
   const [graphMetric, setGraphMetric] = useState('skinAge');
   const [motivation, setMotivation] = useState(null);
-  const [streak, setStreak] = useState({ count: 0 });
   const [changes, setChanges] = useState(null);
   const [totalChanges, setTotalChanges] = useState(null);
   const [nextInfo, setNextInfo] = useState(null);
@@ -196,7 +195,6 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
   useEffect(() => {
     setRecords(getRecords());
     setMotivation(getMotivation());
-    setStreak(getStreak());
     setChanges(getChanges());
     setTotalChanges(getTotalChanges());
     setNextInfo(getNextMeasurementInfo());
@@ -345,10 +343,6 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                   <div>
                     <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{avgScore}</div>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>평균점수</div>
-                  </div>
-                  <div>
-                    <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{streak.count}</div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>연속</div>
                   </div>
                 </div>
               </div>

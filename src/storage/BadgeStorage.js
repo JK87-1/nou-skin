@@ -4,7 +4,7 @@
  */
 
 import { BADGE_DATABASE, LEVEL_TITLES, calculateLevel } from '../data/BadgeData';
-import { getRecords, getStreak } from './SkinStorage';
+import { getRecords } from './SkinStorage';
 
 const XP_KEY = 'lua_badge_xp';
 const XP_LOG_KEY = 'lua_badge_xp_log';
@@ -87,7 +87,6 @@ export function checkAndAwardBadges() {
   const earned = getEarnedBadgesRaw();
   const stats = getStats();
   const records = getRecords();
-  const streak = getStreak();
   const newBadges = [];
 
   const latestRecord = records.length > 0 ? records[records.length - 1] : null;
@@ -115,9 +114,6 @@ export function checkAndAwardBadges() {
     let met = false;
 
     switch (type) {
-      case 'streak':
-        met = streak.count >= value;
-        break;
       case 'score':
         met = latestRecord && (latestRecord.overallScore || 0) >= value;
         break;
@@ -202,7 +198,6 @@ export function getEarnedBadges() {
 export function getBadgeProgress(badgeId) {
   const stats = getStats();
   const records = getRecords();
-  const streak = getStreak();
   const latestRecord = records.length > 0 ? records[records.length - 1] : null;
   const firstRecord = records.length > 0 ? records[0] : null;
 
@@ -217,7 +212,6 @@ export function getBadgeProgress(badgeId) {
   let current = 0;
 
   switch (type) {
-    case 'streak': current = streak.count; break;
     case 'score': current = latestRecord ? (latestRecord.overallScore || 0) : 0; break;
     case 'improvement':
       current = (firstRecord && latestRecord && records.length >= 2)
@@ -305,13 +299,11 @@ export function incrementStat(statName, amount = 1) {
 export function getStats() {
   const stats = getStatsRaw();
   const records = getRecords();
-  const streak = getStreak();
 
   return {
     totalMeasurements: records.length,
     totalMissions: stats.totalMissions || 0,
     allClearCount: stats.allClearCount || 0,
-    streak: streak.count,
     consultCount: stats.consultCount || 0,
     shareCount: stats.shareCount || 0,
     nightMeasure: stats.nightMeasure || 0,

@@ -1,22 +1,9 @@
 /**
  * 뱃지 & 레벨 시스템 데이터
- * 5개 카테고리 40개 뱃지, 10개 레벨 칭호, 4개 테마
+ * 4개 카테고리 뱃지, 10개 레벨 칭호, 4개 테마
  */
 
 const BADGE_DATABASE = {
-  streak: {
-    label: '피부 다이어리', subtitle: '연속 피부 측정', icon: '📖', color: '#C8B8E8',
-    badges: [
-      { id: 'streak_3', icon: '📝', name: '첫 번째 페이지', desc: '피부 측정 3일 연속 달성 · 일기의 첫 장이 열렸어요', condition: { type: 'streak', value: 3 } },
-      { id: 'streak_7', icon: '📖', name: '일주일의 기록', desc: '피부 측정 7일 연속 달성 · 한 주의 이야기가 채워졌어요', condition: { type: 'streak', value: 7 } },
-      { id: 'streak_14', icon: '🔖', name: '보름의 책갈피', desc: '피부 측정 14일 연속 달성 · 반달이 지나도록 빠짐없이 기록했어요', condition: { type: 'streak', value: 14 } },
-      { id: 'streak_30', icon: '📚', name: '한 달의 일기장', desc: '피부 측정 30일 연속 달성 · 첫 번째 일기장이 완성되었어요', condition: { type: 'streak', value: 30 } },
-      { id: 'streak_60', icon: '📕', name: '두 번째 일기장', desc: '피부 측정 60일 연속 달성 · 두 번째 권이 시작되었어요', condition: { type: 'streak', value: 60 } },
-      { id: 'streak_100', icon: '🏛️', name: '기억의 서재', desc: '피부 측정 100일 연속 달성 · 백 페이지의 이야기가 서재를 채워요', condition: { type: 'streak', value: 100 } },
-      { id: 'streak_200', icon: '📜', name: '전설의 기록', desc: '피부 측정 200일 연속 달성 · 누구도 쓰지 못한 이야기를 써냈어요', condition: { type: 'streak', value: 200 } },
-      { id: 'streak_365', icon: '🌟', name: '일 년의 서사', desc: '피부 측정 365일 연속 달성 · 사계절을 담은 대서사시', condition: { type: 'streak', value: 365 } },
-    ],
-  },
   score: {
     label: '피부의 빛', subtitle: '피부 종합점수 달성', icon: '✨', color: '#F0D8A8',
     badges: [

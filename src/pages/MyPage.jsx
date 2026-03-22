@@ -4,7 +4,7 @@ import {
   getProfile, saveProfile,
   SKIN_TYPES, SKIN_CONCERNS, SENSITIVITY_OPTIONS, GENDER_OPTIONS,
 } from '../storage/ProfileStorage';
-import { getRecords, getStreak, getTotalChanges } from '../storage/SkinStorage';
+import { getRecords, getTotalChanges } from '../storage/SkinStorage';
 import { clearBaseline, hasBaseline } from '../engine/HybridAnalysis';
 import {
   isPushSupported, isStandalone, isIOS, getPermissionState,

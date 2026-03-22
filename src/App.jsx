@@ -7,7 +7,7 @@ import { estimateAge, preload as preloadAge } from './engine/FaceAgeEstimator';
 import { preload as preloadLandmarker } from './engine/FaceLandmarker';
 import { AnimatedNumber, ScoreRing, MetricBar, Tag, DetailPage } from './components/UIComponents';
 import CameraCapture from './components/CameraCapture';
-import { saveRecord, updateRecord, getRecords, getStreak, getNextMeasurementInfo, getChanges, generateShareText, getLatestRecord, hasTodayRecord, saveThumbnail, saveComparisonPhoto, getTodayRecords, getStableSkinAge } from './storage/SkinStorage';
+import { saveRecord, updateRecord, getRecords, getNextMeasurementInfo, getChanges, generateShareText, getLatestRecord, hasTodayRecord, saveThumbnail, saveComparisonPhoto, getTodayRecords, getStableSkinAge } from './storage/SkinStorage';
 import { migrateFromLocalStorage } from './storage/PhotoDB';
 import { createAutoBackup, verifyDataIntegrity, restoreFromAutoBackup, startPeriodicBackup, getBackupInfo } from './storage/AutoBackup';
 import HistoryPage from './pages/HistoryPage';
@@ -60,7 +60,6 @@ export default function App() {
   const [historyInitMode, setHistoryInitMode] = useState(null);
 
   const [recordCount, setRecordCount] = useState(0);
-  const [streak, setStreakState] = useState({ count: 0 });
   const [nextInfo, setNextInfo] = useState(null);
   const [showMigration, setShowMigration] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -217,7 +216,6 @@ export default function App() {
 
   const refreshLandingData = () => {
     setRecordCount(getRecords().length);
-    setStreakState(getStreak());
     setNextInfo(getNextMeasurementInfo());
   };
 
