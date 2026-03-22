@@ -19,11 +19,11 @@
 
   <!-- Clover centered, scaled up to fill 512 -->
   <g transform="translate(256,256) scale(2.8) translate(-100,-100)" filter="url(#shadow)">
-    <!-- Leaf bases (white) -->
-    <ellipse cx="100" cy="62" rx="34" ry="34" fill="white"/>
-    <ellipse cx="138" cy="100" rx="34" ry="34" fill="white"/>
-    <ellipse cx="100" cy="138" rx="34" ry="34" fill="white"/>
-    <ellipse cx="62" cy="100" rx="34" ry="34" fill="white"/>
+    <!-- Leaf bases (semi-transparent white → tinted mode에서 연하게) -->
+    <ellipse cx="100" cy="62" rx="34" ry="34" fill="white" opacity="0.55"/>
+    <ellipse cx="138" cy="100" rx="34" ry="34" fill="white" opacity="0.55"/>
+    <ellipse cx="100" cy="138" rx="34" ry="34" fill="white" opacity="0.55"/>
+    <ellipse cx="62" cy="100" rx="34" ry="34" fill="white" opacity="0.55"/>
 
     <!-- Leaf shading -->
     <ellipse cx="100" cy="62" rx="34" ry="34" fill="url(#leafShade)"/>
@@ -32,12 +32,12 @@
     <ellipse cx="62" cy="100" rx="34" ry="34" fill="url(#leafShade)"/>
 
     <!-- Leaf highlights -->
-    <ellipse cx="100" cy="52" rx="12" ry="9" fill="white" opacity="0.6"/>
-    <ellipse cx="62" cy="100" rx="9" ry="12" fill="white" opacity="0.4"/>
+    <ellipse cx="100" cy="52" rx="12" ry="9" fill="white" opacity="0.3"/>
+    <ellipse cx="62" cy="100" rx="9" ry="12" fill="white" opacity="0.2"/>
 
-    <!-- Center circle -->
+    <!-- Center circle (진하게 유지 → tinted mode에서 선명) -->
     <circle cx="100" cy="100" r="30" fill="#FBEC5D"/>
     <circle cx="100" cy="100" r="30" fill="url(#centerShade)"/>
-    <ellipse cx="95" cy="93" rx="8" ry="5" fill="white" opacity="0.4"/>
+    <ellipse cx="95" cy="93" rx="8" ry="5" fill="white" opacity="0.3"/>
   </g>
 </svg>
