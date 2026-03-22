@@ -79,10 +79,11 @@ export default function App() {
   // Apply data-theme attribute for light/dark CSS variables
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', colorMode);
-    document.body.style.background = colorMode === 'light' ? '#F7F8FA' : '#000000';
+    const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg-primary').trim() || (colorMode === 'light' ? '#F7F8FA' : '#000000');
+    document.body.style.background = bg;
     document.body.style.color = colorMode === 'light' ? '#191F28' : '#f0f0f5';
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.content = colorMode === 'light' ? '#F7F8FA' : '#000000';
+    if (meta) meta.content = bg;
   }, [colorMode]);
 
   const setColorMode = useCallback((mode) => {
@@ -622,7 +623,7 @@ export default function App() {
     <div className="app-container">
       <GlobalStyles />
       <style>{`@keyframes landingPearlReveal { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }`}</style>
-      {showSplash && <SplashScreen exiting={splashExiting} onAnimationEnd={() => setShowSplash(false)} colorMode={colorMode} cloverTheme={activeThemeColors?.cloverTheme} />}
+      {showSplash && <SplashScreen exiting={splashExiting} onAnimationEnd={() => setShowSplash(false)} cloverTheme={activeThemeColors?.cloverTheme} />}
       <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} style={{ display: 'none' }} />
       <input ref={nativeCameraRef} type="file" accept="image/*" capture="user" onChange={handleFile} style={{ display: 'none' }} />
 
@@ -1032,17 +1033,17 @@ export default function App() {
       {stage === 'upload' && (() => {
         const isL = colorMode === 'light';
         return (
-        <div style={{ background: isL ? '#F7F8FA' : '#08080c', padding: '24px 24px 0', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{ background: 'var(--bg-primary)', padding: '24px 24px 0', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <button onClick={reset} style={{
             alignSelf: 'flex-start', marginBottom: 147,
             width: 38, height: 38, borderRadius: '50%', border: 'none',
-            background: isL ? '#EAEBED' : 'rgba(255,255,255,0.08)', cursor: 'pointer',
+            background: 'var(--bg-input)', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 18, color: isL ? '#4E5968' : '#8888a0',
+            fontSize: 18, color: 'var(--text-muted)',
           }}>←</button>
           <div style={{
             width: 300, height: 300, borderRadius: '50%', overflow: 'hidden',
-            border: isL ? '3px solid #EAEBED' : '3px solid rgba(255,255,255,0.1)',
+            border: '3px solid var(--border-subtle)',
             boxShadow: 'none',
             position: 'relative',
           }}>
@@ -1052,11 +1053,10 @@ export default function App() {
           {photoQuality && !photoQuality.passed && (
             <div style={{
               margin: '16px 0 0', padding: '10px 16px', width: '100%', maxWidth: 320,
-              background: !hasBaseline() ? (isL ? 'rgba(220,38,38,0.06)' : 'rgba(220,38,38,0.15)') : (isL ? 'rgba(245,158,11,0.06)' : 'rgba(245,158,11,0.1)'),
-              backdropFilter: isL ? 'none' : 'blur(8px)', WebkitBackdropFilter: isL ? 'none' : 'blur(8px)',
-              border: `1px solid ${!hasBaseline() ? (isL ? 'rgba(220,38,38,0.15)' : 'rgba(220,38,38,0.3)') : (isL ? 'rgba(245,158,11,0.15)' : 'rgba(245,158,11,0.2)')}`, borderRadius: 16,
+              background: !hasBaseline() ? 'rgba(220,38,38,0.08)' : 'rgba(245,158,11,0.08)',
+              border: `1px solid ${!hasBaseline() ? 'rgba(220,38,38,0.15)' : 'rgba(245,158,11,0.15)'}`, borderRadius: 16,
             }}>
-              <div style={{ fontSize: 12, color: isL ? '#BF360C' : '#BF360C', lineHeight: 1.5 }}>
+              <div style={{ fontSize: 12, color: '#BF360C', lineHeight: 1.5 }}>
                 {!hasBaseline() && <span style={{ fontWeight: 700 }}>첫 분석은 기준이 되므로 좋은 사진이 필요해요!<br/></span>}
                 {photoQuality.issues.includes('too_dark') && <span>사진이 너무 어두워요. 밝은 곳에서 다시 촬영하세요.<br/></span>}
                 {photoQuality.issues.includes('too_bright') && <span>사진이 너무 밝아요. 직사광선을 피해서 촬영해보세요.<br/></span>}
@@ -1067,19 +1067,18 @@ export default function App() {
             </div>
           )}
           <div style={{ textAlign: 'center', marginTop: 60 }}>
-            <p style={{ fontSize: 15, fontWeight: 600, color: isL ? '#191F28' : '#f0f0f5', marginBottom: 3, letterSpacing: -0.3 }}>이 사진으로 분석할까요?</p>
-            <p style={{ fontSize: 11, color: isL ? '#8B95A1' : '#8888a0' }}>{imageSize}</p>
+            <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 3, letterSpacing: -0.3 }}>이 사진으로 분석할까요?</p>
+            <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>{imageSize}</p>
           </div>
           <div style={{ padding: '60px 20px', width: '100%' }}>
             {(() => {
               const isBlocked = !hasBaseline() && photoQuality && !photoQuality.passed;
               return <button onClick={isBlocked ? undefined : startAnalysis} disabled={isBlocked} style={{
-                marginBottom: 12, width: '100%', padding: 14, borderRadius: isL ? 16 : 50,
-                border: isL ? 'none' : '1px solid rgba(255,255,255,0.08)',
+                marginBottom: 12, width: '100%', padding: 14, borderRadius: 'var(--btn-radius)',
+                border: 'none',
                 background: isBlocked
-                  ? (isL ? '#D1D6DB' : 'linear-gradient(135deg, #444, #333)')
-                  : (isL ? '#81E4BD' : 'linear-gradient(135deg, #81E4BD, #E87080, #D05878)'),
-                backdropFilter: isL ? 'none' : 'blur(12px)', WebkitBackdropFilter: isL ? 'none' : 'blur(12px)',
+                  ? 'var(--text-disabled)'
+                  : 'var(--btn-primary-bg)',
                 boxShadow: 'none',
                 color: '#fff', fontSize: 16, fontWeight: 700,
                 cursor: isBlocked ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
@@ -1087,12 +1086,11 @@ export default function App() {
               }}><span style={{marginRight:6,fontSize:21,verticalAlign:'middle',display:'inline-flex'}}>{isBlocked ? <CameraIcon size={21} /> : <WandIcon size={21} />}</span>{isBlocked ? '다시 촬영해주세요' : 'AI 피부 분석 시작'}</button>;
             })()}
             <button onClick={() => fileRef.current?.click()} style={{
-              width: '100%', padding: 12, borderRadius: isL ? 16 : 50,
-              background: isL ? '#F2F3F5' : 'rgba(255,255,255,0.04)',
-              border: isL ? 'none' : '1px solid rgba(255,255,255,0.08)',
-              backdropFilter: isL ? 'none' : 'blur(12px)', WebkitBackdropFilter: isL ? 'none' : 'blur(12px)',
+              width: '100%', padding: 12, borderRadius: 'var(--btn-radius)',
+              background: 'var(--btn-secondary-bg)',
+              border: 'var(--btn-secondary-border)',
               boxShadow: 'none',
-              color: isL ? '#4E5968' : '#8888a0', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+              color: 'var(--text-muted)', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
             }}><span style={{marginRight:6,fontSize:21,verticalAlign:'middle',display:'inline-flex'}}><PhotoIcon size={21} /></span>다른 사진 선택</button>
           </div>
         </div>
@@ -1106,7 +1104,7 @@ export default function App() {
         <div style={{
           minHeight: '100dvh', display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center', padding: 40,
-          background: isL ? '#F7F8FA' : '#08080c',
+          background: 'var(--bg-primary)',
         }}>
           <div style={{ position: 'relative', marginBottom: 40 }}>
             {/* Blob aura behind the photo — only dark mode */}
@@ -1141,7 +1139,7 @@ export default function App() {
             {/* Photo circle */}
             <div style={{
               width: 220, height: 220, borderRadius: '50%', overflow: 'hidden',
-              border: isL ? '3px solid #EAEBED' : '3px solid rgba(255,255,255,0.1)',
+              border: '3px solid var(--border-subtle)',
               boxShadow: 'none',
               position: 'relative', zIndex: 1,
             }}>
@@ -1150,35 +1148,33 @@ export default function App() {
               ) : (
                 <div style={{
                   width: '100%', height: '100%',
-                  background: isL ? '#FFFFFF' : '#0e0e14',
+                  background: 'var(--bg-card-solid)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 44,
                 }}><SparkleIcon size={44} /></div>
               )}
             </div>
           </div>
 
-          <h2 style={{ fontSize: 22, fontWeight: 600, fontFamily: "'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif", color: isL ? '#191F28' : '#f0f0f5', letterSpacing: -0.3 }}>
+          <h2 style={{ fontSize: 22, fontWeight: 600, fontFamily: "'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif", color: 'var(--text-primary)', letterSpacing: -0.3 }}>
             피부 분석중
           </h2>
-          <p style={{ fontSize: 14, fontFamily: "'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif", color: isL ? '#8B95A1' : '#8888a0', margin: '8px 0 32px' }}>
+          <p style={{ fontSize: 14, fontFamily: "'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif", color: 'var(--text-muted)', margin: '8px 0 32px' }}>
             수분 · 탄력 · 피부결을 분석하고 있어요
           </p>
 
           <div style={{ width: '100%', maxWidth: 280 }}>
             <div style={{
               height: 6, borderRadius: 3,
-              background: isL ? '#F2F3F5' : 'rgba(255,255,255,0.06)', overflow: 'hidden', marginBottom: 12,
+              background: 'var(--progress-track)', overflow: 'hidden', marginBottom: 12,
             }}>
               <div style={{
                 height: '100%', borderRadius: 3,
-                background: isL
-                  ? 'linear-gradient(90deg, #81E4BD, #81E4BD)'
-                  : `linear-gradient(90deg, ${activeThemeColors.pearl[2]}, ${activeThemeColors.pearl[1]}, ${activeThemeColors.accent})`,
+                background: 'var(--progress-fill)',
                 width: `${Math.min(progress, 100)}%`,
                 transition: 'width 0.4s',
               }} />
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: isL ? '#8B95A1' : '#8888a0' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-muted)' }}>
               <span>{getProgressText(progress)}</span>
               <span>{Math.round(Math.min(progress, 99))}%</span>
             </div>
@@ -1186,7 +1182,7 @@ export default function App() {
 
           {/* Tip message */}
           <p key={getProgressTip(progress)} style={{
-            marginTop: 48, fontSize: 13, color: isL ? '#B0B8C1' : '#6b6b80', textAlign: 'center',
+            marginTop: 48, fontSize: 13, color: 'var(--text-dim)', textAlign: 'center',
             letterSpacing: -0.2, lineHeight: 1.5,
             animation: 'fadeIn 0.6s ease',
           }}>

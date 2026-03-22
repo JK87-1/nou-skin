@@ -45,21 +45,21 @@ export default function MyPage({ colorMode, setColorMode }) {
         {/* App Info / Version Footer */}
         <div style={{
           textAlign: 'center',
-          padding: colorMode === 'light' ? '20px 0 8px' : '12px 0 0',
+          padding: '20px 0 8px',
           animation: 'breatheIn 0.8s ease 0.55s both',
         }}>
           <div style={{
             fontSize: 11, fontWeight: 300, marginBottom: 4,
-            color: colorMode === 'light' ? '#B0B8C1' : 'var(--text-muted)',
+            color: 'var(--text-muted)',
           }}>루아 Beta v1.0.2</div>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 16 }}>
             <span style={{
               fontSize: 11, cursor: 'pointer', fontWeight: 300,
-              color: colorMode === 'light' ? '#B0B8C1' : 'var(--text-muted)',
+              color: 'var(--text-muted)',
             }}>이용약관</span>
             <span style={{
               fontSize: 11, cursor: 'pointer', fontWeight: 300,
-              color: colorMode === 'light' ? '#B0B8C1' : 'var(--text-muted)',
+              color: 'var(--text-muted)',
             }}>개인정보처리방침</span>
           </div>
         </div>

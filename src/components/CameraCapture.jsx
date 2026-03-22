@@ -59,30 +59,29 @@ const STATUS_TEXT = {
 function CameraErrorScreen({ reason, onFallback, onClose, onRetry, colorMode }) {
   const isInsecure = reason === 'insecure';
   const isDenied = reason === 'denied';
-  const isL = colorMode === 'light';
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: isL ? '#F7F8FA' : '#111', zIndex: 200,
+      position: 'fixed', inset: 0, background: 'var(--bg-primary)', zIndex: 200,
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       padding: '40px 24px', textAlign: 'center',
     }}>
       <div style={{
-        width: 80, height: 80, borderRadius: isL ? 24 : '50%', marginBottom: 24,
-        background: isL ? 'rgba(124,92,252,0.08)' : 'rgba(255,140,66,0.15)',
+        width: 80, height: 80, borderRadius: 24, marginBottom: 24,
+        background: 'var(--context-bg)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 36,
       }}>
         {isInsecure ? <LockIcon size={36} /> : isDenied ? '🚫' : <CameraIcon size={36} />}
       </div>
 
-      <h2 style={{ color: isL ? '#191F28' : '#fff', fontSize: 20, fontWeight: 700, marginBottom: 8 }}>
+      <h2 style={{ color: 'var(--text-primary)', fontSize: 20, fontWeight: 700, marginBottom: 8 }}>
         {isInsecure ? '보안 연결이 필요합니다' :
          isDenied ? '카메라 권한이 거부되었습니다' :
          '카메라를 사용할 수 없습니다'}
       </h2>
 
-      <p style={{ color: isL ? '#8B95A1' : 'rgba(255,255,255,0.6)', fontSize: 14, lineHeight: 1.6, marginBottom: 32, maxWidth: 300 }}>
+      <p style={{ color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.6, marginBottom: 32, maxWidth: 300 }}>
         {isInsecure
           ? '모바일에서 카메라를 사용하려면 HTTPS 연결이 필요합니다. 앨범에서 사진을 선택해주세요.'
           : isDenied
@@ -91,9 +90,8 @@ function CameraErrorScreen({ reason, onFallback, onClose, onRetry, colorMode }) 
       </p>
 
       <button onClick={onFallback} style={{
-        width: '100%', maxWidth: 300, padding: 16, borderRadius: isL ? 12 : 14, border: 'none',
-        background: isL ? '#81E4BD' : 'linear-gradient(135deg, #98FBCB, #FF8C42)',
-        boxShadow: isL ? '0 2px 8px rgba(124,92,252,0.25)' : 'none',
+        width: '100%', maxWidth: 300, padding: 16, borderRadius: 12, border: 'none',
+        background: 'var(--accent-primary)',
         color: '#fff', fontSize: 16, fontWeight: 700, cursor: 'pointer', marginBottom: 12,
       }}>
         앨범에서 사진 선택
@@ -101,10 +99,10 @@ function CameraErrorScreen({ reason, onFallback, onClose, onRetry, colorMode }) 
 
       {isDenied && (
         <button onClick={onRetry} style={{
-          width: '100%', maxWidth: 300, padding: 14, borderRadius: isL ? 12 : 14,
-          background: isL ? '#F2F3F5' : 'transparent',
-          border: isL ? 'none' : '1.5px solid rgba(255,255,255,0.3)',
-          color: isL ? '#4E5968' : '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', marginBottom: 12,
+          width: '100%', maxWidth: 300, padding: 14, borderRadius: 12,
+          background: 'var(--bg-secondary)',
+          border: 'var(--item-border)',
+          color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600, cursor: 'pointer', marginBottom: 12,
         }}>
           다시 시도
         </button>
@@ -112,7 +110,7 @@ function CameraErrorScreen({ reason, onFallback, onClose, onRetry, colorMode }) 
 
       <button onClick={onClose} style={{
         background: 'none', border: 'none',
-        color: isL ? '#B0B8C1' : 'rgba(255,255,255,0.4)',
+        color: 'var(--text-dim)',
         fontSize: 14, cursor: 'pointer', padding: '8px 16px',
       }}>
         돌아가기
@@ -582,16 +580,15 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
   const isReady = status === 'ready';
   const isCapturing = status === 'capturing' || status === 'captured';
   const canCapture = isReady || !mediapipeReady;
-  const isL = colorMode === 'light';
-  const accentOk = isL ? '#81E4BD' : '#4CAF50';
+  const accentOk = 'var(--accent-primary)';
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: isL ? '#F7F8FA' : '#000', zIndex: 200,
+      position: 'fixed', inset: 0, background: 'var(--bg-primary)', zIndex: 200,
       display: 'flex', flexDirection: 'column',
     }}>
       {/* Camera preview */}
-      <div style={{ flex: 1, position: 'relative', overflow: 'hidden', borderRadius: isL ? '0 0 24px 24px' : 0 }}>
+      <div style={{ flex: 1, position: 'relative', overflow: 'hidden', borderRadius: '0 0 24px 24px' }}>
         <video
           ref={videoRef}
           autoPlay
@@ -620,9 +617,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
             position: 'absolute',
             left: '16%', right: '16%',
             height: 2,
-            background: isL
-              ? 'linear-gradient(90deg, transparent, rgba(124,92,252,0.5), transparent)'
-              : 'linear-gradient(90deg, transparent, rgba(76,175,80,0.6), transparent)',
+            background: 'linear-gradient(90deg, transparent, rgba(129,228,189,0.6), transparent)',
             animation: 'scanLine 2.5s ease-in-out infinite',
             pointerEvents: 'none',
           }} />
@@ -644,10 +639,10 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
           style={{
             position: 'absolute', top: 'calc(16px + env(safe-area-inset-top, 0px))', left: 16,
             width: 40, height: 40, borderRadius: '50%',
-            background: isL ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.35)', border: 'none',
-            color: isL ? '#191F28' : '#fff', fontSize: 20, cursor: 'pointer',
+            background: 'rgba(255,255,255,0.85)', border: 'none',
+            color: '#191F28', fontSize: 20, cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: isL ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
             zIndex: 10,
           }}
         >
@@ -659,10 +654,10 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
           onClick={() => { cleanup(); onFallback(); }}
           style={{
             position: 'absolute', top: 'calc(16px + env(safe-area-inset-top, 0px))', right: 16,
-            padding: '8px 14px', borderRadius: isL ? 10 : 20,
-            background: isL ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.35)', border: 'none',
-            color: isL ? '#191F28' : '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer',
-            boxShadow: isL ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
+            padding: '8px 14px', borderRadius: 10,
+            background: 'rgba(255,255,255,0.85)', border: 'none',
+            color: '#191F28', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
             zIndex: 10,
           }}
         >
@@ -675,13 +670,13 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
 
       {/* Bottom controls */}
       <div style={{
-        background: isL ? '#F7F8FA' : 'rgba(0,0,0,0.85)',
+        background: 'var(--bg-primary)',
         padding: '16px 20px calc(20px + env(safe-area-inset-bottom, 0px))',
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14,
       }}>
         {/* Status text */}
         <p style={{
-          color: isReady ? accentOk : (isL ? '#191F28' : '#fff'),
+          color: isReady ? accentOk : 'var(--text-primary)',
           fontSize: 15, fontWeight: 600, textAlign: 'center',
           margin: 0, minHeight: 20,
           transition: 'color 0.3s',
@@ -701,7 +696,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
               <div style={{
                 width: 24, height: 24, borderRadius: '50%',
                 background: conditions[key] ? accentOk : 'transparent',
-                border: `2px solid ${conditions[key] ? accentOk : (isL ? '#D1D6DB' : 'rgba(255,255,255,0.3)')}`,
+                border: `2px solid ${conditions[key] ? accentOk : 'var(--text-disabled)'}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 transition: 'all 0.3s',
               }}>
@@ -709,7 +704,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
                   <span style={{ color: '#fff', fontSize: 12, fontWeight: 700 }}>&#10003;</span>
                 )}
               </div>
-              <span style={{ color: conditions[key] ? accentOk : (isL ? '#B0B8C1' : 'rgba(255,255,255,0.5)'), fontSize: 10, fontWeight: 600 }}>
+              <span style={{ color: conditions[key] ? accentOk : 'var(--text-dim)', fontSize: 10, fontWeight: 600 }}>
                 {label}
               </span>
             </div>
@@ -723,10 +718,10 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
           style={{
             width: 72, height: 72, borderRadius: '50%',
             background: canCapture
-              ? (isL ? '#81E4BD' : 'linear-gradient(135deg, #98FBCB, #FF8C42)')
-              : (isL ? '#EAEBED' : 'rgba(255,255,255,0.15)'),
-            border: `4px solid ${canCapture ? '#fff' : (isL ? '#D1D6DB' : 'rgba(255,255,255,0.2)')}`,
-            boxShadow: canCapture && isL ? '0 4px 16px rgba(124,92,252,0.3)' : 'none',
+              ? 'var(--accent-primary)'
+              : 'var(--text-disabled)',
+            border: `4px solid ${canCapture ? '#fff' : 'var(--text-disabled)'}`,
+            boxShadow: 'none',
             cursor: canCapture && !isCapturing ? 'pointer' : 'default',
             transition: 'all 0.3s',
             opacity: isCapturing ? 0.5 : 1,

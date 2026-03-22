@@ -28,9 +28,7 @@ const splashKeyframes = `
   }
 `;
 
-export default function SplashScreen({ exiting, onAnimationEnd, colorMode, cloverTheme }) {
-  const isLight = colorMode === 'light';
-
+export default function SplashScreen({ exiting, onAnimationEnd, cloverTheme }) {
   // Only fire callback when the overlay dissolve completes (not child animations)
   const handleAnimEnd = (e) => {
     if (exiting && e.animationName === 'splashDissolve') {
@@ -43,10 +41,9 @@ export default function SplashScreen({ exiting, onAnimationEnd, colorMode, clove
       onAnimationEnd={handleAnimEnd}
       style={{
         position: 'fixed', inset: 0, zIndex: 9999,
-        background: isLight ? '#F7F8FA' : '#000000',
+        background: 'var(--bg-primary)',
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
-        // Dissolve the entire overlay (including pearl) — starts after text exits
         animation: exiting
           ? 'splashDissolve 0.7s cubic-bezier(0.4, 0, 0.6, 1) 0.15s forwards'
           : undefined,
@@ -54,29 +51,26 @@ export default function SplashScreen({ exiting, onAnimationEnd, colorMode, clove
     >
       <style>{splashKeyframes}</style>
 
-      {/* Pearl — no separate exit animation, dissolves with the overlay */}
       <div style={{
         animation: exiting ? undefined : 'splashPearlIn 0.8s ease-out both',
       }}>
         <SoftCloverIcon theme={cloverTheme || 'verteDeH'} size={120} animate={!exiting} />
       </div>
 
-      {/* "루아" text — exits fast before overlay dissolves */}
       <div style={{
         marginTop: 24,
         fontSize: 32, fontWeight: 700, letterSpacing: 8, paddingLeft: 8,
-        color: isLight ? '#191F28' : '#f0f0f5',
+        color: 'var(--text-primary)',
         fontFamily: "'Outfit', sans-serif",
         animation: exiting
           ? 'splashTextExit 0.2s ease-in forwards'
           : 'splashTextIn 0.6s ease-out 0.4s both',
       }}>루아</div>
 
-      {/* Tagline — exits slightly before main text */}
       <div style={{
         marginTop: 8,
         fontSize: 10, letterSpacing: 2,
-        color: isLight ? '#8B95A1' : '#555568',
+        color: 'var(--text-dim)',
         animation: exiting
           ? 'splashTextExit 0.15s ease-in forwards'
           : 'splashFade 0.5s ease-out 0.8s both',

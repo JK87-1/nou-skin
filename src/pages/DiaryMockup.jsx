@@ -148,8 +148,8 @@ export default function DiaryMockup() {
       <div style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
         padding: '8px 16px', display: 'flex', gap: 6,
-        background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)',
-        borderBottom: '1px solid rgba(255,255,255,0.08)',
+        background: 'var(--bg-modal)', backdropFilter: 'blur(10px)',
+        borderBottom: '1px solid var(--border-subtle)',
       }}>
         <div style={{ fontSize: 10, color: '#888', alignSelf: 'center', marginRight: 4 }}>MOCKUP</div>
         {[
