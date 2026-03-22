@@ -28,7 +28,7 @@ import SkinWeather from './components/SkinWeather';
 import WeatherChip from './components/WeatherChip';
 import { getGoal, updateGoalProgress } from './storage/GoalStorage';
 import { addXP, checkAndAwardBadges, incrementStat, getTotalXP, getLevel } from './storage/BadgeStorage';
-import { calculateLevel, getThemeForLevel, getLevelTitleData, THEMES } from './data/BadgeData';
+import { calculateLevel, getDefaultTheme, getThemeById, getLevelTitleData, THEMES } from './data/BadgeData';
 import { BadgeCelebration } from './components/BadgeRanking';
 import SplashScreen from './components/SplashScreen';
 import { DropletIcon, SparkleIcon, LotionIcon, DiamondIcon, PaletteIcon, MicroscopeIcon, RulerIcon, EyeIcon, BubbleIcon, TargetIcon, SunIcon, MoonIcon, CameraIcon, TestTubeIcon, StarIcon, ShieldIcon, WandIcon, PhotoIcon, CheckIcon, SaveIcon, PastelIcon, LuaMiniIcon } from './components/icons/PastelIcons';
@@ -91,15 +91,15 @@ export default function App() {
     saveProfile({ colorMode: mode });
   }, []);
 
-  // Active theme — reactive to level changes + tab switches
+  // Active theme — reactive to colorMode + user preference
   const activeThemeColors = useMemo(() => {
     const prof = getProfile();
     if (prof.activeTheme) {
-      const t = THEMES.find(th => th.id === prof.activeTheme && userLevel >= th.range[0]);
-      if (t) return t;
+      const t = getThemeById(prof.activeTheme);
+      if (t.mode === colorMode) return t;
     }
-    return getThemeForLevel(userLevel);
-  }, [userLevel, activeTab]);
+    return getDefaultTheme(colorMode);
+  }, [colorMode, activeTab]);
 
   // Local fallback briefing when API fails
   const generateLocalBriefing = useCallback((scores) => {
@@ -443,11 +443,10 @@ export default function App() {
         if (badgeResult.newBadges.length > 0) {
           setTimeout(() => setCelebrateBadge(badgeResult.newBadges[0]), 1500);
         }
-        // Auto-upgrade theme & title on level-up
+        // Auto-upgrade title on level-up
         if (xpResult.levelUp) {
-          const newTheme = getThemeForLevel(xpResult.newLevel);
           const newTitle = getLevelTitleData(xpResult.newLevel);
-          saveProfile({ activeTheme: newTheme.id, selectedTitleLevel: newTitle.level });
+          saveProfile({ selectedTitleLevel: newTitle.level });
           setUserLevel(xpResult.newLevel);
         }
         // Submit score to ranking server
@@ -532,11 +531,10 @@ export default function App() {
           if (badgeResult.newBadges.length > 0) {
             setTimeout(() => setCelebrateBadge(badgeResult.newBadges[0]), 1500);
           }
-          // Auto-upgrade theme & title on level-up
+          // Auto-upgrade title on level-up
           if (demoXpResult.levelUp) {
-            const newTheme = getThemeForLevel(demoXpResult.newLevel);
             const newTitle = getLevelTitleData(demoXpResult.newLevel);
-            saveProfile({ activeTheme: newTheme.id, selectedTitleLevel: newTitle.level });
+            saveProfile({ selectedTitleLevel: newTitle.level });
             setUserLevel(demoXpResult.newLevel);
           }
           // Submit score to ranking server
@@ -815,13 +813,13 @@ export default function App() {
             </div>
           )}
           {/* First screen — fills full viewport */}
-          <div style={{ height: 'calc(100dvh - 72px)', display: 'flex', flexDirection: 'column', overflow: colorMode === 'light' ? 'auto' : 'hidden' }}>
+          <div style={{ height: 'calc(100dvh - 72px)', display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
           {/* Header with Weather Chip */}
           <div style={{ padding: '24px 24px 16px', position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontSize: 20, fontWeight: 700, color: '#81E4BD', letterSpacing: 6, fontFamily: "'Fredoka', sans-serif" }}>LUA</span>
-                <span style={{ fontSize: 9, color: colorMode === 'light' ? 'var(--text-dim)' : activeThemeColors.accent, background: colorMode === 'light' ? 'var(--chip-bg)' : `${activeThemeColors.accent}1a`, padding: '2px 8px', borderRadius: 'var(--chip-radius)', fontWeight: 500 }}>Beta</span>
+                <span style={{ fontSize: 9, color: 'var(--text-dim)', background: 'var(--chip-bg)', padding: '2px 8px', borderRadius: 'var(--chip-radius)', fontWeight: 500 }}>Beta</span>
               </div>
             </div>
             {/* Weather Chip */}
@@ -835,26 +833,25 @@ export default function App() {
 
           {/* Eternal Pearl Hero */}
           <div onClick={openCamera} style={{
-            flex: colorMode === 'light' ? 'none' : 1, display: 'flex', flexDirection: 'column',
+            display: 'flex', flexDirection: 'column',
             alignItems: 'center', justifyContent: 'center',
             padding: '0 20px', position: 'relative', zIndex: 2,
             cursor: 'pointer',
             WebkitTapHighlightColor: 'transparent',
           }}>
-            {/* Pearl card wrapper — white card in light, transparent in dark */}
+            {/* Pearl card wrapper */}
             <div style={{
-              background: colorMode === 'light' ? 'var(--bg-card)' : 'transparent',
-              borderRadius: colorMode === 'light' ? 'var(--card-border-radius)' : 0,
+              background: 'var(--bg-card)',
+              borderRadius: 'var(--card-border-radius)',
               boxShadow: 'none',
-              padding: colorMode === 'light' ? '32px 20px 28px' : '0 4px',
+              padding: '32px 20px 28px',
               width: '100%',
               textAlign: 'center',
             }}>
               <div style={{
-                position: 'relative', width: colorMode === 'light' ? 312 : 442, height: colorMode === 'light' ? 312 : 442,
+                position: 'relative', width: 312, height: 312,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 margin: '0 auto',
-                /* Cross-fade: landing pearl reveals as splash dissolves */
                 ...(showSplash ? {
                   opacity: 0,
                   transform: 'scale(0.92)',
@@ -863,16 +860,13 @@ export default function App() {
                     : undefined,
                 } : {}),
               }}>
-                <EternalPearl size={colorMode === 'light' ? 200 : 291} animated colors={activeThemeColors} theme={colorMode} />
+                <EternalPearl size={200} animated colors={activeThemeColors} theme={colorMode} />
               </div>
 
-              {/* CTA text inside card for light, below for dark */}
-              <div style={{ textAlign: 'center', marginTop: colorMode === 'light' ? 16 : 28 }}>
-                <p style={{ fontSize: colorMode === 'light' ? 16 : 18, fontWeight: colorMode === 'light' ? 600 : 300, color: 'var(--text-secondary)', letterSpacing: -0.3, lineHeight: 1.6, marginBottom: 6 }}>
-                  {colorMode === 'light'
-                    ? '탭 하여 피부를 분석하세요'
-                    : <>당신의 피부를 <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>비춰보세요</span></>
-                  }
+              {/* CTA text */}
+              <div style={{ textAlign: 'center', marginTop: 16 }}>
+                <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: -0.3, lineHeight: 1.6, marginBottom: 6 }}>
+                  탭 하여 피부를 분석하세요
                 </p>
                 <p style={{ fontSize: 12, color: 'var(--text-dim)', fontWeight: 300 }}>AI가 10개 지표를 정밀 분석합니다</p>
                 {/* Condition tags */}
@@ -880,25 +874,13 @@ export default function App() {
                   {['정면 셀카', '밝은 자연광', '맨 얼굴'].map(tag => (
                     <span key={tag} style={{
                       fontSize: 11, fontWeight: 400, color: 'var(--chip-text)',
-                      background: colorMode === 'light' ? '#F2F3F5' : 'var(--bg-card)',
-                      border: colorMode === 'light' ? 'none' : '1px solid var(--border-light)',
+                      background: 'var(--tag-bg)',
                       borderRadius: 'var(--chip-radius)', padding: '5px 12px', letterSpacing: -0.2,
                     }}>{tag}</span>
                   ))}
                 </div>
               </div>
             </div>
-
-            {/* Tap hint — only in dark mode */}
-            {colorMode !== 'light' && (
-              <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, animation: 'tapHintPulse 2.5s ease-in-out infinite' }}>
-                <style>{`@keyframes tapHintPulse { 0%,100% { opacity:0.5; } 50% { opacity:1; } }`}</style>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={activeThemeColors.accent} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.6 }}>
-                  <path d="M12 19V5m-7 7l7-7 7 7"/>
-                </svg>
-                <span style={{ fontSize: 12, color: activeThemeColors.accent, fontWeight: 400, letterSpacing: 0.5 }}>탭하여 시작</span>
-              </div>
-            )}
           </div>
 
           {/* Goal Progress Card */}
@@ -908,8 +890,8 @@ export default function App() {
             </div>
           )}
 
-          {/* AI Insight Card — only on landing when there's data */}
-          {colorMode === 'light' && getLatestRecord() && (
+          {/* AI Insight Card — on landing when there's data */}
+          {getLatestRecord() && (
             <div style={{ padding: '17px 20px 0' }}>
               <AiInsightCard colorMode={colorMode} />
             </div>
@@ -922,8 +904,8 @@ export default function App() {
               margin: '17px 20px 0',
               padding: 20,
               borderRadius: 20,
-              background: colorMode === 'light' ? '#FFFFFF' : 'var(--bg-card)',
-              border: colorMode === 'light' ? 'none' : '1px solid var(--border-subtle)',
+              background: 'var(--bg-card)',
+              border: 'none',
               boxShadow: 'none',
               cursor: 'pointer',
               animation: 'breatheIn 0.5s ease 0.3s both',
@@ -1194,12 +1176,12 @@ export default function App() {
 
       {/* ===== RESULT ===== */}
       {stage === 'result' && result && (
-        <div style={{ minHeight: '100dvh', background: colorMode === 'light' ? '#F7F8FA' : 'var(--bg-secondary)' }}>
+        <div style={{ minHeight: '100dvh', background: 'var(--bg-primary)' }}>
 
           {/* ═══════ Photo Hero ═══════ */}
           <div style={{
-            position: 'relative', width: '100%', height: colorMode === 'light' ? 340 : 430,
-            background: colorMode === 'light' ? 'linear-gradient(180deg, #1a1a2e, #08080c)' : 'linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-secondary) 60%, var(--bg-secondary) 100%)',
+            position: 'relative', width: '100%', height: 340,
+            background: 'linear-gradient(180deg, #1a1a2e, #08080c)',
             overflow: 'hidden',
           }}>
             {/* Nav */}
@@ -1305,9 +1287,9 @@ export default function App() {
           {/* ═══════ Bottom Sheet ═══════ */}
           <div style={{
             position: 'relative',
-            background: colorMode === 'light' ? '#F7F8FA' : `linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%)`,
+            background: 'var(--bg-primary)',
             borderRadius: '24px 24px 0 0',
-            marginTop: -28, padding: colorMode === 'light' ? '0 20px 28px' : '0 22px 28px', zIndex: 5,
+            marginTop: -28, padding: '0 20px 28px', zIndex: 5,
             boxShadow: 'none',
             animation: 'slideUp 0.6s ease-out 0.4s both',
           }}>
@@ -1317,146 +1299,59 @@ export default function App() {
             </div>
 
             {/* ── Header: 피부 컨디션 ── */}
-            {colorMode === 'light' ? (
-              /* ── Toss-style header ── */
-              <div style={{ animation: 'fadeUp 0.5s ease-out 0.6s both' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                  <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>피부 컨디션</span>
-                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                    {new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
-                  </span>
-                </div>
-                {/* card-flat sub-cards: 피부나이 + 종합점수 */}
-                <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-                  <div onClick={() => openDetail('skinAge')} style={{
-                    flex: 1, textAlign: 'center', padding: '18px 14px 16px',
-                    background: '#F2F4F6', borderRadius: 16, cursor: 'pointer',
-                  }}>
-                    <div style={{ fontSize: 11, color: '#8B95A1', marginBottom: 6 }}>피부나이</div>
-                    <div style={{ fontSize: 30, fontWeight: 700, color: '#191F28', fontFamily: 'var(--font-display)', lineHeight: 1 }}>
-                      <AnimatedNumber target={result.skinAge} />
-                      <span style={{ fontSize: 14, fontWeight: 500, color: '#B0B8C1', marginLeft: 2 }}>세</span>
-                    </div>
-                    {changes && changes.skinAge ? (
-                      changes.skinAge.diff !== 0 ? (
-                        <div style={{ fontSize: 11, fontWeight: 600, marginTop: 6, color: changes.skinAge.improved ? '#22C55E' : '#f06050' }}>
-                          {changes.skinAge.diff > 0 ? '+' : ''}{changes.skinAge.diff}세 {changes.skinAge.improved ? '↓' : '↑'}
-                        </div>
-                      ) : (
-                        <div style={{ fontSize: 11, color: '#B0B8C1', marginTop: 6 }}>변동 없음</div>
-                      )
-                    ) : (
-                      <div style={{ fontSize: 11, color: '#B0B8C1', marginTop: 6 }}>첫 측정</div>
-                    )}
-                  </div>
-                  <div style={{
-                    flex: 1, textAlign: 'center', padding: '18px 14px 16px',
-                    background: '#F2F4F6', borderRadius: 16,
-                  }}>
-                    <div style={{ fontSize: 11, color: '#8B95A1', marginBottom: 6 }}>종합 점수</div>
-                    <div style={{ fontSize: 30, fontWeight: 700, color: '#81E4BD', fontFamily: 'var(--font-display)', lineHeight: 1 }}>
-                      <AnimatedNumber target={result.overallScore} />
-                      <span style={{ fontSize: 14, fontWeight: 500, color: '#FFD4B8', marginLeft: 2 }}>점</span>
-                    </div>
-                    {changes && changes.overallScore ? (
-                      changes.overallScore.diff !== 0 ? (
-                        <div style={{ fontSize: 11, fontWeight: 600, marginTop: 6, color: changes.overallScore.improved ? '#22C55E' : '#f06050' }}>
-                          {changes.overallScore.diff > 0 ? '+' : ''}{changes.overallScore.diff}점 {changes.overallScore.improved ? '↑' : '↓'}
-                        </div>
-                      ) : (
-                        <div style={{ fontSize: 11, color: '#B0B8C1', marginTop: 6 }}>변동 없음</div>
-                      )
-                    ) : (
-                      <div style={{ fontSize: 11, color: '#B0B8C1', marginTop: 6 }}>첫 측정</div>
-                    )}
-                  </div>
-                </div>
+            <div style={{ animation: 'fadeUp 0.5s ease-out 0.6s both' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>피부 컨디션</span>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                  {new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
+                </span>
               </div>
-            ) : (
-              /* ── Dark mode header (original) ── */
-              <div style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                marginBottom: 18, animation: 'fadeUp 0.5s ease-out 0.6s both',
-                position: 'relative', overflow: 'hidden',
-              }}>
-                <div style={{ position: 'absolute', top: -20, right: -30, zIndex: 0, opacity: 0.3, pointerEvents: 'none' }}>
-                  <SoftCloverIcon theme={activeThemeColors.cloverTheme} size={160} animate={false} />
-                </div>
-                <div style={{ position: 'relative', zIndex: 1 }}>
-                  <span style={{ fontSize: 12, color: activeThemeColors.accent, fontWeight: 600, letterSpacing: 0.3 }}>분석 완료</span>
-                  <h2 style={{ fontSize: 22, fontWeight: 600, fontFamily: "'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif", color: 'var(--text-primary)', margin: '4px 0 4px', letterSpacing: -0.3 }}>피부 컨디션</h2>
-                  <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 300 }}>
-                    {new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
-                    {' · '}
-                    {new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', gap: 8, animation: 'popIn 0.5s ease-out 0.8s both', position: 'relative', zIndex: 1 }}>
-                  {/* Stable Skin Age card */}
-                  <div onClick={() => openDetail('skinAge')} style={{
-                    width: 66, height: 72, borderRadius: 14,
-                    background: 'var(--bg-card)', backdropFilter: 'var(--card-backdrop)', WebkitBackdropFilter: 'var(--card-backdrop)',
-                    border: '1px solid var(--border-subtle)',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: 'none',
-                    cursor: 'pointer',
-                  }}>
-                    <span style={{ fontSize: 24, fontWeight: 650, color: activeThemeColors.accent, lineHeight: 1, fontFamily: 'var(--font-display)' }}>
-                      <AnimatedNumber target={result.skinAge} />
-                    </span>
-                    <span style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 500, marginTop: 2 }}>피부나이</span>
-                    <span style={{ fontSize: 8, color: activeThemeColors.sub, fontWeight: 600, marginTop: 1 }}>측정값</span>
+              {/* card-flat sub-cards: 피부나이 + 종합점수 */}
+              <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                <div onClick={() => openDetail('skinAge')} style={{
+                  flex: 1, textAlign: 'center', padding: '18px 14px 16px',
+                  background: 'var(--tag-bg)', borderRadius: 16, cursor: 'pointer',
+                }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>피부나이</div>
+                  <div style={{ fontSize: 30, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1 }}>
+                    <AnimatedNumber target={result.skinAge} />
+                    <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-dim)', marginLeft: 2 }}>세</span>
                   </div>
-                  {/* Overall Score card with gauge */}
-                  <div style={{
-                    width: 66, height: 72, borderRadius: 14,
-                    background: 'var(--bg-card)', backdropFilter: 'var(--card-backdrop)', WebkitBackdropFilter: 'var(--card-backdrop)',
-                    border: '1px solid var(--border-subtle)',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: 'none',
-                    position: 'relative',
-                  }}>
-                    {/* Mini circular gauge */}
-                    <svg width={62} height={62} style={{ transform: 'rotate(-90deg)', position: 'absolute' }}>
-                      <defs>
-                        <linearGradient id="miniGauge" x1="0%" y1="0%" x2="100%" y2="0%">
-                          <stop offset="0%" stopColor={activeThemeColors.sub} />
-                          <stop offset="100%" stopColor={activeThemeColors.accent} />
-                        </linearGradient>
-                      </defs>
-                      <circle cx={31} cy={31} r={25} fill="none" stroke="var(--border-subtle)" strokeWidth={4} />
-                      <circle cx={31} cy={31} r={25} fill="none" stroke="url(#miniGauge)" strokeWidth={4}
-                        strokeDasharray={157} strokeDashoffset={157 - (result.overallScore / 100) * 157}
-                        strokeLinecap="round" style={{ transition: 'stroke-dashoffset 1.2s ease-out' }} />
-                    </svg>
-                    <span style={{ fontSize: 24, fontWeight: 650, color: activeThemeColors.accent, lineHeight: 1, fontFamily: 'var(--font-display)', zIndex: 1 }}>
-                      <AnimatedNumber target={result.overallScore} />
-                    </span>
-                    <span style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 500, marginTop: 1, zIndex: 1 }}>종합</span>
-                    {changes && changes.overallScore.diff !== 0 && (
-                      <span style={{ fontSize: 8, fontWeight: 700, color: changes.overallScore.improved ? '#4ecb71' : '#f06050', zIndex: 1 }}>
-                        {changes.overallScore.diff > 0 ? '+' : ''}{changes.overallScore.diff}
-                      </span>
-                    )}
-                  </div>
-                  {/* Today measurement count */}
-                  {(() => {
-                    const todayCount = getTodayRecords().length;
-                    return todayCount > 1 ? (
-                      <div style={{
-                        width: 42, height: 72, borderRadius: 14,
-                        background: `${activeThemeColors.accent}14`,
-                        border: `1px solid ${activeThemeColors.accent}26`,
-                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                      }}>
-                        <span style={{ fontSize: 20, fontWeight: 700, color: activeThemeColors.accent, lineHeight: 1, fontFamily: 'var(--font-display)' }}>{todayCount}</span>
-                        <span style={{ fontSize: 8, color: 'var(--text-muted)', fontWeight: 500, marginTop: 2 }}>회째</span>
+                  {changes && changes.skinAge ? (
+                    changes.skinAge.diff !== 0 ? (
+                      <div style={{ fontSize: 11, fontWeight: 600, marginTop: 6, color: changes.skinAge.improved ? 'var(--accent-success)' : '#f06050' }}>
+                        {changes.skinAge.diff > 0 ? '+' : ''}{changes.skinAge.diff}세 {changes.skinAge.improved ? '↓' : '↑'}
                       </div>
-                    ) : null;
-                  })()}
+                    ) : (
+                      <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 6 }}>변동 없음</div>
+                    )
+                  ) : (
+                    <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 6 }}>첫 측정</div>
+                  )}
+                </div>
+                <div style={{
+                  flex: 1, textAlign: 'center', padding: '18px 14px 16px',
+                  background: 'var(--tag-bg)', borderRadius: 16,
+                }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>종합 점수</div>
+                  <div style={{ fontSize: 30, fontWeight: 700, color: 'var(--accent-primary)', fontFamily: 'var(--font-display)', lineHeight: 1 }}>
+                    <AnimatedNumber target={result.overallScore} />
+                    <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-dim)', marginLeft: 2 }}>점</span>
+                  </div>
+                  {changes && changes.overallScore ? (
+                    changes.overallScore.diff !== 0 ? (
+                      <div style={{ fontSize: 11, fontWeight: 600, marginTop: 6, color: changes.overallScore.improved ? 'var(--accent-success)' : '#f06050' }}>
+                        {changes.overallScore.diff > 0 ? '+' : ''}{changes.overallScore.diff}점 {changes.overallScore.improved ? '↑' : '↓'}
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 6 }}>변동 없음</div>
+                    )
+                  ) : (
+                    <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 6 }}>첫 측정</div>
+                  )}
                 </div>
               </div>
-            )}
+            </div>
 
             {/* ── Save & Share ── */}
             <div style={{ display: 'flex', gap: 10, marginBottom: 16, animation: 'fadeUp 0.5s ease-out 0.7s both' }}>
@@ -1478,18 +1373,15 @@ export default function App() {
             </div>
 
             {/* ── Skin Info glass card ── */}
-            <div className="glass-card" style={{ padding: colorMode === 'light' ? '24px' : '4px 0', animation: 'fadeUp 0.5s ease-out 0.85s both' }}>
-              {/* Section icon header — light mode only */}
-              {colorMode === 'light' && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
-                  <LuaMiniIcon size={14} />
-                  <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>피부 타입 정보</h2>
-                </div>
-              )}
+            <div className="glass-card" style={{ padding: '24px', animation: 'fadeUp 0.5s ease-out 0.85s both' }}>
+              {/* Section icon header */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+                <LuaMiniIcon size={14} />
+                <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>피부 타입 정보</h2>
+              </div>
               {/* Skin type */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: colorMode === 'light' ? '0' : '8px 20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  {colorMode !== 'light' && <span style={{ fontSize: 15 }}>🧬</span>}
                   <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>피부 타입</span>
                 </div>
                 <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{result.skinType}</span>
@@ -1568,43 +1460,22 @@ export default function App() {
               return (
               <div className="glass-card" style={{
                 animation: 'fadeUp 0.5s ease-out 0.88s both',
-                border: colorMode === 'light' ? 'none' : `1px solid ${grade.border}`,
-                background: colorMode === 'light' ? '#FFFFFF' : `linear-gradient(135deg, ${activeThemeColors.accent}0f, ${activeThemeColors.accent}0a)`,
+                border: 'none',
+                background: 'var(--bg-card)',
               }}>
-                {/* Section icon header — light mode */}
-                {colorMode === 'light' && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
-                    <LuaMiniIcon size={14} />
-                    <div style={{ flex: 1 }}>
-                      <h2 style={{ fontSize: 15, fontWeight: 700, color: '#191F28', margin: 0 }}>컨디션 브리핑</h2>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <div style={{ padding: '4px 10px', borderRadius: 8, background: 'rgba(124,92,252,0.08)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <span style={{ fontSize: 15, fontWeight: 800, color: '#81E4BD', fontFamily: 'var(--font-display)' }}>{grade.letter}</span>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: '#81E4BD' }}>{score}점</span>
-                      </div>
-                    </div>
+                {/* Section icon header */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+                  <LuaMiniIcon size={14} />
+                  <div style={{ flex: 1 }}>
+                    <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>컨디션 브리핑</h2>
                   </div>
-                )}
-                {/* Header: title + grade + score — dark mode */}
-                {colorMode !== 'light' && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: activeThemeColors.accent }}>오늘의 피부 컨디션</span>
-                  <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
-                    {getTodayRecords().length > 1 && (
-                      <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{getTodayRecords().length}회째</span>
-                    )}
-                    <div style={{
-                      display: 'flex', alignItems: 'center', gap: 6,
-                      padding: '4px 10px', borderRadius: 20,
-                      background: grade.bg, border: `1px solid ${grade.border}`,
-                    }}>
-                      <span style={{ fontSize: 15, fontWeight: 800, color: grade.color, fontFamily: 'var(--font-display)' }}>{grade.letter}</span>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: grade.color }}>{score}점</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{ padding: '4px 10px', borderRadius: 8, background: 'var(--context-bg)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--accent-primary)', fontFamily: 'var(--font-display)' }}>{grade.letter}</span>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent-primary)' }}>{score}점</span>
                     </div>
                   </div>
                 </div>
-                )}
                 {/* Briefing text */}
                 <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.8, margin: 0 }}>{conditionBriefing}</p>
                 {/* Today's change badges */}
@@ -1634,21 +1505,14 @@ export default function App() {
 
             {/* ── AI Analysis ── */}
             <div className="glass-card" style={{ animation: 'fadeUp 0.5s ease-out 0.9s both', boxShadow: 'none' }}>
-              {colorMode === 'light' ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
-                  <LuaMiniIcon size={14} />
-                  <div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>전체 피부 분석</div>
-                    <div style={{ fontSize: 11, color: '#8B95A1', marginTop: 1 }}>AI 맞춤 리포트</div>
-                  </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+                <LuaMiniIcon size={14} />
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>전체 피부 분석</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>AI 맞춤 리포트</div>
                 </div>
-              ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                  <SoftCloverIcon theme={activeThemeColors.cloverTheme} size={28} animate={false} />
-                  <span style={{ fontSize: 14, fontWeight: 700, color: activeThemeColors.accent }}>전체 피부 분석</span>
-                </div>
-              )}
-              <p style={{ fontSize: colorMode === 'light' ? 13.5 : 14, color: 'var(--text-secondary)', lineHeight: 1.75 }}>{result.advice}</p>
+              </div>
+              <p style={{ fontSize: 13.5, color: 'var(--text-secondary)', lineHeight: 1.75 }}>{result.advice}</p>
               {result.aiNotes && (() => {
                 // Remove any sentence about identity comparison (동일 인물, 같은 사람, etc.)
                 const filtered = result.aiNotes
@@ -1658,8 +1522,8 @@ export default function App() {
                 return (
                 <div style={{
                   marginTop: 14, padding: '14px 16px', borderRadius: 16,
-                  background: colorMode === 'light' ? '#F2F4F6' : `linear-gradient(135deg, ${activeThemeColors.accent}0f, ${activeThemeColors.accent}0f)`,
-                  border: colorMode === 'light' ? 'none' : `1px solid ${activeThemeColors.accent}1f`,
+                  background: 'var(--tag-bg)',
+                  border: 'none',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
                     <span style={{ fontSize: 12, display: 'inline-flex', verticalAlign: 'middle' }}><MicroscopeIcon size={12} /></span>
@@ -1727,21 +1591,14 @@ export default function App() {
             </div>
 
             {/* ── GROUP 1: Condition Metrics ── */}
-            <div className="glass-card" style={{ padding: colorMode === 'light' ? '24px' : '18px 10px', animation: 'fadeUp 0.5s ease-out 1.0s both', boxShadow: 'none' }}>
-              {colorMode === 'light' ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
-                  <LuaMiniIcon size={14} />
-                  <div>
-                    <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>컨디션 지표</h2>
-                    <div style={{ fontSize: 11, color: '#8B95A1', marginTop: 1 }}>일상 관리 포인트</div>
-                  </div>
+            <div className="glass-card" style={{ padding: '24px', animation: 'fadeUp 0.5s ease-out 1.0s both', boxShadow: 'none' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+                <LuaMiniIcon size={14} />
+                <div>
+                  <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>컨디션 지표</h2>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>일상 관리 포인트</div>
                 </div>
-              ) : (
-                <>
-                  <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4, paddingLeft: 8, color: 'var(--text-primary)' }}>컨디션 지표 <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 400 }}>일상 관리 포인트</span></div>
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)', paddingLeft: 8, marginBottom: 14 }}>탭하면 과학적 근거</div>
-                </>
-              )}
+              </div>
               <MetricBar label="수분도" value={result.moisture} unit="%" icon={<DropletIcon size={18} />} color="#A8DEFF"
                 description={result.moisture >= 60 ? '정상 범위' : '보습 강화 필요'}
                 onClick={() => openDetail('moisture')} />
@@ -1760,18 +1617,14 @@ export default function App() {
             </div>
 
             {/* ── GROUP 2: Aging Metrics ── */}
-            <div className="glass-card" style={{ padding: colorMode === 'light' ? '24px' : '18px 10px', animation: 'fadeUp 0.5s ease-out 1.1s both', boxShadow: 'none' }}>
-              {colorMode === 'light' ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
-                  <LuaMiniIcon size={14} />
-                  <div>
-                    <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>노화 지표</h2>
-                    <div style={{ fontSize: 11, color: '#8B95A1', marginTop: 1 }}>피부 나이에 큰 영향</div>
-                  </div>
+            <div className="glass-card" style={{ padding: '24px', animation: 'fadeUp 0.5s ease-out 1.1s both', boxShadow: 'none' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+                <LuaMiniIcon size={14} />
+                <div>
+                  <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>노화 지표</h2>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>피부 나이에 큰 영향</div>
                 </div>
-              ) : (
-                <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 14, paddingLeft: 8, color: 'var(--text-primary)' }}>노화 지표 <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 400 }}>피부 나이에 큰 영향</span></div>
-              )}
+              </div>
               <MetricBar label="피부결" value={result.textureScore} unit="점" icon={<LotionIcon size={18} />} color="#FFB0C8"
                 description={result.textureScore >= 70 ? '매끈한 피부' : result.textureScore >= 45 ? '각질 케어 추천' : '피부결 집중 관리 필요'}
                 onClick={() => openDetail('texture')} />

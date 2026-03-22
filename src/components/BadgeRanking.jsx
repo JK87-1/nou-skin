@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { BADGE_DATABASE, LEVEL_TITLES, THEMES, calculateLevel, getLevelTitle, getLevelTitleData, getThemeForLevel } from '../data/BadgeData';
+import { BADGE_DATABASE, LEVEL_TITLES, THEMES, calculateLevel, getLevelTitle, getLevelTitleData, getDefaultTheme, getThemeById, getThemesForMode } from '../data/BadgeData';
 import {
   getTotalXP, getLevel, getLevelProgress,
   getAllBadgesWithStatus, checkAndAwardBadges, getStats,
@@ -49,7 +49,6 @@ function MiniPearl({ size = 24, colors, glow, id: pid, cloverTheme }) {
 
 // ===== Main Component =====
 export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode }) {
-  const isLight = colorMode === 'light';
   const [tab, setTab] = useState('badges'); // 'badges' | 'theme' | 'ranking'
   const [selectedCat, setSelectedCat] = useState('streak');
   const [selectedBadge, setSelectedBadge] = useState(null);
@@ -75,11 +74,11 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
   // Theme & selected title
   const activeTheme = useMemo(() => {
     if (profile.activeTheme) {
-      const t = THEMES.find(th => th.id === profile.activeTheme && level >= th.range[0]);
-      if (t) return t;
+      const t = getThemeById(profile.activeTheme);
+      if (t.mode === colorMode) return t;
     }
-    return getThemeForLevel(level);
-  }, [profile.activeTheme, level]);
+    return getDefaultTheme(colorMode);
+  }, [profile.activeTheme, colorMode]);
   const selectedTitleData = useMemo(() => {
     if (profile.selectedTitleLevel) {
       const t = LEVEL_TITLES.find(lt => lt.level === profile.selectedTitleLevel && level >= lt.level);
@@ -222,10 +221,8 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
       `}</style>
 
       {/* ── Profile Header ── */}
-      {isLight ? (
-        /* ===== LIGHT MODE: Toss-style centered profile card ===== */
         <div style={{
-          background: '#FFFFFF', borderRadius: 16, padding: '28px 20px',
+          background: 'var(--bg-card)', borderRadius: 16, padding: '28px 20px',
           boxShadow: 'none', marginBottom: 12,
           textAlign: 'center', position: 'relative',
           animation: 'brFadeInUp 0.5s ease both',
@@ -237,12 +234,12 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
               style={{
                 position: 'absolute', top: 20, right: 20, zIndex: 2,
                 width: 32, height: 32, borderRadius: '50%',
-                border: 'none', background: '#F2F3F5',
+                border: 'none', background: 'var(--tag-bg)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: 'pointer',
               }}
             >
-              <span style={{ fontSize: 16, color: '#8B95A1' }}>{'⚙'}</span>
+              <span style={{ fontSize: 16, color: 'var(--text-muted)' }}>{'⚙'}</span>
             </button>
           )}
 
@@ -286,8 +283,8 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
                 onKeyDown={(e) => { if (e.key === 'Enter') saveName(); }}
                 maxLength={12}
                 style={{
-                  fontSize: 22, fontWeight: 700, color: '#191F28',
-                  background: '#F7F8FA', border: '1.5px solid rgba(124,92,252,0.3)',
+                  fontSize: 22, fontWeight: 700, color: 'var(--text-primary)',
+                  background: 'var(--item-bg)', border: '1.5px solid rgba(124,92,252,0.3)',
                   borderRadius: 10, padding: '2px 10px', width: 180,
                   outline: 'none', fontFamily: 'inherit', textAlign: 'center',
                 }}
@@ -295,7 +292,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
             ) : (
               <span
                 onClick={startNameEdit}
-                style={{ fontSize: 22, fontWeight: 700, color: '#191F28', cursor: 'pointer' }}
+                style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', cursor: 'pointer' }}
               >
                 {profile.nickname || '사용자'}
               </span>
@@ -321,10 +318,10 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
           {/* XP Progress bar */}
           <div style={{ margin: '0 auto', maxWidth: 240 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-              <span style={{ fontSize: 12, color: '#8B95A1' }}>Level {level}</span>
-              <span style={{ fontSize: 12, color: '#8B95A1' }}>{totalXP - currentLevelXP} / {nextLevelXP - currentLevelXP} XP</span>
+              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Level {level}</span>
+              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{totalXP - currentLevelXP} / {nextLevelXP - currentLevelXP} XP</span>
             </div>
-            <div style={{ height: 6, background: '#F2F3F5', borderRadius: 3, overflow: 'hidden' }}>
+            <div style={{ height: 6, background: 'var(--progress-track)', borderRadius: 3, overflow: 'hidden' }}>
               <div style={{
                 width: `${levelProgress}%`, height: '100%', borderRadius: 3,
                 background: 'linear-gradient(90deg, #81E4BD, #81E4BD)',
@@ -343,196 +340,18 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
             ].map((s, i, arr) => (
               <div key={i} onClick={s.onClick} style={{
                 flex: 1, textAlign: 'center', cursor: s.onClick ? 'pointer' : 'default',
-                borderRight: i < arr.length - 1 ? '1px solid #F2F3F5' : 'none',
+                borderRight: i < arr.length - 1 ? '1px solid var(--progress-track)' : 'none',
               }}>
-                <div style={{ fontSize: 22, fontWeight: 700, color: '#191F28' }}>{s.value}</div>
-                <div style={{ fontSize: 11, color: '#8B95A1' }}>{s.label}</div>
+                <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)' }}>{s.value}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{s.label}</div>
               </div>
             ))}
           </div>
         </div>
-      ) : (
-        /* ===== DARK MODE: Original horizontal layout ===== */
-        <div style={{
-          padding: '10px 0 22px', animation: 'brFadeInUp 0.5s ease both',
-          position: 'relative',
-        }}>
-          {/* Settings gear (top right, same height as profile) */}
-          {onSettingsClick && (
-            <button
-              onClick={onSettingsClick}
-              style={{
-                position: 'absolute', top: 10, right: 0, zIndex: 2,
-                width: 28, height: 28, borderRadius: 9,
-                border: '1px solid var(--border-subtle)',
-                background: 'var(--bg-card)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer',
-              }}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="3"/>
-                <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
-              </svg>
-            </button>
-          )}
-
-          {/* Avatar + Info */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 20 }}>
-            {/* Avatar — tap to change photo */}
-            <div style={{ position: 'relative', flexShrink: 0, cursor: 'pointer' }} onClick={() => photoInputRef.current?.click()}>
-              <input ref={photoInputRef} type="file" accept="image/*" onChange={handlePhotoSelect} style={{ display: 'none' }} />
-              {/* Clover Pearl background */}
-              <div style={{
-                position: 'absolute', top: '50%', left: '50%',
-                transform: 'translate(-50%, -50%)',
-                zIndex: 0, opacity: 0.6, pointerEvents: 'none',
-              }}>
-                <SoftCloverIcon theme={activeTheme.cloverTheme || 'navySapphire'} size={64} animate />
-              </div>
-              <div style={{
-                width: 100, height: 100, borderRadius: 30,
-                border: `2.5px solid ${activeTheme.accent}66`,
-                background: `linear-gradient(135deg, ${activeTheme.pearl[0]}, ${activeTheme.pearl[1]}, ${activeTheme.pearl[2]})`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                overflow: 'hidden',
-                position: 'relative', zIndex: 1,
-              }}>
-                {profile.profileImage ? (
-                  <img src={profile.profileImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  <span style={{ fontSize: 44 }}>👤</span>
-                )}
-                {/* Camera overlay */}
-                <div style={{
-                  position: 'absolute', bottom: 0, left: 0, right: 0,
-                  height: 28, background: 'var(--bg-modal-overlay)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
-                    <circle cx="12" cy="13" r="4"/>
-                  </svg>
-                </div>
-              </div>
-              {/* Level badge */}
-              <div style={{
-                position: 'absolute', bottom: -5, right: -5, zIndex: 2,
-                width: 32, height: 32, borderRadius: 11,
-                background: 'linear-gradient(135deg, #F0B870, #f59e0b)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                border: '2.5px solid #000000',
-                fontSize: 14, fontWeight: 800, color: '#1a1a2e',
-              }}>{level}</div>
-            </div>
-
-            {/* Name + Title */}
-            <div style={{ flex: 1, paddingRight: 32 }}>
-              <div style={{ marginBottom: 10 }}>
-                <div style={{ marginBottom: 6 }}>
-                  {editingName ? (
-                    <input
-                      ref={nameInputRef}
-                      value={nameInput}
-                      onChange={(e) => setNameInput(e.target.value)}
-                      onBlur={saveName}
-                      onKeyDown={(e) => { if (e.key === 'Enter') saveName(); }}
-                      maxLength={12}
-                      style={{
-                        fontSize: 24, fontWeight: 700, color: 'var(--text-primary)',
-                        background: 'var(--bg-card-hover)', border: '1.5px solid rgba(240,144,112,0.4)',
-                        borderRadius: 10, padding: '2px 10px', width: '100%', maxWidth: 180,
-                        outline: 'none', fontFamily: 'inherit',
-                      }}
-                    />
-                  ) : (
-                    <span
-                      onClick={startNameEdit}
-                      style={{
-                        fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', cursor: 'pointer',
-                        borderBottom: '1.5px dashed rgba(255,255,255,0.15)',
-                        paddingBottom: 1,
-                      }}
-                    >
-                      {profile.nickname || '사용자'}
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 6, verticalAlign: 'middle' }}>
-                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                      </svg>
-                    </span>
-                  )}
-                </div>
-                <button
-                  onClick={(e) => { e.stopPropagation(); setShowTitleModal(true); }}
-                  style={{
-                    fontSize: 12, fontWeight: 600, color: activeTheme.accent,
-                    background: `${activeTheme.accent}12`, padding: '5px 12px 5px 8px', borderRadius: 20,
-                    border: `1px dashed ${activeTheme.accent}40`,
-                    cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5,
-                    transition: 'all 0.2s', fontFamily: 'inherit',
-                  }}
-                >
-                  <span style={{ fontSize: 13 }}>{selectedTitleData.icon}</span>
-                  {levelTitle}
-                  <span style={{ fontSize: 10, color: 'var(--text-dim)', marginLeft: 2 }}>{'▾'}</span>
-                </button>
-              </div>
-              {/* XP Bar */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>Lv.{level} {'→'} Lv.{level + 1}</span>
-                  <span style={{
-                    fontSize: 7, fontWeight: 700, color: activeTheme.accent,
-                    background: `${activeTheme.accent}12`,
-                    padding: '1px 5px', borderRadius: 4, letterSpacing: 0.3,
-                  }}>{activeTheme.name}</span>
-                </div>
-                <span style={{ fontSize: 10, fontWeight: 600, color: activeTheme.accent, fontFamily: "var(--font-display)" }}>
-                  {totalXP - currentLevelXP} / {nextLevelXP - currentLevelXP} XP
-                </span>
-              </div>
-              <div style={{
-                height: 6, borderRadius: 3,
-                background: 'var(--bg-card-hover)', overflow: 'hidden',
-              }}>
-                <div style={{
-                  width: `${levelProgress}%`, height: '100%', borderRadius: 3,
-                  background: `linear-gradient(90deg, ${activeTheme.pearl[2]}, ${activeTheme.accent})`,
-                  transition: 'width 1s ease-out',
-                }} />
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Stats */}
-          <div style={{ display: 'flex', gap: 10 }}>
-            {[
-              { icon: '🪞', value: records.length, label: '측정' },
-              { icon: '🎯', value: stats.totalMissions || 0, label: '미션' },
-              { icon: '🔥', value: streak.count, label: '연속' },
-              { icon: '🏅', value: `${earnedCount}/${totalBadgeCount}`, label: '뱃지', onClick: () => setShowBadgeModal(true) },
-            ].map((s, i) => (
-              <div key={i} onClick={s.onClick} style={{
-                flex: 1, padding: '16px 4px 14px', textAlign: 'center',
-                background: 'var(--bg-card)', borderRadius: 16,
-                border: s.onClick ? '1px solid rgba(240,144,112,0.15)' : '1px solid var(--border-separator)',
-                cursor: s.onClick ? 'pointer' : 'default',
-                transition: 'border-color 0.2s',
-              }}>
-                <div style={{ fontSize: 22, marginBottom: 5 }}>{s.icon}</div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>{s.value}</div>
-                <div style={{ fontSize: 11, color: s.onClick ? activeTheme.accent : 'var(--text-dim)', marginTop: 6 }}>{s.label}{s.onClick ? ' >' : ''}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* ── Tab Switcher ── */}
-      {isLight ? (
-        /* Toss-style segment control */
         <div style={{
-          display: 'flex', gap: 2, background: '#EAEBED', borderRadius: 12,
+          display: 'flex', gap: 2, background: 'var(--tag-bg)', borderRadius: 12,
           padding: 4, margin: '12px 0 16px',
           animation: 'brFadeInUp 0.5s ease 0.1s both',
         }}>
@@ -545,61 +364,40 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
               flex: 1, textAlign: 'center', padding: '8px 12px',
               borderRadius: 8, fontSize: 13, fontWeight: 600,
               border: 'none',
-              background: tab === t.key ? '#FFFFFF' : 'transparent',
-              color: tab === t.key ? '#191F28' : '#8B95A1',
+              background: tab === t.key ? 'var(--bg-card)' : 'transparent',
+              color: tab === t.key ? 'var(--text-primary)' : 'var(--text-muted)',
               boxShadow: 'none',
               cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s',
             }}>{t.label}</button>
           ))}
         </div>
-      ) : (
-        <div style={{
-          background: 'var(--bg-card)', borderRadius: 14, padding: 3,
-          border: '1px solid var(--border-separator)', marginBottom: 20,
-          display: 'flex', animation: 'brFadeInUp 0.5s ease 0.1s both',
-        }}>
-          {[
-            { key: 'badges', label: '🏅 뱃지 컬렉션' },
-            { key: 'theme', label: '🎨 테마' },
-            { key: 'ranking', label: '👑 주간 랭킹' },
-          ].map(t => (
-            <button key={t.key} onClick={() => setTab(t.key)} style={{
-              flex: 1, padding: '10px 4px', borderRadius: 11, fontSize: 12, fontWeight: 600,
-              border: tab === t.key ? `1px solid ${activeTheme.accent}25` : '1px solid transparent',
-              background: tab === t.key ? `${activeTheme.accent}18` : 'transparent',
-              color: tab === t.key ? activeTheme.accent : 'var(--text-dim)',
-              cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.25s',
-            }}>{t.label}</button>
-          ))}
-        </div>
-      )}
 
       {/* ── Badge Collection Tab ── */}
       {tab === 'badges' && (
         <div>
-          {/* Next Goals — shown first in light mode (mockup order) */}
-          {isLight && nextGoals.length > 0 && (
+          {/* Next Goals */}
+          {nextGoals.length > 0 && (
             <>
               <div style={{ padding: '0 0 8px' }}>
-                <span style={{ fontSize: 14, fontWeight: 600, color: '#191F28' }}>다음 목표</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>다음 목표</span>
               </div>
               {nextGoals.slice(0, 1).map((g) => (
                 <div key={g.id} style={{
-                  background: '#FFFFFF', borderRadius: 16, padding: 20,
+                  background: 'var(--bg-card)', borderRadius: 16, padding: 20,
                   boxShadow: 'none', marginBottom: 16,
                   animation: 'brFadeInUp 0.5s ease 0.15s both',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
                     <span style={{ fontSize: 28, display: 'inline-flex' }}><PastelIcon emoji={g.icon} size={28} /></span>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: '#191F28' }}>{g.name}</div>
-                      <div style={{ fontSize: 12, color: '#8B95A1', marginTop: 4 }}>{g.desc}</div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{g.name}</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{g.desc}</div>
                     </div>
                     <span style={{ fontSize: 14, fontWeight: 700, color: '#81E4BD' }}>
                       {g.current}/{g.target}
                     </span>
                   </div>
-                  <div style={{ height: 6, background: '#F2F3F5', borderRadius: 3, overflow: 'hidden' }}>
+                  <div style={{ height: 6, background: 'var(--progress-track)', borderRadius: 3, overflow: 'hidden' }}>
                     <div style={{
                       width: `${g.progress * 100}%`, height: '100%', borderRadius: 3,
                       background: 'linear-gradient(90deg, #81E4BD, #81E4BD)',
@@ -611,7 +409,6 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
           )}
 
           {/* Category Filter */}
-          {isLight ? (
             <div className="br-hide-scroll" style={{
               display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 12,
               animation: 'brFadeInUp 0.5s ease 0.15s both',
@@ -622,48 +419,34 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
                   <button key={key} onClick={() => { setSelectedCat(key); setSelectedBadge(null); }} style={{
                     padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600,
                     whiteSpace: 'nowrap', flexShrink: 0, cursor: 'pointer', fontFamily: 'inherit',
-                    background: active ? 'rgba(124,92,252,0.08)' : '#F2F3F5',
+                    background: active ? 'rgba(124,92,252,0.08)' : 'var(--tag-bg)',
                     color: active ? '#81E4BD' : '#4E5968',
                     border: 'none', transition: 'all 0.25s',
                   }}>
-                    {cat.label}
+                    {cat.subtitle || cat.label}
                   </button>
                 );
               })}
             </div>
-          ) : (
-            <div className="br-hide-scroll" style={{
-              display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 12,
-              animation: 'brFadeInUp 0.5s ease 0.15s both',
+
+          {/* Category subtitle */}
+          {currentCat?.subtitle && (
+            <div style={{
+              fontSize: 12, color: 'var(--text-muted)', marginBottom: 12,
+              display: 'flex', alignItems: 'center', gap: 6,
+              animation: 'brFadeInUp 0.3s ease 0.18s both',
             }}>
-              {catEntries.map(([key, cat]) => {
-                const active = selectedCat === key;
-                const catEarned = cat.badges.filter(b => b.earned).length;
-                return (
-                  <button key={key} onClick={() => { setSelectedCat(key); setSelectedBadge(null); }} style={{
-                    padding: '8px 14px', borderRadius: 12, fontSize: 12, fontWeight: 600,
-                    whiteSpace: 'nowrap', flexShrink: 0, cursor: 'pointer', fontFamily: 'inherit',
-                    background: active
-                      ? `linear-gradient(135deg, ${cat.color}20, ${cat.color}10)`
-                      : 'var(--bg-card)',
-                    color: active ? cat.color : 'var(--text-dim)',
-                    border: active ? `1px solid ${cat.color}40` : '1px solid var(--border-separator)',
-                    transition: 'all 0.25s',
-                    display: 'flex', alignItems: 'center', gap: 6,
-                  }}>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><PastelIcon emoji={cat.icon} size={14} />{cat.label}</span>
-                    <span style={{
-                      fontSize: 10, opacity: 0.7,
-                      color: active ? cat.color : 'var(--text-dim)',
-                    }}>{catEarned}/{cat.badges.length}</span>
-                  </button>
-                );
-              })}
+              <span style={{
+                fontSize: 11, fontWeight: 600, color: currentCat.color,
+                background: `${currentCat.color}14`, padding: '3px 8px', borderRadius: 6,
+              }}>{currentCat.subtitle}</span>
+              <span style={{ fontSize: 11, color: 'var(--text-dim)' }}>
+                {currentCat.badges.filter(b => b.earned).length}/{currentCat.badges.length} 달성
+              </span>
             </div>
           )}
 
-          {/* Badge Grid (light) / Badge List (dark) */}
-          {isLight ? (
+          {/* Badge Grid */}
             <div style={{
               display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12,
               animation: 'brFadeInUp 0.4s ease 0.2s both',
@@ -675,7 +458,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
                   style={{
                     textAlign: 'center', padding: 16, borderRadius: 16,
                     cursor: 'pointer', transition: 'all 0.25s',
-                    background: badge.earned ? '#FFFFFF' : '#F7F8FA',
+                    background: badge.earned ? 'var(--bg-card)' : 'var(--item-bg)',
                     boxShadow: 'none',
                     animation: `brFadeInUp 0.4s ease-out ${bi * 0.06}s both`,
                   }}
@@ -686,190 +469,43 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
                   }}><PastelIcon emoji={badge.icon} size={36} /></div>
                   <div style={{
                     fontSize: 13, fontWeight: 600,
-                    color: badge.earned ? '#191F28' : '#B0B8C1',
+                    color: badge.earned ? 'var(--text-primary)' : 'var(--text-dim)',
                   }}>{badge.name}</div>
                   {badge.earned ? (
-                    <div style={{ fontSize: 11, color: '#8B95A1', marginTop: 4 }}>획득 완료!</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>획득 완료!</div>
                   ) : badge.progress > 0 ? (
                     <>
                       <div style={{ marginTop: 6 }}>
-                        <div style={{ height: 4, background: '#F2F3F5', borderRadius: 2, overflow: 'hidden' }}>
+                        <div style={{ height: 4, background: 'var(--progress-track)', borderRadius: 2, overflow: 'hidden' }}>
                           <div style={{
                             width: `${badge.progress * 100}%`, height: '100%', borderRadius: 2,
                             background: 'linear-gradient(90deg, #81E4BD, #81E4BD)',
                           }} />
                         </div>
                       </div>
-                      <div style={{ fontSize: 11, color: '#B0B8C1', marginTop: 4 }}>
+                      <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 4 }}>
                         {badge.current}/{badge.target}
                       </div>
                     </>
                   ) : (
-                    <div style={{ fontSize: 11, color: '#B0B8C1', marginTop: 4 }}>미획득</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 4 }}>미획득</div>
                   )}
                 </div>
               ))}
             </div>
-          ) : (
-            <div style={{ animation: 'brFadeInUp 0.4s ease 0.2s both' }}>
-              {currentCat?.badges.map((badge, bi) => {
-                const isSelected = selectedBadge === badge.id;
-                const color = currentCat.color;
 
-                return (
-                  <div
-                    key={badge.id}
-                    onClick={() => setSelectedBadge(isSelected ? null : badge.id)}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 14,
-                      padding: 16, marginBottom: 8, borderRadius: 18, cursor: 'pointer',
-                      background: isSelected
-                        ? `${color}12`
-                        : badge.earned ? 'var(--bg-card)' : 'rgba(255,255,255,0.015)',
-                      border: isSelected
-                        ? `1px solid ${color}40`
-                        : badge.earned ? '1px solid var(--border-light)' : '1px solid rgba(255,255,255,0.03)',
-                      transition: 'all 0.25s',
-                      animation: `brFadeInUp 0.4s ease-out ${bi * 0.06}s both`,
-                    }}
-                  >
-                    {/* Icon */}
-                    <div style={{ position: 'relative', flexShrink: 0 }}>
-                      <div style={{
-                        width: 52, height: 52, borderRadius: 16,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 26,
-                        background: badge.earned
-                          ? `linear-gradient(135deg, ${color}18, ${color}08)`
-                          : 'rgba(255,255,255,0.02)',
-                        border: badge.earned
-                          ? `1px solid ${color}25`
-                          : '1px solid var(--border-separator)',
-                        filter: badge.earned ? 'none' : 'grayscale(1) brightness(0.35)',
-                        animation: badge.earned ? 'brBadgeShine 3s ease infinite' : 'none',
-                        boxShadow: 'none',
-                      }}><PastelIcon emoji={badge.icon} size={28} /></div>
-                      {badge.earned && (
-                        <div style={{
-                          position: 'absolute', bottom: -3, right: -3,
-                          width: 18, height: 18, borderRadius: 6,
-                          background: 'linear-gradient(135deg, #34d399, #22c55e)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          border: '2px solid #000000',
-                        }}>
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Info */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-                        <span style={{
-                          fontSize: 15, fontWeight: 600,
-                          color: badge.earned ? 'var(--text-primary)' : 'var(--text-dim)',
-                        }}>{badge.name}</span>
-                        {badge.earned && (
-                          <span style={{
-                            fontSize: 9, fontWeight: 600, color: '#34d399',
-                            background: 'rgba(52,211,153,0.1)', padding: '2px 6px', borderRadius: 4,
-                          }}>획득</span>
-                        )}
-                      </div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 0 }}>{badge.desc}</div>
-
-                      {/* Progress for unearned */}
-                      {!badge.earned && badge.progress > 0 && (
-                        <div style={{ marginTop: 8 }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                            <span style={{ fontSize: 10, color: 'var(--text-dim)' }}>진행률</span>
-                            <span style={{ fontSize: 10, color, fontWeight: 600 }}>{badge.current}/{badge.target}</span>
-                          </div>
-                          <div style={{ height: 4, borderRadius: 2, background: 'var(--bg-card)', overflow: 'hidden' }}>
-                            <div style={{
-                              width: `${badge.progress * 100}%`, height: '100%', borderRadius: 2,
-                              background: `linear-gradient(90deg, ${color}, ${color}88)`,
-                              transition: 'width 0.5s ease',
-                            }} />
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Earned date */}
-                      {badge.earned && badge.earnedDate && (
-                        <div style={{ fontSize: 10, color: 'var(--text-dim)', marginTop: 4 }}>
-                          {new Date(badge.earnedDate).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })} 획득
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Share button for selected & earned */}
-                    {isSelected && badge.earned && (
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleShare(badge); }}
-                        style={{
-                          padding: '8px 12px', borderRadius: 10,
-                          background: 'var(--btn-primary-bg)',
-                          border: 'none', fontSize: 11, fontWeight: 600, color: '#fff',
-                          cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0,
-                          display: 'flex', alignItems: 'center', gap: 4,
-                        }}
-                      >공유</button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Next Goals — dark mode (shown after badges) */}
-          {!isLight && nextGoals.length > 0 && (
-            <div style={{
-              background: 'linear-gradient(135deg, rgba(240,144,112,0.06), rgba(240,144,112,0.03))',
-              borderRadius: 18, border: '1px solid rgba(240,144,112,0.1)',
-              padding: 16, marginTop: 12,
-              animation: 'brFadeInUp 0.5s ease 0.3s both',
-            }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><TargetIcon size={13} /></span> 다음 목표
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {nextGoals.map((g) => (
-                  <div key={g.id} style={{
-                    flex: 1, textAlign: 'center', padding: '12px 6px 10px',
-                    background: 'var(--bg-card)', borderRadius: 14,
-                  }}>
-                    <div style={{ fontSize: 22, marginBottom: 4, display: 'flex', justifyContent: 'center' }}><PastelIcon emoji={g.icon} size={22} /></div>
-                    <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4 }}>{g.name}</div>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: activeTheme.accent, marginBottom: 6 }}>
-                      {Math.round(g.progress * 100)}%
-                    </div>
-                    <div style={{ height: 3, borderRadius: 2, background: 'var(--bg-card-hover)', overflow: 'hidden', margin: '0 4px' }}>
-                      <div style={{
-                        width: `${g.progress * 100}%`, height: '100%', borderRadius: 2,
-                        background: `linear-gradient(90deg, ${activeTheme.pearl[2]}, ${activeTheme.pearl[1]}, ${activeTheme.accent})`,
-                      }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       )}
 
       {/* ── Theme Tab ── */}
-      {tab === 'theme' && (isLight ? (
-        /* ===== LIGHT MODE: Toss-style clean list ===== */
+      {tab === 'theme' && (
         <div style={{ animation: 'brFadeInUp 0.5s ease 0.1s both' }}>
           {/* What theme changes — horizontal scroll chips */}
           <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
             {['액센트 컬러', '루아 아이콘', '분석 오라', '칭호 뱃지', 'XP 바', '랭킹 명함'].map((item, i) => (
               <div key={i} style={{
                 padding: '5px 10px', borderRadius: 8,
-                background: '#F2F3F5',
+                background: 'var(--tag-bg)',
                 fontSize: 11, color: '#4E5968', fontWeight: 500,
               }}>{item}</div>
             ))}
@@ -877,21 +513,19 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
 
           {/* Theme list */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
-            {THEMES.map((t) => {
-              const unlocked = level >= t.range[0];
+            {getThemesForMode(colorMode).map((t) => {
               const isActive = activeTheme.id === t.id;
               return (
                 <div key={t.id}
-                  onClick={unlocked ? () => {
+                  onClick={() => {
                     const updated = saveProfile({ activeTheme: t.id });
                     setProfile(updated);
-                  } : undefined}
+                  }}
                   style={{
                     padding: '14px 16px', borderRadius: 16,
-                    background: isActive ? '#FFFFFF' : '#FFFFFF',
-                    boxShadow: 'none',
-                    cursor: unlocked ? 'pointer' : 'default',
-                    opacity: unlocked ? 1 : 0.4,
+                    background: 'var(--bg-card)',
+                    boxShadow: isActive ? `0 0 0 1.5px ${t.accent}40` : 'none',
+                    cursor: 'pointer',
                     transition: 'all 0.25s ease',
                     display: 'flex', alignItems: 'center', gap: 14,
                   }}
@@ -899,23 +533,17 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
                   {/* Pearl icon */}
                   <div style={{
                     width: 44, height: 44, borderRadius: 14,
-                    background: unlocked ? `linear-gradient(135deg, ${t.pearl[0]}40, ${t.pearl[1]}30)` : '#F2F3F5',
+                    background: `linear-gradient(135deg, ${t.pearl[0]}40, ${t.pearl[1]}30)`,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     flexShrink: 0,
                   }}>
-                    {unlocked ? (
-                      <MiniPearl size={28} colors={t.pearl} glow={isActive} id={`tl-${t.id}`} cloverTheme={t.cloverTheme} />
-                    ) : (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B0B8C1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0110 0v4" />
-                      </svg>
-                    )}
+                    <MiniPearl size={28} colors={t.pearl} glow={isActive} id={`tl-${t.id}`} cloverTheme={t.cloverTheme} />
                   </div>
 
                   {/* Info */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{ fontSize: 14, fontWeight: 700, color: unlocked ? '#191F28' : '#B0B8C1' }}>{t.name}</span>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{t.name}</span>
                       {isActive && (
                         <span style={{
                           fontSize: 10, fontWeight: 600, color: t.accent,
@@ -923,8 +551,8 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
                         }}>적용 중</span>
                       )}
                     </div>
-                    <div style={{ fontSize: 11, color: unlocked ? '#8B95A1' : '#D1D6DB', marginTop: 2 }}>
-                      {t.kr} · {unlocked ? `Lv.${t.range[0]}~${t.range[1]}` : `Lv.${t.range[0]} 달성 시 언락`}
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                      {t.kr} · {t.desc}
                     </div>
                   </div>
 
@@ -933,7 +561,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
                     {[...t.pearl, t.accent].map((c, i) => (
                       <div key={i} style={{
                         width: 12, height: 12, borderRadius: '50%',
-                        background: unlocked ? c : '#D1D6DB',
+                        background: c,
                         border: '1px solid rgba(0,0,0,0.06)',
                       }} />
                     ))}
@@ -942,159 +570,8 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode })
               );
             })}
           </div>
-
-          {/* Next unlock hint */}
-          {(() => {
-            const next = THEMES.find(t => level < t.range[0]);
-            if (!next) return null;
-            return (
-              <div style={{
-                padding: 14, background: '#FFFFFF', borderRadius: 16,
-                boxShadow: 'none',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                  <span style={{ fontSize: 12 }}>🔮</span>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: next.accent }}>다음 테마</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <MiniPearl size={28} colors={next.pearl} id="nt" cloverTheme={next.cloverTheme} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: '#4E5968' }}>{next.name} · {next.kr}</div>
-                    <div style={{ fontSize: 10, color: '#8B95A1', marginTop: 3 }}>Lv.{next.range[0]} 달성 시 언락</div>
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
         </div>
-      ) : (
-        /* ===== DARK MODE: Original grid layout ===== */
-        <div style={{ animation: 'brFadeInUp 0.5s ease 0.1s both' }}>
-          {/* Active theme card */}
-          <div style={{
-            padding: 16, borderRadius: 20, marginBottom: 16,
-            background: `linear-gradient(135deg, ${activeTheme.accent}0a, rgba(255,255,255,0.02))`,
-            border: `1px solid ${activeTheme.accent}20`,
-          }}>
-            <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: 2, marginBottom: 10 }}>ACTIVE THEME</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <MiniPearl size={40} colors={activeTheme.pearl} glow id="at" cloverTheme={activeTheme.cloverTheme} />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{activeTheme.name}</div>
-                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{activeTheme.kr} · {activeTheme.desc}</div>
-                <div style={{ display: 'flex', gap: 4, marginTop: 8 }}>
-                  {[...activeTheme.pearl, activeTheme.accent].map((c, i) => (
-                    <div key={i} style={{
-                      width: 14, height: 14, borderRadius: '50%',
-                      background: c, border: '1px solid rgba(255,255,255,0.1)',
-                      boxShadow: 'none',
-                    }} />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* What theme changes */}
-          <div style={{
-            padding: '12px 14px', borderRadius: 14, marginBottom: 16,
-            background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-separator)',
-          }}>
-            <div style={{ fontSize: 9, fontWeight: 600, color: 'var(--text-dim)', marginBottom: 8 }}>테마가 변경하는 것들</div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-              {['액센트 컬러', '루아 아이콘', '분석 오라', '칭호 뱃지', 'XP 바', '랭킹 명함'].map((item, i) => (
-                <div key={i} style={{
-                  padding: '4px 8px', borderRadius: 7,
-                  background: 'var(--bg-card)', border: '1px solid var(--border-separator)',
-                  fontSize: 9, color: 'var(--text-muted)', fontWeight: 500,
-                }}>{item}</div>
-              ))}
-            </div>
-          </div>
-
-          {/* Theme grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
-            {THEMES.map((t) => {
-              const unlocked = level >= t.range[0];
-              const isActive = activeTheme.id === t.id;
-              return (
-                <div key={t.id}
-                  onClick={unlocked ? () => {
-                    const updated = saveProfile({ activeTheme: t.id });
-                    setProfile(updated);
-                  } : undefined}
-                  style={{
-                    borderRadius: 18, overflow: 'hidden',
-                    background: isActive ? `${t.accent}08` : 'var(--bg-card)',
-                    border: isActive ? `1.5px solid ${t.accent}40` : '1px solid var(--border-separator)',
-                    cursor: unlocked ? 'pointer' : 'default',
-                    opacity: unlocked ? 1 : 0.35,
-                    filter: unlocked ? 'none' : 'grayscale(0.7)',
-                    transition: 'all 0.3s ease',
-                  }}
-                >
-                  {/* Mini preview */}
-                  <div style={{ height: 68, background: '#000', position: 'relative', overflow: 'hidden' }}>
-                    <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 50% 20%, ${t.accent}15, transparent 70%)` }} />
-                    <div style={{ position: 'relative', padding: 10 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <MiniPearl size={12} colors={t.pearl} id={`tg-${t.id}`} cloverTheme={t.cloverTheme} />
-                        <span style={{ fontSize: 6, fontWeight: 700, color: t.accent, letterSpacing: 0.8 }}>SCORE</span>
-                        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-primary)', fontFamily: "var(--font-display)" }}>74</span>
-                      </div>
-                      <div style={{ marginTop: 5, display: 'flex', flexDirection: 'column', gap: 3 }}>
-                        {[0.82, 0.65].map((v, i) => (
-                          <div key={i} style={{ height: 2, borderRadius: 1, background: 'var(--border-separator)', overflow: 'hidden' }}>
-                            <div style={{ width: `${v * 100}%`, height: '100%', borderRadius: 1, background: `linear-gradient(90deg, ${t.pearl[2]}, ${t.accent})` }} />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <div style={{ padding: '10px 12px 12px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: unlocked ? 'var(--text-primary)' : 'var(--text-dim)' }}>{t.name}</span>
-                      {isActive && <span style={{ fontSize: 6, fontWeight: 700, color: t.accent, background: `${t.accent}18`, padding: '2px 4px', borderRadius: 4 }}>적용 중</span>}
-                    </div>
-                    <div style={{ fontSize: 8, color: 'var(--text-dim)', marginTop: 3 }}>
-                      {unlocked ? `Lv.${t.range[0]}~${t.range[1]}` : `🔒 Lv.${t.range[0]}`}
-                    </div>
-                    <div style={{ display: 'flex', gap: 2, marginTop: 6 }}>
-                      {[...t.pearl, t.accent].map((c, i) => (
-                        <div key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: c, border: '1px solid var(--border-subtle)' }} />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Next unlock hint */}
-          {(() => {
-            const next = THEMES.find(t => level < t.range[0]);
-            if (!next) return null;
-            return (
-              <div style={{
-                padding: 14, background: 'var(--bg-card)', borderRadius: 18,
-                border: '1px solid var(--border-separator)',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                  <span style={{ fontSize: 12 }}>🔮</span>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: next.accent }}>다음 테마</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <MiniPearl size={28} colors={next.pearl} id="nt" cloverTheme={next.cloverTheme} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>{next.name} · {next.kr}</div>
-                    <div style={{ fontSize: 9, color: 'var(--text-dim)', marginTop: 3, fontFamily: "var(--font-display)" }}>Lv.{next.range[0]} 달성 시 언락</div>
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
-        </div>
-      ))}
+      )}
 
       {/* ── Ranking Tab ── */}
       {tab === 'ranking' && (
@@ -1394,75 +871,57 @@ function TitleSelectionSheet({ currentLevel, totalXP, activeTheme, selectedTitle
           </div>
         </div>
 
-        {/* Title list grouped by theme tier */}
+        {/* Title list */}
         <div className="br-hide-scroll" style={{ flex: 1, overflowY: 'auto', padding: '10px 24px 30px' }}>
-          {THEMES.map((tier) => {
-            const tierTitles = LEVEL_TITLES.filter(t => t.level >= tier.range[0] && t.level <= tier.range[1]);
-            if (tierTitles.length === 0) return null;
-            const tierUnlocked = currentLevel >= tier.range[0];
+          {LEVEL_TITLES.map((title) => {
+            const earned = currentLevel >= title.level;
+            const isSelected = selectedTitleLevel === title.level;
 
             return (
-              <div key={tier.id} style={{ marginBottom: 14 }}>
-                {/* Tier label */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6, padding: '0 2px' }}>
-                  <MiniPearl size={14} colors={tier.pearl} id={`bs-${tier.id}`} cloverTheme={tier.cloverTheme} />
-                  <span style={{ fontSize: 10, fontWeight: 700, color: tierUnlocked ? tier.accent : 'var(--text-dim)' }}>{tier.name}</span>
-                  <span style={{ fontSize: 9, color: 'var(--text-dim)' }}>Lv.{tier.range[0]}~{tier.range[1]}</span>
+              <div
+                key={title.level}
+                ref={isSelected ? currentRef : null}
+                onClick={() => earned && onSelect(title.level)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '10px 12px', marginBottom: 3, borderRadius: 14,
+                  background: isSelected ? `${activeTheme.accent}10` : 'rgba(255,255,255,0.02)',
+                  border: isSelected ? `1px solid ${activeTheme.accent}30` : '1px solid rgba(255,255,255,0.03)',
+                  cursor: earned ? 'pointer' : 'default',
+                  opacity: earned ? 1 : 0.35,
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                {/* Level badge */}
+                <div style={{
+                  width: 24, height: 24, borderRadius: 7, flexShrink: 0,
+                  background: isSelected ? `linear-gradient(135deg, ${activeTheme.accent}, ${activeTheme.sub})` : 'rgba(255,255,255,0.05)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 9, fontWeight: 700, color: isSelected ? '#000' : 'var(--text-muted)',
+                  fontFamily: "var(--font-display)",
+                }}>{title.level}</div>
+
+                {/* Icon */}
+                <span style={{ fontSize: 18, filter: earned ? 'none' : 'grayscale(1) brightness(0.3)' }}>{title.icon}</span>
+
+                {/* Name */}
+                <div style={{ flex: 1 }}>
+                  <span style={{
+                    fontSize: 13, fontWeight: isSelected ? 700 : 500,
+                    color: earned ? 'var(--text-primary)' : 'var(--text-dim)',
+                  }}>{title.title}</span>
                 </div>
 
-                {/* Title items */}
-                {tierTitles.map((title) => {
-                  const earned = currentLevel >= title.level;
-                  const isSelected = selectedTitleLevel === title.level;
-
-                  return (
-                    <div
-                      key={title.level}
-                      ref={isSelected ? currentRef : null}
-                      onClick={() => earned && onSelect(title.level)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 10,
-                        padding: '10px 12px', marginBottom: 3, borderRadius: 14,
-                        background: isSelected ? `${tier.accent}10` : 'rgba(255,255,255,0.02)',
-                        border: isSelected ? `1px solid ${tier.accent}30` : '1px solid rgba(255,255,255,0.03)',
-                        cursor: earned ? 'pointer' : 'default',
-                        opacity: earned ? 1 : 0.35,
-                        transition: 'all 0.2s ease',
-                      }}
-                    >
-                      {/* Level badge */}
-                      <div style={{
-                        width: 24, height: 24, borderRadius: 7, flexShrink: 0,
-                        background: isSelected ? `linear-gradient(135deg, ${tier.accent}, ${tier.sub})` : 'rgba(255,255,255,0.05)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 9, fontWeight: 700, color: isSelected ? '#000' : 'var(--text-muted)',
-                        fontFamily: "var(--font-display)",
-                      }}>{title.level}</div>
-
-                      {/* Icon */}
-                      <span style={{ fontSize: 18, filter: earned ? 'none' : 'grayscale(1) brightness(0.3)' }}>{title.icon}</span>
-
-                      {/* Name */}
-                      <div style={{ flex: 1 }}>
-                        <span style={{
-                          fontSize: 13, fontWeight: isSelected ? 700 : 500,
-                          color: earned ? 'var(--text-primary)' : 'var(--text-dim)',
-                        }}>{title.title}</span>
-                      </div>
-
-                      {/* Status */}
-                      {isSelected && (
-                        <div style={{
-                          fontSize: 8, fontWeight: 700, color: tier.accent,
-                          background: `${tier.accent}15`, padding: '3px 8px', borderRadius: 6,
-                        }}>사용 중</div>
-                      )}
-                      {earned && !isSelected && (
-                        <span style={{ fontSize: 10, color: '#34d399' }}>✓</span>
-                      )}
-                    </div>
-                  );
-                })}
+                {/* Status */}
+                {isSelected && (
+                  <div style={{
+                    fontSize: 8, fontWeight: 700, color: activeTheme.accent,
+                    background: `${activeTheme.accent}15`, padding: '3px 8px', borderRadius: 6,
+                  }}>사용 중</div>
+                )}
+                {earned && !isSelected && (
+                  <span style={{ fontSize: 10, color: '#34d399' }}>✓</span>
+                )}
               </div>
             );
           })}
@@ -1551,7 +1010,8 @@ function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#81E4BD' 
                 display: 'flex', alignItems: 'center', gap: 4,
               }}>
                 <span style={{ display: 'inline-flex' }}><PastelIcon emoji={cat.icon} size={13} /></span>
-                <span>{catEarned}/{cat.badges.length}</span>
+                <span>{cat.subtitle || cat.label}</span>
+                <span style={{ opacity: 0.6 }}>{catEarned}/{cat.badges.length}</span>
               </button>
             );
           })}
@@ -1569,7 +1029,7 @@ function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#81E4BD' 
                   fontSize: 12, fontWeight: 600, color: cat.color, marginBottom: 10,
                   display: 'flex', alignItems: 'center', gap: 6,
                 }}>
-                  <span style={{ display: 'inline-flex' }}><PastelIcon emoji={cat.icon} size={13} /></span> {cat.label}
+                  <span style={{ display: 'inline-flex' }}><PastelIcon emoji={cat.icon} size={13} /></span> {cat.subtitle || cat.label}
                   <span style={{ fontSize: 10, color: 'var(--text-dim)', fontWeight: 400 }}>
                     {cat.badges.filter(b => b.earned).length}/{cat.badges.length}
                   </span>
