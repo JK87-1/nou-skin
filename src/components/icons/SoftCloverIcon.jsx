@@ -10,7 +10,7 @@
  *   <SoftCloverIcon theme="champagneGold" size={48} showBg animate={false} />
  *
  * ── Props ────────────────────────────────────────────────────
- *   theme    : string  — THEMES 키값. 기본값 "verteDeH"
+ *   theme    : string  — THEMES 키값. 기본값 "morningLight"
  *   size     : number  — 아이콘 크기(px). 기본값 200
  *   showBg   : boolean — 그라데이션 앱 아이콘 배경. 기본값 false
  *   bgRadius : number  — showBg 시 border-radius(px). 기본값 size×0.224
@@ -20,7 +20,7 @@
  *
  * ── 전체 18 테마 ─────────────────────────────────────────────
  *   Vol.1 (컬러)
- *     verteDeH · roseGold · navySapphire · sunsetPeach
+ *     morningLight · roseGold · navySapphire · sunsetPeach
  *     sunsetAmber · coralBlush · aquaMint
  *
  *   Vol.2 (컬러)
@@ -56,10 +56,10 @@ export const THEMES = {
 
   springBlossom: {
     label: "스프링 블라썸",
-    rg:  ["#FFF0F5", "#F4A8C8", "#A8D8F0", "#5EA8D0"],
-    mop: ["#FFF8FC", "#FFF0F5", "#F8D0E0", "#D0E8F8", "#A8D0F0", "#5E98C0"],
-    iri: "#BAE6FD",
-    cp:  ["#fff", "#FFF0F5", "#F0D8E8", "#B8D8F0", "#5EA8D0"],
+    rg:  ["#F0F8FF", "#A8D8F0", "#5EB8E0", "#2A7AAA"],
+    mop: ["#FAFCFF", "#E8F4FC", "#C0E0F4", "#88C8E8", "#50A0D0", "#2A7AAA"],
+    iri: "#FFC0D0",
+    cp:  ["#fff", "#F0F8FF", "#C8E8F8", "#88C8E8", "#2A7AAA"],
     sh:  "#081840",
   },
 
@@ -88,7 +88,7 @@ export const THEME_KEYS = Object.keys(THEMES);
 
 // ─── 컴포넌트 ────────────────────────────────────────────────────
 export default function SoftCloverIcon({
-  theme     = "verteDeH",
+  theme     = "morningLight",
   size      = 200,
   showBg    = false,
   bgRadius,
@@ -97,7 +97,7 @@ export default function SoftCloverIcon({
   style,
 }) {
   const uid = useId().replace(/:/g, "");
-  const p   = THEMES[theme] ?? THEMES.verteDeH;
+  const p   = THEMES[theme] ?? THEMES.morningLight;
 
   const id = {
     rg:  `${uid}rg`,

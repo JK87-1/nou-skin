@@ -54,7 +54,7 @@ export default function SplashScreen({ exiting, onAnimationEnd, cloverTheme }) {
       <div style={{
         animation: exiting ? undefined : 'splashPearlIn 0.8s ease-out both',
       }}>
-        <SoftCloverIcon theme={cloverTheme || 'verteDeH'} size={120} animate={!exiting} />
+        <SoftCloverIcon theme={cloverTheme || 'morningLight'} size={120} animate={!exiting} />
       </div>
 
       <div style={{

@@ -642,7 +642,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
                   paddingLeft: 2,
                 }}>
                   <div style={{ flexShrink: 0 }}>
-                    <SoftCloverIcon theme="verteDeH" size={28} animate />
+                    <SoftCloverIcon theme="morningLight" size={28} animate />
                   </div>
                   <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 400 }}>루아</span>
                 </div>

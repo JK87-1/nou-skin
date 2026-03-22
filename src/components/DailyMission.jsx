@@ -315,7 +315,7 @@ export default function DailyMission() {
           color: remainingCount === 0 ? 'var(--accent-success)' : 'var(--text-muted)',
           border: 'none',
         }}>
-          {remainingCount === 0 ? '올클리어!' : `+${progress.earnedXP || 0} XP`}
+          {remainingCount === 0 ? '올클리어!' : `+${progress.earnedXP || 0} P`}
         </div>
       </div>
 
@@ -350,7 +350,7 @@ export default function DailyMission() {
                   fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 8,
                   background: 'var(--tag-bg)',
                   color: 'var(--accent-streak)',
-                }}>+{missions.main.xp} XP</span>
+                }}>+{missions.main.xp} P</span>
               </div>
 
               {/* Title */}
@@ -424,11 +424,11 @@ export default function DailyMission() {
                   opacity: 0.5, pointerEvents: 'none',
                   animation: 'missionCelebrate 0.5s ease',
                 }}>
-                  <SoftCloverIcon theme="champagneGold" size={80} animate />
+                  <SoftCloverIcon theme="morningLight" size={80} animate />
                 </div>
               )}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, position: 'relative', zIndex: 1 }}>
-                <span>🎉 메인 미션 완료! +{missions.main.xp} XP 획득</span>
+                <span>🎉 메인 미션 완료! +{missions.main.xp} P 획득</span>
                 <button onClick={(e) => { e.stopPropagation(); handleUndoMain(); }} style={{
                   background: 'var(--bg-input)', border: 'none',
                   borderRadius: 8, padding: '3px 10px', fontSize: 11, fontWeight: 600,
@@ -492,7 +492,7 @@ export default function DailyMission() {
                     <span style={{
                       fontSize: 10, padding: '2px 6px', borderRadius: 8,
                       background: 'var(--tag-bg)', color: 'var(--tag-color)',
-                    }}>+{b.xp} XP</span>
+                    }}>+{b.xp} P</span>
                   ) : (
                     <span style={{ color: 'var(--text-dim)', fontSize: 14 }}>{'\u203A'}</span>
                   )}
@@ -624,7 +624,7 @@ export default function DailyMission() {
           fontSize: 20, fontWeight: 800, color: '#F0B870', fontFamily: 'var(--font-display)',
           animation: 'missionXpFloat 1.2s ease-out forwards', pointerEvents: 'none', zIndex: 999,
           textShadow: '0 2px 10px rgba(251,191,36,0.5)',
-        }}>+{xpFloat} XP</div>
+        }}>+{xpFloat} P</div>
       )}
     </div>
   );
