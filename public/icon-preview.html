@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Icon Preview — iOS Modes</title>
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, 'Helvetica Neue', sans-serif;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 40px 20px; gap: 40px;
+    background: #1a1a2e; color: #fff; min-height: 100vh;
+  }
+  h1 { font-size: 18px; font-weight: 600; opacity: 0.7; }
+  .modes { display: flex; gap: 32px; flex-wrap: wrap; justify-content: center; }
+  .mode {
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+  }
+  .mode-label { font-size: 12px; opacity: 0.5; font-weight: 500; }
+  .icon-frame {
+    width: 120px; height: 120px; border-radius: 27px;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; position: relative;
+  }
+  .icon-frame img { width: 100%; height: 100%; }
+
+  /* Light mode (normal) */
+  .light { background: #98FBCB; }
+
+  /* Dark mode */
+  .dark { background: #1c1c1e; }
+
+  /* Tinted modes — simulates iOS 18 tint */
+  .tint-blue { background: #1a2a40; }
+  .tint-blue img { filter: brightness(0.7) sepia(1) hue-rotate(180deg) saturate(2); }
+
+  .tint-pink { background: #2a1a28; }
+  .tint-pink img { filter: brightness(0.7) sepia(1) hue-rotate(280deg) saturate(1.5); }
+
+  .tint-green { background: #1a2a1a; }
+  .tint-green img { filter: brightness(0.7) sepia(1) hue-rotate(90deg) saturate(1.5); }
+
+  .tint-purple { background: #201a30; }
+  .tint-purple img { filter: brightness(0.7) sepia(1) hue-rotate(230deg) saturate(1.8); }
+
+  /* Raw transparent — just the SVG on dark bg */
+  .raw-dark { background: #000; }
+  .raw-light { background: #f5f5f7; }
+  .raw-wallpaper {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  .section { text-align: center; }
+  .section h2 { font-size: 14px; opacity: 0.4; margin-bottom: 16px; font-weight: 500; }
+
+  .grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
+    max-width: 600px;
+  }
+  @media (max-width: 500px) {
+    .grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* Live edit info */
+  .info {
+    background: rgba(255,255,255,0.05); border-radius: 12px;
+    padding: 16px 24px; font-size: 13px; opacity: 0.5;
+    max-width: 500px; text-align: center; line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+  <h1>LUA Icon Preview</h1>
+
+  <div class="section">
+    <h2>Normal / Solid Background</h2>
+    <div class="modes">
+      <div class="mode">
+        <div class="icon-frame light">
+          <img src="/icons/clover-icon-solid.svg">
+        </div>
+        <span class="mode-label">Light</span>
+      </div>
+      <div class="mode">
+        <div class="icon-frame dark">
+          <img src="/icons/clover-icon-solid.svg">
+        </div>
+        <span class="mode-label">Dark</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Transparent (iOS Tinted Mode Simulation)</h2>
+    <div class="grid">
+      <div class="mode">
+        <div class="icon-frame raw-dark">
+          <img src="/icons/clover-icon.svg">
+        </div>
+        <span class="mode-label">Dark BG</span>
+      </div>
+      <div class="mode">
+        <div class="icon-frame raw-light">
+          <img src="/icons/clover-icon.svg">
+        </div>
+        <span class="mode-label">Light BG</span>
+      </div>
+      <div class="mode">
+        <div class="icon-frame raw-wallpaper">
+          <img src="/icons/clover-icon.svg">
+        </div>
+        <span class="mode-label">Wallpaper</span>
+      </div>
+      <div class="mode">
+        <div class="icon-frame tint-blue">
+          <img src="/icons/clover-icon.svg">
+        </div>
+        <span class="mode-label">Blue Tint</span>
+      </div>
+      <div class="mode">
+        <div class="icon-frame tint-pink">
+          <img src="/icons/clover-icon.svg">
+        </div>
+        <span class="mode-label">Pink Tint</span>
+      </div>
+      <div class="mode">
+        <div class="icon-frame tint-green">
+          <img src="/icons/clover-icon.svg">
+        </div>
+        <span class="mode-label">Green Tint</span>
+      </div>
+      <div class="mode">
+        <div class="icon-frame tint-purple">
+          <img src="/icons/clover-icon.svg">
+        </div>
+        <span class="mode-label">Purple Tint</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="info">
+    SVG 파일 수정 후 이 페이지를 새로고침하면 바로 반영됩니다.<br>
+    경로: <code>public/icons/clover-icon.svg</code>
+  </div>
+</body>
+</html>
