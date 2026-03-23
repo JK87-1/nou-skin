@@ -31,6 +31,7 @@ import { addXP, checkAndAwardBadges, incrementStat, getTotalXP, getLevel } from 
 import { calculateLevel, getDefaultTheme, getThemeById, getLevelTitleData, THEMES } from './data/BadgeData';
 import { BadgeCelebration } from './components/BadgeRanking';
 import SplashScreen from './components/SplashScreen';
+import SkinMeasurePage from './pages/SkinMeasurePage';
 import { DropletIcon, SparkleIcon, LotionIcon, DiamondIcon, PaletteIcon, MicroscopeIcon, RulerIcon, EyeIcon, BubbleIcon, TargetIcon, SunIcon, MoonIcon, CameraIcon, TestTubeIcon, StarIcon, ShieldIcon, WandIcon, PhotoIcon, CheckIcon, SaveIcon, PastelIcon, LuaMiniIcon } from './components/icons/PastelIcons';
 import SoftCloverIcon from './components/icons/SoftCloverIcon';
 import EternalPearl from './components/icons/EternalPearl';
@@ -1005,6 +1006,15 @@ export default function App() {
           onCapture={handleCameraCapture}
           onClose={reset}
           onFallback={() => { setStage('landing'); setTimeout(() => nativeCameraRef.current?.click(), 100); }}
+          colorMode={colorMode}
+        />
+      )}
+
+      {/* ===== SKIN MEASURE (모델 이미지 데모) ===== */}
+      {stage === 'skin-measure' && (
+        <SkinMeasurePage
+          onClose={reset}
+          onCapture={() => setStage('camera')}
           colorMode={colorMode}
         />
       )}

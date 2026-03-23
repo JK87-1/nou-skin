@@ -18,14 +18,22 @@ const RIGHT_EAR = 454;
 const FOREHEAD = 10;
 const CHIN = 152;
 
-// Key landmark indices to render as dots (~27 points)
+// Key landmark indices to render as dots (~50 points, matching facedot.png)
 const KEY_LANDMARKS = [
-  10, 67, 109, 108, 69, 151, 337, 299, 297, 338,
-  1, 4, 5,
-  234, 454,
-  152, 148, 377,
-  93, 132, 58, 172,
-  323, 361, 288, 397,
+  // 이마 (forehead)
+  10, 67, 297, 109, 338, 151, 108, 337, 69, 299,
+  // 눈썹 (eyebrows)
+  70, 63, 105, 66, 300, 293, 334, 296,
+  // 눈 (eyes)
+  33, 133, 159, 145, 263, 362, 386, 374,
+  // 코 (nose)
+  6, 4, 1, 2, 98, 327,
+  // 볼 (cheeks)
+  93, 132, 116, 323, 361, 345,
+  // 입 (mouth)
+  0, 13, 14, 17, 61, 291, 78, 308,
+  // 턱 (jawline & chin)
+  152, 148, 377, 172, 397, 176, 400, 234, 454,
 ];
 
 // Analysis zone definitions with landmark anchor and display config
