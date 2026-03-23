@@ -47,7 +47,7 @@ export default function SkinMeasurePage({ onClose, onCapture, colorMode }) {
       }}>
         {/* 모델 이미지 */}
         <img
-          src="/model.jpg"
+          src="/model.png"
           alt="face guide"
           style={{
             width: '100%', height: '100%', objectFit: 'cover',
