@@ -204,9 +204,9 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
     const ry = Math.min(rx * 1.35, H * 0.40);
 
     const curStatus = statusRef.current;
-    // Unified purple palette for both modes
-    const readyColor = 'rgba(124,92,252,0.85)';
-    const readyGlow = 'rgba(124,92,252,0.25)';
+    // White / Lemon / Mint palette
+    const readyColor = 'rgba(126,252,202,0.9)';   // mint
+    const readyGlow = 'rgba(126,252,202,0.3)';
     const pendingColor = 'rgba(255,255,255,0.7)';
 
     let guideColor = pendingColor;
@@ -216,7 +216,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
         guideColor = readyColor;
         glowColor = readyGlow;
       } else {
-        guideColor = 'rgba(240,144,112,0.7)';
+        guideColor = 'rgba(255,251,139,0.75)';  // lemon for aligning
       }
     }
 
@@ -237,7 +237,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
       ctx.shadowBlur = 24;
     }
     ctx.strokeStyle = guideColor;
-    ctx.lineWidth = 2.5;
+    ctx.lineWidth = 3.5;
     if (!landmarks) ctx.setLineDash([10, 8]);
     ctx.beginPath();
     ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
@@ -267,20 +267,20 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
       ctx.beginPath();
       ctx.roundRect(-boxW / 2, -boxH / 2, boxW, boxH, rad);
       ctx.fill();
-      // Text
+      // Text — dark text for light label backgrounds
       ctx.shadowColor = 'transparent';
-      ctx.fillStyle = '#fff';
+      ctx.fillStyle = '#1a1a2e';
       ctx.fillText(label, 0, 0.5);
       ctx.restore();
     };
 
-    // Layer 3: Analysis zone labels — refined palette
+    // Layer 3: Analysis zone labels — white/lemon/mint palette
     const ZONE_COLORS = {
-      '이마': 'rgba(124,92,252,0.75)',
-      'T존': 'rgba(99,102,241,0.75)',
-      '왼볼': 'rgba(79,70,229,0.65)',
-      '오른볼': 'rgba(79,70,229,0.65)',
-      '턱선': 'rgba(139,92,246,0.7)',
+      '이마': 'rgba(255,251,139,0.85)',     // lemon
+      'T존': 'rgba(126,252,202,0.8)',       // mint
+      '왼볼': 'rgba(255,255,255,0.75)',     // white
+      '오른볼': 'rgba(255,255,255,0.75)',   // white
+      '턱선': 'rgba(126,252,202,0.8)',      // mint
     };
     for (const zone of ANALYSIS_ZONES) {
       if (zone.anchor >= landmarks.length) continue;
@@ -290,15 +290,21 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
       drawLabel(zx, zy, zone.label, ZONE_COLORS[zone.label] || 'rgba(124,92,252,0.7)');
     }
 
-    // Layer 4: Landmark dots — subtle, refined
-    const dotColor = curStatus === 'ready' ? 'rgba(124,92,252,0.7)' : 'rgba(240,144,112,0.6)';
+    // Layer 4: Landmark dots — larger with glow
+    const dotColor = curStatus === 'ready' ? 'rgba(255,251,139,0.9)' : 'rgba(255,255,255,0.7)';  // lemon / white
+    const dotGlow = curStatus === 'ready' ? 'rgba(255,251,139,0.5)' : 'rgba(255,255,255,0.3)';
     for (const idx of KEY_LANDMARKS) {
       if (idx >= landmarks.length) continue;
       const lm = landmarks[idx];
+      // Glow
+      ctx.save();
+      ctx.shadowColor = dotGlow;
+      ctx.shadowBlur = 6;
       ctx.beginPath();
-      ctx.arc(mapX(lm.x), mapY(lm.y), 2, 0, Math.PI * 2);
+      ctx.arc(mapX(lm.x), mapY(lm.y), 4, 0, Math.PI * 2);
       ctx.fillStyle = dotColor;
       ctx.fill();
+      ctx.restore();
     }
 
     // Layer 5: Under-eye dots
@@ -322,15 +328,19 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
         );
       }
       for (const dot of underEyeDots) {
+        ctx.save();
+        ctx.shadowColor = dotGlow;
+        ctx.shadowBlur = 6;
         ctx.beginPath();
-        ctx.arc(mapX(dot.x), mapY(dot.y), 2, 0, Math.PI * 2);
+        ctx.arc(mapX(dot.x), mapY(dot.y), 4, 0, Math.PI * 2);
         ctx.fillStyle = dotColor;
         ctx.fill();
+        ctx.restore();
       }
 
       // '눈밑' label
       const rEyeCenter = underEyeDots[1];
-      drawLabel(mapX(rEyeCenter.x), mapY(rEyeCenter.y + 0.02), '눈밑', 'rgba(168,85,247,0.7)');
+      drawLabel(mapX(rEyeCenter.x), mapY(rEyeCenter.y + 0.02), '눈밑', 'rgba(126,252,202,0.8)');
     }
   };
 

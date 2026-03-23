@@ -1,6 +1,5 @@
 /**
  * SkinMeasurePage — 피부측정 화면 (얼굴을 화면에 맞춰주세요)
- * model.png를 사용한 정적 피부측정 가이드 UI
  */
 import { useState, useEffect, useRef } from 'react';
 
@@ -45,16 +44,6 @@ export default function SkinMeasurePage({ onClose, onCapture, colorMode }) {
         flex: 1, position: 'relative', overflow: 'hidden',
         borderRadius: '0 0 24px 24px',
       }}>
-        {/* 모델 이미지 */}
-        <img
-          src="/model.png"
-          alt="face guide"
-          style={{
-            width: '100%', height: '100%', objectFit: 'cover',
-            display: 'block',
-          }}
-        />
-
         {/* 비네트 마스크 + 타원 가이드 */}
         <div style={{
           position: 'absolute', inset: 0,
