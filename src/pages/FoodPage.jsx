@@ -186,6 +186,7 @@ function AddFoodModal({ onAdd, onClose }) {
   const [extraLooking, setExtraLooking] = useState(false);
   const [extraItems, setExtraItems] = useState([]);
   const fileRef = useRef(null);
+  const albumRef = useRef(null);
 
   // Merge all items for totals
   const allItems = [...(aiItems || []), ...extraItems];
@@ -321,28 +322,42 @@ function AddFoodModal({ onAdd, onClose }) {
           ))}
         </div>
 
-        {/* Photo button */}
+        {/* Photo buttons */}
         <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={handlePhoto} style={{ display: 'none' }} />
-        <button onClick={() => fileRef.current?.click()} disabled={analyzing} style={{
-          width: '100%', padding: '14px 0', borderRadius: 14, border: 'none',
-          background: analyzing ? 'var(--bg-input, #F2F3F5)' : 'linear-gradient(135deg, rgba(249,232,74,0.15), rgba(255,179,71,0.12), rgba(255,143,171,0.12))',
-          color: analyzing ? 'var(--text-muted)' : '#C4580A',
-          fontSize: 13, fontWeight: 600, cursor: analyzing ? 'default' : 'pointer',
-          fontFamily: 'inherit', marginBottom: 12,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-        }}>
-          {analyzing ? (
-            <>분석 중...</>
-          ) : (
-            <>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <input ref={albumRef} type="file" accept="image/*" onChange={handlePhoto} style={{ display: 'none' }} />
+        <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+          <button onClick={() => fileRef.current?.click()} disabled={analyzing} style={{
+            flex: 1, padding: '14px 0', borderRadius: 14, border: 'none',
+            background: analyzing ? 'var(--bg-input, #F2F3F5)' : 'linear-gradient(135deg, rgba(249,232,74,0.15), rgba(255,179,71,0.12), rgba(255,143,171,0.12))',
+            color: analyzing ? 'var(--text-muted)' : '#C4580A',
+            fontSize: 13, fontWeight: 600, cursor: analyzing ? 'default' : 'pointer',
+            fontFamily: 'inherit',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+          }}>
+            {analyzing ? '분석 중...' : (<>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                 <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="#C4580A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 <circle cx="12" cy="13" r="3" stroke="#C4580A" strokeWidth="1.5" />
               </svg>
-              식단 사진으로 자동 분석
-            </>
-          )}
-        </button>
+              사진 촬영
+            </>)}
+          </button>
+          <button onClick={() => albumRef.current?.click()} disabled={analyzing} style={{
+            flex: 1, padding: '14px 0', borderRadius: 14, border: 'none',
+            background: analyzing ? 'var(--bg-input, #F2F3F5)' : 'var(--bg-input, #F2F3F5)',
+            color: analyzing ? 'var(--text-dim)' : 'var(--text-secondary)',
+            fontSize: 13, fontWeight: 600, cursor: analyzing ? 'default' : 'pointer',
+            fontFamily: 'inherit',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+          }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" strokeWidth="1.5" />
+              <circle cx="8.5" cy="8.5" r="1.5" stroke="currentColor" strokeWidth="1.2" />
+              <path d="M3 16l5-4 4 3 3-2 6 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            앨범에서 선택
+          </button>
+        </div>
 
         {/* Photo preview */}
         {preview && (
