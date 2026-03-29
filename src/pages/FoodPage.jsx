@@ -181,12 +181,26 @@ function AddFoodModal({ onAdd, onClose }) {
   const [analyzing, setAnalyzing] = useState(false);
   const [preview, setPreview] = useState(null);
   const [aiItems, setAiItems] = useState(null);
+  const [extraInput, setExtraInput] = useState('');
+  const [extraServings, setExtraServings] = useState(1);
+  const [extraLooking, setExtraLooking] = useState(false);
+  const [extraItems, setExtraItems] = useState([]);
   const fileRef = useRef(null);
 
+  // Merge all items for totals
+  const allItems = [...(aiItems || []), ...extraItems];
+
+  const updateTotals = (items) => {
+    setName(items.map(i => i.name).join(', '));
+    setKcal(String(items.reduce((s, i) => s + i.kcal, 0)));
+    setCarb(String(items.reduce((s, i) => s + i.carb, 0)));
+    setProtein(String(items.reduce((s, i) => s + i.protein, 0)));
+    setFat(String(items.reduce((s, i) => s + i.fat, 0)));
+  };
+
   const handleSubmit = () => {
-    if (aiItems && aiItems.length > 0) {
-      // Add all AI-detected items
-      aiItems.forEach(item => {
+    if (allItems.length > 0) {
+      allItems.forEach(item => {
         onAdd({ name: item.name, meal, kcal: item.kcal, carb: item.carb, protein: item.protein, fat: item.fat, water: 0 });
       });
       return;
@@ -200,6 +214,33 @@ function AddFoodModal({ onAdd, onClose }) {
       fat: Number(fat) || 0,
       water: 0,
     });
+  };
+
+  const handleExtraAdd = async () => {
+    if (!extraInput.trim()) return;
+    setExtraLooking(true);
+    try {
+      const res = await fetch('/api/food-lookup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: extraInput.trim(), servings: extraServings }),
+      });
+      if (res.ok) {
+        const result = await res.json();
+        const newExtra = [...extraItems, { name: result.name, kcal: result.kcal, carb: result.carb, protein: result.protein, fat: result.fat }];
+        setExtraItems(newExtra);
+        updateTotals([...(aiItems || []), ...newExtra]);
+        setExtraInput('');
+        setExtraServings(1);
+      }
+    } catch (err) {}
+    setExtraLooking(false);
+  };
+
+  const removeExtra = (idx) => {
+    const newExtra = extraItems.filter((_, i) => i !== idx);
+    setExtraItems(newExtra);
+    updateTotals([...(aiItems || []), ...newExtra]);
   };
 
   const handlePhoto = async (e) => {
@@ -237,13 +278,7 @@ function AddFoodModal({ onAdd, onClose }) {
         }
         if (result.items?.length > 0) {
           setAiItems(result.items);
-          // Auto-fill first item into form
-          const first = result.items[0];
-          setName(result.items.map(i => i.name).join(', '));
-          setKcal(String(result.totalKcal || result.items.reduce((s, i) => s + i.kcal, 0)));
-          setCarb(String(result.items.reduce((s, i) => s + i.carb, 0)));
-          setProtein(String(result.items.reduce((s, i) => s + i.protein, 0)));
-          setFat(String(result.items.reduce((s, i) => s + i.fat, 0)));
+          updateTotals([...result.items, ...extraItems]);
         }
       }
     } catch (err) {
@@ -335,18 +370,86 @@ function AddFoodModal({ onAdd, onClose }) {
           </div>
         )}
 
-        {/* Name */}
-        <input value={name} onChange={e => setName(e.target.value)} placeholder="음식 이름" style={{ ...inputStyle, marginBottom: 10 }} />
+        {/* Extra food input */}
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>
+            {allItems.length > 0 ? '추가 음식 입력' : '음식 이름으로 검색'}
+          </div>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+            <input
+              value={extraInput}
+              onChange={e => setExtraInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleExtraAdd()}
+              placeholder="예: 메밀소바, 김치찌개"
+              style={{ ...inputStyle, flex: 1 }}
+            />
+            <select
+              value={extraServings}
+              onChange={e => setExtraServings(Number(e.target.value))}
+              style={{
+                width: 64, padding: '10px 4px', borderRadius: 12, border: 'none',
+                background: 'var(--bg-input, #F2F3F5)', fontSize: 13,
+                color: 'var(--text-primary)', fontFamily: 'inherit', textAlign: 'center',
+                outline: 'none',
+              }}
+            >
+              {[0.5, 1, 1.5, 2, 3].map(n => (
+                <option key={n} value={n}>{n}인분</option>
+              ))}
+            </select>
+            <button onClick={handleExtraAdd} disabled={extraLooking || !extraInput.trim()} style={{
+              padding: '10px 14px', borderRadius: 12, border: 'none',
+              background: extraLooking ? 'var(--bg-input)' : 'linear-gradient(120deg, #F9E84A, #FFB347)',
+              color: '#7A3800', fontSize: 13, fontWeight: 600,
+              cursor: extraLooking ? 'default' : 'pointer', fontFamily: 'inherit',
+              flexShrink: 0,
+            }}>{extraLooking ? '...' : '추가'}</button>
+          </div>
 
-        {/* Kcal */}
-        <input value={kcal} onChange={e => setKcal(e.target.value)} placeholder="칼로리 (kcal)" type="number" style={{ ...inputStyle, marginBottom: 10 }} />
-
-        {/* Macros row */}
-        <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-          <input value={carb} onChange={e => setCarb(e.target.value)} placeholder="탄수화물(g)" type="number" style={inputStyle} />
-          <input value={protein} onChange={e => setProtein(e.target.value)} placeholder="단백질(g)" type="number" style={inputStyle} />
-          <input value={fat} onChange={e => setFat(e.target.value)} placeholder="지방(g)" type="number" style={inputStyle} />
+          {/* Extra items list */}
+          {extraItems.length > 0 && (
+            <div style={{ padding: '8px 12px', borderRadius: 12, background: 'rgba(255,179,71,0.08)', marginBottom: 4 }}>
+              {extraItems.map((item, idx) => (
+                <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0' }}>
+                  <span style={{ fontSize: 12, color: 'var(--text-primary)' }}>
+                    {item.name} — {item.kcal}kcal
+                  </span>
+                  <button onClick={() => removeExtra(idx)} style={{
+                    background: 'none', border: 'none', color: 'var(--text-dim)',
+                    fontSize: 14, cursor: 'pointer', padding: '0 4px',
+                  }}>×</button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
+
+        {/* Total summary */}
+        {allItems.length > 0 && (
+          <div style={{
+            padding: '12px 16px', borderRadius: 12, marginBottom: 12,
+            background: 'linear-gradient(135deg, rgba(249,232,74,0.1), rgba(255,179,71,0.08), rgba(255,143,171,0.08))',
+          }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: '#C4580A', marginBottom: 4 }}>합계</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
+              {kcal}kcal
+              <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-muted)', marginLeft: 8 }}>
+                탄{carb}g · 단{protein}g · 지{fat}g
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Manual input (hidden when items exist, shown as fallback) */}
+        {allItems.length === 0 && <>
+          <input value={name} onChange={e => setName(e.target.value)} placeholder="음식 이름" style={{ ...inputStyle, marginBottom: 10 }} />
+          <input value={kcal} onChange={e => setKcal(e.target.value)} placeholder="칼로리 (kcal)" type="number" style={{ ...inputStyle, marginBottom: 10 }} />
+          <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+            <input value={carb} onChange={e => setCarb(e.target.value)} placeholder="탄수화물(g)" type="number" style={inputStyle} />
+            <input value={protein} onChange={e => setProtein(e.target.value)} placeholder="단백질(g)" type="number" style={inputStyle} />
+            <input value={fat} onChange={e => setFat(e.target.value)} placeholder="지방(g)" type="number" style={inputStyle} />
+          </div>
+        </>}
 
         {/* Buttons */}
         <div style={{ display: 'flex', gap: 10 }}>
