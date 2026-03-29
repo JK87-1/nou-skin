@@ -4,6 +4,7 @@ import {
   getBodyGoal, saveBodyGoal, getBodyProfile, saveBodyProfile,
   calcBMI, getLatestWeight, getStartWeight,
 } from '../storage/BodyStorage';
+import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, SENSITIVITY_OPTIONS, GENDER_OPTIONS } from '../storage/ProfileStorage';
 
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
 
@@ -13,6 +14,8 @@ export default function BodyPage() {
   const [profile, setProfile] = useState(getBodyProfile);
   const [showAdd, setShowAdd] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [userProfile, setUserProfile] = useState(getProfile);
 
   const latest = records.length > 0 ? records[records.length - 1] : null;
   const start = records.length > 0 ? records[0] : null;
@@ -67,9 +70,38 @@ export default function BodyPage() {
 
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--bg-primary)', paddingBottom: 80 }}>
-      {/* Header */}
+      {/* Header with profile */}
       <div style={{ padding: '24px 24px 16px' }}>
-        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>몸무게</div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{
+              width: 42, height: 42, borderRadius: '50%', overflow: 'hidden',
+              background: 'var(--bg-secondary)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              {userProfile.profileImage ? (
+                <img src={userProfile.profileImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
+                  <circle cx="12" cy="10" r="4" /><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" strokeLinecap="round" />
+                </svg>
+              )}
+            </div>
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{userProfile.nickname || '사용자'}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{userProfile.skinType || ''}{userProfile.birthYear ? ` · ${new Date().getFullYear() - userProfile.birthYear}세` : ''}</div>
+            </div>
+          </div>
+          {/* Settings gear */}
+          <div onClick={() => setShowSettings(true)} style={{ cursor: 'pointer', padding: 6 }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+            </svg>
+          </div>
+        </div>
+
+        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>바디</div>
         <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
           {goalDiff != null
             ? `목표까지 ${Math.abs(goalDiff)}kg ${Number(goalDiff) > 0 ? '남았어요' : '달성!'}`
@@ -187,6 +219,13 @@ export default function BodyPage() {
 
       {/* Goal Modal */}
       {showGoalModal && <GoalModal onSave={handleSaveGoal} onClose={() => setShowGoalModal(false)} current={goal} />}
+
+      {/* Profile Settings Modal */}
+      {showSettings && <ProfileSettingsModal
+        profile={userProfile}
+        onUpdate={(key, val) => { const next = saveProfile({ [key]: val }); setUserProfile(next); }}
+        onClose={() => setShowSettings(false)}
+      />}
     </div>
   );
 }
@@ -301,6 +340,119 @@ function GoalModal({ onSave, onClose, current }) {
             cursor: 'pointer', fontFamily: 'inherit',
           }}>저장</button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== Profile Settings Modal =====
+function ProfileSettingsModal({ profile, onUpdate, onClose }) {
+  const currentYear = new Date().getFullYear();
+  const age = profile.birthYear ? currentYear - parseInt(profile.birthYear) : null;
+
+  const inputStyle = {
+    width: '100%', padding: '12px 14px', borderRadius: 12, border: 'none',
+    background: 'var(--bg-input, #F2F3F5)', fontSize: 14,
+    color: 'var(--text-primary)', fontFamily: 'inherit', outline: 'none',
+  };
+
+  return (
+    <div onClick={onClose} style={{
+      position: 'fixed', inset: 0, zIndex: 1100,
+      background: 'rgba(0,0,0,0.5)',
+      display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
+        padding: '24px 24px 40px', width: '100%', maxWidth: 420,
+        maxHeight: '85vh', overflowY: 'auto',
+      }}>
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
+        <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20 }}>프로필 설정</div>
+
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>닉네임</div>
+          <input value={profile.nickname || ''} onChange={e => onUpdate('nickname', e.target.value)}
+            placeholder="닉네임" maxLength={20} style={inputStyle} />
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>출생연도</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <input value={profile.birthYear || ''} onChange={e => onUpdate('birthYear', e.target.value)}
+              placeholder="예: 1995" type="number" min={1940} max={currentYear} style={{ ...inputStyle, flex: 1 }} />
+            {age > 0 && <span style={{ fontSize: 13, color: '#C4580A', fontWeight: 600, whiteSpace: 'nowrap' }}>만 {age}세</span>}
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>성별</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {GENDER_OPTIONS.map(g => (
+              <button key={g} onClick={() => onUpdate('gender', g)} style={{
+                flex: 1, padding: '10px 0', borderRadius: 10, border: 'none',
+                background: profile.gender === g ? 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)' : 'var(--bg-input, #F2F3F5)',
+                color: profile.gender === g ? '#7A3800' : 'var(--text-muted)',
+                fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+              }}>{g}</button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>피부 타입</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {SKIN_TYPES.map(t => (
+              <button key={t} onClick={() => onUpdate('skinType', t)} style={{
+                padding: '8px 14px', borderRadius: 10, border: 'none',
+                background: profile.skinType === t ? 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)' : 'var(--bg-input, #F2F3F5)',
+                color: profile.skinType === t ? '#7A3800' : 'var(--text-muted)',
+                fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+              }}>{t}</button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>민감도</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {SENSITIVITY_OPTIONS.map(s => (
+              <button key={s} onClick={() => onUpdate('sensitivity', s)} style={{
+                flex: 1, padding: '10px 0', borderRadius: 10, border: 'none',
+                background: profile.sensitivity === s ? 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)' : 'var(--bg-input, #F2F3F5)',
+                color: profile.sensitivity === s ? '#7A3800' : 'var(--text-muted)',
+                fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+              }}>{s}</button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>피부 고민</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {SKIN_CONCERNS.map(c => {
+              const active = (profile.skinConcerns || []).includes(c);
+              return (
+                <button key={c} onClick={() => {
+                  const list = active ? profile.skinConcerns.filter(x => x !== c) : [...(profile.skinConcerns || []), c];
+                  onUpdate('skinConcerns', list);
+                }} style={{
+                  padding: '8px 14px', borderRadius: 10, border: 'none',
+                  background: active ? 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)' : 'var(--bg-input, #F2F3F5)',
+                  color: active ? '#7A3800' : 'var(--text-muted)',
+                  fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+                }}>{c}</button>
+              );
+            })}
+          </div>
+        </div>
+
+        <button onClick={onClose} style={{
+          width: '100%', padding: '14px 0', borderRadius: 'var(--btn-radius)',
+          border: 'none', background: 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)',
+          color: '#7A3800', fontSize: 14, fontWeight: 700,
+          cursor: 'pointer', fontFamily: 'inherit',
+        }}>완료</button>
       </div>
     </div>
   );
