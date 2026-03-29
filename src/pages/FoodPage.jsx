@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { getTodayFoods, getTodayNutrition, getFoodGoal, saveFoodRecord, deleteFoodRecord } from '../storage/FoodStorage';
+import { compressImage } from '../engine/PixelAnalysis';
 
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
 const MEAL_LABELS = ['아침', '점심', '저녁', '간식'];
@@ -177,8 +178,19 @@ function AddFoodModal({ onAdd, onClose }) {
   const [carb, setCarb] = useState('');
   const [protein, setProtein] = useState('');
   const [fat, setFat] = useState('');
+  const [analyzing, setAnalyzing] = useState(false);
+  const [preview, setPreview] = useState(null);
+  const [aiItems, setAiItems] = useState(null);
+  const fileRef = useRef(null);
 
   const handleSubmit = () => {
+    if (aiItems && aiItems.length > 0) {
+      // Add all AI-detected items
+      aiItems.forEach(item => {
+        onAdd({ name: item.name, meal, kcal: item.kcal, carb: item.carb, protein: item.protein, fat: item.fat, water: 0 });
+      });
+      return;
+    }
     if (!name.trim() || !kcal) return;
     onAdd({
       name: name.trim(), meal,
@@ -188,6 +200,56 @@ function AddFoodModal({ onAdd, onClose }) {
       fat: Number(fat) || 0,
       water: 0,
     });
+  };
+
+  const handlePhoto = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = (ev) => setPreview(ev.target.result);
+    reader.readAsDataURL(file);
+
+    setAnalyzing(true);
+    setAiItems(null);
+    try {
+      // Compress and convert to base64
+      const dataUrl = await new Promise((resolve) => {
+        const r = new FileReader();
+        r.onload = (ev) => resolve(ev.target.result);
+        r.readAsDataURL(file);
+      });
+      const compressed = await compressImage(dataUrl, 800);
+      const base64 = compressed.split(',')[1];
+
+      const res = await fetch('/api/food-analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: base64 }),
+      });
+
+      if (res.ok) {
+        const result = await res.json();
+        if (result.notFood) {
+          setAnalyzing(false);
+          return;
+        }
+        if (result.items?.length > 0) {
+          setAiItems(result.items);
+          // Auto-fill first item into form
+          const first = result.items[0];
+          setName(result.items.map(i => i.name).join(', '));
+          setKcal(String(result.totalKcal || result.items.reduce((s, i) => s + i.kcal, 0)));
+          setCarb(String(result.items.reduce((s, i) => s + i.carb, 0)));
+          setProtein(String(result.items.reduce((s, i) => s + i.protein, 0)));
+          setFat(String(result.items.reduce((s, i) => s + i.fat, 0)));
+        }
+      }
+    } catch (err) {
+      // Silently fail — user can fill manually
+    }
+    setAnalyzing(false);
   };
 
   const inputStyle = {
@@ -223,6 +285,55 @@ function AddFoodModal({ onAdd, onClose }) {
             }}>{m}</button>
           ))}
         </div>
+
+        {/* Photo button */}
+        <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={handlePhoto} style={{ display: 'none' }} />
+        <button onClick={() => fileRef.current?.click()} disabled={analyzing} style={{
+          width: '100%', padding: '14px 0', borderRadius: 14, border: 'none',
+          background: analyzing ? 'var(--bg-input, #F2F3F5)' : 'linear-gradient(135deg, rgba(249,232,74,0.15), rgba(255,179,71,0.12), rgba(255,143,171,0.12))',
+          color: analyzing ? 'var(--text-muted)' : '#C4580A',
+          fontSize: 13, fontWeight: 600, cursor: analyzing ? 'default' : 'pointer',
+          fontFamily: 'inherit', marginBottom: 12,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+        }}>
+          {analyzing ? (
+            <>분석 중...</>
+          ) : (
+            <>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="#C4580A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx="12" cy="13" r="3" stroke="#C4580A" strokeWidth="1.5" />
+              </svg>
+              식단 사진으로 자동 분석
+            </>
+          )}
+        </button>
+
+        {/* Photo preview */}
+        {preview && (
+          <div style={{ marginBottom: 12, borderRadius: 14, overflow: 'hidden', position: 'relative' }}>
+            <img src={preview} alt="" style={{ width: '100%', height: 140, objectFit: 'cover', display: 'block' }} />
+            {analyzing && (
+              <div style={{
+                position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#fff', fontSize: 13, fontWeight: 600,
+              }}>AI 분석 중...</div>
+            )}
+          </div>
+        )}
+
+        {/* AI detected items */}
+        {aiItems && aiItems.length > 0 && (
+          <div style={{ marginBottom: 12, padding: '10px 14px', borderRadius: 12, background: 'rgba(249,232,74,0.1)' }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: '#C4580A', marginBottom: 6 }}>AI 분석 결과</div>
+            {aiItems.map((item, idx) => (
+              <div key={idx} style={{ fontSize: 12, color: 'var(--text-primary)', lineHeight: 1.6 }}>
+                {item.name} — {item.kcal}kcal (탄{item.carb}g · 단{item.protein}g · 지{item.fat}g)
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Name */}
         <input value={name} onChange={e => setName(e.target.value)} placeholder="음식 이름" style={{ ...inputStyle, marginBottom: 10 }} />
