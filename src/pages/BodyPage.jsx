@@ -427,6 +427,28 @@ function ProfileSettingsModal({ profile, onUpdate, onClose }) {
           </div>
         </div>
 
+        {/* Body info */}
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>신체 정보</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 11, color: 'var(--text-dim)', marginBottom: 4 }}>키 (cm)</div>
+              <input value={profile.height || ''} onChange={e => onUpdate('height', e.target.value)}
+                placeholder="165" type="number" style={inputStyle} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 11, color: 'var(--text-dim)', marginBottom: 4 }}>현재 몸무게 (kg)</div>
+              <input value={profile.currentWeight || ''} onChange={e => onUpdate('currentWeight', e.target.value)}
+                placeholder="60" type="number" step="0.1" style={inputStyle} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 11, color: 'var(--text-dim)', marginBottom: 4 }}>희망 몸무게 (kg)</div>
+              <input value={profile.goalWeight || ''} onChange={e => onUpdate('goalWeight', e.target.value)}
+                placeholder="55" type="number" step="0.1" style={inputStyle} />
+            </div>
+          </div>
+        </div>
+
         <div style={{ marginBottom: 20 }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>피부 고민</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
