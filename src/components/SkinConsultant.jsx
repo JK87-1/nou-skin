@@ -6,7 +6,6 @@ import { getProducts } from '../storage/TrackerStorage';
 import { compressImage } from '../engine/PixelAnalysis';
 import { incrementStat, addXP, checkAndAwardBadges } from '../storage/BadgeStorage';
 import { PRODUCTS, CATEGORY_META, getProductsByCategory, calcMatchScore } from '../data/ProductCatalog';
-import { getProducts } from '../storage/TrackerStorage';
 import SoftCloverIcon from './icons/SoftCloverIcon';
 import { DropletIcon, SparkleIcon, TestTubeIcon, SunIcon, DiamondIcon, PaletteIcon, MicroscopeIcon, LotionIcon } from './icons/PastelIcons';
 
