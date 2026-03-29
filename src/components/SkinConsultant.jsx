@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { getRecords, getSmoothedChanges, getChanges, getTodayRecords, getStableSkinAge } from '../storage/SkinStorage';
 import { getProfile } from '../storage/ProfileStorage';
 import { saveConsultSession, loadConsultSession, clearConsultSession } from '../storage/ConsultStorage';
+import { getProducts } from '../storage/TrackerStorage';
 import { compressImage } from '../engine/PixelAnalysis';
 import { incrementStat, addXP, checkAndAwardBadges } from '../storage/BadgeStorage';
 import { PRODUCTS, CATEGORY_META, getProductsByCategory, calcMatchScore } from '../data/ProductCatalog';
@@ -391,13 +392,13 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
         gender: profile.gender,
         skinType: profile.skinType,
       },
-      products: getProducts().map(p => ({
+      trackerProducts: getProducts().map(p => ({
         brand: p.brand,
         name: p.name,
         category: p.category,
         timeSlot: p.timeSlot,
-        ingredients: p.ingredients,
         startDate: p.startDate,
+        ingredients: p.ingredients,
       })),
     };
   }, [result]);

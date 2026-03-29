@@ -15,6 +15,32 @@ function checkRateLimit(ip) {
   return true;
 }
 
+function buildTrackerProductsPrompt(products) {
+  if (!products || products.length === 0) return '';
+
+  const timeSlotLabel = { morning: '아침', night: '저녁', both: '아침+저녁' };
+
+  let section = '\n\n[사용자가 현재 사용 중인 화장품 — 피부트래커 등록 제품]';
+  section += '\n아래는 사용자가 직접 등록한 화장품 목록이에요. 상담 시 이 정보를 적극 활용하세요.';
+
+  products.forEach((p, i) => {
+    section += `\n${i + 1}. ${p.brand ? p.brand + ' ' : ''}${p.name} (${p.category}, ${timeSlotLabel[p.timeSlot] || p.timeSlot})`;
+    if (p.startDate) section += ` — 사용 시작: ${p.startDate}`;
+    if (p.ingredients && p.ingredients.length > 0) {
+      section += `\n   성분: ${p.ingredients.join(', ')}`;
+    }
+  });
+
+  section += '\n\n[등록 제품 활용 규칙]';
+  section += '\n- 사용자가 피부 고민을 상담하면, 등록된 제품의 성분이 해당 고민에 도움이 되는지 자연스럽게 분석해주세요';
+  section += '\n- 성분 간 상호작용(시너지/충돌)이 있으면 반드시 알려주세요 (위 [성분 상호작용 규칙] 참고)';
+  section += '\n- 사용 순서(토너→세럼→에센스→크림→선크림)가 잘못된 경우 올바른 순서를 안내하세요';
+  section += '\n- 사용자의 피부 데이터와 비교하여 현재 루틴에서 부족하거나 과한 성분이 있으면 알려주세요';
+  section += '\n- "내 화장품 분석해줘", "내 루틴 봐줘" 같은 요청 시 등록 제품 전체를 종합 분석하세요';
+
+  return section;
+}
+
 function buildSystemPrompt(context) {
   const month = new Date().getMonth() + 1;
   const season = month <= 2 || month === 12 ? '겨울' : month <= 5 ? '봄' : month <= 8 ? '여름' : '가을';
@@ -149,6 +175,7 @@ ${ingredientAdvice}
 ${context.profile?.birthYear ? `출생년도: ${context.profile.birthYear}` : ''}
 ${context.profile?.gender ? `성별: ${context.profile.gender}` : ''}
 ${context.profile?.skinType ? `자가진단 피부타입: ${context.profile.skinType}` : ''}
+${buildTrackerProductsPrompt(context.trackerProducts)}
 
 [사진 분석 가이드 — 사진이 포함된 경우 반드시 따르세요]
 
