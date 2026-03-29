@@ -4,7 +4,6 @@ import { getProfile } from '../storage/ProfileStorage';
 import { saveConsultSession, loadConsultSession, clearConsultSession } from '../storage/ConsultStorage';
 import { getProducts } from '../storage/TrackerStorage';
 import { compressImage } from '../engine/PixelAnalysis';
-import { incrementStat, addXP, checkAndAwardBadges } from '../storage/BadgeStorage';
 import { PRODUCTS, CATEGORY_META, getProductsByCategory, calcMatchScore } from '../data/ProductCatalog';
 import SoftCloverIcon from './icons/SoftCloverIcon';
 import { DropletIcon, SparkleIcon, TestTubeIcon, SunIcon, DiamondIcon, PaletteIcon, MicroscopeIcon, LotionIcon } from './icons/PastelIcons';
@@ -426,10 +425,6 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
     setPendingImages([]);
     setIsLoading(true);
 
-    // Track consult usage for badges
-    incrementStat('consultCount');
-    addXP(10, 'AI 상담 이용');
-    checkAndAwardBadges();
 
     // Build conversation history for API (exclude timestamps and images)
     const conversationHistory = messages

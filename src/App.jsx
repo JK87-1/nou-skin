@@ -13,6 +13,9 @@ import { createAutoBackup, verifyDataIntegrity, restoreFromAutoBackup, startPeri
 import HistoryPage from './pages/HistoryPage';
 import TabBar from './components/TabBar';
 import MyPage from './pages/MyPage';
+import HomePage from './pages/HomePage';
+import FoodPage from './pages/FoodPage';
+import BodyPage from './pages/BodyPage';
 // RoutinePage removed — tab restructuring
 import RoutineTracker from './pages/RoutineTracker';
 import SkinScoreCircle from './components/SkinScoreCircle';
@@ -27,9 +30,7 @@ import GoalProgressCard from './components/GoalProgressCard';
 import SkinWeather from './components/SkinWeather';
 import WeatherChip from './components/WeatherChip';
 import { getGoal, updateGoalProgress } from './storage/GoalStorage';
-import { addXP, checkAndAwardBadges, incrementStat, getTotalXP, getLevel } from './storage/BadgeStorage';
-import { calculateLevel, getDefaultTheme, getThemeById, getLevelTitleData, THEMES } from './data/BadgeData';
-import { BadgeCelebration } from './components/BadgeRanking';
+import { getDefaultTheme, getThemeById } from './data/BadgeData';
 import SplashScreen from './components/SplashScreen';
 import SkinMeasurePage from './pages/SkinMeasurePage';
 import { DropletIcon, SparkleIcon, LotionIcon, DiamondIcon, PaletteIcon, MicroscopeIcon, RulerIcon, EyeIcon, BubbleIcon, TargetIcon, SunIcon, MoonIcon, CameraIcon, TestTubeIcon, StarIcon, ShieldIcon, WandIcon, PhotoIcon, CheckIcon, SaveIcon, PastelIcon, LuaMiniIcon } from './components/icons/PastelIcons';
@@ -66,7 +67,6 @@ export default function App() {
   const [showCelebration, setShowCelebration] = useState(false);
   const [conditionBriefing, setConditionBriefing] = useState(null);
   const [briefingLoading, setBriefingLoading] = useState(false);
-  const [celebrateBadge, setCelebrateBadge] = useState(null);
   const [showSplash, setShowSplash] = useState(true);
   const [splashExiting, setSplashExiting] = useState(false);
   const [weatherSheet, setWeatherSheet] = useState(false);
@@ -74,7 +74,6 @@ export default function App() {
   const [recoveryInfo, setRecoveryInfo] = useState(null);
   const [showBackupReminder, setShowBackupReminder] = useState(false);
   const [colorMode, setColorModeState] = useState(() => getProfile().colorMode || 'light');
-  const [userLevel, setUserLevel] = useState(() => calculateLevel(getTotalXP()));
   const [activeThemeId, setActiveThemeId] = useState(() => getProfile().activeTheme || null);
 
   // Apply data-theme attribute for light/dark CSS variables
@@ -153,7 +152,7 @@ export default function App() {
     // Handle push notification deep link (?scan=1)
     const params = new URLSearchParams(window.location.search);
     if (params.get('scan') === '1') {
-      setActiveTab('home');
+      setActiveTab('skin');
       setStage('camera');
       window.history.replaceState({}, '', '/');
     }
@@ -249,13 +248,12 @@ export default function App() {
 
   const openDetail = useCallback((key) => { setPrevStage(stage); setDetailKey(key); setStage('detail'); }, [stage]);
   const closeDetail = useCallback(() => { setStage(prevStage); setDetailKey(null); }, [prevStage]);
-  const goToHistory = useCallback(() => { refreshLandingData(); setHistoryInitMode(null); setActiveTab('history'); }, []);
-  const goToLanding = useCallback(() => { refreshLandingData(); setHistoryInitMode(null); setActiveTab('home'); setStage('landing'); }, []);
+  const goToHistory = useCallback(() => { refreshLandingData(); setHistoryInitMode(null); setActiveTab('album'); }, []);
+  const goToLanding = useCallback(() => { refreshLandingData(); setHistoryInitMode(null); setActiveTab('skin'); setStage('landing'); }, []);
 
   const switchTab = useCallback((tab) => {
     setActiveTab(tab);
-    setUserLevel(getLevel());
-    if (tab === 'home') {
+    if (tab === 'skin') {
       setStage('landing');
       refreshLandingData();
     }
@@ -302,7 +300,7 @@ export default function App() {
 
   // Smart camera opener: Face ID guide on secure context, native camera on HTTP mobile
   const openCamera = useCallback(() => {
-    setActiveTab('home');
+    setActiveTab('skin');
     if (window.isSecureContext && navigator.mediaDevices?.getUserMedia) {
       setStage('camera');
     } else {
@@ -433,34 +431,6 @@ export default function App() {
         if (goalResult.achieved) {
           setTimeout(() => setShowCelebration(true), 1200);
         }
-        // Badge & XP: measurement completed
-        const xpResult = addXP(50, '피부 측정 완료');
-        const hour = new Date().getHours();
-        if (hour >= 22 || hour < 5) incrementStat('nightMeasure');
-        if (hour >= 5 && hour < 10) incrementStat('morningMeasure');
-        const badgeResult = checkAndAwardBadges();
-        if (badgeResult.newBadges.length > 0) {
-          setTimeout(() => setCelebrateBadge(badgeResult.newBadges[0]), 1500);
-        }
-        // Auto-upgrade title on level-up
-        if (xpResult.levelUp) {
-          const newTitle = getLevelTitleData(xpResult.newLevel);
-          saveProfile({ selectedTitleLevel: newTitle.level });
-          setUserLevel(xpResult.newLevel);
-        }
-        // Submit score to ranking server
-        const freshLevel = getLevel();
-        fetch('/api/ranking', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            deviceId: getDeviceId(),
-            nickname: prof.nickname || '사용자',
-            score: finalScores.overallScore,
-            xp: getTotalXP(),
-            level: freshLevel,
-          }),
-        }).catch(() => {});
       }
 
     }, 400);
@@ -525,30 +495,6 @@ export default function App() {
           setShowSaveToast(true);
           setTimeout(() => setShowSaveToast(false), 2500);
           updateGoalProgress(scores);
-          const demoXpResult = addXP(50, '피부 측정 완료');
-          const badgeResult = checkAndAwardBadges();
-          if (badgeResult.newBadges.length > 0) {
-            setTimeout(() => setCelebrateBadge(badgeResult.newBadges[0]), 1500);
-          }
-          // Auto-upgrade title on level-up
-          if (demoXpResult.levelUp) {
-            const newTitle = getLevelTitleData(demoXpResult.newLevel);
-            saveProfile({ selectedTitleLevel: newTitle.level });
-            setUserLevel(demoXpResult.newLevel);
-          }
-          // Submit score to ranking server
-          const prof = getProfile();
-          fetch('/api/ranking', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              deviceId: getDeviceId(),
-              nickname: prof.nickname || '사용자',
-              score: scores.overallScore,
-              xp: getTotalXP(),
-              level: getLevel(),
-            }),
-          }).catch(() => {});
         }
       }, 400);
     }, 2800);
@@ -570,8 +516,6 @@ export default function App() {
   const handleShare = useCallback(() => {
     if (!result) return;
     const text = generateShareText(result);
-    incrementStat('shareCount');
-    checkAndAwardBadges();
     if (navigator.share) { navigator.share({ title: '루아 피부 나이', text }).catch(() => {}); }
     else { navigator.clipboard?.writeText(text).then(() => alert('복사되었습니다!')).catch(() => {}); }
   }, [result]);
@@ -614,7 +558,7 @@ export default function App() {
 
   const changes = getChanges();
 
-  const showTabBar = activeTab !== 'home' || stage === 'landing' || stage === 'result';
+  const showTabBar = activeTab !== 'skin' || stage === 'landing' || stage === 'result';
 
   return (
     <div className="app-container">
@@ -700,7 +644,7 @@ export default function App() {
           <button
             onClick={() => {
               setShowBackupReminder(false);
-              setActiveTab('my');
+              setActiveTab('home');
             }}
             style={{
               padding: '7px 14px', borderRadius: 12, border: 'none',
@@ -726,8 +670,13 @@ export default function App() {
         </div>
       )}
 
+      {/* ===== HOME TAB (new dashboard) ===== */}
+      {activeTab === 'home' && (
+        <HomePage onMeasure={openCamera} onTabChange={switchTab} />
+      )}
+
       {/* ===== DETAIL PAGE ===== */}
-      {activeTab === 'home' && stage === 'detail' && (
+      {activeTab === 'skin' && stage === 'detail' && (
         <DetailPage
           metricKey={detailKey}
           value={result ? {
@@ -741,21 +690,19 @@ export default function App() {
         />
       )}
 
-      {/* ===== HISTORY PAGE (gallery + insights merged) ===== */}
-      {activeTab === 'history' && (
-        <HistoryPage onBack={goToLanding} onMeasure={openCamera} onOpenConsult={() => setActiveTab('consult')} initialMode={historyInitMode} />
+      {/* ===== ALBUM TAB (gallery + insights merged) ===== */}
+      {activeTab === 'album' && (
+        <HistoryPage onBack={goToLanding} onMeasure={openCamera} onOpenConsult={() => switchTab('home')} initialMode={historyInitMode} />
       )}
 
-      {/* ===== CONSULT TAB ===== */}
-      {activeTab === 'consult' && (
-        <SkinConsultant result={result || getLatestRecord()} isTab={true} />
-      )}
+      {/* ===== FOOD TAB ===== */}
+      {activeTab === 'food' && <FoodPage />}
 
-      {/* ===== MY PAGE ===== */}
-      {activeTab === 'my' && <MyPage colorMode={colorMode} setColorMode={setColorMode} onThemeChange={setActiveThemeId} />}
+      {/* ===== BODY TAB ===== */}
+      {activeTab === 'body' && <BodyPage />}
 
-      {/* ===== HOME TAB (stage-based sub-flow) ===== */}
-      {activeTab === 'home' && <>
+      {/* ===== SKIN TAB (stage-based sub-flow) ===== */}
+      {activeTab === 'skin' && <>
 
       {/* ===== ROUTINE TRACKER ===== */}
       {stage === 'routineTracker' && (
@@ -800,7 +747,7 @@ export default function App() {
                     <button onClick={() => {
                       setShowMigration(false);
                       localStorage.setItem('nou_migration_dismissed', '1');
-                      setActiveTab('my');
+                      setActiveTab('home');
                     }} style={{
                       padding: '6px 14px', borderRadius: 10, border: 'none',
                       background: 'rgba(240,144,112,0.15)', color: '#ADEBB3',
@@ -885,7 +832,7 @@ export default function App() {
           {/* Goal Progress Card */}
           {getGoal()?.status === 'active' && (
             <div style={{ padding: '17px 0 0' }}>
-              <GoalProgressCard onTap={() => setActiveTab('my')} colorMode={colorMode} />
+              <GoalProgressCard onTap={() => setActiveTab('home')} colorMode={colorMode} />
             </div>
           )}
 
@@ -1812,7 +1759,7 @@ export default function App() {
                     })()}
                   </div>
                   <div style={{ padding: '6px 16px 12px' }}>
-                    <button onClick={() => setActiveTab('consult')} style={{
+                    <button onClick={() => setActiveTab('home')} style={{
                       width: '100%', padding: '10px 0', borderRadius: 10, border: 'none',
                       background: 'var(--btn-primary-bg)', color: '#fff',
                       fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
@@ -1830,7 +1777,7 @@ export default function App() {
 
             {/* ── Skin Consultant CTA ── */}
             <div style={{ display: 'flex', gap: 10, marginBottom: 10, animation: 'fadeUp 0.5s ease-out 1.25s both' }}>
-              <button onClick={() => setActiveTab('consult')} style={{
+              <button onClick={() => setActiveTab('home')} style={{
                 flex: 1, padding: 14, borderRadius: 12, fontFamily: 'inherit',
                 background: 'var(--bg-card)', border: '1px solid var(--border-subtle)',
                 color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
@@ -1869,15 +1816,14 @@ export default function App() {
       </>}
       {/* End of home tab wrapper */}
 
-      {/* Tab bar spacer for pages that show tab bar (consult tab manages its own height) */}
-      {showTabBar && activeTab !== 'home' && activeTab !== 'consult' && <div className="tab-bar-spacer" />}
-      {showTabBar && activeTab === 'home' && stage === 'landing' && <div className="tab-bar-spacer" />}
+      {/* Tab bar spacer */}
+      {showTabBar && <div className="tab-bar-spacer" />}
 
       {/* ===== PWA INSTALL BANNER ===== */}
       <InstallBanner />
 
       {/* ===== TAB BAR ===== */}
-      {showTabBar && <TabBar activeTab={activeTab} onTabChange={switchTab} onMeasure={openCamera} themeColors={activeThemeColors} colorMode={colorMode} />}
+      {showTabBar && <TabBar activeTab={activeTab} onTabChange={switchTab} />}
 
       {/* ===== GOAL CELEBRATION OVERLAY ===== */}
       {showCelebration && (
@@ -1939,7 +1885,7 @@ export default function App() {
                 }}
               >닫기</button>
               <button
-                onClick={() => { setShowCelebration(false); setActiveTab('my'); }}
+                onClick={() => { setShowCelebration(false); setActiveTab('home'); }}
                 style={{
                   flex: 1, padding: 14, borderRadius: 16, border: 'none',
                   background: 'var(--btn-primary-bg)',
@@ -1952,8 +1898,6 @@ export default function App() {
         </div>
       )}
 
-      {/* ===== BADGE CELEBRATION POPUP ===== */}
-      <BadgeCelebration badge={celebrateBadge} onClose={() => setCelebrateBadge(null)} accent={activeThemeColors.accent} />
     </div>
   );
 }

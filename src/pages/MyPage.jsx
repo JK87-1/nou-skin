@@ -14,7 +14,6 @@ import {
 } from '../utils/pushNotification';
 import { getLatestRecord } from '../storage/SkinStorage';
 import { getGoal, saveGoal, clearGoal, getDaysRemaining, getGoalProgress, getOverallProgress, METRIC_META } from '../storage/GoalStorage';
-import BadgeRanking from '../components/BadgeRanking';
 import { getAllPhotosRaw, restorePhotos } from '../storage/PhotoDB';
 import { MoonIcon, SunIcon, CameraIcon, SaveIcon, PastelIcon } from '../components/icons/PastelIcons';
 
@@ -39,8 +38,6 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange }) {
     <div style={{ paddingBottom: 40 }}>
       <div style={{ padding: '0 24px 0' }}>
 
-        {/* Badge & Ranking UI (gear icon inside profile header) */}
-        <BadgeRanking onSettingsClick={() => setSettingsOpen(true)} colorMode={colorMode} onThemeChange={onThemeChange} />
 
         {/* App Info / Version Footer */}
         <div style={{

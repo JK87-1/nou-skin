@@ -7,9 +7,8 @@ import { getLatestRecord } from '../storage/SkinStorage';
 import { getTodayMissions } from '../data/MissionData';
 import {
   loadMissionProgress, saveMissionProgress, initMissionState,
-  getWeeklyStatus, getTotalXP, getBadges,
+  getWeeklyStatus, getTotalXP,
 } from '../storage/MissionStorage';
-import { addXP as addBadgeXP, incrementStat, checkAndAwardBadges } from '../storage/BadgeStorage';
 import SoftCloverIcon from './icons/SoftCloverIcon';
 import { TargetIcon, SparkleIcon, CheckIcon, PastelIcon } from './icons/PastelIcons';
 
@@ -43,7 +42,6 @@ export default function DailyMission() {
   const [progress, setProgress] = useState(null);
   const [celebrating, setCelebrating] = useState(null); // 'main' | index | null
   const [xpFloat, setXpFloat] = useState(null);
-  const [badgeTooltip, setBadgeTooltip] = useState(null);
   const [undoToast, setUndoToast] = useState(null);
   const undoTimerRef = useRef(null);
 
@@ -82,9 +80,6 @@ export default function DailyMission() {
     setXpFloat(xp);
     setTimeout(() => { setCelebrating(null); setXpFloat(null); }, 1200);
     updateProgress(p => ({ ...p, mainCompleted: true, earnedXP: (p.earnedXP || 0) + xp }));
-    addBadgeXP(30, '메인 미션 완료');
-    incrementStat('totalMissions');
-    checkAndAwardBadges();
     if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
     setUndoToast({ label: '메인 미션 완료!', type: 'main' });
     undoTimerRef.current = setTimeout(() => setUndoToast(null), 4000);
@@ -101,9 +96,6 @@ export default function DailyMission() {
         setCelebrating('main');
         setXpFloat(xp);
         setTimeout(() => { setCelebrating(null); setXpFloat(null); }, 1200);
-        addBadgeXP(30, '메인 미션 완료');
-        incrementStat('totalMissions');
-        checkAndAwardBadges();
         return { ...p, trackProgress: next, mainCompleted: true, earnedXP: (p.earnedXP || 0) + xp };
       }
       return { ...p, trackProgress: next };
@@ -126,16 +118,8 @@ export default function DailyMission() {
       const bc = [...(p.bonusCompleted || [])];
       bc[index] = true;
       const next = { ...p, bonusCompleted: bc, earnedXP: (p.earnedXP || 0) + xp };
-      // 올클리어 체크
-      if (next.mainCompleted && bc.every(Boolean)) {
-        addBadgeXP(20, '올클리어 보너스');
-        incrementStat('allClearCount');
-      }
       return next;
     });
-    addBadgeXP(xp >= 20 ? 25 : 15, '보너스 미션 완료');
-    incrementStat('totalMissions');
-    checkAndAwardBadges();
     if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
     setUndoToast({ label: '보너스 미션 완료!', type: 'bonus', index });
     undoTimerRef.current = setTimeout(() => setUndoToast(null), 4000);
@@ -153,12 +137,6 @@ export default function DailyMission() {
       }
       return next;
     });
-    addBadgeXP(-30, '메인 미션 되돌리기');
-    incrementStat('totalMissions', -1);
-    if (wasAllClear) {
-      addBadgeXP(-20, '올클리어 되돌리기');
-      incrementStat('allClearCount', -1);
-    }
     if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
     setUndoToast(null);
   }, [missions, progress, updateProgress]);
@@ -173,12 +151,6 @@ export default function DailyMission() {
       bc[index] = false;
       return { ...p, bonusCompleted: bc, earnedXP: Math.max(0, (p.earnedXP || 0) - xp) };
     });
-    addBadgeXP(-(xp >= 20 ? 25 : 15), '보너스 미션 되돌리기');
-    incrementStat('totalMissions', -1);
-    if (wasAllClear) {
-      addBadgeXP(-20, '올클리어 되돌리기');
-      incrementStat('allClearCount', -1);
-    }
     if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
     setUndoToast(null);
   }, [missions, progress, updateProgress]);
@@ -203,7 +175,6 @@ export default function DailyMission() {
   if (!missions || !progress) return null;
 
   const weeklyStatus = getWeeklyStatus();
-  const badges = getBadges();
   const totalCompleted = (progress.mainCompleted ? 1 : 0) + (progress.bonusCompleted?.filter(Boolean).length || 0);
   const totalMissions = 1 + missions.bonus.length;
   const completionPct = Math.round((totalCompleted / totalMissions) * 100);
@@ -486,68 +457,6 @@ export default function DailyMission() {
         </div>
       </div>
 
-      {/* === 3-6. BADGES === */}
-      <div style={{ marginBottom: 20, ...fadeUp(0.4) }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-          <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}>획득한 뱃지</span>
-          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-            {badges.filter(b => b.achieved).length}/{badges.length}
-          </span>
-        </div>
-
-        <div style={{ display: 'flex', gap: 8 }}>
-          {badges.map(badge => (
-            <div key={badge.id}
-              onClick={() => setBadgeTooltip(badgeTooltip === badge.id ? null : badge.id)}
-              style={{
-                flex: 1, textAlign: 'center', padding: '14px 6px 10px', borderRadius: 16,
-                cursor: 'pointer', position: 'relative',
-                background: badge.achieved
-                  ? 'var(--context-bg)'
-                  : 'var(--item-bg)',
-                border: 'none',
-              }}
-            >
-              <div style={{
-                fontSize: 24, marginBottom: 4,
-                filter: badge.achieved ? 'none' : 'grayscale(1) brightness(0.4)',
-              }}><PastelIcon emoji={badge.icon} size={24} /></div>
-              <div style={{
-                fontSize: 10, fontWeight: 600, lineHeight: 1.3,
-                color: badge.achieved ? 'var(--text-secondary)' : 'var(--text-dim)',
-              }}>{badge.name}</div>
-
-              {/* Progress bar for unachieved */}
-              {!badge.achieved && (
-                <div style={{
-                  height: 3, borderRadius: 2, marginTop: 6,
-                  background: 'var(--progress-track)', overflow: 'hidden',
-                }}>
-                  <div style={{
-                    height: '100%', borderRadius: 2,
-                    width: `${badge.progress * 100}%`,
-                    background: 'var(--progress-fill)',
-                  }} />
-                </div>
-              )}
-
-              {/* Tooltip */}
-              {badgeTooltip === badge.id && (
-                <div style={{
-                  position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)',
-                  background: 'var(--bg-modal)', borderRadius: 10, padding: '8px 12px',
-                  fontSize: 10, color: 'var(--text-secondary)', whiteSpace: 'nowrap', marginBottom: 6,
-                  border: 'none',
-                  boxShadow: 'none', zIndex: 10,
-                }}>
-                  <div style={{ fontWeight: 600, marginBottom: 2 }}>{badge.description}</div>
-                  <div style={{ color: 'var(--text-muted)' }}>{badge.current}/{badge.target}</div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
 
       {/* === 3-7. AI SKIN COACH === */}
       <div style={{

@@ -180,7 +180,7 @@ function ChangeIndicator({ diff, unit = '점', inverse = false, size = 'normal' 
 
 // ===== MAIN HISTORY PAGE =====
 export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialMode }) {
-  const [mode, setMode] = useState(initialMode || 'mission');
+  const [mode, setMode] = useState(initialMode || 'gallery');
   const [insightMode, setInsightMode] = useState('timeline');
   const [records, setRecords] = useState([]);
   const [graphMetric, setGraphMetric] = useState('skinAge');
@@ -191,6 +191,8 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
   const [viewDate, setViewDate] = useState(new Date());
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [thumbs, setThumbs] = useState({});
+  const [compareRecords, setCompareRecords] = useState(null);
+  const [showTimelapse, setShowTimelapse] = useState(false);
 
   useEffect(() => {
     setRecords(getRecords());
@@ -267,12 +269,12 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
       {/* Mode Toggle */}
       <div style={{ padding: '12px 20px 16px' }}>
         <div className="segment-control">
-          <button className={`segment-btn${mode === 'mission' ? ' active' : ''}`}
-            onClick={() => setMode('mission')}>미션</button>
-          <button className={`segment-btn${mode === 'insights' ? ' active' : ''}`}
-            onClick={() => setMode('insights')}>분석</button>
           <button className={`segment-btn${mode === 'gallery' ? ' active' : ''}`}
             onClick={() => setMode('gallery')}>앨범</button>
+          <button className={`segment-btn${mode === 'insights' ? ' active' : ''}`}
+            onClick={() => setMode('insights')}>분석</button>
+          <button className={`segment-btn${mode === 'mission' ? ' active' : ''}`}
+            onClick={() => setMode('mission')}>미션</button>
         </div>
       </div>
 
@@ -417,6 +419,144 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                 })}
               </div>
             )}
+
+            {/* ── Compare Section ── */}
+            {records.length >= 2 && (
+              <div style={{ padding: '24px 20px 0', animation: 'breatheIn 0.6s ease 0.25s both' }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 10 }}>비교 보기</div>
+
+                {/* 1-month change */}
+                <div
+                  onClick={() => {
+                    const oneMonthAgo = new Date();
+                    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+                    const oldest = [...records].find(r => new Date(r.date) <= oneMonthAgo) || records[0];
+                    const newest = records[records.length - 1];
+                    setCompareRecords({ before: oldest, after: newest });
+                  }}
+                  style={{
+                    background: 'var(--bg-card)', borderRadius: 'var(--card-border-radius)',
+                    padding: '14px 18px', marginBottom: 10, cursor: 'pointer',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>1개월 변화</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                        {new Date(records[0].date).getMonth() + 1}월 {new Date(records[0].date).getDate()}일 → 오늘
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: '#FF8FAB' }}>비교 →</div>
+                  </div>
+                </div>
+
+                {/* Timelapse */}
+                <div
+                  onClick={() => setShowTimelapse(true)}
+                  style={{
+                    background: 'var(--bg-card)', borderRadius: 'var(--card-border-radius)',
+                    padding: '14px 18px', cursor: 'pointer',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>타임랩스</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                        지난 {Math.ceil((Date.now() - new Date(records[0].date).getTime()) / (1000 * 60 * 60 * 24 * 30))}개월
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: '#FFB347' }}>재생 →</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Take photo button */}
+            <div style={{ padding: '20px 20px 0', animation: 'breatheIn 0.6s ease 0.3s both' }}>
+              <button onClick={onMeasure} style={{
+                width: '100%', padding: '14px 0',
+                background: 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)',
+                border: 'none', borderRadius: 'var(--btn-radius)',
+                fontSize: 14, fontWeight: 600,
+                color: '#7A3800', cursor: 'pointer', fontFamily: 'inherit',
+              }}>오늘 사진 찍기</button>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ── Compare Modal ── */}
+      {compareRecords && (() => {
+        const { before, after } = compareRecords;
+        const bThumb = thumbs[String(before.id)] || thumbs[before.date];
+        const aThumb = thumbs[String(after.id)] || thumbs[after.date];
+        const diff = after.overallScore - before.overallScore;
+        return (
+          <div onClick={() => setCompareRecords(null)} style={{
+            position: 'fixed', inset: 0, zIndex: 1100,
+            background: 'rgba(0,0,0,0.7)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
+          }}>
+            <div onClick={e => e.stopPropagation()} style={{
+              background: 'var(--bg-modal, #fff)', borderRadius: 24, padding: 24,
+              maxWidth: 360, width: '100%', textAlign: 'center',
+            }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 16 }}>피부 변화 비교</div>
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginBottom: 16 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ aspectRatio: '1', borderRadius: 16, overflow: 'hidden', background: 'var(--bg-secondary)', marginBottom: 8 }}>
+                    {bThumb ? <img src={bThumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-dim)', fontSize: 11 }}>사진 없음</div>}
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{new Date(before.date).getMonth() + 1}/{new Date(before.date).getDate()}</div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{before.overallScore}점</div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', fontSize: 22, color: 'var(--text-dim)' }}>→</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ aspectRatio: '1', borderRadius: 16, overflow: 'hidden', background: 'var(--bg-secondary)', marginBottom: 8 }}>
+                    {aThumb ? <img src={aThumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-dim)', fontSize: 11 }}>사진 없음</div>}
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{new Date(after.date).getMonth() + 1}/{new Date(after.date).getDate()}</div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{after.overallScore}점</div>
+                </div>
+              </div>
+              <div style={{
+                padding: '12px 16px', borderRadius: 14,
+                background: diff >= 0 ? 'rgba(52,211,153,0.08)' : 'rgba(248,113,113,0.08)',
+                color: diff >= 0 ? '#34d399' : '#f87171',
+                fontSize: 14, fontWeight: 700,
+              }}>
+                {diff >= 0 ? '▲' : '▼'} {Math.abs(diff)}점 {diff >= 0 ? '향상' : '하락'}
+              </div>
+              <button onClick={() => setCompareRecords(null)} style={{
+                marginTop: 16, padding: '12px 0', width: '100%',
+                background: 'var(--bg-secondary)', border: 'none', borderRadius: 14,
+                fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)',
+                cursor: 'pointer', fontFamily: 'inherit',
+              }}>닫기</button>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ── Timelapse Modal ── */}
+      {showTimelapse && records.length >= 2 && (() => {
+        const sorted = [...records].reverse();
+        return (
+          <div onClick={() => setShowTimelapse(false)} style={{
+            position: 'fixed', inset: 0, zIndex: 1100,
+            background: 'rgba(0,0,0,0.85)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <div onClick={e => e.stopPropagation()} style={{ textAlign: 'center', maxWidth: 320 }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', marginBottom: 16 }}>타임랩스</div>
+              <TimelapsePlayer records={sorted} thumbs={thumbs} />
+              <button onClick={() => setShowTimelapse(false)} style={{
+                marginTop: 20, padding: '12px 32px',
+                background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 14,
+                fontSize: 14, fontWeight: 600, color: '#fff',
+                cursor: 'pointer', fontFamily: 'inherit',
+              }}>닫기</button>
+            </div>
           </div>
         );
       })()}
@@ -1377,6 +1517,51 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ===== TIMELAPSE PLAYER =====
+function TimelapsePlayer({ records, thumbs }) {
+  const [idx, setIdx] = useState(0);
+  const timerRef = useRef(null);
+  const [playing, setPlaying] = useState(true);
+
+  const withThumbs = records.filter(r => thumbs[String(r.id)] || thumbs[r.date]);
+  const current = withThumbs[idx];
+  const thumb = current ? (thumbs[String(current.id)] || thumbs[current.date]) : null;
+
+  useEffect(() => {
+    if (!playing || withThumbs.length < 2) return;
+    timerRef.current = setInterval(() => {
+      setIdx(i => (i + 1) % withThumbs.length);
+    }, 1200);
+    return () => clearInterval(timerRef.current);
+  }, [playing, withThumbs.length]);
+
+  if (withThumbs.length < 2) {
+    return <div style={{ color: '#fff', fontSize: 13, padding: 20 }}>사진이 2장 이상 필요해요</div>;
+  }
+
+  return (
+    <div>
+      <div style={{
+        width: 240, height: 240, borderRadius: 20, overflow: 'hidden',
+        margin: '0 auto', background: '#222',
+      }}>
+        {thumb && <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'opacity 0.3s' }} />}
+      </div>
+      <div style={{ marginTop: 12, fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>
+        {current && `${new Date(current.date).getMonth() + 1}/${new Date(current.date).getDate()} · ${current.overallScore}점`}
+      </div>
+      <div style={{ marginTop: 8, fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>
+        {idx + 1} / {withThumbs.length}
+      </div>
+      <button onClick={() => setPlaying(p => !p)} style={{
+        marginTop: 10, padding: '8px 24px', background: 'rgba(255,255,255,0.15)',
+        border: 'none', borderRadius: 10, color: '#fff', fontSize: 12, fontWeight: 600,
+        cursor: 'pointer', fontFamily: 'inherit',
+      }}>{playing ? '일시정지' : '재생'}</button>
     </div>
   );
 }
