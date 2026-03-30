@@ -29,6 +29,8 @@ import AiInsightCard from '../components/AiInsightCard';
 import BeforeAfterSlider from '../components/BeforeAfterSlider';
 import DailyMission from '../components/DailyMission';
 import { ChartIcon, CameraIcon, MicroscopeIcon, SparkleIcon, DiamondIcon, DropletIcon, RulerIcon, PaletteIcon, LotionIcon, EyeIcon, BubbleIcon, TargetIcon, ClockIcon, LuaMiniIcon } from '../components/icons/PastelIcons';
+import EternalPearl from '../components/icons/EternalPearl';
+import { getDefaultTheme } from '../data/BadgeData';
 
 // ===== MINI LINE GRAPH (Canvas-based, no dependencies) =====
 function TrendGraph({ data, color = '#ADEBB3', height = 160, metricKey = 'skinAge', inverse = false, showAllLabels = false }) {
@@ -473,7 +475,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
               </div>
             )}
 
-            {/* Skin Analysis CTA — slim card */}
+            {/* Skin Analysis CTA — exact copy from skin page */}
             <div onClick={onMeasure} style={{
               margin: '20px 20px 0', padding: '16px 20px',
               background: 'var(--bg-card)', borderRadius: 20,
@@ -481,19 +483,16 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
               cursor: 'pointer', animation: 'breatheIn 0.6s ease 0.3s both',
               WebkitTapHighlightColor: 'transparent',
             }}>
-              <div style={{
-                width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
-                background: 'linear-gradient(135deg, rgba(249,232,74,0.2), rgba(255,179,71,0.15), rgba(255,143,171,0.15))',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="12" r="8" stroke="#FFB347" strokeWidth="1.5" />
-                  <circle cx="12" cy="12" r="3" stroke="#FF8FAB" strokeWidth="1.5" />
-                </svg>
+              <div style={{ width: 48, height: 48, flexShrink: 0 }}>
+                <EternalPearl size={48} animated colors={getDefaultTheme('light')} theme="light" />
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: -0.3 }}>피부 분석하기</div>
-                <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 3 }}>AI가 10개 지표를 정밀 분석합니다</div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: -0.3 }}>
+                  피부 분석하기
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 3 }}>
+                  AI가 10개 지표를 정밀 분석합니다
+                </div>
               </div>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                 <path d="M9 18l6-6-6-6" stroke="var(--text-dim)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
