@@ -8,7 +8,7 @@ import SkinWeather from '../components/SkinWeather';
 
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
 
-export default function HomePage({ onMeasure, onTabChange }) {
+export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [profile] = useState(getProfile);
   const latest = getLatestRecord();
   const records = getRecords();
@@ -126,6 +126,43 @@ export default function HomePage({ onMeasure, onTabChange }) {
                 {getInsightText(latest)}
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Skincare Tracker Card */}
+        <div onClick={onOpenRoutine} style={{
+          marginTop: 14, padding: 20, borderRadius: 16,
+          background: '#FFFFFF', cursor: 'pointer',
+          ...fadeUp(0.18),
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <svg width="26" height="26" viewBox="0 0 36 36" fill="none">
+                <defs>
+                  <linearGradient id="lot-g1" x1="30%" y1="0%" x2="70%" y2="100%">
+                    <stop offset="0%" stopColor="#FFF0F3" />
+                    <stop offset="100%" stopColor="#FFD0DA" />
+                  </linearGradient>
+                  <linearGradient id="lot-g2" x1="30%" y1="0%" x2="70%" y2="100%">
+                    <stop offset="0%" stopColor="#FFE0E8" />
+                    <stop offset="100%" stopColor="#FFC0CC" />
+                  </linearGradient>
+                </defs>
+                <rect x="13" y="3" width="10" height="4" rx="1.5" fill="url(#lot-g2)" />
+                <rect x="16.5" y="1" width="3" height="3" rx="1" fill="url(#lot-g2)" />
+                <rect x="14" y="0.5" width="8" height="1.5" rx="0.75" fill="url(#lot-g2)" />
+                <rect x="11" y="7" width="14" height="20" rx="4" fill="url(#lot-g1)" />
+                <rect x="13" y="13" width="10" height="8" rx="2" fill="white" opacity="0.3" />
+                <rect x="12.5" y="9" width="3" height="12" rx="1.5" fill="white" opacity="0.2" />
+              </svg>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>스킨케어 트래커</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>제품 등록 · 루틴 관리 · 효과 분석</div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M9 18l6-6-6-6" stroke="var(--text-dim)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </div>
         </div>
 
