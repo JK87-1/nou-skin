@@ -8,6 +8,7 @@ import { createPortal } from 'react-dom';
 import { SunIcon, MoonIcon, LotionIcon, PastelIcon } from '../components/icons/PastelIcons';
 import DailyMission from '../components/DailyMission';
 import { getWeeklyStatus } from '../storage/MissionStorage';
+import { getRoutineItems, saveRoutineItem, deleteRoutineItem, getChecks, toggleCheck, getTodayProgress } from '../storage/RoutineCheckStorage';
 import {
   TRACKER_CATEGORIES, getProducts, saveProduct, deleteProduct,
   getProductsForMode, getTrackerChecks, toggleTrackerCheck,
@@ -788,28 +789,10 @@ export default function RoutineTracker({ themeColors, onBack, initialMode }) {
         </div>
       </div>
 
-      {/* Routine (mission) mode */}
-      {pageMode === 'routine' && (
-        <div style={{ animation: 'breatheIn 0.6s ease both' }}>
-          <DailyMission />
-        </div>
-      )}
-
-      {/* 식단 mode */}
-      {pageMode === 'insights' && (
-        <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)', animation: 'breatheIn 0.5s ease both' }}>
-          <div style={{ fontSize: 14, fontWeight: 600 }}>식단 루틴</div>
-          <div style={{ fontSize: 12, marginTop: 6 }}>준비 중이에요</div>
-        </div>
-      )}
-
-      {/* 바디 mode */}
-      {pageMode === 'mission' && (
-        <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)', animation: 'breatheIn 0.5s ease both' }}>
-          <div style={{ fontSize: 14, fontWeight: 600 }}>바디 루틴</div>
-          <div style={{ fontSize: 12, marginTop: 6 }}>준비 중이에요</div>
-        </div>
-      )}
+      {/* Routine checklist for each category */}
+      {pageMode === 'routine' && <RoutineChecklist category="skin" label="피부" onAdd={() => setShowAddSheet(true)} />}
+      {pageMode === 'insights' && <RoutineChecklist category="food" label="식단" onAdd={() => setShowAddSheet(true)} />}
+      {pageMode === 'mission' && <RoutineChecklist category="body" label="바디" onAdd={() => setShowAddSheet(true)} />}
 
       {/* Tracker mode — existing tracker content (hidden) */}
       {pageMode === '__tracker__' && <>
@@ -1125,6 +1108,187 @@ export default function RoutineTracker({ themeColors, onBack, initialMode }) {
         />
       )}
       </>}
+    </div>
+  );
+}
+
+// ===== Routine Checklist Component =====
+function RoutineChecklist({ category, label }) {
+  const today = new Date().toISOString().slice(0, 10);
+  const [items, setItems] = useState(() => getRoutineItems(category));
+  const [checks, setChecksState] = useState(() => getChecks(category, today));
+  const [showAdd, setShowAdd] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [newTime, setNewTime] = useState('아침');
+
+  const progress = getTodayProgress(category);
+
+  const handleToggle = (id) => {
+    const updated = toggleCheck(category, today, id);
+    setChecksState(updated);
+  };
+
+  const handleAdd = () => {
+    if (!newName.trim()) return;
+    const updated = saveRoutineItem(category, { name: newName.trim(), time: newTime });
+    setItems(updated);
+    setNewName('');
+    setShowAdd(false);
+  };
+
+  const handleDelete = (id) => {
+    const updated = deleteRoutineItem(category, id);
+    setItems(updated);
+  };
+
+  const timeLabels = category === 'skin' ? ['아침', '저녁'] : category === 'food' ? ['아침', '점심', '저녁'] : ['아침', '저녁'];
+
+  return (
+    <div style={{ padding: '0 20px', animation: 'breatheIn 0.5s ease both' }}>
+      {/* Progress bar */}
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>오늘의 {label} 루틴</span>
+          <span style={{ fontSize: 12, color: 'var(--accent-primary)', fontWeight: 600 }}>{progress.done}/{progress.total}</span>
+        </div>
+        <div style={{ height: 6, borderRadius: 3, background: 'var(--bar-track)', overflow: 'hidden' }}>
+          <div style={{
+            height: '100%', borderRadius: 3, width: `${progress.pct}%`,
+            background: 'var(--accent-primary)',
+            transition: 'width 0.3s ease',
+          }} />
+        </div>
+      </div>
+
+      {/* Items */}
+      {items.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+          <div style={{ fontSize: 14, fontWeight: 600 }}>아직 {label} 루틴이 없어요</div>
+          <div style={{ fontSize: 12, marginTop: 6 }}>+ 버튼으로 루틴을 추가해보세요</div>
+          <button onClick={() => setShowAdd(true)} style={{
+            marginTop: 16, padding: '10px 24px', borderRadius: 'var(--btn-radius)',
+            background: 'var(--accent-primary)', border: 'none',
+            color: '#fff', fontSize: 13, fontWeight: 600,
+            cursor: 'pointer', fontFamily: 'inherit',
+          }}>루틴 추가하기</button>
+        </div>
+      ) : (
+        <>
+          {timeLabels.map(time => {
+            const timeItems = items.filter(i => i.time === time);
+            if (timeItems.length === 0) return null;
+            return (
+              <div key={time} style={{ marginBottom: 16 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>{time}</div>
+                {timeItems.map(item => {
+                  const checked = !!checks[item.id];
+                  return (
+                    <div key={item.id} style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      padding: '14px 16px', marginBottom: 6,
+                      background: 'var(--bg-card)', borderRadius: 14,
+                    }}>
+                      {/* Check circle */}
+                      <div onClick={() => handleToggle(item.id)} style={{
+                        width: 24, height: 24, borderRadius: '50%', flexShrink: 0, cursor: 'pointer',
+                        border: checked ? 'none' : '2px solid var(--border-subtle)',
+                        background: checked ? 'var(--accent-primary)' : 'transparent',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        transition: 'all 0.2s ease',
+                      }}>
+                        {checked && (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                            <path d="M5 13l4 4L19 7" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        )}
+                      </div>
+                      {/* Name */}
+                      <div style={{
+                        flex: 1, fontSize: 14, fontWeight: 500,
+                        color: checked ? 'var(--text-muted)' : 'var(--text-primary)',
+                        textDecoration: checked ? 'line-through' : 'none',
+                      }}>{item.name}</div>
+                      {/* Delete */}
+                      <button onClick={() => handleDelete(item.id)} style={{
+                        background: 'none', border: 'none', color: 'var(--text-dim)',
+                        fontSize: 16, cursor: 'pointer', padding: '0 4px', lineHeight: 1,
+                      }}>×</button>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+
+          {/* Add more button */}
+          <button onClick={() => setShowAdd(true)} style={{
+            width: '100%', padding: '12px 0', borderRadius: 14,
+            background: 'transparent', border: '1.5px dashed var(--border-subtle)',
+            color: 'var(--text-muted)', fontSize: 13, fontWeight: 500,
+            cursor: 'pointer', fontFamily: 'inherit', marginBottom: 16,
+          }}>+ 루틴 추가</button>
+        </>
+      )}
+
+      {/* Add routine modal */}
+      {showAdd && (
+        <div onClick={() => setShowAdd(false)} style={{
+          position: 'fixed', inset: 0, zIndex: 1100,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
+            padding: '24px 24px 40px', width: '100%', maxWidth: 420,
+          }}>
+            <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
+            <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20 }}>{label} 루틴 추가</div>
+
+            {/* Time selector */}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+              {timeLabels.map(t => (
+                <button key={t} onClick={() => setNewTime(t)} style={{
+                  flex: 1, padding: '10px 0', borderRadius: 10, border: 'none',
+                  background: newTime === t ? 'var(--accent-primary)' : 'var(--bg-input, #F2F3F5)',
+                  color: newTime === t ? '#fff' : 'var(--text-muted)',
+                  fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                }}>{t}</button>
+              ))}
+            </div>
+
+            {/* Name input */}
+            <input
+              value={newName}
+              onChange={e => setNewName(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleAdd()}
+              placeholder={category === 'skin' ? '예: 토너 바르기, 선크림' : category === 'food' ? '예: 물 2L 마시기, 채소 먹기' : '예: 스트레칭, 걷기 30분'}
+              style={{
+                width: '100%', padding: '14px', borderRadius: 12, border: 'none',
+                background: 'var(--bg-input, #F2F3F5)', fontSize: 14,
+                color: 'var(--text-primary)', fontFamily: 'inherit', outline: 'none',
+                marginBottom: 20,
+              }}
+              autoFocus
+            />
+
+            {/* Buttons */}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={() => setShowAdd(false)} style={{
+                flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
+                border: 'none', background: 'var(--bg-input, #F2F3F5)',
+                color: 'var(--text-muted)', fontSize: 14, fontWeight: 600,
+                cursor: 'pointer', fontFamily: 'inherit',
+              }}>취소</button>
+              <button onClick={handleAdd} style={{
+                flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
+                border: 'none', background: 'var(--accent-primary)',
+                color: '#fff', fontSize: 14, fontWeight: 700,
+                cursor: 'pointer', fontFamily: 'inherit',
+              }}>추가</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
