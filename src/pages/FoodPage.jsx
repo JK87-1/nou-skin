@@ -109,8 +109,8 @@ export default function FoodPage({ onTabChange }) {
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--bg-primary)', paddingBottom: 80 }}>
       {/* Header */}
-      <div style={{ padding: '14px 16px 8px' }}>
-        <div style={{ fontSize: 18, fontWeight: 500, color: 'var(--text-primary)' }}>식단</div>
+      <div style={{ padding: '16px 20px 0' }}>
+        <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>분석</h1>
       </div>
 
       {/* Category Tabs */}
