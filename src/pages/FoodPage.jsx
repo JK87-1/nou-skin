@@ -3,7 +3,7 @@ import { getTodayFoods, getTodayNutrition, getFoodGoal, saveFoodRecord, deleteFo
 import { compressImage } from '../engine/PixelAnalysis';
 
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
-const MEAL_LABELS = ['아침', '점심', '저녁', '간식'];
+const MEAL_LABELS = ['아침', '점심', '저녁'];
 const MEAL_GRADIENTS = [
   'linear-gradient(135deg, #F9E84A, #FFB347)',
   'linear-gradient(135deg, #FFB347, #FF8FAB)',
@@ -277,16 +277,32 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
     setFat(String(items.reduce((s, i) => s + i.fat, 0)));
   };
 
+  // Compress preview for thumbnail storage
+  const getThumb = () => {
+    if (!preview) return null;
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = 120; canvas.height = 120;
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      img.src = preview;
+      // Sync draw — preview is already loaded as dataURL
+      ctx.drawImage(img, 0, 0, 120, 120);
+      return canvas.toDataURL('image/jpeg', 0.6);
+    } catch { return preview; }
+  };
+
   const handleSubmit = () => {
+    const thumb = getThumb();
     if (allItems.length > 0) {
-      allItems.forEach(item => {
-        onAdd({ name: item.name, meal, kcal: item.kcal, carb: item.carb, protein: item.protein, fat: item.fat, water: 0 });
+      allItems.forEach((item, i) => {
+        onAdd({ name: item.name, meal, kcal: item.kcal, carb: item.carb, protein: item.protein, fat: item.fat, water: 0, photo: i === 0 ? thumb : null });
       });
       return;
     }
     if (!name.trim() || !kcal) return;
     onAdd({
-      name: name.trim(), meal,
+      name: name.trim(), meal, photo: thumb,
       kcal: Number(kcal) || 0,
       carb: Number(carb) || 0,
       protein: Number(protein) || 0,
