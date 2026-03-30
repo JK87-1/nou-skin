@@ -24,7 +24,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       <div style={{ padding: '8px 20px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         {/* Profile photo */}
         <div style={{
-          width: 67, height: 67, borderRadius: '50%', overflow: 'hidden',
+          width: 55, height: 55, borderRadius: '50%', overflow: 'hidden',
           background: 'var(--bg-secondary)', flexShrink: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
