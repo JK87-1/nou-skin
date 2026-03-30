@@ -19,11 +19,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--bg-primary)', paddingBottom: 80 }}>
-      {/* LUA Beta */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '14px 0 4px' }}>
-        <span style={{ fontSize: 16, fontWeight: 500, letterSpacing: 6, fontFamily: "'Fredoka', sans-serif", background: 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>LUA</span>
-        <span style={{ fontSize: 9, color: '#fff', background: 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)', padding: '2px 8px', borderRadius: 'var(--chip-radius)', fontWeight: 500 }}>Beta</span>
-      </div>
 
       {/* Header */}
       <div style={{ padding: '8px 20px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -48,8 +43,12 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           </div>
         </div>
 
-        {/* Greeting + Today date */}
+        {/* LUA Beta + Greeting + Date */}
         <div style={{ textAlign: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, marginBottom: 3 }}>
+            <span style={{ fontSize: 14, fontWeight: 500, letterSpacing: 4, fontFamily: "'Fredoka', sans-serif", background: 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>LUA</span>
+            <span style={{ fontSize: 8, color: '#fff', background: 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)', padding: '1px 6px', borderRadius: 8, fontWeight: 500 }}>Beta</span>
+          </div>
           <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 2 }}>안녕하세요, {nickname}님</div>
           <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>
             {today.getMonth() + 1}월 {today.getDate()}일 {['일', '월', '화', '수', '목', '금', '토'][today.getDay()]}요일
