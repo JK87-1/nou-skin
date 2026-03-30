@@ -179,7 +179,7 @@ function ChangeIndicator({ diff, unit = '점', inverse = false, size = 'normal' 
 }
 
 // ===== MAIN HISTORY PAGE =====
-export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialMode }) {
+export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialMode, galleryOnly }) {
   const [mode, setMode] = useState(initialMode || 'gallery');
   const [insightMode, setInsightMode] = useState('timeline');
   const [records, setRecords] = useState([]);
@@ -267,16 +267,18 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
   return (
     <div style={{ paddingBottom: 40 }}>
       {/* Mode Toggle */}
-      <div style={{ padding: '12px 20px 16px' }}>
-        <div className="segment-control">
-          <button className={`segment-btn${mode === 'gallery' ? ' active' : ''}`}
-            onClick={() => setMode('gallery')}>앨범</button>
-          <button className={`segment-btn${mode === 'insights' ? ' active' : ''}`}
-            onClick={() => setMode('insights')}>분석</button>
-          <button className={`segment-btn${mode === 'mission' ? ' active' : ''}`}
-            onClick={() => setMode('mission')}>미션</button>
+      {!galleryOnly && (
+        <div style={{ padding: '12px 20px 16px' }}>
+          <div className="segment-control">
+            <button className={`segment-btn${mode === 'gallery' ? ' active' : ''}`}
+              onClick={() => setMode('gallery')}>앨범</button>
+            <button className={`segment-btn${mode === 'insights' ? ' active' : ''}`}
+              onClick={() => setMode('insights')}>분석</button>
+            <button className={`segment-btn${mode === 'mission' ? ' active' : ''}`}
+              onClick={() => setMode('mission')}>미션</button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Record Detail Modal */}
       {selectedRecord && (
