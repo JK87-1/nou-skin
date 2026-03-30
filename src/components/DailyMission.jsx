@@ -165,7 +165,6 @@ export default function DailyMission() {
           boxShadow: 'none', border: 'none',
         }}>
           <div style={{ fontSize: 36, marginBottom: 10 }}><TargetIcon size={36} /></div>
-          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>오늘의 피부 미션</div>
           <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>먼저 피부 측정을 해주세요.<br />분석 결과에 맞는 맞춤 미션이 생성돼요!</div>
         </div>
       </div>
@@ -188,8 +187,6 @@ export default function DailyMission() {
       {/* === 3-1. HEADER === */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18, ...fadeUp(0) }}>
         <div>
-          <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1, color: 'var(--text-muted)', marginBottom: 4 }}>DAILY MISSION</div>
-          <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)' }}>오늘의 피부 미션</div>
         </div>
       </div>
 
@@ -401,7 +398,7 @@ export default function DailyMission() {
       {/* === 3-5. BONUS MISSIONS === */}
       <div style={{ marginBottom: 20, ...fadeUp(0.3) }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-          <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}>보너스 미션</span>
+          <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}></span>
           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
             {progress.bonusCompleted?.filter(Boolean).length || 0}/{missions.bonus.length} 완료
           </span>
