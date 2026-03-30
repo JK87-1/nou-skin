@@ -190,41 +190,6 @@ export default function DailyMission() {
         </div>
       </div>
 
-      {/* === 3-2. WEEKLY CALENDAR === */}
-      <div style={{ display: 'flex', gap: 6, marginBottom: 18, ...fadeUp(0.1) }}>
-        {weeklyStatus.map(day => (
-          <div key={day.date} style={{
-            flex: 1, textAlign: 'center', padding: '10px 0 8px', borderRadius: 12, position: 'relative',
-            background: day.isToday
-              ? 'var(--day-today-bg)'
-              : day.completed ? 'var(--day-completed-bg)' : 'var(--day-default-bg)',
-            border: 'none',
-          }}>
-            <div style={{
-              fontSize: 11,
-              color: day.isToday ? 'var(--day-today-accent)' : 'var(--text-muted)',
-              fontWeight: 600, marginBottom: 2,
-            }}>{day.dayLabel}</div>
-            <div style={{
-              fontSize: 15, fontWeight: 700,
-              color: day.isToday
-                ? 'var(--day-today-accent)'
-                : day.completed ? 'var(--accent-success)' : 'var(--text-primary)',
-            }}>
-              {new Date(day.date).getDate()}
-            </div>
-            {day.completed && !day.isToday && (
-              <div style={{ fontSize: 8, color: 'var(--accent-success)', marginTop: 2 }}>&#10003;</div>
-            )}
-            {day.isToday && (
-              <div style={{
-                width: 4, height: 4, borderRadius: '50%', background: 'var(--day-today-accent)',
-                margin: '4px auto 0',
-              }} />
-            )}
-          </div>
-        ))}
-      </div>
 
       {/* === 3-3. TODAY ACHIEVEMENT === */}
       <div style={{
