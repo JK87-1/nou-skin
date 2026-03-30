@@ -737,8 +737,8 @@ export default function RoutineTracker({ themeColors, onBack, initialMode }) {
         </div>
       </div>
 
-      {/* Mission mode */}
-      {pageMode === 'mission' && (
+      {/* Routine (mission) mode */}
+      {pageMode === 'routine' && (
         <div style={{ animation: 'breatheIn 0.6s ease both' }}>
           <DailyMission />
         </div>
@@ -751,8 +751,15 @@ export default function RoutineTracker({ themeColors, onBack, initialMode }) {
         </div>
       )}
 
-      {/* Routine mode — existing tracker content */}
-      {pageMode === 'routine' && <>
+      {/* Mission mode */}
+      {pageMode === 'mission' && (
+        <div style={{ animation: 'breatheIn 0.6s ease both' }}>
+          <DailyMission />
+        </div>
+      )}
+
+      {/* Tracker mode — existing tracker content (hidden) */}
+      {pageMode === '__tracker__' && <>
       {/* Section Tabs */}
       <div style={{ display: 'flex', gap: 8, padding: '20px 20px 4px', overflowX: 'auto' }}>
         {sections.map(s => {
