@@ -199,6 +199,8 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
   const [compareRecords, setCompareRecords] = useState(null);
   const [showTimelapse, setShowTimelapse] = useState(false);
   const [showBeforeAfter, setShowBeforeAfter] = useState(false);
+  const [showCompareModal, setShowCompareModal] = useState(false);
+  const [compareTab, setCompareTab] = useState('monthly');
 
   useEffect(() => {
     setRecords(getRecords());
@@ -521,39 +523,11 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
               </div>
             )}
 
-            {/* ── Compare Section ── */}
+            {/* ── Compare Button ── */}
             {records.length >= 2 && (
               <div style={{ padding: '24px 20px 0', animation: 'breatheIn 0.6s ease 0.25s both' }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 10 }}>비교 보기</div>
-
-                {/* 1-month change */}
                 <div
-                  onClick={() => {
-                    const oneMonthAgo = new Date();
-                    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-                    const oldest = [...records].find(r => new Date(r.date) <= oneMonthAgo) || records[0];
-                    const newest = records[records.length - 1];
-                    setCompareRecords({ before: oldest, after: newest });
-                  }}
-                  style={{
-                    background: 'var(--bg-card)', borderRadius: 'var(--card-border-radius)',
-                    padding: '14px 18px', marginBottom: 10, cursor: 'pointer',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>1개월 변화</div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
-                        {new Date(records[0].date).getMonth() + 1}월 {new Date(records[0].date).getDate()}일 → 오늘
-                      </div>
-                    </div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: '#FF8FAB' }}>비교 →</div>
-                  </div>
-                </div>
-
-                {/* Timelapse */}
-                <div
-                  onClick={() => setShowTimelapse(true)}
+                  onClick={() => setShowCompareModal(true)}
                   style={{
                     background: 'var(--bg-card)', borderRadius: 'var(--card-border-radius)',
                     padding: '14px 18px', cursor: 'pointer',
@@ -561,29 +535,12 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>타임랩스</div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
-                        지난 {Math.ceil((Date.now() - new Date(records[0].date).getTime()) / (1000 * 60 * 60 * 24 * 30))}개월
-                      </div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>비교 보기</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>1개월 변화 · 타임랩스 · Before & After</div>
                     </div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: '#FFB347' }}>재생 →</div>
-                  </div>
-                </div>
-
-                {/* Before & After */}
-                <div
-                  onClick={() => setShowBeforeAfter(true)}
-                  style={{
-                    background: 'var(--bg-card)', borderRadius: 'var(--card-border-radius)',
-                    padding: '14px 18px', marginTop: 10, cursor: 'pointer',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Before & After</div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>슬라이더로 변화 비교</div>
-                    </div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: '#F9E84A' }}>보기 →</div>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path d="M9 18l6-6-6-6" stroke="var(--text-dim)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
                   </div>
                 </div>
               </div>
@@ -616,106 +573,91 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
         );
       })()}
 
-      {/* ── Compare Modal ── */}
-      {compareRecords && (() => {
-        const { before, after } = compareRecords;
-        const bThumb = thumbs[String(before.id)] || thumbs[before.date];
-        const aThumb = thumbs[String(after.id)] || thumbs[after.date];
-        const diff = after.overallScore - before.overallScore;
-        return (
-          <div onClick={() => setCompareRecords(null)} style={{
-            position: 'fixed', inset: 0, zIndex: 1100,
-            background: 'rgba(0,0,0,0.7)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
-          }}>
-            <div onClick={e => e.stopPropagation()} style={{
-              background: 'var(--bg-modal, #fff)', borderRadius: 24, padding: 24,
-              maxWidth: 360, width: '100%', textAlign: 'center',
-            }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 16 }}>피부 변화 비교</div>
-              <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginBottom: 16 }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ aspectRatio: '1', borderRadius: 16, overflow: 'hidden', background: 'var(--bg-secondary)', marginBottom: 8 }}>
-                    {bThumb ? <img src={bThumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-dim)', fontSize: 11 }}>사진 없음</div>}
-                  </div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{new Date(before.date).getMonth() + 1}/{new Date(before.date).getDate()}</div>
-                  <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{before.overallScore}점</div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', fontSize: 22, color: 'var(--text-dim)' }}>→</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ aspectRatio: '1', borderRadius: 16, overflow: 'hidden', background: 'var(--bg-secondary)', marginBottom: 8 }}>
-                    {aThumb ? <img src={aThumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-dim)', fontSize: 11 }}>사진 없음</div>}
-                  </div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{new Date(after.date).getMonth() + 1}/{new Date(after.date).getDate()}</div>
-                  <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{after.overallScore}점</div>
-                </div>
-              </div>
-              <div style={{
-                padding: '12px 16px', borderRadius: 14,
-                background: diff >= 0 ? 'rgba(52,211,153,0.08)' : 'rgba(248,113,113,0.08)',
-                color: diff >= 0 ? '#34d399' : '#f87171',
-                fontSize: 14, fontWeight: 700,
-              }}>
-                {diff >= 0 ? '▲' : '▼'} {Math.abs(diff)}점 {diff >= 0 ? '향상' : '하락'}
-              </div>
-              <button onClick={() => setCompareRecords(null)} style={{
-                marginTop: 16, padding: '12px 0', width: '100%',
-                background: 'var(--bg-secondary)', border: 'none', borderRadius: 14,
-                fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)',
-                cursor: 'pointer', fontFamily: 'inherit',
-              }}>닫기</button>
-            </div>
-          </div>
-        );
-      })()}
-
-      {/* ── Timelapse Modal ── */}
-      {showTimelapse && records.length >= 2 && (() => {
+      {/* ── Unified Compare Modal ── */}
+      {showCompareModal && records.length >= 2 && (() => {
         const sorted = [...records].reverse();
-        return (
-          <div onClick={() => setShowTimelapse(false)} style={{
-            position: 'fixed', inset: 0, zIndex: 1100,
-            background: 'rgba(0,0,0,0.85)',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <div onClick={e => e.stopPropagation()} style={{ textAlign: 'center', maxWidth: 320 }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', marginBottom: 16 }}>타임랩스</div>
-              <TimelapsePlayer records={sorted} thumbs={thumbs} />
-              <button onClick={() => setShowTimelapse(false)} style={{
-                marginTop: 20, padding: '12px 32px',
-                background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 14,
-                fontSize: 14, fontWeight: 600, color: '#fff',
-                cursor: 'pointer', fontFamily: 'inherit',
-              }}>닫기</button>
-            </div>
-          </div>
-        );
-      })()}
+        const oldest = records[0];
+        const newest = records[records.length - 1];
+        const bThumb = thumbs[String(oldest.id)] || thumbs[oldest.date];
+        const aThumb = thumbs[String(newest.id)] || thumbs[newest.date];
+        const diff = newest.overallScore - oldest.overallScore;
 
-      {/* ── Before & After Modal ── */}
-      {showBeforeAfter && records.length >= 2 && (
-        <>
-          <div onClick={() => setShowBeforeAfter(false)} style={{
+        return (
+          <div onClick={() => setShowCompareModal(false)} style={{
             position: 'fixed', inset: 0, zIndex: 1100,
             background: 'rgba(0,0,0,0.7)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
           }}>
             <div onClick={e => e.stopPropagation()} style={{
-              background: 'var(--bg-modal, #fff)', borderRadius: 24, padding: 24,
-              maxWidth: 380, width: '100%',
+              background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
+              padding: '24px 24px 40px', width: '100%', maxWidth: 420,
+              maxHeight: '85vh', overflowY: 'auto',
             }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 16, textAlign: 'center' }}>Before & After</div>
-              <BeforeAfterSlider />
-              <button onClick={() => setShowBeforeAfter(false)} style={{
-                marginTop: 16, padding: '12px 0', width: '100%',
+              <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 16px', opacity: 0.3 }} />
+
+              {/* Tabs */}
+              <div className="segment-control" style={{ marginBottom: 20 }}>
+                <button className={`segment-btn${compareTab === 'monthly' ? ' active' : ''}`}
+                  onClick={() => setCompareTab('monthly')}>1개월 변화</button>
+                <button className={`segment-btn${compareTab === 'timelapse' ? ' active' : ''}`}
+                  onClick={() => setCompareTab('timelapse')}>타임랩스</button>
+                <button className={`segment-btn${compareTab === 'beforeafter' ? ' active' : ''}`}
+                  onClick={() => setCompareTab('beforeafter')}>Before&After</button>
+              </div>
+
+              {/* Monthly compare */}
+              {compareTab === 'monthly' && (
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginBottom: 16 }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ aspectRatio: '1', borderRadius: 16, overflow: 'hidden', background: 'var(--bg-secondary)', marginBottom: 8 }}>
+                        {bThumb ? <img src={bThumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-dim)', fontSize: 11 }}>사진 없음</div>}
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{new Date(oldest.date).getMonth() + 1}/{new Date(oldest.date).getDate()}</div>
+                      <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{oldest.overallScore}점</div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', fontSize: 22, color: 'var(--text-dim)' }}>→</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ aspectRatio: '1', borderRadius: 16, overflow: 'hidden', background: 'var(--bg-secondary)', marginBottom: 8 }}>
+                        {aThumb ? <img src={aThumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-dim)', fontSize: 11 }}>사진 없음</div>}
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{new Date(newest.date).getMonth() + 1}/{new Date(newest.date).getDate()}</div>
+                      <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{newest.overallScore}점</div>
+                    </div>
+                  </div>
+                  <div style={{
+                    padding: '12px 16px', borderRadius: 14,
+                    background: diff >= 0 ? 'rgba(52,211,153,0.08)' : 'rgba(248,113,113,0.08)',
+                    color: diff >= 0 ? '#34d399' : '#f87171',
+                    fontSize: 14, fontWeight: 700,
+                  }}>
+                    {diff >= 0 ? '▲' : '▼'} {Math.abs(diff)}점 {diff >= 0 ? '향상' : '하락'}
+                  </div>
+                </div>
+              )}
+
+              {/* Timelapse */}
+              {compareTab === 'timelapse' && (
+                <div style={{ textAlign: 'center' }}>
+                  <TimelapsePlayer records={sorted} thumbs={thumbs} />
+                </div>
+              )}
+
+              {/* Before & After */}
+              {compareTab === 'beforeafter' && (
+                <BeforeAfterSlider />
+              )}
+
+              <button onClick={() => setShowCompareModal(false)} style={{
+                marginTop: 20, padding: '12px 0', width: '100%',
                 background: 'var(--bg-secondary)', border: 'none', borderRadius: 14,
                 fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)',
                 cursor: 'pointer', fontFamily: 'inherit',
               }}>닫기</button>
             </div>
           </div>
-        </>
-      )}
+        );
+      })()}
 
       {/* ===== INSIGHTS MODE (Redesigned: Timeline + Compare) ===== */}
       {albumCategory === 'skin' && mode === 'insights' && (() => {
