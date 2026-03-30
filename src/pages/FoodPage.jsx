@@ -57,7 +57,8 @@ function calcFoodScore(nutrition, goal) {
   return Math.min(100, Math.max(0, Math.round(score)));
 }
 
-export default function FoodPage() {
+export default function FoodPage({ onTabChange }) {
+  const [foodTab, setFoodTab] = useState('food');
   const today = new Date();
   const dateStr = today.toISOString().slice(0, 10);
   const [foods, setFoods] = useState(getTodayFoods);
@@ -106,10 +107,26 @@ export default function FoodPage() {
 
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--bg-primary)', paddingBottom: 80 }}>
-      {/* 1. Header */}
+      {/* Header */}
       <div style={{ padding: '14px 16px 8px' }}>
-        <div style={{ fontSize: 18, fontWeight: 500, color: 'var(--text-primary)' }}>오늘의 식단</div>
-        <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>
+        <div style={{ fontSize: 18, fontWeight: 500, color: 'var(--text-primary)' }}>식단</div>
+      </div>
+
+      {/* Category Tabs */}
+      <div style={{ padding: '0 16px 12px' }}>
+        <div className="segment-control">
+          <button className={`segment-btn${foodTab === 'skin' ? ' active' : ''}`}
+            onClick={() => onTabChange?.('album')}>피부</button>
+          <button className={`segment-btn${foodTab === 'food' ? ' active' : ''}`}
+            onClick={() => setFoodTab('food')}>식단</button>
+          <button className={`segment-btn${foodTab === 'body' ? ' active' : ''}`}
+            onClick={() => onTabChange?.('body')}>바디</button>
+        </div>
+      </div>
+
+      {/* Date subtitle */}
+      <div style={{ padding: '0 16px 8px' }}>
+        <div style={{ fontSize: 11, color: '#888' }}>
           {today.getFullYear()}년 {today.getMonth() + 1}월 {today.getDate()}일 {DAY_NAMES[today.getDay()]}요일
         </div>
       </div>

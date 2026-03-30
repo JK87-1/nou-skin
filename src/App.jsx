@@ -697,7 +697,7 @@ export default function App() {
 
 
       {/* ===== FOOD TAB ===== */}
-      {activeTab === 'food' && <FoodPage />}
+      {activeTab === 'food' && <FoodPage onTabChange={switchTab} />}
 
       {/* ===== BODY TAB ===== */}
       {activeTab === 'body' && <BodyPage />}
