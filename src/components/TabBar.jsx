@@ -71,24 +71,25 @@ export default function TabBar({ activeTab, onTabChange }) {
             key={tab.key}
             onClick={() => onTabChange(tab.key)}
             style={{
-              flex: 1, display: 'flex', flexDirection: 'column',
-              alignItems: 'center', gap: 2,
-              background: 'none', border: 'none', cursor: 'pointer',
-              padding: '6px 0',
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center', gap: 4,
+              background: active ? 'linear-gradient(135deg, #FFF3B0, #FFD6A0)' : 'none',
+              border: active ? 'none' : '1px solid #eee',
+              borderRadius: 16,
+              width: 52, height: 52,
+              cursor: 'pointer',
               WebkitTapHighlightColor: 'transparent',
+              padding: 0,
             }}
           >
             {tab.icon(active)}
-            <span style={{
-              fontSize: 9, fontWeight: active ? 600 : 400,
-              color: active ? '#C4580A' : '#bbb',
-            }}>{tab.label}</span>
-            {active && (
+            {active ? (
               <div style={{
-                width: 4, height: 4, borderRadius: '50%',
-                background: 'linear-gradient(135deg, #FFB347, #FF8FAB)',
-                marginTop: -1,
+                width: 5, height: 5, borderRadius: '50%',
+                background: '#FFB347',
               }} />
+            ) : (
+              <span style={{ fontSize: 9, fontWeight: 400, color: '#bbb' }}>{tab.label}</span>
             )}
           </button>
         );
