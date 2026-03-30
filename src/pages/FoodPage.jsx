@@ -7,14 +7,14 @@ const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both`
 const MEAL_LABELS = ['아침', '점심', '저녁'];
 const MEAL_GRADIENTS = [
   'linear-gradient(135deg, #F9E84A, #FFB347)',
-  'linear-gradient(135deg, #FFB347, #FF8FAB)',
-  'linear-gradient(135deg, #FF8FAB, #F9E84A)',
-  'linear-gradient(135deg, #F9E84A, #FF8FAB)',
+  'linear-gradient(135deg, #FFF5D6, #FFB347)',
+  'linear-gradient(135deg, #FFD6A0, #FFB347)',
+  'linear-gradient(135deg, #FFF5D6, #FFB347)',
 ];
 
 const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
 const NUTRIENT_META = [
-  { key: 'protein', icon: '🥩', label: '단백질', unit: 'g', goalKey: 'protein', grad: ['#FFD6E0', '#FF8FAB'] },
+  { key: 'protein', icon: '🥩', label: '단백질', unit: 'g', goalKey: 'protein', grad: ['#FFE8D0', '#FFB347'] },
   { key: 'carb', icon: '🍚', label: '탄수화물', unit: 'g', goalKey: 'carb', grad: ['#FFF3B0', '#FFB347'] },
   { key: 'vitamin', icon: '⭐', label: '비타민', unit: '%', fixed: 65, grad: ['#F9E84A', '#FFD700'] },
   { key: 'mineral', icon: '💎', label: '미네랄', unit: '%', fixed: 72, grad: ['#D4F0FF', '#74C0FC'] },
@@ -183,7 +183,7 @@ export default function FoodPage({ onTabChange }) {
             }}>
               <div style={{
                 width: 20, height: 20, borderRadius: 10,
-                background: 'linear-gradient(135deg, #FFB347, #FF8FAB)',
+                background: 'linear-gradient(135deg, #FFF5D6, #FFB347)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <span style={{ color: '#fff', fontSize: 14, lineHeight: 1 }}>+</span>
@@ -207,7 +207,7 @@ export default function FoodPage({ onTabChange }) {
               <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stopColor="#F9E84A" />
                 <stop offset="50%" stopColor="#FFB347" />
-                <stop offset="100%" stopColor="#FF8FAB" />
+                <stop offset="100%" stopColor="#FFB347" />
               </linearGradient>
             </defs>
             <circle cx="31" cy="31" r={r} fill="none" stroke="#F0EDE8" strokeWidth="6" />
@@ -259,7 +259,7 @@ export default function FoodPage({ onTabChange }) {
       {/* 5. LUA AI Coach Card */}
       <div style={{
         margin: '0 16px 14px', borderRadius: 16, padding: '12px 14px',
-        background: 'linear-gradient(120deg, #F9E84A 0%, #FFB347 50%, #FF8FAB 100%)',
+        background: 'linear-gradient(120deg, #FFF5D6 0%, #FFB347 100%)',
         ...fadeUp(0.2),
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
@@ -447,7 +447,7 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
           {MEAL_LABELS.map(m => (
             <button key={m} onClick={() => setMeal(m)} style={{
               flex: 1, padding: '8px 0', borderRadius: 10, border: 'none',
-              background: meal === m ? 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)' : 'var(--bg-input, #F2F3F5)',
+              background: meal === m ? 'linear-gradient(120deg, #FFF5D6, #FFB347)' : 'var(--bg-input, #F2F3F5)',
               color: meal === m ? '#7A3800' : 'var(--text-muted)',
               fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
             }}>{m}</button>
@@ -608,7 +608,7 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
           }}>취소</button>
           <button onClick={handleSubmit} style={{
             flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
-            border: 'none', background: 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)',
+            border: 'none', background: 'linear-gradient(120deg, #FFF5D6, #FFB347)',
             color: '#7A3800', fontSize: 14, fontWeight: 700,
             cursor: 'pointer', fontFamily: 'inherit',
           }}>추가</button>
@@ -699,7 +699,7 @@ function SkinInsightsSection() {
             <div style={{ height: 5, borderRadius: 3, background: 'var(--bar-track)', overflow: 'hidden' }}>
               <div style={{
                 height: '100%', borderRadius: 3, width: `${Math.min(100, val)}%`,
-                background: 'linear-gradient(90deg, #F9E84A, #FFB347, #FF8FAB)',
+                background: 'linear-gradient(90deg, #FFF5D6, #FFB347)',
                 transition: 'width 0.5s ease',
               }} />
             </div>
