@@ -1,4 +1,7 @@
+import { getProfile } from '../storage/ProfileStorage';
+
 export default function TabBar({ activeTab, onTabChange }) {
+  const profile = getProfile();
   const tabs = [
     {
       key: 'home',
@@ -63,6 +66,26 @@ export default function TabBar({ activeTab, onTabChange }) {
       display: 'flex', alignItems: 'center', justifyContent: 'space-around',
       zIndex: 100,
     }}>
+      {/* Profile button */}
+      <button
+        onClick={() => onTabChange('body')}
+        style={{
+          width: 36, height: 36, borderRadius: '50%', overflow: 'hidden',
+          background: 'var(--bg-secondary, #F2F3F5)', border: 'none',
+          cursor: 'pointer', flexShrink: 0, padding: 0, marginLeft: 10,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          WebkitTapHighlightColor: 'transparent',
+        }}
+      >
+        {profile.profileImage ? (
+          <img src={profile.profileImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        ) : (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#bbb" strokeWidth="1.5">
+            <circle cx="12" cy="10" r="4" /><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" strokeLinecap="round" />
+          </svg>
+        )}
+      </button>
+
       {tabs.map(tab => {
         const active = activeTab === tab.key;
         return (
