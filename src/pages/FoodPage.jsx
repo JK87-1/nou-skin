@@ -127,10 +127,10 @@ export default function FoodPage({ onTabChange }) {
       </div>
 
       {/* Spacer — matches HistoryPage profile header height */}
-      <div style={{ height: 130 }} />
+      <div style={{ height: 118 }} />
 
       {/* Category Tabs */}
-      <div style={{ padding: '0 16px 12px' }}>
+      <div style={{ padding: '0 20px 12px' }}>
         <div className="segment-control">
           <button className={`segment-btn${foodTab === 'skin' ? ' active' : ''}`}
             onClick={() => setFoodTab('skin')}>피부</button>

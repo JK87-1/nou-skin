@@ -741,7 +741,7 @@ export default function RoutineTracker({ themeColors, onBack, initialMode }) {
       </div>
 
       {/* Weekly Calendar */}
-      <div style={{ padding: '16px 20px 0' }}>
+      <div style={{ padding: '24px 20px 0' }}>
         <div style={{ display: 'flex', gap: 6 }}>
           {getWeeklyStatus().map(day => (
             <div key={day.date} style={{
@@ -778,7 +778,7 @@ export default function RoutineTracker({ themeColors, onBack, initialMode }) {
       </div>
 
       {/* Mode Toggle */}
-      <div style={{ padding: '12px 20px 16px' }}>
+      <div style={{ padding: '14px 20px 16px' }}>
         <div className="segment-control">
           <button className={`segment-btn${pageMode === 'routine' ? ' active' : ''}`}
             onClick={() => setPageMode('routine')}>피부</button>
