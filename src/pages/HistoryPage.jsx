@@ -278,7 +278,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
         <div style={{ display: 'flex', gap: 8 }}>
           <div onClick={onMeasure} style={{
             width: 34, height: 34, borderRadius: '50%', cursor: 'pointer',
-            background: 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
               <path d="M12 5v14M5 12h14" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" />
@@ -286,7 +286,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
           </div>
           <div onClick={() => setShowSettings && setShowSettings(true)} style={{
             width: 34, height: 34, borderRadius: '50%', cursor: 'pointer',
-            background: 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="3" />
