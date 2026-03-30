@@ -196,9 +196,6 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
   const [viewDate, setViewDate] = useState(new Date());
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [thumbs, setThumbs] = useState({});
-  const [compareRecords, setCompareRecords] = useState(null);
-  const [showTimelapse, setShowTimelapse] = useState(false);
-  const [showBeforeAfter, setShowBeforeAfter] = useState(false);
   const [showCompareModal, setShowCompareModal] = useState(false);
   const [compareTab, setCompareTab] = useState('monthly');
 
@@ -575,7 +572,6 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
 
       {/* ── Unified Compare Modal ── */}
       {showCompareModal && records.length >= 2 && (() => {
-        const sorted = [...records].reverse();
         const oldest = records[0];
         const newest = records[records.length - 1];
         const bThumb = thumbs[String(oldest.id)] || thumbs[oldest.date];
@@ -599,8 +595,6 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
               <div className="segment-control" style={{ marginBottom: 20 }}>
                 <button className={`segment-btn${compareTab === 'monthly' ? ' active' : ''}`}
                   onClick={() => setCompareTab('monthly')}>1개월 변화</button>
-                <button className={`segment-btn${compareTab === 'timelapse' ? ' active' : ''}`}
-                  onClick={() => setCompareTab('timelapse')}>타임랩스</button>
                 <button className={`segment-btn${compareTab === 'beforeafter' ? ' active' : ''}`}
                   onClick={() => setCompareTab('beforeafter')}>Before&After</button>
               </div>
@@ -633,13 +627,6 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                   }}>
                     {diff >= 0 ? '▲' : '▼'} {Math.abs(diff)}점 {diff >= 0 ? '향상' : '하락'}
                   </div>
-                </div>
-              )}
-
-              {/* Timelapse */}
-              {compareTab === 'timelapse' && (
-                <div style={{ textAlign: 'center' }}>
-                  <TimelapsePlayer records={sorted} thumbs={thumbs} />
                 </div>
               )}
 
@@ -1619,47 +1606,3 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
   );
 }
 
-// ===== TIMELAPSE PLAYER =====
-function TimelapsePlayer({ records, thumbs }) {
-  const [idx, setIdx] = useState(0);
-  const timerRef = useRef(null);
-  const [playing, setPlaying] = useState(true);
-
-  const withThumbs = records.filter(r => thumbs[String(r.id)] || thumbs[r.date]);
-  const current = withThumbs[idx];
-  const thumb = current ? (thumbs[String(current.id)] || thumbs[current.date]) : null;
-
-  useEffect(() => {
-    if (!playing || withThumbs.length < 2) return;
-    timerRef.current = setInterval(() => {
-      setIdx(i => (i + 1) % withThumbs.length);
-    }, 1200);
-    return () => clearInterval(timerRef.current);
-  }, [playing, withThumbs.length]);
-
-  if (withThumbs.length < 2) {
-    return <div style={{ color: '#fff', fontSize: 13, padding: 20 }}>사진이 2장 이상 필요해요</div>;
-  }
-
-  return (
-    <div>
-      <div style={{
-        width: 240, height: 240, borderRadius: 20, overflow: 'hidden',
-        margin: '0 auto', background: '#222',
-      }}>
-        {thumb && <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'opacity 0.3s' }} />}
-      </div>
-      <div style={{ marginTop: 12, fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>
-        {current && `${new Date(current.date).getMonth() + 1}/${new Date(current.date).getDate()} · ${current.overallScore}점`}
-      </div>
-      <div style={{ marginTop: 8, fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>
-        {idx + 1} / {withThumbs.length}
-      </div>
-      <button onClick={() => setPlaying(p => !p)} style={{
-        marginTop: 10, padding: '8px 24px', background: 'rgba(255,255,255,0.15)',
-        border: 'none', borderRadius: 10, color: '#fff', fontSize: 12, fontWeight: 600,
-        cursor: 'pointer', fontFamily: 'inherit',
-      }}>{playing ? '일시정지' : '재생'}</button>
-    </div>
-  );
-}
