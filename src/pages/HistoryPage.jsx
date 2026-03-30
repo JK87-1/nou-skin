@@ -198,6 +198,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
   const [thumbs, setThumbs] = useState({});
   const [compareRecords, setCompareRecords] = useState(null);
   const [showTimelapse, setShowTimelapse] = useState(false);
+  const [showBeforeAfter, setShowBeforeAfter] = useState(false);
 
   useEffect(() => {
     setRecords(getRecords());
@@ -468,13 +469,6 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
         const sorted = [...records].reverse();
         return (
           <div>
-            {/* Before & After Slider */}
-            {records.length >= 2 && (
-              <div style={{ marginTop: 20, animation: 'breatheIn 0.6s ease 0.15s both' }}>
-                <BeforeAfterSlider />
-              </div>
-            )}
-
             <div style={{ marginTop: 16 }} />
 
             {/* Photo grid */}
@@ -573,6 +567,23 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                       </div>
                     </div>
                     <div style={{ fontSize: 13, fontWeight: 600, color: '#FFB347' }}>재생 →</div>
+                  </div>
+                </div>
+
+                {/* Before & After */}
+                <div
+                  onClick={() => setShowBeforeAfter(true)}
+                  style={{
+                    background: 'var(--bg-card)', borderRadius: 'var(--card-border-radius)',
+                    padding: '14px 18px', marginTop: 10, cursor: 'pointer',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Before & After</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>슬라이더로 변화 비교</div>
+                    </div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: '#F9E84A' }}>보기 →</div>
                   </div>
                 </div>
               </div>
@@ -680,6 +691,31 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
           </div>
         );
       })()}
+
+      {/* ── Before & After Modal ── */}
+      {showBeforeAfter && records.length >= 2 && (
+        <>
+          <div onClick={() => setShowBeforeAfter(false)} style={{
+            position: 'fixed', inset: 0, zIndex: 1100,
+            background: 'rgba(0,0,0,0.7)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
+          }}>
+            <div onClick={e => e.stopPropagation()} style={{
+              background: 'var(--bg-modal, #fff)', borderRadius: 24, padding: 24,
+              maxWidth: 380, width: '100%',
+            }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 16, textAlign: 'center' }}>Before & After</div>
+              <BeforeAfterSlider />
+              <button onClick={() => setShowBeforeAfter(false)} style={{
+                marginTop: 16, padding: '12px 0', width: '100%',
+                background: 'var(--bg-secondary)', border: 'none', borderRadius: 14,
+                fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)',
+                cursor: 'pointer', fontFamily: 'inherit',
+              }}>닫기</button>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* ===== INSIGHTS MODE (Redesigned: Timeline + Compare) ===== */}
       {albumCategory === 'skin' && mode === 'insights' && (() => {
