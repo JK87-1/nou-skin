@@ -44,7 +44,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         </div>
 
         {/* LUA Beta */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
           <span style={{ fontSize: 18, fontWeight: 500, letterSpacing: 5, fontFamily: "'Fredoka', sans-serif", background: 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>LUA</span>
           <span style={{ fontSize: 8, color: '#fff', background: 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)', padding: '1px 6px', borderRadius: 8, fontWeight: 500 }}>Beta</span>
         </div>
