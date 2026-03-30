@@ -68,7 +68,7 @@ export default function TabBar({ activeTab, onTabChange }) {
     }}>
       {/* Profile button */}
       <button
-        onClick={() => onTabChange('body')}
+        onClick={() => onTabChange('home')}
         style={{
           width: 36, height: 36, borderRadius: '50%', overflow: 'hidden',
           background: 'var(--bg-secondary, #F2F3F5)', border: 'none',
