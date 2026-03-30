@@ -360,7 +360,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                 </div>
               </div>
             </div>
-            <div style={{ marginTop: 14 }}>
+            <div style={{ padding: '12px 0 0' }}>
               <div className="segment-control">
                 <button className={`segment-btn${albumCategory === 'skin' ? ' active' : ''}`}
                   onClick={() => setAlbumCategory('skin')}>피부</button>

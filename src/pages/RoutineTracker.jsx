@@ -740,9 +740,9 @@ export default function RoutineTracker({ themeColors, onBack, initialMode }) {
         </div>
       </div>
 
-      {/* Weekly Calendar */}
-      <div style={{ padding: '24px 20px 0' }}>
-        <div style={{ display: 'flex', gap: 6 }}>
+      {/* Weekly Calendar — fixed height to match HistoryPage profile area */}
+      <div style={{ height: 118, display: 'flex', alignItems: 'flex-end', padding: '0 20px' }}>
+        <div style={{ display: 'flex', gap: 6, width: '100%', paddingBottom: 8 }}>
           {getWeeklyStatus().map(day => (
             <div key={day.date} style={{
               flex: 1, textAlign: 'center', padding: '10px 0 8px', borderRadius: 12,
@@ -778,7 +778,7 @@ export default function RoutineTracker({ themeColors, onBack, initialMode }) {
       </div>
 
       {/* Mode Toggle */}
-      <div style={{ padding: '14px 20px 16px' }}>
+      <div style={{ padding: '12px 20px 16px' }}>
         <div className="segment-control">
           <button className={`segment-btn${pageMode === 'routine' ? ' active' : ''}`}
             onClick={() => setPageMode('routine')}>피부</button>

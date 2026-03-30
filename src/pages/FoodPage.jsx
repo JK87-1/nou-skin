@@ -130,7 +130,7 @@ export default function FoodPage({ onTabChange }) {
       <div style={{ height: 118 }} />
 
       {/* Category Tabs */}
-      <div style={{ padding: '0 20px 12px' }}>
+      <div style={{ padding: '12px 20px 16px' }}>
         <div className="segment-control">
           <button className={`segment-btn${foodTab === 'skin' ? ' active' : ''}`}
             onClick={() => setFoodTab('skin')}>피부</button>
