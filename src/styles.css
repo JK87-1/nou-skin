@@ -93,12 +93,12 @@
 
 [data-theme="light"] {
   /* Surfaces — Toss/Karrot palette */
-  --bg-primary: #FCF9F3;
-  --bg-secondary: #F7F4EE;
-  --bg-card: #FFFFFF;
-  --bg-card-hover: #F7F8FA;
-  --bg-card-solid: #FFFFFF;
-  --bg-elevated: #FFFFFF;
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F7F8FA;
+  --bg-card: #F5F5F7;
+  --bg-card-hover: #F0F0F2;
+  --bg-card-solid: #F5F5F7;
+  --bg-elevated: #F5F5F7;
   --bg-modal: #FFFFFF;
   --bg-modal-overlay: rgba(0,0,0,0.4);
   --bg-input: #F2F3F5;
