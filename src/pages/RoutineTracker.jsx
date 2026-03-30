@@ -757,17 +757,19 @@ export default function RoutineTracker({ themeColors, onBack, initialMode }) {
         </div>
       )}
 
-      {/* Insights mode — placeholder */}
+      {/* 식단 mode */}
       {pageMode === 'insights' && (
-        <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 14 }}>
-          루틴 효과 분석은 2주 이상 기록 후 확인할 수 있어요.
+        <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)', animation: 'breatheIn 0.5s ease both' }}>
+          <div style={{ fontSize: 14, fontWeight: 600 }}>식단 루틴</div>
+          <div style={{ fontSize: 12, marginTop: 6 }}>준비 중이에요</div>
         </div>
       )}
 
-      {/* Mission mode */}
+      {/* 바디 mode */}
       {pageMode === 'mission' && (
-        <div style={{ animation: 'breatheIn 0.6s ease both' }}>
-          <DailyMission />
+        <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)', animation: 'breatheIn 0.5s ease both' }}>
+          <div style={{ fontSize: 14, fontWeight: 600 }}>바디 루틴</div>
+          <div style={{ fontSize: 12, marginTop: 6 }}>준비 중이에요</div>
         </div>
       )}
 
