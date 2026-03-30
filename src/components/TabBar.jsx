@@ -1,7 +1,4 @@
-import { getProfile } from '../storage/ProfileStorage';
-
 export default function TabBar({ activeTab, onTabChange }) {
-  const profile = getProfile();
   const tabs = [
     {
       key: 'home',
@@ -14,16 +11,6 @@ export default function TabBar({ activeTab, onTabChange }) {
       ),
     },
     {
-      key: 'skin',
-      label: '피부',
-      icon: (active) => (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="8" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" />
-          <circle cx="12" cy="12" r="3" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" />
-        </svg>
-      ),
-    },
-    {
       key: 'album',
       label: '앨범',
       icon: (active) => (
@@ -31,6 +18,16 @@ export default function TabBar({ activeTab, onTabChange }) {
           <rect x="3" y="3" width="18" height="18" rx="3" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" />
           <circle cx="8.5" cy="8.5" r="1.5" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.2" />
           <path d="M3 16l5-4 4 3 3-2 6 4" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ),
+    },
+    {
+      key: 'skin',
+      label: '피부',
+      icon: (active) => (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="8" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" />
+          <circle cx="12" cy="12" r="3" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" />
         </svg>
       ),
     },
@@ -66,26 +63,6 @@ export default function TabBar({ activeTab, onTabChange }) {
       display: 'flex', alignItems: 'center', justifyContent: 'space-around',
       zIndex: 100,
     }}>
-      {/* Profile button */}
-      <button
-        onClick={() => onTabChange('profile-album')}
-        style={{
-          width: 36, height: 36, borderRadius: '50%', overflow: 'hidden',
-          background: 'var(--bg-secondary, #F2F3F5)', border: 'none',
-          cursor: 'pointer', flexShrink: 0, padding: 0, marginLeft: 10,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          WebkitTapHighlightColor: 'transparent',
-        }}
-      >
-        {profile.profileImage ? (
-          <img src={profile.profileImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        ) : (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#bbb" strokeWidth="1.5">
-            <circle cx="12" cy="10" r="4" /><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" strokeLinecap="round" />
-          </svg>
-        )}
-      </button>
-
       {tabs.map(tab => {
         const active = activeTab === tab.key;
         return (

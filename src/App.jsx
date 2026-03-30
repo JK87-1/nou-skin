@@ -695,10 +695,6 @@ export default function App() {
         <HistoryPage onBack={goToLanding} onMeasure={openCamera} onOpenConsult={() => switchTab('home')} initialMode={historyInitMode} />
       )}
 
-      {/* ===== PROFILE ALBUM (gallery only, no tabs) ===== */}
-      {activeTab === 'profile-album' && (
-        <HistoryPage onBack={goToLanding} onMeasure={openCamera} onOpenConsult={() => switchTab('home')} initialMode="gallery" galleryOnly />
-      )}
 
       {/* ===== FOOD TAB ===== */}
       {activeTab === 'food' && <FoodPage />}
