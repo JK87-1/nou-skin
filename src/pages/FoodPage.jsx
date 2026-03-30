@@ -11,6 +11,52 @@ const MEAL_GRADIENTS = [
   'linear-gradient(135deg, #F9E84A, #FF8FAB)',
 ];
 
+const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
+const NUTRIENT_META = [
+  { key: 'protein', icon: '🥩', label: '단백질', unit: 'g', goalKey: 'protein', grad: ['#FFD6E0', '#FF8FAB'] },
+  { key: 'carb', icon: '🍚', label: '탄수화물', unit: 'g', goalKey: 'carb', grad: ['#FFF3B0', '#FFB347'] },
+  { key: 'vitamin', icon: '⭐', label: '비타민', unit: '%', fixed: 65, grad: ['#F9E84A', '#FFD700'] },
+  { key: 'mineral', icon: '💎', label: '미네랄', unit: '%', fixed: 72, grad: ['#D4F0FF', '#74C0FC'] },
+  { key: 'kcal', icon: '⚡', label: '칼로리', unit: '', goalKey: 'kcal', grad: ['#FFE0B2', '#FFB347'] },
+];
+
+function getStatus(value, goal) {
+  if (!goal || !value) return '부족';
+  const ratio = value / goal;
+  if (ratio < 0.7) return '부족';
+  if (ratio > 1.2) return '과잉';
+  return '적정';
+}
+
+const statusStyle = {
+  '적정': { background: '#E8F8F0', color: '#0F6E56' },
+  '부족': { background: '#FBEAF0', color: '#993556' },
+  '과잉': { background: '#FFF3E0', color: '#E65100' },
+};
+
+function getScoreComment(score) {
+  if (score >= 90) return '완벽한 하루예요! 🌟';
+  if (score >= 75) return '좋은 식습관이에요!';
+  if (score >= 60) return '조금만 더 신경써봐요';
+  return '식단 개선이 필요해요';
+}
+
+function calcFoodScore(nutrition, goal) {
+  if (!nutrition.kcal && !nutrition.protein && !nutrition.carb) return 0;
+  let score = 50;
+  const kcalR = goal.kcal ? nutrition.kcal / goal.kcal : 0;
+  if (kcalR >= 0.7 && kcalR <= 1.1) score += 20;
+  else if (kcalR > 0 && kcalR < 0.7) score += 5;
+  const protR = goal.protein ? nutrition.protein / goal.protein : 0;
+  if (protR >= 0.8) score += 15;
+  else if (protR >= 0.5) score += 8;
+  const carbR = goal.carb ? nutrition.carb / goal.carb : 0;
+  if (carbR >= 0.6 && carbR <= 1.2) score += 10;
+  const fatR = goal.fat ? nutrition.fat / goal.fat : 0;
+  if (fatR >= 0.5 && fatR <= 1.1) score += 5;
+  return Math.min(100, Math.max(0, Math.round(score)));
+}
+
 export default function FoodPage() {
   const today = new Date();
   const dateStr = today.toISOString().slice(0, 10);
@@ -18,10 +64,8 @@ export default function FoodPage() {
   const [nutrition, setNutrition] = useState(getTodayNutrition);
   const goal = getFoodGoal();
   const [showAdd, setShowAdd] = useState(false);
-  const [waterCount, setWaterCount] = useState(() => {
-    const foods = getTodayFoods();
-    return foods.reduce((s, f) => s + (f.water || 0), 0);
-  });
+  const [addMeal, setAddMeal] = useState(null);
+  const [coachMsg, setCoachMsg] = useState(null);
 
   const refresh = useCallback(() => {
     setFoods(getTodayFoods());
@@ -32,148 +76,182 @@ export default function FoodPage() {
     saveFoodRecord(dateStr, food);
     refresh();
     setShowAdd(false);
+    setAddMeal(null);
   }, [dateStr, refresh]);
 
-  const handleDelete = useCallback((id) => {
-    deleteFoodRecord(dateStr, id);
-    refresh();
-  }, [dateStr, refresh]);
+  const score = calcFoodScore(nutrition, goal);
 
-  const handleAddWater = useCallback(() => {
-    saveFoodRecord(dateStr, { name: '물 1잔', meal: '간식', kcal: 0, carb: 0, protein: 0, fat: 0, water: 0.25 });
-    setWaterCount(w => w + 0.25);
-    refresh();
-  }, [dateStr, refresh]);
+  // Group foods by meal
+  const mealFoods = {};
+  MEAL_LABELS.forEach(m => { mealFoods[m] = foods.filter(f => f.meal === m && !f.name?.startsWith('물 ')); });
 
-  const kcalPct = Math.min(1, nutrition.kcal / goal.kcal);
-  const dashTotal = 2 * Math.PI * 44;
-  const dashFill = dashTotal * kcalPct;
+  // Which meals are not recorded yet
+  const unrecordedMeals = MEAL_LABELS.filter(m => mealFoods[m].length === 0);
+
+  // Nutrients for card
+  const nutrients = NUTRIENT_META.map(n => {
+    let value, displayVal;
+    if (n.key === 'kcal') { value = nutrition.kcal; displayVal = nutrition.kcal.toLocaleString(); }
+    else if (n.fixed) { value = n.fixed; displayVal = `${n.fixed}${n.unit}`; }
+    else { value = nutrition[n.key] || 0; displayVal = `${value}${n.unit}`; }
+    const goalVal = n.goalKey ? goal[n.goalKey] : (n.fixed ? 100 : 0);
+    return { ...n, value, displayVal, status: n.fixed ? (n.fixed >= 70 ? '적정' : '부족') : getStatus(value, goalVal) };
+  });
+
+  const lacking = nutrients.filter(n => n.status === '부족').map(n => n.label);
+
+  // Score ring
+  const r = 24, circ = 2 * Math.PI * r;
+  const dashFill = circ * (score / 100);
 
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--bg-primary)', paddingBottom: 80 }}>
-      {/* Header */}
-      <div style={{ padding: '24px 24px 16px' }}>
-        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>식단 분석</div>
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-          오늘 {today.getMonth() + 1}월 {today.getDate()}일
+      {/* 1. Header */}
+      <div style={{ padding: '14px 16px 8px' }}>
+        <div style={{ fontSize: 18, fontWeight: 500, color: 'var(--text-primary)' }}>오늘의 식단</div>
+        <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>
+          {today.getFullYear()}년 {today.getMonth() + 1}월 {today.getDate()}일 {DAY_NAMES[today.getDay()]}요일
         </div>
       </div>
 
-      <div style={{ padding: '0 20px' }}>
-        {/* Calorie Ring */}
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 16px', ...fadeUp(0.05) }}>
-          <div style={{ position: 'relative', width: 120, height: 120 }}>
-            <svg viewBox="0 0 100 100" style={{ width: 120, height: 120 }}>
-              <defs>
-                <linearGradient id="kcalGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#F9E84A" />
-                  <stop offset="50%" stopColor="#FFB347" />
-                  <stop offset="100%" stopColor="#FF8FAB" />
-                </linearGradient>
-              </defs>
-              <circle cx="50" cy="50" r="44" fill="none" stroke="var(--bar-track)" strokeWidth="8" />
-              <circle cx="50" cy="50" r="44" fill="none" stroke="url(#kcalGrad)" strokeWidth="8"
-                strokeLinecap="round"
-                strokeDasharray={`${dashFill} ${dashTotal - dashFill}`}
-                strokeDashoffset={dashTotal * 0.25}
-                transform="rotate(-90 50 50)"
-                style={{ transition: 'stroke-dasharray 0.5s ease' }}
-              />
-            </svg>
-            <div style={{
-              position: 'absolute', inset: 0,
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
-                {nutrition.kcal.toLocaleString()}
-              </div>
-              <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>/ {goal.kcal.toLocaleString()} kcal</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Macro Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, ...fadeUp(0.1) }}>
-          <MacroBox label="탄수화물" value={`${nutrition.carb}g`} color="#C9A800" />
-          <MacroBox label="단백질" value={`${nutrition.protein}g`} color="#C4580A" />
-          <MacroBox label="지방" value={`${nutrition.fat}g`} color="#C2185B" />
-          <MacroBox label="수분" value={`${waterCount.toFixed(1)}L`} color="var(--text-muted)" onTap={handleAddWater} />
-        </div>
-
-        {/* Today's Food List */}
-        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', margin: '24px 0 10px', ...fadeUp(0.15) }}>
-          오늘 먹은 것
-        </div>
-
-        {foods.length === 0 ? (
-          <div style={{
-            textAlign: 'center', padding: '32px 0', color: 'var(--text-dim)',
-            fontSize: 13, ...fadeUp(0.2),
-          }}>
-            아직 기록이 없어요
-          </div>
-        ) : (
-          <div style={fadeUp(0.2)}>
-            {foods.filter(f => !f.name?.startsWith('물 ')).map((food, i) => (
+      {/* 2. Meal Thumbnail Row */}
+      <div style={{ display: 'flex', gap: 7, padding: '0 16px 12px', overflowX: 'auto', ...fadeUp(0.05) }}>
+        {MEAL_LABELS.map(meal => {
+          const items = mealFoods[meal];
+          if (items.length > 0) {
+            return items.map((food, i) => (
               <div key={food.id} style={{
-                display: 'flex', alignItems: 'center', gap: 12,
-                padding: '12px 0',
-                borderBottom: '0.5px solid var(--border-separator)',
+                width: 62, height: 62, borderRadius: 12, flexShrink: 0, overflow: 'hidden',
+                background: MEAL_GRADIENTS[MEAL_LABELS.indexOf(meal)],
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end',
+                position: 'relative',
               }}>
+                {food.photo ? (
+                  <img src={food.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
+                ) : null}
                 <div style={{
-                  width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                  background: MEAL_GRADIENTS[MEAL_LABELS.indexOf(food.meal) % MEAL_GRADIENTS.length],
-                }} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{food.name}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>{food.meal}</div>
-                </div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#C4580A', flexShrink: 0 }}>{food.kcal}</div>
-                <button onClick={() => handleDelete(food.id)} style={{
-                  background: 'none', border: 'none', color: 'var(--text-dim)',
-                  fontSize: 16, cursor: 'pointer', padding: '0 4px', lineHeight: 1,
-                }}>×</button>
+                  fontSize: 8, color: '#fff', fontWeight: 600, padding: '2px 6px',
+                  background: 'rgba(0,0,0,0.3)', borderRadius: '0 0 12px 12px', width: '100%', textAlign: 'center',
+                  position: 'relative', zIndex: 1,
+                }}>{food.name?.slice(0, 6)}</div>
               </div>
-            ))}
-          </div>
-        )}
+            ));
+          }
+          return (
+            <div key={meal} onClick={() => { setAddMeal(meal); setShowAdd(true); }} style={{
+              width: 62, height: 62, borderRadius: 12, flexShrink: 0,
+              border: '1.5px dashed #FFB347',
+              background: 'rgba(249,232,74,0.08)',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3,
+              cursor: 'pointer',
+            }}>
+              <div style={{
+                width: 20, height: 20, borderRadius: 10,
+                background: 'linear-gradient(135deg, #FFB347, #FF8FAB)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <span style={{ color: '#fff', fontSize: 14, lineHeight: 1 }}>+</span>
+              </div>
+              <span style={{ fontSize: 9, color: '#C4580A' }}>{meal}</span>
+            </div>
+          );
+        })}
+      </div>
 
-        {/* Add Button */}
-        <div style={{ marginTop: 16, ...fadeUp(0.25) }}>
-          <button onClick={() => setShowAdd(true)} style={{
-            width: '100%', padding: '14px 0',
-            background: 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)',
-            border: 'none', borderRadius: 'var(--btn-radius)',
-            fontSize: 14, fontWeight: 600,
-            color: '#7A3800', cursor: 'pointer', fontFamily: 'inherit',
-          }}>식사 기록 추가</button>
+      {/* 3. Diet Score Card */}
+      <div style={{
+        margin: '0 16px 10px', borderRadius: 16, padding: 13,
+        background: '#fff', border: '0.5px solid #eee',
+        display: 'flex', alignItems: 'center', gap: 14,
+        ...fadeUp(0.1),
+      }}>
+        <div style={{ position: 'relative', width: 62, height: 62, flexShrink: 0 }}>
+          <svg viewBox="0 0 62 62" style={{ width: 62, height: 62 }}>
+            <defs>
+              <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#F9E84A" />
+                <stop offset="50%" stopColor="#FFB347" />
+                <stop offset="100%" stopColor="#FF8FAB" />
+              </linearGradient>
+            </defs>
+            <circle cx="31" cy="31" r={r} fill="none" stroke="#F0EDE8" strokeWidth="6" />
+            {score > 0 && <circle cx="31" cy="31" r={r} fill="none" stroke="url(#scoreGrad)" strokeWidth="6"
+              strokeLinecap="round"
+              strokeDasharray={`${dashFill} ${circ - dashFill}`}
+              transform="rotate(-90 31 31)"
+              style={{ transition: 'stroke-dasharray 0.5s ease' }}
+            />}
+          </svg>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: 20, fontWeight: 700, color: '#C4580A', fontFamily: 'var(--font-display)', lineHeight: 1 }}>{score}</span>
+            <span style={{ fontSize: 9, color: '#888' }}>점</span>
+          </div>
+        </div>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{getScoreComment(score)}</div>
+          <div style={{ fontSize: 10, color: '#888', lineHeight: 1.5, marginTop: 3 }}>
+            {score > 0 ? `오늘 ${nutrition.kcal}kcal 섭취 · 목표 대비 ${Math.round((nutrition.kcal / goal.kcal) * 100)}%` : '식사를 기록하면 점수가 계산돼요'}
+          </div>
+        </div>
+      </div>
+
+      {/* 4. Nutrient Card */}
+      <div style={{
+        margin: '0 16px 10px', borderRadius: 16, padding: '12px 8px',
+        background: '#fff', border: '0.5px solid #eee',
+        display: 'flex', justifyContent: 'space-between',
+        ...fadeUp(0.15),
+      }}>
+        {nutrients.map(n => (
+          <div key={n.key} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+            <div style={{
+              width: 24, height: 24, borderRadius: 8,
+              background: `linear-gradient(135deg, ${n.grad[0]}, ${n.grad[1]})`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 13,
+            }}>{n.icon}</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.displayVal}</div>
+            <div style={{ fontSize: 9, color: '#888' }}>{n.label}</div>
+            <span style={{
+              fontSize: 9, fontWeight: 600, padding: '2px 6px', borderRadius: 8,
+              ...statusStyle[n.status],
+            }}>{n.status}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* 5. LUA AI Coach Card */}
+      <div style={{
+        margin: '0 16px 14px', borderRadius: 16, padding: '12px 14px',
+        background: 'linear-gradient(120deg, #F9E84A 0%, #FFB347 50%, #FF8FAB 100%)',
+        ...fadeUp(0.2),
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <div style={{
+            width: 24, height: 24, borderRadius: 12,
+            background: 'rgba(255,255,255,0.4)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 13,
+          }}>✨</div>
+          <span style={{ fontSize: 12, fontWeight: 500, color: '#7A3800' }}>LUA AI 코치</span>
+        </div>
+        <div style={{ fontSize: 11, color: '#7A3800', lineHeight: 1.6 }}>
+          {coachMsg || (lacking.length > 0
+            ? `${lacking.join(', ')}이(가) 부족해요. ${lacking.includes('단백질') ? '닭가슴살이나 두부를 추가해보세요.' : '과일이나 채소를 더 먹어보세요.'}`
+            : score > 0 ? '오늘 식단 균형이 좋아요! 이 패턴을 유지해보세요.' : '식사를 기록하면 맞춤 코칭을 받을 수 있어요.'
+          )}
         </div>
       </div>
 
       {/* Add Food Modal */}
-      {showAdd && <AddFoodModal onAdd={handleAddFood} onClose={() => setShowAdd(false)} />}
+      {showAdd && <AddFoodModal onAdd={handleAddFood} onClose={() => { setShowAdd(false); setAddMeal(null); }} initialMeal={addMeal} />}
     </div>
   );
 }
 
-function MacroBox({ label, value, color, onTap }) {
-  return (
-    <div onClick={onTap} style={{
-      background: 'var(--bg-card)', borderRadius: 'var(--card-border-radius)',
-      padding: '14px 16px', cursor: onTap ? 'pointer' : 'default',
-    }}>
-      <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 500 }}>{label}</div>
-      <div style={{ fontSize: 20, fontWeight: 600, color, marginTop: 4, fontFamily: 'var(--font-display)' }}>
-        {value}
-      </div>
-      {onTap && <div style={{ fontSize: 10, color: 'var(--text-dim)', marginTop: 2 }}>탭하여 +1잔</div>}
-    </div>
-  );
-}
-
-function AddFoodModal({ onAdd, onClose }) {
+function AddFoodModal({ onAdd, onClose, initialMeal }) {
   const [name, setName] = useState('');
-  const [meal, setMeal] = useState('아침');
+  const [meal, setMeal] = useState(initialMeal || '아침');
   const [kcal, setKcal] = useState('');
   const [carb, setCarb] = useState('');
   const [protein, setProtein] = useState('');
