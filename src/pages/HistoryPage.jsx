@@ -473,15 +473,31 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
               </div>
             )}
 
-            {/* Take photo button */}
-            <div style={{ padding: '20px 20px 0', animation: 'breatheIn 0.6s ease 0.3s both' }}>
-              <button onClick={onMeasure} style={{
-                width: '100%', padding: '14px 0',
-                background: 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)',
-                border: 'none', borderRadius: 'var(--btn-radius)',
-                fontSize: 14, fontWeight: 600,
-                color: '#7A3800', cursor: 'pointer', fontFamily: 'inherit',
-              }}>오늘 사진 찍기</button>
+            {/* Skin Analysis CTA — slim card */}
+            <div onClick={onMeasure} style={{
+              margin: '20px 20px 0', padding: '16px 20px',
+              background: 'var(--bg-card)', borderRadius: 20,
+              display: 'flex', alignItems: 'center', gap: 14,
+              cursor: 'pointer', animation: 'breatheIn 0.6s ease 0.3s both',
+              WebkitTapHighlightColor: 'transparent',
+            }}>
+              <div style={{
+                width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+                background: 'linear-gradient(135deg, rgba(249,232,74,0.2), rgba(255,179,71,0.15), rgba(255,143,171,0.15))',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="8" stroke="#FFB347" strokeWidth="1.5" />
+                  <circle cx="12" cy="12" r="3" stroke="#FF8FAB" strokeWidth="1.5" />
+                </svg>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: -0.3 }}>피부 분석하기</div>
+                <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 3 }}>AI가 10개 지표를 정밀 분석합니다</div>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M9 18l6-6-6-6" stroke="var(--text-dim)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </div>
           </div>
         );
