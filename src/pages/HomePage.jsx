@@ -3,6 +3,7 @@ import { getLatestRecord, getRecords } from '../storage/SkinStorage';
 import { getProfile } from '../storage/ProfileStorage';
 import { getFoodRecords } from '../storage/FoodStorage';
 import { getBodyRecords } from '../storage/BodyStorage';
+import WeatherChip from '../components/WeatherChip';
 
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
 
@@ -53,17 +54,8 @@ export default function HomePage({ onMeasure, onTabChange }) {
           </div>
         </div>
 
-        {/* + button */}
-        <div onClick={onMeasure} style={{
-          width: 38, height: 38, borderRadius: '50%', flexShrink: 0,
-          background: 'linear-gradient(135deg, #F9E84A, #FFB347, #FF8FAB)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer',
-        }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M12 5v14M5 12h14" stroke="#7A3800" strokeWidth="2.5" strokeLinecap="round" />
-          </svg>
-        </div>
+        {/* Weather chip */}
+        <WeatherChip />
       </div>
 
       <div style={{ padding: '0 20px' }}>
