@@ -114,8 +114,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         {/* 2. AI Coach Card */}
         <div style={{
           borderRadius: 16, padding: '12px 14px', marginBottom: 12,
-          background: 'var(--bg-card)',
-          border: '1px solid var(--border-subtle)',
+          background: '#f9f9f9',
           ...fadeUp(0.05),
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
@@ -166,7 +165,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         {/* 4. Routine Summary Bar */}
         <div onClick={() => onTabChange('routine')} style={{
           borderRadius: 14, padding: '11px 13px', marginBottom: 12,
-          background: 'var(--bg-card)', cursor: 'pointer',
+          background: '#f9f9f9', cursor: 'pointer',
           display: 'flex', alignItems: 'center', gap: 10,
           ...fadeUp(0.15),
         }}>
@@ -260,8 +259,7 @@ function StatCard({ icon, label, value, unit, change, changePositive }) {
   const changeColor = changePositive === null ? 'var(--text-muted)' : changePositive ? '#0F6E56' : '#C4580A';
   return (
     <div style={{
-      borderRadius: 12, padding: '10px 8px', background: '#fff',
-      border: '0.5px solid var(--border-subtle)',
+      borderRadius: 12, padding: '10px 8px', background: '#f9f9f9',
       textAlign: 'center',
     }}>
       <div style={{ fontSize: 18, marginBottom: 4 }}>{icon}</div>
@@ -281,8 +279,7 @@ function StatCard({ icon, label, value, unit, change, changePositive }) {
 function QuickAction({ icon, label, onTap }) {
   return (
     <div onClick={onTap} style={{
-      borderRadius: 12, padding: '11px 10px', background: '#fff',
-      border: '0.5px solid var(--border-subtle)',
+      borderRadius: 12, padding: '11px 10px', background: '#f9f9f9',
       display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
     }}>
       <div style={{ fontSize: 20, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{icon}</div>
