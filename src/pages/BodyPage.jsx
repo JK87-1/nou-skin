@@ -370,6 +370,52 @@ function ProfileSettingsModal({ profile, onUpdate, onClose }) {
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
         <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20 }}>프로필 설정</div>
 
+        {/* Profile photo */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+          <div onClick={() => document.getElementById('profile-photo-input')?.click()} style={{
+            position: 'relative', width: 72, height: 72, borderRadius: '50%', cursor: 'pointer',
+            overflow: 'hidden', background: 'var(--bg-secondary)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            {profile.profileImage ? (
+              <img src={profile.profileImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
+                <circle cx="12" cy="10" r="4" /><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" strokeLinecap="round" />
+              </svg>
+            )}
+            <div style={{
+              position: 'absolute', bottom: 0, left: 0, right: 0, height: 24,
+              background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="#fff" strokeWidth="1.5" />
+                <circle cx="12" cy="13" r="3" stroke="#fff" strokeWidth="1.5" />
+              </svg>
+            </div>
+            <input id="profile-photo-input" type="file" accept="image/*" onChange={e => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              const reader = new FileReader();
+              reader.onload = (ev) => {
+                // Resize to 200px for storage
+                const img = new Image();
+                img.onload = () => {
+                  const canvas = document.createElement('canvas');
+                  canvas.width = 200; canvas.height = 200;
+                  const ctx = canvas.getContext('2d');
+                  const size = Math.min(img.width, img.height);
+                  const sx = (img.width - size) / 2, sy = (img.height - size) / 2;
+                  ctx.drawImage(img, sx, sy, size, size, 0, 0, 200, 200);
+                  onUpdate('profileImage', canvas.toDataURL('image/jpeg', 0.8));
+                };
+                img.src = ev.target.result;
+              };
+              reader.readAsDataURL(file);
+            }} style={{ display: 'none' }} />
+          </div>
+        </div>
+
         <div style={{ marginBottom: 16 }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>닉네임</div>
           <input value={profile.nickname || ''} onChange={e => onUpdate('nickname', e.target.value)}
