@@ -294,21 +294,6 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
         </div>
       )}
 
-      {/* ===== Album Category Tabs ===== */}
-      <div style={{ display: 'flex', gap: 8, padding: '12px 20px 12px' }}>
-        {[
-          { key: 'skin', label: '피부' },
-          { key: 'food', label: '식단' },
-          { key: 'body', label: '바디' },
-        ].map(cat => (
-          <button key={cat.key} onClick={() => setAlbumCategory(cat.key)} style={{
-            flex: 1, padding: '8px 0', borderRadius: 10, border: 'none',
-            background: albumCategory === cat.key ? 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)' : 'var(--bg-card)',
-            color: albumCategory === cat.key ? '#7A3800' : 'var(--text-muted)',
-            fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-          }}>{cat.label}</button>
-        ))}
-      </div>
 
       {/* ===== FOOD ALBUM ===== */}
       {albumCategory === 'food' && (() => {
@@ -462,14 +447,16 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                 </div>
               </div>
 
-              {/* Bio line */}
+              {/* Album category tabs — segment-control style */}
               <div style={{ marginTop: 14 }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>나의 피부 기록</div>
-                {latestRecord && (
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
-                    최근 피부나이 {latestRecord.skinAge}세 · {latestRecord.skinType}
-                  </div>
-                )}
+                <div className="segment-control">
+                  <button className={`segment-btn${albumCategory === 'skin' ? ' active' : ''}`}
+                    onClick={() => setAlbumCategory('skin')}>피부</button>
+                  <button className={`segment-btn${albumCategory === 'food' ? ' active' : ''}`}
+                    onClick={() => setAlbumCategory('food')}>식단</button>
+                  <button className={`segment-btn${albumCategory === 'body' ? ' active' : ''}`}
+                    onClick={() => setAlbumCategory('body')}>바디</button>
+                </div>
               </div>
 
             </div>
