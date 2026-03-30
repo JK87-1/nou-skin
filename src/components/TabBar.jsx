@@ -15,9 +15,10 @@ export default function TabBar({ activeTab, onTabChange }) {
       label: '앨범',
       icon: (active) => (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <rect x="3" y="3" width="18" height="18" rx="3" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" />
-          <circle cx="8.5" cy="8.5" r="1.5" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.2" />
-          <path d="M3 16l5-4 4 3 3-2 6 4" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          <rect x="3" y="3" width="8" height="8" rx="2" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" />
+          <rect x="13" y="3" width="8" height="8" rx="2" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" />
+          <rect x="3" y="13" width="8" height="8" rx="2" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" />
+          <rect x="13" y="13" width="8" height="8" rx="2" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" />
         </svg>
       ),
     },
@@ -26,8 +27,8 @@ export default function TabBar({ activeTab, onTabChange }) {
       label: '루틴',
       icon: (active) => (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <path d="M9 2v2M15 2v2M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M9 16l2 2 4-4" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          <circle cx="12" cy="12" r="9" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" />
+          <path d="M8 12.5l2.5 2.5L16 10" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       ),
     },
