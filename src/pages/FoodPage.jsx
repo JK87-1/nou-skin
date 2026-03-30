@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { getTodayFoods, getTodayNutrition, getFoodGoal, saveFoodRecord, deleteFoodRecord } from '../storage/FoodStorage';
 import { compressImage } from '../engine/PixelAnalysis';
+import { getRecords, getChanges, getTotalChanges } from '../storage/SkinStorage';
 
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
 const MEAL_LABELS = ['아침', '점심', '저녁'];
@@ -116,7 +117,7 @@ export default function FoodPage({ onTabChange }) {
       <div style={{ padding: '0 16px 12px' }}>
         <div className="segment-control">
           <button className={`segment-btn${foodTab === 'skin' ? ' active' : ''}`}
-            onClick={() => onTabChange?.('album')}>피부</button>
+            onClick={() => setFoodTab('skin')}>피부</button>
           <button className={`segment-btn${foodTab === 'food' ? ' active' : ''}`}
             onClick={() => setFoodTab('food')}>식단</button>
           <button className={`segment-btn${foodTab === 'body' ? ' active' : ''}`}
@@ -124,6 +125,11 @@ export default function FoodPage({ onTabChange }) {
         </div>
       </div>
 
+      {/* Skin Insights */}
+      {foodTab === 'skin' && <SkinInsightsSection />}
+
+      {/* Food content */}
+      {foodTab === 'food' && <>
       {/* Date subtitle */}
       <div style={{ padding: '0 16px 8px' }}>
         <div style={{ fontSize: 11, color: '#888' }}>
@@ -259,6 +265,8 @@ export default function FoodPage({ onTabChange }) {
           )}
         </div>
       </div>
+
+      </>}
 
       {/* Add Food Modal */}
       {showAdd && <AddFoodModal onAdd={handleAddFood} onClose={() => { setShowAdd(false); setAddMeal(null); }} initialMeal={addMeal} />}
@@ -593,6 +601,122 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
           }}>추가</button>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ===== Skin Insights Section =====
+function SkinInsightsSection() {
+  const records = getRecords();
+  const changes = getChanges();
+  const totalChanges = getTotalChanges();
+
+  if (records.length === 0) {
+    return (
+      <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
+        <div style={{ fontSize: 14, fontWeight: 600 }}>아직 피부 기록이 없어요</div>
+        <div style={{ fontSize: 12, marginTop: 6 }}>피부 측정을 시작하면 분석을 확인할 수 있어요</div>
+      </div>
+    );
+  }
+
+  const latest = records[records.length - 1];
+  const first = records[0];
+  const overallDiff = totalChanges?.overallScore || 0;
+  const skinAgeDiff = totalChanges?.skinAge || 0;
+  const period = totalChanges?.period || 0;
+
+  const metrics = [
+    { key: 'moisture', label: '수분도', icon: '💧' },
+    { key: 'oilBalance', label: '유분', icon: '🫧' },
+    { key: 'skinTone', label: '피부톤', icon: '✨' },
+    { key: 'wrinkleScore', label: '주름', icon: '📐' },
+    { key: 'poreScore', label: '모공', icon: '🔬' },
+    { key: 'elasticityScore', label: '탄력', icon: '💎' },
+    { key: 'darkCircleScore', label: '다크서클', icon: '👁️' },
+  ];
+
+  return (
+    <div style={{ padding: '8px 20px', animation: 'breatheIn 0.5s ease both' }}>
+      {/* Summary cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+        <div style={{ background: 'var(--bg-card)', borderRadius: 16, padding: '14px 16px' }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>종합 점수</div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', marginTop: 4 }}>
+            {latest.overallScore}<span style={{ fontSize: 12, color: 'var(--text-dim)', fontWeight: 400 }}>점</span>
+          </div>
+          {overallDiff !== 0 && (
+            <div style={{ fontSize: 11, color: overallDiff > 0 ? '#34d399' : '#f87171', marginTop: 4 }}>
+              {overallDiff > 0 ? '▲' : '▼'} {Math.abs(overallDiff)}점 {period > 0 ? `(${period}일)` : ''}
+            </div>
+          )}
+        </div>
+        <div style={{ background: 'var(--bg-card)', borderRadius: 16, padding: '14px 16px' }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>피부 나이</div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', marginTop: 4 }}>
+            {latest.skinAge}<span style={{ fontSize: 12, color: 'var(--text-dim)', fontWeight: 400 }}>세</span>
+          </div>
+          {skinAgeDiff !== 0 && (
+            <div style={{ fontSize: 11, color: skinAgeDiff < 0 ? '#34d399' : '#f87171', marginTop: 4 }}>
+              {skinAgeDiff < 0 ? '▼' : '▲'} {Math.abs(skinAgeDiff)}세
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Metric bars */}
+      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 10 }}>항목별 분석</div>
+      {metrics.map(m => {
+        const val = latest[m.key];
+        if (val == null) return null;
+        const change = changes?.[m.key];
+        return (
+          <div key={m.key} style={{ marginBottom: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+              <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{m.icon} {m.label}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{val}</span>
+                {change && Math.abs(change.diff) >= 1 && (
+                  <span style={{ fontSize: 10, color: change.improved ? '#34d399' : '#f87171' }}>
+                    {change.diff > 0 ? '+' : ''}{change.diff}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div style={{ height: 5, borderRadius: 3, background: 'var(--bar-track)', overflow: 'hidden' }}>
+              <div style={{
+                height: '100%', borderRadius: 3, width: `${Math.min(100, val)}%`,
+                background: 'linear-gradient(90deg, #F9E84A, #FFB347, #FF8FAB)',
+                transition: 'width 0.5s ease',
+              }} />
+            </div>
+          </div>
+        );
+      })}
+
+      {/* Recent timeline */}
+      {changes && (() => {
+        const improved = Object.values(changes).filter(c => c.improved && Math.abs(c.diff) >= 2);
+        const worsened = Object.values(changes).filter(c => !c.improved && Math.abs(c.diff) >= 2);
+        if (improved.length === 0 && worsened.length === 0) return null;
+        return (
+          <div style={{ marginTop: 16 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 10 }}>최근 변화</div>
+            {improved.map(c => (
+              <div key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#34d399', flexShrink: 0 }} />
+                <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{c.label} +{Math.abs(c.diff)}점 향상</span>
+              </div>
+            ))}
+            {worsened.map(c => (
+              <div key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#f87171', flexShrink: 0 }} />
+                <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{c.label} {c.diff}점 하락</span>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
     </div>
   );
 }
