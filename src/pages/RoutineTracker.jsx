@@ -6,6 +6,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { SunIcon, MoonIcon, LotionIcon, PastelIcon } from '../components/icons/PastelIcons';
+import DailyMission from '../components/DailyMission';
 import {
   TRACKER_CATEGORIES, getProducts, saveProduct, deleteProduct,
   getProductsForMode, getTrackerChecks, toggleTrackerCheck,
@@ -639,7 +640,8 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, accent }) {
 
 // ===== MAIN COMPONENT =====
 
-export default function RoutineTracker({ themeColors, onBack }) {
+export default function RoutineTracker({ themeColors, onBack, initialMode }) {
+  const [pageMode, setPageMode] = useState(initialMode || 'routine');
   const [section, setSection] = useState('products');
   const [products, setProducts] = useState(() => getProducts());
   const [routineMode, setRoutineMode] = useState(new Date().getHours() >= 18 ? 'night' : 'morning');
@@ -719,22 +721,38 @@ export default function RoutineTracker({ themeColors, onBack }) {
   return (
     <div style={{ minHeight: '100vh', paddingBottom: 100, animation: 'breatheIn 0.5s ease both' }}>
       {/* Header */}
-      <div style={{ padding: '52px 20px 0', display: 'flex', alignItems: 'center', gap: 14 }}>
-        <button onClick={onBack} style={{
-          width: 38, height: 38, borderRadius: 12, border: 'none', cursor: 'pointer',
-          background: 'var(--progress-track)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path d="M15 18l-6-6 6-6" stroke={'var(--text-primary)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
-        <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>스킨케어 트래커</h1>
-          <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0' }}>제품 등록 · 루틴 관리 · 효과 분석</p>
+      <div style={{ padding: '16px 20px 0' }}>
+        <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>루틴</h1>
+      </div>
+
+      {/* Mode Toggle */}
+      <div style={{ padding: '12px 20px 16px' }}>
+        <div className="segment-control">
+          <button className={`segment-btn${pageMode === 'routine' ? ' active' : ''}`}
+            onClick={() => setPageMode('routine')}>루틴</button>
+          <button className={`segment-btn${pageMode === 'insights' ? ' active' : ''}`}
+            onClick={() => setPageMode('insights')}>분석</button>
+          <button className={`segment-btn${pageMode === 'mission' ? ' active' : ''}`}
+            onClick={() => setPageMode('mission')}>미션</button>
         </div>
       </div>
 
+      {/* Mission mode */}
+      {pageMode === 'mission' && (
+        <div style={{ animation: 'breatheIn 0.6s ease both' }}>
+          <DailyMission />
+        </div>
+      )}
+
+      {/* Insights mode — placeholder */}
+      {pageMode === 'insights' && (
+        <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 14 }}>
+          루틴 효과 분석은 2주 이상 기록 후 확인할 수 있어요.
+        </div>
+      )}
+
+      {/* Routine mode — existing tracker content */}
+      {pageMode === 'routine' && <>
       {/* Section Tabs */}
       <div style={{ display: 'flex', gap: 8, padding: '20px 20px 4px', overflowX: 'auto' }}>
         {sections.map(s => {
@@ -1046,6 +1064,7 @@ export default function RoutineTracker({ themeColors, onBack }) {
           accent={accent}
         />
       )}
+      </>}
     </div>
   );
 }
