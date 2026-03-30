@@ -416,14 +416,18 @@ function ProfileSettingsModal({ profile, onUpdate, onClose }) {
           </div>
         </div>
 
+        {/* Nickname */}
         <div style={{ marginBottom: 16 }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>닉네임</div>
           <input value={profile.nickname || ''} onChange={e => onUpdate('nickname', e.target.value)}
             placeholder="닉네임" maxLength={20} style={inputStyle} />
         </div>
 
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>출생연도</div>
+        {/* ── 기본 정보 ── */}
+        <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', margin: '24px 0 12px' }}>기본 정보</div>
+
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>생년월일</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <input value={profile.birthYear || ''} onChange={e => onUpdate('birthYear', e.target.value)}
               placeholder="예: 1995" type="number" min={1940} max={currentYear} style={{ ...inputStyle, flex: 1 }} />
@@ -431,7 +435,7 @@ function ProfileSettingsModal({ profile, onUpdate, onClose }) {
           </div>
         </div>
 
-        <div style={{ marginBottom: 16 }}>
+        <div style={{ marginBottom: 12 }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>성별</div>
           <div style={{ display: 'flex', gap: 8 }}>
             {GENDER_OPTIONS.map(g => (
@@ -445,7 +449,43 @@ function ProfileSettingsModal({ profile, onUpdate, onClose }) {
           </div>
         </div>
 
+        <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>키 (cm)</div>
+            <input value={profile.height || ''} onChange={e => onUpdate('height', e.target.value)}
+              placeholder="165" type="number" style={inputStyle} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>현재 몸무게 (kg)</div>
+            <input value={profile.currentWeight || ''} onChange={e => onUpdate('currentWeight', e.target.value)}
+              placeholder="60" type="number" step="0.1" style={inputStyle} />
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>목표 몸무게 (kg)</div>
+          <input value={profile.goalWeight || ''} onChange={e => onUpdate('goalWeight', e.target.value)}
+            placeholder="55" type="number" step="0.1" style={inputStyle} />
+        </div>
+
         <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>활동 수준</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {['거의 없음', '가벼운 활동', '보통', '활발한 활동', '매우 활발'].map(level => (
+              <button key={level} onClick={() => onUpdate('activityLevel', level)} style={{
+                padding: '8px 14px', borderRadius: 10, border: 'none',
+                background: profile.activityLevel === level ? 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)' : 'var(--bg-input, #F2F3F5)',
+                color: profile.activityLevel === level ? '#7A3800' : 'var(--text-muted)',
+                fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+              }}>{level}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── 피부 정보 ── */}
+        <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', margin: '24px 0 12px' }}>피부 정보</div>
+
+        <div style={{ marginBottom: 12 }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>피부 타입</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {SKIN_TYPES.map(t => (
@@ -459,44 +499,8 @@ function ProfileSettingsModal({ profile, onUpdate, onClose }) {
           </div>
         </div>
 
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>민감도</div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            {SENSITIVITY_OPTIONS.map(s => (
-              <button key={s} onClick={() => onUpdate('sensitivity', s)} style={{
-                flex: 1, padding: '10px 0', borderRadius: 10, border: 'none',
-                background: profile.sensitivity === s ? 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)' : 'var(--bg-input, #F2F3F5)',
-                color: profile.sensitivity === s ? '#7A3800' : 'var(--text-muted)',
-                fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-              }}>{s}</button>
-            ))}
-          </div>
-        </div>
-
-        {/* Body info */}
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>신체 정보</div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 11, color: 'var(--text-dim)', marginBottom: 4 }}>키 (cm)</div>
-              <input value={profile.height || ''} onChange={e => onUpdate('height', e.target.value)}
-                placeholder="165" type="number" style={inputStyle} />
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 11, color: 'var(--text-dim)', marginBottom: 4 }}>현재 몸무게 (kg)</div>
-              <input value={profile.currentWeight || ''} onChange={e => onUpdate('currentWeight', e.target.value)}
-                placeholder="60" type="number" step="0.1" style={inputStyle} />
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 11, color: 'var(--text-dim)', marginBottom: 4 }}>희망 몸무게 (kg)</div>
-              <input value={profile.goalWeight || ''} onChange={e => onUpdate('goalWeight', e.target.value)}
-                placeholder="55" type="number" step="0.1" style={inputStyle} />
-            </div>
-          </div>
-        </div>
-
         <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>피부 고민</div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>주요 피부 고민</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {SKIN_CONCERNS.map(c => {
               const active = (profile.skinConcerns || []).includes(c);
