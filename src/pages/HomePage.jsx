@@ -111,6 +111,76 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
       <div style={{ padding: '0 16px' }}>
 
+        {/* Today's Insight */}
+        <div style={{
+          padding: 20, borderRadius: 16, marginBottom: 12,
+          background: '#f9f9f9', ...fadeUp(0.03),
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <svg width="26" height="26" viewBox="0 0 36 36" fill="none">
+                <defs>
+                  <linearGradient id="hi-g1" x1="20%" y1="0%" x2="80%" y2="100%">
+                    <stop offset="0%" stopColor="#FFF3B0" />
+                    <stop offset="100%" stopColor="#FFE082" />
+                  </linearGradient>
+                  <linearGradient id="hi-g2" x1="20%" y1="0%" x2="80%" y2="100%">
+                    <stop offset="0%" stopColor="#FFF9D0" />
+                    <stop offset="100%" stopColor="#FFF3B0" />
+                  </linearGradient>
+                </defs>
+                <path d="M18 2 L21 12 L31 15.5 L21 19 L18 29 L15 19 L5 15.5 L15 12 Z" fill="url(#hi-g1)" />
+                <path d="M28 3 L29 6.5 L32.5 7.5 L29 8.5 L28 12 L27 8.5 L23.5 7.5 L27 6.5 Z" fill="url(#hi-g2)" />
+                <path d="M8 24 L9 27 L12 28 L9 29 L8 32 L7 29 L4 28 L7 27 Z" fill="url(#hi-g2)" />
+                <ellipse cx="15" cy="12" rx="3" ry="2" fill="white" opacity="0.3" />
+              </svg>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, color: '#8B95A1' }}>오늘의 인사이트</div>
+              <div style={{ fontSize: 14, color: '#4E5968', marginTop: 4, lineHeight: 1.5 }}>
+                {getInsightText(latest)}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Skincare Tracker Card */}
+        <div onClick={onOpenRoutine} style={{
+          padding: 20, borderRadius: 16, marginBottom: 12,
+          background: '#f9f9f9', cursor: 'pointer',
+          ...fadeUp(0.04),
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <svg width="26" height="26" viewBox="0 0 36 36" fill="none">
+                <defs>
+                  <linearGradient id="lot-g1" x1="30%" y1="0%" x2="70%" y2="100%">
+                    <stop offset="0%" stopColor="#FFF0F3" />
+                    <stop offset="100%" stopColor="#FFD0DA" />
+                  </linearGradient>
+                  <linearGradient id="lot-g2" x1="30%" y1="0%" x2="70%" y2="100%">
+                    <stop offset="0%" stopColor="#FFE0E8" />
+                    <stop offset="100%" stopColor="#FFC0CC" />
+                  </linearGradient>
+                </defs>
+                <rect x="13" y="3" width="10" height="4" rx="1.5" fill="url(#lot-g2)" />
+                <rect x="16.5" y="1" width="3" height="3" rx="1" fill="url(#lot-g2)" />
+                <rect x="14" y="0.5" width="8" height="1.5" rx="0.75" fill="url(#lot-g2)" />
+                <rect x="11" y="7" width="14" height="20" rx="4" fill="url(#lot-g1)" />
+                <rect x="13" y="13" width="10" height="8" rx="2" fill="white" opacity="0.3" />
+                <rect x="12.5" y="9" width="3" height="12" rx="1.5" fill="white" opacity="0.2" />
+              </svg>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>스킨케어 트래커</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>제품 등록 · 루틴 관리 · 효과 분석</div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M9 18l6-6-6-6" stroke="var(--text-dim)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+        </div>
+
         {/* 2. AI Coach Card */}
         <div style={{
           borderRadius: 16, padding: '12px 14px', marginBottom: 12,
@@ -327,4 +397,12 @@ function getCoachTags(latest, nutrition, foodGoal, routineDone, routineTotal) {
   if (nutrition.kcal > 0 && nutrition.protein < (foodGoal.protein || 80) * 0.7) tags.push('단백질 부족');
   if (routineTotal > 0 && routineDone < routineTotal) tags.push(`루틴 ${routineTotal - routineDone}개 남음`);
   return tags.length > 0 ? tags : ['기록을 시작해보세요'];
+}
+
+function getInsightText(latest) {
+  if (!latest) return '피부 측정을 시작하면 매일 맞춤 인사이트를 받을 수 있어요.';
+  if (latest.moisture < 50) return '수분 섭취가 부족해요. 피부 수분도에 영향을 줄 수 있어요.';
+  if (latest.oilBalance > 70) return '유분이 높은 편이에요. 가벼운 보습제를 추천해요.';
+  if (latest.overallScore >= 80) return '피부 컨디션이 좋아요! 꾸준히 유지해보세요.';
+  return '오늘도 꾸준한 관리가 피부를 바꿔요. 화이팅!';
 }
