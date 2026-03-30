@@ -43,16 +43,10 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           </div>
         </div>
 
-        {/* LUA Beta + Greeting + Date */}
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, marginBottom: 3 }}>
-            <span style={{ fontSize: 14, fontWeight: 500, letterSpacing: 4, fontFamily: "'Fredoka', sans-serif", background: 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>LUA</span>
-            <span style={{ fontSize: 8, color: '#fff', background: 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)', padding: '1px 6px', borderRadius: 8, fontWeight: 500 }}>Beta</span>
-          </div>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 2 }}>안녕하세요, {nickname}님</div>
-          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>
-            {today.getMonth() + 1}월 {today.getDate()}일 {['일', '월', '화', '수', '목', '금', '토'][today.getDay()]}요일
-          </div>
+        {/* LUA Beta */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
+          <span style={{ fontSize: 14, fontWeight: 500, letterSpacing: 4, fontFamily: "'Fredoka', sans-serif", background: 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>LUA</span>
+          <span style={{ fontSize: 8, color: '#fff', background: 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)', padding: '1px 6px', borderRadius: 8, fontWeight: 500 }}>Beta</span>
         </div>
 
         {/* Weather chip button */}
