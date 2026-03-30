@@ -4,6 +4,7 @@ import { getProfile } from '../storage/ProfileStorage';
 import { getFoodRecords } from '../storage/FoodStorage';
 import { getBodyRecords } from '../storage/BodyStorage';
 import { getWeatherData } from '../storage/WeatherStorage';
+import SkinWeather from '../components/SkinWeather';
 
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
 
@@ -14,6 +15,7 @@ export default function HomePage({ onMeasure, onTabChange }) {
   const streak = calcStreak(records);
   const nickname = profile.nickname || '사용자';
   const today = new Date();
+  const [weatherSheet, setWeatherSheet] = useState(false);
 
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--bg-primary)', paddingBottom: 80 }}>
@@ -54,16 +56,17 @@ export default function HomePage({ onMeasure, onTabChange }) {
           </div>
         </div>
 
-        {/* Weather circle button */}
+        {/* Weather chip button */}
         {(() => {
           const w = getWeatherData();
           const temp = w?.temp ?? '—';
           return (
-            <div style={{
-              width: 48, height: 48, borderRadius: '50%', flexShrink: 0,
-              background: '#fff',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            <div onClick={() => setWeatherSheet(true)} style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '7px 12px 7px 8px',
+              background: '#fff', borderRadius: 50, cursor: 'pointer',
               boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+              WebkitTapHighlightColor: 'transparent',
             }}>
               <svg width="20" height="20" viewBox="0 0 36 36" fill="none">
                 <defs>
@@ -80,7 +83,7 @@ export default function HomePage({ onMeasure, onTabChange }) {
                 <circle cx="18" cy="18" r="9" fill="url(#sun-home)" />
                 <ellipse cx="15.5" cy="15.5" rx="3.5" ry="2.5" fill="white" opacity="0.35" />
               </svg>
-              <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1, marginTop: 1 }}>{temp}°</span>
+              <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>{temp}°</span>
             </div>
           );
         })()}
@@ -129,6 +132,45 @@ export default function HomePage({ onMeasure, onTabChange }) {
           식단 사진 찍기
         </button>
       </div>
+
+      {/* Weather Bottom Sheet */}
+      {weatherSheet && (
+        <>
+          <div onClick={() => setWeatherSheet(false)} style={{
+            position: 'fixed', inset: 0, zIndex: 50,
+            background: 'rgba(0,0,0,0.4)',
+            animation: 'weatherFadeIn 0.3s ease',
+          }} />
+          <div style={{
+            position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 60,
+            background: 'var(--bg-secondary)',
+            borderTopLeftRadius: 28, borderTopRightRadius: 28,
+            borderTop: '1px solid var(--border-light)',
+            maxHeight: '85vh',
+            animation: 'weatherSlideUp 0.4s cubic-bezier(0.32, 0.72, 0, 1)',
+            overflow: 'hidden',
+          }}>
+            <style>{`
+              @keyframes weatherFadeIn { from { opacity: 0; } to { opacity: 1; } }
+              @keyframes weatherSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+            `}</style>
+            <div onClick={() => setWeatherSheet(false)} style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 8px', cursor: 'pointer' }}>
+              <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--border-subtle)' }} />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0 20px 8px' }}>
+              <button onClick={() => setWeatherSheet(false)} style={{
+                width: 32, height: 32, borderRadius: '50%',
+                background: 'var(--bg-card-hover)', border: 'none',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', color: 'var(--text-muted)', fontSize: 16, fontFamily: 'inherit',
+              }}>✕</button>
+            </div>
+            <div style={{ overflowY: 'auto', maxHeight: 'calc(85vh - 80px)', WebkitOverflowScrolling: 'touch' }}>
+              <SkinWeather skinResult={latest} />
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

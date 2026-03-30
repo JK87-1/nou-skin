@@ -768,8 +768,6 @@ export default function App() {
                 <span style={{ fontSize: 9, color: 'var(--text-dim)', background: 'var(--chip-bg)', padding: '2px 8px', borderRadius: 'var(--chip-radius)', fontWeight: 500 }}>Beta</span>
               </div>
             </div>
-            {/* Weather Chip */}
-            <WeatherChip onTap={() => setWeatherSheet(true)} />
           </div>
 
           {/* Background aura — very subtle (hidden in light mode) */}
@@ -898,52 +896,6 @@ export default function App() {
 
           </div>{/* end first screen wrapper */}
 
-          {/* Weather Bottom Sheet */}
-          {weatherSheet && (
-            <>
-              <div onClick={() => setWeatherSheet(false)} style={{
-                position: 'fixed', inset: 0, zIndex: 50,
-                background: 'var(--bg-modal-overlay)',
-                animation: 'weatherSheetFadeIn 0.3s ease',
-              }} />
-              <div style={{
-                position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 60,
-                background: 'var(--bg-secondary)',
-                borderTopLeftRadius: 28, borderTopRightRadius: 28,
-                borderTop: '1px solid var(--border-light)',
-                maxHeight: '85vh',
-                animation: 'weatherSheetSlideUp 0.4s cubic-bezier(0.32, 0.72, 0, 1)',
-                overflow: 'hidden',
-              }}>
-                <style>{`
-                  @keyframes weatherSheetFadeIn { from { opacity: 0; } to { opacity: 1; } }
-                  @keyframes weatherSheetSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-                `}</style>
-                {/* Handle */}
-                <div onClick={() => setWeatherSheet(false)} style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 8px', cursor: 'pointer' }}>
-                  <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--border-subtle)' }} />
-                </div>
-                {/* Sheet header */}
-                <div style={{
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
-                  padding: '4px 20px 16px',
-                }}>
-                  <div></div>
-                  <button onClick={() => setWeatherSheet(false)} style={{
-                    width: 32, height: 32, borderRadius: '50%',
-                    background: 'var(--bg-card-hover)', border: 'none',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    cursor: 'pointer', marginTop: 4, color: 'var(--text-muted)', fontSize: 16,
-                    fontFamily: 'inherit',
-                  }}>✕</button>
-                </div>
-                {/* Sheet content */}
-                <div style={{ overflowY: 'auto', maxHeight: 'calc(85vh - 80px)', WebkitOverflowScrolling: 'touch' }}>
-                  <SkinWeather skinResult={getLatestRecord()} />
-                </div>
-              </div>
-            </>
-          )}
         </div>
       )}
 
