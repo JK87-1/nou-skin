@@ -45,8 +45,8 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
         {/* LUA Beta */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-          <span style={{ fontSize: 18, fontWeight: 500, letterSpacing: 5, fontFamily: "'Fredoka', sans-serif", background: 'linear-gradient(120deg, #FFF5D6, #FFB347)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>LUA</span>
-          <span style={{ fontSize: 8, color: '#fff', background: 'linear-gradient(120deg, #FFF5D6, #FFB347)', padding: '1px 6px', borderRadius: 8, fontWeight: 500 }}>Beta</span>
+          <span style={{ fontSize: 18, fontWeight: 500, letterSpacing: 5, fontFamily: "'Fredoka', sans-serif", background: 'linear-gradient(120deg, #FFC145, #EC368D)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>LUA</span>
+          <span style={{ fontSize: 8, color: '#fff', background: 'linear-gradient(120deg, #FFC145, #EC368D)', padding: '1px 6px', borderRadius: 8, fontWeight: 500 }}>Beta</span>
         </div>
 
         {/* Weather chip button */}
@@ -164,10 +164,10 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           오늘 기록
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, ...fadeUp(0.25) }}>
-          <StatBox label="피부 점수" value={latest ? latest.overallScore : ''} unit="/ 100" accent="#FFB347" />
-          <StatBox label="칼로리" value="" unit="kcal" accent="#FFB347" />
+          <StatBox label="피부 점수" value={latest ? latest.overallScore : ''} unit="/ 100" accent="#EC368D" />
+          <StatBox label="칼로리" value="" unit="kcal" accent="#EC368D" />
           <StatBox label="몸무게" value="" unit="kg" accent="#F9E84A" />
-          <StatBox label="연속 기록" value={streak} unit="일" accent="#FFB347" />
+          <StatBox label="연속 기록" value={streak} unit="일" accent="#EC368D" />
         </div>
 
         {/* Quick Actions */}
@@ -265,7 +265,7 @@ function StreakWeekRow({ skinRecords, foodRecords, bodyRecords }) {
             width: 38, height: 38, borderRadius: '50%',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             background: d.count > 0
-              ? 'linear-gradient(135deg, #FFF5D6, #FFB347)'
+              ? 'linear-gradient(135deg, #FFC145, #EC368D)'
               : d.isToday
                 ? 'rgba(255,179,71,0.1)'
                 : 'var(--bg-card)',
@@ -308,8 +308,8 @@ function StreakCard({ streak, maxStreak }) {
           <defs>
             <linearGradient id="streakGrad" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#F9E84A" />
-              <stop offset="50%" stopColor="#FFB347" />
-              <stop offset="100%" stopColor="#FFB347" />
+              <stop offset="50%" stopColor="#EC368D" />
+              <stop offset="100%" stopColor="#EC368D" />
             </linearGradient>
           </defs>
           <circle cx="36" cy="36" r={r} fill="none" stroke="rgba(255,179,71,0.15)" strokeWidth="6" />
@@ -345,7 +345,7 @@ function StreakCard({ streak, maxStreak }) {
           }}>최장 연속</span>
           <span style={{
             fontSize: 11, padding: '3px 10px', borderRadius: 20,
-            background: 'linear-gradient(120deg, #F9E84A, #FFB347)',
+            background: 'linear-gradient(120deg, #F9E84A, #EC368D)',
             color: '#7A3800', fontWeight: 600,
           }}>{maxStreak}일</span>
         </div>
@@ -420,7 +420,7 @@ function getInsightText(latest) {
 
 const btnStyle = {
   width: '100%', padding: '14px 0',
-  background: 'linear-gradient(120deg, #FFF5D6, #FFB347)',
+  background: 'linear-gradient(120deg, #FFC145, #EC368D)',
   border: 'none', borderRadius: 'var(--btn-radius)',
   fontSize: 14, fontWeight: 600,
   color: '#7A3800', cursor: 'pointer', fontFamily: 'inherit',

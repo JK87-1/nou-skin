@@ -135,12 +135,12 @@ export default function BodyPage() {
               <defs>
                 <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%" stopColor="#F9E84A" />
-                  <stop offset="50%" stopColor="#FFB347" />
-                  <stop offset="100%" stopColor="#FFB347" />
+                  <stop offset="50%" stopColor="#EC368D" />
+                  <stop offset="100%" stopColor="#EC368D" />
                 </linearGradient>
               </defs>
               <polyline points={graphData.points} fill="none" stroke="url(#bodyGrad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <circle cx={graphData.lastPt.x} cy={graphData.lastPt.y} r="4" fill="#FFB347" />
+              <circle cx={graphData.lastPt.x} cy={graphData.lastPt.y} r="4" fill="#EC368D" />
             </svg>
           </div>
         )}
@@ -206,7 +206,7 @@ export default function BodyPage() {
         <div style={{ marginTop: 16, ...fadeUp(0.3) }}>
           <button onClick={() => setShowAdd(true)} style={{
             width: '100%', padding: '14px 0',
-            background: 'linear-gradient(120deg, #FFF5D6, #FFB347)',
+            background: 'linear-gradient(120deg, #FFC145, #EC368D)',
             border: 'none', borderRadius: 'var(--btn-radius)',
             fontSize: 14, fontWeight: 600,
             color: '#7A3800', cursor: 'pointer', fontFamily: 'inherit',
@@ -285,7 +285,7 @@ function AddWeightModal({ onSave, onClose, latest }) {
           }}>취소</button>
           <button onClick={() => { if (weight) onSave(Number(weight)); }} style={{
             flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
-            border: 'none', background: 'linear-gradient(120deg, #FFF5D6, #FFB347)',
+            border: 'none', background: 'linear-gradient(120deg, #FFC145, #EC368D)',
             color: '#7A3800', fontSize: 14, fontWeight: 700,
             cursor: 'pointer', fontFamily: 'inherit',
           }}>저장</button>
@@ -335,7 +335,7 @@ function GoalModal({ onSave, onClose, current }) {
           }}>취소</button>
           <button onClick={() => { if (target) onSave(Number(target)); }} style={{
             flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
-            border: 'none', background: 'linear-gradient(120deg, #FFF5D6, #FFB347)',
+            border: 'none', background: 'linear-gradient(120deg, #FFC145, #EC368D)',
             color: '#7A3800', fontSize: 14, fontWeight: 700,
             cursor: 'pointer', fontFamily: 'inherit',
           }}>저장</button>
@@ -441,7 +441,7 @@ function ProfileSettingsModal({ profile, onUpdate, onClose }) {
             {GENDER_OPTIONS.map(g => (
               <button key={g} onClick={() => onUpdate('gender', g)} style={{
                 flex: 1, padding: '10px 0', borderRadius: 10, border: 'none',
-                background: profile.gender === g ? 'linear-gradient(120deg, #FFF5D6, #FFB347)' : 'var(--bg-input, #F2F3F5)',
+                background: profile.gender === g ? 'linear-gradient(120deg, #FFC145, #EC368D)' : 'var(--bg-input, #F2F3F5)',
                 color: profile.gender === g ? '#7A3800' : 'var(--text-muted)',
                 fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
               }}>{g}</button>
@@ -474,7 +474,7 @@ function ProfileSettingsModal({ profile, onUpdate, onClose }) {
             {['거의 없음', '가벼운 활동', '보통', '활발한 활동', '매우 활발'].map(level => (
               <button key={level} onClick={() => onUpdate('activityLevel', level)} style={{
                 padding: '8px 14px', borderRadius: 10, border: 'none',
-                background: profile.activityLevel === level ? 'linear-gradient(120deg, #FFF5D6, #FFB347)' : 'var(--bg-input, #F2F3F5)',
+                background: profile.activityLevel === level ? 'linear-gradient(120deg, #FFC145, #EC368D)' : 'var(--bg-input, #F2F3F5)',
                 color: profile.activityLevel === level ? '#7A3800' : 'var(--text-muted)',
                 fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
               }}>{level}</button>
@@ -491,7 +491,7 @@ function ProfileSettingsModal({ profile, onUpdate, onClose }) {
             {SKIN_TYPES.map(t => (
               <button key={t} onClick={() => onUpdate('skinType', t)} style={{
                 padding: '8px 14px', borderRadius: 10, border: 'none',
-                background: profile.skinType === t ? 'linear-gradient(120deg, #FFF5D6, #FFB347)' : 'var(--bg-input, #F2F3F5)',
+                background: profile.skinType === t ? 'linear-gradient(120deg, #FFC145, #EC368D)' : 'var(--bg-input, #F2F3F5)',
                 color: profile.skinType === t ? '#7A3800' : 'var(--text-muted)',
                 fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
               }}>{t}</button>
@@ -510,7 +510,7 @@ function ProfileSettingsModal({ profile, onUpdate, onClose }) {
                   onUpdate('skinConcerns', list);
                 }} style={{
                   padding: '8px 14px', borderRadius: 10, border: 'none',
-                  background: active ? 'linear-gradient(120deg, #FFF5D6, #FFB347)' : 'var(--bg-input, #F2F3F5)',
+                  background: active ? 'linear-gradient(120deg, #FFC145, #EC368D)' : 'var(--bg-input, #F2F3F5)',
                   color: active ? '#7A3800' : 'var(--text-muted)',
                   fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
                 }}>{c}</button>
@@ -521,7 +521,7 @@ function ProfileSettingsModal({ profile, onUpdate, onClose }) {
 
         <button onClick={onClose} style={{
           width: '100%', padding: '14px 0', borderRadius: 'var(--btn-radius)',
-          border: 'none', background: 'linear-gradient(120deg, #FFF5D6, #FFB347)',
+          border: 'none', background: 'linear-gradient(120deg, #FFC145, #EC368D)',
           color: '#7A3800', fontSize: 14, fontWeight: 700,
           cursor: 'pointer', fontFamily: 'inherit',
         }}>완료</button>
