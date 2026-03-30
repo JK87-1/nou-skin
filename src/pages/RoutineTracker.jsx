@@ -738,6 +738,9 @@ export default function RoutineTracker({ themeColors, onBack, initialMode }) {
         </div>
       </div>
 
+      {/* Spacer — matches HistoryPage profile header height */}
+      <div style={{ height: 130 }} />
+
       {/* Mode Toggle */}
       <div style={{ padding: '12px 20px 16px' }}>
         <div className="segment-control">

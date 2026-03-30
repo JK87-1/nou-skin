@@ -126,6 +126,9 @@ export default function FoodPage({ onTabChange }) {
         </div>
       </div>
 
+      {/* Spacer — matches HistoryPage profile header height */}
+      <div style={{ height: 130 }} />
+
       {/* Category Tabs */}
       <div style={{ padding: '0 16px 12px' }}>
         <div className="segment-control">
