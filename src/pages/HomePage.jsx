@@ -1,185 +1,192 @@
-import { useState } from 'react';
-import { getLatestRecord, getRecords } from '../storage/SkinStorage';
+import { useState, useEffect } from 'react';
+import { getLatestRecord, getRecords, getChanges } from '../storage/SkinStorage';
 import { getProfile } from '../storage/ProfileStorage';
-import { getFoodRecords } from '../storage/FoodStorage';
+import { getTodayNutrition, getFoodGoal } from '../storage/FoodStorage';
 import { getBodyRecords } from '../storage/BodyStorage';
 import { getWeatherData } from '../storage/WeatherStorage';
+import { getTodayProgress } from '../storage/RoutineCheckStorage';
 import SkinWeather from '../components/SkinWeather';
 
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
+const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
 
 export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [profile] = useState(getProfile);
   const latest = getLatestRecord();
   const records = getRecords();
-  const streak = calcStreak(records);
-  const nickname = profile.nickname || '사용자';
+  const changes = getChanges();
   const today = new Date();
+  const weather = getWeatherData();
+  const nutrition = getTodayNutrition();
+  const foodGoal = getFoodGoal();
+  const bodyRecords = getBodyRecords();
+  const latestWeight = bodyRecords.length > 0 ? bodyRecords[bodyRecords.length - 1] : null;
+  const prevWeight = bodyRecords.length > 1 ? bodyRecords[bodyRecords.length - 2] : null;
+  const weightDiff = latestWeight && prevWeight ? (latestWeight.weight - prevWeight.weight).toFixed(1) : null;
+  const skinDiff = changes?.overallScore ? (changes.overallScore.diff > 0 ? `+${changes.overallScore.diff}` : `${changes.overallScore.diff}`) : null;
+
+  // Routine progress
+  const skinRoutine = getTodayProgress('skin');
+  const foodRoutine = getTodayProgress('food');
+  const bodyRoutine = getTodayProgress('body');
+  const totalRoutine = skinRoutine.total + foodRoutine.total + bodyRoutine.total;
+  const doneRoutine = skinRoutine.done + foodRoutine.done + bodyRoutine.done;
+  const routinePct = totalRoutine > 0 ? Math.round((doneRoutine / totalRoutine) * 100) : 0;
+
   const [weatherSheet, setWeatherSheet] = useState(false);
+  const [coachMsg, setCoachMsg] = useState(null);
+
+  // Weather warning text
+  const getWeatherWarning = () => {
+    if (!weather) return '';
+    if (weather.humidity < 40) return '건조함 주의';
+    if (weather.airQuality > 80) return '미세먼지 주의';
+    if (weather.uv > 6) return '자외선 강함';
+    return '';
+  };
 
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--bg-primary)', paddingBottom: 80 }}>
 
-      {/* Header */}
-      <div style={{ padding: '8px 20px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        {/* Profile photo */}
+      {/* 1. Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px 14px' }}>
+        {/* Profile */}
         <div style={{
-          width: 55, height: 55, borderRadius: '50%', overflow: 'hidden',
-          background: 'var(--bg-secondary)', flexShrink: 0,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          width: 36, height: 36, borderRadius: 18, overflow: 'hidden', flexShrink: 0,
+          background: 'var(--bg-secondary)',
         }}>
-          <div style={{
-            width: '100%', height: '100%', borderRadius: '50%',
-            overflow: 'hidden',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            {profile.profileImage ? (
-              <img src={profile.profileImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
+          {profile.profileImage ? (
+            <img src={profile.profileImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
                 <circle cx="12" cy="10" r="4" /><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" strokeLinecap="round" />
               </svg>
-            )}
+            </div>
+          )}
+        </div>
+
+        {/* Date + Weather */}
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>
+            {DAY_NAMES[today.getDay()]}요일, {today.getMonth() + 1}월 {today.getDate()}일
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+            <span style={{ fontSize: 12 }}>☀️</span>
+            <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+              {weather ? `${weather.conditionIcon || '맑음'} ${weather.temp}°` : '날씨 로딩중'}
+              {getWeatherWarning() && ` · ${getWeatherWarning()}`}
+            </span>
           </div>
         </div>
 
-        {/* LUA Beta */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-          <span style={{ fontSize: 18, fontWeight: 500, letterSpacing: 5, fontFamily: "'Fredoka', sans-serif", color: '#81E4BD' }}>LUA</span>
-          <span style={{ fontSize: 8, color: '#fff', background: '#81E4BD', padding: '1px 6px', borderRadius: 8, fontWeight: 500 }}>Beta</span>
+        {/* + Button */}
+        <div onClick={onMeasure} style={{
+          width: 30, height: 30, borderRadius: 10, flexShrink: 0,
+          background: 'var(--accent-primary)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer',
+        }}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+            <path d="M12 5v14M5 12h14" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" />
+          </svg>
         </div>
-
-        {/* Weather chip button */}
-        {(() => {
-          const w = getWeatherData();
-          const temp = w?.temp ?? '—';
-          return (
-            <div onClick={() => setWeatherSheet(true)} style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              padding: '7px 12px 7px 8px',
-              background: '#fff', borderRadius: 50, cursor: 'pointer',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-              WebkitTapHighlightColor: 'transparent',
-            }}>
-              <svg width="20" height="20" viewBox="0 0 36 36" fill="none">
-                <defs>
-                  <radialGradient id="sun-home" cx="40%" cy="38%" r="55%">
-                    <stop offset="0%" stopColor="#FFF9D0" />
-                    <stop offset="50%" stopColor="#FFF3B0" />
-                    <stop offset="100%" stopColor="#FFE082" />
-                  </radialGradient>
-                </defs>
-                {[0,45,90,135,180,225,270,315].map(a => {
-                  const r1 = 10.5, r2 = 15.5, rad = a * Math.PI / 180;
-                  return <line key={a} x1={18+Math.cos(rad)*r1} y1={18+Math.sin(rad)*r1} x2={18+Math.cos(rad)*r2} y2={18+Math.sin(rad)*r2} stroke="#FFE082" strokeWidth="2" strokeLinecap="round" />;
-                })}
-                <circle cx="18" cy="18" r="9" fill="url(#sun-home)" />
-                <ellipse cx="15.5" cy="15.5" rx="3.5" ry="2.5" fill="white" opacity="0.35" />
-              </svg>
-              <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>{temp}°</span>
-            </div>
-          );
-        })()}
       </div>
 
-      <div style={{ padding: '0 20px' }}>
-        {/* ── Streak Week Row (Part 1) ── */}
-        <StreakWeekRow skinRecords={records} foodRecords={getFoodRecords()} bodyRecords={getBodyRecords()} />
+      <div style={{ padding: '0 16px' }}>
 
-        {/* ── Streak Card (Part 2) ── */}
-        <StreakCard streak={streak} maxStreak={calcMaxStreak(records)} />
-
-        {/* Today's Insight — matches AiInsightCard */}
+        {/* 2. AI Coach Card */}
         <div style={{
-          marginTop: 14, padding: 20, borderRadius: 16,
-          background: '#FFFFFF', ...fadeUp(0.15),
+          borderRadius: 16, padding: '12px 14px', marginBottom: 12,
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border-subtle)',
+          ...fadeUp(0.05),
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <svg width="26" height="26" viewBox="0 0 36 36" fill="none">
-                <defs>
-                  <linearGradient id="hi-g1" x1="20%" y1="0%" x2="80%" y2="100%">
-                    <stop offset="0%" stopColor="#FFF3B0" />
-                    <stop offset="100%" stopColor="#FFE082" />
-                  </linearGradient>
-                  <linearGradient id="hi-g2" x1="20%" y1="0%" x2="80%" y2="100%">
-                    <stop offset="0%" stopColor="#FFF9D0" />
-                    <stop offset="100%" stopColor="#FFF3B0" />
-                  </linearGradient>
-                </defs>
-                <path d="M18 2 L21 12 L31 15.5 L21 19 L18 29 L15 19 L5 15.5 L15 12 Z" fill="url(#hi-g1)" />
-                <path d="M28 3 L29 6.5 L32.5 7.5 L29 8.5 L28 12 L27 8.5 L23.5 7.5 L27 6.5 Z" fill="url(#hi-g2)" />
-                <path d="M8 24 L9 27 L12 28 L9 29 L8 32 L7 29 L4 28 L7 27 Z" fill="url(#hi-g2)" />
-                <ellipse cx="15" cy="12" rx="3" ry="2" fill="white" opacity="0.3" />
-              </svg>
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, color: '#8B95A1' }}>오늘의 인사이트</div>
-              <div style={{ fontSize: 14, color: '#4E5968', marginTop: 4, lineHeight: 1.5 }}>
-                {getInsightText(latest)}
-              </div>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+            <div style={{
+              width: 20, height: 20, borderRadius: 10,
+              background: 'var(--accent-primary)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 10,
+            }}>✨</div>
+            <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)' }}>LUA AI 코치</span>
+          </div>
+          <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+            {getCoachMessage(latest, nutrition, foodGoal, latestWeight, doneRoutine, totalRoutine, weather)}
+          </div>
+          {/* Tags */}
+          <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+            {getCoachTags(latest, nutrition, foodGoal, doneRoutine, totalRoutine).map((tag, i) => (
+              <span key={i} style={{
+                fontSize: 10, padding: '3px 8px', borderRadius: 8,
+                background: 'var(--bg-card-hover)', color: 'var(--text-muted)', fontWeight: 500,
+              }}>{tag}</span>
+            ))}
           </div>
         </div>
 
-        {/* Skincare Tracker Card */}
-        <div onClick={onOpenRoutine} style={{
-          marginTop: 14, padding: 20, borderRadius: 16,
-          background: '#FFFFFF', cursor: 'pointer',
-          ...fadeUp(0.18),
+        {/* 3. Today Stats (3 cards) */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginBottom: 12, ...fadeUp(0.1) }}>
+          <StatCard
+            icon="🔬" label="피부"
+            value={latest ? latest.overallScore : ''} unit="점"
+            change={skinDiff ? `${skinDiff}점` : null}
+            changePositive={skinDiff ? parseFloat(skinDiff) >= 0 : null}
+          />
+          <StatCard
+            icon="🍽️" label="식단"
+            value={nutrition.kcal > 0 ? nutrition.kcal.toLocaleString() : ''} unit="kcal"
+            change={nutrition.kcal > 0 ? `목표 ${foodGoal.kcal.toLocaleString()}` : null}
+            changePositive={null}
+          />
+          <StatCard
+            icon="⚖️" label="몸무게"
+            value={latestWeight ? latestWeight.weight : ''} unit="kg"
+            change={weightDiff ? `${weightDiff}kg` : null}
+            changePositive={weightDiff ? parseFloat(weightDiff) <= 0 : null}
+          />
+        </div>
+
+        {/* 4. Routine Summary Bar */}
+        <div onClick={() => onTabChange('routine')} style={{
+          borderRadius: 14, padding: '11px 13px', marginBottom: 12,
+          background: 'var(--bg-card)', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', gap: 10,
+          ...fadeUp(0.15),
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <svg width="26" height="26" viewBox="0 0 36 36" fill="none">
-                <defs>
-                  <linearGradient id="lot-g1" x1="30%" y1="0%" x2="70%" y2="100%">
-                    <stop offset="0%" stopColor="#FFF0F3" />
-                    <stop offset="100%" stopColor="#FFD0DA" />
-                  </linearGradient>
-                  <linearGradient id="lot-g2" x1="30%" y1="0%" x2="70%" y2="100%">
-                    <stop offset="0%" stopColor="#FFE0E8" />
-                    <stop offset="100%" stopColor="#FFC0CC" />
-                  </linearGradient>
-                </defs>
-                <rect x="13" y="3" width="10" height="4" rx="1.5" fill="url(#lot-g2)" />
-                <rect x="16.5" y="1" width="3" height="3" rx="1" fill="url(#lot-g2)" />
-                <rect x="14" y="0.5" width="8" height="1.5" rx="0.75" fill="url(#lot-g2)" />
-                <rect x="11" y="7" width="14" height="20" rx="4" fill="url(#lot-g1)" />
-                <rect x="13" y="13" width="10" height="8" rx="2" fill="white" opacity="0.3" />
-                <rect x="12.5" y="9" width="3" height="12" rx="1.5" fill="white" opacity="0.2" />
-              </svg>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+              <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>오늘 루틴</span>
+              <span style={{ fontSize: 12, color: 'var(--accent-primary)', fontWeight: 600 }}>{doneRoutine} / {totalRoutine} 완료</span>
             </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>스킨케어 트래커</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>제품 등록 · 루틴 관리 · 효과 분석</div>
+            <div style={{ height: 5, borderRadius: 3, background: 'var(--bar-track)', overflow: 'hidden' }}>
+              <div style={{
+                height: '100%', borderRadius: 3, width: `${routinePct}%`,
+                background: 'var(--accent-primary)',
+                transition: 'width 0.3s ease',
+              }} />
             </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path d="M9 18l6-6-6-6" stroke="var(--text-dim)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
+              {totalRoutine === 0
+                ? '루틴을 추가해보세요'
+                : doneRoutine >= totalRoutine
+                  ? '오늘 루틴 모두 완료! 🎉'
+                  : getIncompleteText()
+              }
+            </div>
           </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6" stroke="var(--text-dim)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
         </div>
 
-        {/* Today Summary */}
-        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', margin: '20px 0 10px', ...fadeUp(0.2) }}>
-          오늘 기록
+        {/* 5. Quick Action Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, ...fadeUp(0.2) }}>
+          <QuickAction icon="🔬" label="피부 측정" onTap={onMeasure} />
+          <QuickAction icon="🤳" label="얼굴 사진" onTap={() => onTabChange('album')} />
+          <QuickAction icon="🍽️" label="식단 기록" onTap={() => onTabChange('food')} />
+          <QuickAction icon="⚖️" label="몸무게" onTap={() => onTabChange('body')} />
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, ...fadeUp(0.25) }}>
-          <StatBox label="피부 점수" value={latest ? latest.overallScore : ''} unit="/ 100" />
-          <StatBox label="칼로리" value="" unit="kcal" />
-          <StatBox label="몸무게" value="" unit="kg" />
-          <StatBox label="연속 기록" value={streak} unit="일" />
-        </div>
-
-        {/* Quick Actions */}
-        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', margin: '24px 0 10px', ...fadeUp(0.3) }}>
-          빠른 기록
-        </div>
-        <button onClick={onMeasure} style={{ ...btnStyle, ...fadeUp(0.35) }}>
-          피부 측정하기
-        </button>
-        <button onClick={() => onTabChange('food')} style={{ ...btnStyle, marginTop: 10, background: 'var(--bg-card)', color: 'var(--text-secondary)', border: 'none', ...fadeUp(0.4) }}>
-          식단 사진 찍기
-        </button>
       </div>
 
       {/* Weather Bottom Sheet */}
@@ -222,205 +229,89 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       )}
     </div>
   );
+
+  function getIncompleteText() {
+    const names = [];
+    if (skinRoutine.done < skinRoutine.total) names.push('피부');
+    if (foodRoutine.done < foodRoutine.total) names.push('식단');
+    if (bodyRoutine.done < bodyRoutine.total) names.push('바디');
+    return names.length > 0 ? `${names.join(' · ')} 루틴이 남았어요` : '';
+  }
 }
 
-function StreakWeekRow({ skinRecords, foodRecords, bodyRecords }) {
-  const dayLabels = ['일', '월', '화', '수', '목', '금', '토'];
-  const today = new Date();
-  const todayDay = today.getDay();
-
-  // Build date sets for each category
-  const skinDates = new Set(skinRecords.map(r => {
-    const d = new Date(r.date || r.timestamp);
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  }));
-
-  // foodRecords is { 'YYYY-MM-DD': [...], ... }
-  const foodDates = new Set(Object.keys(foodRecords).filter(k => foodRecords[k]?.length > 0));
-
-  const bodyDates = new Set(bodyRecords.map(r => r.date));
-
-  const weekDays = [];
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(today);
-    d.setDate(today.getDate() - todayDay + i);
-    const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    const isToday = i === todayDay;
-    const hasSkin = skinDates.has(dateStr);
-    const hasFood = foodDates.has(dateStr);
-    const hasBody = bodyDates.has(dateStr);
-    const count = (hasSkin ? 1 : 0) + (hasFood ? 1 : 0) + (hasBody ? 1 : 0);
-    weekDays.push({ label: dayLabels[i], isToday, count });
-  }
-
+// ===== Stat Card =====
+function StatCard({ icon, label, value, unit, change, changePositive }) {
+  const changeColor = changePositive === null ? 'var(--text-muted)' : changePositive ? '#0F6E56' : '#C4580A';
   return (
     <div style={{
-      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-      marginTop: 16, ...fadeUp(0.05),
+      borderRadius: 12, padding: '10px 8px', background: '#fff',
+      border: '0.5px solid var(--border-subtle)',
+      textAlign: 'center',
     }}>
-      {weekDays.map((d, i) => (
-        <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 400 }}>{d.label}</div>
-          <div style={{
-            width: 38, height: 38, borderRadius: '50%',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: d.count > 0
-              ? 'var(--accent-primary)'
-              : d.isToday
-                ? 'rgba(129,228,189,0.1)'
-                : 'var(--bg-card)',
-          }}>
-            {d.count > 0 ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M12 2c0 0-5 6-5 11a5 5 0 0010 0c0-5-5-11-5-11z"
-                  fill={d.count === 3 ? '#fff' : d.count === 2 ? 'rgba(129,228,189,0.7)' : 'rgba(129,228,189,0.45)'}
-                />
-              </svg>
-            ) : null}
-          </div>
-        </div>
-      ))}
+      <div style={{ fontSize: 18, marginBottom: 4 }}>{icon}</div>
+      <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
+        {value || '—'}
+      </div>
+      <div style={{ fontSize: 9, color: 'var(--text-dim)' }}>{unit}</div>
+      <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{label}</div>
+      {change && (
+        <div style={{ fontSize: 9, color: changeColor, marginTop: 3, fontWeight: 600 }}>{change}</div>
+      )}
     </div>
   );
 }
 
-function StreakCard({ streak, maxStreak }) {
-  // Ring chart
-  const maxDays = 30;
-  const pct = Math.min(1, streak / maxDays);
-  const r = 28;
-  const circ = 2 * Math.PI * r;
-  const fill = circ * pct;
-
+// ===== Quick Action =====
+function QuickAction({ icon, label, onTap }) {
   return (
-    <div style={{
-      marginTop: 14,
-      background: 'var(--bg-card)',
-      border: 'none',
-      borderRadius: 20,
-      padding: '16px 18px',
-      display: 'flex', alignItems: 'center', gap: 16,
-      ...fadeUp(0.1),
+    <div onClick={onTap} style={{
+      borderRadius: 12, padding: '11px 10px', background: '#fff',
+      border: '0.5px solid var(--border-subtle)',
+      display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
     }}>
-      {/* Ring Chart */}
-      <div style={{ position: 'relative', width: 72, height: 72, flexShrink: 0 }}>
-        <svg viewBox="0 0 72 72" style={{ width: 72, height: 72 }}>
-          <defs>
-            <linearGradient id="streakGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#81E4BD" />
-              <stop offset="100%" stopColor="#81E4BD" />
-            </linearGradient>
-          </defs>
-          <circle cx="36" cy="36" r={r} fill="none" stroke="rgba(129,228,189,0.15)" strokeWidth="6" />
-          <circle cx="36" cy="36" r={r} fill="none" stroke="url(#streakGrad)" strokeWidth="6"
-            strokeLinecap="round"
-            strokeDasharray={`${fill} ${circ - fill}`}
-            strokeDashoffset={circ * 0.25}
-            transform="rotate(-90 36 36)"
-            style={{ transition: 'stroke-dasharray 0.5s ease' }}
-          />
-        </svg>
-        <div style={{
-          position: 'absolute', inset: 0,
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1 }}>{streak}</div>
-          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>Days</div>
-        </div>
-      </div>
-
-      {/* Text */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>
-          {streak > 0 ? `${streak}일 연속 기록 중` : '오늘 첫 기록을 시작하세요'}
-        </div>
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5, marginTop: 3 }}>
-          {streak > 0 ? '꾸준한 기록이 변화의 시작이에요' : '매일 기록하면 변화를 확인할 수 있어요'}
-        </div>
-        <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
-          <span style={{
-            fontSize: 11, padding: '3px 10px', borderRadius: 20,
-            background: 'var(--bg-card)', color: 'var(--text-muted)', fontWeight: 500,
-          }}>최장 연속</span>
-          <span style={{
-            fontSize: 11, padding: '3px 10px', borderRadius: 20,
-            background: 'var(--accent-primary)',
-            color: '#fff', fontWeight: 600,
-          }}>{maxStreak}일</span>
-        </div>
-      </div>
+      <div style={{ fontSize: 20, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{icon}</div>
+      <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{label}</span>
     </div>
   );
 }
 
-function calcMaxStreak(records) {
-  if (!records || records.length === 0) return 0;
-  const dates = [...new Set(records.map(r => {
-    const d = new Date(r.date || r.timestamp);
-    d.setHours(0, 0, 0, 0);
-    return d.getTime();
-  }))].sort((a, b) => a - b);
-
-  let max = 1, cur = 1;
-  const day = 86400000;
-  for (let i = 1; i < dates.length; i++) {
-    if (dates[i] - dates[i - 1] === day) {
-      cur++;
-      if (cur > max) max = cur;
-    } else {
-      cur = 1;
-    }
+// ===== AI Coach Message =====
+function getCoachMessage(latest, nutrition, foodGoal, weight, routineDone, routineTotal, weather) {
+  if (!latest && nutrition.kcal === 0 && !weight) {
+    return '오늘 첫 기록을 시작해보세요! 피부 측정, 식단 기록, 몸무게 중 하나를 기록하면 맞춤 코칭을 받을 수 있어요 ✨';
   }
-  return max;
-}
 
-function StatBox({ label, value, unit }) {
-  return (
-    <div style={{
-      background: 'var(--bg-card)',
-      borderRadius: 'var(--card-border-radius)',
-      padding: '14px 16px',
-    }}>
-      <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 500 }}>{label}</div>
-      <div style={{ fontSize: 20, fontWeight: 600, color: 'var(--text-primary)', marginTop: 4, fontFamily: 'var(--font-display)' }}>
-        {value} <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-dim)' }}>{unit}</span>
-      </div>
-    </div>
-  );
-}
+  const parts = [];
 
-function calcStreak(records) {
-  if (!records || records.length === 0) return 0;
-  let streak = 0;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const day = 86400000;
-  const dates = [...new Set(records.map(r => {
-    const d = new Date(r.date || r.timestamp);
-    d.setHours(0, 0, 0, 0);
-    return d.getTime();
-  }))].sort((a, b) => b - a);
-
-  for (let i = 0; i < dates.length; i++) {
-    const expected = today.getTime() - i * day;
-    if (dates[i] === expected) streak++;
-    else break;
+  if (weather?.humidity < 40) {
+    parts.push('오늘 공기가 건조해요. 수분 크림과 물 섭취를 신경 써주세요 💧');
+  } else if (weather?.uv > 6) {
+    parts.push('자외선이 강해요. 선크림을 꼭 바르세요 ☀️');
   }
-  return streak;
+
+  if (latest) {
+    if (latest.overallScore >= 80) parts.push('피부 컨디션이 좋아요! 이 루틴을 유지해보세요.');
+    else if (latest.moisture < 50) parts.push('수분도가 낮아요. 보습에 집중해보세요.');
+  }
+
+  if (nutrition.kcal > 0 && foodGoal.kcal) {
+    const ratio = nutrition.kcal / foodGoal.kcal;
+    if (ratio > 1.2) parts.push('칼로리가 목표를 넘었어요. 저녁은 가볍게!');
+    else if (ratio < 0.5) parts.push('아직 식사가 부족해요. 균형 잡힌 식단을 챙겨보세요.');
+  }
+
+  if (routineTotal > 0 && routineDone >= routineTotal) {
+    parts.push('오늘 루틴을 모두 완료했어요! 대단해요 🎉');
+  }
+
+  return parts.length > 0 ? parts.slice(0, 2).join(' ') : '오늘도 건강한 하루를 만들어봐요! 꾸준함이 가장 큰 변화를 만들어요 ✨';
 }
 
-function getInsightText(latest) {
-  if (!latest) return '피부 측정을 시작하면 매일 맞춤 인사이트를 받을 수 있어요.';
-  if (latest.moisture < 50) return '수분 섭취가 부족해요. 피부 수분도에 영향을 줄 수 있어요.';
-  if (latest.oilBalance > 70) return '유분이 높은 편이에요. 가벼운 보습제를 추천해요.';
-  if (latest.overallScore >= 80) return '피부 컨디션이 좋아요! 꾸준히 유지해보세요.';
-  return '오늘도 꾸준한 관리가 피부를 바꿔요. 화이팅!';
+function getCoachTags(latest, nutrition, foodGoal, routineDone, routineTotal) {
+  const tags = [];
+  if (latest?.moisture < 50) tags.push('수분 부족');
+  if (latest?.oilBalance > 70) tags.push('유분 관리');
+  if (nutrition.kcal > 0 && nutrition.protein < (foodGoal.protein || 80) * 0.7) tags.push('단백질 부족');
+  if (routineTotal > 0 && routineDone < routineTotal) tags.push(`루틴 ${routineTotal - routineDone}개 남음`);
+  return tags.length > 0 ? tags : ['기록을 시작해보세요'];
 }
-
-const btnStyle = {
-  width: '100%', padding: '14px 0',
-  background: 'var(--accent-primary)',
-  border: 'none', borderRadius: 'var(--btn-radius)',
-  fontSize: 14, fontWeight: 600,
-  color: '#fff', cursor: 'pointer', fontFamily: 'inherit',
-};
