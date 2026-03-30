@@ -3,7 +3,7 @@ import { getLatestRecord, getRecords } from '../storage/SkinStorage';
 import { getProfile } from '../storage/ProfileStorage';
 import { getFoodRecords } from '../storage/FoodStorage';
 import { getBodyRecords } from '../storage/BodyStorage';
-import WeatherChip from '../components/WeatherChip';
+import { getWeatherData } from '../storage/WeatherStorage';
 
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
 
@@ -54,8 +54,22 @@ export default function HomePage({ onMeasure, onTabChange }) {
           </div>
         </div>
 
-        {/* Weather chip */}
-        <WeatherChip />
+        {/* Weather circle button */}
+        {(() => {
+          const w = getWeatherData();
+          const temp = w?.temp ?? '—';
+          return (
+            <div style={{
+              width: 48, height: 48, borderRadius: '50%', flexShrink: 0,
+              background: '#fff',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+            }}>
+              <span style={{ fontSize: 14, lineHeight: 1 }}>☀️</span>
+              <span style={{ fontSize: 10, fontWeight: 600, color: '#C4580A', lineHeight: 1, marginTop: 2 }}>{temp}°</span>
+            </div>
+          );
+        })()}
       </div>
 
       <div style={{ padding: '0 20px' }}>
