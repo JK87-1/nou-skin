@@ -181,32 +181,39 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           </div>
         </div>
 
-        {/* 2. AI Coach Card */}
+        {/* 2. AI Coach Card — same layout as Insight */}
         <div style={{
-          borderRadius: 16, padding: '12px 14px', marginBottom: 12,
-          background: '#f9f9f9',
-          ...fadeUp(0.05),
+          padding: 20, borderRadius: 16, marginBottom: 12,
+          background: '#f9f9f9', ...fadeUp(0.05),
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-            <div style={{
-              width: 20, height: 20, borderRadius: 10,
-              background: 'var(--accent-primary)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 10,
-            }}>✨</div>
-            <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)' }}>LUA AI 코치</span>
-          </div>
-          <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-            {getCoachMessage(latest, nutrition, foodGoal, latestWeight, doneRoutine, totalRoutine, weather)}
-          </div>
-          {/* Tags */}
-          <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
-            {getCoachTags(latest, nutrition, foodGoal, doneRoutine, totalRoutine).map((tag, i) => (
-              <span key={i} style={{
-                fontSize: 10, padding: '3px 8px', borderRadius: 8,
-                background: 'var(--bg-card-hover)', color: 'var(--text-muted)', fontWeight: 500,
-              }}>{tag}</span>
-            ))}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <svg width="26" height="26" viewBox="0 0 36 36" fill="none">
+                <defs>
+                  <linearGradient id="coach-g1" x1="20%" y1="0%" x2="80%" y2="100%">
+                    <stop offset="0%" stopColor="#B8F0D8" />
+                    <stop offset="100%" stopColor="#81E4BD" />
+                  </linearGradient>
+                </defs>
+                <circle cx="18" cy="18" r="14" fill="url(#coach-g1)" />
+                <text x="18" y="23" textAnchor="middle" fontSize="16">✨</text>
+              </svg>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, color: '#8B95A1' }}>LUA AI 코치</div>
+              <div style={{ fontSize: 14, color: '#4E5968', marginTop: 4, lineHeight: 1.5 }}>
+                {getCoachMessage(latest, nutrition, foodGoal, latestWeight, doneRoutine, totalRoutine, weather)}
+              </div>
+              {/* Tags */}
+              <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                {getCoachTags(latest, nutrition, foodGoal, doneRoutine, totalRoutine).map((tag, i) => (
+                  <span key={i} style={{
+                    fontSize: 10, padding: '3px 8px', borderRadius: 8,
+                    background: 'rgba(129,228,189,0.12)', color: 'var(--text-muted)', fontWeight: 500,
+                  }}>{tag}</span>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
