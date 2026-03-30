@@ -5,7 +5,7 @@ export default function TabBar({ activeTab, onTabChange }) {
       label: '홈',
       icon: (active) => (
         <svg width="22" height="22" viewBox="0 0 24 24" fill={active ? 'url(#luaGrad)' : 'none'} fillOpacity={active ? 0.15 : 0}>
-          <defs><linearGradient id="luaGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#F9E84A" /><stop offset="50%" stopColor="#FFB347" /><stop offset="100%" stopColor="#FF8FAB" /></linearGradient></defs>
+          <defs><linearGradient id="luaGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#F9E84A" /><stop offset="100%" stopColor="#FFB347" /></linearGradient></defs>
           <path d="M4 12l8-7 8 7v7a1 1 0 01-1 1H5a1 1 0 01-1-1v-7z" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" strokeLinejoin="round" />
         </svg>
       ),
@@ -71,15 +71,11 @@ export default function TabBar({ activeTab, onTabChange }) {
             key={tab.key}
             onClick={() => onTabChange(tab.key)}
             style={{
-              display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center', gap: 4,
-              background: active ? 'linear-gradient(135deg, #FFF3B0, #FFD6A0)' : 'none',
-              border: active ? 'none' : '1px solid #eee',
-              borderRadius: 16,
-              width: 52, height: 52,
-              cursor: 'pointer',
+              flex: 1, display: 'flex', flexDirection: 'column',
+              alignItems: 'center', gap: 2,
+              background: 'none', border: 'none', cursor: 'pointer',
+              padding: '6px 0',
               WebkitTapHighlightColor: 'transparent',
-              padding: 0,
             }}
           >
             {tab.icon(active)}
@@ -87,6 +83,7 @@ export default function TabBar({ activeTab, onTabChange }) {
               <div style={{
                 width: 5, height: 5, borderRadius: '50%',
                 background: '#FFB347',
+                marginTop: 1,
               }} />
             ) : (
               <span style={{ fontSize: 9, fontWeight: 400, color: '#bbb' }}>{tab.label}</span>
