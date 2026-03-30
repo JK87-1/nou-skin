@@ -34,12 +34,12 @@ export default function TabBar({ activeTab, onTabChange }) {
     },
     {
       key: 'food',
-      label: '식단',
+      label: '분석',
       icon: (active) => (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <path d="M18 8h1a4 4 0 010 8h-1" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" strokeLinecap="round" />
-          <path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" />
-          <path d="M6 1v3M10 1v3M14 1v3" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" strokeLinecap="round" />
+          <path d="M21 21l-4.35-4.35" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" strokeLinecap="round" />
+          <circle cx="11" cy="11" r="8" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" />
+          <path d="M8 11h6M11 8v6" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" strokeLinecap="round" />
         </svg>
       ),
     },
