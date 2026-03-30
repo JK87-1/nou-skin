@@ -49,48 +49,64 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
     <div style={{ minHeight: '100dvh', background: 'var(--bg-primary)', paddingBottom: 80 }}>
 
       {/* 1. Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px 14px' }}>
-        {/* Profile */}
+      <div style={{ padding: '8px 20px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        {/* Profile photo */}
         <div style={{
-          width: 36, height: 36, borderRadius: 18, overflow: 'hidden', flexShrink: 0,
-          background: 'var(--bg-secondary)',
+          width: 55, height: 55, borderRadius: '50%', overflow: 'hidden',
+          background: 'var(--bg-secondary)', flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          {profile.profileImage ? (
-            <img src={profile.profileImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          ) : (
-            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
+          <div style={{
+            width: '100%', height: '100%', borderRadius: '50%',
+            overflow: 'hidden',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            {profile.profileImage ? (
+              <img src={profile.profileImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
                 <circle cx="12" cy="10" r="4" /><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" strokeLinecap="round" />
               </svg>
+            )}
+          </div>
+        </div>
+
+        {/* LUA Beta */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+          <span style={{ fontSize: 18, fontWeight: 500, letterSpacing: 5, fontFamily: "'Fredoka', sans-serif", color: '#81E4BD' }}>LUA</span>
+          <span style={{ fontSize: 8, color: '#fff', background: '#81E4BD', padding: '1px 6px', borderRadius: 8, fontWeight: 500 }}>Beta</span>
+        </div>
+
+        {/* Weather chip button */}
+        {(() => {
+          const temp = weather?.temp ?? '—';
+          return (
+            <div onClick={() => setWeatherSheet(true)} style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '7px 12px 7px 8px',
+              background: '#fff', borderRadius: 50, cursor: 'pointer',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+              WebkitTapHighlightColor: 'transparent',
+            }}>
+              <svg width="20" height="20" viewBox="0 0 36 36" fill="none">
+                <defs>
+                  <radialGradient id="sun-home" cx="40%" cy="38%" r="55%">
+                    <stop offset="0%" stopColor="#FFF9D0" />
+                    <stop offset="50%" stopColor="#FFF3B0" />
+                    <stop offset="100%" stopColor="#FFE082" />
+                  </radialGradient>
+                </defs>
+                {[0,45,90,135,180,225,270,315].map(a => {
+                  const r1 = 10.5, r2 = 15.5, rad = a * Math.PI / 180;
+                  return <line key={a} x1={18+Math.cos(rad)*r1} y1={18+Math.sin(rad)*r1} x2={18+Math.cos(rad)*r2} y2={18+Math.sin(rad)*r2} stroke="#FFE082" strokeWidth="2" strokeLinecap="round" />;
+                })}
+                <circle cx="18" cy="18" r="9" fill="url(#sun-home)" />
+                <ellipse cx="15.5" cy="15.5" rx="3.5" ry="2.5" fill="white" opacity="0.35" />
+              </svg>
+              <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>{temp}°</span>
             </div>
-          )}
-        </div>
-
-        {/* Date + Weather */}
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>
-            {DAY_NAMES[today.getDay()]}요일, {today.getMonth() + 1}월 {today.getDate()}일
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
-            <span style={{ fontSize: 12 }}>☀️</span>
-            <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>
-              {weather ? `${weather.conditionIcon || '맑음'} ${weather.temp}°` : '날씨 로딩중'}
-              {getWeatherWarning() && ` · ${getWeatherWarning()}`}
-            </span>
-          </div>
-        </div>
-
-        {/* + Button */}
-        <div onClick={onMeasure} style={{
-          width: 30, height: 30, borderRadius: 10, flexShrink: 0,
-          background: 'var(--accent-primary)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer',
-        }}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-            <path d="M12 5v14M5 12h14" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" />
-          </svg>
-        </div>
+          );
+        })()}
       </div>
 
       <div style={{ padding: '0 16px' }}>
