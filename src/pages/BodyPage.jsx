@@ -116,8 +116,7 @@ export default function BodyPage() {
             <>
               <div style={{
                 fontSize: 42, fontWeight: 600, fontFamily: 'var(--font-display)',
-                background: 'linear-gradient(120deg, #C9A800, #C4580A, #C2185B)',
-                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+                color: 'var(--accent-primary)',
               }}>{latest.weight}</div>
               <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>kg · 오늘</div>
             </>
@@ -134,13 +133,12 @@ export default function BodyPage() {
             <svg viewBox={`0 0 ${graphData.w} ${graphData.h}`} style={{ width: '100%', height: 60 }} preserveAspectRatio="none">
               <defs>
                 <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#F9E84A" />
-                  <stop offset="50%" stopColor="#FFB347" />
-                  <stop offset="100%" stopColor="#FFB347" />
+                  <stop offset="0%" stopColor="#81E4BD" />
+                  <stop offset="100%" stopColor="#81E4BD" />
                 </linearGradient>
               </defs>
               <polyline points={graphData.points} fill="none" stroke="url(#bodyGrad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <circle cx={graphData.lastPt.x} cy={graphData.lastPt.y} r="4" fill="#FFB347" />
+              <circle cx={graphData.lastPt.x} cy={graphData.lastPt.y} r="4" fill="#81E4BD" />
             </svg>
           </div>
         )}
@@ -152,7 +150,7 @@ export default function BodyPage() {
             label="변화"
             value={diff != null ? `${Number(diff) > 0 ? '+' : ''}${diff}` : ''}
             unit="kg"
-            color={diff && Number(diff) < 0 ? '#C4580A' : 'var(--text-primary)'}
+            color={diff && Number(diff) < 0 ? 'var(--accent-primary)' : 'var(--text-primary)'}
           />
           <StatBox
             label="목표"
@@ -189,7 +187,7 @@ export default function BodyPage() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <span style={{
                       fontSize: 15, fontWeight: 600,
-                      color: isToday ? '#C2185B' : 'var(--text-muted)',
+                      color: isToday ? 'var(--accent-primary)' : 'var(--text-muted)',
                     }}>{r.weight} kg</span>
                     <button onClick={() => handleDelete(r.date)} style={{
                       background: 'none', border: 'none', color: 'var(--text-dim)',
@@ -206,7 +204,7 @@ export default function BodyPage() {
         <div style={{ marginTop: 16, ...fadeUp(0.3) }}>
           <button onClick={() => setShowAdd(true)} style={{
             width: '100%', padding: '14px 0',
-            background: 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)',
+            background: 'var(--accent-primary)',
             border: 'none', borderRadius: 'var(--btn-radius)',
             fontSize: 14, fontWeight: 600,
             color: '#fff', cursor: 'pointer', fontFamily: 'inherit',
@@ -285,7 +283,7 @@ function AddWeightModal({ onSave, onClose, latest }) {
           }}>취소</button>
           <button onClick={() => { if (weight) onSave(Number(weight)); }} style={{
             flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
-            border: 'none', background: 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)',
+            border: 'none', background: 'var(--accent-primary)',
             color: '#fff', fontSize: 14, fontWeight: 700,
             cursor: 'pointer', fontFamily: 'inherit',
           }}>저장</button>
@@ -335,7 +333,7 @@ function GoalModal({ onSave, onClose, current }) {
           }}>취소</button>
           <button onClick={() => { if (target) onSave(Number(target)); }} style={{
             flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
-            border: 'none', background: 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)',
+            border: 'none', background: 'var(--accent-primary)',
             color: '#fff', fontSize: 14, fontWeight: 700,
             cursor: 'pointer', fontFamily: 'inherit',
           }}>저장</button>
@@ -431,7 +429,7 @@ function ProfileSettingsModal({ profile, onUpdate, onClose }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <input value={profile.birthYear || ''} onChange={e => onUpdate('birthYear', e.target.value)}
               placeholder="예: 1995" type="number" min={1940} max={currentYear} style={{ ...inputStyle, flex: 1 }} />
-            {age > 0 && <span style={{ fontSize: 13, color: '#C4580A', fontWeight: 600, whiteSpace: 'nowrap' }}>만 {age}세</span>}
+            {age > 0 && <span style={{ fontSize: 13, color: 'var(--accent-primary)', fontWeight: 600, whiteSpace: 'nowrap' }}>만 {age}세</span>}
           </div>
         </div>
 
@@ -441,7 +439,7 @@ function ProfileSettingsModal({ profile, onUpdate, onClose }) {
             {GENDER_OPTIONS.map(g => (
               <button key={g} onClick={() => onUpdate('gender', g)} style={{
                 flex: 1, padding: '10px 0', borderRadius: 10, border: 'none',
-                background: profile.gender === g ? 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)' : 'var(--bg-input, #F2F3F5)',
+                background: profile.gender === g ? 'var(--accent-primary)' : 'var(--bg-input, #F2F3F5)',
                 color: profile.gender === g ? '#fff' : 'var(--text-muted)',
                 fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
               }}>{g}</button>
@@ -474,7 +472,7 @@ function ProfileSettingsModal({ profile, onUpdate, onClose }) {
             {['거의 없음', '가벼운 활동', '보통', '활발한 활동', '매우 활발'].map(level => (
               <button key={level} onClick={() => onUpdate('activityLevel', level)} style={{
                 padding: '8px 14px', borderRadius: 10, border: 'none',
-                background: profile.activityLevel === level ? 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)' : 'var(--bg-input, #F2F3F5)',
+                background: profile.activityLevel === level ? 'var(--accent-primary)' : 'var(--bg-input, #F2F3F5)',
                 color: profile.activityLevel === level ? '#fff' : 'var(--text-muted)',
                 fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
               }}>{level}</button>
@@ -491,7 +489,7 @@ function ProfileSettingsModal({ profile, onUpdate, onClose }) {
             {SKIN_TYPES.map(t => (
               <button key={t} onClick={() => onUpdate('skinType', t)} style={{
                 padding: '8px 14px', borderRadius: 10, border: 'none',
-                background: profile.skinType === t ? 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)' : 'var(--bg-input, #F2F3F5)',
+                background: profile.skinType === t ? 'var(--accent-primary)' : 'var(--bg-input, #F2F3F5)',
                 color: profile.skinType === t ? '#fff' : 'var(--text-muted)',
                 fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
               }}>{t}</button>
@@ -510,7 +508,7 @@ function ProfileSettingsModal({ profile, onUpdate, onClose }) {
                   onUpdate('skinConcerns', list);
                 }} style={{
                   padding: '8px 14px', borderRadius: 10, border: 'none',
-                  background: active ? 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)' : 'var(--bg-input, #F2F3F5)',
+                  background: active ? 'var(--accent-primary)' : 'var(--bg-input, #F2F3F5)',
                   color: active ? '#fff' : 'var(--text-muted)',
                   fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
                 }}>{c}</button>
@@ -521,7 +519,7 @@ function ProfileSettingsModal({ profile, onUpdate, onClose }) {
 
         <button onClick={onClose} style={{
           width: '100%', padding: '14px 0', borderRadius: 'var(--btn-radius)',
-          border: 'none', background: 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)',
+          border: 'none', background: 'var(--accent-primary)',
           color: '#fff', fontSize: 14, fontWeight: 700,
           cursor: 'pointer', fontFamily: 'inherit',
         }}>완료</button>

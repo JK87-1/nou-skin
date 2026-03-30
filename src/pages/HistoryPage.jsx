@@ -395,7 +395,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                   <div key={date} style={{ marginBottom: 16 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                       <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{d.getMonth() + 1}월 {d.getDate()}일</span>
-                      <span style={{ fontSize: 12, color: '#C4580A', fontWeight: 600 }}>{totalKcal}kcal</span>
+                      <span style={{ fontSize: 12, color: 'var(--accent-primary)', fontWeight: 600 }}>{totalKcal}kcal</span>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4 }}>
                       {foods.map(food => (
@@ -403,7 +403,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                           {food.photo ? (
                             <img src={food.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           ) : (
-                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, rgba(249,232,74,0.1), rgba(255,179,71,0.08))' }}>
+                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(129,228,189,0.08)' }}>
                               <span style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', padding: 4 }}>{food.name}</span>
                             </div>
                           )}
@@ -442,7 +442,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                   return (
                     <div style={{ marginBottom: 16 }}>
                       <svg viewBox={`0 0 ${w} ${h}`} style={{ width: '100%', height: 60 }} preserveAspectRatio="none">
-                        <defs><linearGradient id="bgAlbum" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#F9E84A" /><stop offset="50%" stopColor="#FFB347" /><stop offset="100%" stopColor="#FF8FAB" /></linearGradient></defs>
+                        <defs><linearGradient id="bgAlbum" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#81E4BD" /><stop offset="100%" stopColor="#81E4BD" /></linearGradient></defs>
                         <polyline points={points} fill="none" stroke="url(#bgAlbum)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </div>
@@ -453,7 +453,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                   return (
                     <div key={r.date} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-card)', borderRadius: 16, padding: '14px 18px', marginBottom: 8 }}>
                       <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{d.getMonth() + 1}월 {d.getDate()}일</span>
-                      <span style={{ fontSize: 15, fontWeight: 600, color: '#C4580A' }}>{r.weight} kg</span>
+                      <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--accent-primary)' }}>{r.weight} kg</span>
                     </div>
                   );
                 })}

@@ -6,19 +6,19 @@ import { getRecords, getChanges, getTotalChanges } from '../storage/SkinStorage'
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
 const MEAL_LABELS = ['아침', '점심', '저녁'];
 const MEAL_GRADIENTS = [
-  'linear-gradient(135deg, #F9E84A, #FFB347)',
-  'linear-gradient(135deg, #F9E84A, #FFB347, #FF8FAB)',
-  'linear-gradient(135deg, #FFB347, #FF8FAB)',
-  'linear-gradient(135deg, #F9E84A, #FFB347, #FF8FAB)',
+  'var(--accent-primary)',
+  'var(--accent-primary)',
+  'var(--accent-primary)',
+  'var(--accent-primary)',
 ];
 
 const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
 const NUTRIENT_META = [
-  { key: 'protein', icon: '🥩', label: '단백질', unit: 'g', goalKey: 'protein', grad: ['#FFD6E0', '#FF8FAB'] },
-  { key: 'carb', icon: '🍚', label: '탄수화물', unit: 'g', goalKey: 'carb', grad: ['#FFF3B0', '#FFB347'] },
-  { key: 'vitamin', icon: '⭐', label: '비타민', unit: '%', fixed: 65, grad: ['#F9E84A', '#FFD700'] },
+  { key: 'protein', icon: '🥩', label: '단백질', unit: 'g', goalKey: 'protein', grad: ['#D1FAE5', '#81E4BD'] },
+  { key: 'carb', icon: '🍚', label: '탄수화물', unit: 'g', goalKey: 'carb', grad: ['#E0F2FE', '#93C5FD'] },
+  { key: 'vitamin', icon: '⭐', label: '비타민', unit: '%', fixed: 65, grad: ['#FEF3C7', '#FCD34D'] },
   { key: 'mineral', icon: '💎', label: '미네랄', unit: '%', fixed: 72, grad: ['#D4F0FF', '#74C0FC'] },
-  { key: 'kcal', icon: '⚡', label: '칼로리', unit: '', goalKey: 'kcal', grad: ['#FFE0B2', '#FFB347'] },
+  { key: 'kcal', icon: '⚡', label: '칼로리', unit: '', goalKey: 'kcal', grad: ['#E0F2FE', '#81E4BD'] },
 ];
 
 function getStatus(value, goal) {
@@ -179,19 +179,19 @@ export default function FoodPage({ onTabChange }) {
           return (
             <div key={meal} onClick={() => { setAddMeal(meal); setShowAdd(true); }} style={{
               width: 62, height: 62, borderRadius: 12, flexShrink: 0,
-              border: '1.5px dashed #FFB347',
-              background: 'rgba(249,232,74,0.08)',
+              border: '1.5px dashed var(--accent-primary)',
+              background: 'rgba(129,228,189,0.08)',
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3,
               cursor: 'pointer',
             }}>
               <div style={{
                 width: 20, height: 20, borderRadius: 10,
-                background: 'linear-gradient(135deg, #F9E84A, #FFB347, #FF8FAB)',
+                background: 'var(--accent-primary)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <span style={{ color: '#fff', fontSize: 14, lineHeight: 1 }}>+</span>
               </div>
-              <span style={{ fontSize: 9, color: '#C4580A' }}>{meal}</span>
+              <span style={{ fontSize: 9, color: 'var(--text-secondary)' }}>{meal}</span>
             </div>
           );
         })}
@@ -208,9 +208,8 @@ export default function FoodPage({ onTabChange }) {
           <svg viewBox="0 0 62 62" style={{ width: 62, height: 62 }}>
             <defs>
               <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#F9E84A" />
-                <stop offset="50%" stopColor="#FFB347" />
-                <stop offset="100%" stopColor="#FFB347" />
+                <stop offset="0%" stopColor="#81E4BD" />
+                <stop offset="100%" stopColor="#81E4BD" />
               </linearGradient>
             </defs>
             <circle cx="31" cy="31" r={r} fill="none" stroke="#F0EDE8" strokeWidth="6" />
@@ -222,7 +221,7 @@ export default function FoodPage({ onTabChange }) {
             />}
           </svg>
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ fontSize: 20, fontWeight: 700, color: '#C4580A', fontFamily: 'var(--font-display)', lineHeight: 1 }}>{score}</span>
+            <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--accent-primary)', fontFamily: 'var(--font-display)', lineHeight: 1 }}>{score}</span>
             <span style={{ fontSize: 9, color: '#888' }}>점</span>
           </div>
         </div>
@@ -262,19 +261,19 @@ export default function FoodPage({ onTabChange }) {
       {/* 5. LUA AI Coach Card */}
       <div style={{
         margin: '0 16px 14px', borderRadius: 16, padding: '12px 14px',
-        background: 'linear-gradient(120deg, #F9E84A 0%, #FFB347 50%, #FF8FAB 100%)',
+        background: 'var(--bg-card)',
         ...fadeUp(0.2),
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
           <div style={{
             width: 24, height: 24, borderRadius: 12,
-            background: 'rgba(255,255,255,0.4)',
+            background: 'rgba(129,228,189,0.15)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 13,
           }}>✨</div>
-          <span style={{ fontSize: 12, fontWeight: 500, color: '#fff' }}>LUA AI 코치</span>
+          <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-primary)' }}>LUA AI 코치</span>
         </div>
-        <div style={{ fontSize: 11, color: '#fff', lineHeight: 1.6 }}>
+        <div style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
           {coachMsg || (lacking.length > 0
             ? `${lacking.join(', ')}이(가) 부족해요. ${lacking.includes('단백질') ? '닭가슴살이나 두부를 추가해보세요.' : '과일이나 채소를 더 먹어보세요.'}`
             : score > 0 ? '오늘 식단 균형이 좋아요! 이 패턴을 유지해보세요.' : '식사를 기록하면 맞춤 코칭을 받을 수 있어요.'
@@ -450,7 +449,7 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
           {MEAL_LABELS.map(m => (
             <button key={m} onClick={() => setMeal(m)} style={{
               flex: 1, padding: '8px 0', borderRadius: 10, border: 'none',
-              background: meal === m ? 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)' : 'var(--bg-input, #F2F3F5)',
+              background: meal === m ? 'var(--accent-primary)' : 'var(--bg-input, #F2F3F5)',
               color: meal === m ? '#fff' : 'var(--text-muted)',
               fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
             }}>{m}</button>
@@ -463,16 +462,16 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
         <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
           <button onClick={() => fileRef.current?.click()} disabled={analyzing} style={{
             flex: 1, padding: '14px 0', borderRadius: 14, border: 'none',
-            background: analyzing ? 'var(--bg-input, #F2F3F5)' : 'linear-gradient(135deg, rgba(249,232,74,0.15), rgba(255,179,71,0.12), rgba(255,143,171,0.12))',
-            color: analyzing ? 'var(--text-muted)' : '#C4580A',
+            background: analyzing ? 'var(--bg-input, #F2F3F5)' : 'rgba(129,228,189,0.12)',
+            color: analyzing ? 'var(--text-muted)' : 'var(--accent-primary)',
             fontSize: 13, fontWeight: 600, cursor: analyzing ? 'default' : 'pointer',
             fontFamily: 'inherit',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
           }}>
             {analyzing ? '분석 중...' : (<>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="#C4580A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                <circle cx="12" cy="13" r="3" stroke="#C4580A" strokeWidth="1.5" />
+                <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="#81E4BD" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx="12" cy="13" r="3" stroke="#81E4BD" strokeWidth="1.5" />
               </svg>
               사진 촬영
             </>)}
@@ -510,8 +509,8 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
 
         {/* AI detected items */}
         {aiItems && aiItems.length > 0 && (
-          <div style={{ marginBottom: 12, padding: '10px 14px', borderRadius: 12, background: 'rgba(249,232,74,0.1)' }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: '#C4580A', marginBottom: 6 }}>AI 분석 결과</div>
+          <div style={{ marginBottom: 12, padding: '10px 14px', borderRadius: 12, background: 'rgba(129,228,189,0.1)' }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent-primary)', marginBottom: 6 }}>AI 분석 결과</div>
             {aiItems.map((item, idx) => (
               <div key={idx} style={{ fontSize: 12, color: 'var(--text-primary)', lineHeight: 1.6 }}>
                 {item.name} — {item.kcal}kcal (탄{item.carb}g · 단{item.protein}g · 지{item.fat}g)
@@ -549,7 +548,7 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
             </select>
             <button onClick={handleExtraAdd} disabled={extraLooking || !extraInput.trim()} style={{
               padding: '10px 14px', borderRadius: 12, border: 'none',
-              background: extraLooking ? 'var(--bg-input)' : 'linear-gradient(120deg, #F9E84A, #FFB347)',
+              background: extraLooking ? 'var(--bg-input)' : 'var(--accent-primary)',
               color: '#fff', fontSize: 13, fontWeight: 600,
               cursor: extraLooking ? 'default' : 'pointer', fontFamily: 'inherit',
               flexShrink: 0,
@@ -558,7 +557,7 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
 
           {/* Extra items list */}
           {extraItems.length > 0 && (
-            <div style={{ padding: '8px 12px', borderRadius: 12, background: 'rgba(255,179,71,0.08)', marginBottom: 4 }}>
+            <div style={{ padding: '8px 12px', borderRadius: 12, background: 'rgba(129,228,189,0.08)', marginBottom: 4 }}>
               {extraItems.map((item, idx) => (
                 <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0' }}>
                   <span style={{ fontSize: 12, color: 'var(--text-primary)' }}>
@@ -578,9 +577,9 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
         {allItems.length > 0 && (
           <div style={{
             padding: '12px 16px', borderRadius: 12, marginBottom: 12,
-            background: 'linear-gradient(135deg, rgba(249,232,74,0.1), rgba(255,179,71,0.08), rgba(255,143,171,0.08))',
+            background: 'rgba(129,228,189,0.08)',
           }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: '#C4580A', marginBottom: 4 }}>합계</div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent-primary)', marginBottom: 4 }}>합계</div>
             <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
               {kcal}kcal
               <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-muted)', marginLeft: 8 }}>
@@ -611,7 +610,7 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
           }}>취소</button>
           <button onClick={handleSubmit} style={{
             flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
-            border: 'none', background: 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)',
+            border: 'none', background: 'var(--accent-primary)',
             color: '#fff', fontSize: 14, fontWeight: 700,
             cursor: 'pointer', fontFamily: 'inherit',
           }}>추가</button>
@@ -702,7 +701,7 @@ function SkinInsightsSection() {
             <div style={{ height: 5, borderRadius: 3, background: 'var(--bar-track)', overflow: 'hidden' }}>
               <div style={{
                 height: '100%', borderRadius: 3, width: `${Math.min(100, val)}%`,
-                background: 'linear-gradient(90deg, #F9E84A, #FFB347, #FF8FAB)',
+                background: 'var(--accent-primary)',
                 transition: 'width 0.5s ease',
               }} />
             </div>
