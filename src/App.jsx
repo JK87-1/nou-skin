@@ -152,7 +152,7 @@ export default function App() {
     // Handle push notification deep link (?scan=1)
     const params = new URLSearchParams(window.location.search);
     if (params.get('scan') === '1') {
-      setActiveTab('skin');
+      setActiveTab('measure');
       setStage('camera');
       window.history.replaceState({}, '', '/');
     }
@@ -249,11 +249,11 @@ export default function App() {
   const openDetail = useCallback((key) => { setPrevStage(stage); setDetailKey(key); setStage('detail'); }, [stage]);
   const closeDetail = useCallback(() => { setStage(prevStage); setDetailKey(null); }, [prevStage]);
   const goToHistory = useCallback(() => { refreshLandingData(); setHistoryInitMode(null); setActiveTab('album'); }, []);
-  const goToLanding = useCallback(() => { refreshLandingData(); setHistoryInitMode(null); setActiveTab('skin'); setStage('landing'); }, []);
+  const goToLanding = useCallback(() => { refreshLandingData(); setHistoryInitMode(null); setActiveTab('home'); }, []);
 
   const switchTab = useCallback((tab) => {
     setActiveTab(tab);
-    if (tab === 'skin') {
+    if (tab === 'measure') {
       setStage('landing');
       refreshLandingData();
     }
@@ -300,7 +300,7 @@ export default function App() {
 
   // Smart camera opener: Face ID guide on secure context, native camera on HTTP mobile
   const openCamera = useCallback(() => {
-    setActiveTab('skin');
+    setActiveTab('measure');
     if (window.isSecureContext && navigator.mediaDevices?.getUserMedia) {
       setStage('camera');
     } else {
@@ -558,7 +558,7 @@ export default function App() {
 
   const changes = getChanges();
 
-  const showTabBar = activeTab !== 'skin' || stage === 'landing' || stage === 'result';
+  const showTabBar = activeTab !== 'measure' || stage === 'result';
 
   return (
     <div className="app-container">
@@ -672,11 +672,11 @@ export default function App() {
 
       {/* ===== HOME TAB (new dashboard) ===== */}
       {activeTab === 'home' && (
-        <HomePage onMeasure={openCamera} onTabChange={switchTab} onOpenRoutine={() => { switchTab('skin'); setTimeout(() => setStage('routineTracker'), 50); }} />
+        <HomePage onMeasure={openCamera} onTabChange={switchTab} onOpenRoutine={() => switchTab('routine')} />
       )}
 
       {/* ===== DETAIL PAGE ===== */}
-      {activeTab === 'skin' && stage === 'detail' && (
+      {activeTab === 'measure' && stage === 'detail' && (
         <DetailPage
           metricKey={detailKey}
           value={result ? {
@@ -702,126 +702,18 @@ export default function App() {
       {/* ===== BODY TAB ===== */}
       {activeTab === 'body' && <BodyPage />}
 
-      {/* ===== SKIN TAB (stage-based sub-flow) ===== */}
-      {activeTab === 'skin' && <>
-
-      {/* ===== ROUTINE TRACKER ===== */}
-      {stage === 'routineTracker' && (
+      {/* ===== ROUTINE TAB ===== */}
+      {activeTab === 'routine' && (
         <RoutineTracker
           colorMode={colorMode}
           themeColors={activeThemeColors}
-          onBack={() => setStage('landing')}
+          onBack={() => switchTab('home')}
         />
       )}
 
-      {/* ===== LANDING PAGE ===== */}
-      {stage === 'landing' && (
-        <div>
-          {/* Migration Notice */}
-          {showMigration && (
-            <div style={{
-              margin: '12px 16px 0', padding: '14px 18px',
-              background: 'rgba(240,144,112,0.08)', borderRadius: 16,
-              border: '1px solid rgba(240,144,112,0.15)',
-              animation: 'fadeUp 0.4s ease-out',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-                <span style={{ fontSize: 20, lineHeight: 1, flexShrink: 0, marginTop: 1 }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ADEBB3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-                  </svg>
-                </span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>Safari 기록을 가져올 수 있어요</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                    Safari에서 측정한 기록은 마이페이지 &gt; 데이터 내보내기로 백업 후, 이 앱에서 가져오기로 복원할 수 있어요.
-                  </div>
-                  <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-                    <button onClick={() => {
-                      setShowMigration(false);
-                      localStorage.setItem('nou_migration_dismissed', '1');
-                    }} style={{
-                      padding: '6px 14px', borderRadius: 10, border: 'none',
-                      background: 'var(--bg-card-hover)', color: 'var(--text-muted)',
-                      fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
-                    }}>닫기</button>
-                    <button onClick={() => {
-                      setShowMigration(false);
-                      localStorage.setItem('nou_migration_dismissed', '1');
-                      setActiveTab('home');
-                    }} style={{
-                      padding: '6px 14px', borderRadius: 10, border: 'none',
-                      background: 'rgba(240,144,112,0.15)', color: '#ADEBB3',
-                      fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-                    }}>마이페이지로 이동</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-          {/* First screen — fills full viewport */}
-          <div style={{ height: 'calc(100dvh - 72px)', display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
-          {/* Header with Weather Chip */}
-          <div style={{ padding: '24px 24px 16px', position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 20, fontWeight: 700, color: '#81E4BD', letterSpacing: 6, fontFamily: "'Fredoka', sans-serif" }}>LUA</span>
-                <span style={{ fontSize: 9, color: 'var(--text-dim)', background: 'var(--chip-bg)', padding: '2px 8px', borderRadius: 'var(--chip-radius)', fontWeight: 500 }}>Beta</span>
-              </div>
-            </div>
-          </div>
+      {/* ===== MEASURE FLOW (stage-based sub-flow) ===== */}
+      {activeTab === 'measure' && <>
 
-          {/* Background aura — very subtle (hidden in light mode) */}
-          {colorMode !== 'light' && (
-            <div style={{ position: 'absolute', top: '10%', left: '50%', transform: 'translateX(-50%)', width: '120%', height: '50%', background: `radial-gradient(ellipse at 50% 40%, ${activeThemeColors.accent}06 0%, transparent 60%)`, pointerEvents: 'none' }} />
-          )}
-
-          {/* Skin Analysis CTA — slim horizontal card */}
-          <div onClick={openCamera} style={{
-            margin: '0 20px', padding: '16px 20px',
-            background: 'var(--bg-card)', borderRadius: 20,
-            display: 'flex', alignItems: 'center', gap: 14,
-            cursor: 'pointer', position: 'relative', zIndex: 2,
-            WebkitTapHighlightColor: 'transparent',
-          }}>
-            {/* Mini orb */}
-            <div style={{ width: 48, height: 48, flexShrink: 0 }}>
-              <EternalPearl size={48} animated colors={activeThemeColors} theme={colorMode} />
-            </div>
-            {/* Text */}
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: -0.3 }}>
-                피부 분석하기
-              </div>
-              <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 3 }}>
-                AI가 10개 지표를 정밀 분석합니다
-              </div>
-            </div>
-            {/* Arrow */}
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path d="M9 18l6-6-6-6" stroke="var(--text-dim)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-
-          {/* Goal Progress Card */}
-          {getGoal()?.status === 'active' && (
-            <div style={{ padding: '17px 0 0' }}>
-              <GoalProgressCard onTap={() => setActiveTab('home')} colorMode={colorMode} />
-            </div>
-          )}
-
-          {/* AI Insight Card — on landing when there's data */}
-          {getLatestRecord() && (
-            <div style={{ padding: '17px 20px 0' }}>
-              <AiInsightCard colorMode={colorMode} />
-            </div>
-          )}
-
-
-          </div>{/* end first screen wrapper */}
-
-        </div>
-      )}
 
       {/* ===== CAMERA CAPTURE ===== */}
       {stage === 'camera' && (

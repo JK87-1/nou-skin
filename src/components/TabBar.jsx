@@ -22,12 +22,12 @@ export default function TabBar({ activeTab, onTabChange }) {
       ),
     },
     {
-      key: 'skin',
-      label: '피부',
+      key: 'routine',
+      label: '루틴',
       icon: (active) => (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="8" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" />
-          <circle cx="12" cy="12" r="3" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" />
+          <path d="M9 2v2M15 2v2M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M9 16l2 2 4-4" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       ),
     },
