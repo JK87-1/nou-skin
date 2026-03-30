@@ -300,109 +300,6 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
       )}
 
 
-      {/* ===== FOOD ALBUM ===== */}
-      {albumCategory === 'food' && (() => {
-        const allFoods = getFoodRecords();
-        const dates = Object.keys(allFoods).sort().reverse();
-        return (
-          <div style={{ padding: '0 20px', animation: 'breatheIn 0.5s ease both' }}>
-            {dates.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
-                <div style={{ fontSize: 14, fontWeight: 600 }}>식단 기록이 없어요</div>
-                <div style={{ fontSize: 12, marginTop: 6 }}>식단 탭에서 기록을 시작해보세요</div>
-              </div>
-            ) : (
-              dates.map(date => {
-                const foods = allFoods[date].filter(f => !f.name?.startsWith('물 '));
-                if (foods.length === 0) return null;
-                const d = new Date(date);
-                const totalKcal = foods.reduce((s, f) => s + (f.kcal || 0), 0);
-                return (
-                  <div key={date} style={{ marginBottom: 16 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
-                        {d.getMonth() + 1}월 {d.getDate()}일
-                      </span>
-                      <span style={{ fontSize: 12, color: '#C4580A', fontWeight: 600 }}>{totalKcal}kcal</span>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4 }}>
-                      {foods.map(food => (
-                        <div key={food.id} style={{
-                          aspectRatio: '1', borderRadius: 10, overflow: 'hidden',
-                          background: 'var(--bg-card-hover)', position: 'relative',
-                        }}>
-                          {food.photo ? (
-                            <img src={food.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          ) : (
-                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, rgba(249,232,74,0.1), rgba(255,179,71,0.08))' }}>
-                              <span style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', padding: 4 }}>{food.name}</span>
-                            </div>
-                          )}
-                          <span style={{ position: 'absolute', bottom: 4, left: 6, fontSize: 10, color: '#fff', fontWeight: 600, textShadow: '0 1px 3px rgba(0,0,0,0.6)' }}>
-                            {food.meal}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        );
-      })()}
-
-      {/* ===== BODY ALBUM ===== */}
-      {albumCategory === 'body' && (() => {
-        const bodyRecords = getBodyRecords();
-        const sorted = [...bodyRecords].reverse();
-        return (
-          <div style={{ padding: '0 20px', animation: 'breatheIn 0.5s ease both' }}>
-            {sorted.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
-                <div style={{ fontSize: 14, fontWeight: 600 }}>몸무게 기록이 없어요</div>
-                <div style={{ fontSize: 12, marginTop: 6 }}>바디 탭에서 기록을 시작해보세요</div>
-              </div>
-            ) : (
-              <div>
-                {/* Weight graph */}
-                {sorted.length >= 2 && (() => {
-                  const data = [...bodyRecords].slice(-14);
-                  const weights = data.map(r => r.weight);
-                  const min = Math.min(...weights) - 1, max = Math.max(...weights) + 1;
-                  const range = max - min || 1;
-                  const w = 280, h = 60;
-                  const points = data.map((r, i) => `${(i / (data.length - 1)) * w},${h - ((r.weight - min) / range) * h}`).join(' ');
-                  return (
-                    <div style={{ marginBottom: 16 }}>
-                      <svg viewBox={`0 0 ${w} ${h}`} style={{ width: '100%', height: 60 }} preserveAspectRatio="none">
-                        <defs><linearGradient id="bgAlbum" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#F9E84A" /><stop offset="50%" stopColor="#FFB347" /><stop offset="100%" stopColor="#FF8FAB" /></linearGradient></defs>
-                        <polyline points={points} fill="none" stroke="url(#bgAlbum)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </div>
-                  );
-                })()}
-                {/* Record list */}
-                {sorted.map(r => {
-                  const d = new Date(r.date);
-                  return (
-                    <div key={r.date} style={{
-                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                      background: 'var(--bg-card)', borderRadius: 16, padding: '14px 18px', marginBottom: 8,
-                    }}>
-                      <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>
-                        {d.getMonth() + 1}월 {d.getDate()}일
-                      </span>
-                      <span style={{ fontSize: 15, fontWeight: 600, color: '#C4580A' }}>{r.weight} kg</span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        );
-      })()}
-
       {/* ===== Profile Header + Category Tabs (always visible) ===== */}
       {(() => {
         const latestRecord = records.length > 0 ? records[records.length - 1] : null;
@@ -454,6 +351,95 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                   onClick={() => setAlbumCategory('body')}>바디</button>
               </div>
             </div>
+          </div>
+        );
+      })()}
+
+      {/* ===== FOOD ALBUM ===== */}
+      {albumCategory === 'food' && (() => {
+        const allFoods = getFoodRecords();
+        const dates = Object.keys(allFoods).sort().reverse();
+        return (
+          <div style={{ padding: '16px 20px 0', animation: 'breatheIn 0.5s ease both' }}>
+            {dates.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
+                <div style={{ fontSize: 14, fontWeight: 600 }}>식단 기록이 없어요</div>
+                <div style={{ fontSize: 12, marginTop: 6 }}>식단 탭에서 기록을 시작해보세요</div>
+              </div>
+            ) : (
+              dates.map(date => {
+                const foods = allFoods[date].filter(f => !f.name?.startsWith('물 '));
+                if (foods.length === 0) return null;
+                const d = new Date(date);
+                const totalKcal = foods.reduce((s, f) => s + (f.kcal || 0), 0);
+                return (
+                  <div key={date} style={{ marginBottom: 16 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{d.getMonth() + 1}월 {d.getDate()}일</span>
+                      <span style={{ fontSize: 12, color: '#C4580A', fontWeight: 600 }}>{totalKcal}kcal</span>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4 }}>
+                      {foods.map(food => (
+                        <div key={food.id} style={{ aspectRatio: '1', borderRadius: 10, overflow: 'hidden', background: 'var(--bg-card-hover)', position: 'relative' }}>
+                          {food.photo ? (
+                            <img src={food.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : (
+                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, rgba(249,232,74,0.1), rgba(255,179,71,0.08))' }}>
+                              <span style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', padding: 4 }}>{food.name}</span>
+                            </div>
+                          )}
+                          <span style={{ position: 'absolute', bottom: 4, left: 6, fontSize: 10, color: '#fff', fontWeight: 600, textShadow: '0 1px 3px rgba(0,0,0,0.6)' }}>{food.meal}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        );
+      })()}
+
+      {/* ===== BODY ALBUM ===== */}
+      {albumCategory === 'body' && (() => {
+        const bodyRecords = getBodyRecords();
+        const sorted = [...bodyRecords].reverse();
+        return (
+          <div style={{ padding: '16px 20px 0', animation: 'breatheIn 0.5s ease both' }}>
+            {sorted.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
+                <div style={{ fontSize: 14, fontWeight: 600 }}>몸무게 기록이 없어요</div>
+                <div style={{ fontSize: 12, marginTop: 6 }}>바디 탭에서 기록을 시작해보세요</div>
+              </div>
+            ) : (
+              <div>
+                {sorted.length >= 2 && (() => {
+                  const data = [...bodyRecords].slice(-14);
+                  const weights = data.map(r => r.weight);
+                  const min = Math.min(...weights) - 1, max = Math.max(...weights) + 1;
+                  const range = max - min || 1;
+                  const w = 280, h = 60;
+                  const points = data.map((r, i) => `${(i / (data.length - 1)) * w},${h - ((r.weight - min) / range) * h}`).join(' ');
+                  return (
+                    <div style={{ marginBottom: 16 }}>
+                      <svg viewBox={`0 0 ${w} ${h}`} style={{ width: '100%', height: 60 }} preserveAspectRatio="none">
+                        <defs><linearGradient id="bgAlbum" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#F9E84A" /><stop offset="50%" stopColor="#FFB347" /><stop offset="100%" stopColor="#FF8FAB" /></linearGradient></defs>
+                        <polyline points={points} fill="none" stroke="url(#bgAlbum)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+                  );
+                })()}
+                {sorted.map(r => {
+                  const d = new Date(r.date);
+                  return (
+                    <div key={r.date} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-card)', borderRadius: 16, padding: '14px 18px', marginBottom: 8 }}>
+                      <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{d.getMonth() + 1}월 {d.getDate()}일</span>
+                      <span style={{ fontSize: 15, fontWeight: 600, color: '#C4580A' }}>{r.weight} kg</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         );
       })()}
