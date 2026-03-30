@@ -96,17 +96,36 @@ export default function HomePage({ onMeasure, onTabChange }) {
         {/* ── Streak Card (Part 2) ── */}
         <StreakCard streak={streak} maxStreak={calcMaxStreak(records)} />
 
-        {/* Today's Insight */}
+        {/* Today's Insight — matches AiInsightCard */}
         <div style={{
-          marginTop: 14,
-          background: 'linear-gradient(120deg, #FFF9E0, #FFE8D0, #FFD6E0)',
-          borderRadius: 'var(--card-border-radius)',
-          padding: '18px 20px',
-          ...fadeUp(0.15),
+          marginTop: 14, padding: 20, borderRadius: 16,
+          background: '#FFFFFF', ...fadeUp(0.15),
         }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: '#9B4E10', marginBottom: 6 }}>오늘의 인사이트</div>
-          <div style={{ fontSize: 13, color: '#7A3800', lineHeight: 1.7 }}>
-            {getInsightText(latest)}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <svg width="26" height="26" viewBox="0 0 36 36" fill="none">
+                <defs>
+                  <linearGradient id="hi-g1" x1="20%" y1="0%" x2="80%" y2="100%">
+                    <stop offset="0%" stopColor="#FFF3B0" />
+                    <stop offset="100%" stopColor="#FFE082" />
+                  </linearGradient>
+                  <linearGradient id="hi-g2" x1="20%" y1="0%" x2="80%" y2="100%">
+                    <stop offset="0%" stopColor="#FFF9D0" />
+                    <stop offset="100%" stopColor="#FFF3B0" />
+                  </linearGradient>
+                </defs>
+                <path d="M18 2 L21 12 L31 15.5 L21 19 L18 29 L15 19 L5 15.5 L15 12 Z" fill="url(#hi-g1)" />
+                <path d="M28 3 L29 6.5 L32.5 7.5 L29 8.5 L28 12 L27 8.5 L23.5 7.5 L27 6.5 Z" fill="url(#hi-g2)" />
+                <path d="M8 24 L9 27 L12 28 L9 29 L8 32 L7 29 L4 28 L7 27 Z" fill="url(#hi-g2)" />
+                <ellipse cx="15" cy="12" rx="3" ry="2" fill="white" opacity="0.3" />
+              </svg>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, color: '#8B95A1' }}>오늘의 인사이트</div>
+              <div style={{ fontSize: 14, color: '#4E5968', marginTop: 4, lineHeight: 1.5 }}>
+                {getInsightText(latest)}
+              </div>
+            </div>
           </div>
         </div>
 
