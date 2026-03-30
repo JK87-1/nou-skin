@@ -776,56 +776,31 @@ export default function App() {
             <div style={{ position: 'absolute', top: '10%', left: '50%', transform: 'translateX(-50%)', width: '120%', height: '50%', background: `radial-gradient(ellipse at 50% 40%, ${activeThemeColors.accent}06 0%, transparent 60%)`, pointerEvents: 'none' }} />
           )}
 
-          {/* Eternal Pearl Hero */}
+          {/* Skin Analysis CTA — slim horizontal card */}
           <div onClick={openCamera} style={{
-            display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center',
-            padding: '0 20px', position: 'relative', zIndex: 2,
-            cursor: 'pointer',
+            margin: '0 20px', padding: '16px 20px',
+            background: 'var(--bg-card)', borderRadius: 20,
+            display: 'flex', alignItems: 'center', gap: 14,
+            cursor: 'pointer', position: 'relative', zIndex: 2,
             WebkitTapHighlightColor: 'transparent',
           }}>
-            {/* Pearl card wrapper */}
-            <div style={{
-              background: 'var(--bg-card)',
-              borderRadius: 'var(--card-border-radius)',
-              boxShadow: 'none',
-              padding: '32px 20px 28px',
-              width: '100%',
-              textAlign: 'center',
-            }}>
-              <div style={{
-                position: 'relative', width: 312, height: 312,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                margin: '0 auto',
-                ...(showSplash ? {
-                  opacity: 0,
-                  transform: 'scale(0.92)',
-                  animation: splashExiting
-                    ? 'landingPearlReveal 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards'
-                    : undefined,
-                } : {}),
-              }}>
-                <EternalPearl size={200} animated colors={activeThemeColors} theme={colorMode} />
+            {/* Mini orb */}
+            <div style={{ width: 48, height: 48, flexShrink: 0 }}>
+              <EternalPearl size={48} animated colors={activeThemeColors} theme={colorMode} />
+            </div>
+            {/* Text */}
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: -0.3 }}>
+                피부 분석하기
               </div>
-
-              {/* CTA text */}
-              <div style={{ textAlign: 'center', marginTop: 16 }}>
-                <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: -0.3, lineHeight: 1.6, marginBottom: 6 }}>
-                  탭 하여 피부를 분석하세요
-                </p>
-                <p style={{ fontSize: 12, color: 'var(--text-dim)', fontWeight: 300 }}>AI가 10개 지표를 정밀 분석합니다</p>
-                {/* Condition tags */}
-                <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 14 }}>
-                  {['정면 셀카', '밝은 자연광', '맨 얼굴'].map(tag => (
-                    <span key={tag} style={{
-                      fontSize: 11, fontWeight: 400, color: 'var(--chip-text)',
-                      background: 'var(--tag-bg)',
-                      borderRadius: 'var(--chip-radius)', padding: '5px 12px', letterSpacing: -0.2,
-                    }}>{tag}</span>
-                  ))}
-                </div>
+              <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 3 }}>
+                AI가 10개 지표를 정밀 분석합니다
               </div>
             </div>
+            {/* Arrow */}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M9 18l6-6-6-6" stroke="var(--text-dim)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </div>
 
           {/* Goal Progress Card */}
