@@ -7,14 +7,14 @@ const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both`
 const MEAL_LABELS = ['아침', '점심', '저녁'];
 const MEAL_GRADIENTS = [
   'linear-gradient(135deg, #F9E84A, #FFB347)',
-  'linear-gradient(135deg, #FFF5D6, #FFB347)',
-  'linear-gradient(135deg, #FFD6A0, #FFB347)',
-  'linear-gradient(135deg, #FFF5D6, #FFB347)',
+  'linear-gradient(135deg, #F9E84A, #FFB347, #FF8FAB)',
+  'linear-gradient(135deg, #FFB347, #FF8FAB)',
+  'linear-gradient(135deg, #F9E84A, #FFB347, #FF8FAB)',
 ];
 
 const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
 const NUTRIENT_META = [
-  { key: 'protein', icon: '🥩', label: '단백질', unit: 'g', goalKey: 'protein', grad: ['#FFE8D0', '#FFB347'] },
+  { key: 'protein', icon: '🥩', label: '단백질', unit: 'g', goalKey: 'protein', grad: ['#FFD6E0', '#FF8FAB'] },
   { key: 'carb', icon: '🍚', label: '탄수화물', unit: 'g', goalKey: 'carb', grad: ['#FFF3B0', '#FFB347'] },
   { key: 'vitamin', icon: '⭐', label: '비타민', unit: '%', fixed: 65, grad: ['#F9E84A', '#FFD700'] },
   { key: 'mineral', icon: '💎', label: '미네랄', unit: '%', fixed: 72, grad: ['#D4F0FF', '#74C0FC'] },
@@ -183,7 +183,7 @@ export default function FoodPage({ onTabChange }) {
             }}>
               <div style={{
                 width: 20, height: 20, borderRadius: 10,
-                background: 'linear-gradient(135deg, #FFF5D6, #FFB347)',
+                background: 'linear-gradient(135deg, #F9E84A, #FFB347, #FF8FAB)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <span style={{ color: '#fff', fontSize: 14, lineHeight: 1 }}>+</span>
@@ -259,7 +259,7 @@ export default function FoodPage({ onTabChange }) {
       {/* 5. LUA AI Coach Card */}
       <div style={{
         margin: '0 16px 14px', borderRadius: 16, padding: '12px 14px',
-        background: 'linear-gradient(120deg, #FFF5D6 0%, #FFB347 100%)',
+        background: 'linear-gradient(120deg, #F9E84A 0%, #FFB347 50%, #FF8FAB 100%)',
         ...fadeUp(0.2),
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
@@ -269,9 +269,9 @@ export default function FoodPage({ onTabChange }) {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 13,
           }}>✨</div>
-          <span style={{ fontSize: 12, fontWeight: 500, color: '#7A3800' }}>LUA AI 코치</span>
+          <span style={{ fontSize: 12, fontWeight: 500, color: '#fff' }}>LUA AI 코치</span>
         </div>
-        <div style={{ fontSize: 11, color: '#7A3800', lineHeight: 1.6 }}>
+        <div style={{ fontSize: 11, color: '#fff', lineHeight: 1.6 }}>
           {coachMsg || (lacking.length > 0
             ? `${lacking.join(', ')}이(가) 부족해요. ${lacking.includes('단백질') ? '닭가슴살이나 두부를 추가해보세요.' : '과일이나 채소를 더 먹어보세요.'}`
             : score > 0 ? '오늘 식단 균형이 좋아요! 이 패턴을 유지해보세요.' : '식사를 기록하면 맞춤 코칭을 받을 수 있어요.'
@@ -447,8 +447,8 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
           {MEAL_LABELS.map(m => (
             <button key={m} onClick={() => setMeal(m)} style={{
               flex: 1, padding: '8px 0', borderRadius: 10, border: 'none',
-              background: meal === m ? 'linear-gradient(120deg, #FFF5D6, #FFB347)' : 'var(--bg-input, #F2F3F5)',
-              color: meal === m ? '#7A3800' : 'var(--text-muted)',
+              background: meal === m ? 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)' : 'var(--bg-input, #F2F3F5)',
+              color: meal === m ? '#fff' : 'var(--text-muted)',
               fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
             }}>{m}</button>
           ))}
@@ -547,7 +547,7 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
             <button onClick={handleExtraAdd} disabled={extraLooking || !extraInput.trim()} style={{
               padding: '10px 14px', borderRadius: 12, border: 'none',
               background: extraLooking ? 'var(--bg-input)' : 'linear-gradient(120deg, #F9E84A, #FFB347)',
-              color: '#7A3800', fontSize: 13, fontWeight: 600,
+              color: '#fff', fontSize: 13, fontWeight: 600,
               cursor: extraLooking ? 'default' : 'pointer', fontFamily: 'inherit',
               flexShrink: 0,
             }}>{extraLooking ? '...' : '추가'}</button>
@@ -608,8 +608,8 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
           }}>취소</button>
           <button onClick={handleSubmit} style={{
             flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
-            border: 'none', background: 'linear-gradient(120deg, #FFF5D6, #FFB347)',
-            color: '#7A3800', fontSize: 14, fontWeight: 700,
+            border: 'none', background: 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)',
+            color: '#fff', fontSize: 14, fontWeight: 700,
             cursor: 'pointer', fontFamily: 'inherit',
           }}>추가</button>
         </div>
@@ -699,7 +699,7 @@ function SkinInsightsSection() {
             <div style={{ height: 5, borderRadius: 3, background: 'var(--bar-track)', overflow: 'hidden' }}>
               <div style={{
                 height: '100%', borderRadius: 3, width: `${Math.min(100, val)}%`,
-                background: 'linear-gradient(90deg, #FFF5D6, #FFB347)',
+                background: 'linear-gradient(90deg, #F9E84A, #FFB347, #FF8FAB)',
                 transition: 'width 0.5s ease',
               }} />
             </div>

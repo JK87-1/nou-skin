@@ -45,8 +45,8 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
         {/* LUA Beta */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-          <span style={{ fontSize: 18, fontWeight: 500, letterSpacing: 5, fontFamily: "'Fredoka', sans-serif", background: 'linear-gradient(120deg, #FFF5D6, #FFB347)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>LUA</span>
-          <span style={{ fontSize: 8, color: '#fff', background: 'linear-gradient(120deg, #FFF5D6, #FFB347)', padding: '1px 6px', borderRadius: 8, fontWeight: 500 }}>Beta</span>
+          <span style={{ fontSize: 18, fontWeight: 500, letterSpacing: 5, fontFamily: "'Fredoka', sans-serif", background: 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>LUA</span>
+          <span style={{ fontSize: 8, color: '#fff', background: 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)', padding: '1px 6px', borderRadius: 8, fontWeight: 500 }}>Beta</span>
         </div>
 
         {/* Weather chip button */}
@@ -265,7 +265,7 @@ function StreakWeekRow({ skinRecords, foodRecords, bodyRecords }) {
             width: 38, height: 38, borderRadius: '50%',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             background: d.count > 0
-              ? 'linear-gradient(135deg, #FFF5D6, #FFB347)'
+              ? 'linear-gradient(135deg, #F9E84A, #FFB347, #FF8FAB)'
               : d.isToday
                 ? 'rgba(255,179,71,0.1)'
                 : 'var(--bg-card)',
@@ -273,7 +273,7 @@ function StreakWeekRow({ skinRecords, foodRecords, bodyRecords }) {
             {d.count > 0 ? (
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <path d="M12 2c0 0-5 6-5 11a5 5 0 0010 0c0-5-5-11-5-11z"
-                  fill={d.count === 3 ? '#7A3800' : d.count === 2 ? 'rgba(122,56,0,0.7)' : 'rgba(122,56,0,0.45)'}
+                  fill={d.count === 3 ? '#fff' : d.count === 2 ? 'rgba(122,56,0,0.7)' : 'rgba(122,56,0,0.45)'}
                 />
               </svg>
             ) : null}
@@ -346,7 +346,7 @@ function StreakCard({ streak, maxStreak }) {
           <span style={{
             fontSize: 11, padding: '3px 10px', borderRadius: 20,
             background: 'linear-gradient(120deg, #F9E84A, #FFB347)',
-            color: '#7A3800', fontWeight: 600,
+            color: '#fff', fontWeight: 600,
           }}>{maxStreak}일</span>
         </div>
       </div>
@@ -420,8 +420,8 @@ function getInsightText(latest) {
 
 const btnStyle = {
   width: '100%', padding: '14px 0',
-  background: 'linear-gradient(120deg, #FFF5D6, #FFB347)',
+  background: 'linear-gradient(120deg, #F9E84A, #FFB347, #FF8FAB)',
   border: 'none', borderRadius: 'var(--btn-radius)',
   fontSize: 14, fontWeight: 600,
-  color: '#7A3800', cursor: 'pointer', fontFamily: 'inherit',
+  color: '#fff', cursor: 'pointer', fontFamily: 'inherit',
 };
