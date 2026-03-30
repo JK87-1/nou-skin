@@ -145,7 +145,7 @@
   --float-pill-backdrop: none;
   --modal-bg: #FFFFFF;
   --consult-header-bg: #FFFFFF;
-  --font-display: 'Pretendard Variable', 'Pretendard', 'Outfit', sans-serif;
+  --font-display: 'Outfit', 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
 
   /* Sheet / Modal */
   --sheet-bg: #FFFFFF;
@@ -414,7 +414,7 @@
 
 /* Typography */
 .font-display {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* Gradient Header */
@@ -733,7 +733,7 @@
   right: 6px;
   background: none;
   padding: 0;
-  font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Outfit', 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 18px;
   font-weight: 500;
   color: #fff;
@@ -770,7 +770,7 @@
   gap: 3px;
 }
 .photo-info-num {
-  font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Outfit', 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 22px;
   color: white;
   font-weight: 400;
@@ -1025,7 +1025,7 @@
   margin-bottom: 20px;
 }
 .month-label {
-  font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Outfit', 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 22px;
   font-weight: 400;
   color: var(--text-primary);
@@ -1145,7 +1145,7 @@
   background: rgba(240,144,112,0.12);
 }
 .trend-val {
-  font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Outfit', 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 22px;
   font-weight: 400;
   color: var(--accent-primary);
