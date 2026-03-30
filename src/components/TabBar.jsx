@@ -12,7 +12,7 @@ export default function TabBar({ activeTab, onTabChange }) {
     },
     {
       key: 'album',
-      label: '앨범',
+      label: '기록',
       icon: (active) => (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
           <rect x="3" y="3" width="8" height="8" rx="2" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" />
@@ -45,11 +45,11 @@ export default function TabBar({ activeTab, onTabChange }) {
     },
     {
       key: 'body',
-      label: '바디',
+      label: 'MY',
       icon: (active) => (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <path d="M12 2a3 3 0 100 6 3 3 0 000-6zM16 22v-2a4 4 0 00-8 0v2" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M8 12h8M12 10v6" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" strokeLinecap="round" />
+          <circle cx="12" cy="10" r="4" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" />
+          <path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" strokeLinecap="round" />
         </svg>
       ),
     },
