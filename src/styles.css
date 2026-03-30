@@ -95,10 +95,10 @@
   /* Surfaces — Toss/Karrot palette */
   --bg-primary: #FFFFFF;
   --bg-secondary: #F7F8FA;
-  --bg-card: #F9F9FB;
-  --bg-card-hover: #F5F5F7;
-  --bg-card-solid: #F9F9FB;
-  --bg-elevated: #F9F9FB;
+  --bg-card: #F8F8F8;
+  --bg-card-hover: #F3F3F3;
+  --bg-card-solid: #F8F8F8;
+  --bg-elevated: #F8F8F8;
   --bg-modal: #FFFFFF;
   --bg-modal-overlay: rgba(0,0,0,0.4);
   --bg-input: #F2F3F5;
