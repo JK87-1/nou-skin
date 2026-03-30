@@ -742,11 +742,11 @@ export default function RoutineTracker({ themeColors, onBack, initialMode }) {
       <div style={{ padding: '12px 20px 16px' }}>
         <div className="segment-control">
           <button className={`segment-btn${pageMode === 'routine' ? ' active' : ''}`}
-            onClick={() => setPageMode('routine')}>루틴</button>
+            onClick={() => setPageMode('routine')}>피부</button>
           <button className={`segment-btn${pageMode === 'insights' ? ' active' : ''}`}
-            onClick={() => setPageMode('insights')}>분석</button>
+            onClick={() => setPageMode('insights')}>식단</button>
           <button className={`segment-btn${pageMode === 'mission' ? ' active' : ''}`}
-            onClick={() => setPageMode('mission')}>미션</button>
+            onClick={() => setPageMode('mission')}>바디</button>
         </div>
       </div>
 
