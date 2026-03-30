@@ -272,6 +272,11 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
   return (
     <div style={{ paddingBottom: 40 }}>
 
+      {/* Header */}
+      <div style={{ padding: '16px 20px 0' }}>
+        <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>기록</h1>
+      </div>
+
       {/* Record Detail Modal */}
       {selectedRecord && (
         <RecordDetailModal
