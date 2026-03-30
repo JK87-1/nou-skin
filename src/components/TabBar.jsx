@@ -37,9 +37,9 @@ export default function TabBar({ activeTab, onTabChange }) {
       label: '분석',
       icon: (active) => (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <path d="M21 21l-4.35-4.35" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" strokeLinecap="round" />
-          <circle cx="11" cy="11" r="8" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" />
-          <path d="M8 11h6M11 8v6" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" strokeLinecap="round" />
+          <rect x="4" y="12" width="4" height="8" rx="1" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" />
+          <rect x="10" y="7" width="4" height="13" rx="1" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" />
+          <rect x="16" y="3" width="4" height="17" rx="1" stroke={active ? 'url(#luaGrad)' : '#bbb'} strokeWidth="1.5" />
         </svg>
       ),
     },
