@@ -209,7 +209,7 @@ export default function BodyPage() {
             background: 'linear-gradient(120deg, #FFC145, #EC368D)',
             border: 'none', borderRadius: 'var(--btn-radius)',
             fontSize: 14, fontWeight: 600,
-            color: '#7A3800', cursor: 'pointer', fontFamily: 'inherit',
+            color: '#fff', cursor: 'pointer', fontFamily: 'inherit',
           }}>오늘 기록하기</button>
         </div>
       </div>
@@ -286,7 +286,7 @@ function AddWeightModal({ onSave, onClose, latest }) {
           <button onClick={() => { if (weight) onSave(Number(weight)); }} style={{
             flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
             border: 'none', background: 'linear-gradient(120deg, #FFC145, #EC368D)',
-            color: '#7A3800', fontSize: 14, fontWeight: 700,
+            color: '#fff', fontSize: 14, fontWeight: 700,
             cursor: 'pointer', fontFamily: 'inherit',
           }}>저장</button>
         </div>
@@ -336,7 +336,7 @@ function GoalModal({ onSave, onClose, current }) {
           <button onClick={() => { if (target) onSave(Number(target)); }} style={{
             flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
             border: 'none', background: 'linear-gradient(120deg, #FFC145, #EC368D)',
-            color: '#7A3800', fontSize: 14, fontWeight: 700,
+            color: '#fff', fontSize: 14, fontWeight: 700,
             cursor: 'pointer', fontFamily: 'inherit',
           }}>저장</button>
         </div>
@@ -442,7 +442,7 @@ function ProfileSettingsModal({ profile, onUpdate, onClose }) {
               <button key={g} onClick={() => onUpdate('gender', g)} style={{
                 flex: 1, padding: '10px 0', borderRadius: 10, border: 'none',
                 background: profile.gender === g ? 'linear-gradient(120deg, #FFC145, #EC368D)' : 'var(--bg-input, #F2F3F5)',
-                color: profile.gender === g ? '#7A3800' : 'var(--text-muted)',
+                color: profile.gender === g ? '#fff' : 'var(--text-muted)',
                 fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
               }}>{g}</button>
             ))}
@@ -475,7 +475,7 @@ function ProfileSettingsModal({ profile, onUpdate, onClose }) {
               <button key={level} onClick={() => onUpdate('activityLevel', level)} style={{
                 padding: '8px 14px', borderRadius: 10, border: 'none',
                 background: profile.activityLevel === level ? 'linear-gradient(120deg, #FFC145, #EC368D)' : 'var(--bg-input, #F2F3F5)',
-                color: profile.activityLevel === level ? '#7A3800' : 'var(--text-muted)',
+                color: profile.activityLevel === level ? '#fff' : 'var(--text-muted)',
                 fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
               }}>{level}</button>
             ))}
@@ -492,7 +492,7 @@ function ProfileSettingsModal({ profile, onUpdate, onClose }) {
               <button key={t} onClick={() => onUpdate('skinType', t)} style={{
                 padding: '8px 14px', borderRadius: 10, border: 'none',
                 background: profile.skinType === t ? 'linear-gradient(120deg, #FFC145, #EC368D)' : 'var(--bg-input, #F2F3F5)',
-                color: profile.skinType === t ? '#7A3800' : 'var(--text-muted)',
+                color: profile.skinType === t ? '#fff' : 'var(--text-muted)',
                 fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
               }}>{t}</button>
             ))}
@@ -511,7 +511,7 @@ function ProfileSettingsModal({ profile, onUpdate, onClose }) {
                 }} style={{
                   padding: '8px 14px', borderRadius: 10, border: 'none',
                   background: active ? 'linear-gradient(120deg, #FFC145, #EC368D)' : 'var(--bg-input, #F2F3F5)',
-                  color: active ? '#7A3800' : 'var(--text-muted)',
+                  color: active ? '#fff' : 'var(--text-muted)',
                   fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
                 }}>{c}</button>
               );
@@ -522,7 +522,7 @@ function ProfileSettingsModal({ profile, onUpdate, onClose }) {
         <button onClick={onClose} style={{
           width: '100%', padding: '14px 0', borderRadius: 'var(--btn-radius)',
           border: 'none', background: 'linear-gradient(120deg, #FFC145, #EC368D)',
-          color: '#7A3800', fontSize: 14, fontWeight: 700,
+          color: '#fff', fontSize: 14, fontWeight: 700,
           cursor: 'pointer', fontFamily: 'inherit',
         }}>완료</button>
       </div>

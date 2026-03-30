@@ -273,7 +273,7 @@ function StreakWeekRow({ skinRecords, foodRecords, bodyRecords }) {
             {d.count > 0 ? (
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <path d="M12 2c0 0-5 6-5 11a5 5 0 0010 0c0-5-5-11-5-11z"
-                  fill={d.count === 3 ? '#7A3800' : d.count === 2 ? 'rgba(122,56,0,0.7)' : 'rgba(122,56,0,0.45)'}
+                  fill={d.count === 3 ? '#fff' : d.count === 2 ? 'rgba(122,56,0,0.7)' : 'rgba(122,56,0,0.45)'}
                 />
               </svg>
             ) : null}
@@ -346,7 +346,7 @@ function StreakCard({ streak, maxStreak }) {
           <span style={{
             fontSize: 11, padding: '3px 10px', borderRadius: 20,
             background: 'linear-gradient(120deg, #F9E84A, #EC368D)',
-            color: '#7A3800', fontWeight: 600,
+            color: '#fff', fontWeight: 600,
           }}>{maxStreak}일</span>
         </div>
       </div>
@@ -423,5 +423,5 @@ const btnStyle = {
   background: 'linear-gradient(120deg, #FFC145, #EC368D)',
   border: 'none', borderRadius: 'var(--btn-radius)',
   fontSize: 14, fontWeight: 600,
-  color: '#7A3800', cursor: 'pointer', fontFamily: 'inherit',
+  color: '#fff', cursor: 'pointer', fontFamily: 'inherit',
 };

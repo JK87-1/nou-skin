@@ -269,9 +269,9 @@ export default function FoodPage({ onTabChange }) {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 13,
           }}>✨</div>
-          <span style={{ fontSize: 12, fontWeight: 500, color: '#7A3800' }}>LUA AI 코치</span>
+          <span style={{ fontSize: 12, fontWeight: 500, color: '#fff' }}>LUA AI 코치</span>
         </div>
-        <div style={{ fontSize: 11, color: '#7A3800', lineHeight: 1.6 }}>
+        <div style={{ fontSize: 11, color: '#fff', lineHeight: 1.6 }}>
           {coachMsg || (lacking.length > 0
             ? `${lacking.join(', ')}이(가) 부족해요. ${lacking.includes('단백질') ? '닭가슴살이나 두부를 추가해보세요.' : '과일이나 채소를 더 먹어보세요.'}`
             : score > 0 ? '오늘 식단 균형이 좋아요! 이 패턴을 유지해보세요.' : '식사를 기록하면 맞춤 코칭을 받을 수 있어요.'
@@ -448,7 +448,7 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
             <button key={m} onClick={() => setMeal(m)} style={{
               flex: 1, padding: '8px 0', borderRadius: 10, border: 'none',
               background: meal === m ? 'linear-gradient(120deg, #FFC145, #EC368D)' : 'var(--bg-input, #F2F3F5)',
-              color: meal === m ? '#7A3800' : 'var(--text-muted)',
+              color: meal === m ? '#fff' : 'var(--text-muted)',
               fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
             }}>{m}</button>
           ))}
@@ -547,7 +547,7 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
             <button onClick={handleExtraAdd} disabled={extraLooking || !extraInput.trim()} style={{
               padding: '10px 14px', borderRadius: 12, border: 'none',
               background: extraLooking ? 'var(--bg-input)' : 'linear-gradient(120deg, #F9E84A, #EC368D)',
-              color: '#7A3800', fontSize: 13, fontWeight: 600,
+              color: '#fff', fontSize: 13, fontWeight: 600,
               cursor: extraLooking ? 'default' : 'pointer', fontFamily: 'inherit',
               flexShrink: 0,
             }}>{extraLooking ? '...' : '추가'}</button>
@@ -609,7 +609,7 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
           <button onClick={handleSubmit} style={{
             flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
             border: 'none', background: 'linear-gradient(120deg, #FFC145, #EC368D)',
-            color: '#7A3800', fontSize: 14, fontWeight: 700,
+            color: '#fff', fontSize: 14, fontWeight: 700,
             cursor: 'pointer', fontFamily: 'inherit',
           }}>추가</button>
         </div>
