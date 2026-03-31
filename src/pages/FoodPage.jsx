@@ -160,43 +160,62 @@ export default function FoodPage({ onTabChange }) {
         </div>
       </div>
 
-      {/* 2. Meal Thumbnail Row */}
-      <div style={{ display: 'flex', gap: 8, margin: '0 16px 12px', overflowX: 'auto', ...fadeUp(0.05) }}>
-        {/* Recorded foods */}
-        {foods.filter(f => !f.name?.startsWith('물 ')).map(food => (
-          <div key={food.id} onClick={() => setDetailFood(food)} style={{
-            width: 80, height: 80, borderRadius: 14, overflow: 'hidden', flexShrink: 0,
-            background: 'var(--accent-primary)',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end',
-            position: 'relative', cursor: 'pointer',
-          }}>
-            {food.photo ? (
-              <img src={food.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
-            ) : null}
-            <div style={{
-              fontSize: 9, color: '#fff', fontWeight: 600, padding: '3px 6px',
-              background: 'rgba(0,0,0,0.35)', borderRadius: '0 0 14px 14px', width: '100%', textAlign: 'center',
-              position: 'relative', zIndex: 1,
-            }}>{food.name?.slice(0, 8)}</div>
-          </div>
-        ))}
-        {/* Add button */}
-        <div onClick={() => setShowMealPicker(true)} style={{
-          width: 80, height: 80, borderRadius: 14, flexShrink: 0,
-          border: '1.5px dashed var(--accent-primary)',
-          background: 'rgba(129,228,189,0.08)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer',
-        }}>
+      {/* 2. Meal Thumbnail Row — 3칸 그리드 */}
+      {(() => {
+        const recorded = foods.filter(f => !f.name?.startsWith('물 '));
+        const slots = [];
+        // 기록된 음식 (최대 3개 표시, 나머지는 스크롤)
+        recorded.forEach(food => slots.push({ type: 'food', food }));
+        // 빈 슬롯은 + 버튼으로 채움 (최소 1개)
+        const addCount = Math.max(1, 3 - slots.length);
+        for (let i = 0; i < addCount; i++) slots.push({ type: 'add', key: `add-${i}` });
+
+        return (
           <div style={{
-            width: 28, height: 28, borderRadius: 14,
-            background: 'var(--accent-primary)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            display: 'flex', gap: 8, margin: '0 16px 12px',
+            overflowX: slots.length > 3 ? 'auto' : 'hidden',
+            ...fadeUp(0.05),
           }}>
-            <span style={{ color: '#fff', fontSize: 18, lineHeight: 1 }}>+</span>
+            {slots.map((slot, idx) => slot.type === 'food' ? (
+              <div key={slot.food.id} onClick={() => setDetailFood(slot.food)} style={{
+                flex: slots.length <= 3 ? '1' : undefined,
+                width: slots.length > 3 ? 'calc((100% - 16px) / 3)' : undefined,
+                aspectRatio: '1/1', borderRadius: 14, overflow: 'hidden', flexShrink: 0,
+                background: 'var(--accent-primary)',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end',
+                position: 'relative', cursor: 'pointer',
+              }}>
+                {slot.food.photo ? (
+                  <img src={slot.food.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
+                ) : null}
+                <div style={{
+                  fontSize: 9, color: '#fff', fontWeight: 600, padding: '3px 6px',
+                  background: 'rgba(0,0,0,0.35)', borderRadius: '0 0 14px 14px', width: '100%', textAlign: 'center',
+                  position: 'relative', zIndex: 1,
+                }}>{slot.food.name?.slice(0, 8)}</div>
+              </div>
+            ) : (
+              <div key={slot.key} onClick={() => setShowMealPicker(true)} style={{
+                flex: slots.length <= 3 ? '1' : undefined,
+                width: slots.length > 3 ? 'calc((100% - 16px) / 3)' : undefined,
+                aspectRatio: '1/1', borderRadius: 14, flexShrink: 0,
+                border: '1.5px dashed var(--accent-primary)',
+                background: 'rgba(129,228,189,0.08)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer',
+              }}>
+                <div style={{
+                  width: 28, height: 28, borderRadius: 14,
+                  background: 'var(--accent-primary)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <span style={{ color: '#fff', fontSize: 18, lineHeight: 1 }}>+</span>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
-      </div>
+        );
+      })()}
 
       {/* Meal Picker */}
       {showMealPicker && (
