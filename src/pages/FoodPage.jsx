@@ -17,71 +17,69 @@ const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
 const NutrientIcons = {
   protein: (
     <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
-      {/* 스테이크 - 입체감 */}
-      <ellipse cx="16" cy="18" rx="12" ry="8" fill="#E8899A" />
-      <ellipse cx="16" cy="16" rx="12" ry="8" fill="#F2A5B3" />
-      <ellipse cx="16" cy="16" rx="10" ry="6.5" fill="#F4B8C4" />
-      {/* 마블링 */}
-      <path d="M10 15c2-1 3 1 5 0s3-1.5 4 0" stroke="#fff" strokeWidth="1.2" strokeLinecap="round" opacity="0.6" />
-      <path d="M12 18c1.5-.8 2.5.5 4 0" stroke="#fff" strokeWidth="1" strokeLinecap="round" opacity="0.45" />
-      {/* 뼈 */}
-      <path d="M22 10c1.5-1.5 3.5-1 3 1-.3 1-1.5 1-2 1.5L20 15" stroke="#F2E6D9" strokeWidth="2.5" strokeLinecap="round" />
-      <circle cx="25.2" cy="9.5" r="1.5" fill="#F2E6D9" />
+      {/* T본 스테이크 외곽 — 그림자 */}
+      <path d="M6 22c-1-2-1-4 0-6l2-4c1-2 3-3 5-4h6c2.5 0 4 1 5 3l2 4c1 2.5.5 5-1 6l-3 2c-1.5 1-3.5 1.5-6 1.5s-4-.5-5.5-1.5z" fill="#C46A6A" opacity="0.3" transform="translate(0.5,0.5)" />
+      {/* 스테이크 외곽 — 지방 테두리 */}
+      <path d="M6 22c-1-2-1-4 0-6l2-4c1-2 3-3 5-4h6c2.5 0 4 1 5 3l2 4c1 2.5.5 5-1 6l-3 2c-1.5 1-3.5 1.5-6 1.5s-4-.5-5.5-1.5z" fill="#F5C6CB" />
+      {/* 살코기 안쪽 */}
+      <path d="M8 21c-.8-1.5-.6-3.2.2-5l1.5-3c.8-1.5 2-2.2 3.5-2.8h5.5c2 0 3 .8 3.8 2.2l1.5 3.2c.7 1.8.3 3.8-.8 4.8l-2 1.5c-1.2.7-2.8 1.1-5 1.1s-3.5-.4-4.8-1z" fill="#D45B5B" />
+      {/* 밝은 면 — 입체감 */}
+      <path d="M9 18c-.3-1 0-2.2.5-3.5l1-2c.6-1 1.5-1.6 2.8-2h4c1.5 0 2.3.5 3 1.5l1 2c.5 1.2.3 2.5-.3 3.2" fill="#E87070" opacity="0.7" />
+      {/* T자 뼈 */}
+      <path d="M15.5 10v13" stroke="#F5D6CB" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M11 16h9" stroke="#F5D6CB" strokeWidth="1.6" strokeLinecap="round" />
+      {/* 하이라이트 */}
+      <ellipse cx="12.5" cy="14" rx="2" ry="1.2" fill="#F09090" opacity="0.5" />
     </svg>
   ),
   carb: (
     <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
-      {/* 빵 몸체 - 입체감 */}
-      <path d="M5 20c0 2 1 4 3 4h16c2 0 3-2 3-4v-1H5v1z" fill="#D4A44A" />
+      {/* 빵 그림자 */}
+      <path d="M5 20c0 2 1 4 3 4h16c2 0 3-2 3-4v-2H5z" fill="#B8892E" opacity="0.25" transform="translate(0.5,0.5)" />
+      {/* 빵 바닥 */}
+      <path d="M5 19c0 2 1 4 3 4h16c2 0 3-2 3-4v-1H5z" fill="#D4A044" />
+      {/* 빵 윗부분 */}
       <path d="M5 18c0-6 4-10 11-10s11 4 11 10H5z" fill="#F0C868" />
-      <path d="M7 18c0-5 3.5-8 9-8s9 3 9 8" fill="#F5D88A" />
+      {/* 밝은 면 */}
+      <path d="M7 17c0-5 3.5-8 9-8s9 3 9 8" fill="#F5D88A" />
       {/* 하이라이트 */}
-      <ellipse cx="13" cy="13" rx="4" ry="2" fill="#FAEAC0" opacity="0.6" />
-      {/* 칼집 */}
-      <path d="M11 15.5c1.5-1 3-1 4.5 0M17 14.5c1-1 2.5-1 3.5 0" stroke="#D4A44A" strokeWidth="0.8" strokeLinecap="round" opacity="0.5" />
+      <ellipse cx="13" cy="12.5" rx="4.5" ry="2.5" fill="#FAEAC0" opacity="0.55" />
     </svg>
   ),
   vitamin: (
     <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
       {/* 레몬 그림자 */}
-      <ellipse cx="16.5" cy="17.5" rx="10" ry="8.5" fill="#E8C83A" opacity="0.4" />
+      <ellipse cx="16.5" cy="17" rx="10" ry="8.5" fill="#D4B030" opacity="0.25" />
       {/* 레몬 몸체 */}
       <ellipse cx="16" cy="16" rx="10" ry="8.5" fill="#FCDA4E" />
-      <ellipse cx="16" cy="16" rx="9" ry="7.5" fill="#FFE566" />
-      {/* 꼭지 */}
-      <path d="M25 12c2-1.5 3-1 2.5.5-.3.8-1.5 1-2.5.8" fill="#7CB85D" />
-      <path d="M25.5 13c.8 0 1.5-.5 1.2-1" stroke="#5A9E3E" strokeWidth="0.6" strokeLinecap="round" />
+      {/* 밝은 면 */}
+      <ellipse cx="15.5" cy="15" rx="8.5" ry="7" fill="#FFE566" />
       {/* 하이라이트 */}
-      <ellipse cx="12" cy="13" rx="3.5" ry="2.5" fill="#FFF3A0" opacity="0.7" />
-      {/* 단면 힌트 */}
-      <path d="M11 16c3 0 5 0 8 0" stroke="#F5D030" strokeWidth="0.6" opacity="0.5" />
+      <ellipse cx="12.5" cy="12.5" rx="3.5" ry="2.5" fill="#FFF3A0" opacity="0.6" />
     </svg>
   ),
   mineral: (
     <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
       {/* 세로 마름모 그림자 */}
-      <path d="M16.5 3.5L24.5 16.5 16.5 29.5 8.5 16.5z" fill="#3A9BE0" opacity="0.25" />
-      {/* 세로 마름모 몸체 */}
+      <path d="M16.5 3L25 16.5 16.5 30 8 16.5z" fill="#3A8FD4" opacity="0.2" />
+      {/* 어두운 면 */}
       <path d="M16 2L24 16 16 30 8 16z" fill="#5CB8F5" />
-      <path d="M16 4L22 16 16 28 10 16z" fill="#74C8FF" />
-      {/* 하이라이트 면 */}
-      <path d="M16 4L10 16 16 28z" fill="#8AD4FF" opacity="0.5" />
-      {/* 상단 빛 반사 */}
-      <path d="M14 8l2-3 1 4z" fill="#fff" opacity="0.45" />
-      {/* 중앙 라인 */}
-      <line x1="16" y1="5" x2="16" y2="27" stroke="#4AA4E0" strokeWidth="0.5" opacity="0.3" />
+      {/* 밝은 면 (왼쪽) */}
+      <path d="M16 2L8 16 16 30z" fill="#7ECFFF" />
+      {/* 하이라이트 */}
+      <path d="M13 9l3-5 .5 6z" fill="#fff" opacity="0.35" />
     </svg>
   ),
   kcal: (
     <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
       {/* 번개 그림자 */}
-      <path d="M18 2L8.5 17h7L13 30l11-17h-7z" fill="#D4503A" opacity="0.3" transform="translate(0.8,0.8)" />
+      <path d="M18 2L8.5 17h7L13 30l11-17h-7z" fill="#C44A36" opacity="0.25" transform="translate(0.6,0.6)" />
       {/* 번개 몸체 */}
       <path d="M18 2L8.5 17h7L13 30l11-17h-7z" fill="#F97056" />
       {/* 밝은 면 */}
       <path d="M18 2L8.5 17h7L13 30 15.5 17h-4z" fill="#FF8A70" />
       {/* 하이라이트 */}
-      <path d="M17 5l-4.5 9h3z" fill="#FFB8A8" opacity="0.5" />
+      <path d="M17 5l-4.5 9h3z" fill="#FFB8A8" opacity="0.45" />
     </svg>
   ),
 };
