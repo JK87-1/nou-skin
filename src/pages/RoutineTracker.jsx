@@ -808,9 +808,9 @@ export default function RoutineTracker({ themeColors, onBack, initialMode }) {
       </div>
 
       {/* Routine checklist for each category */}
-      {pageMode === 'routine' && <RoutineChecklist category="skin" label="피부" onAdd={() => setShowAddSheet(true)} />}
-      {pageMode === 'insights' && <RoutineChecklist category="food" label="식단" onAdd={() => setShowAddSheet(true)} />}
-      {pageMode === 'mission' && <RoutineChecklist category="body" label="바디" onAdd={() => setShowAddSheet(true)} />}
+      {pageMode === 'routine' && <RoutineChecklist category="skin" label="피부" selectedDate={selectedDate} />}
+      {pageMode === 'insights' && <RoutineChecklist category="food" label="식단" selectedDate={selectedDate} />}
+      {pageMode === 'mission' && <RoutineChecklist category="body" label="바디" selectedDate={selectedDate} />}
 
       {/* Tracker mode — existing tracker content (hidden) */}
       {pageMode === '__tracker__' && <>
@@ -1131,18 +1131,32 @@ export default function RoutineTracker({ themeColors, onBack, initialMode }) {
 }
 
 // ===== Routine Checklist Component =====
-function RoutineChecklist({ category, label }) {
+function getProgressForDate(category, dateStr) {
+  const items = getRoutineItems(category);
+  const chk = getChecks(category, dateStr);
+  const total = items.length;
+  const done = items.filter(i => chk[i.id]).length;
+  return { total, done, pct: total > 0 ? Math.round((done / total) * 100) : 0 };
+}
+
+function RoutineChecklist({ category, label, selectedDate }) {
   const today = new Date().toISOString().slice(0, 10);
+  const dateStr = selectedDate || today;
+  const isToday = dateStr === today;
   const [items, setItems] = useState(() => getRoutineItems(category));
-  const [checks, setChecksState] = useState(() => getChecks(category, today));
+  const [checks, setChecksState] = useState(() => getChecks(category, dateStr));
   const [showAdd, setShowAdd] = useState(false);
   const [newName, setNewName] = useState('');
   const [newTime, setNewTime] = useState('아침');
 
-  const progress = getTodayProgress(category);
+  useEffect(() => {
+    setChecksState(getChecks(category, dateStr));
+  }, [category, dateStr]);
+
+  const progress = getProgressForDate(category, dateStr);
 
   const handleToggle = (id) => {
-    const updated = toggleCheck(category, today, id);
+    const updated = toggleCheck(category, dateStr, id);
     setChecksState(updated);
   };
 
@@ -1166,7 +1180,7 @@ function RoutineChecklist({ category, label }) {
       {/* Progress bar */}
       <div style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>오늘의 {label} 루틴</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{isToday ? '오늘의' : `${new Date(dateStr + 'T00:00:00').getMonth() + 1}/${new Date(dateStr + 'T00:00:00').getDate()}`} {label} 루틴</span>
           <span style={{ fontSize: 12, color: 'var(--accent-primary)', fontWeight: 600 }}>{progress.done}/{progress.total}</span>
         </div>
         <div style={{ height: 6, borderRadius: 3, background: 'var(--bar-track)', overflow: 'hidden' }}>
