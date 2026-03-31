@@ -14,12 +14,43 @@ const MEAL_GRADIENTS = [
 ];
 
 const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
+const NutrientIcons = {
+  protein: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="10" fill="#F9D1D8" />
+      <path d="M12 6v12M8 9l4-3 4 3M8 15l4 3 4-3" stroke="#E06888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  ),
+  carb: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <rect x="5" y="8" width="14" height="4" rx="1.5" fill="#F5D76E" />
+      <rect x="5" y="13" width="14" height="4" rx="1.5" fill="#E8C84A" />
+      <rect x="5" y="8" width="14" height="4" rx="1.5" stroke="#D4B23C" strokeWidth="0.5" />
+    </svg>
+  ),
+  vitamin: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M12 3l2.8 5.8L21 10l-4.5 4.2L17.6 21 12 17.8 6.4 21l1.1-6.8L3 10l6.2-1.2z" fill="#F5A623" />
+    </svg>
+  ),
+  mineral: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M12 2c.8 4.5 5.5 5.2 10 6-4.5.8-9.2 1.5-10 6-.8-4.5-5.5-5.2-10-6 4.5-.8 9.2-1.5 10-6z" fill="#56B4F9" />
+    </svg>
+  ),
+  kcal: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M13 2L4.5 13h6L9 22l9.5-13h-6L13 2z" fill="#F97056" />
+    </svg>
+  ),
+};
+
 const NUTRIENT_META = [
-  { key: 'protein', icon: '🥩', label: '단백질', unit: 'g', goalKey: 'protein', grad: ['#D1FAE5', '#81E4BD'] },
-  { key: 'carb', icon: '🍚', label: '탄수화물', unit: 'g', goalKey: 'carb', grad: ['#E0F2FE', '#93C5FD'] },
-  { key: 'vitamin', icon: '⭐', label: '비타민', unit: '%', goalKey: 'vitamin', grad: ['#FEF3C7', '#FCD34D'] },
-  { key: 'mineral', icon: '💎', label: '미네랄', unit: '%', goalKey: 'mineral', grad: ['#D4F0FF', '#74C0FC'] },
-  { key: 'kcal', icon: '⚡', label: '칼로리', unit: '', goalKey: 'kcal', grad: ['#E0F2FE', '#81E4BD'] },
+  { key: 'protein', icon: NutrientIcons.protein, label: '단백질', unit: 'g', goalKey: 'protein', grad: ['#F9D1D8', '#F0A0B8'] },
+  { key: 'carb', icon: NutrientIcons.carb, label: '탄수화물', unit: 'g', goalKey: 'carb', grad: ['#FEF3C7', '#F5D76E'] },
+  { key: 'vitamin', icon: NutrientIcons.vitamin, label: '비타민', unit: '%', goalKey: 'vitamin', grad: ['#FEF3C7', '#FCD34D'] },
+  { key: 'mineral', icon: NutrientIcons.mineral, label: '미네랄', unit: '%', goalKey: 'mineral', grad: ['#D4F0FF', '#74C0FC'] },
+  { key: 'kcal', icon: NutrientIcons.kcal, label: '칼로리', unit: '', goalKey: 'kcal', grad: ['#FFE4DC', '#F9A08C'] },
 ];
 
 function getStatus(value, goal) {
@@ -337,10 +368,9 @@ export default function FoodPage({ onTabChange }) {
         {nutrients.map(n => (
           <div key={n.key} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
             <div style={{
-              width: 24, height: 24, borderRadius: 8,
-              background: `linear-gradient(135deg, ${n.grad[0]}, ${n.grad[1]})`,
+              width: 32, height: 32, borderRadius: 10,
+              background: `linear-gradient(135deg, ${n.grad[0]}88, ${n.grad[1]}44)`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 13,
             }}>{n.icon}</div>
             <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.displayVal}</div>
             <div style={{ fontSize: 9, color: '#888' }}>{n.label}</div>
