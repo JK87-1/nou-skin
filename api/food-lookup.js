@@ -32,6 +32,8 @@ export default async function handler(req, res) {
           {
             role: 'user',
             content: `음식: "${name}" ${servings}인분의 영양 정보를 알려주세요.
+vitamin은 1일 권장 비타민 섭취량 대비 이 음식이 제공하는 비율(%)을 추정하세요.
+mineral은 1일 권장 미네랄 섭취량 대비 이 음식이 제공하는 비율(%)을 추정하세요.
 
 ---JSON_START---
 {
@@ -40,7 +42,9 @@ export default async function handler(req, res) {
   "kcal": 숫자,
   "carb": 숫자(g),
   "protein": 숫자(g),
-  "fat": 숫자(g)
+  "fat": 숫자(g),
+  "vitamin": 숫자(%),
+  "mineral": 숫자(%)
 }
 ---JSON_END---`,
           },

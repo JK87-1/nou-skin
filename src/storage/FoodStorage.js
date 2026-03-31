@@ -36,7 +36,7 @@ export function getTodayFoods() {
 }
 
 export function getFoodGoal() {
-  return JSON.parse(localStorage.getItem(GOAL_KEY) || '{"kcal":1800,"carb":250,"protein":80,"fat":60,"water":2.0}');
+  return JSON.parse(localStorage.getItem(GOAL_KEY) || '{"kcal":1800,"carb":250,"protein":80,"fat":60,"water":2.0,"vitamin":100,"mineral":100}');
 }
 
 export function saveFoodGoal(goal) {
@@ -51,5 +51,7 @@ export function getTodayNutrition() {
     protein: sum.protein + (f.protein || 0),
     fat: sum.fat + (f.fat || 0),
     water: sum.water + (f.water || 0),
-  }), { kcal: 0, carb: 0, protein: 0, fat: 0, water: 0 });
+    vitamin: sum.vitamin + (f.vitamin || 0),
+    mineral: sum.mineral + (f.mineral || 0),
+  }), { kcal: 0, carb: 0, protein: 0, fat: 0, water: 0, vitamin: 0, mineral: 0 });
 }

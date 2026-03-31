@@ -1,6 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
 import { getTodayFoods, getTodayNutrition, getFoodGoal, saveFoodRecord, deleteFoodRecord } from '../storage/FoodStorage';
-import { compressImage } from '../engine/PixelAnalysis';
 import { getRecords, getChanges, getTotalChanges } from '../storage/SkinStorage';
 
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
@@ -16,8 +15,8 @@ const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
 const NUTRIENT_META = [
   { key: 'protein', icon: '🥩', label: '단백질', unit: 'g', goalKey: 'protein', grad: ['#D1FAE5', '#81E4BD'] },
   { key: 'carb', icon: '🍚', label: '탄수화물', unit: 'g', goalKey: 'carb', grad: ['#E0F2FE', '#93C5FD'] },
-  { key: 'vitamin', icon: '⭐', label: '비타민', unit: '%', fixed: 65, grad: ['#FEF3C7', '#FCD34D'] },
-  { key: 'mineral', icon: '💎', label: '미네랄', unit: '%', fixed: 72, grad: ['#D4F0FF', '#74C0FC'] },
+  { key: 'vitamin', icon: '⭐', label: '비타민', unit: '%', goalKey: 'vitamin', grad: ['#FEF3C7', '#FCD34D'] },
+  { key: 'mineral', icon: '💎', label: '미네랄', unit: '%', goalKey: 'mineral', grad: ['#D4F0FF', '#74C0FC'] },
   { key: 'kcal', icon: '⚡', label: '칼로리', unit: '', goalKey: 'kcal', grad: ['#E0F2FE', '#81E4BD'] },
 ];
 
@@ -94,10 +93,9 @@ export default function FoodPage({ onTabChange }) {
   const nutrients = NUTRIENT_META.map(n => {
     let value, displayVal;
     if (n.key === 'kcal') { value = nutrition.kcal; displayVal = nutrition.kcal.toLocaleString(); }
-    else if (n.fixed) { value = n.fixed; displayVal = `${n.fixed}${n.unit}`; }
     else { value = nutrition[n.key] || 0; displayVal = `${value}${n.unit}`; }
-    const goalVal = n.goalKey ? goal[n.goalKey] : (n.fixed ? 100 : 0);
-    return { ...n, value, displayVal, status: n.fixed ? (n.fixed >= 70 ? '적정' : '부족') : getStatus(value, goalVal) };
+    const goalVal = n.goalKey ? goal[n.goalKey] : 0;
+    return { ...n, value, displayVal, status: getStatus(value, goalVal) };
   });
 
   const lacking = nutrients.filter(n => n.status === '부족').map(n => n.label);
@@ -292,32 +290,13 @@ export default function FoodPage({ onTabChange }) {
 function AddFoodModal({ onAdd, onClose, initialMeal }) {
   const [name, setName] = useState('');
   const [meal, setMeal] = useState(initialMeal || '아침');
-  const [kcal, setKcal] = useState('');
-  const [carb, setCarb] = useState('');
-  const [protein, setProtein] = useState('');
-  const [fat, setFat] = useState('');
+  const [servings, setServings] = useState(1);
   const [analyzing, setAnalyzing] = useState(false);
   const [preview, setPreview] = useState(null);
-  const [aiItems, setAiItems] = useState(null);
-  const [extraInput, setExtraInput] = useState('');
-  const [extraServings, setExtraServings] = useState(1);
-  const [extraLooking, setExtraLooking] = useState(false);
-  const [extraItems, setExtraItems] = useState([]);
+  const [aiResult, setAiResult] = useState(null);
   const fileRef = useRef(null);
   const albumRef = useRef(null);
 
-  // Merge all items for totals
-  const allItems = [...(aiItems || []), ...extraItems];
-
-  const updateTotals = (items) => {
-    setName(items.map(i => i.name).join(', '));
-    setKcal(String(items.reduce((s, i) => s + i.kcal, 0)));
-    setCarb(String(items.reduce((s, i) => s + i.carb, 0)));
-    setProtein(String(items.reduce((s, i) => s + i.protein, 0)));
-    setFat(String(items.reduce((s, i) => s + i.fat, 0)));
-  };
-
-  // Compress preview for thumbnail storage
   const getThumb = () => {
     if (!preview) return null;
     try {
@@ -326,100 +305,50 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
       const ctx = canvas.getContext('2d');
       const img = new Image();
       img.src = preview;
-      // Sync draw — preview is already loaded as dataURL
       ctx.drawImage(img, 0, 0, 120, 120);
       return canvas.toDataURL('image/jpeg', 0.6);
     } catch { return preview; }
   };
 
-  const handleSubmit = () => {
-    const thumb = getThumb();
-    if (allItems.length > 0) {
-      allItems.forEach((item, i) => {
-        onAdd({ name: item.name, meal, kcal: item.kcal, carb: item.carb, protein: item.protein, fat: item.fat, water: 0, photo: i === 0 ? thumb : null });
-      });
-      return;
-    }
-    if (!name.trim() || !kcal) return;
-    onAdd({
-      name: name.trim(), meal, photo: thumb,
-      kcal: Number(kcal) || 0,
-      carb: Number(carb) || 0,
-      protein: Number(protein) || 0,
-      fat: Number(fat) || 0,
-      water: 0,
-    });
-  };
-
-  const handleExtraAdd = async () => {
-    if (!extraInput.trim()) return;
-    setExtraLooking(true);
+  const handleAnalyze = async () => {
+    if (!name.trim()) return;
+    setAnalyzing(true);
+    setAiResult(null);
     try {
       const res = await fetch('/api/food-lookup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: extraInput.trim(), servings: extraServings }),
+        body: JSON.stringify({ name: name.trim(), servings }),
       });
       if (res.ok) {
         const result = await res.json();
-        const newExtra = [...extraItems, { name: result.name, kcal: result.kcal, carb: result.carb, protein: result.protein, fat: result.fat }];
-        setExtraItems(newExtra);
-        updateTotals([...(aiItems || []), ...newExtra]);
-        setExtraInput('');
-        setExtraServings(1);
+        setAiResult(result);
       }
     } catch (err) {}
-    setExtraLooking(false);
+    setAnalyzing(false);
   };
 
-  const removeExtra = (idx) => {
-    const newExtra = extraItems.filter((_, i) => i !== idx);
-    setExtraItems(newExtra);
-    updateTotals([...(aiItems || []), ...newExtra]);
+  const handleSubmit = () => {
+    if (!aiResult) return;
+    const thumb = getThumb();
+    onAdd({
+      name: aiResult.name, meal, photo: thumb,
+      kcal: aiResult.kcal || 0,
+      carb: aiResult.carb || 0,
+      protein: aiResult.protein || 0,
+      fat: aiResult.fat || 0,
+      vitamin: aiResult.vitamin || 0,
+      mineral: aiResult.mineral || 0,
+      water: 0,
+    });
   };
 
-  const handlePhoto = async (e) => {
+  const handlePhoto = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // Show preview
     const reader = new FileReader();
     reader.onload = (ev) => setPreview(ev.target.result);
     reader.readAsDataURL(file);
-
-    setAnalyzing(true);
-    setAiItems(null);
-    try {
-      // Compress and convert to base64
-      const dataUrl = await new Promise((resolve) => {
-        const r = new FileReader();
-        r.onload = (ev) => resolve(ev.target.result);
-        r.readAsDataURL(file);
-      });
-      const compressed = await compressImage(dataUrl, 800);
-      const base64 = compressed.split(',')[1];
-
-      const res = await fetch('/api/food-analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: base64 }),
-      });
-
-      if (res.ok) {
-        const result = await res.json();
-        if (result.notFood) {
-          setAnalyzing(false);
-          return;
-        }
-        if (result.items?.length > 0) {
-          setAiItems(result.items);
-          updateTotals([...result.items, ...extraItems]);
-        }
-      }
-    } catch (err) {
-      // Silently fail — user can fill manually
-    }
-    setAnalyzing(false);
   };
 
   const inputStyle = {
@@ -439,9 +368,7 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
         background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
-        {/* Handle */}
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
-
         <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20 }}>식사 기록</div>
 
         {/* Meal selector */}
@@ -460,27 +387,25 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
         <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={handlePhoto} style={{ display: 'none' }} />
         <input ref={albumRef} type="file" accept="image/*" onChange={handlePhoto} style={{ display: 'none' }} />
         <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-          <button onClick={() => fileRef.current?.click()} disabled={analyzing} style={{
+          <button onClick={() => fileRef.current?.click()} style={{
             flex: 1, padding: '14px 0', borderRadius: 14, border: 'none',
-            background: analyzing ? 'var(--bg-input, #F2F3F5)' : 'rgba(129,228,189,0.12)',
-            color: analyzing ? 'var(--text-muted)' : 'var(--accent-primary)',
-            fontSize: 13, fontWeight: 600, cursor: analyzing ? 'default' : 'pointer',
+            background: 'rgba(129,228,189,0.12)',
+            color: 'var(--accent-primary)',
+            fontSize: 13, fontWeight: 600, cursor: 'pointer',
             fontFamily: 'inherit',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
           }}>
-            {analyzing ? '분석 중...' : (<>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="#81E4BD" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                <circle cx="12" cy="13" r="3" stroke="#81E4BD" strokeWidth="1.5" />
-              </svg>
-              사진 촬영
-            </>)}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="#81E4BD" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              <circle cx="12" cy="13" r="3" stroke="#81E4BD" strokeWidth="1.5" />
+            </svg>
+            사진 촬영
           </button>
-          <button onClick={() => albumRef.current?.click()} disabled={analyzing} style={{
+          <button onClick={() => albumRef.current?.click()} style={{
             flex: 1, padding: '14px 0', borderRadius: 14, border: 'none',
-            background: analyzing ? 'var(--bg-input, #F2F3F5)' : 'var(--bg-input, #F2F3F5)',
-            color: analyzing ? 'var(--text-dim)' : 'var(--text-secondary)',
-            fontSize: 13, fontWeight: 600, cursor: analyzing ? 'default' : 'pointer',
+            background: 'var(--bg-input, #F2F3F5)',
+            color: 'var(--text-secondary)',
+            fontSize: 13, fontWeight: 600, cursor: 'pointer',
             fontFamily: 'inherit',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
           }}>
@@ -495,110 +420,91 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
 
         {/* Photo preview */}
         {preview && (
-          <div style={{ marginBottom: 12, borderRadius: 14, overflow: 'hidden', position: 'relative' }}>
+          <div style={{ marginBottom: 12, borderRadius: 14, overflow: 'hidden' }}>
             <img src={preview} alt="" style={{ width: '100%', height: 140, objectFit: 'cover', display: 'block' }} />
-            {analyzing && (
-              <div style={{
-                position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#fff', fontSize: 13, fontWeight: 600,
-              }}>AI 분석 중...</div>
-            )}
           </div>
         )}
 
-        {/* AI detected items */}
-        {aiItems && aiItems.length > 0 && (
-          <div style={{ marginBottom: 12, padding: '10px 14px', borderRadius: 12, background: 'rgba(129,228,189,0.1)' }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent-primary)', marginBottom: 6 }}>AI 분석 결과</div>
-            {aiItems.map((item, idx) => (
-              <div key={idx} style={{ fontSize: 12, color: 'var(--text-primary)', lineHeight: 1.6 }}>
-                {item.name} — {item.kcal}kcal (탄{item.carb}g · 단{item.protein}g · 지{item.fat}g)
-              </div>
+        {/* Food name input + servings + analyze button */}
+        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>음식 이름</div>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+          <input
+            value={name}
+            onChange={e => { setName(e.target.value); setAiResult(null); }}
+            onKeyDown={e => e.key === 'Enter' && handleAnalyze()}
+            placeholder="예: 낙지비빔밥, 된장찌개"
+            style={{ ...inputStyle, flex: 1 }}
+          />
+          <select
+            value={servings}
+            onChange={e => { setServings(Number(e.target.value)); setAiResult(null); }}
+            style={{
+              width: 64, padding: '10px 4px', borderRadius: 12, border: 'none',
+              background: 'var(--bg-input, #F2F3F5)', fontSize: 13,
+              color: 'var(--text-primary)', fontFamily: 'inherit', textAlign: 'center',
+              outline: 'none',
+            }}
+          >
+            {[0.5, 1, 1.5, 2, 3].map(n => (
+              <option key={n} value={n}>{n}인분</option>
             ))}
-          </div>
-        )}
+          </select>
+        </div>
 
-        {/* Extra food input */}
-        <div style={{ marginBottom: 12 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>
-            {allItems.length > 0 ? '추가 음식 입력' : '음식 이름으로 검색'}
-          </div>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-            <input
-              value={extraInput}
-              onChange={e => setExtraInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleExtraAdd()}
-              placeholder="예: 메밀소바, 김치찌개"
-              style={{ ...inputStyle, flex: 1 }}
-            />
-            <select
-              value={extraServings}
-              onChange={e => setExtraServings(Number(e.target.value))}
-              style={{
-                width: 64, padding: '10px 4px', borderRadius: 12, border: 'none',
-                background: 'var(--bg-input, #F2F3F5)', fontSize: 13,
-                color: 'var(--text-primary)', fontFamily: 'inherit', textAlign: 'center',
-                outline: 'none',
-              }}
-            >
-              {[0.5, 1, 1.5, 2, 3].map(n => (
-                <option key={n} value={n}>{n}인분</option>
-              ))}
-            </select>
-            <button onClick={handleExtraAdd} disabled={extraLooking || !extraInput.trim()} style={{
-              padding: '10px 14px', borderRadius: 12, border: 'none',
-              background: extraLooking ? 'var(--bg-input)' : 'var(--accent-primary)',
-              color: '#fff', fontSize: 13, fontWeight: 600,
-              cursor: extraLooking ? 'default' : 'pointer', fontFamily: 'inherit',
-              flexShrink: 0,
-            }}>{extraLooking ? '...' : '추가'}</button>
-          </div>
+        {/* Analyze button */}
+        <button onClick={handleAnalyze} disabled={analyzing || !name.trim()} style={{
+          width: '100%', padding: '13px 0', borderRadius: 14, border: 'none',
+          background: analyzing ? 'var(--bg-input, #F2F3F5)' : 'rgba(129,228,189,0.15)',
+          color: analyzing ? 'var(--text-muted)' : 'var(--accent-primary)',
+          fontSize: 13, fontWeight: 600, cursor: analyzing ? 'default' : 'pointer',
+          fontFamily: 'inherit', marginBottom: 12,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+        }}>
+          {analyzing ? (
+            <>
+              <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite', width: 14, height: 14, border: '2px solid var(--text-muted)', borderTopColor: 'transparent', borderRadius: '50%' }} />
+              AI 영양소 분석 중...
+            </>
+          ) : '✨ AI 영양소 분석'}
+        </button>
 
-          {/* Extra items list */}
-          {extraItems.length > 0 && (
-            <div style={{ padding: '8px 12px', borderRadius: 12, background: 'rgba(129,228,189,0.08)', marginBottom: 4 }}>
-              {extraItems.map((item, idx) => (
-                <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0' }}>
-                  <span style={{ fontSize: 12, color: 'var(--text-primary)' }}>
-                    {item.name} — {item.kcal}kcal
-                  </span>
-                  <button onClick={() => removeExtra(idx)} style={{
-                    background: 'none', border: 'none', color: 'var(--text-dim)',
-                    fontSize: 14, cursor: 'pointer', padding: '0 4px',
-                  }}>×</button>
+        {/* AI Result */}
+        {aiResult && (
+          <div style={{
+            padding: '14px 16px', borderRadius: 14, marginBottom: 16,
+            background: 'rgba(129,228,189,0.08)', border: '1px solid rgba(129,228,189,0.2)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+              <span style={{ fontSize: 13 }}>✨</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{aiResult.name}</span>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 'auto' }}>{aiResult.servings || servings}인분</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
+              {[
+                { label: '칼로리', value: `${aiResult.kcal}`, unit: 'kcal', color: '#81E4BD' },
+                { label: '탄수화물', value: `${aiResult.carb}`, unit: 'g', color: '#93C5FD' },
+                { label: '단백질', value: `${aiResult.protein}`, unit: 'g', color: '#D1FAE5' },
+              ].map(n => (
+                <div key={n.label} style={{ textAlign: 'center', padding: '8px 4px', borderRadius: 10, background: '#fff' }}>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.value}<span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>{n.unit}</span></div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{n.label}</div>
                 </div>
               ))}
             </div>
-          )}
-        </div>
-
-        {/* Total summary */}
-        {allItems.length > 0 && (
-          <div style={{
-            padding: '12px 16px', borderRadius: 12, marginBottom: 12,
-            background: 'rgba(129,228,189,0.08)',
-          }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent-primary)', marginBottom: 4 }}>합계</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
-              {kcal}kcal
-              <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-muted)', marginLeft: 8 }}>
-                탄{carb}g · 단{protein}g · 지{fat}g
-              </span>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+              {[
+                { label: '지방', value: `${aiResult.fat}`, unit: 'g' },
+                { label: '비타민', value: `${aiResult.vitamin || 0}`, unit: '%' },
+                { label: '미네랄', value: `${aiResult.mineral || 0}`, unit: '%' },
+              ].map(n => (
+                <div key={n.label} style={{ textAlign: 'center', padding: '8px 4px', borderRadius: 10, background: '#fff' }}>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.value}<span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>{n.unit}</span></div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{n.label}</div>
+                </div>
+              ))}
             </div>
           </div>
         )}
-
-        {/* Manual input (hidden when items exist, shown as fallback) */}
-        {allItems.length === 0 && <>
-          <input value={name} onChange={e => setName(e.target.value)} placeholder="음식 이름" style={{ ...inputStyle, marginBottom: 10 }} />
-          <input value={kcal} onChange={e => setKcal(e.target.value)} placeholder="칼로리 (kcal)" type="number" style={{ ...inputStyle, marginBottom: 10 }} />
-          <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-            <input value={carb} onChange={e => setCarb(e.target.value)} placeholder="탄수화물(g)" type="number" style={inputStyle} />
-            <input value={protein} onChange={e => setProtein(e.target.value)} placeholder="단백질(g)" type="number" style={inputStyle} />
-            <input value={fat} onChange={e => setFat(e.target.value)} placeholder="지방(g)" type="number" style={inputStyle} />
-          </div>
-        </>}
 
         {/* Buttons */}
         <div style={{ display: 'flex', gap: 10 }}>
@@ -608,11 +514,13 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
             color: 'var(--text-muted)', fontSize: 14, fontWeight: 600,
             cursor: 'pointer', fontFamily: 'inherit',
           }}>취소</button>
-          <button onClick={handleSubmit} style={{
+          <button onClick={handleSubmit} disabled={!aiResult} style={{
             flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
-            border: 'none', background: 'var(--accent-primary)',
-            color: '#fff', fontSize: 14, fontWeight: 700,
-            cursor: 'pointer', fontFamily: 'inherit',
+            border: 'none',
+            background: aiResult ? 'var(--accent-primary)' : 'var(--bg-input, #F2F3F5)',
+            color: aiResult ? '#fff' : 'var(--text-dim)',
+            fontSize: 14, fontWeight: 700,
+            cursor: aiResult ? 'pointer' : 'default', fontFamily: 'inherit',
           }}>추가</button>
         </div>
       </div>
