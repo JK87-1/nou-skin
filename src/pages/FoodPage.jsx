@@ -31,13 +31,13 @@ const NutrientIcons = {
   ),
   vitamin: (
     <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
-      <ellipse cx="16" cy="16" rx="12" ry="8" transform="rotate(-35 16 16)" fill="#F5D86A" />
-      <ellipse cx="15" cy="14.5" rx="10" ry="6.5" transform="rotate(-35 15 14.5)" fill="#FAE48A" />
-      <ellipse cx="13" cy="12.5" rx="3.5" ry="2" transform="rotate(-35 13 12.5)" fill="#FFF0A8" opacity="0.7" />
+      <ellipse cx="16" cy="16" rx="13" ry="10.5" transform="rotate(-35 16 16)" fill="#F5D86A" />
+      <ellipse cx="15" cy="14.5" rx="11" ry="8.5" transform="rotate(-35 15 14.5)" fill="#FAE48A" />
+      <ellipse cx="13" cy="12.5" rx="4" ry="2.5" transform="rotate(-35 13 12.5)" fill="#FFF0A8" opacity="0.7" />
     </svg>
   ),
   mineral: (
-    <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
+    <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
       <path d="M16 5L27 11 16 17 5 11z" fill="#C0DEFF" />
       <path d="M5 11L16 17v12L5 23z" fill="#A8D0FA" />
       <path d="M27 11L16 17v12l11-6z" fill="#90C2F5" />
