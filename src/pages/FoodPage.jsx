@@ -452,7 +452,7 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
             onChange={e => { setName(e.target.value); setAiResult(null); }}
             onKeyDown={e => e.key === 'Enter' && handleAnalyze()}
             onFocus={() => setTimeout(() => nameInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
-            placeholder="예: 낙지비빔밥, 된장찌개"
+            placeholder="예: 연어포케, 불고기김밥"
             style={{ ...inputStyle, flex: 1 }}
           />
           <select
