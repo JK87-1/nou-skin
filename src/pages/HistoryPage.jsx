@@ -275,7 +275,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
 
       {/* Header */}
       <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>기록</h1>
+        <div></div>
         <div style={{ display: 'flex', gap: 8 }}>
           <div onClick={onMeasure} style={{
             width: 34, height: 34, borderRadius: '50%', cursor: 'pointer',
@@ -312,21 +312,19 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
         />
       )}
 
-
-      {/* ===== Profile Header + Category Tabs (always visible) ===== */}
+      {/* ===== Profile + Category Tabs ===== */}
       {(() => {
         const latestRecord = records.length > 0 ? records[records.length - 1] : null;
         const profileImg = getProfile().profileImage;
         const avatarSrc = profileImg || (latestRecord ? (thumbs[String(latestRecord.id)] || thumbs[latestRecord.date]) : null);
         const avgScore = records.length > 0
           ? Math.round(records.reduce((s, r) => s + r.overallScore, 0) / records.length) : 0;
-
         return (
-          <div style={{ padding: '24px 20px 0' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          <div style={{ padding: '27px 20px 0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12 }}>
               <div style={{
-                width: 80, height: 80, borderRadius: '50%', flexShrink: 0,
-                background: 'var(--btn-primary-bg)', padding: 3,
+                width: 56, height: 56, borderRadius: '50%', flexShrink: 0,
+                background: 'var(--btn-primary-bg)', padding: 2,
               }}>
                 <div style={{
                   width: '100%', height: '100%', borderRadius: '50%',
@@ -336,7 +334,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                     <img src={avatarSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
                     <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
                         <circle cx="12" cy="10" r="4" /><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" strokeLinecap="round" />
                       </svg>
                     </div>
@@ -345,24 +343,22 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
               </div>
               <div style={{ display: 'flex', flex: 1, justifyContent: 'space-around', textAlign: 'center' }}>
                 <div>
-                  <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{records.length}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>기록</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{records.length}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>기록</div>
                 </div>
                 <div>
-                  <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{avgScore}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>평균점수</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{avgScore}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>평균점수</div>
                 </div>
               </div>
             </div>
-            <div style={{ padding: '12px 0 0' }}>
-              <div className="segment-control">
-                <button className={`segment-btn${albumCategory === 'skin' ? ' active' : ''}`}
-                  onClick={() => setAlbumCategory('skin')}>피부</button>
-                <button className={`segment-btn${albumCategory === 'food' ? ' active' : ''}`}
-                  onClick={() => setAlbumCategory('food')}>식단</button>
-                <button className={`segment-btn${albumCategory === 'body' ? ' active' : ''}`}
-                  onClick={() => setAlbumCategory('body')}>바디</button>
-              </div>
+            <div className="segment-control">
+              <button className={`segment-btn${albumCategory === 'skin' ? ' active' : ''}`}
+                onClick={() => setAlbumCategory('skin')}>피부</button>
+              <button className={`segment-btn${albumCategory === 'food' ? ' active' : ''}`}
+                onClick={() => setAlbumCategory('food')}>식단</button>
+              <button className={`segment-btn${albumCategory === 'body' ? ' active' : ''}`}
+                onClick={() => setAlbumCategory('body')}>바디</button>
             </div>
           </div>
         );
