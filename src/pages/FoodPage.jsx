@@ -565,40 +565,41 @@ function FoodCoachCard({ foods, nutrition, goal, score, lacking }) {
   }
 
   // 1. 혈당 상승
-  if (latestFood.bloodSugar === '높음') {
-    messages.push({ icon: '📈', text: `${latestFood.name}은 혈당을 빠르게 올릴 수 있어요. ${latestFood.bloodSugarNote || '식이섬유가 풍부한 반찬과 함께 드세요.'}` });
-  } else if (latestFood.bloodSugar === '낮음') {
-    messages.push({ icon: '📉', text: `${latestFood.name}은 혈당에 부담이 적어요. 좋은 선택이에요!` });
+  if (latestFood.bloodSugar) {
+    const bsIcon = latestFood.bloodSugar === '높음' ? '📈' : latestFood.bloodSugar === '보통' ? '📊' : '📉';
+    messages.push({ icon: bsIcon, text: `혈당 상승: ${latestFood.bloodSugar} — ${latestFood.bloodSugarNote || (latestFood.bloodSugar === '높음' ? '식이섬유가 풍부한 반찬과 함께 드세요.' : latestFood.bloodSugar === '낮음' ? '혈당에 부담이 적어요.' : '적당한 수준이에요.')}` });
   }
 
   // 2. 졸림 확률
-  if (latestFood.drowsiness === '높음') {
-    messages.push({ icon: '😴', text: latestFood.drowsinessNote || `${latestFood.name} 식후 졸림이 올 수 있어요. 가벼운 산책을 추천해요.` });
+  if (latestFood.drowsiness) {
+    const drIcon = latestFood.drowsiness === '높음' ? '😴' : latestFood.drowsiness === '보통' ? '🙂' : '⚡';
+    messages.push({ icon: drIcon, text: `졸림 확률: ${latestFood.drowsiness} — ${latestFood.drowsinessNote || (latestFood.drowsiness === '높음' ? '식후 가벼운 산책을 추천해요.' : latestFood.drowsiness === '낮음' ? '식후에도 활력이 유지돼요.' : '보통 수준이에요.')}` });
   }
 
   // 3. 피부 트러블
-  if (latestFood.skinImpact === '주의') {
-    messages.push({ icon: '⚠️', text: latestFood.skinImpactNote || `${latestFood.name}은 피부 트러블에 영향을 줄 수 있어요.` });
-  } else if (latestFood.skinImpact === '좋음') {
-    messages.push({ icon: '✨', text: `${latestFood.name}은 피부 건강에 도움이 되는 음식이에요!` });
+  if (latestFood.skinImpact) {
+    const skIcon = latestFood.skinImpact === '주의' ? '⚠️' : latestFood.skinImpact === '좋음' ? '✨' : '🔄';
+    messages.push({ icon: skIcon, text: `피부 영향: ${latestFood.skinImpact} — ${latestFood.skinImpactNote || (latestFood.skinImpact === '주의' ? '트러블에 영향을 줄 수 있어요.' : latestFood.skinImpact === '좋음' ? '피부 건강에 도움이 돼요.' : '큰 영향은 없어요.')}` });
   }
 
-  // 4. 영양소 균형
-  if (lacking.length > 0) {
-    messages.push({ icon: '⚖️', text: `${goal._mealLabel} 기준 ${lacking.join(', ')}이 부족해요. 다음 식사에서 보충해보세요.` });
-  } else if (score >= 70) {
-    messages.push({ icon: '🌟', text: `${goal._mealLabel} 기준 영양 균형이 잘 맞아요! 이 패턴을 유지하세요.` });
-  }
-
-  // 5. 과식 여부
+  // 4. 과식 여부
   const kcalRatio = goal.kcal ? nutrition.kcal / goal.kcal : 0;
   if (kcalRatio > 1.2) {
-    messages.push({ icon: '🍽️', text: `${goal._mealLabel} 기준 칼로리를 ${Math.round((kcalRatio - 1) * 100)}% 초과했어요. 다음 끼니를 가볍게 드세요.` });
+    messages.push({ icon: '🍽️', text: `과식 주의 — ${goal._mealLabel} 기준 칼로리를 ${Math.round((kcalRatio - 1) * 100)}% 초과했어요.` });
+  } else if (kcalRatio > 0) {
+    messages.push({ icon: '🍽️', text: `${goal._mealLabel} 기준 칼로리 ${Math.round(kcalRatio * 100)}% 섭취 — ${kcalRatio >= 0.7 ? '적절해요!' : '아직 여유가 있어요.'}` });
   }
 
-  // 메시지가 없으면 기본 메시지
-  if (messages.length === 0) {
-    messages.push({ icon: '👍', text: `${latestFood.name}, 괜찮은 선택이에요. 균형 잡힌 식단을 이어가세요!` });
+  // 5. 영양소 균형
+  if (lacking.length > 0) {
+    messages.push({ icon: '⚖️', text: `영양 균형 — ${lacking.join(', ')}이 부족해요. 다음 식사에서 보충해보세요.` });
+  } else if (score >= 70) {
+    messages.push({ icon: '⚖️', text: `영양 균형이 잘 맞아요! 이 패턴을 유지하세요.` });
+  }
+
+  // 혈당/졸림/피부 데이터 없는 기존 기록일 때 기본 안내
+  if (!latestFood.bloodSugar && !latestFood.drowsiness && !latestFood.skinImpact) {
+    messages.unshift({ icon: '💡', text: `${latestFood.name} — 새로 기록하면 혈당·졸림·피부 영향까지 분석해드려요.` });
   }
 
   return (
@@ -714,32 +715,37 @@ function FoodDetailModal({ food, onClose }) {
         </div>
 
         {/* Impact analysis */}
-        {(food.bloodSugar || food.drowsiness || food.skinImpact) && (
-          <>
-            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 10 }}>식후 영향 분석</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
-              {impactItems.filter(i => i.value).map(item => {
-                const s = IMPACT_STYLE[item.value] || IMPACT_STYLE['보통'];
-                return (
-                  <div key={item.label} style={{
-                    padding: '14px 16px', borderRadius: 14,
-                    background: 'var(--bg-card)',
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{item.icon} {item.label}</span>
-                      <span style={{
-                        fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 8,
-                        background: s.bg, color: s.color,
-                      }}>{item.value}</span>
-                    </div>
-                    {item.note && (
-                      <div style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{item.note}</div>
-                    )}
+        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 10 }}>식후 영향 분석</div>
+        {(food.bloodSugar || food.drowsiness || food.skinImpact) ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+            {impactItems.filter(i => i.value).map(item => {
+              const s = IMPACT_STYLE[item.value] || IMPACT_STYLE['보통'];
+              return (
+                <div key={item.label} style={{
+                  padding: '14px 16px', borderRadius: 14,
+                  background: 'var(--bg-card)',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{item.icon} {item.label}</span>
+                    <span style={{
+                      fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 8,
+                      background: s.bg, color: s.color,
+                    }}>{item.value}</span>
                   </div>
-                );
-              })}
-            </div>
-          </>
+                  {item.note && (
+                    <div style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{item.note}</div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div style={{
+            padding: '16px', borderRadius: 14, background: 'var(--bg-card)',
+            fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 20, lineHeight: 1.6,
+          }}>
+            이전 방식으로 기록된 식사예요.<br />새로 기록하면 혈당·졸림·피부 영향까지 분석해드려요.
+          </div>
         )}
 
         {/* Close button */}
