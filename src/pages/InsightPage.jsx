@@ -1,4 +1,5 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
+import WeekDateHeader from '../components/WeekDateHeader';
 import {
   getBodyRecords, saveBodyRecord, deleteBodyRecord,
   getBodyGoal, saveBodyGoal, getBodyProfile, saveBodyProfile,
@@ -16,6 +17,10 @@ export default function InsightPage() {
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [userProfile, setUserProfile] = useState(getProfile);
+  const [headerTitle, setHeaderTitle] = useState('');
+  const [insightTab, setInsightTab] = useState('skin');
+  const todayKey = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`;
+  const [selectedDate, setSelectedDate] = useState(todayKey);
 
   const latest = records.length > 0 ? records[records.length - 1] : null;
   const start = records.length > 0 ? records[0] : null;
@@ -70,46 +75,61 @@ export default function InsightPage() {
 
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--bg-primary)', paddingBottom: 80 }}>
-      {/* Header with profile */}
-      <div style={{ padding: '24px 24px 16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{
-              width: 42, height: 42, borderRadius: '50%', overflow: 'hidden',
-              background: 'var(--bg-secondary)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              {userProfile.profileImage ? (
-                <img src={userProfile.profileImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              ) : (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
-                  <circle cx="12" cy="10" r="4" /><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" strokeLinecap="round" />
-                </svg>
-              )}
-            </div>
-            <div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{userProfile.nickname || '사용자'}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{userProfile.skinType || ''}{userProfile.birthYear ? ` · ${new Date().getFullYear() - userProfile.birthYear}세` : ''}</div>
-            </div>
+      {/* Header */}
+      <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>{headerTitle}</h1>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M12 5v14M5 12h14" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" />
+            </svg>
           </div>
-          {/* Settings gear */}
-          <div onClick={() => setShowSettings(true)} style={{ cursor: 'pointer', padding: 6 }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <div onClick={() => setShowSettings(true)} style={{ width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="3" />
               <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
             </svg>
           </div>
         </div>
+      </div>
 
-        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>바디</div>
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-          {goalDiff != null
-            ? `목표까지 ${Math.abs(goalDiff)}kg ${Number(goalDiff) > 0 ? '남았어요' : '달성!'}`
-            : '목표를 설정해보세요'}
+      <WeekDateHeader
+        selectedDate={selectedDate}
+        onSelectDate={setSelectedDate}
+        hideTitle
+        onTitleChange={setHeaderTitle}
+      />
+
+      {/* Category Tabs */}
+      <div style={{ padding: '12px 20px 16px' }}>
+        <div className="segment-control">
+          <button className={`segment-btn${insightTab === 'skin' ? ' active' : ''}`}
+            onClick={() => setInsightTab('skin')}>피부</button>
+          <button className={`segment-btn${insightTab === 'food' ? ' active' : ''}`}
+            onClick={() => setInsightTab('food')}>식단</button>
+          <button className={`segment-btn${insightTab === 'body' ? ' active' : ''}`}
+            onClick={() => setInsightTab('body')}>바디</button>
         </div>
       </div>
 
-      <div style={{ padding: '0 20px' }}>
+      {/* Skin Tab */}
+      {insightTab === 'skin' && (
+        <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+          <div style={{ fontSize: 14, fontWeight: 600 }}>피부 분석 준비 중</div>
+          <div style={{ fontSize: 12, marginTop: 6 }}>곧 피부 트렌드 분석이 제공됩니다</div>
+        </div>
+      )}
+
+      {/* Food Tab */}
+      {insightTab === 'food' && (
+        <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+          <div style={{ fontSize: 14, fontWeight: 600 }}>식단 분석 준비 중</div>
+          <div style={{ fontSize: 12, marginTop: 6 }}>곧 영양 트렌드 분석이 제공됩니다</div>
+        </div>
+      )}
+
+      {/* Body Tab */}
+      {insightTab === 'body' && <div style={{ padding: '0 20px' }}>
         {/* Current Weight Hero */}
         <div style={{ textAlign: 'center', padding: '12px 0 8px', ...fadeUp(0.05) }}>
           {latest ? (
@@ -210,7 +230,7 @@ export default function InsightPage() {
             color: '#fff', cursor: 'pointer', fontFamily: 'inherit',
           }}>오늘 기록하기</button>
         </div>
-      </div>
+      </div>}
 
       {/* Add Weight Modal */}
       {showAdd && <AddWeightModal onSave={handleSave} onClose={() => setShowAdd(false)} latest={latest} />}
