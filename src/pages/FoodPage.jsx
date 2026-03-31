@@ -17,19 +17,14 @@ const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
 const NutrientIcons = {
   protein: (
     <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
-      {/* T본 스테이크 외곽 — 그림자 */}
+      {/* 그림자 */}
       <path d="M6 22c-1-2-1-4 0-6l2-4c1-2 3-3 5-4h6c2.5 0 4 1 5 3l2 4c1 2.5.5 5-1 6l-3 2c-1.5 1-3.5 1.5-6 1.5s-4-.5-5.5-1.5z" fill="#C46A6A" opacity="0.3" transform="translate(0.5,0.5)" />
-      {/* 스테이크 외곽 — 지방 테두리 */}
+      {/* 지방 테두리 */}
       <path d="M6 22c-1-2-1-4 0-6l2-4c1-2 3-3 5-4h6c2.5 0 4 1 5 3l2 4c1 2.5.5 5-1 6l-3 2c-1.5 1-3.5 1.5-6 1.5s-4-.5-5.5-1.5z" fill="#F5C6CB" />
-      {/* 살코기 안쪽 */}
+      {/* 살코기 */}
       <path d="M8 21c-.8-1.5-.6-3.2.2-5l1.5-3c.8-1.5 2-2.2 3.5-2.8h5.5c2 0 3 .8 3.8 2.2l1.5 3.2c.7 1.8.3 3.8-.8 4.8l-2 1.5c-1.2.7-2.8 1.1-5 1.1s-3.5-.4-4.8-1z" fill="#D45B5B" />
-      {/* 밝은 면 — 입체감 */}
-      <path d="M9 18c-.3-1 0-2.2.5-3.5l1-2c.6-1 1.5-1.6 2.8-2h4c1.5 0 2.3.5 3 1.5l1 2c.5 1.2.3 2.5-.3 3.2" fill="#E87070" opacity="0.7" />
-      {/* T자 뼈 */}
-      <path d="M15.5 10v13" stroke="#F5D6CB" strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M11 16h9" stroke="#F5D6CB" strokeWidth="1.6" strokeLinecap="round" />
       {/* 하이라이트 */}
-      <ellipse cx="12.5" cy="14" rx="2" ry="1.2" fill="#F09090" opacity="0.5" />
+      <ellipse cx="13" cy="14" rx="3" ry="2" fill="#E87070" opacity="0.6" />
     </svg>
   ),
   carb: (
@@ -48,14 +43,17 @@ const NutrientIcons = {
   ),
   vitamin: (
     <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
-      {/* 레몬 그림자 */}
-      <ellipse cx="16.5" cy="17" rx="10" ry="8.5" fill="#D4B030" opacity="0.25" />
-      {/* 레몬 몸체 */}
-      <ellipse cx="16" cy="16" rx="10" ry="8.5" fill="#FCDA4E" />
-      {/* 밝은 면 */}
-      <ellipse cx="15.5" cy="15" rx="8.5" ry="7" fill="#FFE566" />
+      {/* 레몬 — 대각선 타원형 */}
+      <ellipse cx="16" cy="16" rx="12" ry="8" transform="rotate(-35 16 16)" fill="#F5D24E" />
+      {/* 밝은 윗면 */}
+      <ellipse cx="15" cy="14.5" rx="10" ry="6.5" transform="rotate(-35 15 14.5)" fill="#FFE566" />
       {/* 하이라이트 */}
-      <ellipse cx="12.5" cy="12.5" rx="3.5" ry="2.5" fill="#FFF3A0" opacity="0.6" />
+      <ellipse cx="12" cy="12" rx="3" ry="1.5" transform="rotate(-35 12 12)" fill="#FFF8CC" opacity="0.7" />
+      {/* 하단 질감 — 점 패턴 */}
+      <circle cx="17" cy="20" r="1" fill="#ECC240" opacity="0.5" />
+      <circle cx="19.5" cy="19" r="1" fill="#ECC240" opacity="0.5" />
+      <circle cx="15" cy="21.5" r="0.8" fill="#ECC240" opacity="0.4" />
+      <circle cx="21" cy="17.5" r="0.8" fill="#ECC240" opacity="0.4" />
     </svg>
   ),
   mineral: (
