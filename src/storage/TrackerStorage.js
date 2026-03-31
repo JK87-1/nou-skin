@@ -108,6 +108,49 @@ export function toggleTrackerCheck(mode, productId) {
   return checks;
 }
 
+export function getTrackerChecksForDate(dateStr) {
+  if (dateStr === getTodayStr()) return getTrackerChecks();
+  try {
+    const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '{}');
+    const h = history[dateStr];
+    if (!h?.checks) return { date: dateStr, morning: {}, night: {} };
+    return { date: dateStr, ...h.checks };
+  } catch { return { date: dateStr, morning: {}, night: {} }; }
+}
+
+export function toggleTrackerCheckForDate(dateStr, mode, productId) {
+  if (dateStr === getTodayStr()) return toggleTrackerCheck(mode, productId);
+  try {
+    const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '{}');
+    if (!history[dateStr]) history[dateStr] = { mornDone: 0, mornTotal: 0, nightDone: 0, nightTotal: 0, completed: false, partial: false };
+    if (!history[dateStr].checks) history[dateStr].checks = { morning: {}, night: {} };
+    history[dateStr].checks[mode][productId] = !history[dateStr].checks[mode][productId];
+    // recalc summary
+    const products = getProducts();
+    const mornProds = products.filter(p => p.timeSlot === 'morning' || p.timeSlot === 'both');
+    const nightProds = products.filter(p => p.timeSlot === 'night' || p.timeSlot === 'both');
+    const mc = history[dateStr].checks.morning || {};
+    const nc = history[dateStr].checks.night || {};
+    const mornDone = mornProds.filter(p => mc[p.id]).length;
+    const nightDone = nightProds.filter(p => nc[p.id]).length;
+    history[dateStr].mornDone = mornDone;
+    history[dateStr].nightDone = nightDone;
+    history[dateStr].mornTotal = mornProds.length;
+    history[dateStr].nightTotal = nightProds.length;
+    history[dateStr].completed = (mornProds.length === 0 || mornDone === mornProds.length) && (nightProds.length === 0 || nightDone === nightProds.length) && (mornProds.length + nightProds.length > 0);
+    history[dateStr].partial = (mornDone + nightDone) > 0;
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    return { date: dateStr, ...history[dateStr].checks };
+  } catch { return { date: dateStr, morning: {}, night: {} }; }
+}
+
+export function getTrackerProgressForDate(dateStr, mode) {
+  const checks = getTrackerChecksForDate(dateStr);
+  const products = getProductsForMode(mode);
+  const done = products.filter(p => checks[mode]?.[p.id]).length;
+  return { done, total: products.length };
+}
+
 export function getTrackerProgress(mode) {
   const checks = getTrackerChecks();
   const products = getProductsForMode(mode);
@@ -132,6 +175,7 @@ function updateHistory(checks) {
       mornDone, mornTotal, nightDone, nightTotal,
       completed: (mornTotal === 0 || mornDone === mornTotal) && (nightTotal === 0 || nightDone === nightTotal) && (mornTotal + nightTotal > 0),
       partial: (mornDone + nightDone) > 0,
+      checks: { morning: { ...checks.morning }, night: { ...checks.night } },
     };
 
     // 30일분만 유지

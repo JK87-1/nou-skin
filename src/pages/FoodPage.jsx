@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { getTodayFoods, getTodayNutrition, getFoodRecords, getNutritionForDate, getTimeAdjustedGoal, getFoodGoal, saveFoodRecord, deleteFoodRecord } from '../storage/FoodStorage';
-import { getWeeklyCompletion } from '../storage/RoutineStorage';
+
 import { getRecords, getChanges, getTotalChanges, getAllThumbnailsAsync } from '../storage/SkinStorage';
 import { getBodyRecords, getLatestWeight, getStartWeight, getBodyGoal, getBodyProfile, calcBMI, saveBodyRecord, deleteBodyRecord } from '../storage/BodyStorage';
 
@@ -131,35 +131,48 @@ export default function FoodPage({ onTabChange }) {
         <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>분석</h1>
       </div>
 
-      {/* Weekly Date Header — identical to RoutinePage */}
-      <div style={{ padding: '24px 20px 12px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+      {/* Weekly Date Header — matching RoutineTracker style */}
+      <div style={{ height: 118, display: 'flex', alignItems: 'flex-end', padding: '0 20px' }}>
+        <div style={{ display: 'flex', gap: 6, width: '100%', paddingBottom: 8 }}>
           {(() => {
             const now = new Date();
             const dayOfWeek = now.getDay();
             const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-            const weekly = getWeeklyCompletion();
             const days = [];
             for (let i = 0; i < 7; i++) {
               const d = new Date(now);
               d.setDate(now.getDate() + mondayOffset + i);
               const dk = getDateKey(d);
-              const dayData = weekly.find(w => w.date === dk);
-              days.push({ date: d.getDate(), dateKey: dk, dayLabel: ['월','화','수','목','금','토','일'][i], completed: dayData?.completed, partial: dayData?.partial });
+              days.push({ date: d.getDate(), dateKey: dk, dayLabel: ['월','화','수','목','금','토','일'][i], isToday: d.toDateString() === now.toDateString() });
             }
-            return days.map((d, i) => {
+            return days.map((d) => {
               const isSelected = d.dateKey === selectedDate;
               return (
-                <div key={i} onClick={() => handleSelectDate(d.dateKey)} style={{ textAlign: 'center', minWidth: 32, cursor: 'pointer' }}>
-                  <div style={{ fontSize: 10, color: isSelected ? 'var(--accent-primary)' : 'var(--text-dim)', fontWeight: 500, marginBottom: 6 }}>{d.dayLabel}</div>
+                <div key={d.dateKey} onClick={() => handleSelectDate(d.dateKey)} style={{
+                  flex: 1, textAlign: 'center', padding: '10px 0 8px', borderRadius: 12, cursor: 'pointer',
+                  background: isSelected
+                    ? 'var(--day-today-bg)'
+                    : 'var(--day-default-bg)',
+                }}>
                   <div style={{
-                    width: 32, height: 32, borderRadius: '50%',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 13, fontWeight: isSelected ? 700 : 400,
-                    color: isSelected ? '#fff' : d.completed ? 'var(--accent-primary)' : 'var(--text-muted)',
-                    background: isSelected ? 'var(--accent-primary)' : d.completed ? 'rgba(129,228,189,0.15)' : 'transparent',
-                    border: d.partial && !isSelected && !d.completed ? '1.5px solid rgba(129,228,189,0.4)' : 'none',
-                  }}>{d.date}</div>
+                    fontSize: 11,
+                    color: isSelected ? 'var(--day-today-accent)' : 'var(--text-muted)',
+                    fontWeight: 600, marginBottom: 2,
+                  }}>{d.dayLabel}</div>
+                  <div style={{
+                    fontSize: 15, fontWeight: 700,
+                    color: isSelected
+                      ? 'var(--day-today-accent)'
+                      : 'var(--text-primary)',
+                  }}>
+                    {d.date}
+                  </div>
+                  {isSelected && (
+                    <div style={{
+                      width: 4, height: 4, borderRadius: '50%', background: 'var(--day-today-accent)',
+                      margin: '4px auto 0',
+                    }} />
+                  )}
                 </div>
               );
             });

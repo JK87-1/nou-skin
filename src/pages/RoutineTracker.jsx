@@ -11,8 +11,9 @@ import { getWeeklyStatus } from '../storage/MissionStorage';
 import { getRoutineItems, saveRoutineItem, deleteRoutineItem, getChecks, toggleCheck, getTodayProgress } from '../storage/RoutineCheckStorage';
 import {
   TRACKER_CATEGORIES, getProducts, saveProduct, deleteProduct,
-  getProductsForMode, getTrackerChecks, toggleTrackerCheck,
-  getTrackerProgress, getTrackerWeekly,
+  getProductsForMode,
+  getTrackerProgress, getTrackerProgressForDate, getTrackerWeekly,
+  getTrackerChecksForDate, toggleTrackerCheckForDate,
   computeAllCorrelations, compressProductThumb,
 } from '../storage/TrackerStorage';
 
@@ -642,12 +643,19 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, accent }) {
 
 // ===== MAIN COMPONENT =====
 
+function getTodayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 export default function RoutineTracker({ themeColors, onBack, initialMode }) {
   const [pageMode, setPageMode] = useState(initialMode || 'routine');
   const [section, setSection] = useState('products');
   const [products, setProducts] = useState(() => getProducts());
   const [routineMode, setRoutineMode] = useState(new Date().getHours() >= 18 ? 'night' : 'morning');
-  const [checks, setChecks] = useState(() => getTrackerChecks());
+  const [selectedDate, setSelectedDate] = useState(getTodayStr);
+  const isToday = selectedDate === getTodayStr();
+  const [checks, setChecks] = useState(() => getTrackerChecksForDate(selectedDate));
   const [analyses, setAnalyses] = useState([]);
 
   // Sheets
@@ -659,9 +667,14 @@ export default function RoutineTracker({ themeColors, onBack, initialMode }) {
   const accent = themeColors?.accent || '#81E4BD';
   const getCat = (cat) => TRACKER_CATEGORIES[cat] || TRACKER_CATEGORIES['기타'];
 
+  const handleSelectDate = (dateKey) => {
+    setSelectedDate(dateKey);
+    setChecks(getTrackerChecksForDate(dateKey));
+  };
+
   // 루틴 데이터
   const modeProducts = getProductsForMode(routineMode);
-  const progress = getTrackerProgress(routineMode);
+  const progress = getTrackerProgressForDate(selectedDate, routineMode);
   const weekly = getTrackerWeekly();
 
   // 효과 분석 로드
@@ -710,7 +723,7 @@ export default function RoutineTracker({ themeColors, onBack, initialMode }) {
   };
 
   const handleToggleCheck = (productId) => {
-    const updated = toggleTrackerCheck(routineMode, productId);
+    const updated = toggleTrackerCheckForDate(selectedDate, routineMode, productId);
     setChecks(updated);
   };
 
@@ -743,37 +756,42 @@ export default function RoutineTracker({ themeColors, onBack, initialMode }) {
       {/* Weekly Calendar — fixed height to match HistoryPage profile area */}
       <div style={{ height: 118, display: 'flex', alignItems: 'flex-end', padding: '0 20px' }}>
         <div style={{ display: 'flex', gap: 6, width: '100%', paddingBottom: 8 }}>
-          {getWeeklyStatus().map(day => (
-            <div key={day.date} style={{
-              flex: 1, textAlign: 'center', padding: '10px 0 8px', borderRadius: 12,
-              background: day.isToday
-                ? 'var(--day-today-bg)'
-                : day.completed ? 'var(--day-completed-bg)' : 'var(--day-default-bg)',
-            }}>
-              <div style={{
-                fontSize: 11,
-                color: day.isToday ? 'var(--day-today-accent)' : 'var(--text-muted)',
-                fontWeight: 600, marginBottom: 2,
-              }}>{day.dayLabel}</div>
-              <div style={{
-                fontSize: 15, fontWeight: 700,
-                color: day.isToday
-                  ? 'var(--day-today-accent)'
-                  : day.completed ? 'var(--accent-success)' : 'var(--text-primary)',
+          {getWeeklyStatus().map(day => {
+            const isSelected = day.date === selectedDate;
+            const isFuture = day.date > getTodayStr();
+            return (
+              <div key={day.date} onClick={() => !isFuture && handleSelectDate(day.date)} style={{
+                flex: 1, textAlign: 'center', padding: '10px 0 8px', borderRadius: 12,
+                cursor: isFuture ? 'default' : 'pointer',
+                background: isSelected
+                  ? 'var(--day-today-bg)'
+                  : day.completed ? 'var(--day-completed-bg)' : 'var(--day-default-bg)',
               }}>
-                {new Date(day.date).getDate()}
-              </div>
-              {day.completed && !day.isToday && (
-                <div style={{ fontSize: 8, color: 'var(--accent-success)', marginTop: 2 }}>&#10003;</div>
-              )}
-              {day.isToday && (
                 <div style={{
-                  width: 4, height: 4, borderRadius: '50%', background: 'var(--day-today-accent)',
-                  margin: '4px auto 0',
-                }} />
-              )}
-            </div>
-          ))}
+                  fontSize: 11,
+                  color: isSelected ? 'var(--day-today-accent)' : 'var(--text-muted)',
+                  fontWeight: 600, marginBottom: 2,
+                }}>{day.dayLabel}</div>
+                <div style={{
+                  fontSize: 15, fontWeight: 700,
+                  color: isSelected
+                    ? 'var(--day-today-accent)'
+                    : isFuture ? 'var(--text-disabled)' : day.completed ? 'var(--accent-success)' : 'var(--text-primary)',
+                }}>
+                  {new Date(day.date).getDate()}
+                </div>
+                {day.completed && !isSelected && (
+                  <div style={{ fontSize: 8, color: 'var(--accent-success)', marginTop: 2 }}>&#10003;</div>
+                )}
+                {isSelected && (
+                  <div style={{
+                    width: 4, height: 4, borderRadius: '50%', background: 'var(--day-today-accent)',
+                    margin: '4px auto 0',
+                  }} />
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -899,7 +917,7 @@ export default function RoutineTracker({ themeColors, onBack, initialMode }) {
               {/* Progress */}
               <div style={{ marginBottom: 20 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>오늘 진행률</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>{isToday ? '오늘' : `${new Date(selectedDate + 'T00:00:00').getMonth() + 1}/${new Date(selectedDate + 'T00:00:00').getDate()}`} 진행률</span>
                   <span style={{ fontSize: 13, fontWeight: 700, color: accent }}>{progress.done}/{progress.total} 완료</span>
                 </div>
                 <div style={{ height: 8, borderRadius: 4, overflow: 'hidden', background: 'var(--progress-track)' }}>
