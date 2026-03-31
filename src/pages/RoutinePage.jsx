@@ -16,33 +16,15 @@ import {
   getPersonalizedSteps, getIngredientRecommendations,
   getWeeklyCompletion,
 } from '../storage/RoutineStorage';
+import WeekDateHeader from '../components/WeekDateHeader';
 
 function getDateKey(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-function getWeekDays() {
-  const now = new Date();
-  const dayOfWeek = now.getDay();
-  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-  const days = [];
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(now);
-    d.setDate(now.getDate() + mondayOffset + i);
-    days.push({
-      date: d.getDate(),
-      dateKey: getDateKey(d),
-      dayLabel: ['월','화','수','목','금','토','일'][i],
-      isToday: d.toDateString() === now.toDateString(),
-    });
-  }
-  return days;
-}
-
 export default function RoutinePage() {
   const isEvening = new Date().getHours() >= 18;
   const [mode, setMode] = useState(isEvening ? 'night' : 'morning');
-  const weekDays = getWeekDays();
   const todayKey = getDateKey(new Date());
   const [selectedDate, setSelectedDate] = useState(todayKey);
   const [checks, setChecks] = useState(() => getChecksForDate(selectedDate));
@@ -84,29 +66,11 @@ export default function RoutinePage() {
       </div>
 
       {/* Weekly Date Header */}
-      <div style={{ padding: '24px 20px 12px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-          {weekDays.map((d, i) => {
-            const isSelected = d.dateKey === selectedDate;
-            const dayData = weekly.find(w => w.date === d.dateKey);
-            const completed = dayData?.completed;
-            const partial = dayData?.partial;
-            return (
-              <div key={i} onClick={() => handleSelectDate(d.dateKey)} style={{ textAlign: 'center', minWidth: 32, cursor: 'pointer' }}>
-                <div style={{ fontSize: 10, color: isSelected ? 'var(--accent-primary)' : 'var(--text-dim)', fontWeight: 500, marginBottom: 6 }}>{d.dayLabel}</div>
-                <div style={{
-                  width: 32, height: 32, borderRadius: '50%',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 13, fontWeight: isSelected ? 700 : 400,
-                  color: isSelected ? '#fff' : completed ? 'var(--accent-primary)' : 'var(--text-muted)',
-                  background: isSelected ? 'var(--accent-primary)' : completed ? 'rgba(129,228,189,0.15)' : 'transparent',
-                  border: partial && !isSelected && !completed ? '1.5px solid rgba(129,228,189,0.4)' : 'none',
-                }}>{d.date}</div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      <WeekDateHeader
+        selectedDate={selectedDate}
+        onSelectDate={handleSelectDate}
+        weeklyData={weekly}
+      />
 
       <div style={{ padding: '0 20px' }}>
         {/* Morning/Night Toggle */}

@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { getTodayFoods, getTodayNutrition, getFoodRecords, getNutritionForDate, getTimeAdjustedGoal, getFoodGoal, saveFoodRecord, deleteFoodRecord } from '../storage/FoodStorage';
-
+import WeekDateHeader from '../components/WeekDateHeader';
 import { getRecords, getChanges, getTotalChanges, getAllThumbnailsAsync } from '../storage/SkinStorage';
 import { getBodyRecords, getLatestWeight, getStartWeight, getBodyGoal, getBodyProfile, calcBMI, saveBodyRecord, deleteBodyRecord } from '../storage/BodyStorage';
 
@@ -183,54 +183,11 @@ export default function FoodPage({ onTabChange }) {
         </div>
       </div>
 
-      {/* Weekly Date Header — matching RoutineTracker style */}
-      <div style={{ height: 118, display: 'flex', alignItems: 'flex-end', padding: '0 20px' }}>
-        <div style={{ display: 'flex', gap: 6, width: '100%', paddingBottom: 8 }}>
-          {(() => {
-            const now = new Date();
-            const dayOfWeek = now.getDay();
-            const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-            const days = [];
-            for (let i = 0; i < 7; i++) {
-              const d = new Date(now);
-              d.setDate(now.getDate() + mondayOffset + i);
-              const dk = getDateKey(d);
-              days.push({ date: d.getDate(), dateKey: dk, dayLabel: ['월','화','수','목','금','토','일'][i], isToday: d.toDateString() === now.toDateString() });
-            }
-            return days.map((d) => {
-              const isSelected = d.dateKey === selectedDate;
-              return (
-                <div key={d.dateKey} onClick={() => handleSelectDate(d.dateKey)} style={{
-                  flex: 1, textAlign: 'center', padding: '10px 0 8px', borderRadius: 12, cursor: 'pointer',
-                  background: isSelected
-                    ? 'var(--day-today-bg)'
-                    : 'var(--day-default-bg)',
-                }}>
-                  <div style={{
-                    fontSize: 11,
-                    color: isSelected ? 'var(--day-today-accent)' : 'var(--text-muted)',
-                    fontWeight: 600, marginBottom: 2,
-                  }}>{d.dayLabel}</div>
-                  <div style={{
-                    fontSize: 15, fontWeight: 700,
-                    color: isSelected
-                      ? 'var(--day-today-accent)'
-                      : 'var(--text-primary)',
-                  }}>
-                    {d.date}
-                  </div>
-                  {isSelected && (
-                    <div style={{
-                      width: 4, height: 4, borderRadius: '50%', background: 'var(--day-today-accent)',
-                      margin: '4px auto 0',
-                    }} />
-                  )}
-                </div>
-              );
-            });
-          })()}
-        </div>
-      </div>
+      {/* Weekly Date Header */}
+      <WeekDateHeader
+        selectedDate={selectedDate}
+        onSelectDate={handleSelectDate}
+      />
 
       {/* Category Tabs */}
       <div style={{ padding: '12px 20px 16px' }}>
