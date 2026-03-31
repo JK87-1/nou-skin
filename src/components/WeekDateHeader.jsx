@@ -1,8 +1,8 @@
 import { useState, useRef, useCallback } from 'react';
 
 const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
-const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'];
+const MONTH_NAMES = ['1월', '2월', '3월', '4월', '5월', '6월',
+  '7월', '8월', '9월', '10월', '11월', '12월'];
 
 function getDateKey(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -124,13 +124,12 @@ export default function WeekDateHeader({ selectedDate, onSelectDate, weeklyData 
       {/* Month / Year */}
       <div style={{
         fontSize: 18, fontWeight: 700, color: 'var(--text-primary)',
-        fontFamily: 'var(--font-display)', marginBottom: 16,
-        fontStyle: 'italic',
+        fontFamily: 'Pretendard, sans-serif', marginBottom: 16,
         transform: slideDir ? slideTransform : 'none',
         opacity: slideDir ? 0.5 : 1,
         transition: slideDir ? 'transform 0.2s ease, opacity 0.2s ease' : 'none',
       }}>
-        {MONTH_NAMES[centerDay.month]} {centerDay.year}
+        {centerDay.year}년 {MONTH_NAMES[centerDay.month]}
       </div>
 
       {/* Swipeable Week Strip */}
