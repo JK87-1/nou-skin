@@ -162,12 +162,13 @@ export default function FoodPage({ onTabChange }) {
   // Score ring
   const r = 24, circ = 2 * Math.PI * r;
   const dashFill = circ * (score / 100);
+  const [headerTitle, setHeaderTitle] = useState('');
 
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--bg-primary)', paddingBottom: 80 }}>
       {/* Header */}
       <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>분석</h1>
+        <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>{headerTitle}</h1>
         <div style={{ display: 'flex', gap: 8 }}>
           <div style={{ width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -187,6 +188,8 @@ export default function FoodPage({ onTabChange }) {
       <WeekDateHeader
         selectedDate={selectedDate}
         onSelectDate={handleSelectDate}
+        hideTitle
+        onTitleChange={setHeaderTitle}
       />
 
       {/* Category Tabs */}

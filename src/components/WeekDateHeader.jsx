@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
 const MONTH_NAMES = ['1월', '2월', '3월', '4월', '5월', '6월',
@@ -26,7 +26,7 @@ function getDaysForWeek(weekOffset) {
   return days;
 }
 
-export default function WeekDateHeader({ selectedDate, onSelectDate, weeklyData }) {
+export default function WeekDateHeader({ selectedDate, onSelectDate, weeklyData, hideTitle, onTitleChange }) {
   const [weekOffset, setWeekOffset] = useState(0);
   const [slideDir, setSlideDir] = useState(null); // 'left' | 'right' | null
   const [dragX, setDragX] = useState(0);
@@ -38,6 +38,11 @@ export default function WeekDateHeader({ selectedDate, onSelectDate, weeklyData 
 
   const days = getDaysForWeek(weekOffset);
   const centerDay = days[3];
+  const titleText = `${centerDay.year}년 ${MONTH_NAMES[centerDay.month]}`;
+
+  useEffect(() => {
+    if (onTitleChange) onTitleChange(titleText);
+  }, [titleText, onTitleChange]);
 
   const triggerSlide = useCallback((direction) => {
     setSlideDir(direction);
@@ -122,15 +127,17 @@ export default function WeekDateHeader({ selectedDate, onSelectDate, weeklyData 
   return (
     <div style={{ padding: '16px 20px 12px', overflow: 'hidden' }}>
       {/* Month / Year */}
-      <div style={{
-        fontSize: 18, fontWeight: 700, color: 'var(--text-primary)',
-        fontFamily: 'Pretendard, sans-serif', marginBottom: 16,
-        transform: slideDir ? slideTransform : 'none',
-        opacity: slideDir ? 0.5 : 1,
-        transition: slideDir ? 'transform 0.2s ease, opacity 0.2s ease' : 'none',
-      }}>
-        {centerDay.year}년 {MONTH_NAMES[centerDay.month]}
-      </div>
+      {!hideTitle && (
+        <div style={{
+          fontSize: 18, fontWeight: 700, color: 'var(--text-primary)',
+          fontFamily: 'Pretendard, sans-serif', marginBottom: 16,
+          transform: slideDir ? slideTransform : 'none',
+          opacity: slideDir ? 0.5 : 1,
+          transition: slideDir ? 'transform 0.2s ease, opacity 0.2s ease' : 'none',
+        }}>
+          {titleText}
+        </div>
+      )}
 
       {/* Swipeable Week Strip */}
       <div
