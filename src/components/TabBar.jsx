@@ -21,22 +21,22 @@ export default function TabBar({ activeTab, onTabChange }) {
       ),
     },
     {
-      key: 'body',
-      label: 'MY',
-      icon: (active) => (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="10" r="4" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
-          <path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" strokeLinecap="round" />
-        </svg>
-      ),
-    },
-    {
       key: 'routine',
       label: '루틴',
       icon: (active) => (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="12" r="9" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
           <path d="M8 12.5l2.5 2.5L16 10" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ),
+    },
+    {
+      key: 'body',
+      label: 'MY',
+      icon: (active) => (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="10" r="4" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
+          <path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" strokeLinecap="round" />
         </svg>
       ),
     },
