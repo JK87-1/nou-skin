@@ -143,39 +143,37 @@ export default function FoodPage({ onTabChange }) {
         </div>
       </div>
 
-      {/* Weekly Date Header */}
-      {(() => {
-        const now = new Date();
-        const dayOfWeek = now.getDay();
-        const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-        const days = [];
-        for (let i = 0; i < 7; i++) {
-          const d = new Date(now);
-          d.setDate(now.getDate() + mondayOffset + i);
-          days.push({ date: d.getDate(), dateKey: getDateKey(d), dayLabel: ['월','화','수','목','금','토','일'][i], isToday: d.toDateString() === now.toDateString() });
-        }
-        return (
-          <div style={{ padding: '24px 20px 12px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-              {days.map((d, i) => {
-                const isSelected = d.dateKey === selectedDate;
-                return (
-                  <div key={i} onClick={() => handleSelectDate(d.dateKey)} style={{ textAlign: 'center', minWidth: 32, cursor: 'pointer' }}>
-                    <div style={{ fontSize: 10, color: isSelected ? 'var(--accent-primary)' : 'var(--text-dim)', fontWeight: 500, marginBottom: 6 }}>{d.dayLabel}</div>
-                    <div style={{
-                      width: 32, height: 32, borderRadius: '50%',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 13, fontWeight: isSelected ? 700 : 400,
-                      color: isSelected ? '#fff' : 'var(--text-muted)',
-                      background: isSelected ? 'var(--accent-primary)' : 'transparent',
-                    }}>{d.date}</div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })()}
+      {/* Weekly Date Header — synced with RoutinePage */}
+      <div style={{ padding: '24px 20px 12px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+          {(() => {
+            const now = new Date();
+            const dayOfWeek = now.getDay();
+            const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+            const days = [];
+            for (let i = 0; i < 7; i++) {
+              const d = new Date(now);
+              d.setDate(now.getDate() + mondayOffset + i);
+              days.push({ date: d.getDate(), dateKey: getDateKey(d), dayLabel: ['월','화','수','목','금','토','일'][i] });
+            }
+            return days.map((d, i) => {
+              const isSelected = d.dateKey === selectedDate;
+              return (
+                <div key={i} onClick={() => handleSelectDate(d.dateKey)} style={{ textAlign: 'center', minWidth: 32, cursor: 'pointer' }}>
+                  <div style={{ fontSize: 10, color: isSelected ? 'var(--accent-primary)' : 'var(--text-dim)', fontWeight: 500, marginBottom: 6 }}>{d.dayLabel}</div>
+                  <div style={{
+                    width: 32, height: 32, borderRadius: '50%',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 13, fontWeight: isSelected ? 700 : 400,
+                    color: isSelected ? '#fff' : 'var(--text-muted)',
+                    background: isSelected ? 'var(--accent-primary)' : 'transparent',
+                  }}>{d.date}</div>
+                </div>
+              );
+            });
+          })()}
+        </div>
+      </div>
 
       {/* Category Tabs */}
       <div style={{ padding: '12px 20px 16px' }}>
