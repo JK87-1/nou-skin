@@ -735,7 +735,7 @@ function FoodDetailModal({ food, onClose, onDelete }) {
         maxHeight: '88vh', overflowY: 'auto', WebkitOverflowScrolling: 'touch',
       }}>
         {/* Handle bar + back/delete buttons */}
-        <div style={{ display: 'flex', justifyContent: 'center', position: 'relative', marginBottom: 14 }}>
+        <div style={{ display: 'flex', justifyContent: 'center', position: 'relative', marginBottom: 28 }}>
           <div onClick={onClose} style={{
             position: 'absolute', left: -4, top: 2,
             width: 32, height: 32, borderRadius: '50%', cursor: 'pointer',
