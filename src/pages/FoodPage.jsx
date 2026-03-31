@@ -715,6 +715,8 @@ const IMPACT_STYLE = {
 };
 
 function FoodDetailModal({ food, onClose, onDelete }) {
+  const [showConfirm, setShowConfirm] = useState(false);
+
   const impactItems = [
     { icon: '📈', label: '혈당 상승', value: food.bloodSugar, note: food.bloodSugarNote },
     { icon: '😴', label: '졸림 확률', value: food.drowsiness, note: food.drowsinessNote },
@@ -724,15 +726,67 @@ function FoodDetailModal({ food, onClose, onDelete }) {
   return (
     <div onClick={onClose} style={{
       position: 'fixed', inset: 0, zIndex: 1100,
-      background: 'rgba(0,0,0,0.5)',
+      background: 'rgba(0,0,0,0.45)',
       display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
     }}>
       <div onClick={e => e.stopPropagation()} style={{
-        background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
-        padding: '24px 24px 40px', width: '100%', maxWidth: 420,
-        maxHeight: '90dvh', overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+        background: 'var(--bg-secondary, #fff)', borderRadius: '24px 24px 0 0',
+        padding: '12px 20px 40px', width: '100%', maxWidth: 430,
+        maxHeight: '88vh', overflowY: 'auto', WebkitOverflowScrolling: 'touch',
       }}>
-        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 16px', opacity: 0.3 }} />
+        {/* Handle bar + back/delete buttons */}
+        <div style={{ display: 'flex', justifyContent: 'center', position: 'relative', marginBottom: 14 }}>
+          <div onClick={onClose} style={{
+            position: 'absolute', left: -4, top: 2,
+            width: 32, height: 32, borderRadius: '50%', cursor: 'pointer',
+            background: 'var(--bg-card-hover, #F2F3F5)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M15 18l-6-6 6-6" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--bg-input, #E0E0E0)', marginTop: 10 }} />
+          <div onClick={() => setShowConfirm(true)} style={{
+            position: 'absolute', right: -4, top: 2,
+            width: 32, height: 32, borderRadius: '50%', cursor: 'pointer',
+            background: 'var(--bg-card-hover, #F2F3F5)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M6 12h12" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Delete confirm popup */}
+        {showConfirm && (
+          <div style={{
+            position: 'fixed', inset: 0, zIndex: 1200,
+            background: 'rgba(0,0,0,0.4)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }} onClick={() => setShowConfirm(false)}>
+            <div onClick={e => e.stopPropagation()} style={{
+              background: 'var(--bg-card, #fff)',
+              borderRadius: 20, padding: '28px 24px',
+              width: 280, textAlign: 'center',
+              border: '1px solid var(--border-subtle, #eee)',
+            }}>
+              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>이 기록을 삭제할까요?</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 20 }}>삭제된 기록은 복구할 수 없습니다.</div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button onClick={() => setShowConfirm(false)} style={{
+                  flex: 1, padding: '12px 0', borderRadius: 12, border: 'none',
+                  background: 'var(--bg-input, #F2F3F5)', color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                }}>아니오</button>
+                <button onClick={() => { onDelete?.(food); setShowConfirm(false); onClose(); }} style={{
+                  flex: 1, padding: '12px 0', borderRadius: 12, border: 'none',
+                  background: '#e05545', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                }}>삭제</button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Photo + Name header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
@@ -745,18 +799,6 @@ function FoodDetailModal({ food, onClose, onDelete }) {
             <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{food.name}</div>
             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{food.meal}</div>
           </div>
-          <button onClick={() => {
-            if (confirm('이 식사 기록을 삭제할까요?')) {
-              onDelete?.(food);
-              onClose();
-            }
-          }} style={{
-            width: 32, height: 32, borderRadius: 10, border: 'none',
-            background: '#F2F3F5', color: '#999',
-            fontSize: 18, fontWeight: 300, lineHeight: 1,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', flexShrink: 0,
-          }}>−</button>
         </div>
 
         {/* Nutrition grid */}
@@ -820,13 +862,6 @@ function FoodDetailModal({ food, onClose, onDelete }) {
           </div>
         )}
 
-        {/* Close button */}
-        <button onClick={onClose} style={{
-          width: '100%', padding: '14px 0', borderRadius: 'var(--btn-radius)',
-          border: 'none', background: 'var(--bg-input, #F2F3F5)',
-          color: 'var(--text-muted)', fontSize: 14, fontWeight: 600,
-          cursor: 'pointer', fontFamily: 'inherit',
-        }}>닫기</button>
       </div>
     </div>
   );
