@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { getTodayFoods, getTodayNutrition, getFoodRecords, getNutritionForDate, getTimeAdjustedGoal, getFoodGoal, saveFoodRecord, deleteFoodRecord } from '../storage/FoodStorage';
-import { getRecords, getChanges, getTotalChanges } from '../storage/SkinStorage';
+import { getRecords, getChanges, getTotalChanges, getAllThumbnailsAsync } from '../storage/SkinStorage';
+import { getBodyRecords, getLatestWeight, getStartWeight, getBodyGoal, getBodyProfile, calcBMI, saveBodyRecord, deleteBodyRecord } from '../storage/BodyStorage';
 
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
 const MEAL_LABELS = ['아침', '점심', '저녁', '간식'];
@@ -184,7 +185,7 @@ export default function FoodPage({ onTabChange }) {
           <button className={`segment-btn${foodTab === 'food' ? ' active' : ''}`}
             onClick={() => setFoodTab('food')}>식단</button>
           <button className={`segment-btn${foodTab === 'body' ? ' active' : ''}`}
-            onClick={() => onTabChange?.('body')}>바디</button>
+            onClick={() => setFoodTab('body')}>바디</button>
         </div>
       </div>
 
@@ -352,6 +353,9 @@ export default function FoodPage({ onTabChange }) {
       <FoodCoachCard foods={foods} nutrition={nutrition} goal={goal} score={score} lacking={lacking} />
 
       </>}
+
+      {/* Body content */}
+      {foodTab === 'body' && <BodyInsightsSection />}
 
       {/* Add Food Modal */}
       {showAdd && <AddFoodModal onAdd={handleAddFood} onClose={() => { setShowAdd(false); setAddMeal(null); }} initialMeal={addMeal} />}
@@ -1061,102 +1065,304 @@ function SkinInsightsSection() {
   }
 
   const latest = records[records.length - 1];
-  const first = records[0];
   const overallDiff = totalChanges?.overallScore || 0;
   const skinAgeDiff = totalChanges?.skinAge || 0;
   const period = totalChanges?.period || 0;
 
+  const scoreR = 24, scoreCirc = 2 * Math.PI * scoreR;
+  const scoreDash = scoreCirc * (latest.overallScore / 100);
+
   const metrics = [
-    { key: 'moisture', label: '수분도', icon: '💧' },
-    { key: 'oilBalance', label: '유분', icon: '🫧' },
-    { key: 'skinTone', label: '피부톤', icon: '✨' },
-    { key: 'wrinkleScore', label: '주름', icon: '📐' },
-    { key: 'poreScore', label: '모공', icon: '🔬' },
-    { key: 'elasticityScore', label: '탄력', icon: '💎' },
-    { key: 'darkCircleScore', label: '다크서클', icon: '👁️' },
+    { key: 'moisture', label: '수분도', icon: '💧', grad: ['#D4F0FF', '#A8DEFF'] },
+    { key: 'oilBalance', label: '유분', icon: '🫧', grad: ['#FEF3C7', '#FCD34D'] },
+    { key: 'skinTone', label: '피부톤', icon: '✨', grad: ['#FFF3C7', '#FFE082'] },
+    { key: 'wrinkleScore', label: '주름', icon: '📐', grad: ['#F5E6D8', '#E8C8B0'] },
+    { key: 'poreScore', label: '모공', icon: '🔬', grad: ['#E8D8C8', '#D0C0A8'] },
+    { key: 'elasticityScore', label: '탄력', icon: '💎', grad: ['#D1FAE5', '#81E4BD'] },
+    { key: 'darkCircleScore', label: '다크서클', icon: '👁️', grad: ['#E8E0F0', '#C8B8E8'] },
   ];
 
+  const improved = changes ? Object.values(changes).filter(c => c.improved && Math.abs(c.diff) >= 2) : [];
+  const worsened = changes ? Object.values(changes).filter(c => !c.improved && Math.abs(c.diff) >= 2) : [];
+
+  // AI insight message
+  let insightMsg = '';
+  if (worsened.length > 0) {
+    const worst = worsened.sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff))[0];
+    insightMsg = `${worst.label}이 ${Math.abs(worst.diff)}점 하락했어요. 집중 관리가 필요해요.`;
+  } else if (improved.length > 0) {
+    insightMsg = `${improved[0].label} 등 ${improved.length}개 지표가 개선 중이에요!`;
+  } else {
+    insightMsg = `종합 ${latest.overallScore}점 — 꾸준한 관리로 더 좋아질 수 있어요.`;
+  }
+
   return (
-    <div style={{ padding: '8px 20px', animation: 'breatheIn 0.5s ease both' }}>
-      {/* Summary cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
-        <div style={{ background: 'var(--bg-card)', borderRadius: 16, padding: '14px 16px' }}>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>종합 점수</div>
-          <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', marginTop: 4 }}>
-            {latest.overallScore}<span style={{ fontSize: 12, color: 'var(--text-dim)', fontWeight: 400 }}>점</span>
+    <div style={{ animation: 'breatheIn 0.5s ease both' }}>
+      {/* Score Card */}
+      <div style={{
+        margin: '0 16px 10px', borderRadius: 16, padding: 13,
+        background: '#fff', border: '0.5px solid #eee',
+        display: 'flex', alignItems: 'center', gap: 14,
+      }}>
+        <div style={{ position: 'relative', width: 62, height: 62, flexShrink: 0 }}>
+          <svg viewBox="0 0 62 62" style={{ width: 62, height: 62 }}>
+            <circle cx="31" cy="31" r={scoreR} fill="none" stroke="#F0EDE8" strokeWidth="6" />
+            {latest.overallScore > 0 && <circle cx="31" cy="31" r={scoreR} fill="none" stroke="var(--accent-primary)" strokeWidth="6"
+              strokeLinecap="round" strokeDasharray={`${scoreDash} ${scoreCirc - scoreDash}`} transform="rotate(-90 31 31)" />}
+          </svg>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--accent-primary)', fontFamily: 'var(--font-display)', lineHeight: 1 }}>{latest.overallScore}</span>
+            <span style={{ fontSize: 9, color: '#888' }}>점</span>
           </div>
-          {overallDiff !== 0 && (
-            <div style={{ fontSize: 11, color: overallDiff > 0 ? '#34d399' : '#f87171', marginTop: 4 }}>
-              {overallDiff > 0 ? '▲' : '▼'} {Math.abs(overallDiff)}점 {period > 0 ? `(${period}일)` : ''}
-            </div>
-          )}
         </div>
-        <div style={{ background: 'var(--bg-card)', borderRadius: 16, padding: '14px 16px' }}>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>피부 나이</div>
-          <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', marginTop: 4 }}>
-            {latest.skinAge}<span style={{ fontSize: 12, color: 'var(--text-dim)', fontWeight: 400 }}>세</span>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>
+            피부나이 {latest.skinAge}세 {skinAgeDiff !== 0 && <span style={{ fontSize: 11, color: skinAgeDiff < 0 ? '#34d399' : '#f87171' }}>{skinAgeDiff < 0 ? '▼' : '▲'}{Math.abs(skinAgeDiff)}세</span>}
           </div>
-          {skinAgeDiff !== 0 && (
-            <div style={{ fontSize: 11, color: skinAgeDiff < 0 ? '#34d399' : '#f87171', marginTop: 4 }}>
-              {skinAgeDiff < 0 ? '▼' : '▲'} {Math.abs(skinAgeDiff)}세
-            </div>
-          )}
+          <div style={{ fontSize: 10, color: '#888', lineHeight: 1.5, marginTop: 3 }}>
+            {overallDiff !== 0 ? `종합 ${overallDiff > 0 ? '+' : ''}${overallDiff}점 ${period > 0 ? `(${period}일간)` : ''}` : '꾸준히 측정하면 변화를 추적할 수 있어요'}
+          </div>
         </div>
       </div>
 
-      {/* Metric bars */}
-      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 10 }}>항목별 분석</div>
-      {metrics.map(m => {
-        const val = latest[m.key];
-        if (val == null) return null;
-        const change = changes?.[m.key];
-        return (
-          <div key={m.key} style={{ marginBottom: 12 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-              <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{m.icon} {m.label}</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{val}</span>
-                {change && Math.abs(change.diff) >= 1 && (
-                  <span style={{ fontSize: 10, color: change.improved ? '#34d399' : '#f87171' }}>
-                    {change.diff > 0 ? '+' : ''}{change.diff}
-                  </span>
-                )}
-              </div>
-            </div>
-            <div style={{ height: 5, borderRadius: 3, background: 'var(--bar-track)', overflow: 'hidden' }}>
+      {/* Metric Cards — 5 columns */}
+      <div style={{
+        margin: '0 16px 10px', borderRadius: 16, padding: '12px 8px',
+        background: '#fff', border: '0.5px solid #eee',
+        display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8,
+      }}>
+        {metrics.map(m => {
+          const val = latest[m.key];
+          if (val == null) return null;
+          const change = changes?.[m.key];
+          return (
+            <div key={m.key} style={{ flex: '0 0 18%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
               <div style={{
-                height: '100%', borderRadius: 3, width: `${Math.min(100, val)}%`,
-                background: 'var(--accent-primary)',
-                transition: 'width 0.5s ease',
-              }} />
+                width: 24, height: 24, borderRadius: 8,
+                background: `linear-gradient(135deg, ${m.grad[0]}, ${m.grad[1]})`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12,
+              }}>{m.icon}</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{val}</div>
+              <div style={{ fontSize: 8, color: '#888' }}>{m.label}</div>
+              {change && Math.abs(change.diff) >= 1 ? (
+                <span style={{ fontSize: 9, fontWeight: 600, padding: '1px 5px', borderRadius: 6, background: change.improved ? '#E8F8F0' : '#FBEAF0', color: change.improved ? '#0F6E56' : '#993556' }}>
+                  {change.diff > 0 ? '+' : ''}{change.diff}
+                </span>
+              ) : (
+                <span style={{ fontSize: 9, fontWeight: 600, padding: '1px 5px', borderRadius: 6, background: '#f5f5f5', color: '#aaa' }}>—</span>
+              )}
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
 
-      {/* Recent timeline */}
-      {changes && (() => {
-        const improved = Object.values(changes).filter(c => c.improved && Math.abs(c.diff) >= 2);
-        const worsened = Object.values(changes).filter(c => !c.improved && Math.abs(c.diff) >= 2);
-        if (improved.length === 0 && worsened.length === 0) return null;
-        return (
-          <div style={{ marginTop: 16 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 10 }}>최근 변화</div>
-            {improved.map(c => (
-              <div key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#34d399', flexShrink: 0 }} />
-                <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{c.label} +{Math.abs(c.diff)}점 향상</span>
-              </div>
-            ))}
-            {worsened.map(c => (
-              <div key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#f87171', flexShrink: 0 }} />
-                <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{c.label} {c.diff}점 하락</span>
-              </div>
-            ))}
+      {/* AI Insight */}
+      <div style={{ margin: '0 16px 14px', padding: '20px', borderRadius: 16, background: '#f9f9f9' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <CoachStarIcon />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13, color: '#8B95A1' }}>AI 인사이트</div>
+            <div style={{ fontSize: 14, color: '#4E5968', marginTop: 4, lineHeight: 1.5 }}>{insightMsg}</div>
           </div>
-        );
-      })()}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== Body Insights Section =====
+function BodyInsightsSection() {
+  const [records, setRecords] = useState(getBodyRecords);
+  const [showAddWeight, setShowAddWeight] = useState(false);
+  const [newWeight, setNewWeight] = useState('');
+
+  const latest = records.length > 0 ? records[records.length - 1] : null;
+  const start = records.length > 0 ? records[0] : null;
+  const goal = getBodyGoal();
+  const profile = getBodyProfile();
+  const bmi = latest ? calcBMI(latest.weight, profile.height) : null;
+  const weightDiff = (start && latest) ? (latest.weight - start.weight).toFixed(1) : 0;
+  const recent = [...records].reverse().slice(0, 7);
+
+  const handleAdd = () => {
+    const w = parseFloat(newWeight);
+    if (!w || w < 20 || w > 300) return;
+    saveBodyRecord(w);
+    setRecords(getBodyRecords());
+    setShowAddWeight(false);
+    setNewWeight('');
+  };
+
+  const handleDelete = (date) => {
+    if (!confirm('이 기록을 삭제할까요?')) return;
+    deleteBodyRecord(date);
+    setRecords(getBodyRecords());
+  };
+
+  if (!latest) {
+    return (
+      <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
+        <div style={{ fontSize: 14, fontWeight: 600 }}>아직 바디 기록이 없어요</div>
+        <div style={{ fontSize: 12, marginTop: 6, marginBottom: 16 }}>체중을 기록하면 변화를 추적할 수 있어요</div>
+        <button onClick={() => setShowAddWeight(true)} style={{
+          padding: '12px 28px', borderRadius: 14, border: 'none',
+          background: 'var(--accent-primary)', color: '#fff',
+          fontSize: 14, fontWeight: 600, cursor: 'pointer',
+        }}>첫 기록하기</button>
+        {showAddWeight && <WeightInputModal value={newWeight} onChange={setNewWeight} onConfirm={handleAdd} onClose={() => setShowAddWeight(false)} />}
+      </div>
+    );
+  }
+
+  const scoreR = 24, scoreCirc = 2 * Math.PI * scoreR;
+  const bmiNum = parseFloat(bmi) || 0;
+  const bmiPct = Math.min(100, Math.max(0, ((bmiNum - 15) / 20) * 100));
+  const bmiDash = scoreCirc * (bmiPct / 100);
+  const bmiLabel = bmiNum < 18.5 ? '저체중' : bmiNum < 23 ? '정상' : bmiNum < 25 ? '과체중' : '비만';
+
+  // AI insight
+  let bodyInsight = '';
+  if (goal && latest) {
+    const diff = (latest.weight - goal).toFixed(1);
+    bodyInsight = diff > 0 ? `목표까지 ${diff}kg 남았어요. 꾸준히 관리하세요!` : `목표 체중을 달성했어요! 유지가 중요해요.`;
+  } else if (records.length >= 2) {
+    bodyInsight = `시작 대비 ${weightDiff > 0 ? '+' : ''}${weightDiff}kg 변화. ${Math.abs(weightDiff) < 0.5 ? '안정적으로 유지 중이에요.' : weightDiff < 0 ? '감량이 진행되고 있어요!' : '식단 조절이 필요할 수 있어요.'}`;
+  } else {
+    bodyInsight = '꾸준히 기록하면 체중 변화 트렌드를 분석해드려요.';
+  }
+
+  return (
+    <div style={{ animation: 'breatheIn 0.5s ease both' }}>
+      {/* Weight + BMI Card */}
+      <div style={{
+        margin: '0 16px 10px', borderRadius: 16, padding: 13,
+        background: '#fff', border: '0.5px solid #eee',
+        display: 'flex', alignItems: 'center', gap: 14,
+      }}>
+        <div style={{ position: 'relative', width: 62, height: 62, flexShrink: 0 }}>
+          <svg viewBox="0 0 62 62" style={{ width: 62, height: 62 }}>
+            <circle cx="31" cy="31" r={scoreR} fill="none" stroke="#F0EDE8" strokeWidth="6" />
+            <circle cx="31" cy="31" r={scoreR} fill="none" stroke="var(--accent-primary)" strokeWidth="6"
+              strokeLinecap="round" strokeDasharray={`${bmiDash} ${scoreCirc - bmiDash}`} transform="rotate(-90 31 31)" />
+          </svg>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--accent-primary)', fontFamily: 'var(--font-display)', lineHeight: 1 }}>{bmi}</span>
+            <span style={{ fontSize: 8, color: '#888' }}>BMI</span>
+          </div>
+        </div>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>
+            {latest.weight}kg · {bmiLabel}
+          </div>
+          <div style={{ fontSize: 10, color: '#888', lineHeight: 1.5, marginTop: 3 }}>
+            {goal ? `목표 ${goal}kg · 시작 대비 ${weightDiff > 0 ? '+' : ''}${weightDiff}kg` : `시작 대비 ${weightDiff > 0 ? '+' : ''}${weightDiff}kg`}
+          </div>
+        </div>
+      </div>
+
+      {/* Stats Row */}
+      <div style={{
+        margin: '0 16px 10px', borderRadius: 16, padding: '12px 8px',
+        background: '#fff', border: '0.5px solid #eee',
+        display: 'flex', justifyContent: 'space-between',
+      }}>
+        {[
+          { label: '현재', value: `${latest.weight}`, unit: 'kg' },
+          { label: '시작', value: `${start.weight}`, unit: 'kg' },
+          { label: '변화', value: `${weightDiff > 0 ? '+' : ''}${weightDiff}`, unit: 'kg' },
+          { label: '기록', value: `${records.length}`, unit: '회' },
+        ].map(s => (
+          <div key={s.label} style={{ flex: 1, textAlign: 'center' }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{s.value}<span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>{s.unit}</span></div>
+            <div style={{ fontSize: 9, color: '#888' }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Recent Records */}
+      <div style={{ margin: '0 16px 10px', borderRadius: 16, padding: '12px 16px', background: '#fff', border: '0.5px solid #eee' }}>
+        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>최근 기록</div>
+        {recent.map(r => {
+          const d = new Date(r.date);
+          const isToday = r.date === new Date().toISOString().slice(0, 10);
+          return (
+            <div key={r.date} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0', borderBottom: '0.5px solid #f5f5f5' }}>
+              <span style={{ fontSize: 12, color: isToday ? 'var(--accent-primary)' : 'var(--text-secondary)', fontWeight: isToday ? 600 : 400 }}>
+                {isToday ? '오늘' : `${d.getMonth() + 1}/${d.getDate()}`}
+              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{r.weight}kg</span>
+                <button onClick={() => handleDelete(r.date)} style={{ background: 'none', border: 'none', color: '#ccc', fontSize: 14, cursor: 'pointer', padding: '0 2px' }}>×</button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Add button */}
+      <div style={{ margin: '0 16px 10px' }}>
+        <button onClick={() => setShowAddWeight(true)} style={{
+          width: '100%', padding: '13px 0', borderRadius: 14, border: 'none',
+          background: 'rgba(129,228,189,0.15)', color: 'var(--accent-primary)',
+          fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+        }}>+ 오늘 체중 기록</button>
+      </div>
+
+      {/* AI Insight */}
+      <div style={{ margin: '0 16px 14px', padding: '20px', borderRadius: 16, background: '#f9f9f9' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <CoachStarIcon />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13, color: '#8B95A1' }}>AI 인사이트</div>
+            <div style={{ fontSize: 14, color: '#4E5968', marginTop: 4, lineHeight: 1.5 }}>{bodyInsight}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Weight Input Modal */}
+      {showAddWeight && <WeightInputModal value={newWeight} onChange={setNewWeight} onConfirm={handleAdd} onClose={() => setShowAddWeight(false)} />}
+    </div>
+  );
+}
+
+function WeightInputModal({ value, onChange, onConfirm, onClose }) {
+  return (
+    <div onClick={onClose} style={{
+      position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.4)',
+      display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
+        padding: '24px 24px 36px', width: '100%', maxWidth: 420,
+      }}>
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
+        <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 16 }}>오늘 체중</div>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+          <input type="number" value={value} onChange={e => onChange(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && onConfirm()}
+            placeholder="예: 65.5" step="0.1"
+            style={{
+              flex: 1, padding: '14px 16px', borderRadius: 14, border: 'none',
+              background: 'var(--bg-input, #F2F3F5)', fontSize: 16, fontWeight: 600,
+              color: 'var(--text-primary)', fontFamily: 'inherit', outline: 'none',
+            }}
+            autoFocus
+          />
+          <span style={{ display: 'flex', alignItems: 'center', fontSize: 14, color: 'var(--text-muted)', fontWeight: 600 }}>kg</span>
+        </div>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button onClick={onClose} style={{
+            flex: 1, padding: '14px 0', borderRadius: 14, border: 'none',
+            background: 'var(--bg-input, #F2F3F5)', color: 'var(--text-muted)',
+            fontSize: 14, fontWeight: 600, cursor: 'pointer',
+          }}>취소</button>
+          <button onClick={onConfirm} style={{
+            flex: 1, padding: '14px 0', borderRadius: 14, border: 'none',
+            background: 'var(--accent-primary)', color: '#fff',
+            fontSize: 14, fontWeight: 700, cursor: 'pointer',
+          }}>저장</button>
+        </div>
+      </div>
     </div>
   );
 }
