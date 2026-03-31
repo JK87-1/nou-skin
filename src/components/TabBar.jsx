@@ -11,14 +11,13 @@ export default function TabBar({ activeTab, onTabChange }) {
       ),
     },
     {
-      key: 'album',
-      label: '기록',
+      key: 'food',
+      label: '분석',
       icon: (active) => (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <rect x="3" y="3" width="8" height="8" rx="2" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
-          <rect x="13" y="3" width="8" height="8" rx="2" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
-          <rect x="3" y="13" width="8" height="8" rx="2" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
-          <rect x="13" y="13" width="8" height="8" rx="2" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
+          <rect x="4" y="12" width="4" height="8" rx="1" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
+          <rect x="10" y="7" width="4" height="13" rx="1" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
+          <rect x="16" y="3" width="4" height="17" rx="1" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
         </svg>
       ),
     },
@@ -33,13 +32,14 @@ export default function TabBar({ activeTab, onTabChange }) {
       ),
     },
     {
-      key: 'food',
-      label: '분석',
+      key: 'album',
+      label: '기록',
       icon: (active) => (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <rect x="4" y="12" width="4" height="8" rx="1" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
-          <rect x="10" y="7" width="4" height="13" rx="1" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
-          <rect x="16" y="3" width="4" height="17" rx="1" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
+          <rect x="3" y="3" width="8" height="8" rx="2" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
+          <rect x="13" y="3" width="8" height="8" rx="2" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
+          <rect x="3" y="13" width="8" height="8" rx="2" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
+          <rect x="13" y="13" width="8" height="8" rx="2" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
         </svg>
       ),
     },

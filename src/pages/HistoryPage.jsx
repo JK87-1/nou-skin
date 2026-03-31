@@ -182,7 +182,7 @@ function ChangeIndicator({ diff, unit = '점', inverse = false, size = 'normal' 
 }
 
 // ===== MAIN HISTORY PAGE =====
-export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialMode, galleryOnly }) {
+export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onTabChange, initialMode, galleryOnly }) {
   const [mode, setMode] = useState(initialMode || 'gallery');
   const [albumCategory, setAlbumCategory] = useState('skin');
   const [insightMode, setInsightMode] = useState('timeline');
@@ -277,7 +277,10 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
       <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div></div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <div onClick={onMeasure} style={{
+          <div onClick={() => {
+            if (albumCategory === 'food' && onTabChange) onTabChange('food', { openAdd: true });
+            else onMeasure();
+          }} style={{
             width: 34, height: 34, borderRadius: '50%', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
@@ -388,7 +391,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                       <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{d.getMonth() + 1}월 {d.getDate()}일</span>
                       <span style={{ fontSize: 12, color: 'var(--accent-primary)', fontWeight: 600 }}>{totalKcal}kcal</span>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 3, padding: '0' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, padding: '0' }}>
                       {foods.map(food => (
                         <div key={food.id} onClick={() => setSelectedFood({ ...food, _date: date })} style={{ aspectRatio: '1', borderRadius: 5, overflow: 'hidden', background: 'var(--bg-card-hover)', position: 'relative', cursor: 'pointer' }}>
                           {food.photo ? (
@@ -482,7 +485,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
               </div>
             ) : (
               <div style={{
-                display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 3, padding: '0 16px',
+                display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, padding: '0 16px',
               }}>
                 {sorted.map((r) => {
                   const thumb = thumbs[String(r.id)] || thumbs[r.date];

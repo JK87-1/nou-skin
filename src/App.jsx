@@ -58,6 +58,7 @@ export default function App() {
   const nativeCameraRef = useRef(null);
 
   const [activeTab, setActiveTab] = useState('home');
+  const [foodAutoOpen, setFoodAutoOpen] = useState(false);
   const [historyInitMode, setHistoryInitMode] = useState(null);
 
   const [recordCount, setRecordCount] = useState(0);
@@ -250,11 +251,16 @@ export default function App() {
   const goToHistory = useCallback(() => { refreshLandingData(); setHistoryInitMode(null); setActiveTab('album'); }, []);
   const goToLanding = useCallback(() => { refreshLandingData(); setHistoryInitMode(null); setActiveTab('home'); }, []);
 
-  const switchTab = useCallback((tab) => {
+  const switchTab = useCallback((tab, opts) => {
     setActiveTab(tab);
     if (tab === 'measure') {
       setStage('landing');
       refreshLandingData();
+    }
+    if (tab === 'food' && opts?.openAdd) {
+      setFoodAutoOpen(Date.now());
+    } else {
+      setFoodAutoOpen(false);
     }
   }, []);
 
@@ -691,12 +697,12 @@ export default function App() {
 
       {/* ===== ALBUM TAB (gallery + insights merged) ===== */}
       {activeTab === 'album' && (
-        <HistoryPage onBack={goToLanding} onMeasure={openCamera} onOpenConsult={() => switchTab('home')} initialMode={historyInitMode} />
+        <HistoryPage onBack={goToLanding} onMeasure={openCamera} onOpenConsult={() => switchTab('home')} onTabChange={switchTab} initialMode={historyInitMode} />
       )}
 
 
       {/* ===== FOOD TAB ===== */}
-      {activeTab === 'food' && <FoodPage onTabChange={switchTab} />}
+      {activeTab === 'food' && <FoodPage onTabChange={switchTab} autoOpenAdd={foodAutoOpen} />}
 
       {/* ===== BODY TAB ===== */}
       {activeTab === 'body' && <BodyPage />}

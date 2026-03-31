@@ -102,7 +102,7 @@ function getDateKey(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-export default function FoodPage({ onTabChange }) {
+export default function FoodPage({ onTabChange, autoOpenAdd }) {
   const [foodTab, setFoodTab] = useState('food');
   const today = new Date();
   const todayStr = getDateKey(today);
@@ -115,6 +115,13 @@ export default function FoodPage({ onTabChange }) {
   const [addMeal, setAddMeal] = useState(null);
   const [detailFood, setDetailFood] = useState(null);
   const [showMealPicker, setShowMealPicker] = useState(false);
+
+  useEffect(() => {
+    if (autoOpenAdd) {
+      setFoodTab('food');
+      setShowMealPicker(true);
+    }
+  }, [autoOpenAdd]);
 
   const refresh = useCallback(() => {
     setFoods(getFoodRecords(selectedDate));
