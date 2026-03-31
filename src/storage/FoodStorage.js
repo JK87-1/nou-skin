@@ -75,7 +75,7 @@ export function getTimeAdjustedGoal() {
   const hour = new Date().getHours();
   let ratio;
   if (hour < 11) ratio = 0.3;
-  else if (hour < 17) ratio = 0.65;
+  else if (hour < 17) ratio = 0.6;
   else ratio = 1.0;
   return {
     ...full,
