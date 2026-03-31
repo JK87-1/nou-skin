@@ -130,8 +130,36 @@ export default function FoodPage({ onTabChange }) {
         </div>
       </div>
 
-      {/* Spacer — matches HistoryPage profile header height */}
-      <div style={{ height: 118 }} />
+      {/* Weekly Date Header */}
+      {(() => {
+        const now = new Date();
+        const dayOfWeek = now.getDay(); // 0=일, 1=월 ...
+        const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+        const days = [];
+        for (let i = 0; i < 7; i++) {
+          const d = new Date(now);
+          d.setDate(now.getDate() + mondayOffset + i);
+          days.push({ date: d.getDate(), dayLabel: ['월','화','수','목','금','토','일'][i], isToday: d.toDateString() === now.toDateString() });
+        }
+        return (
+          <div style={{ padding: '24px 20px 12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+              {days.map((d, i) => (
+                <div key={i} style={{ textAlign: 'center', minWidth: 32 }}>
+                  <div style={{ fontSize: 10, color: d.isToday ? 'var(--accent-primary)' : 'var(--text-dim)', fontWeight: 500, marginBottom: 6 }}>{d.dayLabel}</div>
+                  <div style={{
+                    width: 32, height: 32, borderRadius: '50%',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 13, fontWeight: d.isToday ? 700 : 400,
+                    color: d.isToday ? '#fff' : 'var(--text-muted)',
+                    background: d.isToday ? 'var(--accent-primary)' : 'transparent',
+                  }}>{d.date}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Category Tabs */}
       <div style={{ padding: '12px 20px 16px' }}>
