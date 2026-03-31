@@ -482,7 +482,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
               </div>
             ) : (
               <div style={{
-                display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4, padding: '0 2px',
+                display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, padding: '0 16px',
               }}>
                 {sorted.map((r) => {
                   const thumb = thumbs[String(r.id)] || thumbs[r.date];
