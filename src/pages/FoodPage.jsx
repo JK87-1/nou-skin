@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { getTodayFoods, getTodayNutrition, getTimeAdjustedGoal, saveFoodRecord, deleteFoodRecord } from '../storage/FoodStorage';
+import { getTodayFoods, getTodayNutrition, getFoodRecords, getNutritionForDate, getTimeAdjustedGoal, getFoodGoal, saveFoodRecord, deleteFoodRecord } from '../storage/FoodStorage';
 import { getRecords, getChanges, getTotalChanges } from '../storage/SkinStorage';
 
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
@@ -57,34 +57,46 @@ function calcFoodScore(nutrition, goal) {
   return Math.min(100, Math.max(0, Math.round(score)));
 }
 
+function getDateKey(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 export default function FoodPage({ onTabChange }) {
   const [foodTab, setFoodTab] = useState('food');
   const today = new Date();
-  const dateStr = today.toISOString().slice(0, 10);
-  const [foods, setFoods] = useState(getTodayFoods);
-  const [nutrition, setNutrition] = useState(getTodayNutrition);
-  const goal = getTimeAdjustedGoal();
+  const todayStr = getDateKey(today);
+  const [selectedDate, setSelectedDate] = useState(todayStr);
+  const isToday = selectedDate === todayStr;
+  const [foods, setFoods] = useState(() => getFoodRecords(selectedDate));
+  const [nutrition, setNutrition] = useState(() => getNutritionForDate(selectedDate));
+  const goal = isToday ? getTimeAdjustedGoal() : { ...getFoodGoal(), _ratio: 1, _mealLabel: '하루' };
   const [showAdd, setShowAdd] = useState(false);
   const [addMeal, setAddMeal] = useState(null);
   const [detailFood, setDetailFood] = useState(null);
   const [showMealPicker, setShowMealPicker] = useState(false);
 
   const refresh = useCallback(() => {
-    setFoods(getTodayFoods());
-    setNutrition(getTodayNutrition());
+    setFoods(getFoodRecords(selectedDate));
+    setNutrition(getNutritionForDate(selectedDate));
+  }, [selectedDate]);
+
+  const handleSelectDate = useCallback((dateKey) => {
+    setSelectedDate(dateKey);
+    setFoods(getFoodRecords(dateKey));
+    setNutrition(getNutritionForDate(dateKey));
   }, []);
 
   const handleAddFood = useCallback((food) => {
-    saveFoodRecord(dateStr, food);
+    saveFoodRecord(selectedDate, food);
     refresh();
     setShowAdd(false);
     setAddMeal(null);
-  }, [dateStr, refresh]);
+  }, [selectedDate, refresh]);
 
   const handleDeleteFood = useCallback((food) => {
-    deleteFoodRecord(dateStr, food.id);
+    deleteFoodRecord(selectedDate, food.id);
     refresh();
-  }, [dateStr, refresh]);
+  }, [selectedDate, refresh]);
 
   const score = calcFoodScore(nutrition, goal);
 
@@ -133,29 +145,32 @@ export default function FoodPage({ onTabChange }) {
       {/* Weekly Date Header */}
       {(() => {
         const now = new Date();
-        const dayOfWeek = now.getDay(); // 0=일, 1=월 ...
+        const dayOfWeek = now.getDay();
         const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
         const days = [];
         for (let i = 0; i < 7; i++) {
           const d = new Date(now);
           d.setDate(now.getDate() + mondayOffset + i);
-          days.push({ date: d.getDate(), dayLabel: ['월','화','수','목','금','토','일'][i], isToday: d.toDateString() === now.toDateString() });
+          days.push({ date: d.getDate(), dateKey: getDateKey(d), dayLabel: ['월','화','수','목','금','토','일'][i], isToday: d.toDateString() === now.toDateString() });
         }
         return (
           <div style={{ padding: '24px 20px 12px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-              {days.map((d, i) => (
-                <div key={i} style={{ textAlign: 'center', minWidth: 32 }}>
-                  <div style={{ fontSize: 10, color: d.isToday ? 'var(--accent-primary)' : 'var(--text-dim)', fontWeight: 500, marginBottom: 6 }}>{d.dayLabel}</div>
-                  <div style={{
-                    width: 32, height: 32, borderRadius: '50%',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 13, fontWeight: d.isToday ? 700 : 400,
-                    color: d.isToday ? '#fff' : 'var(--text-muted)',
-                    background: d.isToday ? 'var(--accent-primary)' : 'transparent',
-                  }}>{d.date}</div>
-                </div>
-              ))}
+              {days.map((d, i) => {
+                const isSelected = d.dateKey === selectedDate;
+                return (
+                  <div key={i} onClick={() => handleSelectDate(d.dateKey)} style={{ textAlign: 'center', minWidth: 32, cursor: 'pointer' }}>
+                    <div style={{ fontSize: 10, color: isSelected ? 'var(--accent-primary)' : 'var(--text-dim)', fontWeight: 500, marginBottom: 6 }}>{d.dayLabel}</div>
+                    <div style={{
+                      width: 32, height: 32, borderRadius: '50%',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 13, fontWeight: isSelected ? 700 : 400,
+                      color: isSelected ? '#fff' : 'var(--text-muted)',
+                      background: isSelected ? 'var(--accent-primary)' : 'transparent',
+                    }}>{d.date}</div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         );
@@ -181,7 +196,7 @@ export default function FoodPage({ onTabChange }) {
       {/* Date subtitle */}
       <div style={{ padding: '0 16px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ fontSize: 11, color: '#888' }}>
-          {today.getFullYear()}년 {today.getMonth() + 1}월 {today.getDate()}일 {DAY_NAMES[today.getDay()]}요일
+          {(() => { const d = new Date(selectedDate + 'T00:00:00'); return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 ${DAY_NAMES[d.getDay()]}요일`; })()}
         </div>
         <div style={{ fontSize: 10, color: 'var(--accent-primary)', fontWeight: 600 }}>
           {goal._mealLabel} 기준

@@ -94,6 +94,19 @@ export function saveFoodGoal(goal) {
   localStorage.setItem(GOAL_KEY, JSON.stringify(goal));
 }
 
+export function getNutritionForDate(dateStr) {
+  const foods = getFoodRecords(dateStr);
+  return foods.reduce((sum, f) => ({
+    kcal: sum.kcal + (f.kcal || 0),
+    carb: sum.carb + (f.carb || 0),
+    protein: sum.protein + (f.protein || 0),
+    fat: sum.fat + (f.fat || 0),
+    water: sum.water + (f.water || 0),
+    vitamin: sum.vitamin + (f.vitamin || 0),
+    mineral: sum.mineral + (f.mineral || 0),
+  }), { kcal: 0, carb: 0, protein: 0, fat: 0, water: 0, vitamin: 0, mineral: 0 });
+}
+
 export function getTodayNutrition() {
   const foods = getTodayFoods();
   return foods.reduce((sum, f) => ({
