@@ -31,7 +31,7 @@ import DailyMission from '../components/DailyMission';
 import { ChartIcon, CameraIcon, MicroscopeIcon, SparkleIcon, DiamondIcon, DropletIcon, RulerIcon, PaletteIcon, LotionIcon, EyeIcon, BubbleIcon, TargetIcon, ClockIcon, LuaMiniIcon } from '../components/icons/PastelIcons';
 import EternalPearl from '../components/icons/EternalPearl';
 import { getDefaultTheme } from '../data/BadgeData';
-import { getFoodRecords } from '../storage/FoodStorage';
+import { getFoodRecords, deleteFoodRecord } from '../storage/FoodStorage';
 import { getBodyRecords } from '../storage/BodyStorage';
 
 // ===== MINI LINE GRAPH (Canvas-based, no dependencies) =====
@@ -198,6 +198,8 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
   const [thumbs, setThumbs] = useState({});
   const [showCompareModal, setShowCompareModal] = useState(false);
   const [compareTab, setCompareTab] = useState('monthly');
+  const [selectedFood, setSelectedFood] = useState(null);
+  const [foodRefreshKey, setFoodRefreshKey] = useState(0);
 
   useEffect(() => {
     setRecords(getRecords());
@@ -376,6 +378,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
 
       {/* ===== FOOD ALBUM ===== */}
       {albumCategory === 'food' && (() => {
+        const _refresh = foodRefreshKey; // trigger re-render on delete
         const allFoods = getFoodRecords();
         const dates = Object.keys(allFoods).sort().reverse();
         return (
@@ -397,9 +400,9 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                       <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{d.getMonth() + 1}월 {d.getDate()}일</span>
                       <span style={{ fontSize: 12, color: 'var(--accent-primary)', fontWeight: 600 }}>{totalKcal}kcal</span>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, padding: '0' }}>
                       {foods.map(food => (
-                        <div key={food.id} style={{ aspectRatio: '1', borderRadius: 10, overflow: 'hidden', background: 'var(--bg-card-hover)', position: 'relative' }}>
+                        <div key={food.id} onClick={() => setSelectedFood({ ...food, _date: date })} style={{ aspectRatio: '1', borderRadius: 10, overflow: 'hidden', background: 'var(--bg-card-hover)', position: 'relative', cursor: 'pointer' }}>
                           {food.photo ? (
                             <img src={food.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           ) : (
@@ -418,6 +421,15 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
           </div>
         );
       })()}
+
+      {/* Food Detail Modal */}
+      {selectedFood && (
+        <HistoryFoodDetailModal food={selectedFood} onClose={() => setSelectedFood(null)} onDelete={() => {
+          deleteFoodRecord(selectedFood._date, selectedFood.id);
+          setSelectedFood(null);
+          setFoodRefreshKey(k => k + 1);
+        }} />
+      )}
 
       {/* ===== BODY ALBUM ===== */}
       {albumCategory === 'body' && (() => {
@@ -1600,6 +1612,118 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
               color: '#fff',
             }}>{grade.letter}</span>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== History Food Detail Modal =====
+function HistoryFoodDetailModal({ food, onClose, onDelete }) {
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  return (
+    <div onClick={onClose} style={{
+      position: 'fixed', inset: 0, zIndex: 1100,
+      background: 'rgba(0,0,0,0.45)',
+      display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: 'var(--bg-secondary, #fff)', borderRadius: '24px 24px 0 0',
+        padding: '12px 20px 40px', width: '100%', maxWidth: 430,
+        maxHeight: '88vh', overflowY: 'auto',
+      }}>
+        {/* Handle bar + back/delete */}
+        <div style={{ display: 'flex', justifyContent: 'center', position: 'relative', marginBottom: 28 }}>
+          <div onClick={onClose} style={{
+            position: 'absolute', left: -4, top: 2,
+            width: 32, height: 32, borderRadius: '50%', cursor: 'pointer',
+            background: 'var(--bg-card-hover, #F2F3F5)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M15 18l-6-6 6-6" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--bg-input, #E0E0E0)', marginTop: 10 }} />
+          <div onClick={() => setShowConfirm(true)} style={{
+            position: 'absolute', right: -4, top: 2,
+            width: 32, height: 32, borderRadius: '50%', cursor: 'pointer',
+            background: 'var(--bg-card-hover, #F2F3F5)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M6 12h12" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Delete confirm */}
+        {showConfirm && (
+          <div style={{
+            position: 'fixed', inset: 0, zIndex: 1200,
+            background: 'rgba(0,0,0,0.4)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }} onClick={() => setShowConfirm(false)}>
+            <div onClick={e => e.stopPropagation()} style={{
+              background: 'var(--bg-card, #fff)',
+              borderRadius: 20, padding: '28px 24px',
+              width: 280, textAlign: 'center',
+              border: '1px solid var(--border-subtle, #eee)',
+            }}>
+              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>이 기록을 삭제할까요?</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 20 }}>삭제된 기록은 복구할 수 없습니다.</div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button onClick={() => setShowConfirm(false)} style={{
+                  flex: 1, padding: '12px 0', borderRadius: 12, border: 'none',
+                  background: 'var(--bg-input, #F2F3F5)', color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                }}>아니오</button>
+                <button onClick={() => { onDelete(); setShowConfirm(false); }} style={{
+                  flex: 1, padding: '12px 0', borderRadius: 12, border: 'none',
+                  background: '#e05545', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                }}>삭제</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Food info */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+          {food.photo ? (
+            <img src={food.photo} alt="" style={{ width: 56, height: 56, borderRadius: 14, objectFit: 'cover', flexShrink: 0 }} />
+          ) : (
+            <div style={{ width: 56, height: 56, borderRadius: 14, background: 'rgba(129,228,189,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🍽️</div>
+          )}
+          <div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{food.name}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{food.meal}</div>
+          </div>
+        </div>
+
+        {/* Nutrition */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
+          {[
+            { label: '칼로리', value: food.kcal, unit: 'kcal' },
+            { label: '탄수화물', value: food.carb, unit: 'g' },
+            { label: '단백질', value: food.protein, unit: 'g' },
+          ].map(n => (
+            <div key={n.label} style={{ textAlign: 'center', padding: '10px 4px', borderRadius: 12, background: 'var(--bg-card)' }}>
+              <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.value}<span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>{n.unit}</span></div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{n.label}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+          {[
+            { label: '지방', value: food.fat, unit: 'g' },
+            { label: '비타민', value: food.vitamin || 0, unit: '%' },
+            { label: '미네랄', value: food.mineral || 0, unit: '%' },
+          ].map(n => (
+            <div key={n.label} style={{ textAlign: 'center', padding: '10px 4px', borderRadius: 12, background: 'var(--bg-card)' }}>
+              <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.value}<span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>{n.unit}</span></div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{n.label}</div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
