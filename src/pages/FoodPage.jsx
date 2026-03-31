@@ -596,7 +596,7 @@ function FoodCoachCard({ foods, nutrition, goal, score, lacking }) {
 
   if (!latestFood) {
     return (
-      <div style={{ margin: '0 16px 14px', padding: '20px', borderRadius: 16, background: '#FFFFFF' }}>
+      <div style={{ margin: '0 16px 14px', padding: '20px', borderRadius: 16, background: '#f9f9f9' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <CoachStarIcon />
           <div style={{ flex: 1 }}>
@@ -663,7 +663,7 @@ function FoodCoachCard({ foods, nutrition, goal, score, lacking }) {
   }
 
   return (
-    <div style={{ margin: '0 16px 14px', padding: '20px', borderRadius: 16, background: '#FFFFFF' }}>
+    <div style={{ margin: '0 16px 14px', padding: '20px', borderRadius: 16, background: '#f9f9f9' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
         <CoachStarIcon />
         <div style={{ flex: 1 }}>
