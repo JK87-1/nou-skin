@@ -17,41 +17,38 @@ const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
 const NutrientIcons = {
   protein: (
     <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
-      <path d="M7 21c-1-1.5-1-3.5 0-5.5l1.5-3c1-1.8 2.5-2.8 4.5-3.5h6c2 0 3.5 1 4.5 2.8l1.5 3c.8 2 .5 4.2-.5 5.5l-2.5 2c-1.2.8-3 1.2-5.5 1.2s-4-.4-5.5-1.2z" fill="#F4B8C4" />
-      <path d="M9 20c-.6-1.2-.5-2.8.2-4.5l1-2c.7-1.2 1.8-2 3-2.5h5c1.6 0 2.6.7 3.3 2l1 2.5c.5 1.5.2 3.2-.5 4l-2 1.2c-1 .6-2.4 1-4.5 1s-3.2-.4-4.2-.8z" fill="#F9CDD5" />
-      <ellipse cx="14" cy="15" rx="3" ry="2" fill="#FCDFE4" opacity="0.6" />
+      <path d="M7 21c-1-1.5-1-3.5 0-5.5l1.5-3c1-1.8 2.5-2.8 4.5-3.5h6c2 0 3.5 1 4.5 2.8l1.5 3c.8 2 .5 4.2-.5 5.5l-2.5 2c-1.2.8-3 1.2-5.5 1.2s-4-.4-5.5-1.2z" fill="#F2A5B3" />
+      <path d="M9 20c-.6-1.2-.5-2.8.2-4.5l1-2c.7-1.2 1.8-2 3-2.5h5c1.6 0 2.6.7 3.3 2l1 2.5c.5 1.5.2 3.2-.5 4l-2 1.2c-1 .6-2.4 1-4.5 1s-3.2-.4-4.2-.8z" fill="#F7BAC5" />
+      <ellipse cx="14" cy="15" rx="3" ry="2" fill="#FCD0D8" opacity="0.6" />
     </svg>
   ),
   carb: (
     <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
-      {/* 식빵 테두리 (크러스트) */}
-      <path d="M6 26V12c0-2 1-4 3-5.5C11 5 13 4 16 4s5 1 7 2.5c2 1.5 3 3.5 3 5.5v14a1 1 0 01-1 1H7a1 1 0 01-1-1z" fill="#D4A87A" />
-      {/* 식빵 안쪽 (흰 부분) */}
-      <path d="M8 25V13c0-1.6.8-3 2.2-4C12 8 13.8 7 16 7s4 1 5.8 2c1.4 1 2.2 2.4 2.2 4v12z" fill="#FAEAC0" />
-      {/* 하이라이트 */}
-      <path d="M10 24V14c0-1.3.6-2.4 1.8-3.2C13 10 14.4 9.2 16 9.2s3 .8 4.2 1.6c1.2.8 1.8 1.9 1.8 3.2v10" fill="#FFF4D8" opacity="0.5" />
+      <path d="M6 26V12c0-2 1-4 3-5.5C11 5 13 4 16 4s5 1 7 2.5c2 1.5 3 3.5 3 5.5v14a1 1 0 01-1 1H7a1 1 0 01-1-1z" fill="#EAC87A" />
+      <path d="M8 25V13c0-1.6.8-3 2.2-4C12 8 13.8 7 16 7s4 1 5.8 2c1.4 1 2.2 2.4 2.2 4v12z" fill="#F0D898" />
+      <path d="M10 24V14c0-1.3.6-2.4 1.8-3.2C13 10 14.4 9.2 16 9.2s3 .8 4.2 1.6c1.2.8 1.8 1.9 1.8 3.2v10" fill="#F8E8B8" opacity="0.5" />
     </svg>
   ),
   vitamin: (
     <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
-      <ellipse cx="16" cy="16" rx="12" ry="8" transform="rotate(-35 16 16)" fill="#F5E07A" />
-      <ellipse cx="15" cy="14.5" rx="10" ry="6.5" transform="rotate(-35 15 14.5)" fill="#FBF0A0" />
-      <ellipse cx="13" cy="12.5" rx="3.5" ry="2" transform="rotate(-35 13 12.5)" fill="#FFF8CC" opacity="0.7" />
+      <ellipse cx="16" cy="16" rx="12" ry="8" transform="rotate(-35 16 16)" fill="#F5D86A" />
+      <ellipse cx="15" cy="14.5" rx="10" ry="6.5" transform="rotate(-35 15 14.5)" fill="#FAE48A" />
+      <ellipse cx="13" cy="12.5" rx="3.5" ry="2" transform="rotate(-35 13 12.5)" fill="#FFF0A8" opacity="0.7" />
     </svg>
   ),
   mineral: (
     <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
-      <path d="M16 5L27 11 16 17 5 11z" fill="#D8EEFF" />
-      <path d="M5 11L16 17v12L5 23z" fill="#B8DAFC" />
-      <path d="M27 11L16 17v12l11-6z" fill="#9ECBF5" />
-      <path d="M16 6.5L25 11.5 16 16 7 11.5z" fill="#EAF4FF" opacity="0.6" />
+      <path d="M16 5L27 11 16 17 5 11z" fill="#C0DEFF" />
+      <path d="M5 11L16 17v12L5 23z" fill="#A8D0FA" />
+      <path d="M27 11L16 17v12l11-6z" fill="#90C2F5" />
+      <path d="M16 6.5L25 11.5 16 16 7 11.5z" fill="#D8ECFF" opacity="0.5" />
     </svg>
   ),
   kcal: (
     <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
-      <path d="M18 3L9 17h6.5L13 29l10.5-16H17z" fill="#FFB8A8" />
-      <path d="M18 3L9 17h6.5L13 29 15.5 17H11z" fill="#FFCEC0" />
-      <path d="M17 6l-4 8h2.5z" fill="#FFE0D6" opacity="0.6" />
+      <path d="M18 3L9 17h6.5L13 29l10.5-16H17z" fill="#F5A898" />
+      <path d="M18 3L9 17h6.5L13 29 15.5 17H11z" fill="#FAB8AC" />
+      <path d="M17 6l-4 8h2.5z" fill="#FDD0C8" opacity="0.6" />
     </svg>
   ),
 };
