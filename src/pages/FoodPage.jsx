@@ -373,6 +373,7 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
   const albumRef = useRef(null);
   const contentRef = useRef(null);
   const nameInputRef = useRef(null);
+  const [cropSrc, setCropSrc] = useState(null);
 
   // Handle mobile keyboard: adjust modal position when keyboard appears
   useEffect(() => {
@@ -444,8 +445,9 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (ev) => setPreview(ev.target.result);
+    reader.onload = (ev) => setCropSrc(ev.target.result);
     reader.readAsDataURL(file);
+    e.target.value = '';
   };
 
   const inputStyle = {
@@ -624,6 +626,139 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
             cursor: aiResult ? 'pointer' : 'default', fontFamily: 'inherit',
           }}>추가</button>
         </div>
+
+        {/* Crop Modal */}
+        {cropSrc && <PhotoCropModal src={cropSrc} onConfirm={(cropped) => { setPreview(cropped); setCropSrc(null); }} onCancel={() => setCropSrc(null)} />}
+      </div>
+    </div>
+  );
+}
+
+// ===== 1:1 Photo Crop Modal =====
+function PhotoCropModal({ src, onConfirm, onCancel }) {
+  const canvasRef = useRef(null);
+  const [img, setImg] = useState(null);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [scale, setScale] = useState(1);
+  const dragRef = useRef(null);
+
+  useEffect(() => {
+    const image = new Image();
+    image.onload = () => {
+      setImg(image);
+      // 초기 스케일: 짧은 변이 cropSize에 맞도록
+      const cropSize = 280;
+      const s = cropSize / Math.min(image.width, image.height);
+      setScale(s);
+      setOffset({
+        x: (cropSize - image.width * s) / 2,
+        y: (cropSize - image.height * s) / 2,
+      });
+    };
+    image.src = src;
+  }, [src]);
+
+  const cropSize = 280;
+
+  const handleTouchStart = (e) => {
+    const t = e.touches[0];
+    dragRef.current = { startX: t.clientX - offset.x, startY: t.clientY - offset.y };
+  };
+  const handleTouchMove = (e) => {
+    if (!dragRef.current || !img) return;
+    e.preventDefault();
+    const t = e.touches[0];
+    const w = img.width * scale, h = img.height * scale;
+    let x = t.clientX - dragRef.current.startX;
+    let y = t.clientY - dragRef.current.startY;
+    x = Math.min(0, Math.max(cropSize - w, x));
+    y = Math.min(0, Math.max(cropSize - h, y));
+    setOffset({ x, y });
+  };
+  const handleTouchEnd = () => { dragRef.current = null; };
+
+  const handleMouseDown = (e) => {
+    dragRef.current = { startX: e.clientX - offset.x, startY: e.clientY - offset.y };
+    const onMove = (ev) => {
+      if (!dragRef.current || !img) return;
+      const w = img.width * scale, h = img.height * scale;
+      let x = ev.clientX - dragRef.current.startX;
+      let y = ev.clientY - dragRef.current.startY;
+      x = Math.min(0, Math.max(cropSize - w, x));
+      y = Math.min(0, Math.max(cropSize - h, y));
+      setOffset({ x, y });
+    };
+    const onUp = () => { dragRef.current = null; window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  };
+
+  const handleConfirm = () => {
+    if (!img) return;
+    const canvas = document.createElement('canvas');
+    canvas.width = 600; canvas.height = 600;
+    const ctx = canvas.getContext('2d');
+    const ratio = 600 / cropSize;
+    ctx.drawImage(img, offset.x * ratio, offset.y * ratio, img.width * scale * ratio, img.height * scale * ratio);
+    onConfirm(canvas.toDataURL('image/jpeg', 0.85));
+  };
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 1300,
+      background: 'rgba(0,0,0,0.85)',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+    }}>
+      <div style={{ fontSize: 14, color: '#fff', fontWeight: 600, marginBottom: 16 }}>사진 위치 조정</div>
+      <div
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onMouseDown={handleMouseDown}
+        style={{
+          width: cropSize, height: cropSize, overflow: 'hidden',
+          borderRadius: 16, position: 'relative', cursor: 'grab',
+          border: '2px solid rgba(255,255,255,0.3)',
+        }}
+      >
+        {img && (
+          <img src={src} alt="" draggable={false} style={{
+            position: 'absolute',
+            left: offset.x, top: offset.y,
+            width: img.width * scale, height: img.height * scale,
+            pointerEvents: 'none', userSelect: 'none',
+          }} />
+        )}
+      </div>
+
+      {/* Scale slider */}
+      {img && (
+        <input type="range" min={Math.max(cropSize / img.width, cropSize / img.height)} max={Math.max(cropSize / img.width, cropSize / img.height) * 3} step={0.01}
+          value={scale}
+          onChange={e => {
+            const newScale = Number(e.target.value);
+            const w = img.width * newScale, h = img.height * newScale;
+            setScale(newScale);
+            setOffset(o => ({
+              x: Math.min(0, Math.max(cropSize - w, o.x)),
+              y: Math.min(0, Math.max(cropSize - h, o.y)),
+            }));
+          }}
+          style={{ width: cropSize, marginTop: 16, accentColor: '#81E4BD' }}
+        />
+      )}
+
+      <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
+        <button onClick={onCancel} style={{
+          padding: '12px 32px', borderRadius: 14, border: 'none',
+          background: 'rgba(255,255,255,0.15)', color: '#fff',
+          fontSize: 14, fontWeight: 600, cursor: 'pointer',
+        }}>취소</button>
+        <button onClick={handleConfirm} style={{
+          padding: '12px 32px', borderRadius: 14, border: 'none',
+          background: '#81E4BD', color: '#fff',
+          fontSize: 14, fontWeight: 700, cursor: 'pointer',
+        }}>확인</button>
       </div>
     </div>
   );
