@@ -88,6 +88,9 @@ export default function RoutinePage() {
         <div style={{ display: 'flex', justifyContent: 'space-around' }}>
           {weekDays.map((d, i) => {
             const isSelected = d.dateKey === selectedDate;
+            const dayData = weekly.find(w => w.date === d.dateKey);
+            const completed = dayData?.completed;
+            const partial = dayData?.partial;
             return (
               <div key={i} onClick={() => handleSelectDate(d.dateKey)} style={{ textAlign: 'center', minWidth: 32, cursor: 'pointer' }}>
                 <div style={{ fontSize: 10, color: isSelected ? 'var(--accent-primary)' : 'var(--text-dim)', fontWeight: 500, marginBottom: 6 }}>{d.dayLabel}</div>
@@ -95,8 +98,9 @@ export default function RoutinePage() {
                   width: 32, height: 32, borderRadius: '50%',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 13, fontWeight: isSelected ? 700 : 400,
-                  color: isSelected ? '#fff' : 'var(--text-muted)',
-                  background: isSelected ? 'var(--accent-primary)' : 'transparent',
+                  color: isSelected ? '#fff' : completed ? 'var(--accent-primary)' : 'var(--text-muted)',
+                  background: isSelected ? 'var(--accent-primary)' : completed ? 'rgba(129,228,189,0.15)' : 'transparent',
+                  border: partial && !isSelected && !completed ? '1.5px solid rgba(129,228,189,0.4)' : 'none',
                 }}>{d.date}</div>
               </div>
             );

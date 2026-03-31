@@ -150,11 +150,15 @@ export default function FoodPage({ onTabChange }) {
             const now = new Date();
             const dayOfWeek = now.getDay();
             const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+            const allFoodRecords = getFoodRecords();
             const days = [];
             for (let i = 0; i < 7; i++) {
               const d = new Date(now);
               d.setDate(now.getDate() + mondayOffset + i);
-              days.push({ date: d.getDate(), dateKey: getDateKey(d), dayLabel: ['월','화','수','목','금','토','일'][i] });
+              const dk = getDateKey(d);
+              const dayFoods = allFoodRecords[dk] || [];
+              const hasFood = dayFoods.filter(f => !f.name?.startsWith('물 ')).length > 0;
+              days.push({ date: d.getDate(), dateKey: dk, dayLabel: ['월','화','수','목','금','토','일'][i], hasFood });
             }
             return days.map((d, i) => {
               const isSelected = d.dateKey === selectedDate;
@@ -165,8 +169,8 @@ export default function FoodPage({ onTabChange }) {
                     width: 32, height: 32, borderRadius: '50%',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 13, fontWeight: isSelected ? 700 : 400,
-                    color: isSelected ? '#fff' : 'var(--text-muted)',
-                    background: isSelected ? 'var(--accent-primary)' : 'transparent',
+                    color: isSelected ? '#fff' : d.hasFood ? 'var(--accent-primary)' : 'var(--text-muted)',
+                    background: isSelected ? 'var(--accent-primary)' : d.hasFood ? 'rgba(129,228,189,0.15)' : 'transparent',
                   }}>{d.date}</div>
                 </div>
               );
