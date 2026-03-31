@@ -67,6 +67,7 @@ export default function FoodPage({ onTabChange }) {
   const [showAdd, setShowAdd] = useState(false);
   const [addMeal, setAddMeal] = useState(null);
   const [coachMsg, setCoachMsg] = useState(null);
+  const [detailFood, setDetailFood] = useState(null);
 
   const refresh = useCallback(() => {
     setFoods(getTodayFoods());
@@ -160,7 +161,7 @@ export default function FoodPage({ onTabChange }) {
           const items = mealFoods[meal];
           if (items.length > 0) {
             return (
-              <div key={meal} onClick={() => { setAddMeal(meal); setShowAdd(true); }} style={{
+              <div key={meal} onClick={() => setDetailFood(items[0])} style={{
                 flex: 1, aspectRatio: '1/1', borderRadius: 14, overflow: 'hidden',
                 background: MEAL_GRADIENTS[MEAL_LABELS.indexOf(meal)],
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end',
@@ -286,6 +287,9 @@ export default function FoodPage({ onTabChange }) {
 
       {/* Add Food Modal */}
       {showAdd && <AddFoodModal onAdd={handleAddFood} onClose={() => { setShowAdd(false); setAddMeal(null); }} initialMeal={addMeal} />}
+
+      {/* Food Detail Modal */}
+      {detailFood && <FoodDetailModal food={detailFood} onClose={() => setDetailFood(null)} />}
     </div>
   );
 }
@@ -358,6 +362,12 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
       fat: aiResult.fat || 0,
       vitamin: aiResult.vitamin || 0,
       mineral: aiResult.mineral || 0,
+      bloodSugar: aiResult.bloodSugar || '',
+      bloodSugarNote: aiResult.bloodSugarNote || '',
+      drowsiness: aiResult.drowsiness || '',
+      drowsinessNote: aiResult.drowsinessNote || '',
+      skinImpact: aiResult.skinImpact || '',
+      skinImpactNote: aiResult.skinImpactNote || '',
       water: 0,
     });
   };
@@ -546,6 +556,116 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
             cursor: aiResult ? 'pointer' : 'default', fontFamily: 'inherit',
           }}>추가</button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== Food Detail Modal =====
+const IMPACT_STYLE = {
+  '낮음': { bg: '#E8F8F0', color: '#0F6E56' },
+  '보통': { bg: '#FFF8E1', color: '#F59E0B' },
+  '높음': { bg: '#FBEAF0', color: '#993556' },
+  '좋음': { bg: '#E8F8F0', color: '#0F6E56' },
+  '주의': { bg: '#FBEAF0', color: '#993556' },
+};
+
+function FoodDetailModal({ food, onClose }) {
+  const impactItems = [
+    { icon: '📈', label: '혈당 상승', value: food.bloodSugar, note: food.bloodSugarNote },
+    { icon: '😴', label: '졸림 확률', value: food.drowsiness, note: food.drowsinessNote },
+    { icon: '✨', label: '피부 영향', value: food.skinImpact, note: food.skinImpactNote },
+  ];
+
+  return (
+    <div onClick={onClose} style={{
+      position: 'fixed', inset: 0, zIndex: 1100,
+      background: 'rgba(0,0,0,0.5)',
+      display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
+        padding: '24px 24px 40px', width: '100%', maxWidth: 420,
+        maxHeight: '90dvh', overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+      }}>
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 16px', opacity: 0.3 }} />
+
+        {/* Photo + Name header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+          {food.photo ? (
+            <img src={food.photo} alt="" style={{ width: 56, height: 56, borderRadius: 14, objectFit: 'cover', flexShrink: 0 }} />
+          ) : (
+            <div style={{ width: 56, height: 56, borderRadius: 14, background: 'rgba(129,228,189,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🍽️</div>
+          )}
+          <div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{food.name}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{food.meal}</div>
+          </div>
+        </div>
+
+        {/* Nutrition grid */}
+        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>영양 정보</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
+          {[
+            { label: '칼로리', value: food.kcal, unit: 'kcal' },
+            { label: '탄수화물', value: food.carb, unit: 'g' },
+            { label: '단백질', value: food.protein, unit: 'g' },
+          ].map(n => (
+            <div key={n.label} style={{ textAlign: 'center', padding: '10px 4px', borderRadius: 12, background: 'var(--bg-card)' }}>
+              <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.value}<span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>{n.unit}</span></div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{n.label}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 20 }}>
+          {[
+            { label: '지방', value: food.fat, unit: 'g' },
+            { label: '비타민', value: food.vitamin || 0, unit: '%' },
+            { label: '미네랄', value: food.mineral || 0, unit: '%' },
+          ].map(n => (
+            <div key={n.label} style={{ textAlign: 'center', padding: '10px 4px', borderRadius: 12, background: 'var(--bg-card)' }}>
+              <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.value}<span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>{n.unit}</span></div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{n.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Impact analysis */}
+        {(food.bloodSugar || food.drowsiness || food.skinImpact) && (
+          <>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 10 }}>식후 영향 분석</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+              {impactItems.filter(i => i.value).map(item => {
+                const s = IMPACT_STYLE[item.value] || IMPACT_STYLE['보통'];
+                return (
+                  <div key={item.label} style={{
+                    padding: '14px 16px', borderRadius: 14,
+                    background: 'var(--bg-card)',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{item.icon} {item.label}</span>
+                      <span style={{
+                        fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 8,
+                        background: s.bg, color: s.color,
+                      }}>{item.value}</span>
+                    </div>
+                    {item.note && (
+                      <div style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{item.note}</div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        {/* Close button */}
+        <button onClick={onClose} style={{
+          width: '100%', padding: '14px 0', borderRadius: 'var(--btn-radius)',
+          border: 'none', background: 'var(--bg-input, #F2F3F5)',
+          color: 'var(--text-muted)', fontSize: 14, fontWeight: 600,
+          cursor: 'pointer', fontFamily: 'inherit',
+        }}>닫기</button>
       </div>
     </div>
   );
