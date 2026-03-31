@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { getTodayFoods, getTodayNutrition, getFoodGoal, saveFoodRecord, deleteFoodRecord } from '../storage/FoodStorage';
 import { getRecords, getChanges, getTotalChanges } from '../storage/SkinStorage';
 
@@ -296,6 +296,22 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
   const [aiResult, setAiResult] = useState(null);
   const fileRef = useRef(null);
   const albumRef = useRef(null);
+  const contentRef = useRef(null);
+  const nameInputRef = useRef(null);
+
+  // Handle mobile keyboard: adjust modal position when keyboard appears
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const onResize = () => {
+      if (contentRef.current) {
+        const keyboardHeight = window.innerHeight - vv.height;
+        contentRef.current.style.transform = keyboardHeight > 50 ? `translateY(-${keyboardHeight}px)` : 'translateY(0)';
+      }
+    };
+    vv.addEventListener('resize', onResize);
+    return () => vv.removeEventListener('resize', onResize);
+  }, []);
 
   const getThumb = () => {
     if (!preview) return null;
@@ -364,9 +380,11 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
       background: 'rgba(0,0,0,0.5)',
       display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
     }}>
-      <div onClick={e => e.stopPropagation()} style={{
+      <div ref={contentRef} onClick={e => e.stopPropagation()} style={{
         background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
+        maxHeight: '85dvh', overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+        transition: 'transform 0.2s ease',
       }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
         <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20 }}>식사 기록</div>
@@ -429,9 +447,11 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
         <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>음식 이름</div>
         <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
           <input
+            ref={nameInputRef}
             value={name}
             onChange={e => { setName(e.target.value); setAiResult(null); }}
             onKeyDown={e => e.key === 'Enter' && handleAnalyze()}
+            onFocus={() => setTimeout(() => nameInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
             placeholder="예: 낙지비빔밥, 된장찌개"
             style={{ ...inputStyle, flex: 1 }}
           />
@@ -445,7 +465,7 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
               outline: 'none',
             }}
           >
-            {[0.5, 1, 1.5, 2, 3].map(n => (
+            {[0.5, 0.8, 1, 1.5, 2].map(n => (
               <option key={n} value={n}>{n}인분</option>
             ))}
           </select>
