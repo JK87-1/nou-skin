@@ -17,80 +17,49 @@ const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
 const NutrientIcons = {
   protein: (
     <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
-      {/* 그림자 */}
-      <path d="M6 22c-1-2-1-4 0-6l2-4c1-2 3-3 5-4h6c2.5 0 4 1 5 3l2 4c1 2.5.5 5-1 6l-3 2c-1.5 1-3.5 1.5-6 1.5s-4-.5-5.5-1.5z" fill="#C46A6A" opacity="0.3" transform="translate(0.5,0.5)" />
-      {/* 지방 테두리 */}
-      <path d="M6 22c-1-2-1-4 0-6l2-4c1-2 3-3 5-4h6c2.5 0 4 1 5 3l2 4c1 2.5.5 5-1 6l-3 2c-1.5 1-3.5 1.5-6 1.5s-4-.5-5.5-1.5z" fill="#F5C6CB" />
-      {/* 살코기 */}
-      <path d="M8 21c-.8-1.5-.6-3.2.2-5l1.5-3c.8-1.5 2-2.2 3.5-2.8h5.5c2 0 3 .8 3.8 2.2l1.5 3.2c.7 1.8.3 3.8-.8 4.8l-2 1.5c-1.2.7-2.8 1.1-5 1.1s-3.5-.4-4.8-1z" fill="#D45B5B" />
-      {/* 하이라이트 */}
-      <ellipse cx="13" cy="14" rx="3" ry="2" fill="#E87070" opacity="0.6" />
+      <path d="M7 21c-1-1.5-1-3.5 0-5.5l1.5-3c1-1.8 2.5-2.8 4.5-3.5h6c2 0 3.5 1 4.5 2.8l1.5 3c.8 2 .5 4.2-.5 5.5l-2.5 2c-1.2.8-3 1.2-5.5 1.2s-4-.4-5.5-1.2z" fill="#F4B8C4" />
+      <path d="M9 20c-.6-1.2-.5-2.8.2-4.5l1-2c.7-1.2 1.8-2 3-2.5h5c1.6 0 2.6.7 3.3 2l1 2.5c.5 1.5.2 3.2-.5 4l-2 1.2c-1 .6-2.4 1-4.5 1s-3.2-.4-4.2-.8z" fill="#F9CDD5" />
+      <ellipse cx="14" cy="15" rx="3" ry="2" fill="#FCDFE4" opacity="0.6" />
     </svg>
   ),
   carb: (
     <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
-      {/* 빵 그림자 */}
-      <path d="M5 20c0 2 1 4 3 4h16c2 0 3-2 3-4v-2H5z" fill="#B8892E" opacity="0.25" transform="translate(0.5,0.5)" />
-      {/* 빵 바닥 */}
-      <path d="M5 19c0 2 1 4 3 4h16c2 0 3-2 3-4v-1H5z" fill="#D4A044" />
-      {/* 빵 윗부분 */}
-      <path d="M5 18c0-6 4-10 11-10s11 4 11 10H5z" fill="#F0C868" />
-      {/* 밝은 면 */}
-      <path d="M7 17c0-5 3.5-8 9-8s9 3 9 8" fill="#F5D88A" />
-      {/* 하이라이트 */}
-      <ellipse cx="13" cy="12.5" rx="4.5" ry="2.5" fill="#FAEAC0" opacity="0.55" />
+      <rect x="7" y="17" width="18" height="9" rx="2" fill="#E8C870" />
+      <path d="M7 18c0-5 4-10 9-10s9 5 9 10H7z" fill="#F5DCA0" />
+      <path d="M9 17c0-4.2 3.2-8 7-8s7 3.8 7 8" fill="#FAEAC0" />
+      <ellipse cx="14" cy="13" rx="4" ry="2.2" fill="#FFF4D8" opacity="0.6" />
     </svg>
   ),
   vitamin: (
     <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
-      {/* 레몬 — 대각선 타원형 */}
-      <ellipse cx="16" cy="16" rx="12" ry="8" transform="rotate(-35 16 16)" fill="#F5D24E" />
-      {/* 밝은 윗면 */}
-      <ellipse cx="15" cy="14.5" rx="10" ry="6.5" transform="rotate(-35 15 14.5)" fill="#FFE566" />
-      {/* 하이라이트 */}
-      <ellipse cx="12" cy="12" rx="3" ry="1.5" transform="rotate(-35 12 12)" fill="#FFF8CC" opacity="0.7" />
-      {/* 하단 질감 — 점 패턴 */}
-      <circle cx="17" cy="20" r="1" fill="#ECC240" opacity="0.5" />
-      <circle cx="19.5" cy="19" r="1" fill="#ECC240" opacity="0.5" />
-      <circle cx="15" cy="21.5" r="0.8" fill="#ECC240" opacity="0.4" />
-      <circle cx="21" cy="17.5" r="0.8" fill="#ECC240" opacity="0.4" />
+      <ellipse cx="16" cy="16" rx="12" ry="8" transform="rotate(-35 16 16)" fill="#F5E07A" />
+      <ellipse cx="15" cy="14.5" rx="10" ry="6.5" transform="rotate(-35 15 14.5)" fill="#FBF0A0" />
+      <ellipse cx="13" cy="12.5" rx="3.5" ry="2" transform="rotate(-35 13 12.5)" fill="#FFF8CC" opacity="0.7" />
     </svg>
   ),
   mineral: (
     <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
-      {/* 아이스큐브 — 윗면 */}
-      <path d="M16 4L28 10 16 16 4 10z" fill="#D0EAFF" />
-      {/* 왼쪽 면 */}
-      <path d="M4 10L16 16v14L4 24z" fill="#A0D4F8" />
-      {/* 오른쪽 면 */}
-      <path d="M28 10L16 16v14l12-6z" fill="#7EC0F0" />
-      {/* 윗면 하이라이트 */}
-      <path d="M16 5.5L26 10.5 16 15 6 10.5z" fill="#E4F2FF" opacity="0.6" />
-      {/* 엣지 라인 */}
-      <path d="M16 16v14" stroke="#fff" strokeWidth="0.6" opacity="0.5" />
-      <path d="M4 10L16 16 28 10" stroke="#fff" strokeWidth="0.6" opacity="0.4" />
+      <path d="M16 5L27 11 16 17 5 11z" fill="#D8EEFF" />
+      <path d="M5 11L16 17v12L5 23z" fill="#B8DAFC" />
+      <path d="M27 11L16 17v12l11-6z" fill="#9ECBF5" />
+      <path d="M16 6.5L25 11.5 16 16 7 11.5z" fill="#EAF4FF" opacity="0.6" />
     </svg>
   ),
   kcal: (
     <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
-      {/* 번개 그림자 */}
-      <path d="M18 2L8.5 17h7L13 30l11-17h-7z" fill="#C44A36" opacity="0.25" transform="translate(0.6,0.6)" />
-      {/* 번개 몸체 */}
-      <path d="M18 2L8.5 17h7L13 30l11-17h-7z" fill="#F97056" />
-      {/* 밝은 면 */}
-      <path d="M18 2L8.5 17h7L13 30 15.5 17h-4z" fill="#FF8A70" />
-      {/* 하이라이트 */}
-      <path d="M17 5l-4.5 9h3z" fill="#FFB8A8" opacity="0.45" />
+      <path d="M18 3L9 17h6.5L13 29l10.5-16H17z" fill="#FFB8A8" />
+      <path d="M18 3L9 17h6.5L13 29 15.5 17H11z" fill="#FFCEC0" />
+      <path d="M17 6l-4 8h2.5z" fill="#FFE0D6" opacity="0.6" />
     </svg>
   ),
 };
 
 const NUTRIENT_META = [
-  { key: 'protein', icon: NutrientIcons.protein, label: '단백질', unit: 'g', goalKey: 'protein', grad: ['#F9D1D8', '#F0A0B8'] },
-  { key: 'carb', icon: NutrientIcons.carb, label: '탄수화물', unit: 'g', goalKey: 'carb', grad: ['#FEF3C7', '#F5D76E'] },
-  { key: 'vitamin', icon: NutrientIcons.vitamin, label: '비타민', unit: '%', goalKey: 'vitamin', grad: ['#FEF3C7', '#FCD34D'] },
-  { key: 'mineral', icon: NutrientIcons.mineral, label: '미네랄', unit: '%', goalKey: 'mineral', grad: ['#D4F0FF', '#74C0FC'] },
-  { key: 'kcal', icon: NutrientIcons.kcal, label: '칼로리', unit: '', goalKey: 'kcal', grad: ['#FFE4DC', '#F9A08C'] },
+  { key: 'protein', icon: NutrientIcons.protein, label: '단백질', unit: 'g', goalKey: 'protein', grad: ['#FDE8EC', '#F9CDD5'] },
+  { key: 'carb', icon: NutrientIcons.carb, label: '탄수화물', unit: 'g', goalKey: 'carb', grad: ['#FFF6E0', '#FAEAC0'] },
+  { key: 'vitamin', icon: NutrientIcons.vitamin, label: '비타민', unit: '%', goalKey: 'vitamin', grad: ['#FFFBE0', '#FBF0A0'] },
+  { key: 'mineral', icon: NutrientIcons.mineral, label: '미네랄', unit: '%', goalKey: 'mineral', grad: ['#E8F4FF', '#D8EEFF'] },
+  { key: 'kcal', icon: NutrientIcons.kcal, label: '칼로리', unit: '', goalKey: 'kcal', grad: ['#FFF0EC', '#FFCEC0'] },
 ];
 
 function getStatus(value, goal) {
