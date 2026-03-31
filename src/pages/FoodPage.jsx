@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { getTodayFoods, getTodayNutrition, getFoodRecords, getNutritionForDate, getTimeAdjustedGoal, getFoodGoal, saveFoodRecord, deleteFoodRecord } from '../storage/FoodStorage';
+import { getWeeklyCompletion } from '../storage/RoutineStorage';
 import { getRecords, getChanges, getTotalChanges, getAllThumbnailsAsync } from '../storage/SkinStorage';
 import { getBodyRecords, getLatestWeight, getStartWeight, getBodyGoal, getBodyProfile, calcBMI, saveBodyRecord, deleteBodyRecord } from '../storage/BodyStorage';
 
@@ -143,22 +144,21 @@ export default function FoodPage({ onTabChange }) {
         </div>
       </div>
 
-      {/* Weekly Date Header — synced with RoutinePage */}
+      {/* Weekly Date Header — identical to RoutinePage */}
       <div style={{ padding: '24px 20px 12px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-around' }}>
           {(() => {
             const now = new Date();
             const dayOfWeek = now.getDay();
             const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-            const allFoodRecords = getFoodRecords();
+            const weekly = getWeeklyCompletion();
             const days = [];
             for (let i = 0; i < 7; i++) {
               const d = new Date(now);
               d.setDate(now.getDate() + mondayOffset + i);
               const dk = getDateKey(d);
-              const dayFoods = allFoodRecords[dk] || [];
-              const hasFood = dayFoods.filter(f => !f.name?.startsWith('물 ')).length > 0;
-              days.push({ date: d.getDate(), dateKey: dk, dayLabel: ['월','화','수','목','금','토','일'][i], hasFood });
+              const dayData = weekly.find(w => w.date === dk);
+              days.push({ date: d.getDate(), dateKey: dk, dayLabel: ['월','화','수','목','금','토','일'][i], completed: dayData?.completed, partial: dayData?.partial });
             }
             return days.map((d, i) => {
               const isSelected = d.dateKey === selectedDate;
@@ -169,8 +169,9 @@ export default function FoodPage({ onTabChange }) {
                     width: 32, height: 32, borderRadius: '50%',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: 13, fontWeight: isSelected ? 700 : 400,
-                    color: isSelected ? '#fff' : d.hasFood ? 'var(--accent-primary)' : 'var(--text-muted)',
-                    background: isSelected ? 'var(--accent-primary)' : d.hasFood ? 'rgba(129,228,189,0.15)' : 'transparent',
+                    color: isSelected ? '#fff' : d.completed ? 'var(--accent-primary)' : 'var(--text-muted)',
+                    background: isSelected ? 'var(--accent-primary)' : d.completed ? 'rgba(129,228,189,0.15)' : 'transparent',
+                    border: d.partial && !isSelected && !d.completed ? '1.5px solid rgba(129,228,189,0.4)' : 'none',
                   }}>{d.date}</div>
                 </div>
               );
