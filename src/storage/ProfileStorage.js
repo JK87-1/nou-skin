@@ -5,6 +5,7 @@ const DEFAULTS = {
   profileImage: '',
   birthYear: '',
   gender: '',
+  targetWeight: '',
   skinType: '',
   skinConcerns: [],
   sensitivity: '',

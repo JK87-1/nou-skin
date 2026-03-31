@@ -205,6 +205,19 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                   onSelect={(v) => update('gender', v)}
                 />
               </Section>
+              <Section label="목표 체중">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <input
+                    type="number"
+                    value={profile.targetWeight}
+                    onChange={(e) => update('targetWeight', e.target.value)}
+                    placeholder="예: 65"
+                    min={30} max={200}
+                    style={{ ...inputStyle, flex: 1 }}
+                  />
+                  <span style={{ fontSize: 13, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>kg</span>
+                </div>
+              </Section>
             </div>
           )}
 

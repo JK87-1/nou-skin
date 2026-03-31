@@ -35,8 +35,59 @@ export function getTodayFoods() {
   return getFoodRecords(today);
 }
 
+/**
+ * 목표체중 기반 1일 영양 목표 계산
+ * - 칼로리: 목표체중 × 30 kcal
+ * - 탄수화물: 총 칼로리의 50% / 4 kcal/g
+ * - 단백질: 목표체중 × 1.5g
+ * - 지방: 총 칼로리의 25% / 9 kcal/g
+ */
+function calcGoalByWeight(kg) {
+  const kcal = Math.round(kg * 30);
+  return {
+    kcal,
+    carb: Math.round((kcal * 0.5) / 4),
+    protein: Math.round(kg * 1.5),
+    fat: Math.round((kcal * 0.25) / 9),
+    water: 2.0,
+    vitamin: 100,
+    mineral: 100,
+  };
+}
+
 export function getFoodGoal() {
-  return JSON.parse(localStorage.getItem(GOAL_KEY) || '{"kcal":1800,"carb":250,"protein":80,"fat":60,"water":2.0,"vitamin":100,"mineral":100}');
+  try {
+    const profile = JSON.parse(localStorage.getItem('nou_profile') || '{}');
+    const tw = Number(profile.targetWeight);
+    if (tw > 0) return calcGoalByWeight(tw);
+  } catch {}
+  return { kcal: 1800, carb: 250, protein: 80, fat: 60, water: 2.0, vitamin: 100, mineral: 100 };
+}
+
+/**
+ * 시간대별 목표 비율
+ * ~11시: 아침만 (30%)
+ * ~17시: 아침+점심 (65%)
+ * ~24시: 하루 전체 (100%)
+ */
+export function getTimeAdjustedGoal() {
+  const full = getFoodGoal();
+  const hour = new Date().getHours();
+  let ratio;
+  if (hour < 11) ratio = 0.3;
+  else if (hour < 17) ratio = 0.65;
+  else ratio = 1.0;
+  return {
+    ...full,
+    kcal: Math.round(full.kcal * ratio),
+    carb: Math.round(full.carb * ratio),
+    protein: Math.round(full.protein * ratio),
+    fat: Math.round(full.fat * ratio),
+    vitamin: Math.round(full.vitamin * ratio),
+    mineral: Math.round(full.mineral * ratio),
+    _ratio: ratio,
+    _mealLabel: ratio === 0.3 ? '아침' : ratio === 0.65 ? '아침·점심' : '하루',
+  };
 }
 
 export function saveFoodGoal(goal) {

@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { getTodayFoods, getTodayNutrition, getFoodGoal, saveFoodRecord, deleteFoodRecord } from '../storage/FoodStorage';
+import { getTodayFoods, getTodayNutrition, getTimeAdjustedGoal, saveFoodRecord, deleteFoodRecord } from '../storage/FoodStorage';
 import { getRecords, getChanges, getTotalChanges } from '../storage/SkinStorage';
 
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
@@ -63,7 +63,7 @@ export default function FoodPage({ onTabChange }) {
   const dateStr = today.toISOString().slice(0, 10);
   const [foods, setFoods] = useState(getTodayFoods);
   const [nutrition, setNutrition] = useState(getTodayNutrition);
-  const goal = getFoodGoal();
+  const goal = getTimeAdjustedGoal();
   const [showAdd, setShowAdd] = useState(false);
   const [addMeal, setAddMeal] = useState(null);
   const [coachMsg, setCoachMsg] = useState(null);
@@ -145,9 +145,12 @@ export default function FoodPage({ onTabChange }) {
       {/* Food content */}
       {foodTab === 'food' && <>
       {/* Date subtitle */}
-      <div style={{ padding: '0 16px 8px' }}>
+      <div style={{ padding: '0 16px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ fontSize: 11, color: '#888' }}>
           {today.getFullYear()}년 {today.getMonth() + 1}월 {today.getDate()}일 {DAY_NAMES[today.getDay()]}요일
+        </div>
+        <div style={{ fontSize: 10, color: 'var(--accent-primary)', fontWeight: 600 }}>
+          {goal._mealLabel} 기준
         </div>
       </div>
 
