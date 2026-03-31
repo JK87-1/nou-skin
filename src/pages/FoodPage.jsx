@@ -24,10 +24,12 @@ const NutrientIcons = {
   ),
   carb: (
     <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
-      <rect x="7" y="17" width="18" height="9" rx="2" fill="#E8C870" />
-      <path d="M7 18c0-5 4-10 9-10s9 5 9 10H7z" fill="#F5DCA0" />
-      <path d="M9 17c0-4.2 3.2-8 7-8s7 3.8 7 8" fill="#FAEAC0" />
-      <ellipse cx="14" cy="13" rx="4" ry="2.2" fill="#FFF4D8" opacity="0.6" />
+      {/* 식빵 테두리 (크러스트) */}
+      <path d="M6 26V12c0-2 1-4 3-5.5C11 5 13 4 16 4s5 1 7 2.5c2 1.5 3 3.5 3 5.5v14a1 1 0 01-1 1H7a1 1 0 01-1-1z" fill="#D4A87A" />
+      {/* 식빵 안쪽 (흰 부분) */}
+      <path d="M8 25V13c0-1.6.8-3 2.2-4C12 8 13.8 7 16 7s4 1 5.8 2c1.4 1 2.2 2.4 2.2 4v12z" fill="#FAEAC0" />
+      {/* 하이라이트 */}
+      <path d="M10 24V14c0-1.3.6-2.4 1.8-3.2C13 10 14.4 9.2 16 9.2s3 .8 4.2 1.6c1.2.8 1.8 1.9 1.8 3.2v10" fill="#FFF4D8" opacity="0.5" />
     </svg>
   ),
   vitamin: (
