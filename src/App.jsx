@@ -16,8 +16,7 @@ import MyPage from './pages/MyPage';
 import HomePage from './pages/HomePage';
 import FoodPage from './pages/FoodPage';
 import BodyPage from './pages/BodyPage';
-// RoutinePage removed — tab restructuring
-import RoutineTracker from './pages/RoutineTracker';
+import RoutinePage from './pages/RoutinePage';
 import SkinScoreCircle from './components/SkinScoreCircle';
 import AiInsightCard from './components/AiInsightCard';
 import SkinConsultant from './components/SkinConsultant';
@@ -704,7 +703,7 @@ export default function App() {
 
       {/* ===== ROUTINE TAB ===== */}
       {activeTab === 'routine' && (
-        <RoutineTracker
+        <RoutinePage
           colorMode={colorMode}
           themeColors={activeThemeColors}
           onBack={() => switchTab('home')}
