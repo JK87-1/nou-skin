@@ -96,6 +96,20 @@ export function getChecks() {
   }
 }
 
+export function getChecksForDate(dateKey) {
+  try {
+    if (dateKey === getTodayKey()) return getChecks();
+    const history = JSON.parse(localStorage.getItem(ROUTINE_HISTORY_KEY) || '{}');
+    const entry = history[dateKey];
+    if (!entry) return { date: dateKey, morning: {}, night: {} };
+    // history에서 체크 상태 복원
+    const allChecks = JSON.parse(localStorage.getItem('nou_routine_all') || '{}');
+    return allChecks[dateKey] || { date: dateKey, morning: {}, night: {} };
+  } catch {
+    return { date: dateKey, morning: {}, night: {} };
+  }
+}
+
 export function toggleCheck(mode, stepId) {
   const checks = getChecks();
   if (!checks[mode]) checks[mode] = {};
@@ -104,11 +118,47 @@ export function toggleCheck(mode, stepId) {
   localStorage.setItem(ROUTINE_KEY, JSON.stringify(checks));
   // 히스토리 업데이트
   updateHistory(checks);
+  // 전체 기록 저장
+  saveAllChecks(getTodayKey(), checks);
   return checks;
+}
+
+export function toggleCheckForDate(dateKey, mode, stepId) {
+  if (dateKey === getTodayKey()) return toggleCheck(mode, stepId);
+  const allChecks = JSON.parse(localStorage.getItem('nou_routine_all') || '{}');
+  const checks = allChecks[dateKey] || { date: dateKey, morning: {}, night: {} };
+  if (!checks[mode]) checks[mode] = {};
+  checks[mode][stepId] = !checks[mode][stepId];
+  checks.date = dateKey;
+  allChecks[dateKey] = checks;
+  localStorage.setItem('nou_routine_all', JSON.stringify(allChecks));
+  // 히스토리도 업데이트
+  const history = JSON.parse(localStorage.getItem(ROUTINE_HISTORY_KEY) || '{}');
+  const mDone = MORNING_STEPS.filter(s => (checks.morning || {})[s.id]).length;
+  const nDone = NIGHT_STEPS.filter(s => (checks.night || {})[s.id]).length;
+  history[dateKey] = { morning: mDone >= MORNING_STEPS.length, night: nDone >= NIGHT_STEPS.length, morningCount: mDone, nightCount: nDone };
+  localStorage.setItem(ROUTINE_HISTORY_KEY, JSON.stringify(history));
+  return checks;
+}
+
+function saveAllChecks(dateKey, checks) {
+  try {
+    const allChecks = JSON.parse(localStorage.getItem('nou_routine_all') || '{}');
+    allChecks[dateKey] = checks;
+    localStorage.setItem('nou_routine_all', JSON.stringify(allChecks));
+  } catch {}
 }
 
 export function getProgress(mode) {
   const checks = getChecks();
+  const steps = mode === 'morning' ? MORNING_STEPS : NIGHT_STEPS;
+  const modeChecks = checks[mode] || {};
+  const done = steps.filter(s => modeChecks[s.id]).length;
+  return { done, total: steps.length };
+}
+
+export function getProgressForDate(dateKey, mode) {
+  const checks = getChecksForDate(dateKey);
   const steps = mode === 'morning' ? MORNING_STEPS : NIGHT_STEPS;
   const modeChecks = checks[mode] || {};
   const done = steps.filter(s => modeChecks[s.id]).length;

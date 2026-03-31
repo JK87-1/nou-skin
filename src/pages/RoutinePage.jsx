@@ -12,25 +12,55 @@ import { useState, useEffect } from 'react';
 import { SunIcon, MoonIcon } from '../components/icons/PastelIcons';
 import { getLatestRecord } from '../storage/SkinStorage';
 import {
-  getChecks, toggleCheck, getProgress,
+  getChecksForDate, toggleCheckForDate, getProgressForDate,
   getPersonalizedSteps, getIngredientRecommendations,
   getWeeklyCompletion,
 } from '../storage/RoutineStorage';
 
+function getDateKey(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function getWeekDays() {
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(now);
+    d.setDate(now.getDate() + mondayOffset + i);
+    days.push({
+      date: d.getDate(),
+      dateKey: getDateKey(d),
+      dayLabel: ['월','화','수','목','금','토','일'][i],
+      isToday: d.toDateString() === now.toDateString(),
+    });
+  }
+  return days;
+}
+
 export default function RoutinePage() {
   const isEvening = new Date().getHours() >= 18;
   const [mode, setMode] = useState(isEvening ? 'night' : 'morning');
-  const [checks, setChecks] = useState(getChecks());
+  const weekDays = getWeekDays();
+  const todayKey = getDateKey(new Date());
+  const [selectedDate, setSelectedDate] = useState(todayKey);
+  const [checks, setChecks] = useState(() => getChecksForDate(selectedDate));
   const [openIngredientIdx, setOpenIngredientIdx] = useState(null);
 
   const latestRecord = getLatestRecord();
   const steps = getPersonalizedSteps(mode, latestRecord);
-  const progress = getProgress(mode);
+  const progress = getProgressForDate(selectedDate, mode);
   const ingredients = getIngredientRecommendations(latestRecord);
   const weekly = getWeeklyCompletion();
 
+  const handleSelectDate = (dateKey) => {
+    setSelectedDate(dateKey);
+    setChecks(getChecksForDate(dateKey));
+  };
+
   const handleToggle = (stepId) => {
-    const updated = toggleCheck(mode, stepId);
+    const updated = toggleCheckForDate(selectedDate, mode, stepId);
     setChecks({ ...updated });
   };
 
@@ -49,13 +79,33 @@ export default function RoutinePage() {
   return (
     <div style={{ paddingBottom: 20 }}>
       {/* Header */}
-      <div style={{ padding: '48px 28px 20px', textAlign: 'center' }}>
-        <h1 style={{
-          fontSize: 28, fontWeight: 300, color: 'var(--text-secondary)',
-          fontFamily: "'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif", fontStyle: 'italic',
-          marginBottom: 4,
-        }}>Daily Ritual</h1>
-        <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>오늘의 피부 루틴</p>
+      <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>루틴</h1>
+      </div>
+
+      {/* Weekly Date Header */}
+      <div style={{ padding: '24px 20px 12px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+          {weekDays.map((d, i) => {
+            const isSelected = d.dateKey === selectedDate;
+            const dayData = weekly.find(w => w.date === d.dateKey);
+            const completed = dayData?.completed;
+            const partial = dayData?.partial;
+            return (
+              <div key={i} onClick={() => handleSelectDate(d.dateKey)} style={{ textAlign: 'center', minWidth: 32, cursor: 'pointer' }}>
+                <div style={{ fontSize: 10, color: isSelected ? 'var(--accent-primary)' : 'var(--text-dim)', fontWeight: 500, marginBottom: 6 }}>{d.dayLabel}</div>
+                <div style={{
+                  width: 32, height: 32, borderRadius: '50%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 13, fontWeight: isSelected ? 700 : 400,
+                  color: isSelected ? '#fff' : completed ? 'var(--accent-primary)' : 'var(--text-muted)',
+                  background: isSelected ? 'var(--accent-primary)' : completed ? 'rgba(129,228,189,0.15)' : 'transparent',
+                  border: partial && !isSelected && !completed ? '1.5px solid rgba(129,228,189,0.4)' : 'none',
+                }}>{d.date}</div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       <div style={{ padding: '0 20px' }}>
@@ -89,7 +139,7 @@ export default function RoutinePage() {
         <div style={{ marginBottom: 20 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
             <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>
-              오늘 진행률
+              {selectedDate === todayKey ? '오늘' : `${new Date(selectedDate).getMonth() + 1}/${new Date(selectedDate).getDate()}`} 진행률
             </span>
             <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--ingredient-accent)' }}>
               {progress.done}/{progress.total} 완료
@@ -211,38 +261,6 @@ export default function RoutinePage() {
           )}
         </div>
 
-        {/* Weekly Completion Dots */}
-        <div className="card" style={{ padding: '16px 18px' }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 14 }}>주간 루틴 현황</div>
-          <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-            {weekly.map((day) => (
-              <div key={day.date} style={{ textAlign: 'center' }}>
-                <div style={{
-                  width: 32, height: 32, borderRadius: '50%',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  marginBottom: 4,
-                  background: day.completed ? 'var(--ingredient-accent)'
-                    : day.isToday ? 'rgba(240,144,112,0.15)'
-                    : day.partial ? 'rgba(240,144,112,0.08)'
-                    : 'var(--item-bg)',
-                  border: day.isToday && !day.completed ? '2px solid var(--ingredient-accent)' : 'none',
-                }}>
-                  {day.completed ? (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                      <path d="M5 12l5 5L20 7" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  ) : day.partial ? (
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--ingredient-accent)' }} />
-                  ) : null}
-                </div>
-                <span style={{
-                  fontSize: 10, fontWeight: day.isToday ? 600 : 400,
-                  color: day.isToday ? 'var(--ingredient-accent)' : 'var(--text-muted)',
-                }}>{day.dayLabel}</span>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );
