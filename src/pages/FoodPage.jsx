@@ -3,7 +3,7 @@ import { getTodayFoods, getTodayNutrition, getTimeAdjustedGoal, saveFoodRecord, 
 import { getRecords, getChanges, getTotalChanges } from '../storage/SkinStorage';
 
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
-const MEAL_LABELS = ['아침', '점심', '저녁'];
+const MEAL_LABELS = ['아침', '점심', '저녁', '간식'];
 const MEAL_GRADIENTS = [
   'var(--accent-primary)',
   'var(--accent-primary)',
@@ -67,6 +67,7 @@ export default function FoodPage({ onTabChange }) {
   const [showAdd, setShowAdd] = useState(false);
   const [addMeal, setAddMeal] = useState(null);
   const [detailFood, setDetailFood] = useState(null);
+  const [showMealPicker, setShowMealPicker] = useState(false);
 
   const refresh = useCallback(() => {
     setFoods(getTodayFoods());
@@ -160,48 +161,69 @@ export default function FoodPage({ onTabChange }) {
       </div>
 
       {/* 2. Meal Thumbnail Row */}
-      <div style={{ display: 'flex', gap: 8, margin: '0 16px 12px', ...fadeUp(0.05) }}>
-        {MEAL_LABELS.map(meal => {
-          const items = mealFoods[meal];
-          if (items.length > 0) {
-            return (
-              <div key={meal} onClick={() => setDetailFood(items[0])} style={{
-                flex: 1, aspectRatio: '1/1', borderRadius: 14, overflow: 'hidden',
-                background: MEAL_GRADIENTS[MEAL_LABELS.indexOf(meal)],
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end',
-                position: 'relative', cursor: 'pointer',
-              }}>
-                {items[0].photo ? (
-                  <img src={items[0].photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
-                ) : null}
-                <div style={{
-                  fontSize: 10, color: '#fff', fontWeight: 600, padding: '3px 8px',
-                  background: 'rgba(0,0,0,0.35)', borderRadius: '0 0 14px 14px', width: '100%', textAlign: 'center',
-                  position: 'relative', zIndex: 1,
-                }}>{items.map(f => f.name?.slice(0, 6)).join(', ')}</div>
-              </div>
-            );
-          }
-          return (
-            <div key={meal} onClick={() => { setAddMeal(meal); setShowAdd(true); }} style={{
-              flex: 1, aspectRatio: '1/1', borderRadius: 14,
-              border: '1.5px dashed var(--accent-primary)',
-              background: 'rgba(129,228,189,0.08)',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4,
-              cursor: 'pointer',
-            }}>
-              <div style={{
-                width: 22, height: 22, borderRadius: 11,
-                background: 'var(--accent-primary)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <span style={{ color: '#fff', fontSize: 15, lineHeight: 1 }}>+</span>
-              </div>
-              <span style={{ fontSize: 10, color: 'var(--text-secondary)' }}>{meal}</span>
-            </div>
-          );
-        })}
+      <div style={{ display: 'flex', gap: 8, margin: '0 16px 12px', overflowX: 'auto', ...fadeUp(0.05) }}>
+        {/* Recorded foods */}
+        {foods.filter(f => !f.name?.startsWith('물 ')).map(food => (
+          <div key={food.id} onClick={() => setDetailFood(food)} style={{
+            width: 80, height: 80, borderRadius: 14, overflow: 'hidden', flexShrink: 0,
+            background: 'var(--accent-primary)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end',
+            position: 'relative', cursor: 'pointer',
+          }}>
+            {food.photo ? (
+              <img src={food.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
+            ) : null}
+            <div style={{
+              fontSize: 9, color: '#fff', fontWeight: 600, padding: '3px 6px',
+              background: 'rgba(0,0,0,0.35)', borderRadius: '0 0 14px 14px', width: '100%', textAlign: 'center',
+              position: 'relative', zIndex: 1,
+            }}>{food.name?.slice(0, 8)}</div>
+          </div>
+        ))}
+        {/* Add button */}
+        <div onClick={() => setShowMealPicker(true)} style={{
+          width: 80, height: 80, borderRadius: 14, flexShrink: 0,
+          border: '1.5px dashed var(--accent-primary)',
+          background: 'rgba(129,228,189,0.08)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer',
+        }}>
+          <div style={{
+            width: 28, height: 28, borderRadius: 14,
+            background: 'var(--accent-primary)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <span style={{ color: '#fff', fontSize: 18, lineHeight: 1 }}>+</span>
+          </div>
+        </div>
       </div>
+
+      {/* Meal Picker */}
+      {showMealPicker && (
+        <div onClick={() => setShowMealPicker(false)} style={{
+          position: 'fixed', inset: 0, zIndex: 1100,
+          background: 'rgba(0,0,0,0.4)',
+          display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
+            padding: '24px 24px 36px', width: '100%', maxWidth: 420,
+          }}>
+            <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 16px', opacity: 0.3 }} />
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 16 }}>언제 먹었나요?</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {MEAL_LABELS.map(m => (
+                <button key={m} onClick={() => { setShowMealPicker(false); setAddMeal(m); setShowAdd(true); }} style={{
+                  padding: '16px 0', borderRadius: 14, border: 'none',
+                  background: 'var(--bg-input, #F2F3F5)',
+                  color: 'var(--text-primary)', fontSize: 14, fontWeight: 600,
+                  cursor: 'pointer', fontFamily: 'inherit',
+                }}>{m}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 3. Diet Score Card */}
       <div style={{
