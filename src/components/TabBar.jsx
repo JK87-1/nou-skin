@@ -32,11 +32,12 @@ export default function TabBar({ activeTab, onTabChange }) {
     },
     {
       key: 'body',
-      label: 'MY',
+      label: '분석',
       icon: (active) => (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="10" r="4" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
-          <path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" strokeLinecap="round" />
+          <rect x="4" y="12" width="4" height="8" rx="1" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
+          <rect x="10" y="7" width="4" height="13" rx="1" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
+          <rect x="16" y="3" width="4" height="17" rx="1" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
         </svg>
       ),
     },

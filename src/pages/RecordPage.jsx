@@ -102,7 +102,7 @@ function getDateKey(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-export default function RecordPage({ onTabChange, autoOpenAdd }) {
+export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
   const [foodTab, setFoodTab] = useState('food');
   const today = new Date();
   const todayStr = getDateKey(today);
@@ -115,6 +115,8 @@ export default function RecordPage({ onTabChange, autoOpenAdd }) {
   const [addMeal, setAddMeal] = useState(null);
   const [detailFood, setDetailFood] = useState(null);
   const [showMealPicker, setShowMealPicker] = useState(false);
+  const [showBodyAdd, setShowBodyAdd] = useState(false);
+  const [bodyWeight, setBodyWeight] = useState('');
 
   useEffect(() => {
     if (autoOpenAdd) {
@@ -211,8 +213,58 @@ export default function RecordPage({ onTabChange, autoOpenAdd }) {
         </div>
       </div>
 
-      {/* Skin Insights */}
-      {foodTab === 'skin' && <SkinInsightsSection />}
+      {/* Skin content */}
+      {foodTab === 'skin' && <>
+        {/* Skin Thumbnail Row — 3칸 그리드 */}
+        {(() => {
+          const skinRecords = getRecords();
+          const slots = [];
+          const recent = [...skinRecords].reverse().slice(0, 2);
+          recent.forEach(r => {
+            const thumb = null; // thumbnails loaded async in AlbumPage, here just show score
+            slots.push({ type: 'record', record: r });
+          });
+          const addCount = Math.max(1, 3 - slots.length);
+          for (let i = 0; i < addCount; i++) slots.push({ type: 'add', key: `skin-add-${i}` });
+          return (
+            <div style={{
+              display: 'flex', gap: 8, margin: '0 16px 12px',
+              ...fadeUp(0.05),
+            }}>
+              {slots.map((slot) => slot.type === 'record' ? (
+                <div key={slot.record.id || slot.record.date} style={{
+                  flex: '1', aspectRatio: '1/1', borderRadius: 14, overflow: 'hidden', flexShrink: 0,
+                  background: 'var(--accent-primary)',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                  position: 'relative',
+                }}>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: '#fff' }}>{slot.record.overallScore}</div>
+                  <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.8)', fontWeight: 600 }}>
+                    {new Date(slot.record.date).getMonth() + 1}/{new Date(slot.record.date).getDate()}
+                  </div>
+                </div>
+              ) : (
+                <div key={slot.key} onClick={() => onMeasure && onMeasure()} style={{
+                  flex: '1', aspectRatio: '1/1', borderRadius: 14, flexShrink: 0,
+                  border: '1.5px dashed var(--accent-primary)',
+                  background: 'rgba(129,228,189,0.08)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer',
+                }}>
+                  <div style={{
+                    width: 28, height: 28, borderRadius: 14,
+                    background: 'var(--accent-primary)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <span style={{ color: '#fff', fontSize: 18, lineHeight: 1 }}>+</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
+        <SkinInsightsSection />
+      </>}
 
       {/* Food content */}
       {foodTab === 'food' && <>
@@ -376,7 +428,88 @@ export default function RecordPage({ onTabChange, autoOpenAdd }) {
       </>}
 
       {/* Body content */}
-      {foodTab === 'body' && <BodyInsightsSection />}
+      {foodTab === 'body' && <>
+        {/* Body Thumbnail Row — 3칸 그리드 */}
+        {(() => {
+          const bodyRecords = getBodyRecords();
+          const slots = [];
+          const recent = [...bodyRecords].reverse().slice(0, 2);
+          recent.forEach(r => {
+            slots.push({ type: 'record', record: r });
+          });
+          const addCount = Math.max(1, 3 - slots.length);
+          for (let i = 0; i < addCount; i++) slots.push({ type: 'add', key: `body-add-${i}` });
+          return (
+            <div style={{
+              display: 'flex', gap: 8, margin: '0 16px 12px',
+              ...fadeUp(0.05),
+            }}>
+              {slots.map((slot) => slot.type === 'record' ? (
+                <div key={slot.record.date} style={{
+                  flex: '1', aspectRatio: '1/1', borderRadius: 14, overflow: 'hidden', flexShrink: 0,
+                  background: 'var(--accent-primary)',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                  position: 'relative',
+                }}>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: '#fff' }}>{slot.record.weight}<span style={{ fontSize: 11 }}>kg</span></div>
+                  <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.8)', fontWeight: 600 }}>
+                    {new Date(slot.record.date).getMonth() + 1}/{new Date(slot.record.date).getDate()}
+                  </div>
+                </div>
+              ) : (
+                <div key={slot.key} onClick={() => setShowBodyAdd(true)} style={{
+                  flex: '1', aspectRatio: '1/1', borderRadius: 14, flexShrink: 0,
+                  border: '1.5px dashed var(--accent-primary)',
+                  background: 'rgba(129,228,189,0.08)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer',
+                }}>
+                  <div style={{
+                    width: 28, height: 28, borderRadius: 14,
+                    background: 'var(--accent-primary)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <span style={{ color: '#fff', fontSize: 18, lineHeight: 1 }}>+</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
+        <BodyInsightsSection />
+      </>}
+
+      {/* Body Weight Quick Add */}
+      {showBodyAdd && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setShowBodyAdd(false)}>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)' }} />
+          <div onClick={e => e.stopPropagation()} style={{
+            position: 'relative', background: '#fff', borderRadius: 20, padding: 24, width: 280,
+          }}>
+            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, color: 'var(--text-primary)' }}>몸무게 기록</div>
+            <input
+              type="number" step="0.1" placeholder="kg" value={bodyWeight}
+              onChange={e => setBodyWeight(e.target.value)}
+              style={{
+                width: '100%', padding: '12px 14px', borderRadius: 12, border: '1.5px solid var(--border-subtle)',
+                fontSize: 18, fontWeight: 600, textAlign: 'center', outline: 'none',
+              }}
+              autoFocus
+            />
+            <button onClick={() => {
+              const w = parseFloat(bodyWeight);
+              if (w && w >= 20 && w <= 300) {
+                saveBodyRecord(w);
+                setShowBodyAdd(false);
+                setBodyWeight('');
+              }
+            }} style={{
+              width: '100%', marginTop: 12, padding: '12px 0', borderRadius: 12, border: 'none',
+              background: 'var(--accent-primary)', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+            }}>저장</button>
+          </div>
+        </div>
+      )}
 
       {/* Add Food Modal */}
       {showAdd && <AddFoodModal onAdd={handleAddFood} onClose={() => { setShowAdd(false); setAddMeal(null); }} initialMeal={addMeal} />}
