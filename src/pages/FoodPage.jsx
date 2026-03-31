@@ -152,44 +152,44 @@ export default function FoodPage({ onTabChange }) {
       </div>
 
       {/* 2. Meal Thumbnail Row */}
-      <div style={{ display: 'flex', gap: 7, padding: '0 16px 12px', overflowX: 'auto', ...fadeUp(0.05) }}>
+      <div style={{ display: 'flex', gap: 8, margin: '0 16px 12px', ...fadeUp(0.05) }}>
         {MEAL_LABELS.map(meal => {
           const items = mealFoods[meal];
           if (items.length > 0) {
-            return items.map((food, i) => (
-              <div key={food.id} style={{
-                width: 62, height: 62, borderRadius: 12, flexShrink: 0, overflow: 'hidden',
+            return (
+              <div key={meal} onClick={() => { setAddMeal(meal); setShowAdd(true); }} style={{
+                flex: 1, height: 72, borderRadius: 14, overflow: 'hidden',
                 background: MEAL_GRADIENTS[MEAL_LABELS.indexOf(meal)],
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end',
-                position: 'relative',
+                position: 'relative', cursor: 'pointer',
               }}>
-                {food.photo ? (
-                  <img src={food.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
+                {items[0].photo ? (
+                  <img src={items[0].photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
                 ) : null}
                 <div style={{
-                  fontSize: 8, color: '#fff', fontWeight: 600, padding: '2px 6px',
-                  background: 'rgba(0,0,0,0.3)', borderRadius: '0 0 12px 12px', width: '100%', textAlign: 'center',
+                  fontSize: 10, color: '#fff', fontWeight: 600, padding: '3px 8px',
+                  background: 'rgba(0,0,0,0.35)', borderRadius: '0 0 14px 14px', width: '100%', textAlign: 'center',
                   position: 'relative', zIndex: 1,
-                }}>{food.name?.slice(0, 6)}</div>
+                }}>{items.map(f => f.name?.slice(0, 6)).join(', ')}</div>
               </div>
-            ));
+            );
           }
           return (
             <div key={meal} onClick={() => { setAddMeal(meal); setShowAdd(true); }} style={{
-              width: 62, height: 62, borderRadius: 12, flexShrink: 0,
+              flex: 1, height: 72, borderRadius: 14,
               border: '1.5px dashed var(--accent-primary)',
               background: 'rgba(129,228,189,0.08)',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3,
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4,
               cursor: 'pointer',
             }}>
               <div style={{
-                width: 20, height: 20, borderRadius: 10,
+                width: 22, height: 22, borderRadius: 11,
                 background: 'var(--accent-primary)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <span style={{ color: '#fff', fontSize: 14, lineHeight: 1 }}>+</span>
+                <span style={{ color: '#fff', fontSize: 15, lineHeight: 1 }}>+</span>
               </div>
-              <span style={{ fontSize: 9, color: 'var(--text-secondary)' }}>{meal}</span>
+              <span style={{ fontSize: 10, color: 'var(--text-secondary)' }}>{meal}</span>
             </div>
           );
         })}
