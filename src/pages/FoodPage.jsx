@@ -23,7 +23,7 @@ const NutrientIcons = {
     </svg>
   ),
   carb: (
-    <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
+    <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
       <path d="M6 26V12c0-2 1-4 3-5.5C11 5 13 4 16 4s5 1 7 2.5c2 1.5 3 3.5 3 5.5v14a1 1 0 01-1 1H7a1 1 0 01-1-1z" fill="#EAC87A" />
       <path d="M8 25V13c0-1.6.8-3 2.2-4C12 8 13.8 7 16 7s4 1 5.8 2c1.4 1 2.2 2.4 2.2 4v12z" fill="#F0D898" />
       <path d="M10 24V14c0-1.3.6-2.4 1.8-3.2C13 10 14.4 9.2 16 9.2s3 .8 4.2 1.6c1.2.8 1.8 1.9 1.8 3.2v10" fill="#F8E8B8" opacity="0.5" />
