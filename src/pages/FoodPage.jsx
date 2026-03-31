@@ -80,6 +80,11 @@ export default function FoodPage({ onTabChange }) {
     setAddMeal(null);
   }, [dateStr, refresh]);
 
+  const handleDeleteFood = useCallback((food) => {
+    deleteFoodRecord(dateStr, food.id);
+    refresh();
+  }, [dateStr, refresh]);
+
   const score = calcFoodScore(nutrition, goal);
 
   // Group foods by meal
@@ -268,7 +273,7 @@ export default function FoodPage({ onTabChange }) {
       {showAdd && <AddFoodModal onAdd={handleAddFood} onClose={() => { setShowAdd(false); setAddMeal(null); }} initialMeal={addMeal} />}
 
       {/* Food Detail Modal */}
-      {detailFood && <FoodDetailModal food={detailFood} onClose={() => setDetailFood(null)} />}
+      {detailFood && <FoodDetailModal food={detailFood} onClose={() => setDetailFood(null)} onDelete={handleDeleteFood} />}
     </div>
   );
 }
@@ -654,7 +659,7 @@ const IMPACT_STYLE = {
   '주의': { bg: '#FBEAF0', color: '#993556' },
 };
 
-function FoodDetailModal({ food, onClose }) {
+function FoodDetailModal({ food, onClose, onDelete }) {
   const impactItems = [
     { icon: '📈', label: '혈당 상승', value: food.bloodSugar, note: food.bloodSugarNote },
     { icon: '😴', label: '졸림 확률', value: food.drowsiness, note: food.drowsinessNote },
@@ -681,10 +686,22 @@ function FoodDetailModal({ food, onClose }) {
           ) : (
             <div style={{ width: 56, height: 56, borderRadius: 14, background: 'rgba(129,228,189,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🍽️</div>
           )}
-          <div>
+          <div style={{ flex: 1 }}>
             <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{food.name}</div>
             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{food.meal}</div>
           </div>
+          <button onClick={() => {
+            if (confirm('이 식사 기록을 삭제할까요?')) {
+              onDelete?.(food);
+              onClose();
+            }
+          }} style={{
+            width: 32, height: 32, borderRadius: 10, border: 'none',
+            background: '#F2F3F5', color: '#999',
+            fontSize: 18, fontWeight: 300, lineHeight: 1,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', flexShrink: 0,
+          }}>−</button>
         </div>
 
         {/* Nutrition grid */}
