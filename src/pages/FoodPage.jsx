@@ -66,7 +66,6 @@ export default function FoodPage({ onTabChange }) {
   const goal = getTimeAdjustedGoal();
   const [showAdd, setShowAdd] = useState(false);
   const [addMeal, setAddMeal] = useState(null);
-  const [coachMsg, setCoachMsg] = useState(null);
   const [detailFood, setDetailFood] = useState(null);
 
   const refresh = useCallback(() => {
@@ -260,28 +259,8 @@ export default function FoodPage({ onTabChange }) {
         ))}
       </div>
 
-      {/* 5. LUA AI Coach Card */}
-      <div style={{
-        margin: '0 16px 14px', borderRadius: 16, padding: '12px 14px',
-        background: 'var(--bg-card)',
-        ...fadeUp(0.2),
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <div style={{
-            width: 24, height: 24, borderRadius: 12,
-            background: 'rgba(129,228,189,0.15)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 13,
-          }}>✨</div>
-          <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-primary)' }}>LUA AI 코치</span>
-        </div>
-        <div style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-          {coachMsg || (lacking.length > 0
-            ? `${lacking.join(', ')}이(가) 부족해요. ${lacking.includes('단백질') ? '닭가슴살이나 두부를 추가해보세요.' : '과일이나 채소를 더 먹어보세요.'}`
-            : score > 0 ? '오늘 식단 균형이 좋아요! 이 패턴을 유지해보세요.' : '식사를 기록하면 맞춤 코칭을 받을 수 있어요.'
-          )}
-        </div>
-      </div>
+      {/* 5. LUA AI Coach Card — AiInsightCard 디자인 통일 */}
+      <FoodCoachCard foods={foods} nutrition={nutrition} goal={goal} score={score} lacking={lacking} />
 
       </>}
 
@@ -557,6 +536,110 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
           }}>추가</button>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ===== Food Coach Card (AiInsightCard 디자인 통일) =====
+function FoodCoachCard({ foods, nutrition, goal, score, lacking }) {
+  // 최신 식사 찾기
+  const latestFood = foods.length > 0 ? foods[foods.length - 1] : null;
+
+  // 코칭 메시지 생성
+  const messages = [];
+
+  if (!latestFood) {
+    return (
+      <div style={{ margin: '0 16px 14px', padding: '20px', borderRadius: 16, background: '#FFFFFF' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <CoachStarIcon />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13, color: '#8B95A1' }}>AI 인사이트</div>
+            <div style={{ fontSize: 14, color: '#4E5968', marginTop: 4, lineHeight: 1.5 }}>
+              식사를 기록하면 맞춤 코칭을 받을 수 있어요.
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 1. 혈당 상승
+  if (latestFood.bloodSugar === '높음') {
+    messages.push({ icon: '📈', text: `${latestFood.name}은 혈당을 빠르게 올릴 수 있어요. ${latestFood.bloodSugarNote || '식이섬유가 풍부한 반찬과 함께 드세요.'}` });
+  } else if (latestFood.bloodSugar === '낮음') {
+    messages.push({ icon: '📉', text: `${latestFood.name}은 혈당에 부담이 적어요. 좋은 선택이에요!` });
+  }
+
+  // 2. 졸림 확률
+  if (latestFood.drowsiness === '높음') {
+    messages.push({ icon: '😴', text: latestFood.drowsinessNote || `${latestFood.name} 식후 졸림이 올 수 있어요. 가벼운 산책을 추천해요.` });
+  }
+
+  // 3. 피부 트러블
+  if (latestFood.skinImpact === '주의') {
+    messages.push({ icon: '⚠️', text: latestFood.skinImpactNote || `${latestFood.name}은 피부 트러블에 영향을 줄 수 있어요.` });
+  } else if (latestFood.skinImpact === '좋음') {
+    messages.push({ icon: '✨', text: `${latestFood.name}은 피부 건강에 도움이 되는 음식이에요!` });
+  }
+
+  // 4. 영양소 균형
+  if (lacking.length > 0) {
+    messages.push({ icon: '⚖️', text: `${goal._mealLabel} 기준 ${lacking.join(', ')}이 부족해요. 다음 식사에서 보충해보세요.` });
+  } else if (score >= 70) {
+    messages.push({ icon: '🌟', text: `${goal._mealLabel} 기준 영양 균형이 잘 맞아요! 이 패턴을 유지하세요.` });
+  }
+
+  // 5. 과식 여부
+  const kcalRatio = goal.kcal ? nutrition.kcal / goal.kcal : 0;
+  if (kcalRatio > 1.2) {
+    messages.push({ icon: '🍽️', text: `${goal._mealLabel} 기준 칼로리를 ${Math.round((kcalRatio - 1) * 100)}% 초과했어요. 다음 끼니를 가볍게 드세요.` });
+  }
+
+  // 메시지가 없으면 기본 메시지
+  if (messages.length === 0) {
+    messages.push({ icon: '👍', text: `${latestFood.name}, 괜찮은 선택이에요. 균형 잡힌 식단을 이어가세요!` });
+  }
+
+  return (
+    <div style={{ margin: '0 16px 14px', padding: '20px', borderRadius: 16, background: '#FFFFFF' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+        <CoachStarIcon />
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 13, color: '#8B95A1' }}>AI 인사이트</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+            {messages.map((m, i) => (
+              <div key={i} style={{ fontSize: 13, color: '#4E5968', lineHeight: 1.6 }}>
+                <span style={{ marginRight: 6 }}>{m.icon}</span>
+                {m.text}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CoachStarIcon() {
+  return (
+    <div style={{ width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+      <svg width="26" height="26" viewBox="0 0 36 36" fill="none">
+        <defs>
+          <linearGradient id="coach-g1" x1="20%" y1="0%" x2="80%" y2="100%">
+            <stop offset="0%" stopColor="#FFF3B0" />
+            <stop offset="100%" stopColor="#FFE082" />
+          </linearGradient>
+          <linearGradient id="coach-g2" x1="20%" y1="0%" x2="80%" y2="100%">
+            <stop offset="0%" stopColor="#FFF9D0" />
+            <stop offset="100%" stopColor="#FFF3B0" />
+          </linearGradient>
+        </defs>
+        <path d="M18 2 L21 12 L31 15.5 L21 19 L18 29 L15 19 L5 15.5 L15 12 Z" fill="url(#coach-g1)" />
+        <path d="M28 3 L29 6.5 L32.5 7.5 L29 8.5 L28 12 L27 8.5 L23.5 7.5 L27 6.5 Z" fill="url(#coach-g2)" />
+        <path d="M8 24 L9 27 L12 28 L9 29 L8 32 L7 29 L4 28 L7 27 Z" fill="url(#coach-g2)" />
+        <ellipse cx="15" cy="12" rx="3" ry="2" fill="white" opacity="0.3" />
+      </svg>
     </div>
   );
 }
