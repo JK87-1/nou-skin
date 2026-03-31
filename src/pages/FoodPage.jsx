@@ -158,7 +158,7 @@ export default function FoodPage({ onTabChange }) {
           if (items.length > 0) {
             return (
               <div key={meal} onClick={() => { setAddMeal(meal); setShowAdd(true); }} style={{
-                flex: 1, height: 72, borderRadius: 14, overflow: 'hidden',
+                flex: 1, aspectRatio: '1/1', borderRadius: 14, overflow: 'hidden',
                 background: MEAL_GRADIENTS[MEAL_LABELS.indexOf(meal)],
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end',
                 position: 'relative', cursor: 'pointer',
@@ -176,7 +176,7 @@ export default function FoodPage({ onTabChange }) {
           }
           return (
             <div key={meal} onClick={() => { setAddMeal(meal); setShowAdd(true); }} style={{
-              flex: 1, height: 72, borderRadius: 14,
+              flex: 1, aspectRatio: '1/1', borderRadius: 14,
               border: '1.5px dashed var(--accent-primary)',
               background: 'rgba(129,228,189,0.08)',
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4,
