@@ -6,8 +6,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { SunIcon, MoonIcon, LotionIcon, PastelIcon } from '../components/icons/PastelIcons';
-import DailyMission from '../components/DailyMission';
-import { getWeeklyStatus } from '../storage/MissionStorage';
+import { getWeeklyRoutineStatus } from '../storage/RoutineCheckStorage';
 import { getRoutineItems, saveRoutineItem, deleteRoutineItem, getChecks, toggleCheck, getTodayProgress } from '../storage/RoutineCheckStorage';
 import {
   TRACKER_CATEGORIES, getProducts, saveProduct, deleteProduct,
@@ -756,7 +755,7 @@ export default function RoutineTracker({ themeColors, onBack, initialMode }) {
       {/* Weekly Calendar — fixed height to match HistoryPage profile area */}
       <div style={{ height: 118, display: 'flex', alignItems: 'flex-end', padding: '0 20px' }}>
         <div style={{ display: 'flex', gap: 6, width: '100%', paddingBottom: 8 }}>
-          {getWeeklyStatus().map(day => {
+          {getWeeklyRoutineStatus().map(day => {
             const isSelected = day.date === selectedDate;
             const isFuture = day.date > getTodayStr();
             return (

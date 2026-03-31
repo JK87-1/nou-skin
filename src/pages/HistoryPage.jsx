@@ -27,7 +27,6 @@ import { AnimatedNumber, ScoreRing, MetricBar } from '../components/UIComponents
 import { getProfile } from '../storage/ProfileStorage';
 import AiInsightCard from '../components/AiInsightCard';
 import BeforeAfterSlider from '../components/BeforeAfterSlider';
-import DailyMission from '../components/DailyMission';
 import { ChartIcon, CameraIcon, MicroscopeIcon, SparkleIcon, DiamondIcon, DropletIcon, RulerIcon, PaletteIcon, LotionIcon, EyeIcon, BubbleIcon, TargetIcon, ClockIcon, LuaMiniIcon } from '../components/icons/PastelIcons';
 import EternalPearl from '../components/icons/EternalPearl';
 import { getDefaultTheme } from '../data/BadgeData';
@@ -311,13 +310,6 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
             refreshThumbs();
           }}
         />
-      )}
-
-      {/* ===== MISSION MODE ===== */}
-      {albumCategory === 'skin' && mode === 'mission' && (
-        <div style={{ animation: 'breatheIn 0.6s ease both' }}>
-          <DailyMission />
-        </div>
       )}
 
 

@@ -52,3 +52,35 @@ export function getTodayProgress(category) {
   const done = items.filter(i => checks[i.id]).length;
   return { total, done, pct: total > 0 ? Math.round((done / total) * 100) : 0 };
 }
+
+export function getWeeklyRoutineStatus() {
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
+  const dayOfWeek = today.getDay();
+  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  const labels = ['월', '화', '수', '목', '금', '토', '일'];
+  const categories = ['skin', 'food', 'body'];
+
+  return labels.map((label, i) => {
+    const d = new Date(today);
+    d.setDate(today.getDate() + mondayOffset + i);
+    const dateStr = d.toISOString().slice(0, 10);
+    const isToday = dateStr === todayStr;
+
+    let totalAll = 0, doneAll = 0;
+    for (const cat of categories) {
+      const items = getRoutineItems(cat);
+      const chk = getChecks(cat, dateStr);
+      totalAll += items.length;
+      doneAll += items.filter(it => chk[it.id]).length;
+    }
+
+    return {
+      dayLabel: label,
+      date: dateStr,
+      isToday,
+      completed: totalAll > 0 && doneAll === totalAll,
+      partial: doneAll > 0,
+    };
+  });
+}
