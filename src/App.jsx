@@ -10,11 +10,11 @@ import CameraCapture from './components/CameraCapture';
 import { saveRecord, updateRecord, getRecords, getNextMeasurementInfo, getChanges, generateShareText, getLatestRecord, hasTodayRecord, saveThumbnail, saveComparisonPhoto, getTodayRecords, getStableSkinAge } from './storage/SkinStorage';
 import { migrateFromLocalStorage } from './storage/PhotoDB';
 import { createAutoBackup, verifyDataIntegrity, restoreFromAutoBackup, startPeriodicBackup, getBackupInfo } from './storage/AutoBackup';
-import HistoryPage from './pages/HistoryPage';
+import AlbumPage from './pages/AlbumPage';
 import TabBar from './components/TabBar';
 import MyPage from './pages/MyPage';
 import HomePage from './pages/HomePage';
-import FoodPage from './pages/FoodPage';
+import RecordPage from './pages/RecordPage';
 import BodyPage from './pages/BodyPage';
 import RoutinePage from './pages/RoutinePage';
 import SkinScoreCircle from './components/SkinScoreCircle';
@@ -697,12 +697,12 @@ export default function App() {
 
       {/* ===== ALBUM TAB (gallery + insights merged) ===== */}
       {activeTab === 'album' && (
-        <HistoryPage onBack={goToLanding} onMeasure={openCamera} onOpenConsult={() => switchTab('home')} onTabChange={switchTab} initialMode={historyInitMode} />
+        <AlbumPage onBack={goToLanding} onMeasure={openCamera} onOpenConsult={() => switchTab('home')} onTabChange={switchTab} initialMode={historyInitMode} />
       )}
 
 
       {/* ===== FOOD TAB ===== */}
-      {activeTab === 'food' && <FoodPage onTabChange={switchTab} autoOpenAdd={foodAutoOpen} />}
+      {activeTab === 'food' && <RecordPage onTabChange={switchTab} autoOpenAdd={foodAutoOpen} />}
 
       {/* ===== BODY TAB ===== */}
       {activeTab === 'body' && <BodyPage />}

@@ -12,12 +12,21 @@ export default function TabBar({ activeTab, onTabChange }) {
     },
     {
       key: 'food',
-      label: '분석',
+      label: '기록',
+      icon: (active) => (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" strokeLinejoin="round" />
+          <circle cx="12" cy="13" r="4" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
+        </svg>
+      ),
+    },
+    {
+      key: 'body',
+      label: 'MY',
       icon: (active) => (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <rect x="4" y="12" width="4" height="8" rx="1" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
-          <rect x="10" y="7" width="4" height="13" rx="1" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
-          <rect x="16" y="3" width="4" height="17" rx="1" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
+          <circle cx="12" cy="10" r="4" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
+          <path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" strokeLinecap="round" />
         </svg>
       ),
     },
@@ -33,23 +42,13 @@ export default function TabBar({ activeTab, onTabChange }) {
     },
     {
       key: 'album',
-      label: '기록',
+      label: '앨범',
       icon: (active) => (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
           <rect x="3" y="3" width="8" height="8" rx="2" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
           <rect x="13" y="3" width="8" height="8" rx="2" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
           <rect x="3" y="13" width="8" height="8" rx="2" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
           <rect x="13" y="13" width="8" height="8" rx="2" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
-        </svg>
-      ),
-    },
-    {
-      key: 'body',
-      label: 'MY',
-      icon: (active) => (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="10" r="4" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
-          <path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" strokeLinecap="round" />
         </svg>
       ),
     },
@@ -78,7 +77,9 @@ export default function TabBar({ activeTab, onTabChange }) {
               WebkitTapHighlightColor: 'transparent',
             }}
           >
-            {tab.icon(active)}
+            <div style={{ width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {tab.icon(active)}
+            </div>
             <span style={{
               fontSize: 9, fontWeight: active ? 600 : 400,
               color: active ? '#81E4BD' : '#bbb',

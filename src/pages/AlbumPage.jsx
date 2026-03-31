@@ -182,7 +182,7 @@ function ChangeIndicator({ diff, unit = '점', inverse = false, size = 'normal' 
 }
 
 // ===== MAIN HISTORY PAGE =====
-export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onTabChange, initialMode, galleryOnly }) {
+export default function AlbumPage({ onBack, onMeasure, onOpenConsult, onTabChange, initialMode, galleryOnly }) {
   const [mode, setMode] = useState(initialMode || 'gallery');
   const [albumCategory, setAlbumCategory] = useState('skin');
   const [insightMode, setInsightMode] = useState('timeline');

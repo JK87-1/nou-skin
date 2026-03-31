@@ -102,7 +102,7 @@ function getDateKey(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-export default function FoodPage({ onTabChange, autoOpenAdd }) {
+export default function RecordPage({ onTabChange, autoOpenAdd }) {
   const [foodTab, setFoodTab] = useState('food');
   const today = new Date();
   const todayStr = getDateKey(today);
