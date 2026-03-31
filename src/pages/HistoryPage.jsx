@@ -388,9 +388,9 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                       <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{d.getMonth() + 1}월 {d.getDate()}일</span>
                       <span style={{ fontSize: 12, color: 'var(--accent-primary)', fontWeight: 600 }}>{totalKcal}kcal</span>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, padding: '0' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 3, padding: '0' }}>
                       {foods.map(food => (
-                        <div key={food.id} onClick={() => setSelectedFood({ ...food, _date: date })} style={{ aspectRatio: '1', borderRadius: 10, overflow: 'hidden', background: 'var(--bg-card-hover)', position: 'relative', cursor: 'pointer' }}>
+                        <div key={food.id} onClick={() => setSelectedFood({ ...food, _date: date })} style={{ aspectRatio: '1', borderRadius: 5, overflow: 'hidden', background: 'var(--bg-card-hover)', position: 'relative', cursor: 'pointer' }}>
                           {food.photo ? (
                             <img src={food.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           ) : (
@@ -482,14 +482,14 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
               </div>
             ) : (
               <div style={{
-                display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, padding: '0 16px',
+                display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 3, padding: '0 16px',
               }}>
                 {sorted.map((r) => {
                   const thumb = thumbs[String(r.id)] || thumbs[r.date];
                   return (
                     <div key={r.id || r.timestamp || r.date} onClick={() => handleSelectRecord(r)} style={{
                       position: 'relative', aspectRatio: '1', cursor: 'pointer',
-                      background: 'var(--bg-card-hover)', overflow: 'hidden', borderRadius: 10,
+                      background: 'var(--bg-card-hover)', overflow: 'hidden', borderRadius: 5,
                     }}>
                       {thumb ? (
                         <img src={thumb} alt={r.date} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
