@@ -58,14 +58,17 @@ const NutrientIcons = {
   ),
   mineral: (
     <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
-      {/* 세로 마름모 그림자 */}
-      <path d="M16.5 3L25 16.5 16.5 30 8 16.5z" fill="#3A8FD4" opacity="0.2" />
-      {/* 어두운 면 */}
-      <path d="M16 2L24 16 16 30 8 16z" fill="#5CB8F5" />
-      {/* 밝은 면 (왼쪽) */}
-      <path d="M16 2L8 16 16 30z" fill="#7ECFFF" />
-      {/* 하이라이트 */}
-      <path d="M13 9l3-5 .5 6z" fill="#fff" opacity="0.35" />
+      {/* 아이스큐브 — 윗면 */}
+      <path d="M16 4L28 10 16 16 4 10z" fill="#D0EAFF" />
+      {/* 왼쪽 면 */}
+      <path d="M4 10L16 16v14L4 24z" fill="#A0D4F8" />
+      {/* 오른쪽 면 */}
+      <path d="M28 10L16 16v14l12-6z" fill="#7EC0F0" />
+      {/* 윗면 하이라이트 */}
+      <path d="M16 5.5L26 10.5 16 15 6 10.5z" fill="#E4F2FF" opacity="0.6" />
+      {/* 엣지 라인 */}
+      <path d="M16 16v14" stroke="#fff" strokeWidth="0.6" opacity="0.5" />
+      <path d="M4 10L16 16 28 10" stroke="#fff" strokeWidth="0.6" opacity="0.4" />
     </svg>
   ),
   kcal: (
