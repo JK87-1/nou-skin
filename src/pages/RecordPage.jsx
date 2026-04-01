@@ -228,12 +228,12 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
           for (let i = 0; i < addCount; i++) slots.push({ type: 'add', key: `skin-add-${i}` });
           return (
             <div style={{
-              display: 'flex', gap: 8, margin: '0 16px 12px',
+              display: 'flex', gap: 1, margin: '0 16px 12px',
               ...fadeUp(0.05),
             }}>
               {slots.map((slot) => slot.type === 'record' ? (
                 <div key={slot.record.id || slot.record.date} style={{
-                  flex: '1', aspectRatio: '1/1', borderRadius: 14, overflow: 'hidden', flexShrink: 0,
+                  flex: '1', aspectRatio: '1/1', borderRadius: 5, overflow: 'hidden', flexShrink: 0,
                   background: 'var(--accent-primary)',
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                   position: 'relative',
@@ -245,7 +245,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                 </div>
               ) : (
                 <div key={slot.key} onClick={() => onMeasure && onMeasure()} style={{
-                  flex: '1', aspectRatio: '1/1', borderRadius: 14, flexShrink: 0,
+                  flex: '1', aspectRatio: '1/1', borderRadius: 5, flexShrink: 0,
                   border: '1.5px dashed var(--accent-primary)',
                   background: 'rgba(129,228,189,0.08)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -290,7 +290,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
         return (
           <div style={{
-            display: 'flex', gap: 8, margin: '0 16px 12px',
+            display: 'flex', gap: 1, margin: '0 16px 12px',
             overflowX: slots.length > 3 ? 'auto' : 'hidden',
             ...fadeUp(0.05),
           }}>
@@ -298,7 +298,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
               <div key={slot.food.id} onClick={() => setDetailFood(slot.food)} style={{
                 flex: slots.length <= 3 ? '1' : undefined,
                 width: slots.length > 3 ? 'calc((100% - 16px) / 3)' : undefined,
-                aspectRatio: '1/1', borderRadius: 14, overflow: 'hidden', flexShrink: 0,
+                aspectRatio: '1/1', borderRadius: 5, overflow: 'hidden', flexShrink: 0,
                 background: 'var(--accent-primary)',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end',
                 position: 'relative', cursor: 'pointer',
@@ -308,7 +308,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                 ) : null}
                 <div style={{
                   fontSize: 9, color: '#fff', fontWeight: 600, padding: '3px 6px',
-                  background: 'rgba(0,0,0,0.35)', borderRadius: '0 0 14px 14px', width: '100%', textAlign: 'center',
+                  background: 'rgba(0,0,0,0.35)', borderRadius: '0 0 5px 5px', width: '100%', textAlign: 'center',
                   position: 'relative', zIndex: 1,
                 }}>{slot.food.name?.slice(0, 8)}</div>
               </div>
@@ -316,7 +316,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
               <div key={slot.key} onClick={() => setShowMealPicker(true)} style={{
                 flex: slots.length <= 3 ? '1' : undefined,
                 width: slots.length > 3 ? 'calc((100% - 16px) / 3)' : undefined,
-                aspectRatio: '1/1', borderRadius: 14, flexShrink: 0,
+                aspectRatio: '1/1', borderRadius: 5, flexShrink: 0,
                 border: '1.5px dashed var(--accent-primary)',
                 background: 'rgba(129,228,189,0.08)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -441,12 +441,12 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
           for (let i = 0; i < addCount; i++) slots.push({ type: 'add', key: `body-add-${i}` });
           return (
             <div style={{
-              display: 'flex', gap: 8, margin: '0 16px 12px',
+              display: 'flex', gap: 1, margin: '0 16px 12px',
               ...fadeUp(0.05),
             }}>
               {slots.map((slot) => slot.type === 'record' ? (
                 <div key={slot.record.date} style={{
-                  flex: '1', aspectRatio: '1/1', borderRadius: 14, overflow: 'hidden', flexShrink: 0,
+                  flex: '1', aspectRatio: '1/1', borderRadius: 5, overflow: 'hidden', flexShrink: 0,
                   background: 'var(--accent-primary)',
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                   position: 'relative',
@@ -458,7 +458,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                 </div>
               ) : (
                 <div key={slot.key} onClick={() => setShowBodyAdd(true)} style={{
-                  flex: '1', aspectRatio: '1/1', borderRadius: 14, flexShrink: 0,
+                  flex: '1', aspectRatio: '1/1', borderRadius: 5, flexShrink: 0,
                   border: '1.5px dashed var(--accent-primary)',
                   background: 'rgba(129,228,189,0.08)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
