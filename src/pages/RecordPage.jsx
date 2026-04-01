@@ -263,7 +263,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
             </div>
           );
         })()}
-        <SkinInsightsSection />
+        <SkinInsightsSection onMeasure={onMeasure} />
       </>}
 
       {/* Food content */}
@@ -1204,7 +1204,7 @@ function FoodDetailModal({ food, onClose, onDelete }) {
 }
 
 // ===== Skin Insights Section =====
-function SkinInsightsSection() {
+function SkinInsightsSection({ onMeasure }) {
   const records = getRecords();
   const changes = getChanges();
   const totalChanges = getTotalChanges();
@@ -1213,7 +1213,12 @@ function SkinInsightsSection() {
     return (
       <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
         <div style={{ fontSize: 14, fontWeight: 600 }}>아직 피부 기록이 없어요</div>
-        <div style={{ fontSize: 12, marginTop: 6 }}>피부 측정을 시작하면 분석을 확인할 수 있어요</div>
+        <div style={{ fontSize: 12, marginTop: 6, marginBottom: 16 }}>피부 측정을 시작하면 분석을 확인할 수 있어요</div>
+        <button onClick={() => onMeasure && onMeasure()} style={{
+          padding: '12px 28px', borderRadius: 14, border: 'none',
+          background: 'var(--accent-primary)', color: '#fff',
+          fontSize: 14, fontWeight: 600, cursor: 'pointer',
+        }}>첫 기록하기</button>
       </div>
     );
   }
