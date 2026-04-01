@@ -246,7 +246,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
               ) : (
                 <div key={slot.key} onClick={() => onMeasure && onMeasure()} style={{
                   flex: '1', aspectRatio: '1/1', borderRadius: 5, flexShrink: 0,
-                  border: '1.5px dashed var(--accent-primary)',
+                  border: 'none',
                   background: 'rgba(129,228,189,0.08)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   cursor: 'pointer',
@@ -317,7 +317,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                 flex: slots.length <= 3 ? '1' : undefined,
                 width: slots.length > 3 ? 'calc((100% - 16px) / 3)' : undefined,
                 aspectRatio: '1/1', borderRadius: 5, flexShrink: 0,
-                border: '1.5px dashed var(--accent-primary)',
+                border: 'none',
                 background: 'rgba(129,228,189,0.08)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: 'pointer',
@@ -459,7 +459,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
               ) : (
                 <div key={slot.key} onClick={() => setShowBodyAdd(true)} style={{
                   flex: '1', aspectRatio: '1/1', borderRadius: 5, flexShrink: 0,
-                  border: '1.5px dashed var(--accent-primary)',
+                  border: 'none',
                   background: 'rgba(129,228,189,0.08)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   cursor: 'pointer',
