@@ -427,7 +427,7 @@ function SettingsDrawer({ open, onClose, onAccount }) {
         overflowY: 'auto', WebkitOverflowScrolling: 'touch',
       }}>
         {/* Close button */}
-        <div style={{ padding: '16px 20px 0', display: 'flex', justifyContent: 'flex-end' }}>
+        <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', justifyContent: 'flex-end' }}>
           <div onClick={onClose} style={{
             width: 36, height: 36, borderRadius: '50%',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
