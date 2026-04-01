@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getLatestRecord, getRecords, getChanges } from '../storage/SkinStorage';
-import { getProfile } from '../storage/ProfileStorage';
+import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, GENDER_OPTIONS } from '../storage/ProfileStorage';
 import { getTodayNutrition, getFoodGoal } from '../storage/FoodStorage';
 import { getBodyRecords } from '../storage/BodyStorage';
 import { getWeatherData } from '../storage/WeatherStorage';
@@ -35,6 +35,9 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
   const [weatherSheet, setWeatherSheet] = useState(false);
   const [coachMsg, setCoachMsg] = useState(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showAccountPage, setShowAccountPage] = useState(false);
+  const [userProfile, setUserProfile] = useState(getProfile);
 
   // Weather warning text
   const getWeatherWarning = () => {
@@ -50,25 +53,17 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
       {/* 1. Header */}
       <div style={{ padding: '8px 20px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        {/* Profile photo */}
-        <div style={{
-          width: 55, height: 55, borderRadius: '50%', overflow: 'hidden',
-          background: 'var(--bg-secondary)', flexShrink: 0,
+        {/* Menu icon */}
+        <div onClick={() => setShowSettings(true)} style={{
+          width: 40, height: 40, flexShrink: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
         }}>
-          <div style={{
-            width: '100%', height: '100%', borderRadius: '50%',
-            overflow: 'hidden',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            {profile.profileImage ? (
-              <img src={profile.profileImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
-                <circle cx="12" cy="10" r="4" /><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" strokeLinecap="round" />
-              </svg>
-            )}
-          </div>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round">
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
         </div>
 
         {/* LUA Beta */}
@@ -111,73 +106,28 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
       <div style={{ padding: '0 16px' }}>
 
-        {/* Today's Insight */}
+        {/* Profile photo */}
         <div style={{
-          padding: 20, borderRadius: 16, marginBottom: 12,
-          background: '#f9f9f9', ...fadeUp(0.03),
+          display: 'flex', alignItems: 'center', gap: 12,
+          marginBottom: 12, ...fadeUp(0.02),
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <svg width="26" height="26" viewBox="0 0 36 36" fill="none">
-                <defs>
-                  <linearGradient id="hi-g1" x1="20%" y1="0%" x2="80%" y2="100%">
-                    <stop offset="0%" stopColor="#FFF3B0" />
-                    <stop offset="100%" stopColor="#FFE082" />
-                  </linearGradient>
-                  <linearGradient id="hi-g2" x1="20%" y1="0%" x2="80%" y2="100%">
-                    <stop offset="0%" stopColor="#FFF9D0" />
-                    <stop offset="100%" stopColor="#FFF3B0" />
-                  </linearGradient>
-                </defs>
-                <path d="M18 2 L21 12 L31 15.5 L21 19 L18 29 L15 19 L5 15.5 L15 12 Z" fill="url(#hi-g1)" />
-                <path d="M28 3 L29 6.5 L32.5 7.5 L29 8.5 L28 12 L27 8.5 L23.5 7.5 L27 6.5 Z" fill="url(#hi-g2)" />
-                <path d="M8 24 L9 27 L12 28 L9 29 L8 32 L7 29 L4 28 L7 27 Z" fill="url(#hi-g2)" />
-                <ellipse cx="15" cy="12" rx="3" ry="2" fill="white" opacity="0.3" />
+          <div style={{
+            width: 44, height: 44, borderRadius: '50%', overflow: 'hidden',
+            background: 'var(--bg-secondary)', flexShrink: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            {profile.profileImage ? (
+              <img src={profile.profileImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
+                <circle cx="12" cy="10" r="4" /><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" strokeLinecap="round" />
               </svg>
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, color: '#8B95A1' }}>오늘의 인사이트</div>
-              <div style={{ fontSize: 14, color: '#4E5968', marginTop: 4, lineHeight: 1.5 }}>
-                {getInsightText(latest)}
-              </div>
-            </div>
+            )}
           </div>
-        </div>
-
-        {/* Skincare Tracker Card */}
-        <div onClick={onOpenRoutine} style={{
-          padding: 20, borderRadius: 16, marginBottom: 12,
-          background: '#f9f9f9', cursor: 'pointer',
-          ...fadeUp(0.04),
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <svg width="26" height="26" viewBox="0 0 36 36" fill="none">
-                <defs>
-                  <linearGradient id="lot-g1" x1="30%" y1="0%" x2="70%" y2="100%">
-                    <stop offset="0%" stopColor="#FFF0F3" />
-                    <stop offset="100%" stopColor="#FFD0DA" />
-                  </linearGradient>
-                  <linearGradient id="lot-g2" x1="30%" y1="0%" x2="70%" y2="100%">
-                    <stop offset="0%" stopColor="#FFE0E8" />
-                    <stop offset="100%" stopColor="#FFC0CC" />
-                  </linearGradient>
-                </defs>
-                <rect x="13" y="3" width="10" height="4" rx="1.5" fill="url(#lot-g2)" />
-                <rect x="16.5" y="1" width="3" height="3" rx="1" fill="url(#lot-g2)" />
-                <rect x="14" y="0.5" width="8" height="1.5" rx="0.75" fill="url(#lot-g2)" />
-                <rect x="11" y="7" width="14" height="20" rx="4" fill="url(#lot-g1)" />
-                <rect x="13" y="13" width="10" height="8" rx="2" fill="white" opacity="0.3" />
-                <rect x="12.5" y="9" width="3" height="12" rx="1.5" fill="white" opacity="0.2" />
-              </svg>
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>
+              {profile.nickname || '사용자'}님
             </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>스킨케어 트래커</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>제품 등록 · 루틴 관리 · 효과 분석</div>
-            </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path d="M9 18l6-6-6-6" stroke="var(--text-dim)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
           </div>
         </div>
 
@@ -319,6 +269,19 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           </div>
         </>
       )}
+
+      {/* Settings Drawer */}
+      <SettingsDrawer open={showSettings} onClose={() => setShowSettings(false)}
+        onAccount={() => { setShowSettings(false); setShowAccountPage(true); }} />
+
+      {/* Account Page */}
+      {showAccountPage && (
+        <AccountPage
+          profile={userProfile}
+          onUpdate={(key, val) => { const next = saveProfile({ [key]: val }); setUserProfile(next); }}
+          onClose={() => setShowAccountPage(false)}
+        />
+      )}
     </div>
   );
 
@@ -412,4 +375,265 @@ function getInsightText(latest) {
   if (latest.oilBalance > 70) return '유분이 높은 편이에요. 가벼운 보습제를 추천해요.';
   if (latest.overallScore >= 80) return '피부 컨디션이 좋아요! 꾸준히 유지해보세요.';
   return '오늘도 꾸준한 관리가 피부를 바꿔요. 화이팅!';
+}
+
+// ===== Settings Drawer =====
+function SettingsDrawer({ open, onClose, onAccount }) {
+  const menuItems = [
+    { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>, label: '계정', action: onAccount },
+    { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>, label: '개인정보 보호' },
+    { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>, label: '화면' },
+    { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>, label: '알림' },
+    { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22l-4-9-9-4z"/></svg>, label: '공지사항' },
+    { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>, label: '정보' },
+    { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>, label: '문의하기' },
+  ];
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div onClick={onClose} style={{
+        position: 'fixed', inset: 0, zIndex: 2000,
+        background: 'rgba(0,0,0,0.5)',
+        opacity: open ? 1 : 0,
+        pointerEvents: open ? 'auto' : 'none',
+        transition: 'opacity 0.3s ease',
+      }} />
+
+      {/* Drawer */}
+      <div style={{
+        position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 2001,
+        width: '80%', maxWidth: 320,
+        background: 'var(--bg-primary, #fff)',
+        transform: open ? 'translateX(0)' : 'translateX(-100%)',
+        transition: 'transform 0.3s ease',
+        display: 'flex', flexDirection: 'column',
+        overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+      }}>
+        {/* Close button */}
+        <div style={{ padding: '16px 20px 0', display: 'flex', justifyContent: 'flex-end' }}>
+          <div onClick={onClose} style={{
+            width: 36, height: 36, borderRadius: '50%',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
+          }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Menu items */}
+        <div style={{ flex: 1, padding: '12px 0' }}>
+          {menuItems.map((item) => (
+            <div key={item.label} onClick={() => item.action ? item.action() : null} style={{
+              display: 'flex', alignItems: 'center', gap: 16,
+              padding: '16px 28px', cursor: 'pointer',
+              WebkitTapHighlightColor: 'transparent',
+              color: 'var(--text-primary)',
+            }}>
+              {item.icon}
+              <span style={{ fontSize: 15, fontWeight: 500 }}>{item.label}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Bottom */}
+        <div style={{ padding: '16px 28px 40px', borderTop: '1px solid var(--border-light, #eee)' }}>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>버전 1.0.0</div>
+          <div onClick={() => {}} style={{
+            fontSize: 13, color: 'var(--text-muted)', cursor: 'pointer',
+          }}>로그아웃</div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ===== Account Page (Full screen) =====
+function AccountPage({ profile, onUpdate, onClose }) {
+  const currentYear = new Date().getFullYear();
+  const age = profile.birthYear ? currentYear - parseInt(profile.birthYear) : null;
+
+  const inputStyle = {
+    width: '100%', padding: '12px 14px', borderRadius: 12, border: 'none',
+    background: 'var(--bg-input, #F2F3F5)', fontSize: 14,
+    color: 'var(--text-primary)', fontFamily: 'inherit', outline: 'none',
+  };
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 1200,
+      background: 'var(--bg-primary, #fff)',
+      overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+      animation: 'slideInRight 0.3s ease',
+    }}>
+      {/* Header */}
+      <div style={{
+        position: 'sticky', top: 0, zIndex: 1,
+        background: 'var(--bg-primary, #fff)',
+        padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12,
+      }}>
+        <div onClick={onClose} style={{
+          width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </div>
+        <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)' }}>계정</div>
+      </div>
+
+      <div style={{ padding: '0 24px 40px' }}>
+        {/* Profile photo */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
+          <div onClick={() => document.getElementById('account-photo-input')?.click()} style={{
+            position: 'relative', width: 80, height: 80, borderRadius: '50%', cursor: 'pointer',
+            overflow: 'hidden', background: 'var(--bg-secondary)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            {profile.profileImage ? (
+              <img src={profile.profileImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
+                <circle cx="12" cy="10" r="4" /><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" strokeLinecap="round" />
+              </svg>
+            )}
+            <div style={{
+              position: 'absolute', bottom: 0, left: 0, right: 0, height: 24,
+              background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="#fff" strokeWidth="1.5" />
+                <circle cx="12" cy="13" r="3" stroke="#fff" strokeWidth="1.5" />
+              </svg>
+            </div>
+            <input id="account-photo-input" type="file" accept="image/*" onChange={e => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              const reader = new FileReader();
+              reader.onload = (ev) => {
+                const img = new Image();
+                img.onload = () => {
+                  const canvas = document.createElement('canvas');
+                  canvas.width = 200; canvas.height = 200;
+                  const ctx = canvas.getContext('2d');
+                  const size = Math.min(img.width, img.height);
+                  const sx = (img.width - size) / 2, sy = (img.height - size) / 2;
+                  ctx.drawImage(img, sx, sy, size, size, 0, 0, 200, 200);
+                  onUpdate('profileImage', canvas.toDataURL('image/jpeg', 0.8));
+                };
+                img.src = ev.target.result;
+              };
+              reader.readAsDataURL(file);
+            }} style={{ display: 'none' }} />
+          </div>
+        </div>
+
+        {/* Nickname */}
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>닉네임</div>
+          <input value={profile.nickname || ''} onChange={e => onUpdate('nickname', e.target.value)}
+            placeholder="닉네임" maxLength={20} style={inputStyle} />
+        </div>
+
+        {/* 기본 정보 */}
+        <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', margin: '24px 0 12px' }}>기본 정보</div>
+
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>생년월일</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <input value={profile.birthYear || ''} onChange={e => onUpdate('birthYear', e.target.value)}
+              placeholder="예: 1995" type="number" min={1940} max={currentYear} style={{ ...inputStyle, flex: 1 }} />
+            {age > 0 && <span style={{ fontSize: 13, color: 'var(--accent-primary)', fontWeight: 600, whiteSpace: 'nowrap' }}>만 {age}세</span>}
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>성별</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {GENDER_OPTIONS.map(g => (
+              <button key={g} onClick={() => onUpdate('gender', g)} style={{
+                flex: 1, padding: '10px 0', borderRadius: 10, border: 'none',
+                background: profile.gender === g ? 'var(--accent-primary)' : 'var(--bg-input, #F2F3F5)',
+                color: profile.gender === g ? '#fff' : 'var(--text-muted)',
+                fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+              }}>{g}</button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>키 (cm)</div>
+            <input value={profile.height || ''} onChange={e => onUpdate('height', e.target.value)}
+              placeholder="165" type="number" style={inputStyle} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>현재 몸무게 (kg)</div>
+            <input value={profile.currentWeight || ''} onChange={e => onUpdate('currentWeight', e.target.value)}
+              placeholder="60" type="number" step="0.1" style={inputStyle} />
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>목표 몸무게 (kg)</div>
+          <input value={profile.goalWeight || ''} onChange={e => onUpdate('goalWeight', e.target.value)}
+            placeholder="55" type="number" step="0.1" style={inputStyle} />
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>활동 수준</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {['거의 없음', '가벼운 활동', '보통', '활발한 활동', '매우 활발'].map(level => (
+              <button key={level} onClick={() => onUpdate('activityLevel', level)} style={{
+                padding: '8px 14px', borderRadius: 10, border: 'none',
+                background: profile.activityLevel === level ? 'var(--accent-primary)' : 'var(--bg-input, #F2F3F5)',
+                color: profile.activityLevel === level ? '#fff' : 'var(--text-muted)',
+                fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+              }}>{level}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* 피부 정보 */}
+        <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', margin: '24px 0 12px' }}>피부 정보</div>
+
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>피부 타입</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {SKIN_TYPES.map(t => (
+              <button key={t} onClick={() => onUpdate('skinType', t)} style={{
+                padding: '8px 14px', borderRadius: 10, border: 'none',
+                background: profile.skinType === t ? 'var(--accent-primary)' : 'var(--bg-input, #F2F3F5)',
+                color: profile.skinType === t ? '#fff' : 'var(--text-muted)',
+                fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+              }}>{t}</button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>주요 피부 고민</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {SKIN_CONCERNS.map(c => {
+              const active = (profile.skinConcerns || []).includes(c);
+              return (
+                <button key={c} onClick={() => {
+                  const list = active ? profile.skinConcerns.filter(x => x !== c) : [...(profile.skinConcerns || []), c];
+                  onUpdate('skinConcerns', list);
+                }} style={{
+                  padding: '8px 14px', borderRadius: 10, border: 'none',
+                  background: active ? 'var(--accent-primary)' : 'var(--bg-input, #F2F3F5)',
+                  color: active ? '#fff' : 'var(--text-muted)',
+                  fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+                }}>{c}</button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
