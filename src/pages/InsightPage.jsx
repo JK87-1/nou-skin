@@ -6,6 +6,8 @@ import {
   calcBMI, getLatestWeight, getStartWeight,
 } from '../storage/BodyStorage';
 import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, SENSITIVITY_OPTIONS, GENDER_OPTIONS } from '../storage/ProfileStorage';
+import { getRecords, getAllThumbnailsAsync } from '../storage/SkinStorage';
+import BeforeAfterSlider from '../components/BeforeAfterSlider';
 
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
 
@@ -21,6 +23,10 @@ export default function InsightPage() {
   const [insightTab, setInsightTab] = useState('skin');
   const todayKey = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`;
   const [selectedDate, setSelectedDate] = useState(todayKey);
+  const [skinRecords, setSkinRecords] = useState([]);
+  const [skinThumbs, setSkinThumbs] = useState({});
+  const [compareTab, setCompareTab] = useState('monthly');
+  const [showCompareModal, setShowCompareModal] = useState(false);
 
   const latest = records.length > 0 ? records[records.length - 1] : null;
   const start = records.length > 0 ? records[0] : null;
@@ -50,6 +56,11 @@ export default function InsightPage() {
     refresh();
     setShowGoalModal(false);
   }, [refresh]);
+
+  useEffect(() => {
+    setSkinRecords(getRecords());
+    getAllThumbnailsAsync().then(setSkinThumbs);
+  }, []);
 
   // Graph data (last 14 records)
   const graphData = useMemo(() => {
@@ -114,11 +125,107 @@ export default function InsightPage() {
 
       {/* Skin Tab */}
       {insightTab === 'skin' && (
-        <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
-          <div style={{ fontSize: 14, fontWeight: 600 }}>피부 분석 준비 중</div>
-          <div style={{ fontSize: 12, marginTop: 6 }}>곧 피부 트렌드 분석이 제공됩니다</div>
+        <div style={{ padding: '0 20px' }}>
+          {skinRecords.length >= 2 ? (
+            <div style={{ ...fadeUp(0.05) }}>
+              <div
+                onClick={() => setShowCompareModal(true)}
+                style={{
+                  background: 'var(--bg-card)', borderRadius: 'var(--card-border-radius)',
+                  padding: '14px 18px', cursor: 'pointer',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>비교 보기</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>1개월 변화 · Before & After</div>
+                  </div>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M9 18l6-6-6-6" stroke="var(--text-dim)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--text-muted)' }}>
+              <div style={{ fontSize: 14, fontWeight: 600 }}>2회 이상 측정하면 비교 분석을 볼 수 있어요</div>
+            </div>
+          )}
         </div>
       )}
+
+      {/* Compare Modal */}
+      {showCompareModal && skinRecords.length >= 2 && (() => {
+        const oldest = skinRecords[0];
+        const newest = skinRecords[skinRecords.length - 1];
+        const bThumb = skinThumbs[String(oldest.id)] || skinThumbs[oldest.date];
+        const aThumb = skinThumbs[String(newest.id)] || skinThumbs[newest.date];
+        const diff = newest.overallScore - oldest.overallScore;
+
+        return (
+          <div onClick={() => setShowCompareModal(false)} style={{
+            position: 'fixed', inset: 0, zIndex: 1100,
+            background: 'rgba(0,0,0,0.7)',
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+          }}>
+            <div onClick={e => e.stopPropagation()} style={{
+              background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
+              padding: '24px 24px 40px', width: '100%', maxWidth: 420,
+              maxHeight: '85vh', overflowY: 'auto',
+            }}>
+              <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 16px', opacity: 0.3 }} />
+
+              <div className="segment-control" style={{ marginBottom: 20 }}>
+                <button className={`segment-btn${compareTab === 'monthly' ? ' active' : ''}`}
+                  onClick={() => setCompareTab('monthly')}>1개월 변화</button>
+                <button className={`segment-btn${compareTab === 'beforeafter' ? ' active' : ''}`}
+                  onClick={() => setCompareTab('beforeafter')}>Before&After</button>
+              </div>
+
+              {compareTab === 'monthly' && (
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginBottom: 16 }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ aspectRatio: '1', borderRadius: 16, overflow: 'hidden', background: 'var(--bg-secondary)', marginBottom: 8 }}>
+                        {bThumb ? <img src={bThumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-dim)', fontSize: 11 }}>사진 없음</div>}
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{new Date(oldest.date).getMonth() + 1}/{new Date(oldest.date).getDate()}</div>
+                      <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{oldest.overallScore}점</div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', fontSize: 22, color: 'var(--text-dim)' }}>→</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ aspectRatio: '1', borderRadius: 16, overflow: 'hidden', background: 'var(--bg-secondary)', marginBottom: 8 }}>
+                        {aThumb ? <img src={aThumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-dim)', fontSize: 11 }}>사진 없음</div>}
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{new Date(newest.date).getMonth() + 1}/{new Date(newest.date).getDate()}</div>
+                      <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{newest.overallScore}점</div>
+                    </div>
+                  </div>
+                  <div style={{
+                    padding: '12px 16px', borderRadius: 14,
+                    background: diff >= 0 ? 'rgba(52,211,153,0.08)' : 'rgba(248,113,113,0.08)',
+                    color: diff >= 0 ? '#34d399' : '#f87171',
+                    fontSize: 14, fontWeight: 700,
+                  }}>
+                    {diff >= 0 ? '▲' : '▼'} {Math.abs(diff)}점 {diff >= 0 ? '향상' : '하락'}
+                  </div>
+                </div>
+              )}
+
+              {compareTab === 'beforeafter' && (
+                <BeforeAfterSlider />
+              )}
+
+              <button onClick={() => setShowCompareModal(false)} style={{
+                marginTop: 20, padding: '12px 0', width: '100%',
+                background: 'var(--bg-secondary)', border: 'none', borderRadius: 14,
+                fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)',
+                cursor: 'pointer', fontFamily: 'inherit',
+              }}>닫기</button>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Food Tab */}
       {insightTab === 'food' && (
