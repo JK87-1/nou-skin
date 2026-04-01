@@ -379,14 +379,29 @@ function getInsightText(latest) {
 
 // ===== Settings Drawer =====
 function SettingsDrawer({ open, onClose, onAccount }) {
-  const menuItems = [
-    { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>, label: '계정', action: onAccount },
-    { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>, label: '개인정보 보호' },
-    { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>, label: '화면' },
-    { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>, label: '알림' },
-    { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22l-4-9-9-4z"/></svg>, label: '공지사항' },
-    { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>, label: '정보' },
-    { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>, label: '문의하기' },
+  const menuSections = [
+    {
+      title: '계정',
+      items: [
+        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>, label: '프로필 설정', action: onAccount },
+        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>, label: '개인정보 보호' },
+      ],
+    },
+    {
+      title: '앱 설정',
+      items: [
+        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>, label: '화면' },
+        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>, label: '알림' },
+      ],
+    },
+    {
+      title: '정보',
+      items: [
+        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22l-4-9-9-4z"/></svg>, label: '공지사항' },
+        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>, label: '앱 정보' },
+        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>, label: '문의하기' },
+      ],
+    },
   ];
 
   return (
@@ -425,15 +440,24 @@ function SettingsDrawer({ open, onClose, onAccount }) {
 
         {/* Menu items */}
         <div style={{ flex: 1, padding: '12px 0' }}>
-          {menuItems.map((item) => (
-            <div key={item.label} onClick={() => item.action ? item.action() : null} style={{
-              display: 'flex', alignItems: 'center', gap: 16,
-              padding: '16px 28px', cursor: 'pointer',
-              WebkitTapHighlightColor: 'transparent',
-              color: 'var(--text-primary)',
-            }}>
-              {item.icon}
-              <span style={{ fontSize: 15, fontWeight: 500 }}>{item.label}</span>
+          {menuSections.map((section) => (
+            <div key={section.title}>
+              <div style={{
+                padding: '20px 28px 8px',
+                fontSize: 11, fontWeight: 700, color: 'var(--text-muted)',
+                letterSpacing: 0.5, textTransform: 'uppercase',
+              }}>{section.title}</div>
+              {section.items.map((item) => (
+                <div key={item.label} onClick={() => item.action ? item.action() : null} style={{
+                  display: 'flex', alignItems: 'center', gap: 16,
+                  padding: '14px 28px', cursor: 'pointer',
+                  WebkitTapHighlightColor: 'transparent',
+                  color: 'var(--text-primary)',
+                }}>
+                  {item.icon}
+                  <span style={{ fontSize: 15, fontWeight: 500 }}>{item.label}</span>
+                </div>
+              ))}
             </div>
           ))}
         </div>
