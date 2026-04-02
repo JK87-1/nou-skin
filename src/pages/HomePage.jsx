@@ -235,7 +235,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               background: 'linear-gradient(120deg, #B8F0E0, #4DB8A0)',
               color: '#0D3028', border: 'none', borderRadius: 9, padding: '7px 14px',
               fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-            }}>업데이트 →</button>
+            }}>체크 완료 →</button>
           )}
         </div>
 
