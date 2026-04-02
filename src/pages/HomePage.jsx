@@ -140,10 +140,10 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const insight = useMemo(() => generateInsight(activeCheck, latest, nutrition, weather), [activeCheck, latest, nutrition, weather]);
   const actionText = generateAction(activeCheck);
 
-  const allSelected = selections.energy > 0 && selections.skin > 0 && selections.mood > 0 && selections.gut > 0;
+  const anySelected = selections.energy > 0 || selections.skin > 0 || selections.mood > 0 || selections.gut > 0;
 
   const handleUpdate = () => {
-    if (!allSelected) return;
+    if (!anySelected) return;
     const saved = saveConditionCheck(selections);
     setTodayChecks(getTodayChecks());
     setJustUpdated(true);
@@ -161,7 +161,8 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       const d = new Date(c.timestamp);
       const h = d.getHours();
       const m = String(d.getMinutes()).padStart(2, '0');
-      const avg = (c.energy + c.skin + c.mood + c.gut) / 4;
+      const vals = [c.energy, c.skin, c.mood, c.gut].filter(v => v > 0);
+      const avg = vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : 3;
       let label;
       if (h < 10) label = '오전';
       else if (h < 13) label = '점심';
@@ -229,13 +230,22 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
           <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>컨디션 체크</span>
-          {allSelected && (
+          {anySelected && (
             <button onClick={handleUpdate} style={{
               background: 'linear-gradient(120deg, #B8F0E0, #4DB8A0)',
               color: '#0D3028', border: 'none', borderRadius: 9, padding: '7px 14px',
               fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
             }}>업데이트 →</button>
           )}
+        </div>
+
+        {/* 나쁨/좋음 라벨 */}
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
+          <span style={{ width: 72 }} />
+          <div style={{ display: 'flex', flex: 1, justifyContent: 'space-between', padding: '0 2px' }}>
+            <span style={{ fontSize: 9, color: '#ccc' }}>나쁨</span>
+            <span style={{ fontSize: 9, color: '#ccc' }}>좋음</span>
+          </div>
         </div>
 
         {CONDITION_ITEMS.map(item => (
