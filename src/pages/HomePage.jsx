@@ -275,58 +275,62 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       <div style={{ padding: '0 14px' }}>
 
         {/* ===== 3. 실시간 AI 인사이트 카드 ===== */}
-        {activeCheck && (
-          <div style={{
-            marginTop: 12,
-            background: 'rgba(78,184,160,0.08)',
-            border: '1px solid rgba(78,184,160,0.25)',
-            borderRadius: 12, padding: '10px 12px',
-          }}>
-            {/* 상단 배지 */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-              <span style={{
-                fontSize: 9, fontWeight: 600, color: '#4DB8A0',
-                background: 'rgba(78,184,160,0.15)', padding: '2px 8px', borderRadius: 6,
-              }}>실시간 분석</span>
-              <span style={{ fontSize: 9, color: '#4DB8A0', fontWeight: 500 }}>● LIVE</span>
-            </div>
-
-            {/* 인과관계 흐름 */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', marginBottom: 6 }}>
-              {insight.flow.map((step, i) => (
-                <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{
-                    fontSize: 10, fontWeight: 600, color: '#0D3028',
-                    background: i === 0 ? 'rgba(255,179,71,0.2)' : i === 2 ? 'rgba(78,184,160,0.2)' : 'rgba(255,243,176,0.4)',
-                    padding: '3px 8px', borderRadius: 8,
-                  }}>{step}</span>
-                  {i < 2 && <span style={{ fontSize: 10, color: '#aaa' }}>→</span>}
-                </span>
-              ))}
-            </div>
-
-            {/* 설명 */}
-            <div style={{ fontSize: 10, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-              {insight.description}
-            </div>
+        <div style={{
+          marginTop: 12,
+          background: activeCheck ? 'rgba(78,184,160,0.08)' : 'rgba(0,0,0,0.02)',
+          border: `1px solid ${activeCheck ? 'rgba(78,184,160,0.25)' : 'rgba(0,0,0,0.06)'}`,
+          borderRadius: 12, padding: '10px 12px',
+          opacity: activeCheck ? 1 : 0.55,
+        }}>
+          {/* 상단 배지 */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+            <span style={{
+              fontSize: 9, fontWeight: 600, color: activeCheck ? '#4DB8A0' : '#aaa',
+              background: activeCheck ? 'rgba(78,184,160,0.15)' : 'rgba(0,0,0,0.05)', padding: '2px 8px', borderRadius: 6,
+            }}>실시간 분석</span>
+            <span style={{ fontSize: 9, color: activeCheck ? '#4DB8A0' : '#ccc', fontWeight: 500 }}>
+              {activeCheck ? '● LIVE' : '○ 대기중'}
+            </span>
           </div>
-        )}
+
+          {/* 인과관계 흐름 */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', marginBottom: 6 }}>
+            {(activeCheck ? insight.flow : ['컨디션 체크', '원인 분석', '맞춤 케어']).map((step, i) => (
+              <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{
+                  fontSize: 10, fontWeight: 600, color: activeCheck ? '#0D3028' : '#bbb',
+                  background: activeCheck
+                    ? (i === 0 ? 'rgba(255,179,71,0.2)' : i === 2 ? 'rgba(78,184,160,0.2)' : 'rgba(255,243,176,0.4)')
+                    : 'rgba(0,0,0,0.04)',
+                  padding: '3px 8px', borderRadius: 8,
+                }}>{step}</span>
+                {i < 2 && <span style={{ fontSize: 10, color: '#ccc' }}>→</span>}
+              </span>
+            ))}
+          </div>
+
+          {/* 설명 */}
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+            {activeCheck ? insight.description : '위에서 컨디션을 체크하면 AI가 원인을 분석해드려요'}
+          </div>
+        </div>
 
         {/* ===== 4. 행동 추천 버튼 ===== */}
-        {activeCheck && (
-          <button style={{
-            width: '100%', padding: 11, marginTop: 10,
-            borderRadius: 12, border: 'none',
-            background: 'linear-gradient(120deg, #B8F0E0, #6ECFB8, #4DB8A0)',
-            color: '#0D3028', fontSize: 11, fontWeight: 500,
-            cursor: 'pointer', fontFamily: 'inherit',
-            textAlign: 'center',
-          }}>{actionText}</button>
-        )}
+        <button style={{
+          width: '100%', padding: 11, marginTop: 10,
+          borderRadius: 12, border: 'none',
+          background: activeCheck
+            ? 'linear-gradient(120deg, #B8F0E0, #6ECFB8, #4DB8A0)'
+            : 'linear-gradient(120deg, #eee, #e5e5e5)',
+          color: activeCheck ? '#0D3028' : '#bbb',
+          fontSize: 11, fontWeight: 500,
+          cursor: 'pointer', fontFamily: 'inherit',
+          textAlign: 'center',
+          opacity: activeCheck ? 1 : 0.7,
+        }}>{actionText}</button>
 
         {/* ===== 5. 오늘 컨디션 흐름 그래프 ===== */}
-        {graphData.length >= 1 && (
-          <div style={{
+        <div style={{
             marginTop: 12, background: '#fff',
             border: '0.5px solid #eee', borderRadius: 12, padding: '9px 12px',
           }}>
@@ -337,7 +341,11 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               }}>자세히 →</span>
             </div>
 
-            {graphData.length === 1 ? (
+            {graphData.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '10px 0' }}>
+                <div style={{ fontSize: 9, color: '#bbb' }}>컨디션을 체크하면 흐름이 기록돼요</div>
+              </div>
+            ) : graphData.length === 1 ? (
               <div style={{ textAlign: 'center', padding: '8px 0' }}>
                 <div style={{
                   display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
@@ -358,7 +366,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                       <stop offset="100%" stopColor="#4DB8A0" />
                     </linearGradient>
                   </defs>
-                  {/* Line */}
                   <polyline
                     fill="none"
                     stroke="url(#line-grad)"
@@ -366,21 +373,19 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     points={graphData.map((d, i) => {
-                      const x = graphData.length === 1 ? 100 : (i / (graphData.length - 1)) * (Math.max(graphData.length * 60, 200) - 20) + 10;
+                      const x = (i / (graphData.length - 1)) * (Math.max(graphData.length * 60, 200) - 20) + 10;
                       const y = 40 - (d.avg / 5) * 35;
                       return `${x},${y}`;
                     }).join(' ')}
                   />
-                  {/* Points */}
                   {graphData.map((d, i) => {
                     const w = Math.max(graphData.length * 60, 200);
-                    const x = graphData.length === 1 ? 100 : (i / (graphData.length - 1)) * (w - 20) + 10;
+                    const x = (i / (graphData.length - 1)) * (w - 20) + 10;
                     const y = 40 - (d.avg / 5) * 35;
                     const color = d.avg >= 3.5 ? '#4DB8A0' : d.avg >= 2.5 ? '#FFF3B0' : '#FFE0E0';
                     return <circle key={i} cx={x} cy={y} r="3" fill={color} stroke="#fff" strokeWidth="1" />;
                   })}
                 </svg>
-                {/* X축 라벨 */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
                   {graphData.map((d, i) => (
                     <span key={i} style={{ fontSize: 9, color: '#999' }}>{d.time}</span>
@@ -389,7 +394,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               </>
             )}
           </div>
-        )}
 
         {/* ===== 루틴 요약 ===== */}
         <div onClick={() => onTabChange('routine')} style={{
