@@ -32,7 +32,7 @@ export default function TabBar({ activeTab, onTabChange }) {
     },
     {
       key: 'body',
-      label: '분석',
+      label: '변화',
       icon: (active) => (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
           <rect x="4" y="12" width="4" height="8" rx="1" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
@@ -43,13 +43,11 @@ export default function TabBar({ activeTab, onTabChange }) {
     },
     {
       key: 'album',
-      label: '앨범',
+      label: 'MY',
       icon: (active) => (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <rect x="3" y="3" width="8" height="8" rx="2" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
-          <rect x="13" y="3" width="8" height="8" rx="2" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
-          <rect x="3" y="13" width="8" height="8" rx="2" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
-          <rect x="13" y="13" width="8" height="8" rx="2" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
+          <circle cx="12" cy="8" r="4" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" />
+          <path d="M5 20c0-3.87 3.13-7 7-7s7 3.13 7 7" stroke={active ? '#81E4BD' : '#bbb'} strokeWidth="1.5" strokeLinecap="round" />
         </svg>
       ),
     },

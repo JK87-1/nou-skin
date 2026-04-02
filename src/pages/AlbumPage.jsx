@@ -272,7 +272,7 @@ export default function AlbumPage({ onBack, onMeasure, onOpenConsult, onTabChang
 
       {/* Header */}
       <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div></div>
+        <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>마이 페이지</h1>
         <div style={{ display: 'flex', gap: 8 }}>
           <div onClick={() => {
             if (albumCategory === 'food' && onTabChange) onTabChange('food', { openAdd: true });

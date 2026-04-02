@@ -1,31 +1,110 @@
-import { useState, useEffect } from 'react';
-import { getLatestRecord, getRecords, getChanges } from '../storage/SkinStorage';
+import { useState, useEffect, useMemo } from 'react';
+import { getLatestRecord } from '../storage/SkinStorage';
 import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, GENDER_OPTIONS } from '../storage/ProfileStorage';
 import { getTodayNutrition, getFoodGoal } from '../storage/FoodStorage';
-import { getBodyRecords } from '../storage/BodyStorage';
 import { getWeatherData } from '../storage/WeatherStorage';
 import { getTodayProgress } from '../storage/RoutineCheckStorage';
-import SkinWeather from '../components/SkinWeather';
+import {
+  getTodayChecks, getLatestCheck, saveConditionCheck,
+  shouldResetCheck, getMinutesSinceLastCheck,
+} from '../storage/ConditionStorage';
 
-const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
-const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
+const CONDITION_ITEMS = [
+  { id: 'energy', icon: '\u26A1', label: '에너지' },
+  { id: 'skin',   icon: '\u2728', label: '피부' },
+  { id: 'mood',   icon: '\uD83D\uDE0A', label: '기분' },
+  { id: 'gut',    icon: '\uD83C\uDF3F', label: '장 상태' },
+];
+
+const DOT_COLORS = ['#FFE0E0', '#FFB347', '#FFF3B0', '#B8F0E0', '#4DB8A0'];
+
+// ===== AI 인사이트 생성 (로컬) =====
+function generateInsight(check, skinResult, nutrition, weather) {
+  const e = check?.energy || 3, s = check?.skin || 3, m = check?.mood || 3, g = check?.gut || 3;
+  const avg = (e + s + m + g) / 4;
+
+  // 인과관계 흐름 생성
+  const flows = [];
+  const descs = [];
+
+  if (e <= 2 && g <= 2) {
+    flows.push({ flow: ['장 불편', '영양 흡수 저하', '피로 + 피부 예민'], desc: '장 컨디션이 에너지와 피부에 영향을 줄 수 있어요' });
+  }
+  if (e <= 2 && nutrition?.kcal > 800) {
+    flows.push({ flow: ['식후 혈당 변화', '에너지 저하', '집중력 감소'], desc: '식사 후 혈당 변화가 피로감의 원인일 수 있어요' });
+  }
+  if (s <= 2 && weather?.humidity < 40) {
+    flows.push({ flow: ['낮은 습도', '수분 증발', '피부 예민'], desc: '건조한 환경이 피부 컨디션에 영향을 줘요' });
+  }
+  if (s <= 2 && skinResult?.moisture < 50) {
+    flows.push({ flow: ['수분 부족', '피부 장벽 약화', '피부 예민'], desc: '피부 수분도가 낮아 예민해질 수 있어요' });
+  }
+  if (m <= 2 && e <= 2) {
+    flows.push({ flow: ['수면 부족', '피로 누적', '기분 저하'], desc: '충분한 휴식이 기분 회복에 도움이 돼요' });
+  }
+  if (e >= 4 && s >= 4) {
+    flows.push({ flow: ['충분한 휴식', '좋은 컨디션', '피부 회복'], desc: '현재 컨디션이 좋아서 피부도 안정적이에요' });
+  }
+
+  if (flows.length === 0) {
+    if (avg >= 3.5) {
+      flows.push({ flow: ['균형 잡힌 생활', '안정적 컨디션', '좋은 상태 유지'], desc: '전반적으로 균형 잡힌 상태예요' });
+    } else {
+      flows.push({ flow: ['컨디션 변화 감지', '원인 분석 중', '맞춤 케어 필요'], desc: '데이터를 더 모으면 정확한 분석이 가능해요' });
+    }
+  }
+
+  return flows[0];
+}
+
+function generateHeroStatus(check) {
+  if (!check) return { status: '오늘 컨디션을 체크해보세요', sub: '체크하면 AI가 원인을 분석해드려요' };
+  const e = check.energy, s = check.skin, m = check.mood, g = check.gut;
+  const avg = (e + s + m + g) / 4;
+
+  const lowItems = [];
+  if (e <= 2) lowItems.push('피로');
+  if (s <= 2) lowItems.push('피부 예민');
+  if (m <= 2) lowItems.push('기분 저하');
+  if (g <= 2) lowItems.push('장 불편');
+
+  const highItems = [];
+  if (e >= 4) highItems.push('에너지 좋음');
+  if (s >= 4) highItems.push('피부 좋음');
+  if (m >= 4) highItems.push('기분 좋음');
+  if (g >= 4) highItems.push('장 상태 좋음');
+
+  let status, sub;
+  if (avg >= 4) {
+    status = '오늘 컨디션이 아주 좋아요';
+    sub = highItems.slice(0, 2).join(' · ');
+  } else if (avg >= 3) {
+    status = '오늘 전반적으로 괜찮아요';
+    sub = lowItems.length > 0 ? `${lowItems[0]}만 좀 신경 쓰면 돼요` : '무난한 하루를 보내고 있어요';
+  } else {
+    status = lowItems.length > 0 ? `지금 ${lowItems.slice(0, 2).join(' · ')} 느껴져요` : '컨디션이 좀 낮아요';
+    sub = '원인을 분석해서 케어 방법을 알려드릴게요';
+  }
+  return { status, sub };
+}
+
+function generateAction(check) {
+  if (!check) return '지금 → 컨디션 체크 시작 →';
+  const e = check.energy, s = check.skin, g = check.gut;
+
+  if (e <= 2 && g <= 2) return '지금 → 따뜻한 물 + 가벼운 산책 →';
+  if (e <= 2) return '지금 → 10분 스트레칭 추천 →';
+  if (s <= 2) return '지금 → 물 한 잔 + 수분크림 →';
+  if (g <= 2) return '지금 → 따뜻한 차 한 잔 →';
+  if (check.mood <= 2) return '지금 → 5분 심호흡 추천 →';
+  return '지금 → 현재 루틴 유지 추천 →';
+}
 
 export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [profile] = useState(getProfile);
   const latest = getLatestRecord();
-  const records = getRecords();
-  const changes = getChanges();
-  const today = new Date();
   const weather = getWeatherData();
   const nutrition = getTodayNutrition();
-  const foodGoal = getFoodGoal();
-  const bodyRecords = getBodyRecords();
-  const latestWeight = bodyRecords.length > 0 ? bodyRecords[bodyRecords.length - 1] : null;
-  const prevWeight = bodyRecords.length > 1 ? bodyRecords[bodyRecords.length - 2] : null;
-  const weightDiff = latestWeight && prevWeight ? (latestWeight.weight - prevWeight.weight).toFixed(1) : null;
-  const skinDiff = changes?.overallScore ? (changes.overallScore.diff > 0 ? `+${changes.overallScore.diff}` : `${changes.overallScore.diff}`) : null;
-
-  // Routine progress
   const skinRoutine = getTodayProgress('skin');
   const foodRoutine = getTodayProgress('food');
   const bodyRoutine = getTodayProgress('body');
@@ -33,168 +112,280 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const doneRoutine = skinRoutine.done + foodRoutine.done + bodyRoutine.done;
   const routinePct = totalRoutine > 0 ? Math.round((doneRoutine / totalRoutine) * 100) : 0;
 
-  const [weatherSheet, setWeatherSheet] = useState(false);
-  const [coachMsg, setCoachMsg] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showAccountPage, setShowAccountPage] = useState(false);
   const [userProfile, setUserProfile] = useState(getProfile);
 
-  // Weather warning text
-  const getWeatherWarning = () => {
-    if (!weather) return '';
-    if (weather.humidity < 40) return '건조함 주의';
-    if (weather.airQuality > 80) return '미세먼지 주의';
-    if (weather.uv > 6) return '자외선 강함';
-    return '';
+  // Condition check state
+  const latestCheck = getLatestCheck();
+  const resetNeeded = shouldResetCheck();
+  const [selections, setSelections] = useState(() => {
+    if (!resetNeeded && latestCheck) {
+      return { energy: latestCheck.energy, skin: latestCheck.skin, mood: latestCheck.mood, gut: latestCheck.gut };
+    }
+    return { energy: 0, skin: 0, mood: 0, gut: 0 };
+  });
+  const [justUpdated, setJustUpdated] = useState(false);
+  const [todayChecks, setTodayChecks] = useState(getTodayChecks);
+  const [minutesAgo, setMinutesAgo] = useState(getMinutesSinceLastCheck);
+
+  // Update minutes ago every 60s
+  useEffect(() => {
+    const timer = setInterval(() => setMinutesAgo(getMinutesSinceLastCheck()), 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const activeCheck = justUpdated ? todayChecks[todayChecks.length - 1] : (resetNeeded ? null : latestCheck);
+  const heroInfo = generateHeroStatus(activeCheck);
+  const insight = useMemo(() => generateInsight(activeCheck, latest, nutrition, weather), [activeCheck, latest, nutrition, weather]);
+  const actionText = generateAction(activeCheck);
+
+  const allSelected = selections.energy > 0 && selections.skin > 0 && selections.mood > 0 && selections.gut > 0;
+
+  const handleUpdate = () => {
+    if (!allSelected) return;
+    const saved = saveConditionCheck(selections);
+    setTodayChecks(getTodayChecks());
+    setJustUpdated(true);
+    setMinutesAgo(0);
   };
 
+  const handleSelect = (id, val) => {
+    setSelections(prev => ({ ...prev, [id]: val }));
+    setJustUpdated(false);
+  };
+
+  // Graph data
+  const graphData = useMemo(() => {
+    return todayChecks.map(c => {
+      const d = new Date(c.timestamp);
+      const h = d.getHours();
+      const m = String(d.getMinutes()).padStart(2, '0');
+      const avg = (c.energy + c.skin + c.mood + c.gut) / 4;
+      let label;
+      if (h < 10) label = '오전';
+      else if (h < 13) label = '점심';
+      else if (h < 17) label = '오후';
+      else label = '저녁';
+      return { time: `${h}:${m}`, label, avg };
+    });
+  }, [todayChecks]);
+
   return (
-    <div style={{ minHeight: '100dvh', background: 'var(--bg-primary)', paddingBottom: 80 }}>
+    <div style={{ minHeight: '100dvh', background: 'var(--bg-primary)', paddingBottom: 90 }}>
 
-      {/* 1. Header */}
-      <div style={{ padding: '8px 20px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        {/* Menu icon */}
-        <div onClick={() => setShowSettings(true)} style={{
-          width: 40, height: 40, flexShrink: 0,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
-        }}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round">
-            <line x1="3" y1="6" x2="21" y2="6" />
-            <line x1="3" y1="12" x2="21" y2="12" />
-            <line x1="3" y1="18" x2="21" y2="18" />
-          </svg>
-        </div>
-
-        {/* LUA Beta */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-          <span style={{ fontSize: 18, fontWeight: 500, letterSpacing: 5, fontFamily: "'Fredoka', sans-serif", color: '#81E4BD' }}>LUA</span>
-          <span style={{ fontSize: 8, color: '#fff', background: '#81E4BD', padding: '1px 6px', borderRadius: 8, fontWeight: 500 }}>Beta</span>
-        </div>
-
-        {/* Weather chip button */}
-        {(() => {
-          const temp = weather?.temp ?? '—';
-          return (
-            <div onClick={() => setWeatherSheet(true)} style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              padding: '7px 12px 7px 8px',
-              background: '#fff', borderRadius: 50, cursor: 'pointer',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-              WebkitTapHighlightColor: 'transparent',
-            }}>
-              <svg width="20" height="20" viewBox="0 0 36 36" fill="none">
-                <defs>
-                  <radialGradient id="sun-home" cx="40%" cy="38%" r="55%">
-                    <stop offset="0%" stopColor="#FFF9D0" />
-                    <stop offset="50%" stopColor="#FFF3B0" />
-                    <stop offset="100%" stopColor="#FFE082" />
-                  </radialGradient>
-                </defs>
-                {[0,45,90,135,180,225,270,315].map(a => {
-                  const r1 = 10.5, r2 = 15.5, rad = a * Math.PI / 180;
-                  return <line key={a} x1={18+Math.cos(rad)*r1} y1={18+Math.sin(rad)*r1} x2={18+Math.cos(rad)*r2} y2={18+Math.sin(rad)*r2} stroke="#FFE082" strokeWidth="2" strokeLinecap="round" />;
-                })}
-                <circle cx="18" cy="18" r="9" fill="url(#sun-home)" />
-                <ellipse cx="15.5" cy="15.5" rx="3.5" ry="2.5" fill="white" opacity="0.35" />
+      {/* ===== 1. 히어로 영역 ===== */}
+      <div style={{
+        background: 'linear-gradient(160deg, #B8F0E0 0%, #6ECFB8 50%, #4DB8A0 100%)',
+        padding: '12px 14px 18px',
+        position: 'relative',
+      }}>
+        {/* 상단 row */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div onClick={() => setShowSettings(true)} style={{ cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0D3028" strokeWidth="1.8" strokeLinecap="round">
+                <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
               </svg>
-              <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>{temp}°</span>
             </div>
-          );
-        })()}
-      </div>
-
-      <div style={{ padding: '0 16px' }}>
-
-        {/* Profile photo */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 12,
-          marginBottom: 12, ...fadeUp(0.02),
-        }}>
-          <div style={{
-            width: 44, height: 44, borderRadius: '50%', overflow: 'hidden',
-            background: 'var(--bg-secondary)', flexShrink: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            {profile.profileImage ? (
-              <img src={profile.profileImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
-                <circle cx="12" cy="10" r="4" /><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" strokeLinecap="round" />
-              </svg>
+            <span style={{ fontSize: 15, fontWeight: 600, color: '#0D3028' }}>{profile.nickname || '사용자'}님</span>
+            {weather && (
+              <span style={{ fontSize: 12, color: '#2A6A58', fontWeight: 500 }}>{weather.temp ?? '—'}°</span>
             )}
           </div>
-          <div>
-            <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>
-              {profile.nickname || '사용자'}님
-            </div>
+          <div onClick={onMeasure} style={{
+            width: 30, height: 30, borderRadius: '50%',
+            background: 'rgba(255,255,255,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
+          }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0D3028" strokeWidth="2" strokeLinecap="round">
+              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
           </div>
         </div>
 
-        {/* 2. AI Coach Card — same layout as Insight */}
-        <div style={{
-          padding: 20, borderRadius: 16, marginBottom: 12,
-          background: '#f9f9f9', ...fadeUp(0.05),
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <svg width="26" height="26" viewBox="0 0 36 36" fill="none">
-                <defs>
-                  <linearGradient id="coach-g1" x1="20%" y1="0%" x2="80%" y2="100%">
-                    <stop offset="0%" stopColor="#B8F0D8" />
-                    <stop offset="100%" stopColor="#81E4BD" />
-                  </linearGradient>
-                </defs>
-                <circle cx="18" cy="18" r="14" fill="url(#coach-g1)" />
-                <text x="18" y="23" textAnchor="middle" fontSize="16">✨</text>
-              </svg>
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, color: '#8B95A1' }}>LUA AI 코치</div>
-              <div style={{ fontSize: 14, color: '#4E5968', marginTop: 4, lineHeight: 1.5 }}>
-                {getCoachMessage(latest, nutrition, foodGoal, latestWeight, doneRoutine, totalRoutine, weather)}
-              </div>
-              {/* Tags */}
-              <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
-                {getCoachTags(latest, nutrition, foodGoal, doneRoutine, totalRoutine).map((tag, i) => (
-                  <span key={i} style={{
-                    fontSize: 10, padding: '3px 8px', borderRadius: 8,
-                    background: 'rgba(129,228,189,0.12)', color: 'var(--text-muted)', fontWeight: 500,
-                  }}>{tag}</span>
-                ))}
-              </div>
+        {/* 상태 문장 */}
+        <div style={{ fontSize: 16, fontWeight: 700, color: '#0D3028', marginBottom: 3, lineHeight: 1.4 }}>
+          {heroInfo.status}
+        </div>
+        <div style={{ fontSize: 10, color: '#2A6A58', marginBottom: 6 }}>
+          {heroInfo.sub}
+        </div>
+
+        {/* 마지막 업데이트 */}
+        <div style={{ fontSize: 9, color: 'rgba(13,48,40,0.45)' }}>
+          {minutesAgo !== null
+            ? minutesAgo < 1 ? '방금 업데이트됨' : `마지막 업데이트 ${minutesAgo}분 전`
+            : '아직 체크 기록이 없어요'}
+        </div>
+      </div>
+
+      {/* ===== 2. 실시간 컨디션 체크 카드 ===== */}
+      <div style={{
+        margin: '0 14px', marginTop: -8, position: 'relative', zIndex: 1,
+        background: '#fff', borderRadius: 14, padding: '10px 12px',
+        border: '0.5px solid #eee',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>컨디션 체크</span>
+          {allSelected && (
+            <button onClick={handleUpdate} style={{
+              background: 'linear-gradient(120deg, #B8F0E0, #4DB8A0)',
+              color: '#0D3028', border: 'none', borderRadius: 9, padding: '7px 14px',
+              fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+            }}>업데이트 →</button>
+          )}
+        </div>
+
+        {CONDITION_ITEMS.map(item => (
+          <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+            <span style={{ fontSize: 16, width: 22, textAlign: 'center' }}>{item.icon}</span>
+            <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)', width: 42 }}>{item.label}</span>
+            <div style={{ display: 'flex', gap: 8, flex: 1, justifyContent: 'center' }}>
+              {[1, 2, 3, 4, 5].map(val => {
+                const selected = selections[item.id] === val;
+                return (
+                  <div key={val} onClick={() => handleSelect(item.id, val)} style={{
+                    width: 24, height: 24, borderRadius: '50%',
+                    background: DOT_COLORS[val - 1],
+                    cursor: 'pointer',
+                    boxShadow: selected ? `0 0 0 2px #4DB8A0` : 'none',
+                    transform: selected ? 'scale(1.15)' : 'scale(1)',
+                    transition: 'all 0.15s ease',
+                    WebkitTapHighlightColor: 'transparent',
+                  }} />
+                );
+              })}
             </div>
           </div>
-        </div>
+        ))}
+      </div>
 
-        {/* 3. Today Stats (3 cards) */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginBottom: 12, ...fadeUp(0.1) }}>
-          <StatCard
-            icon="🔬" label="피부"
-            value={latest ? latest.overallScore : ''} unit="점"
-            change={skinDiff ? `${skinDiff}점` : null}
-            changePositive={skinDiff ? parseFloat(skinDiff) >= 0 : null}
-          />
-          <StatCard
-            icon="🍽️" label="식단"
-            value={nutrition.kcal > 0 ? nutrition.kcal.toLocaleString() : ''} unit="kcal"
-            change={nutrition.kcal > 0 ? `목표 ${foodGoal.kcal.toLocaleString()}` : null}
-            changePositive={null}
-          />
-          <StatCard
-            icon="⚖️" label="몸무게"
-            value={latestWeight ? latestWeight.weight : ''} unit="kg"
-            change={weightDiff ? `${weightDiff}kg` : null}
-            changePositive={weightDiff ? parseFloat(weightDiff) <= 0 : null}
-          />
-        </div>
+      <div style={{ padding: '0 14px' }}>
 
-        {/* 4. Routine Summary Bar */}
+        {/* ===== 3. 실시간 AI 인사이트 카드 ===== */}
+        {activeCheck && (
+          <div style={{
+            marginTop: 12,
+            background: 'rgba(78,184,160,0.08)',
+            border: '1px solid rgba(78,184,160,0.25)',
+            borderRadius: 12, padding: '10px 12px',
+          }}>
+            {/* 상단 배지 */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+              <span style={{
+                fontSize: 9, fontWeight: 600, color: '#4DB8A0',
+                background: 'rgba(78,184,160,0.15)', padding: '2px 8px', borderRadius: 6,
+              }}>실시간 분석</span>
+              <span style={{ fontSize: 9, color: '#4DB8A0', fontWeight: 500 }}>● LIVE</span>
+            </div>
+
+            {/* 인과관계 흐름 */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', marginBottom: 6 }}>
+              {insight.flow.map((step, i) => (
+                <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{
+                    fontSize: 10, fontWeight: 600, color: '#0D3028',
+                    background: i === 0 ? 'rgba(255,179,71,0.2)' : i === 2 ? 'rgba(78,184,160,0.2)' : 'rgba(255,243,176,0.4)',
+                    padding: '3px 8px', borderRadius: 8,
+                  }}>{step}</span>
+                  {i < 2 && <span style={{ fontSize: 10, color: '#aaa' }}>→</span>}
+                </span>
+              ))}
+            </div>
+
+            {/* 설명 */}
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+              {insight.description}
+            </div>
+          </div>
+        )}
+
+        {/* ===== 4. 행동 추천 버튼 ===== */}
+        {activeCheck && (
+          <button style={{
+            width: '100%', padding: 11, marginTop: 10,
+            borderRadius: 12, border: 'none',
+            background: 'linear-gradient(120deg, #B8F0E0, #6ECFB8, #4DB8A0)',
+            color: '#0D3028', fontSize: 11, fontWeight: 500,
+            cursor: 'pointer', fontFamily: 'inherit',
+            textAlign: 'center',
+          }}>{actionText}</button>
+        )}
+
+        {/* ===== 5. 오늘 컨디션 흐름 그래프 ===== */}
+        {graphData.length >= 1 && (
+          <div style={{
+            marginTop: 12, background: '#fff',
+            border: '0.5px solid #eee', borderRadius: 12, padding: '9px 12px',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-primary)' }}>오늘 컨디션 흐름</span>
+              <span onClick={() => onTabChange('body')} style={{
+                fontSize: 10, color: 'var(--text-muted)', cursor: 'pointer',
+              }}>자세히 →</span>
+            </div>
+
+            {graphData.length === 1 ? (
+              <div style={{ textAlign: 'center', padding: '8px 0' }}>
+                <div style={{
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  width: 28, height: 28, borderRadius: '50%',
+                  background: graphData[0].avg >= 3.5 ? '#B8F0E0' : graphData[0].avg >= 2.5 ? '#FFF3B0' : '#FFE0E0',
+                }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#0D3028' }}>{graphData[0].avg.toFixed(1)}</span>
+                </div>
+                <div style={{ fontSize: 9, color: '#999', marginTop: 4 }}>{graphData[0].time}</div>
+                <div style={{ fontSize: 9, color: '#bbb', marginTop: 2 }}>체크가 더 쌓이면 흐름 그래프가 나타나요</div>
+              </div>
+            ) : (
+              <>
+                <svg width="100%" height="40" viewBox={`0 0 ${Math.max(graphData.length * 60, 200)} 40`} preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="line-grad" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#B8F0E0" />
+                      <stop offset="100%" stopColor="#4DB8A0" />
+                    </linearGradient>
+                  </defs>
+                  {/* Line */}
+                  <polyline
+                    fill="none"
+                    stroke="url(#line-grad)"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    points={graphData.map((d, i) => {
+                      const x = graphData.length === 1 ? 100 : (i / (graphData.length - 1)) * (Math.max(graphData.length * 60, 200) - 20) + 10;
+                      const y = 40 - (d.avg / 5) * 35;
+                      return `${x},${y}`;
+                    }).join(' ')}
+                  />
+                  {/* Points */}
+                  {graphData.map((d, i) => {
+                    const w = Math.max(graphData.length * 60, 200);
+                    const x = graphData.length === 1 ? 100 : (i / (graphData.length - 1)) * (w - 20) + 10;
+                    const y = 40 - (d.avg / 5) * 35;
+                    const color = d.avg >= 3.5 ? '#4DB8A0' : d.avg >= 2.5 ? '#FFF3B0' : '#FFE0E0';
+                    return <circle key={i} cx={x} cy={y} r="3" fill={color} stroke="#fff" strokeWidth="1" />;
+                  })}
+                </svg>
+                {/* X축 라벨 */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
+                  {graphData.map((d, i) => (
+                    <span key={i} style={{ fontSize: 9, color: '#999' }}>{d.time}</span>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* ===== 루틴 요약 ===== */}
         <div onClick={() => onTabChange('routine')} style={{
-          borderRadius: 14, padding: '11px 13px', marginBottom: 12,
+          borderRadius: 14, padding: '11px 13px', marginTop: 12,
           background: '#f9f9f9', cursor: 'pointer',
           display: 'flex', alignItems: 'center', gap: 10,
-          ...fadeUp(0.15),
         }}>
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
@@ -212,7 +403,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               {totalRoutine === 0
                 ? '루틴을 추가해보세요'
                 : doneRoutine >= totalRoutine
-                  ? '오늘 루틴 모두 완료! 🎉'
+                  ? '오늘 루틴 모두 완료!'
                   : getIncompleteText()
               }
             </div>
@@ -221,54 +412,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             <path d="M9 18l6-6-6-6" stroke="var(--text-dim)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
-
-        {/* 5. Quick Action Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, ...fadeUp(0.2) }}>
-          <QuickAction icon="🔬" label="피부 측정" onTap={onMeasure} />
-          <QuickAction icon="🤳" label="얼굴 사진" onTap={() => onTabChange('album')} />
-          <QuickAction icon="🍽️" label="식단 기록" onTap={() => onTabChange('food')} />
-          <QuickAction icon="⚖️" label="몸무게" onTap={() => onTabChange('body')} />
-        </div>
       </div>
-
-      {/* Weather Bottom Sheet */}
-      {weatherSheet && (
-        <>
-          <div onClick={() => setWeatherSheet(false)} style={{
-            position: 'fixed', inset: 0, zIndex: 50,
-            background: 'rgba(0,0,0,0.4)',
-            animation: 'weatherFadeIn 0.3s ease',
-          }} />
-          <div style={{
-            position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 60,
-            background: 'var(--bg-secondary)',
-            borderTopLeftRadius: 28, borderTopRightRadius: 28,
-            borderTop: '1px solid var(--border-light)',
-            maxHeight: '85vh',
-            animation: 'weatherSlideUp 0.4s cubic-bezier(0.32, 0.72, 0, 1)',
-            overflow: 'hidden',
-          }}>
-            <style>{`
-              @keyframes weatherFadeIn { from { opacity: 0; } to { opacity: 1; } }
-              @keyframes weatherSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-            `}</style>
-            <div onClick={() => setWeatherSheet(false)} style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 8px', cursor: 'pointer' }}>
-              <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--border-subtle)' }} />
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0 20px 8px' }}>
-              <button onClick={() => setWeatherSheet(false)} style={{
-                width: 32, height: 32, borderRadius: '50%',
-                background: 'var(--bg-card-hover)', border: 'none',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', color: 'var(--text-muted)', fontSize: 16, fontFamily: 'inherit',
-              }}>✕</button>
-            </div>
-            <div style={{ overflowY: 'auto', maxHeight: 'calc(85vh - 80px)', WebkitOverflowScrolling: 'touch' }}>
-              <SkinWeather skinResult={latest} />
-            </div>
-          </div>
-        </>
-      )}
 
       {/* Settings Drawer */}
       <SettingsDrawer open={showSettings} onClose={() => setShowSettings(false)}
@@ -292,89 +436,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
     if (bodyRoutine.done < bodyRoutine.total) names.push('바디');
     return names.length > 0 ? `${names.join(' · ')} 루틴이 남았어요` : '';
   }
-}
-
-// ===== Stat Card =====
-function StatCard({ icon, label, value, unit, change, changePositive }) {
-  const changeColor = changePositive === null ? 'var(--text-muted)' : changePositive ? '#0F6E56' : '#C4580A';
-  return (
-    <div style={{
-      borderRadius: 12, padding: '10px 8px', background: '#f9f9f9',
-      textAlign: 'center',
-    }}>
-      <div style={{ fontSize: 18, marginBottom: 4 }}>{icon}</div>
-      <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
-        {value || '—'}
-      </div>
-      <div style={{ fontSize: 9, color: 'var(--text-dim)' }}>{unit}</div>
-      <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{label}</div>
-      {change && (
-        <div style={{ fontSize: 9, color: changeColor, marginTop: 3, fontWeight: 600 }}>{change}</div>
-      )}
-    </div>
-  );
-}
-
-// ===== Quick Action =====
-function QuickAction({ icon, label, onTap }) {
-  return (
-    <div onClick={onTap} style={{
-      borderRadius: 12, padding: '11px 10px', background: '#f9f9f9',
-      display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
-    }}>
-      <div style={{ fontSize: 20, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{icon}</div>
-      <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{label}</span>
-    </div>
-  );
-}
-
-// ===== AI Coach Message =====
-function getCoachMessage(latest, nutrition, foodGoal, weight, routineDone, routineTotal, weather) {
-  if (!latest && nutrition.kcal === 0 && !weight) {
-    return '오늘 첫 기록을 시작해보세요! 피부 측정, 식단 기록, 몸무게 중 하나를 기록하면 맞춤 코칭을 받을 수 있어요 ✨';
-  }
-
-  const parts = [];
-
-  if (weather?.humidity < 40) {
-    parts.push('오늘 공기가 건조해요. 수분 크림과 물 섭취를 신경 써주세요 💧');
-  } else if (weather?.uv > 6) {
-    parts.push('자외선이 강해요. 선크림을 꼭 바르세요 ☀️');
-  }
-
-  if (latest) {
-    if (latest.overallScore >= 80) parts.push('피부 컨디션이 좋아요! 이 루틴을 유지해보세요.');
-    else if (latest.moisture < 50) parts.push('수분도가 낮아요. 보습에 집중해보세요.');
-  }
-
-  if (nutrition.kcal > 0 && foodGoal.kcal) {
-    const ratio = nutrition.kcal / foodGoal.kcal;
-    if (ratio > 1.2) parts.push('칼로리가 목표를 넘었어요. 저녁은 가볍게!');
-    else if (ratio < 0.5) parts.push('아직 식사가 부족해요. 균형 잡힌 식단을 챙겨보세요.');
-  }
-
-  if (routineTotal > 0 && routineDone >= routineTotal) {
-    parts.push('오늘 루틴을 모두 완료했어요! 대단해요 🎉');
-  }
-
-  return parts.length > 0 ? parts.slice(0, 2).join(' ') : '오늘도 건강한 하루를 만들어봐요! 꾸준함이 가장 큰 변화를 만들어요 ✨';
-}
-
-function getCoachTags(latest, nutrition, foodGoal, routineDone, routineTotal) {
-  const tags = [];
-  if (latest?.moisture < 50) tags.push('수분 부족');
-  if (latest?.oilBalance > 70) tags.push('유분 관리');
-  if (nutrition.kcal > 0 && nutrition.protein < (foodGoal.protein || 80) * 0.7) tags.push('단백질 부족');
-  if (routineTotal > 0 && routineDone < routineTotal) tags.push(`루틴 ${routineTotal - routineDone}개 남음`);
-  return tags.length > 0 ? tags : ['기록을 시작해보세요'];
-}
-
-function getInsightText(latest) {
-  if (!latest) return '피부 측정을 시작하면 매일 맞춤 인사이트를 받을 수 있어요.';
-  if (latest.moisture < 50) return '수분 섭취가 부족해요. 피부 수분도에 영향을 줄 수 있어요.';
-  if (latest.oilBalance > 70) return '유분이 높은 편이에요. 가벼운 보습제를 추천해요.';
-  if (latest.overallScore >= 80) return '피부 컨디션이 좋아요! 꾸준히 유지해보세요.';
-  return '오늘도 꾸준한 관리가 피부를 바꿔요. 화이팅!';
 }
 
 // ===== Settings Drawer =====
@@ -407,7 +468,6 @@ function SettingsDrawer({ open, onClose, onAccount }) {
 
   return (
     <>
-      {/* Backdrop */}
       <div onClick={onClose} style={{
         position: 'fixed', inset: 0, zIndex: 2000,
         background: 'rgba(0,0,0,0.5)',
@@ -415,8 +475,6 @@ function SettingsDrawer({ open, onClose, onAccount }) {
         pointerEvents: open ? 'auto' : 'none',
         transition: 'opacity 0.3s ease',
       }} />
-
-      {/* Drawer */}
       <div style={{
         position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 2001,
         width: '80%', maxWidth: 320,
@@ -426,7 +484,6 @@ function SettingsDrawer({ open, onClose, onAccount }) {
         display: 'flex', flexDirection: 'column',
         overflowY: 'auto', WebkitOverflowScrolling: 'touch',
       }}>
-        {/* Close button */}
         <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', justifyContent: 'flex-end' }}>
           <div onClick={onClose} style={{
             width: 36, height: 36, borderRadius: '50%',
@@ -438,8 +495,6 @@ function SettingsDrawer({ open, onClose, onAccount }) {
             </svg>
           </div>
         </div>
-
-        {/* Menu items */}
         <div style={{ flex: 1, padding: '12px 0' }}>
           {menuSections.map((section) => (
             <div key={section.title}>
@@ -462,20 +517,16 @@ function SettingsDrawer({ open, onClose, onAccount }) {
             </div>
           ))}
         </div>
-
-        {/* Bottom */}
         <div style={{ padding: '16px 28px 40px', borderTop: '1px solid var(--border-light, #eee)' }}>
           <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>버전 1.0.0</div>
-          <div onClick={() => {}} style={{
-            fontSize: 13, color: 'var(--text-muted)', cursor: 'pointer',
-          }}>로그아웃</div>
+          <div onClick={() => {}} style={{ fontSize: 13, color: 'var(--text-muted)', cursor: 'pointer' }}>로그아웃</div>
         </div>
       </div>
     </>
   );
 }
 
-// ===== Account Page (Full screen) =====
+// ===== Account Page =====
 function AccountPage({ profile, onUpdate, onClose }) {
   const currentYear = new Date().getFullYear();
   const age = profile.birthYear ? currentYear - parseInt(profile.birthYear) : null;
@@ -493,7 +544,6 @@ function AccountPage({ profile, onUpdate, onClose }) {
       overflowY: 'auto', WebkitOverflowScrolling: 'touch',
       animation: 'slideInRight 0.3s ease',
     }}>
-      {/* Header */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 1,
         background: 'var(--bg-primary, #fff)',
@@ -556,14 +606,12 @@ function AccountPage({ profile, onUpdate, onClose }) {
           </div>
         </div>
 
-        {/* Nickname */}
         <div style={{ marginBottom: 16 }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>닉네임</div>
           <input value={profile.nickname || ''} onChange={e => onUpdate('nickname', e.target.value)}
             placeholder="닉네임" maxLength={20} style={inputStyle} />
         </div>
 
-        {/* 기본 정보 */}
         <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', margin: '24px 0 12px' }}>기본 정보</div>
 
         <div style={{ marginBottom: 12 }}>
@@ -622,7 +670,6 @@ function AccountPage({ profile, onUpdate, onClose }) {
           </div>
         </div>
 
-        {/* 피부 정보 */}
         <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', margin: '24px 0 12px' }}>피부 정보</div>
 
         <div style={{ marginBottom: 12 }}>
