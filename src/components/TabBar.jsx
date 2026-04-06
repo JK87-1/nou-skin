@@ -57,7 +57,8 @@ export default function TabBar({ activeTab, onTabChange }) {
       position: 'fixed', bottom: 0, left: 0, right: 0,
       height: 64, paddingBottom: 'env(safe-area-inset-bottom)',
       background: 'transparent',
-      display: 'flex', alignItems: 'center', justifyContent: 'space-around',
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      padding: '0 16px',
       zIndex: 100,
     }}>
       {tabs.map(tab => {
