@@ -36,26 +36,32 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html {
       min-height: 100%;
-      background: #ace2fc linear-gradient(to bottom, #ace2fc, #dfed89) no-repeat;
-      background-size: 100% 100%;
-      background-attachment: fixed;
+      background-color: #ace2fc;
     }
     body {
       font-family: 'Outfit', 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: transparent;
+      background-color: #dfed89;
       -webkit-font-smoothing: antialiased;
       color: #191F28;
       min-height: 100%;
     }
     html[data-theme="dark"], html[data-theme="dark"] body {
       background-color: #000000;
-      background-image: none;
       color: #f0f0f5;
     }
-    #root { min-height: 100dvh; }
+    #root { min-height: 100dvh; position: relative; z-index: 1; }
+    #gradient-bg {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 0;
+      background: linear-gradient(to bottom, #ace2fc, #dfed89);
+      pointer-events: none;
+    }
+    html[data-theme="dark"] #gradient-bg { background: #000000; }
   </style>
 </head>
 <body>
+  <div id="gradient-bg"></div>
   <div id="root"></div>
   <script>
     // Force clear outdated SW caches on version bump
@@ -82,8 +88,8 @@
         document.querySelector('meta[name="theme-color"]').content = '#ace2fc';
       } else {
         document.documentElement.setAttribute('data-theme', 'dark');
-        document.documentElement.style.background = '#000000';
-        document.body.style.background = '#000000';
+        document.documentElement.style.backgroundColor = '#000000';
+        document.body.style.backgroundColor = '#000000';
         document.body.style.color = '#f0f0f5';
         document.querySelector('meta[name="theme-color"]').content = '#000000';
       }
