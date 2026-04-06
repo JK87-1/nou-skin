@@ -55,10 +55,10 @@ export default function TabBar({ activeTab, onTabChange }) {
   return (
     <nav style={{
       position: 'fixed', bottom: 0, left: 0, right: 0,
-      height: 64, paddingBottom: 'env(safe-area-inset-bottom)',
+      height: 64, paddingBottom: 'calc(env(safe-area-inset-bottom) + 5px)',
       background: 'transparent',
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '0 16px',
+      padding: '0 14px',
       zIndex: 100,
     }}>
       {tabs.map(tab => {
