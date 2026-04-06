@@ -61,7 +61,7 @@ export default function TabBar({ activeTab, onTabChange }) {
       padding: '0 12px calc(env(safe-area-inset-bottom) + 8px)',
     }}>
     <nav style={{
-      height: 58,
+      height: 68,
       width: '100%',
       maxWidth: 400,
       background: 'rgba(255,255,255,0.45)',
