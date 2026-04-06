@@ -34,17 +34,25 @@
   <link rel="stylesheet" href="https://static.toss.im/tps/others.css" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html {
+      min-height: 100%;
+      background-color: #dfed89;
+      background-image: linear-gradient(to bottom, #ace2fc, #dfed89);
+      background-attachment: fixed;
+      background-size: 100% 100%;
+    }
     body {
       font-family: 'Outfit', 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: linear-gradient(to bottom, #ace2fc, #dfed89) fixed;
+      background-color: #dfed89;
       -webkit-font-smoothing: antialiased;
       color: #191F28;
+      min-height: 100%;
     }
-    html[data-theme="dark"] body, html:not([data-theme]) body.dark-mode {
-      background: #000000;
+    html[data-theme="dark"], html[data-theme="dark"] body {
+      background-color: #000000;
+      background-image: none;
       color: #f0f0f5;
     }
-    html { min-height: 100%; background: linear-gradient(to bottom, #ace2fc, #dfed89) fixed; overflow-y: scroll; }
     #root { min-height: 100dvh; }
   </style>
 </head>
@@ -75,7 +83,9 @@
         document.querySelector('meta[name="theme-color"]').content = '#ace2fc';
       } else {
         document.documentElement.setAttribute('data-theme', 'dark');
-        document.body.style.background = '#000000';
+        document.documentElement.style.backgroundColor = '#000000';
+        document.documentElement.style.backgroundImage = 'none';
+        document.body.style.backgroundColor = '#000000';
         document.body.style.color = '#f0f0f5';
         document.querySelector('meta[name="theme-color"]').content = '#000000';
       }
