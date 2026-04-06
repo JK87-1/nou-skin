@@ -1566,6 +1566,7 @@
 
 /* Background aura: remove in light mode */
 [data-theme="light"] .app-container::before { display: none; }
+[data-theme="light"] .app-container { background: transparent; }
 
 /* GBS box */
 [data-theme="light"] .gbs-box {

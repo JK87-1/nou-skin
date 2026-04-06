@@ -174,7 +174,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
   const [headerTitle, setHeaderTitle] = useState('');
 
   return (
-    <div style={{ minHeight: '100dvh', background: 'linear-gradient(to bottom, #ace2fc, #dfed89)', backgroundAttachment: 'fixed', paddingBottom: 80 }}>
+    <div style={{ minHeight: '100dvh', paddingBottom: 80 }}>
       {/* Header */}
       <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>{headerTitle}</h1>

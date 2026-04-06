@@ -173,7 +173,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   }, [todayChecks]);
 
   return (
-    <div style={{ minHeight: '100dvh', background: 'linear-gradient(to bottom, #ace2fc, #dfed89)', backgroundAttachment: 'fixed', paddingBottom: 90 }}>
+    <div style={{ minHeight: '100dvh', paddingBottom: 90 }}>
 
       {/* ===== 1. 히어로 영역 ===== */}
       <div style={{

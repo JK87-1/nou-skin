@@ -8,7 +8,8 @@ export default function GlobalStyles() {
       .aura-ring-2 { animation: ${ANIMATION.auraPulse.ring2}; }
       .aura-ring-3 { animation: ${ANIMATION.auraPulse.ring3}; }
       * { box-sizing: border-box; }
-      html, body { margin: 0; min-height: 100%; background: linear-gradient(to bottom, #ace2fc, #dfed89) fixed; }
+      html { margin: 0; min-height: 100%; }
+      body { margin: 0; min-height: 100%; background: transparent; }
       ::-webkit-scrollbar { width: 0; }
       .app-container::before {
         content: '';

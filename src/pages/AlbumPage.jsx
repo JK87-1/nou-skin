@@ -268,7 +268,7 @@ export default function AlbumPage({ onBack, onMeasure, onOpenConsult, onTabChang
   };
 
   return (
-    <div style={{ minHeight: '100dvh', background: 'linear-gradient(to bottom, #ace2fc, #dfed89)', backgroundAttachment: 'fixed', paddingBottom: 40 }}>
+    <div style={{ minHeight: '100dvh', paddingBottom: 40 }}>
 
       {/* Header */}
       <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

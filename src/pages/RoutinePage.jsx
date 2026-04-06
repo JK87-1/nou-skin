@@ -735,7 +735,7 @@ export default function RoutinePage({ themeColors, onBack, initialMode }) {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(to bottom, #ace2fc, #dfed89)', backgroundAttachment: 'fixed', paddingBottom: 100, animation: 'breatheIn 0.5s ease both' }}>
+    <div style={{ minHeight: '100vh', paddingBottom: 100, animation: 'breatheIn 0.5s ease both' }}>
       {/* Header */}
       <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>{headerTitle}</h1>

@@ -82,14 +82,13 @@ export default function App() {
     const html = document.documentElement;
     const body = document.body;
     if (colorMode === 'dark') {
-      html.style.backgroundColor = '#000000';
-      html.style.backgroundImage = 'none';
-      body.style.backgroundColor = '#000000';
+      html.style.background = '#000000';
+      body.style.background = '#000000';
       body.style.color = '#f0f0f5';
     } else {
-      html.style.backgroundColor = '#dfed89';
-      html.style.backgroundImage = 'linear-gradient(to bottom, #ace2fc, #dfed89)';
-      body.style.backgroundColor = '#dfed89';
+      html.style.background = '#ace2fc linear-gradient(to bottom, #ace2fc, #dfed89) no-repeat fixed';
+      html.style.backgroundSize = '100% 100%';
+      body.style.background = 'transparent';
       body.style.color = '#191F28';
     }
     const meta = document.querySelector('meta[name="theme-color"]');
