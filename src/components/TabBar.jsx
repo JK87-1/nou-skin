@@ -66,7 +66,7 @@ export default function TabBar({ activeTab, onTabChange }) {
       background: 'rgba(255,255,255,0.45)',
       backdropFilter: 'blur(24px)',
       WebkitBackdropFilter: 'blur(24px)',
-      borderRadius: 18,
+      borderRadius: 22,
       border: '1px solid rgba(255,255,255,0.5)',
       boxShadow: '0 4px 24px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)',
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
