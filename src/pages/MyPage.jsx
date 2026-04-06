@@ -35,7 +35,7 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange }) {
   };
 
   return (
-    <div style={{ paddingBottom: 40 }}>
+    <div style={{ minHeight: '100dvh', background: 'linear-gradient(to bottom, #ace2fc, #dfed89)', backgroundAttachment: 'fixed', paddingBottom: 40 }}>
       <div style={{ padding: '0 24px 0' }}>
 
 

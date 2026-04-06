@@ -173,33 +173,25 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   }, [todayChecks]);
 
   return (
-    <div style={{ minHeight: '100dvh', background: 'var(--bg-primary)', paddingBottom: 90 }}>
+    <div style={{ minHeight: '100dvh', background: 'linear-gradient(to bottom, #ace2fc, #dfed89)', backgroundAttachment: 'fixed', paddingBottom: 90 }}>
 
       {/* ===== 1. 히어로 영역 ===== */}
       <div style={{
-        background: 'linear-gradient(160deg, #B8F0E0 0%, #6ECFB8 50%, #4DB8A0 100%)',
         padding: '12px 14px 18px',
         position: 'relative',
       }}>
         {/* 상단 row */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div onClick={() => setShowSettings(true)} style={{ cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0D3028" strokeWidth="1.8" strokeLinecap="round">
-                <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
-              </svg>
-            </div>
-            <span style={{ fontSize: 15, fontWeight: 600, color: '#0D3028' }}>{profile.nickname || '사용자'}님</span>
-            {weather && (
-              <span style={{ fontSize: 12, color: '#2A6A58', fontWeight: 500 }}>{weather.temp ?? '—'}°</span>
-            )}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, position: 'relative' }}>
+          <div onClick={() => setShowSettings(true)} style={{ cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1 }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.8)" strokeWidth="1.8" strokeLinecap="round">
+              <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
           </div>
+          <img src="/luaicon2.png" alt="lua" style={{ height: 30, objectFit: 'contain', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }} />
           <div onClick={onMeasure} style={{
-            width: 30, height: 30, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
+            cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1,
           }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0D3028" strokeWidth="2" strokeLinecap="round">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.8)" strokeWidth="2" strokeLinecap="round">
               <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
             </svg>
           </div>
@@ -224,9 +216,9 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       {/* ===== 2. 실시간 컨디션 체크 카드 ===== */}
       <div style={{
         margin: '0 14px', marginTop: -8, position: 'relative', zIndex: 1,
-        background: '#fff', borderRadius: 14, padding: '10px 12px',
-        border: '0.5px solid #eee',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+        background: 'rgba(255,255,255,0.3)', borderRadius: 14, padding: '10px 12px',
+        border: 'none',
+        boxShadow: 'none',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
           <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>컨디션 체크</span>

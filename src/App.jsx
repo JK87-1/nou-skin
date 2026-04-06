@@ -79,11 +79,14 @@ export default function App() {
   // Apply data-theme attribute for light/dark CSS variables
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', colorMode);
-    const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg-primary').trim() || (colorMode === 'light' ? '#F7F8FA' : '#000000');
-    document.body.style.background = bg;
+    if (colorMode === 'dark') {
+      document.body.style.background = '#000000';
+    } else {
+      document.body.style.background = '';
+    }
     document.body.style.color = colorMode === 'light' ? '#191F28' : '#f0f0f5';
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.content = bg;
+    if (meta) meta.content = colorMode === 'light' ? '#F7F8FA' : '#000000';
   }, [colorMode]);
 
   const setColorMode = useCallback((mode) => {
