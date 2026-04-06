@@ -87,7 +87,7 @@ export default function App() {
       body.style.color = '#f0f0f5';
     } else {
       html.style.backgroundColor = '#ace2fc';
-      body.style.backgroundColor = '#dfed89';
+      body.style.backgroundColor = 'transparent';
       body.style.color = '#191F28';
     }
     const meta = document.querySelector('meta[name="theme-color"]');
