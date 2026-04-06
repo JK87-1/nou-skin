@@ -86,7 +86,7 @@ export default function App() {
     }
     document.body.style.color = colorMode === 'light' ? '#191F28' : '#f0f0f5';
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.content = colorMode === 'light' ? '#F7F8FA' : '#000000';
+    if (meta) meta.content = colorMode === 'light' ? '#ace2fc' : '#000000';
   }, [colorMode]);
 
   const setColorMode = useCallback((mode) => {

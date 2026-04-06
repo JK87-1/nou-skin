@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#F7F8FA" />
+  <meta name="theme-color" content="#ace2fc" />
   <meta name="description" content="AI가 비추는 당신의 건강 리듬. 피부 분석부터 웰니스까지." />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -44,7 +44,7 @@
       background: #000000;
       color: #f0f0f5;
     }
-    html { min-height: 100%; background: linear-gradient(to bottom, #ace2fc, #dfed89) fixed; }
+    html { min-height: 100%; background: linear-gradient(to bottom, #ace2fc, #dfed89) fixed; overflow-y: scroll; }
     #root { min-height: 100dvh; }
   </style>
 </head>
@@ -72,7 +72,7 @@
       var mode = p.colorMode || 'light';
       if (mode === 'light') {
         document.documentElement.setAttribute('data-theme', 'light');
-        document.querySelector('meta[name="theme-color"]').content = '#F7F8FA';
+        document.querySelector('meta[name="theme-color"]').content = '#ace2fc';
       } else {
         document.documentElement.setAttribute('data-theme', 'dark');
         document.body.style.background = '#000000';
