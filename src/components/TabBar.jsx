@@ -73,9 +73,9 @@ export default function TabBar({ activeTab, onTabChange }) {
             onClick={() => onTabChange(tab.key)}
             style={{
               flex: 1, display: 'flex', flexDirection: 'column',
-              alignItems: 'center', gap: 2,
+              alignItems: 'center', gap: 4,
               background: 'none', border: 'none', cursor: 'pointer',
-              padding: '8px 0 26px',
+              padding: '8px 0 30px',
               WebkitTapHighlightColor: 'transparent',
             }}
           >
