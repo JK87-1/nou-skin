@@ -55,7 +55,7 @@ function calcGoalByWeight(kg) {
     fiber: 25,
     calcium: 800,
     iron: 14,
-    sodium: 2000,
+    sugar: 25,
   };
 }
 
@@ -65,7 +65,7 @@ export function getFoodGoal() {
     const tw = Number(profile.targetWeight);
     if (tw > 0) return calcGoalByWeight(tw);
   } catch {}
-  return { kcal: 1800, carb: 250, protein: 80, fat: 60, water: 2.0, vitamin: 100, mineral: 100, fiber: 25, calcium: 800, iron: 14, sodium: 2000 };
+  return { kcal: 1800, carb: 250, protein: 80, fat: 60, water: 2.0, vitamin: 100, mineral: 100, fiber: 25, calcium: 800, iron: 14, sugar: 25 };
 }
 
 /**
@@ -111,8 +111,8 @@ export function getNutritionForDate(dateStr) {
     fiber: sum.fiber + (f.fiber || 0),
     calcium: sum.calcium + (f.calcium || 0),
     iron: sum.iron + (f.iron || 0),
-    sodium: sum.sodium + (f.sodium || 0),
-  }), { kcal: 0, carb: 0, protein: 0, fat: 0, water: 0, vitamin: 0, mineral: 0, fiber: 0, calcium: 0, iron: 0, sodium: 0 });
+    sugar: sum.sugar + (f.sugar || 0),
+  }), { kcal: 0, carb: 0, protein: 0, fat: 0, water: 0, vitamin: 0, mineral: 0, fiber: 0, calcium: 0, iron: 0, sugar: 0 });
 }
 
 export function getTodayNutrition() {
@@ -128,6 +128,6 @@ export function getTodayNutrition() {
     fiber: sum.fiber + (f.fiber || 0),
     calcium: sum.calcium + (f.calcium || 0),
     iron: sum.iron + (f.iron || 0),
-    sodium: sum.sodium + (f.sodium || 0),
-  }), { kcal: 0, carb: 0, protein: 0, fat: 0, water: 0, vitamin: 0, mineral: 0, fiber: 0, calcium: 0, iron: 0, sodium: 0 });
+    sugar: sum.sugar + (f.sugar || 0),
+  }), { kcal: 0, carb: 0, protein: 0, fat: 0, water: 0, vitamin: 0, mineral: 0, fiber: 0, calcium: 0, iron: 0, sugar: 0 });
 }

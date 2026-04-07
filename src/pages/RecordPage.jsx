@@ -61,7 +61,7 @@ const NUTRIENT_META = [
   { key: 'fiber', label: '식이섬유', unit: 'g', goalKey: 'fiber', grad: ['#E8F8E8', '#C8ECC8'] },
   { key: 'iron', label: '철분', unit: 'mg', goalKey: 'iron', grad: ['#FFF0E8', '#FFE0D0'] },
   { key: 'calcium', label: '칼슘', unit: 'mg', goalKey: 'calcium', grad: ['#F0F0FF', '#E0E0F8'] },
-  { key: 'sodium', label: '나트륨', unit: 'mg', goalKey: 'sodium', grad: ['#F8F0E8', '#F0E0D0'] },
+  { key: 'sugar', label: '당류', unit: 'g', goalKey: 'sugar', grad: ['#FFF0E8', '#FFE0D0'] },
 ];
 
 function getStatus(value, goal) {
@@ -382,7 +382,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
         const proteinN = nutrients.find(n => n.key === 'protein');
         const fatN = nutrients.find(n => n.key === 'fat');
-        const sodiumN = nutrients.find(n => n.key === 'sodium');
+        const sugarN = nutrients.find(n => n.key === 'sugar');
 
         const impacts = [];
         if (proteinN?.status === '부족' || carbN?.status === '과잉') {
@@ -391,7 +391,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
         if (carbN?.status === '과잉') {
           impacts.push({ icon: '😊', text: '기분 변동 가능', type: 'warn' });
         }
-        if (sodiumN?.status === '과잉' || carbN?.status === '과잉') {
+        if (sugarN?.status === '과잉' || carbN?.status === '과잉') {
           impacts.push({ icon: '✨', text: '피부 트러블 가능성', type: 'caution' });
         }
         if (fatN?.status === '적정' && proteinN?.status === '적정') {
@@ -493,7 +493,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 14,
               }}>
-                {n.key === 'fiber' ? '🥕' : n.key === 'sodium' ? '🧂' : n.key === 'iron' ? '🥦' : '🐟'}
+                {n.key === 'fiber' ? '🥕' : n.key === 'sugar' ? '🍯' : n.key === 'iron' ? '🥦' : '🐟'}
               </div>
               <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(0,0,0,0.7)' }}>{n.label}</div>
               <div style={{ fontSize: 9, color: 'rgba(0,0,0,0.5)', fontFamily: 'var(--font-display)' }}>{n.displayVal}</div>
@@ -677,7 +677,7 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
       fiber: aiResult.fiber || 0,
       iron: aiResult.iron || 0,
       calcium: aiResult.calcium || 0,
-      sodium: aiResult.sodium || 0,
+      sugar: aiResult.sugar || 0,
       bloodSugar: aiResult.bloodSugar || '',
       bloodSugarNote: aiResult.bloodSugarNote || '',
       drowsiness: aiResult.drowsiness || '',
@@ -884,8 +884,8 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
               ].map(n => (
                 <div key={n.label} style={{ textAlign: 'center', padding: '8px 4px', borderRadius: 10 }}>
                   <div style={{ fontSize: 14, marginBottom: 3 }}>{n.icon}</div>
+                  <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 2 }}>{n.label}</div>
                   <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.value}<span style={{ fontSize: 9, fontWeight: 400, color: 'var(--text-muted)' }}>{n.unit}</span></div>
-                  <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>{n.label}</div>
                 </div>
               ))}
             </div>
@@ -894,12 +894,12 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
                 { icon: '🥕', label: '식이섬유', value: aiResult.fiber || 0, unit: 'g' },
                 { icon: '🥦', label: '철분', value: aiResult.iron || 0, unit: 'mg' },
                 { icon: '🐟', label: '칼슘', value: aiResult.calcium || 0, unit: 'mg' },
-                { icon: '🧂', label: '나트륨', value: aiResult.sodium || 0, unit: 'mg' },
+                { icon: '🍯', label: '당류', value: aiResult.sugar || 0, unit: 'g' },
               ].map(n => (
                 <div key={n.label} style={{ textAlign: 'center', padding: '8px 4px', borderRadius: 10 }}>
                   <div style={{ fontSize: 14, marginBottom: 3 }}>{n.icon}</div>
+                  <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 2 }}>{n.label}</div>
                   <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.value}<span style={{ fontSize: 9, fontWeight: 400, color: 'var(--text-muted)' }}>{n.unit}</span></div>
-                  <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>{n.label}</div>
                 </div>
               ))}
             </div>
@@ -1297,7 +1297,7 @@ function FoodDetailModal({ food, onClose, onDelete }) {
             { icon: '🥕', label: '식이섬유', value: food.fiber || 0, unit: 'g' },
             { icon: '🥦', label: '철분', value: food.iron || 0, unit: 'mg' },
             { icon: '🐟', label: '칼슘', value: food.calcium || 0, unit: 'mg' },
-            { icon: '🧂', label: '나트륨', value: food.sodium || 0, unit: 'mg' },
+            { icon: '🍯', label: '당류', value: food.sugar || 0, unit: 'g' },
           ].map(n => (
             <div key={n.label} style={{ textAlign: 'center', padding: '10px 4px', borderRadius: 12 }}>
               <div style={{ fontSize: 16, marginBottom: 4 }}>{n.icon}</div>
