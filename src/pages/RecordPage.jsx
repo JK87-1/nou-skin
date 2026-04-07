@@ -650,11 +650,10 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
     setAiResult(null);
     try {
       const nameStr = validItems.map(f => `${f.name.trim()} ${f.qty}${f.unit}`).join(', ');
-      const totalServings = validItems.reduce((s, f) => s + f.qty, 0);
       const res = await fetch('/api/food-lookup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: nameStr, servings: totalServings }),
+        body: JSON.stringify({ name: nameStr, servings: 1 }),
       });
       if (res.ok) {
         const result = await res.json();
@@ -874,29 +873,33 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
               <span style={{ fontSize: 13 }}>✨</span>
               <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{aiResult.name}</span>
-              <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 'auto' }}>{aiResult.servings || servings}인분</span>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 'auto' }}>{foodItems.filter(f => f.name.trim()).map(f => `${f.qty}${f.unit}`).join(' + ')}</span>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
               {[
-                { label: '칼로리', value: `${aiResult.kcal}`, unit: 'kcal', color: '#81E4BD' },
-                { label: '탄수화물', value: `${aiResult.carb}`, unit: 'g', color: '#93C5FD' },
-                { label: '단백질', value: `${aiResult.protein}`, unit: 'g', color: '#D1FAE5' },
+                { icon: '🔥', label: '칼로리', value: aiResult.kcal, unit: 'kcal' },
+                { icon: '🥩', label: '단백질', value: aiResult.protein, unit: 'g' },
+                { icon: '🍞', label: '탄수화물', value: aiResult.carb, unit: 'g' },
+                { icon: '🥑', label: '지방', value: aiResult.fat, unit: 'g' },
               ].map(n => (
-                <div key={n.label} style={{ textAlign: 'center', padding: '8px 4px', borderRadius: 10, background: '#fff' }}>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.value}<span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>{n.unit}</span></div>
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{n.label}</div>
+                <div key={n.label} style={{ textAlign: 'center', padding: '8px 4px', borderRadius: 10 }}>
+                  <div style={{ fontSize: 14, marginBottom: 3 }}>{n.icon}</div>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.value}<span style={{ fontSize: 9, fontWeight: 400, color: 'var(--text-muted)' }}>{n.unit}</span></div>
+                  <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>{n.label}</div>
                 </div>
               ))}
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8 }}>
               {[
-                { label: '지방', value: `${aiResult.fat}`, unit: 'g' },
-                { label: '비타민', value: `${aiResult.vitamin || 0}`, unit: '%' },
-                { label: '미네랄', value: `${aiResult.mineral || 0}`, unit: '%' },
+                { icon: '🥕', label: '식이섬유', value: aiResult.fiber || 0, unit: 'g' },
+                { icon: '🥦', label: '철분', value: aiResult.iron || 0, unit: 'mg' },
+                { icon: '🐟', label: '칼슘', value: aiResult.calcium || 0, unit: 'mg' },
+                { icon: '🧂', label: '나트륨', value: aiResult.sodium || 0, unit: 'mg' },
               ].map(n => (
-                <div key={n.label} style={{ textAlign: 'center', padding: '8px 4px', borderRadius: 10, background: '#fff' }}>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.value}<span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>{n.unit}</span></div>
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{n.label}</div>
+                <div key={n.label} style={{ textAlign: 'center', padding: '8px 4px', borderRadius: 10 }}>
+                  <div style={{ fontSize: 14, marginBottom: 3 }}>{n.icon}</div>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.value}<span style={{ fontSize: 9, fontWeight: 400, color: 'var(--text-muted)' }}>{n.unit}</span></div>
+                  <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>{n.label}</div>
                 </div>
               ))}
             </div>
