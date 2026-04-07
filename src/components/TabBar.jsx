@@ -62,6 +62,7 @@ export default function TabBar({ activeTab, onTabChange }) {
       boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.35), 0 -2px 12px rgba(255,255,255,0.15)',
       borderRadius: '22px 22px 0 0',
       display: 'flex', alignItems: 'center', justifyContent: 'space-around',
+      padding: '0 12px',
       zIndex: 100,
     }}>
       {tabs.map(tab => {
@@ -74,7 +75,7 @@ export default function TabBar({ activeTab, onTabChange }) {
               flex: 1, display: 'flex', flexDirection: 'column',
               alignItems: 'center', gap: 2,
               background: 'none', border: 'none', cursor: 'pointer',
-              padding: '8px 0 14px',
+              padding: '8px 0 20px',
               WebkitTapHighlightColor: 'transparent',
             }}
           >
