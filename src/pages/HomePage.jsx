@@ -258,15 +258,18 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       `}</style>
       <div style={{
         margin: '0 18px', marginTop: -10, position: 'relative', zIndex: 1,
-        background: 'rgba(255,255,255,0.5)', borderRadius: 16, padding: '12px 13px',
+        background: 'rgba(255,255,255,0.2)', borderRadius: 16, padding: '12px 13px',
+        backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+        border: '1px solid rgba(255,255,255,0.3)',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
       }}>
-        <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 12 }}>지금 느낌은?</div>
+        <div style={{ fontSize: 18, fontWeight: 600, color: 'rgba(0,0,0,0.8)', marginBottom: 12 }}>지금 느낌은?</div>
 
         {/* 에너지 슬라이더 */}
         <div style={{ marginBottom: 14 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>에너지</span>
-            <span style={{ fontSize: 11, fontWeight: 600, color: '#0F6E56' }}>{ENERGY_LABELS[selections.energy - 1]}</span>
+            <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>에너지</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#0F6E56' }}>{ENERGY_LABELS[selections.energy - 1]}</span>
           </div>
           <input type="range" min={1} max={5} step={1} value={selections.energy}
             onChange={e => handleSelect('energy', Number(e.target.value))}
@@ -277,17 +280,17 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             }}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
-            <span style={{ fontSize: 9, color: '#ccc' }}>매우 낮음</span>
-            <span style={{ fontSize: 9, color: '#ccc' }}>보통</span>
-            <span style={{ fontSize: 9, color: '#ccc' }}>활기참</span>
+            <span style={{ fontSize: 11, color: '#ccc' }}>매우 낮음</span>
+            <span style={{ fontSize: 11, color: '#ccc' }}>보통</span>
+            <span style={{ fontSize: 11, color: '#ccc' }}>활기참</span>
           </div>
         </div>
 
         {/* 기분 슬라이더 */}
         <div style={{ marginBottom: 12 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>기분</span>
-            <span style={{ fontSize: 11, fontWeight: 600, color: '#0F6E56' }}>{MOOD_LABELS[selections.mood - 1]}</span>
+            <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>기분</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#0F6E56' }}>{MOOD_LABELS[selections.mood - 1]}</span>
           </div>
           <input type="range" min={1} max={5} step={1} value={selections.mood}
             onChange={e => handleSelect('mood', Number(e.target.value))}
@@ -298,17 +301,17 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             }}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
-            <span style={{ fontSize: 9, color: '#ccc' }}>우울</span>
-            <span style={{ fontSize: 9, color: '#ccc' }}>평온</span>
-            <span style={{ fontSize: 9, color: '#ccc' }}>행복</span>
+            <span style={{ fontSize: 11, color: '#ccc' }}>우울</span>
+            <span style={{ fontSize: 11, color: '#ccc' }}>평온</span>
+            <span style={{ fontSize: 11, color: '#ccc' }}>행복</span>
           </div>
         </div>
 
         {/* 수분 슬라이더 */}
         <div style={{ marginBottom: 12 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>수분</span>
-            <span style={{ fontSize: 11, fontWeight: 600, color: '#0F6E56' }}>{WATER_LABELS[selections.water - 1]}</span>
+            <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>수분</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#0F6E56' }}>{WATER_LABELS[selections.water - 1]}</span>
           </div>
           <input type="range" min={1} max={5} step={1} value={selections.water}
             onChange={e => handleSelect('water', Number(e.target.value))}
@@ -319,9 +322,9 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             }}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
-            <span style={{ fontSize: 9, color: '#ccc' }}>갈증</span>
-            <span style={{ fontSize: 9, color: '#ccc' }}>보통</span>
-            <span style={{ fontSize: 9, color: '#ccc' }}>충분</span>
+            <span style={{ fontSize: 11, color: '#ccc' }}>갈증</span>
+            <span style={{ fontSize: 11, color: '#ccc' }}>보통</span>
+            <span style={{ fontSize: 11, color: '#ccc' }}>충분</span>
           </div>
         </div>
 
@@ -331,127 +334,63 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           background: 'linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.7))',
           backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
           color: '#0D3028', border: '1px solid rgba(255,255,255,0.5)', borderRadius: 10,
-          fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+          fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
         }}>업데이트 →</button>
       </div>
 
       <div style={{ padding: '0 18px' }}>
 
-        {/* ===== 3. 상태 요약 카드 4개 ===== */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginTop: 12 }}>
-          {/* 에너지 */}
-          {(() => {
-            const v = activeCheck?.energy || selections.energy;
-            const s = STATUS_MAP[v] || STATUS_MAP[3];
-            return (
-              <div style={{ background: s.bg, borderRadius: 14, padding: '12px 14px' }}>
-                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>에너지</div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: s.color }}>{s.text}</div>
-              </div>
-            );
-          })()}
-          {/* 기분 */}
-          {(() => {
-            const v = activeCheck?.mood || selections.mood;
-            const s = STATUS_MAP[v] || STATUS_MAP[3];
-            return (
-              <div style={{ background: s.bg, borderRadius: 14, padding: '12px 14px' }}>
-                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>기분</div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: s.color }}>{s.text}</div>
-              </div>
-            );
-          })()}
-          {/* 마지막 식사 */}
-          <div style={{ background: 'rgba(255,243,176,0.3)', borderRadius: 14, padding: '12px 14px' }}>
-            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>마지막 식사</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: '#8A6A00' }}>
-              {(() => {
-                if (!nutrition?.lastMealTime) return '기록 없음';
-                const diff = Math.round((Date.now() - nutrition.lastMealTime) / 60000);
-                if (diff < 60) return `${diff}분 전`;
-                return `${Math.floor(diff / 60)}시간 전`;
-              })()}
-            </div>
-          </div>
-          {/* 수분 */}
-          {(() => {
-            const v = activeCheck?.water || selections.water;
-            const s = STATUS_MAP[v] || STATUS_MAP[3];
-            return (
-              <div style={{ background: s.bg, borderRadius: 14, padding: '12px 14px' }}>
-                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>수분</div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: s.color }}>{WATER_LABELS[v - 1]}</div>
-              </div>
-            );
-          })()}
-        </div>
-
-        {/* ===== 4. 식단 인사이트 카드 ===== */}
+        {/* ===== 4. 인사이트 카드 ===== */}
         <div style={{
           marginTop: 12,
-          background: 'rgba(78,184,160,0.06)',
-          border: '1px solid rgba(78,184,160,0.2)',
-          borderRadius: 13, padding: '10px 13px',
+          background: 'rgba(255,255,255,0.35)',
+          borderRadius: 16, padding: '14px 16px',
+          backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          border: '1px solid rgba(255,255,255,0.35)',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <div style={{ width: 16, height: 16, borderRadius: '50%', background: '#4DB8A0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontSize: 8, color: '#fff' }}>AI</span>
-              </div>
-              <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-primary)' }}>식단 인사이트</span>
-            </div>
-            <span style={{ fontSize: 9, color: '#4DB8A0', fontWeight: 500 }}>● 분석 중</span>
+            <span style={{ fontSize: 18, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>인사이트</span>
+            <span style={{ fontSize: 11, color: '#4DB8A0', fontWeight: 500 }}>● 분석 중</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', marginBottom: 6 }}>
             {(TIER_INSIGHT[activeCheck ? tier : liveTier].flow).map((step, i) => (
               <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <span style={{
-                  fontSize: 10, fontWeight: 600, color: '#0D3028',
+                  fontSize: 12, fontWeight: 600, color: '#0D3028',
                   background: i === 0 ? 'rgba(255,179,71,0.2)' : i === 2 ? 'rgba(78,184,160,0.2)' : 'rgba(255,243,176,0.4)',
                   padding: '3px 8px', borderRadius: 8,
                 }}>{step}</span>
-                {i < 2 && <span style={{ fontSize: 10, color: '#ccc' }}>→</span>}
+                {i < 2 && <span style={{ fontSize: 12, color: '#ccc' }}>→</span>}
               </span>
             ))}
           </div>
-          <div style={{ fontSize: 10, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
             {TIER_INSIGHT[activeCheck ? tier : liveTier].desc}
           </div>
         </div>
 
-        {/* ===== 5. CTA 버튼 ===== */}
-        <button onClick={() => onTabChange('food', { openAdd: true })} style={{
-          width: '100%', padding: '12px 14px', marginTop: 10,
-          borderRadius: 13,
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.7))',
-          backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-          border: '1px solid rgba(255,255,255,0.5)',
-          color: '#0D3028', fontSize: 12, fontWeight: 500,
-          cursor: 'pointer', fontFamily: 'inherit',
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        }}>
-          <span>{TIER_CTA[activeCheck ? tier : liveTier]}</span>
-          <span>→</span>
-        </button>
-
         {/* ===== 6. 에너지·기분 흐름 그래프 ===== */}
         <div style={{
-          marginTop: 12, background: 'rgba(255,255,255,0.3)',
+          marginTop: 12, background: 'rgba(255,255,255,0.5)',
           borderRadius: 16, padding: '14px 16px',
+          backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          border: '1px solid rgba(255,255,255,0.4)',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>오늘 흐름</span>
-            <span onClick={() => onTabChange('body')} style={{ fontSize: 10, color: 'var(--text-muted)', cursor: 'pointer' }}>분석 탭 →</span>
+            <span style={{ fontSize: 18, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>오늘 흐름</span>
+            <span onClick={() => onTabChange('body')} style={{ fontSize: 12, color: 'var(--text-muted)', cursor: 'pointer' }}>분석 탭 →</span>
           </div>
           {/* 범례 */}
           <div style={{ display: 'flex', gap: 14, marginBottom: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               <div style={{ width: 12, height: 2, borderRadius: 1, background: '#4DB8A0' }} />
-              <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>에너지</span>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>에너지</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               <div style={{ width: 12, height: 2, borderRadius: 1, background: '#FFB347', backgroundImage: 'repeating-linear-gradient(90deg, #FFB347 0 3px, transparent 3px 5px)' }} />
-              <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>기분</span>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>기분</span>
             </div>
           </div>
 
@@ -517,7 +456,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                 </svg>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 4px', marginTop: 4 }}>
                   {graphData.map((d, i) => (
-                    <span key={i} style={{ fontSize: 9, color: 'var(--text-muted)' }}>{d.time}</span>
+                    <span key={i} style={{ fontSize: 11, color: 'var(--text-muted)' }}>{d.time}</span>
                   ))}
                 </div>
               </>

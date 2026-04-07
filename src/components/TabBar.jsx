@@ -1,4 +1,46 @@
+import { useState } from 'react';
+
+const TAB_BOUNCE_STYLE = document.createElement('style');
+TAB_BOUNCE_STYLE.textContent = `
+  @keyframes tabBounce {
+    0% { transform: scale(1); }
+    40% { transform: scale(0.97); }
+    70% { transform: scale(1.01); }
+    100% { transform: scale(1); }
+  }
+`;
+if (!document.head.querySelector('[data-tab-bounce]')) {
+  TAB_BOUNCE_STYLE.setAttribute('data-tab-bounce', '');
+  document.head.appendChild(TAB_BOUNCE_STYLE);
+}
+
 export default function TabBar({ activeTab, onTabChange }) {
+  const [bouncingTab, setBouncingTab] = useState(null);
+
+  const playTick = () => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 1800;
+      gain.gain.value = 0.03;
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.03);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.03);
+      setTimeout(() => ctx.close(), 100);
+    } catch {}
+  };
+
+  const handleTap = (key) => {
+    setBouncingTab(key);
+    onTabChange(key);
+    if (navigator.vibrate) navigator.vibrate(8);
+    playTick();
+    setTimeout(() => setBouncingTab(null), 300);
+  };
+
   const tabs = [
     {
       key: 'home',
@@ -70,7 +112,7 @@ export default function TabBar({ activeTab, onTabChange }) {
         return (
           <button
             key={tab.key}
-            onClick={() => onTabChange(tab.key)}
+            onClick={() => handleTap(tab.key)}
             style={{
               flex: 1, display: 'flex', flexDirection: 'column',
               alignItems: 'center', gap: 4,
@@ -79,7 +121,10 @@ export default function TabBar({ activeTab, onTabChange }) {
               WebkitTapHighlightColor: 'transparent',
             }}
           >
-            <div style={{ width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{
+              width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              animation: bouncingTab === tab.key ? 'tabBounce 0.3s ease' : 'none',
+            }}>
               {tab.icon(active)}
             </div>
             <span style={{
