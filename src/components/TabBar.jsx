@@ -83,7 +83,7 @@ export default function TabBar({ activeTab, onTabChange }) {
               {tab.icon(active)}
             </div>
             <span style={{
-              fontSize: 10, fontWeight: active ? 600 : 400,
+              fontSize: 11, fontWeight: active ? 600 : 400,
               color: active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)',
             }}>{tab.label}</span>
           </button>
