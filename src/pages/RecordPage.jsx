@@ -65,7 +65,7 @@ const NUTRIENT_META = [
 ];
 
 function getStatus(value, goal) {
-  if (!goal || !value) return '부족';
+  if (!goal || !value) return '-';
   const ratio = value / goal;
   if (ratio < 0.7) return '부족';
   if (ratio > 1.2) return '과잉';
@@ -76,6 +76,7 @@ const statusStyle = {
   '적정': { background: '#E8F8F0', color: '#0F6E56' },
   '부족': { background: '#FBEAF0', color: '#993556' },
   '과잉': { background: '#FFF3E0', color: '#E65100' },
+  '-': { background: 'transparent', color: 'rgba(255,255,255,0.8)' },
 };
 
 function getScoreComment(score) {
