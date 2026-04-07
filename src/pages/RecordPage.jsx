@@ -1223,40 +1223,31 @@ function FoodDetailModal({ food, onClose, onDelete }) {
 
         {/* Nutrition grid */}
         <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>영양 정보</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
           {[
-            { label: '칼로리', value: food.kcal, unit: 'kcal' },
-            { label: '탄수화물', value: food.carb, unit: 'g' },
-            { label: '단백질', value: food.protein, unit: 'g' },
+            { icon: '🔥', label: '칼로리', value: food.kcal, unit: 'kcal' },
+            { icon: '🥩', label: '단백질', value: food.protein, unit: 'g' },
+            { icon: '🍞', label: '탄수화물', value: food.carb, unit: 'g' },
+            { icon: '🥑', label: '지방', value: food.fat, unit: 'g' },
           ].map(n => (
-            <div key={n.label} style={{ textAlign: 'center', padding: '10px 4px', borderRadius: 12, background: 'var(--bg-card)' }}>
-              <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.value}<span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>{n.unit}</span></div>
-              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{n.label}</div>
-            </div>
-          ))}
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
-          {[
-            { label: '지방', value: food.fat, unit: 'g' },
-            { label: '비타민', value: food.vitamin || 0, unit: '%' },
-            { label: '미네랄', value: food.mineral || 0, unit: '%' },
-          ].map(n => (
-            <div key={n.label} style={{ textAlign: 'center', padding: '10px 4px', borderRadius: 12, background: 'var(--bg-card)' }}>
-              <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.value}<span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>{n.unit}</span></div>
-              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{n.label}</div>
+            <div key={n.label} style={{ textAlign: 'center', padding: '10px 4px', borderRadius: 12 }}>
+              <div style={{ fontSize: 16, marginBottom: 4 }}>{n.icon}</div>
+              <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(0,0,0,0.7)' }}>{n.label}</div>
+              <div style={{ fontSize: 9, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>{n.value}<span>{n.unit}</span></div>
             </div>
           ))}
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8, marginBottom: 20 }}>
           {[
-            { label: '식이섬유', value: food.fiber || 0, unit: 'g' },
-            { label: '칼슘', value: food.calcium || 0, unit: 'mg' },
-            { label: '철분', value: food.iron || 0, unit: 'mg' },
-            { label: '나트륨', value: food.sodium || 0, unit: 'mg' },
+            { icon: '🥕', label: '식이섬유', value: food.fiber || 0, unit: 'g' },
+            { icon: '🥦', label: '철분', value: food.iron || 0, unit: 'mg' },
+            { icon: '🐟', label: '칼슘', value: food.calcium || 0, unit: 'mg' },
+            { icon: '🧂', label: '나트륨', value: food.sodium || 0, unit: 'mg' },
           ].map(n => (
-            <div key={n.label} style={{ textAlign: 'center', padding: '10px 4px', borderRadius: 12, background: 'var(--bg-card)' }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.value}<span style={{ fontSize: 9, fontWeight: 400, color: 'var(--text-muted)' }}>{n.unit}</span></div>
-              <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>{n.label}</div>
+            <div key={n.label} style={{ textAlign: 'center', padding: '10px 4px', borderRadius: 12 }}>
+              <div style={{ fontSize: 16, marginBottom: 4 }}>{n.icon}</div>
+              <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(0,0,0,0.7)' }}>{n.label}</div>
+              <div style={{ fontSize: 9, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>{n.value}<span>{n.unit}</span></div>
             </div>
           ))}
         </div>
