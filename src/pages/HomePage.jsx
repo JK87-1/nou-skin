@@ -177,7 +177,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
       {/* ===== 1. 히어로 영역 ===== */}
       <div style={{
-        padding: '12px 20px 18px',
+        padding: '12px 28px 18px',
         position: 'relative',
       }}>
         {/* 상단 row */}
