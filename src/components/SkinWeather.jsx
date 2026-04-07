@@ -141,25 +141,7 @@ export default function SkinWeather({ skinResult }) {
       `}</style>
 
       {/* ── Header ── */}
-      <div style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
-        marginBottom: 16, animation: 'swFadeInUp 0.5s ease both',
-      }}>
-        <div>
-          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 4 }}>
-            SKIN WEATHER
-          </div>
-          <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)' }}>오늘의 피부 날씨</div>
-        </div>
-        {weather && (
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 4,
-            background: 'var(--bg-card)', border: '1px solid var(--border-light)',
-            borderRadius: 999, padding: '6px 14px', fontSize: 11, color: 'var(--text-secondary)',
-          }}>
-            📍 {weather.location}
-          </div>
-        )}
+      <div style={{ marginBottom: 16, animation: 'swFadeInUp 0.5s ease both' }}>
       </div>
 
       {/* ── Loading Skeleton ── */}
@@ -306,7 +288,7 @@ export default function SkinWeather({ skinResult }) {
       {alerts.length > 0 && (
         <div style={{ marginBottom: 16, animation: 'swFadeInUp 0.5s ease 0.15s both' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-            <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>내 피부 맞춤 알림</span>
+            <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>오늘의 웰니스 알림</span>
             {highCount > 0 && (
               <span style={{
                 fontSize: 10, fontWeight: 700, color: '#fff',
@@ -401,8 +383,8 @@ export default function SkinWeather({ skinResult }) {
           animation: 'swFadeInUp 0.5s ease 0.15s both',
         }}>
           <div style={{ fontSize: 24, marginBottom: 8 }}><MicroscopeIcon size={24} /></div>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4 }}>피부 측정 후 맞춤 알림을 받아보세요</div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>분석 결과를 기반으로 오늘 환경에 맞는 케어 팁을 드려요</div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4 }}>컨디션 체크 후 맞춤 알림을 받아보세요</div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>오늘 날씨에 맞는 피부·운동·식단·컨디션 관리 팁을 드려요</div>
         </div>
       )}
 
@@ -410,7 +392,7 @@ export default function SkinWeather({ skinResult }) {
       {weather.weekForecast && weather.weekForecast.length > 0 && (
         <div style={{ marginBottom: 16, animation: 'swFadeInUp 0.5s ease 0.2s both' }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 12 }}>
-            5일간 피부 환경 예보
+            5일간 웰니스 환경 예보
           </div>
           <div style={{
             background: 'rgba(255,255,255,0.5)', borderRadius: 20,
@@ -492,34 +474,6 @@ export default function SkinWeather({ skinResult }) {
         </div>
       </div>
 
-      {/* ── Scheduled Notifications ── */}
-      {notifications.length > 0 && (
-        <div style={{ marginBottom: 8, animation: 'swFadeInUp 0.5s ease 0.4s both', background: 'rgba(255,255,255,0.3)', borderRadius: 20, padding: 16 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 12 }}>
-            오늘 예정된 알림
-          </div>
-          {notifications.map((n, i) => (
-            <div key={i} style={{
-              display: 'flex', alignItems: 'flex-start', gap: 12,
-              padding: '12px 14px', borderRadius: 14,
-              opacity: i === 0 ? 1 : 0.5,
-              background: i === 0 ? '#FFFFFF' : 'transparent',
-              marginBottom: 4,
-              animation: `swFadeInUp 0.3s ease ${0.4 + i * 0.06}s both`,
-            }}>
-              <div style={{
-                width: 8, height: 8, borderRadius: '50%', flexShrink: 0, marginTop: 4,
-                background: i === 0 ? '#ADEBB3' : 'rgba(255,255,255,0.1)',
-              }} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>{n.title}</div>
-                <div style={{ fontSize: 10, color: 'var(--text-dim)', marginTop: 1 }}>{n.body}</div>
-              </div>
-              <span style={{ fontSize: 10, color: 'var(--text-dim)', flexShrink: 0 }}>{n.time}</span>
-            </div>
-          ))}
-        </div>
-      )}
 
       </>}
     </div>
