@@ -54,11 +54,14 @@ const NutrientIcons = {
 };
 
 const NUTRIENT_META = [
+  { key: 'kcal', icon: NutrientIcons.kcal, label: '칼로리', unit: '', goalKey: 'kcal', grad: ['#FFF0EC', '#FFCEC0'] },
   { key: 'protein', icon: NutrientIcons.protein, label: '단백질', unit: 'g', goalKey: 'protein', grad: ['#FDE8EC', '#F9CDD5'] },
   { key: 'carb', icon: NutrientIcons.carb, label: '탄수화물', unit: 'g', goalKey: 'carb', grad: ['#FFF6E0', '#FAEAC0'] },
-  { key: 'vitamin', icon: NutrientIcons.vitamin, label: '비타민', unit: '%', goalKey: 'vitamin', grad: ['#FFFBE0', '#FBF0A0'] },
-  { key: 'mineral', icon: NutrientIcons.mineral, label: '미네랄', unit: '%', goalKey: 'mineral', grad: ['#E8F4FF', '#D8EEFF'] },
-  { key: 'kcal', icon: NutrientIcons.kcal, label: '칼로리', unit: '', goalKey: 'kcal', grad: ['#FFF0EC', '#FFCEC0'] },
+  { key: 'fat', label: '지방', unit: 'g', goalKey: 'fat', grad: ['#FFFBE0', '#FBF0A0'] },
+  { key: 'fiber', label: '식이섬유', unit: 'g', goalKey: 'fiber', grad: ['#E8F8E8', '#C8ECC8'] },
+  { key: 'sodium', label: '나트륨', unit: 'mg', goalKey: 'sodium', grad: ['#F8F0E8', '#F0E0D0'] },
+  { key: 'iron', label: '철분', unit: 'mg', goalKey: 'iron', grad: ['#FFF0E8', '#FFE0D0'] },
+  { key: 'calcium', label: '칼슘', unit: 'mg', goalKey: 'calcium', grad: ['#F0F0FF', '#E0E0F8'] },
 ];
 
 function getStatus(value, goal) {
@@ -402,24 +405,46 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
       <div style={{
         margin: '0 16px 10px', borderRadius: 16, padding: '12px 8px',
         background: '#fff', border: '0.5px solid #eee',
-        display: 'flex', justifyContent: 'space-between',
+        display: 'flex', flexDirection: 'column', gap: 10,
         ...fadeUp(0.15),
       }}>
-        {nutrients.map(n => (
-          <div key={n.key} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-            <div style={{
-              width: 32, height: 32, borderRadius: 10,
-              background: `linear-gradient(135deg, ${n.grad[0]}88, ${n.grad[1]}44)`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>{n.icon}</div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.displayVal}</div>
-            <div style={{ fontSize: 9, color: '#888' }}>{n.label}</div>
-            <span style={{
-              fontSize: 9, fontWeight: 600, padding: '2px 6px', borderRadius: 8,
-              ...statusStyle[n.status],
-            }}>{n.status}</span>
-          </div>
-        ))}
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          {nutrients.slice(0, 4).map(n => (
+            <div key={n.key} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: 10,
+                background: `linear-gradient(135deg, ${n.grad[0]}88, ${n.grad[1]}44)`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>{n.icon || <span style={{ fontSize: 14 }}>{n.key === 'fat' ? '🫧' : '·'}</span>}</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.displayVal}</div>
+              <div style={{ fontSize: 9, color: '#888' }}>{n.label}</div>
+              <span style={{
+                fontSize: 9, fontWeight: 600, padding: '2px 6px', borderRadius: 8,
+                ...statusStyle[n.status],
+              }}>{n.status}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+          {nutrients.slice(4).map(n => (
+            <div key={n.key} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: 10,
+                background: `linear-gradient(135deg, ${n.grad[0]}88, ${n.grad[1]}44)`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 14,
+              }}>
+                {n.key === 'fiber' ? '🥬' : n.key === 'sodium' ? '🧂' : n.key === 'iron' ? '🩸' : '🦴'}
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.displayVal}</div>
+              <div style={{ fontSize: 9, color: '#888' }}>{n.label}</div>
+              <span style={{
+                fontSize: 9, fontWeight: 600, padding: '2px 6px', borderRadius: 8,
+                ...statusStyle[n.status],
+              }}>{n.status}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* 5. LUA AI Coach Card — AiInsightCard 디자인 통일 */}
@@ -1151,7 +1176,7 @@ function FoodDetailModal({ food, onClose, onDelete }) {
             </div>
           ))}
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
           {[
             { label: '지방', value: food.fat, unit: 'g' },
             { label: '비타민', value: food.vitamin || 0, unit: '%' },
@@ -1160,6 +1185,19 @@ function FoodDetailModal({ food, onClose, onDelete }) {
             <div key={n.label} style={{ textAlign: 'center', padding: '10px 4px', borderRadius: 12, background: 'var(--bg-card)' }}>
               <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.value}<span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>{n.unit}</span></div>
               <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{n.label}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8, marginBottom: 20 }}>
+          {[
+            { label: '식이섬유', value: food.fiber || 0, unit: 'g' },
+            { label: '칼슘', value: food.calcium || 0, unit: 'mg' },
+            { label: '철분', value: food.iron || 0, unit: 'mg' },
+            { label: '나트륨', value: food.sodium || 0, unit: 'mg' },
+          ].map(n => (
+            <div key={n.label} style={{ textAlign: 'center', padding: '10px 4px', borderRadius: 12, background: 'var(--bg-card)' }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.value}<span style={{ fontSize: 9, fontWeight: 400, color: 'var(--text-muted)' }}>{n.unit}</span></div>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>{n.label}</div>
             </div>
           ))}
         </div>

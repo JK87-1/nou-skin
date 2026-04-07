@@ -35,6 +35,10 @@ export default async function handler(req, res) {
 
 vitamin: 1일 권장 비타민 섭취량 대비 이 음식이 제공하는 비율(%)
 mineral: 1일 권장 미네랄 섭취량 대비 이 음식이 제공하는 비율(%)
+fiber: 식이섬유 (g)
+calcium: 칼슘 (mg)
+iron: 철분 (mg)
+sodium: 나트륨 (mg)
 bloodSugar: 식후 혈당 상승 예상 정도 ("낮음"/"보통"/"높음")
 bloodSugarNote: 혈당 관련 한줄 설명 (예: "통곡물이라 혈당이 천천히 올라요")
 drowsiness: 식후 졸림 확률 ("낮음"/"보통"/"높음")
@@ -52,6 +56,10 @@ skinImpactNote: 피부 영향 한줄 설명 (예: "기름진 음식이라 피지
   "fat": 숫자(g),
   "vitamin": 숫자(%),
   "mineral": 숫자(%),
+  "fiber": 숫자(g),
+  "calcium": 숫자(mg),
+  "iron": 숫자(mg),
+  "sodium": 숫자(mg),
   "bloodSugar": "낮음/보통/높음",
   "bloodSugarNote": "한줄 설명",
   "drowsiness": "낮음/보통/높음",
