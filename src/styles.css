@@ -95,9 +95,9 @@
   /* Surfaces — Toss/Karrot palette */
   --bg-primary: #FFFFFF;
   --bg-secondary: #F7F8FA;
-  --bg-card: #F8F8F8;
-  --bg-card-hover: #F3F3F3;
-  --bg-card-solid: #F8F8F8;
+  --bg-card: rgba(255,255,255,0.35);
+  --bg-card-hover: rgba(255,255,255,0.45);
+  --bg-card-solid: rgba(255,255,255,0.5);
   --bg-elevated: #F8F8F8;
   --bg-modal: #FFFFFF;
   --bg-modal-overlay: rgba(0,0,0,0.4);
@@ -385,13 +385,13 @@
 /* Cards */
 .card {
   background: var(--bg-card);
-  border: none;
+  border: 1px solid rgba(255,255,255,0.3);
   border-radius: 20px;
   padding: 22px;
-  box-shadow: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4);
   margin-bottom: 15px;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 /* Tags */

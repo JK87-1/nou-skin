@@ -1185,7 +1185,7 @@ function RoutineChecklist({ category, label, selectedDate }) {
                     <div key={item.id} style={{
                       display: 'flex', alignItems: 'center', gap: 12,
                       padding: '14px 16px', marginBottom: 6,
-                      background: 'var(--bg-card)', borderRadius: 14,
+                      background: 'var(--bg-card)', borderRadius: 14, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
                     }}>
                       {/* Check circle */}
                       <div onClick={() => handleToggle(item.id)} style={{

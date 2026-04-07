@@ -452,7 +452,7 @@ export default function AlbumPage({ onBack, onMeasure, onOpenConsult, onTabChang
                 {sorted.map(r => {
                   const d = new Date(r.date);
                   return (
-                    <div key={r.date} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-card)', borderRadius: 16, padding: '14px 18px', marginBottom: 8 }}>
+                    <div key={r.date} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-card)', borderRadius: 16, padding: '14px 18px', marginBottom: 8, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)' }}>
                       <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{d.getMonth() + 1}월 {d.getDate()}일</span>
                       <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--accent-primary)' }}>{r.weight} kg</span>
                     </div>
@@ -524,7 +524,7 @@ export default function AlbumPage({ onBack, onMeasure, onOpenConsult, onTabChang
             {/* Skin Analysis CTA — exact copy from skin page */}
             <div onClick={onMeasure} style={{
               margin: '20px 18px 0', padding: '16px 18px',
-              background: 'var(--bg-card)', borderRadius: 20,
+              background: 'var(--bg-card)', borderRadius: 20, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
               display: 'flex', alignItems: 'center', gap: 14,
               cursor: 'pointer', animation: 'breatheIn 0.6s ease 0.3s both',
               WebkitTapHighlightColor: 'transparent',
@@ -613,7 +613,9 @@ export default function AlbumPage({ onBack, onMeasure, onOpenConsult, onTabChang
               <div style={{ display: 'flex', gap: 12, marginBottom: 16, animation: 'breatheIn 0.6s ease 0.1s both' }}>
                 <div style={{
                   flex: 1, background: 'var(--bg-card)',
-                  border: 'none', borderRadius: 16, padding: '14px 16px',
+                  border: '1px solid rgba(255,255,255,0.3)', borderRadius: 16, padding: '14px 16px',
+                  backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
                   display: 'flex', alignItems: 'center', gap: 12,
                 }}>
                   <div style={{
@@ -631,7 +633,9 @@ export default function AlbumPage({ onBack, onMeasure, onOpenConsult, onTabChang
                 </div>
                 <div style={{
                   flex: 1, background: 'var(--bg-card)',
-                  border: 'none', borderRadius: 16, padding: '14px 16px',
+                  border: '1px solid rgba(255,255,255,0.3)', borderRadius: 16, padding: '14px 16px',
+                  backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
                   display: 'flex', alignItems: 'center', gap: 12,
                 }}>
                   <div style={{
@@ -1440,7 +1444,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
         {/* Hero: skinAge + overallScore */}
         <div style={{ display: 'flex', gap: 10, marginBottom: 16, animation: 'fadeUp 0.3s ease 0.1s both' }}>
           <div style={{
-            flex: 1, background: 'var(--bg-card)', borderRadius: 20,
+            flex: 1, background: 'var(--bg-card)', borderRadius: 20, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
             border: '1px solid var(--border-light)', padding: '16px 14px', textAlign: 'center',
           }}>
             <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>피부나이</div>
@@ -1450,7 +1454,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
             </div>
           </div>
           <div style={{
-            flex: 1, background: 'var(--bg-card)', borderRadius: 20,
+            flex: 1, background: 'var(--bg-card)', borderRadius: 20, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
             border: '1px solid var(--border-light)', padding: '16px 14px', textAlign: 'center',
           }}>
             <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>종합 점수</div>
@@ -1477,7 +1481,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
         {/* 피부 타입 정보 */}
         <div style={{
           animation: 'fadeUp 0.3s ease 0.2s both',
-          background: 'var(--bg-card)', borderRadius: 22, padding: '16px 18px',
+          background: 'var(--bg-card)', borderRadius: 22, padding: '16px 18px', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
           border: '1px solid var(--border-subtle)', marginBottom: 12,
           boxShadow: 'none',
         }}>
@@ -1551,7 +1555,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
           return (
             <div style={{
               animation: 'fadeUp 0.3s ease 0.3s both',
-              background: 'var(--bg-card)', borderRadius: 22, padding: '16px 18px',
+              background: 'var(--bg-card)', borderRadius: 22, padding: '16px 18px', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
               border: '1px solid var(--border-subtle)', marginBottom: 12,
               boxShadow: 'none',
             }}>
@@ -1578,7 +1582,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
         {record.advice && (
           <div style={{
             animation: 'fadeUp 0.3s ease 0.4s both',
-            background: 'var(--bg-card)', borderRadius: 22, padding: '16px 18px',
+            background: 'var(--bg-card)', borderRadius: 22, padding: '16px 18px', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
             border: '1px solid var(--border-subtle)', marginBottom: 12,
             boxShadow: 'none',
           }}>
@@ -1611,10 +1615,11 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
         <div style={{
           animation: 'fadeUp 0.3s ease 0.5s both',
           background: 'var(--bg-card)',
-          border: '1px solid var(--border-subtle)',
+          border: '1px solid rgba(255,255,255,0.3)',
           borderRadius: 22, padding: '14px 6px 2px',
           marginBottom: 12,
-          boxShadow: 'none',
+          backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingLeft: 14, marginBottom: 4 }}>
             <LuaMiniIcon size={14} />
@@ -1637,10 +1642,11 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
         <div style={{
           animation: 'fadeUp 0.3s ease 0.6s both',
           background: 'var(--bg-card)',
-          border: '1px solid var(--border-subtle)',
+          border: '1px solid rgba(255,255,255,0.3)',
           borderRadius: 22, padding: '14px 6px 2px',
           marginBottom: 12,
-          boxShadow: 'none',
+          backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingLeft: 14, marginBottom: 4 }}>
             <LuaMiniIcon size={14} />

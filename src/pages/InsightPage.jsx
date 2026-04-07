@@ -131,7 +131,7 @@ export default function InsightPage() {
               <div
                 onClick={() => setShowCompareModal(true)}
                 style={{
-                  background: 'var(--bg-card)', borderRadius: 'var(--card-border-radius)',
+                  background: 'var(--bg-card)', borderRadius: 'var(--card-border-radius)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
                   padding: '14px 18px', cursor: 'pointer',
                 }}
               >
@@ -305,7 +305,7 @@ export default function InsightPage() {
               return (
                 <div key={r.date} style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  background: 'var(--bg-card)', borderRadius: 'var(--card-border-radius)',
+                  background: 'var(--bg-card)', borderRadius: 'var(--card-border-radius)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
                   padding: '14px 18px', marginBottom: 8,
                 }}>
                   <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>
@@ -352,7 +352,7 @@ export default function InsightPage() {
 function StatBox({ label, value, unit, color, onTap }) {
   return (
     <div onClick={onTap} style={{
-      background: 'var(--bg-card)', borderRadius: 'var(--card-border-radius)',
+      background: 'var(--bg-card)', borderRadius: 'var(--card-border-radius)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
       padding: '14px 16px', cursor: onTap ? 'pointer' : 'default',
     }}>
       <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 500 }}>{label}</div>

@@ -59,9 +59,9 @@ const NUTRIENT_META = [
   { key: 'carb', icon: NutrientIcons.carb, label: '탄수화물', unit: 'g', goalKey: 'carb', grad: ['#FFF6E0', '#FAEAC0'] },
   { key: 'fat', label: '지방', unit: 'g', goalKey: 'fat', grad: ['#FFFBE0', '#FBF0A0'] },
   { key: 'fiber', label: '식이섬유', unit: 'g', goalKey: 'fiber', grad: ['#E8F8E8', '#C8ECC8'] },
-  { key: 'sodium', label: '나트륨', unit: 'mg', goalKey: 'sodium', grad: ['#F8F0E8', '#F0E0D0'] },
   { key: 'iron', label: '철분', unit: 'mg', goalKey: 'iron', grad: ['#FFF0E8', '#FFE0D0'] },
   { key: 'calcium', label: '칼슘', unit: 'mg', goalKey: 'calcium', grad: ['#F0F0FF', '#E0E0F8'] },
+  { key: 'sodium', label: '나트륨', unit: 'mg', goalKey: 'sodium', grad: ['#F8F0E8', '#F0E0D0'] },
 ];
 
 function getStatus(value, goal) {
@@ -365,46 +365,107 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
         </div>
       )}
 
-      {/* 3. Diet Score Card */}
-      <div style={{
-        margin: '0 16px 10px', borderRadius: 16, padding: 13,
-        background: '#fff', border: '0.5px solid #eee',
-        display: 'flex', alignItems: 'center', gap: 14,
-        ...fadeUp(0.1),
-      }}>
-        <div style={{ position: 'relative', width: 62, height: 62, flexShrink: 0 }}>
-          <svg viewBox="0 0 62 62" style={{ width: 62, height: 62 }}>
-            <defs>
-              <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#81E4BD" />
-                <stop offset="100%" stopColor="#81E4BD" />
-              </linearGradient>
-            </defs>
-            <circle cx="31" cy="31" r={r} fill="none" stroke="#F0EDE8" strokeWidth="6" />
-            {score > 0 && <circle cx="31" cy="31" r={r} fill="none" stroke="url(#scoreGrad)" strokeWidth="6"
-              strokeLinecap="round"
-              strokeDasharray={`${dashFill} ${circ - dashFill}`}
-              transform="rotate(-90 31 31)"
-              style={{ transition: 'stroke-dasharray 0.5s ease' }}
-            />}
-          </svg>
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--accent-primary)', fontFamily: 'var(--font-display)', lineHeight: 1 }}>{score}</span>
-            <span style={{ fontSize: 9, color: '#888' }}>점</span>
+      {/* 3. 오늘 식단 요약 */}
+      {(() => {
+        const summaryTags = nutrients
+          .filter(n => n.status !== '적정')
+          .map(n => ({
+            text: `${n.label} ${n.status === '부족' ? '부족' : '높음'}`,
+            type: n.status === '부족' ? 'lack' : 'high',
+          }));
+        // 혈당 상승 가능 여부
+        const carbN = nutrients.find(n => n.key === 'carb');
+        const fiberN = nutrients.find(n => n.key === 'fiber');
+        if (carbN?.status === '과잉' && fiberN?.status === '부족') {
+          summaryTags.push({ text: '혈당 상승 가능', type: 'high' });
+        }
+
+        const proteinN = nutrients.find(n => n.key === 'protein');
+        const fatN = nutrients.find(n => n.key === 'fat');
+        const sodiumN = nutrients.find(n => n.key === 'sodium');
+
+        const impacts = [];
+        if (proteinN?.status === '부족' || carbN?.status === '과잉') {
+          impacts.push({ icon: '⚡', text: '에너지 하락 가능', type: 'warn' });
+        }
+        if (carbN?.status === '과잉') {
+          impacts.push({ icon: '😊', text: '기분 변동 가능', type: 'warn' });
+        }
+        if (sodiumN?.status === '과잉' || carbN?.status === '과잉') {
+          impacts.push({ icon: '✨', text: '피부 트러블 가능성', type: 'caution' });
+        }
+        if (fatN?.status === '적정' && proteinN?.status === '적정') {
+          impacts.push({ icon: '✨', text: '피부 보습 유지', type: 'ok' });
+        }
+
+        const tagStyle = {
+          lack: { background: 'rgba(255,143,171,0.15)', color: '#C2185B' },
+          high: { background: 'rgba(255,179,71,0.15)', color: '#C4580A' },
+          ok: { background: 'rgba(78,184,160,0.15)', color: '#0F6E56' },
+        };
+        const impactStyle = {
+          warn: { background: 'rgba(255,143,171,0.1)', border: '0.5px solid rgba(255,143,171,0.3)', color: '#C2185B' },
+          caution: { background: 'rgba(255,179,71,0.1)', border: '0.5px solid rgba(255,179,71,0.3)', color: '#C4580A' },
+          ok: { background: 'rgba(78,184,160,0.1)', border: '0.5px solid rgba(78,184,160,0.3)', color: '#0F6E56' },
+        };
+
+        return (
+          <div style={{
+            margin: '0 16px 10px', borderRadius: 14, padding: '11px 13px',
+            background: 'rgba(255,255,255,0.3)',
+            backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255,255,255,0.3)',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+            ...fadeUp(0.1),
+          }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(0,0,0,0.8)', marginBottom: 8 }}>오늘 식단 요약</div>
+
+            {foods.length === 0 ? (
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>식사를 기록하면 영양 요약이 나타나요</div>
+            ) : (
+              <>
+                {/* 영양소 태그 */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: summaryTags.length > 0 ? 10 : 0 }}>
+                  {summaryTags.length === 0 ? (
+                    <span style={{
+                      fontSize: 10, fontWeight: 500, borderRadius: 99, padding: '3px 9px',
+                      ...tagStyle.ok,
+                    }}>전체 영양 균형 적정</span>
+                  ) : summaryTags.map((t, i) => (
+                    <span key={i} style={{
+                      fontSize: 10, fontWeight: 500, borderRadius: 99, padding: '3px 9px',
+                      ...tagStyle[t.type],
+                    }}>{t.text}</span>
+                  ))}
+                </div>
+
+                {/* 내 몸에 미치는 영향 */}
+                {impacts.length > 0 && (
+                  <>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>내 몸에 미치는 영향</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                      {impacts.map((imp, i) => (
+                        <span key={i} style={{
+                          display: 'inline-flex', alignItems: 'center', gap: 3,
+                          fontSize: 10, fontWeight: 500, borderRadius: 10, padding: '5px 9px',
+                          ...impactStyle[imp.type],
+                        }}>
+                          <span style={{ fontSize: 12 }}>{imp.icon}</span>{imp.text}
+                        </span>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </>
+            )}
           </div>
-        </div>
-        <div>
-          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{getScoreComment(score)}</div>
-          <div style={{ fontSize: 10, color: '#888', lineHeight: 1.5, marginTop: 3 }}>
-            {score > 0 ? `오늘 ${nutrition.kcal}kcal 섭취 · 목표 대비 ${Math.round((nutrition.kcal / goal.kcal) * 100)}%` : '식사를 기록하면 점수가 계산돼요'}
-          </div>
-        </div>
-      </div>
+        );
+      })()}
 
       {/* 4. Nutrient Card */}
       <div style={{
         margin: '0 16px 10px', borderRadius: 16, padding: '12px 8px',
-        background: '#fff', border: '0.5px solid #eee',
+        background: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.3)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
         display: 'flex', flexDirection: 'column', gap: 10,
         ...fadeUp(0.15),
       }}>
@@ -413,13 +474,12 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
             <div key={n.key} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
               <div style={{
                 width: 32, height: 32, borderRadius: 10,
-                background: `linear-gradient(135deg, ${n.grad[0]}88, ${n.grad[1]}44)`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>{n.icon || <span style={{ fontSize: 14 }}>{n.key === 'fat' ? '🫧' : '·'}</span>}</div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.displayVal}</div>
-              <div style={{ fontSize: 9, color: '#888' }}>{n.label}</div>
+              }}>{n.key === 'kcal' ? <span style={{ fontSize: 14 }}>🔥</span> : n.key === 'protein' ? <span style={{ fontSize: 14 }}>🥩</span> : n.key === 'carb' ? <span style={{ fontSize: 14 }}>🍞</span> : n.key === 'fat' ? <span style={{ fontSize: 14 }}>🥑</span> : '·'}</div>
+              <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(0,0,0,0.7)' }}>{n.label}</div>
+              <div style={{ fontSize: 9, color: 'rgba(0,0,0,0.5)', fontFamily: 'var(--font-display)' }}>{n.displayVal}</div>
               <span style={{
-                fontSize: 9, fontWeight: 600, padding: '2px 6px', borderRadius: 8,
+                fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 8,
                 ...statusStyle[n.status],
               }}>{n.status}</span>
             </div>
@@ -430,16 +490,15 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
             <div key={n.key} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
               <div style={{
                 width: 32, height: 32, borderRadius: 10,
-                background: `linear-gradient(135deg, ${n.grad[0]}88, ${n.grad[1]}44)`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 14,
               }}>
-                {n.key === 'fiber' ? '🥬' : n.key === 'sodium' ? '🧂' : n.key === 'iron' ? '🩸' : '🦴'}
+                {n.key === 'fiber' ? '🥕' : n.key === 'sodium' ? '🧂' : n.key === 'iron' ? '🥦' : '🐟'}
               </div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.displayVal}</div>
-              <div style={{ fontSize: 9, color: '#888' }}>{n.label}</div>
+              <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(0,0,0,0.7)' }}>{n.label}</div>
+              <div style={{ fontSize: 9, color: 'rgba(0,0,0,0.5)', fontFamily: 'var(--font-display)' }}>{n.displayVal}</div>
               <span style={{
-                fontSize: 9, fontWeight: 600, padding: '2px 6px', borderRadius: 8,
+                fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 8,
                 ...statusStyle[n.status],
               }}>{n.status}</span>
             </div>
@@ -957,7 +1016,7 @@ function FoodCoachCard({ foods, nutrition, goal, score, lacking }) {
 
   if (!latestFood) {
     return (
-      <div style={{ margin: '0 16px 14px', padding: '20px', borderRadius: 16, background: '#f9f9f9' }}>
+      <div style={{ margin: '0 16px 14px', padding: '20px', borderRadius: 16, background: 'rgba(255,255,255,0.3)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <CoachStarIcon />
           <div style={{ flex: 1 }}>
@@ -1024,7 +1083,7 @@ function FoodCoachCard({ foods, nutrition, goal, score, lacking }) {
   }
 
   return (
-    <div style={{ margin: '0 16px 14px', padding: '20px', borderRadius: 16, background: '#f9f9f9' }}>
+    <div style={{ margin: '0 16px 14px', padding: '20px', borderRadius: 16, background: 'rgba(255,255,255,0.3)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
         <CoachStarIcon />
         <div style={{ flex: 1 }}>
@@ -1298,7 +1357,7 @@ function SkinInsightsSection({ onMeasure }) {
       {/* Score Card */}
       <div style={{
         margin: '0 16px 10px', borderRadius: 16, padding: 13,
-        background: '#fff', border: '0.5px solid #eee',
+        background: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.3)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
         display: 'flex', alignItems: 'center', gap: 14,
       }}>
         <div style={{ position: 'relative', width: 62, height: 62, flexShrink: 0 }}>
@@ -1325,7 +1384,7 @@ function SkinInsightsSection({ onMeasure }) {
       {/* Metric Cards — 5 columns */}
       <div style={{
         margin: '0 16px 10px', borderRadius: 16, padding: '12px 8px',
-        background: '#fff', border: '0.5px solid #eee',
+        background: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.3)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
         display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8,
       }}>
         {metrics.map(m => {
@@ -1354,7 +1413,7 @@ function SkinInsightsSection({ onMeasure }) {
       </div>
 
       {/* AI Insight */}
-      <div style={{ margin: '0 16px 14px', padding: '20px', borderRadius: 16, background: '#f9f9f9' }}>
+      <div style={{ margin: '0 16px 14px', padding: '20px', borderRadius: 16, background: 'rgba(255,255,255,0.3)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <CoachStarIcon />
           <div style={{ flex: 1 }}>
@@ -1433,7 +1492,7 @@ function BodyInsightsSection() {
       {/* Weight + BMI Card */}
       <div style={{
         margin: '0 16px 10px', borderRadius: 16, padding: 13,
-        background: '#fff', border: '0.5px solid #eee',
+        background: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.3)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
         display: 'flex', alignItems: 'center', gap: 14,
       }}>
         <div style={{ position: 'relative', width: 62, height: 62, flexShrink: 0 }}>
@@ -1460,7 +1519,7 @@ function BodyInsightsSection() {
       {/* Stats Row */}
       <div style={{
         margin: '0 16px 10px', borderRadius: 16, padding: '12px 8px',
-        background: '#fff', border: '0.5px solid #eee',
+        background: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.3)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
         display: 'flex', justifyContent: 'space-between',
       }}>
         {[
@@ -1477,7 +1536,7 @@ function BodyInsightsSection() {
       </div>
 
       {/* Recent Records */}
-      <div style={{ margin: '0 16px 10px', borderRadius: 16, padding: '12px 16px', background: '#fff', border: '0.5px solid #eee' }}>
+      <div style={{ margin: '0 16px 10px', borderRadius: 16, padding: '12px 16px', background: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.3)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)' }}>
         <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>최근 기록</div>
         {recent.map(r => {
           const d = new Date(r.date);
@@ -1506,7 +1565,7 @@ function BodyInsightsSection() {
       </div>
 
       {/* AI Insight */}
-      <div style={{ margin: '0 16px 14px', padding: '20px', borderRadius: 16, background: '#f9f9f9' }}>
+      <div style={{ margin: '0 16px 14px', padding: '20px', borderRadius: 16, background: 'rgba(255,255,255,0.3)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <CoachStarIcon />
           <div style={{ flex: 1 }}>
