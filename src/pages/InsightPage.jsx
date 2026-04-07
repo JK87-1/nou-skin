@@ -87,7 +87,7 @@ export default function InsightPage() {
   return (
     <div style={{ minHeight: '100dvh', paddingBottom: 80 }}>
       {/* Header */}
-      <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ padding: '16px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>변화</h1>
         <div style={{ display: 'flex', gap: 8 }}>
           <div style={{ width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -112,7 +112,7 @@ export default function InsightPage() {
       />
 
       {/* Category Tabs */}
-      <div style={{ padding: '12px 20px 16px' }}>
+      <div style={{ padding: '12px 18px 16px' }}>
         <div className="segment-control">
           <button className={`segment-btn${insightTab === 'skin' ? ' active' : ''}`}
             onClick={() => setInsightTab('skin')}>피부</button>
@@ -125,7 +125,7 @@ export default function InsightPage() {
 
       {/* Skin Tab */}
       {insightTab === 'skin' && (
-        <div style={{ padding: '0 20px' }}>
+        <div style={{ padding: '0 18px' }}>
           {skinRecords.length >= 2 ? (
             <div style={{ ...fadeUp(0.05) }}>
               <div
@@ -236,7 +236,7 @@ export default function InsightPage() {
       )}
 
       {/* Body Tab */}
-      {insightTab === 'body' && <div style={{ padding: '0 20px' }}>
+      {insightTab === 'body' && <div style={{ padding: '0 18px' }}>
         {/* Current Weight Hero */}
         <div style={{ textAlign: 'center', padding: '12px 0 8px', ...fadeUp(0.05) }}>
           {latest ? (

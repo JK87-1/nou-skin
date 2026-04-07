@@ -215,7 +215,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
       {/* ===== 2. 실시간 컨디션 체크 카드 ===== */}
       <div style={{
-        margin: '0 14px', marginTop: -8, position: 'relative', zIndex: 1,
+        margin: '0 18px', marginTop: -8, position: 'relative', zIndex: 1,
         background: 'rgba(255,255,255,0.3)', borderRadius: 14, padding: '10px 12px',
         border: 'none',
         boxShadow: 'none',
@@ -264,7 +264,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         ))}
       </div>
 
-      <div style={{ padding: '0 14px' }}>
+      <div style={{ padding: '0 18px' }}>
 
         {/* ===== 3. 실시간 AI 인사이트 카드 ===== */}
         <div style={{

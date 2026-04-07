@@ -36,7 +36,7 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange }) {
 
   return (
     <div style={{ minHeight: '100dvh', paddingBottom: 40 }}>
-      <div style={{ padding: '0 24px 0' }}>
+      <div style={{ padding: '0 18px 0' }}>
 
 
         {/* App Info / Version Footer */}

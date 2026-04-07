@@ -176,7 +176,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
   return (
     <div style={{ minHeight: '100dvh', paddingBottom: 80 }}>
       {/* Header */}
-      <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ padding: '16px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>{headerTitle}</h1>
         <div style={{ display: 'flex', gap: 8 }}>
           <div style={{ width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -202,7 +202,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
       />
 
       {/* Category Tabs */}
-      <div style={{ padding: '12px 20px 16px' }}>
+      <div style={{ padding: '12px 18px 16px' }}>
         <div className="segment-control">
           <button className={`segment-btn${foodTab === 'skin' ? ' active' : ''}`}
             onClick={() => setFoodTab('skin')}>피부</button>
@@ -269,7 +269,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
       {/* Food content */}
       {foodTab === 'food' && <>
       {/* Date subtitle */}
-      <div style={{ padding: '0 16px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ padding: '0 18px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ fontSize: 11, color: '#888' }}>
           {(() => { const d = new Date(selectedDate + 'T00:00:00'); return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 ${DAY_NAMES[d.getDay()]}요일`; })()}
         </div>

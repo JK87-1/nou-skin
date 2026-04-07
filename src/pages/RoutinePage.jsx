@@ -737,7 +737,7 @@ export default function RoutinePage({ themeColors, onBack, initialMode }) {
   return (
     <div style={{ minHeight: '100vh', paddingBottom: 100, animation: 'breatheIn 0.5s ease both' }}>
       {/* Header */}
-      <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ padding: '16px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>{headerTitle}</h1>
         <div style={{ display: 'flex', gap: 8 }}>
           <div onClick={() => setShowAddSheet(true)} style={{ width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -763,7 +763,7 @@ export default function RoutinePage({ themeColors, onBack, initialMode }) {
       />
 
       {/* Mode Toggle */}
-      <div style={{ padding: '12px 20px 16px' }}>
+      <div style={{ padding: '12px 18px 16px' }}>
         <div className="segment-control">
           <button className={`segment-btn${pageMode === 'routine' ? ' active' : ''}`}
             onClick={() => setPageMode('routine')}>피부</button>
@@ -1143,7 +1143,7 @@ function RoutineChecklist({ category, label, selectedDate }) {
   const timeLabels = category === 'skin' ? ['아침', '저녁'] : category === 'food' ? ['아침', '점심', '저녁'] : ['아침', '저녁'];
 
   return (
-    <div style={{ padding: '0 20px', animation: 'breatheIn 0.5s ease both' }}>
+    <div style={{ padding: '0 18px', animation: 'breatheIn 0.5s ease both' }}>
       {/* Progress bar */}
       <div style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>

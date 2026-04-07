@@ -271,7 +271,7 @@ export default function AlbumPage({ onBack, onMeasure, onOpenConsult, onTabChang
     <div style={{ minHeight: '100dvh', paddingBottom: 40 }}>
 
       {/* Header */}
-      <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ padding: '16px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>마이 페이지</h1>
         <div style={{ display: 'flex', gap: 8 }}>
           <div onClick={() => {
@@ -320,7 +320,7 @@ export default function AlbumPage({ onBack, onMeasure, onOpenConsult, onTabChang
         const avgScore = records.length > 0
           ? Math.round(records.reduce((s, r) => s + r.overallScore, 0) / records.length) : 0;
         return (
-          <div style={{ padding: '27px 20px 0' }}>
+          <div style={{ padding: '27px 18px 0' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12 }}>
               <div style={{
                 width: 56, height: 56, borderRadius: '50%', flexShrink: 0,
@@ -370,7 +370,7 @@ export default function AlbumPage({ onBack, onMeasure, onOpenConsult, onTabChang
         const allFoods = getFoodRecords();
         const dates = Object.keys(allFoods).sort().reverse();
         return (
-          <div style={{ padding: '16px 20px 0', animation: 'breatheIn 0.5s ease both' }}>
+          <div style={{ padding: '16px 18px 0', animation: 'breatheIn 0.5s ease both' }}>
             {dates.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
                 <div style={{ fontSize: 14, fontWeight: 600 }}>식단 기록이 없어요</div>
@@ -424,7 +424,7 @@ export default function AlbumPage({ onBack, onMeasure, onOpenConsult, onTabChang
         const bodyRecords = getBodyRecords();
         const sorted = [...bodyRecords].reverse();
         return (
-          <div style={{ padding: '16px 20px 0', animation: 'breatheIn 0.5s ease both' }}>
+          <div style={{ padding: '16px 18px 0', animation: 'breatheIn 0.5s ease both' }}>
             {sorted.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
                 <div style={{ fontSize: 14, fontWeight: 600 }}>몸무게 기록이 없어요</div>
@@ -482,7 +482,7 @@ export default function AlbumPage({ onBack, onMeasure, onOpenConsult, onTabChang
               </div>
             ) : (
               <div style={{
-                display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, padding: '0 16px',
+                display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, padding: '0 18px',
               }}>
                 {sorted.map((r) => {
                   const thumb = thumbs[String(r.id)] || thumbs[r.date];
@@ -522,7 +522,7 @@ export default function AlbumPage({ onBack, onMeasure, onOpenConsult, onTabChang
 
             {/* Skin Analysis CTA — exact copy from skin page */}
             <div onClick={onMeasure} style={{
-              margin: '20px 20px 0', padding: '16px 20px',
+              margin: '20px 18px 0', padding: '16px 18px',
               background: 'var(--bg-card)', borderRadius: 20,
               display: 'flex', alignItems: 'center', gap: 14,
               cursor: 'pointer', animation: 'breatheIn 0.6s ease 0.3s both',
@@ -576,7 +576,7 @@ export default function AlbumPage({ onBack, onMeasure, onOpenConsult, onTabChang
         const sorted = [...records].reverse();
 
         return (
-          <div style={{ padding: '0 16px' }}>
+          <div style={{ padding: '0 18px' }}>
             {/* === HEADER === */}
             <div style={{ paddingTop: 20, marginBottom: 20, animation: 'breatheIn 0.6s ease both' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
