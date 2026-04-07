@@ -75,7 +75,7 @@ export default function TabBar({ activeTab, onTabChange }) {
               flex: 1, display: 'flex', flexDirection: 'column',
               alignItems: 'center', gap: 2,
               background: 'none', border: 'none', cursor: 'pointer',
-              padding: '8px 0 20px',
+              padding: '8px 0 26px',
               WebkitTapHighlightColor: 'transparent',
             }}
           >
