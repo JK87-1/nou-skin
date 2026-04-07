@@ -265,7 +265,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         {/* 에너지 슬라이더 */}
         <div style={{ marginBottom: 14 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>⚡ 에너지</span>
+            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>에너지</span>
             <span style={{ fontSize: 11, fontWeight: 600, color: '#0F6E56' }}>{ENERGY_LABELS[selections.energy - 1]}</span>
           </div>
           <input type="range" min={1} max={5} step={1} value={selections.energy}
@@ -273,7 +273,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             className="lua-slider"
             style={{
               width: '100%', height: 6, borderRadius: 3, appearance: 'none', outline: 'none',
-              background: 'linear-gradient(90deg, #FFB3B3, #FFF3B0, #B8F0E0, #4DB8A0)',
+              background: 'linear-gradient(90deg, rgba(255,255,0,0.5), rgba(255,255,255,0.5))',
             }}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
@@ -286,7 +286,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         {/* 기분 슬라이더 */}
         <div style={{ marginBottom: 12 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>😊 기분</span>
+            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>기분</span>
             <span style={{ fontSize: 11, fontWeight: 600, color: '#0F6E56' }}>{MOOD_LABELS[selections.mood - 1]}</span>
           </div>
           <input type="range" min={1} max={5} step={1} value={selections.mood}
@@ -294,7 +294,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             className="lua-slider"
             style={{
               width: '100%', height: 6, borderRadius: 3, appearance: 'none', outline: 'none',
-              background: 'linear-gradient(90deg, #FFB3B3, #FFD1A1, #FFF3B0, #B8F0E0, #4DB8A0)',
+              background: 'linear-gradient(90deg, rgba(255,255,0,0.5), rgba(255,255,255,0.5))',
             }}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
@@ -307,7 +307,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         {/* 수분 슬라이더 */}
         <div style={{ marginBottom: 12 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>💧 수분</span>
+            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>수분</span>
             <span style={{ fontSize: 11, fontWeight: 600, color: '#0F6E56' }}>{WATER_LABELS[selections.water - 1]}</span>
           </div>
           <input type="range" min={1} max={5} step={1} value={selections.water}
@@ -315,7 +315,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             className="lua-slider"
             style={{
               width: '100%', height: 6, borderRadius: 3, appearance: 'none', outline: 'none',
-              background: 'linear-gradient(90deg, #FFD1A1, #FFF3B0, #B8F0E0, #87CEEB, #38bdf8)',
+              background: 'linear-gradient(90deg, rgba(255,255,0,0.5), rgba(255,255,255,0.5))',
             }}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
@@ -345,7 +345,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             const s = STATUS_MAP[v] || STATUS_MAP[3];
             return (
               <div style={{ background: s.bg, borderRadius: 14, padding: '12px 14px' }}>
-                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>⚡ 에너지</div>
+                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>에너지</div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: s.color }}>{s.text}</div>
               </div>
             );
@@ -356,14 +356,14 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             const s = STATUS_MAP[v] || STATUS_MAP[3];
             return (
               <div style={{ background: s.bg, borderRadius: 14, padding: '12px 14px' }}>
-                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>😊 기분</div>
+                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>기분</div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: s.color }}>{s.text}</div>
               </div>
             );
           })()}
           {/* 마지막 식사 */}
           <div style={{ background: 'rgba(255,243,176,0.3)', borderRadius: 14, padding: '12px 14px' }}>
-            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>🍽️ 마지막 식사</div>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>마지막 식사</div>
             <div style={{ fontSize: 14, fontWeight: 700, color: '#8A6A00' }}>
               {(() => {
                 if (!nutrition?.lastMealTime) return '기록 없음';
@@ -379,7 +379,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             const s = STATUS_MAP[v] || STATUS_MAP[3];
             return (
               <div style={{ background: s.bg, borderRadius: 14, padding: '12px 14px' }}>
-                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>💧 수분</div>
+                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>수분</div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: s.color }}>{WATER_LABELS[v - 1]}</div>
               </div>
             );
