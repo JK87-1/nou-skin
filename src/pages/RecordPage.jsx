@@ -605,9 +605,8 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 }
 
 function AddFoodModal({ onAdd, onClose, initialMeal }) {
-  const [name, setName] = useState('');
+  const [foodItems, setFoodItems] = useState([{ name: '', qty: 1, unit: '인분' }]);
   const [meal, setMeal] = useState(initialMeal || '아침');
-  const [servings, setServings] = useState(1);
   const [analyzing, setAnalyzing] = useState(false);
   const [preview, setPreview] = useState(null);
   const [aiResult, setAiResult] = useState(null);
@@ -645,14 +644,17 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
   };
 
   const handleAnalyze = async () => {
-    if (!name.trim()) return;
+    const validItems = foodItems.filter(f => f.name.trim());
+    if (validItems.length === 0) return;
     setAnalyzing(true);
     setAiResult(null);
     try {
+      const nameStr = validItems.map(f => `${f.name.trim()} ${f.qty}${f.unit}`).join(', ');
+      const totalServings = validItems.reduce((s, f) => s + f.qty, 0);
       const res = await fetch('/api/food-lookup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name.trim(), servings }),
+        body: JSON.stringify({ name: nameStr, servings: totalServings }),
       });
       if (res.ok) {
         const result = await res.json();
@@ -673,6 +675,10 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
       fat: aiResult.fat || 0,
       vitamin: aiResult.vitamin || 0,
       mineral: aiResult.mineral || 0,
+      fiber: aiResult.fiber || 0,
+      iron: aiResult.iron || 0,
+      calcium: aiResult.calcium || 0,
+      sodium: aiResult.sodium || 0,
       bloodSugar: aiResult.bloodSugar || '',
       bloodSugarNote: aiResult.bloodSugarNote || '',
       drowsiness: aiResult.drowsiness || '',
@@ -768,36 +774,82 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
           </div>
         )}
 
-        {/* Food name input + servings + analyze button */}
+        {/* Food name input + servings */}
         <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>음식 이름</div>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-          <input
-            ref={nameInputRef}
-            value={name}
-            onChange={e => { setName(e.target.value); setAiResult(null); }}
-            onKeyDown={e => e.key === 'Enter' && handleAnalyze()}
-            onFocus={() => setTimeout(() => nameInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
-            placeholder="예: 연어포케, 불고기김밥"
-            style={{ ...inputStyle, flex: 1 }}
-          />
-          <select
-            value={servings}
-            onChange={e => { setServings(Number(e.target.value)); setAiResult(null); }}
-            style={{
-              width: 64, padding: '10px 4px', borderRadius: 12, border: 'none',
-              background: 'var(--bg-input, #F2F3F5)', fontSize: 13,
-              color: 'var(--text-primary)', fontFamily: 'inherit', textAlign: 'center',
-              outline: 'none',
-            }}
-          >
-            {[0.5, 0.8, 1, 1.5, 2].map(n => (
-              <option key={n} value={n}>{n}인분</option>
-            ))}
-          </select>
+        {foodItems.map((item, idx) => (
+          <div key={idx} style={{ display: 'flex', gap: 6, marginBottom: 8, alignItems: 'center' }}>
+            <input
+              ref={idx === 0 ? nameInputRef : null}
+              value={item.name}
+              onChange={e => {
+                const next = [...foodItems];
+                next[idx].name = e.target.value;
+                setFoodItems(next);
+                setAiResult(null);
+              }}
+              onKeyDown={e => e.key === 'Enter' && handleAnalyze()}
+              onFocus={() => setTimeout(() => nameInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
+              placeholder={idx === 0 ? '예: 연어포케' : '추가 음식'}
+              style={{ ...inputStyle, flex: 1 }}
+            />
+            <select
+              value={item.qty}
+              onChange={e => {
+                const next = [...foodItems];
+                next[idx].qty = Number(e.target.value);
+                setFoodItems(next);
+                setAiResult(null);
+              }}
+              style={{
+                width: 52, padding: '10px 2px', borderRadius: 12, border: 'none',
+                background: 'var(--bg-input, #F2F3F5)', fontSize: 13,
+                color: 'var(--text-primary)', fontFamily: 'inherit', textAlign: 'center',
+                outline: 'none',
+              }}
+            >
+              {[0.5, 0.8, 1, 1.5, 2, 3, 4, 5].map(n => (
+                <option key={n} value={n}>{n}</option>
+              ))}
+            </select>
+            <select
+              value={item.unit}
+              onChange={e => {
+                const next = [...foodItems];
+                next[idx].unit = e.target.value;
+                setFoodItems(next);
+                setAiResult(null);
+              }}
+              style={{
+                width: 56, padding: '10px 2px', borderRadius: 12, border: 'none',
+                background: 'var(--bg-input, #F2F3F5)', fontSize: 13,
+                color: 'var(--text-primary)', fontFamily: 'inherit', textAlign: 'center',
+                outline: 'none',
+              }}
+            >
+              {['인분', '개', '줄', '조각', '잔', '그릇', '봉'].map(u => (
+                <option key={u} value={u}>{u}</option>
+              ))}
+            </select>
+            {foodItems.length > 1 && (
+              <div onClick={() => setFoodItems(foodItems.filter((_, i) => i !== idx))} style={{
+                width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', color: '#ccc', fontSize: 16,
+              }}>×</div>
+            )}
+          </div>
+        ))}
+        <div onClick={() => setFoodItems([...foodItems, { name: '', qty: 1, unit: '인분' }])} style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+          padding: '8px 0', marginBottom: 12, cursor: 'pointer',
+          borderRadius: 10, border: '1px dashed rgba(0,0,0,0.12)',
+          fontSize: 12, color: 'var(--text-muted)',
+        }}>
+          <span style={{ fontSize: 16 }}>+</span> 음식 추가
         </div>
 
         {/* Analyze button */}
-        <button onClick={handleAnalyze} disabled={analyzing || !name.trim()} style={{
+        <button onClick={handleAnalyze} disabled={analyzing || !foodItems.some(f => f.name.trim())} style={{
           width: '100%', padding: '13px 0', borderRadius: 14, border: 'none',
           background: analyzing ? 'var(--bg-input, #F2F3F5)' : 'rgba(129,228,189,0.15)',
           color: analyzing ? 'var(--text-muted)' : 'var(--accent-primary)',
