@@ -324,7 +324,7 @@ export default function AlbumPage({ onBack, onMeasure, onOpenConsult, onTabChang
           <div style={{ padding: '27px 18px 0' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12 }}>
               <div style={{
-                width: 56, height: 56, borderRadius: '50%', flexShrink: 0,
+                width: 72, height: 72, borderRadius: '50%', flexShrink: 0,
                 background: 'var(--btn-primary-bg)', padding: 2,
               }}>
                 <div style={{
@@ -1060,7 +1060,7 @@ function ProfileSettingsPage({ onClose }) {
         {/* Profile photo */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
           <div onClick={() => document.getElementById('profile-photo-input')?.click()} style={{
-            position: 'relative', width: 72, height: 72, borderRadius: '50%', cursor: 'pointer',
+            position: 'relative', width: 96, height: 96, borderRadius: '50%', cursor: 'pointer',
             overflow: 'hidden', background: 'var(--bg-secondary)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
