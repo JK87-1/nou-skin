@@ -24,7 +24,7 @@ import {
   getAllThumbnailsAsync, saveThumbnail, deleteRecord,
 } from '../storage/SkinStorage';
 import { AnimatedNumber, ScoreRing, MetricBar } from '../components/UIComponents';
-import { getProfile } from '../storage/ProfileStorage';
+import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, GENDER_OPTIONS } from '../storage/ProfileStorage';
 import AiInsightCard from '../components/AiInsightCard';
 import { ChartIcon, CameraIcon, MicroscopeIcon, SparkleIcon, DiamondIcon, DropletIcon, RulerIcon, PaletteIcon, LotionIcon, EyeIcon, BubbleIcon, TargetIcon, ClockIcon, LuaMiniIcon } from '../components/icons/PastelIcons';
 import EternalPearl from '../components/icons/EternalPearl';
@@ -196,6 +196,7 @@ export default function AlbumPage({ onBack, onMeasure, onOpenConsult, onTabChang
   const [thumbs, setThumbs] = useState({});
   const [selectedFood, setSelectedFood] = useState(null);
   const [foodRefreshKey, setFoodRefreshKey] = useState(0);
+  const [showSettingsPage, setShowSettingsPage] = useState(false);
 
   useEffect(() => {
     setRecords(getRecords());
@@ -285,7 +286,7 @@ export default function AlbumPage({ onBack, onMeasure, onOpenConsult, onTabChang
               <path d="M12 5v14M5 12h14" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </div>
-          <div onClick={() => setShowSettings && setShowSettings(true)} style={{
+          <div onClick={() => setShowSettingsPage(true)} style={{
             width: 34, height: 34, borderRadius: '50%', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
@@ -914,6 +915,296 @@ export default function AlbumPage({ onBack, onMeasure, onOpenConsult, onTabChang
           </div>
         );
       })()}
+
+      {/* Settings Drawer */}
+      <SettingsPage open={showSettingsPage} onClose={() => setShowSettingsPage(false)} />
+    </div>
+  );
+}
+
+// ===== SETTINGS PAGE =====
+function SettingsPage({ open, onClose }) {
+  const [showProfilePage, setShowProfilePage] = useState(false);
+
+  const menuSections = [
+    {
+      title: '계정',
+      items: [
+        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>, label: '프로필 설정', action: () => setShowProfilePage(true) },
+        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="22" x2="4" y2="2"/><path d="M4 3c3-1 6 1 9 0s6-2 8 0v10c-2-2-5 0-8 1s-6-1-9 0V3z"/></svg>, label: '목표 설정' },
+      ],
+    },
+    {
+      title: '앱 설정',
+      items: [
+        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>, label: '카테고리' },
+        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>, label: '화면' },
+        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>, label: '데이터' },
+      ],
+    },
+    {
+      title: '정보',
+      items: [
+        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>, label: '공지사항' },
+        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>, label: '앱 정보' },
+        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>, label: '문의하기' },
+      ],
+    },
+  ];
+
+  return (
+    <>
+      <div onClick={onClose} style={{
+        position: 'fixed', inset: 0, zIndex: 2000,
+        background: 'rgba(0,0,0,0.5)',
+        opacity: open ? 1 : 0,
+        pointerEvents: open ? 'auto' : 'none',
+        transition: 'opacity 0.3s ease',
+      }} />
+      <div style={{
+        position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 2001,
+        width: '100%',
+        background: 'linear-gradient(to bottom, #ace2fc, #dfed89)',
+        transform: open ? 'translateX(0)' : 'translateX(100%)',
+        transition: 'transform 0.3s ease',
+        display: 'flex', flexDirection: 'column',
+        overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+      }}>
+        <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+          <div onClick={onClose} style={{
+            width: 36, height: 36,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
+            zIndex: 1,
+          }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </div>
+          <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>설정</span>
+        </div>
+        <div style={{ flex: 1, padding: '8px 0' }}>
+          {menuSections.map((section) => (
+            <div key={section.title}>
+              <div style={{
+                padding: '14px 28px 6px',
+                fontSize: 11, fontWeight: 400, color: 'var(--text-dim)',
+                letterSpacing: 0.5,
+              }}>{section.title}</div>
+              {section.items.map((item) => (
+                <div key={item.label} onClick={() => item.action ? item.action() : null} style={{
+                  display: 'flex', alignItems: 'center', gap: 16,
+                  padding: '11px 28px', cursor: 'pointer',
+                  WebkitTapHighlightColor: 'transparent',
+                  color: 'var(--text-primary)',
+                }}>
+                  {item.icon}
+                  <span style={{ fontSize: 15, fontWeight: 500, flex: 1 }}>{item.label}</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.6)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 6l6 6-6 6" />
+                  </svg>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+        <div style={{ padding: '12px 28px 40px', borderTop: '1px solid var(--border-light, #eee)' }}>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12 }}>버전 1.0.0</div>
+          <div onClick={() => {}} style={{ fontSize: 13, color: 'var(--text-muted)', cursor: 'pointer' }}>로그아웃</div>
+        </div>
+      </div>
+      {showProfilePage && <ProfileSettingsPage onClose={() => setShowProfilePage(false)} />}
+    </>
+  );
+}
+
+// ===== PROFILE SETTINGS PAGE =====
+function ProfileSettingsPage({ onClose }) {
+  const [profile, setProfile] = useState(getProfile);
+  const currentYear = new Date().getFullYear();
+  const age = profile.birthYear ? currentYear - parseInt(profile.birthYear) : null;
+
+  const onUpdate = (key, value) => {
+    const next = saveProfile({ [key]: value });
+    setProfile(next);
+  };
+
+  const inputStyle = {
+    width: '100%', padding: '12px 14px', borderRadius: 12, border: 'none',
+    background: 'var(--bg-input, #F2F3F5)', fontSize: 14,
+    color: 'var(--text-primary)', fontFamily: 'inherit', outline: 'none',
+  };
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 2002,
+      background: 'linear-gradient(to bottom, #ace2fc, #dfed89)',
+      overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+    }}>
+      {/* Header */}
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+        <div onClick={onClose} style={{
+          width: 36, height: 36,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
+          zIndex: 1,
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </div>
+        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>프로필 설정</span>
+      </div>
+
+      <div style={{ padding: '20px 24px 40px' }}>
+        {/* Profile photo */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+          <div onClick={() => document.getElementById('profile-photo-input')?.click()} style={{
+            position: 'relative', width: 72, height: 72, borderRadius: '50%', cursor: 'pointer',
+            overflow: 'hidden', background: 'var(--bg-secondary)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            {profile.profileImage ? (
+              <img src={profile.profileImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
+                <circle cx="12" cy="10" r="4" /><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" strokeLinecap="round" />
+              </svg>
+            )}
+            <div style={{
+              position: 'absolute', bottom: 0, left: 0, right: 0, height: 24,
+              background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="#fff" strokeWidth="1.5" />
+                <circle cx="12" cy="13" r="3" stroke="#fff" strokeWidth="1.5" />
+              </svg>
+            </div>
+            <input id="profile-photo-input" type="file" accept="image/*" onChange={e => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              const reader = new FileReader();
+              reader.onload = (ev) => {
+                const img = new Image();
+                img.onload = () => {
+                  const canvas = document.createElement('canvas');
+                  canvas.width = 200; canvas.height = 200;
+                  const ctx = canvas.getContext('2d');
+                  const size = Math.min(img.width, img.height);
+                  const sx = (img.width - size) / 2, sy = (img.height - size) / 2;
+                  ctx.drawImage(img, sx, sy, size, size, 0, 0, 200, 200);
+                  onUpdate('profileImage', canvas.toDataURL('image/jpeg', 0.8));
+                };
+                img.src = ev.target.result;
+              };
+              reader.readAsDataURL(file);
+            }} style={{ display: 'none' }} />
+          </div>
+        </div>
+
+        {/* Nickname */}
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>닉네임</div>
+          <input value={profile.nickname || ''} onChange={e => onUpdate('nickname', e.target.value)}
+            placeholder="닉네임" maxLength={20} style={inputStyle} />
+        </div>
+
+        {/* 기본 정보 */}
+        <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', margin: '24px 0 12px' }}>기본 정보</div>
+
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>생년월일</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <input value={profile.birthYear || ''} onChange={e => onUpdate('birthYear', e.target.value)}
+              placeholder="예: 1995" type="number" min={1940} max={currentYear} style={{ ...inputStyle, flex: 1 }} />
+            {age > 0 && <span style={{ fontSize: 13, color: 'var(--accent-primary)', fontWeight: 600, whiteSpace: 'nowrap' }}>만 {age}세</span>}
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>성별</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {GENDER_OPTIONS.map(g => (
+              <button key={g} onClick={() => onUpdate('gender', g)} style={{
+                flex: 1, padding: '10px 0', borderRadius: 10, border: 'none',
+                background: profile.gender === g ? 'var(--accent-primary)' : 'var(--bg-input, #F2F3F5)',
+                color: profile.gender === g ? '#fff' : 'var(--text-muted)',
+                fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+              }}>{g}</button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>키 (cm)</div>
+            <input value={profile.height || ''} onChange={e => onUpdate('height', e.target.value)}
+              placeholder="165" type="number" style={inputStyle} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>현재 몸무게 (kg)</div>
+            <input value={profile.currentWeight || ''} onChange={e => onUpdate('currentWeight', e.target.value)}
+              placeholder="60" type="number" step="0.1" style={inputStyle} />
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>목표 몸무게 (kg)</div>
+          <input value={profile.goalWeight || ''} onChange={e => onUpdate('goalWeight', e.target.value)}
+            placeholder="55" type="number" step="0.1" style={inputStyle} />
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>활동 수준</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {['거의 없음', '가벼운 활동', '보통', '활발한 활동', '매우 활발'].map(level => (
+              <button key={level} onClick={() => onUpdate('activityLevel', level)} style={{
+                padding: '8px 14px', borderRadius: 10, border: 'none',
+                background: profile.activityLevel === level ? 'var(--accent-primary)' : 'var(--bg-input, #F2F3F5)',
+                color: profile.activityLevel === level ? '#fff' : 'var(--text-muted)',
+                fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+              }}>{level}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* 피부 정보 */}
+        <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', margin: '24px 0 12px' }}>피부 정보</div>
+
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>피부 타입</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {SKIN_TYPES.map(t => (
+              <button key={t} onClick={() => onUpdate('skinType', t)} style={{
+                padding: '8px 14px', borderRadius: 10, border: 'none',
+                background: profile.skinType === t ? 'var(--accent-primary)' : 'var(--bg-input, #F2F3F5)',
+                color: profile.skinType === t ? '#fff' : 'var(--text-muted)',
+                fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+              }}>{t}</button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>주요 피부 고민</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {SKIN_CONCERNS.map(c => {
+              const active = (profile.skinConcerns || []).includes(c);
+              return (
+                <button key={c} onClick={() => {
+                  const list = active ? profile.skinConcerns.filter(x => x !== c) : [...(profile.skinConcerns || []), c];
+                  onUpdate('skinConcerns', list);
+                }} style={{
+                  padding: '8px 14px', borderRadius: 10, border: 'none',
+                  background: active ? 'var(--accent-primary)' : 'var(--bg-input, #F2F3F5)',
+                  color: active ? '#fff' : 'var(--text-muted)',
+                  fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+                }}>{c}</button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

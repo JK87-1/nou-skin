@@ -182,7 +182,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       }}>
         {/* 상단 row */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, position: 'relative' }}>
-          <div onClick={() => setShowSettings(true)} style={{ cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1 }}>
+          <div style={{ cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1 }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.8)" strokeWidth="1.8" strokeLinecap="round">
               <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
             </svg>
@@ -216,7 +216,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       {/* ===== 2. 실시간 컨디션 체크 카드 ===== */}
       <div style={{
         margin: '0 18px', marginTop: -8, position: 'relative', zIndex: 1,
-        background: 'rgba(255,255,255,0.3)', borderRadius: 14, padding: '10px 12px',
+        background: 'rgba(255,255,255,0.3)', borderRadius: 16, padding: '10px 12px',
         border: 'none',
         boxShadow: 'none',
       }}>
@@ -271,7 +271,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           marginTop: 12,
           background: activeCheck ? 'rgba(78,184,160,0.08)' : 'rgba(0,0,0,0.02)',
           border: `1px solid ${activeCheck ? 'rgba(78,184,160,0.25)' : 'rgba(0,0,0,0.06)'}`,
-          borderRadius: 12, padding: '10px 12px',
+          borderRadius: 16, padding: '10px 12px',
           opacity: activeCheck ? 1 : 0.55,
         }}>
           {/* 상단 배지 */}
@@ -310,7 +310,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         {/* ===== 4. 행동 추천 버튼 ===== */}
         <button style={{
           width: '100%', padding: 11, marginTop: 10,
-          borderRadius: 12, border: 'none',
+          borderRadius: 16, border: 'none',
           background: activeCheck
             ? 'linear-gradient(120deg, #B8F0E0, #6ECFB8, #4DB8A0)'
             : 'linear-gradient(120deg, #eee, #e5e5e5)',
@@ -324,7 +324,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         {/* ===== 5. 오늘 컨디션 흐름 그래프 ===== */}
         <div style={{
             marginTop: 12, background: '#fff',
-            border: '0.5px solid #eee', borderRadius: 12, padding: '9px 12px',
+            border: '0.5px solid #eee', borderRadius: 16, padding: '9px 12px',
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
               <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-primary)' }}>오늘 컨디션 흐름</span>
@@ -389,7 +389,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
         {/* ===== 루틴 요약 ===== */}
         <div onClick={() => onTabChange('routine')} style={{
-          borderRadius: 14, padding: '11px 13px', marginTop: 12,
+          borderRadius: 16, padding: '11px 13px', marginTop: 12,
           background: '#f9f9f9', cursor: 'pointer',
           display: 'flex', alignItems: 'center', gap: 10,
         }}>
@@ -420,10 +420,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         </div>
       </div>
 
-      {/* Settings Drawer */}
-      <SettingsDrawer open={showSettings} onClose={() => setShowSettings(false)}
-        onAccount={() => { setShowSettings(false); setShowAccountPage(true); }} />
-
       {/* Account Page */}
       {showAccountPage && (
         <AccountPage
@@ -444,93 +440,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   }
 }
 
-// ===== Settings Drawer =====
-function SettingsDrawer({ open, onClose, onAccount }) {
-  const menuSections = [
-    {
-      title: '계정',
-      items: [
-        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>, label: '프로필 설정', action: onAccount },
-        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="22" x2="4" y2="2"/><path d="M4 3c3-1 6 1 9 0s6-2 8 0v10c-2-2-5 0-8 1s-6-1-9 0V3z"/></svg>, label: '목표 설정' },
-      ],
-    },
-    {
-      title: '앱 설정',
-      items: [
-        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>, label: '카테고리' },
-        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>, label: '화면' },
-        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>, label: '데이터' },
-      ],
-    },
-    {
-      title: '정보',
-      items: [
-        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>, label: '공지사항' },
-        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>, label: '앱 정보' },
-        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>, label: '문의하기' },
-      ],
-    },
-  ];
-
-  return (
-    <>
-      <div onClick={onClose} style={{
-        position: 'fixed', inset: 0, zIndex: 2000,
-        background: 'rgba(0,0,0,0.5)',
-        opacity: open ? 1 : 0,
-        pointerEvents: open ? 'auto' : 'none',
-        transition: 'opacity 0.3s ease',
-      }} />
-      <div style={{
-        position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 2001,
-        width: '80%', maxWidth: 320,
-        background: 'var(--bg-primary, #fff)',
-        transform: open ? 'translateX(0)' : 'translateX(-100%)',
-        transition: 'transform 0.3s ease',
-        display: 'flex', flexDirection: 'column',
-        overflowY: 'auto', WebkitOverflowScrolling: 'touch',
-      }}>
-        <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', justifyContent: 'flex-end' }}>
-          <div onClick={onClose} style={{
-            width: 36, height: 36, borderRadius: '50%',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
-          }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round">
-              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </div>
-        </div>
-        <div style={{ flex: 1, padding: '12px 0' }}>
-          {menuSections.map((section) => (
-            <div key={section.title}>
-              <div style={{
-                padding: '20px 28px 8px',
-                fontSize: 11, fontWeight: 400, color: 'var(--text-dim)',
-                letterSpacing: 0.5,
-              }}>{section.title}</div>
-              {section.items.map((item) => (
-                <div key={item.label} onClick={() => item.action ? item.action() : null} style={{
-                  display: 'flex', alignItems: 'center', gap: 16,
-                  padding: '14px 28px', cursor: 'pointer',
-                  WebkitTapHighlightColor: 'transparent',
-                  color: 'var(--text-primary)',
-                }}>
-                  {item.icon}
-                  <span style={{ fontSize: 15, fontWeight: 500 }}>{item.label}</span>
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-        <div style={{ padding: '16px 28px 40px', borderTop: '1px solid var(--border-light, #eee)' }}>
-          <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>버전 1.0.0</div>
-          <div onClick={() => {}} style={{ fontSize: 13, color: 'var(--text-muted)', cursor: 'pointer' }}>로그아웃</div>
-        </div>
-      </div>
-    </>
-  );
-}
 
 // ===== Account Page =====
 function AccountPage({ profile, onUpdate, onClose }) {

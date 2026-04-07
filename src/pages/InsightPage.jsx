@@ -345,12 +345,6 @@ export default function InsightPage() {
       {/* Goal Modal */}
       {showGoalModal && <GoalModal onSave={handleSaveGoal} onClose={() => setShowGoalModal(false)} current={goal} />}
 
-      {/* Profile Settings Modal */}
-      {showSettings && <ProfileSettingsModal
-        profile={userProfile}
-        onUpdate={(key, val) => { const next = saveProfile({ [key]: val }); setUserProfile(next); }}
-        onClose={() => setShowSettings(false)}
-      />}
     </div>
   );
 }
