@@ -172,6 +172,13 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
     } catch {}
     return '';
   });
+  const [briefingTime, setBriefingTime] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('lua_body_briefing') || '{}');
+      if (saved.date === new Date().toISOString().slice(0, 10)) return saved.time || '';
+    } catch {}
+    return '';
+  });
   const [briefingLoading, setBriefingLoading] = useState(false);
 
   // Update minutes ago every 60s
@@ -218,8 +225,11 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (data?.briefing) {
+          const now = new Date();
+          const time = now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: true });
           setBodyBriefing(data.briefing);
-          localStorage.setItem('lua_body_briefing', JSON.stringify({ date: new Date().toISOString().slice(0, 10), text: data.briefing }));
+          setBriefingTime(time);
+          localStorage.setItem('lua_body_briefing', JSON.stringify({ date: now.toISOString().slice(0, 10), text: data.briefing, time }));
         }
       })
       .catch(() => {})
@@ -396,7 +406,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
             <span style={{ fontSize: 18, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>인사이트</span>
             <span style={{ fontSize: 11, color: '#4DB8A0', fontWeight: 500 }}>
-              {briefingLoading ? '● AI 분석 중...' : bodyBriefing ? '● AI 브리핑' : '● 분석 중'}
+              {briefingLoading ? '● AI 분석 중...' : bodyBriefing && briefingTime ? `${briefingTime} 기준` : '● 분석 중'}
             </span>
           </div>
           {bodyBriefing ? (
