@@ -165,7 +165,13 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [justUpdated, setJustUpdated] = useState(false);
   const [todayChecks, setTodayChecks] = useState(getTodayChecks);
   const [minutesAgo, setMinutesAgo] = useState(getMinutesSinceLastCheck);
-  const [bodyBriefing, setBodyBriefing] = useState('');
+  const [bodyBriefing, setBodyBriefing] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('lua_body_briefing') || '{}');
+      if (saved.date === new Date().toISOString().slice(0, 10)) return saved.text || '';
+    } catch {}
+    return '';
+  });
   const [briefingLoading, setBriefingLoading] = useState(false);
 
   // Update minutes ago every 60s
@@ -210,7 +216,12 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       }),
     })
       .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data?.briefing) setBodyBriefing(data.briefing); })
+      .then(data => {
+        if (data?.briefing) {
+          setBodyBriefing(data.briefing);
+          localStorage.setItem('lua_body_briefing', JSON.stringify({ date: new Date().toISOString().slice(0, 10), text: data.briefing }));
+        }
+      })
       .catch(() => {})
       .finally(() => setBriefingLoading(false));
   };
