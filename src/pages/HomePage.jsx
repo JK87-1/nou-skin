@@ -195,10 +195,11 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
     const bodyRecords = getBodyRecords();
     const prevWeight = bodyRecords.length >= 2 ? bodyRecords[bodyRecords.length - 2].weight : null;
 
-    fetch('/api/body-briefing', {
+    fetch('/api/condition-briefing', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        type: 'body',
         energy: sliderTo100(selections.energy),
         mood: sliderTo100(selections.mood),
         hydration: sliderTo100(selections.water),

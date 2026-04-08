@@ -25,7 +25,48 @@ function getTimeOfDay(hour) {
   return '밤';
 }
 
-function buildPrompt(data) {
+function buildBodyPrompt(data) {
+  const { energy, mood, hydration, dietSummary, supplements, weight, previousWeight, timeOfDay } = data;
+
+  let weightChange = '';
+  if (previousWeight != null && weight != null) {
+    const diff = weight - previousWeight;
+    if (Math.abs(diff) >= 0.1) {
+      weightChange = `\n이전 대비 몸무게 변화: ${diff > 0 ? '+' : ''}${diff.toFixed(1)}kg`;
+    } else {
+      weightChange = '\n몸무게 변화 없음';
+    }
+  }
+
+  const supplementText = supplements && supplements.length > 0
+    ? supplements.map(s => `${s.name}: ${s.taken ? '✅' : '❌'}`).join(', ')
+    : '기록 없음';
+
+  return `당신은 사용자의 건강을 매일 함께 챙기는 따뜻한 웰니스 파트너입니다. 친한 친구처럼 다정하고 개인적인 톤으로 브리핑하세요.
+
+[규칙]
+- 정확히 2문장으로 작성
+- 첫 문장: 오늘 입력된 데이터를 기반으로 컨디션 상태를 따뜻하게 요약
+- 두 번째 문장: 데이터에 기반한 실천 가능한 팁 또는 응원 한마디
+- "~해요" 체, 친구처럼 다정하고 개인적인 톤
+- 시간대(${timeOfDay}) 맥락 자연스럽게 반영
+- 매번 다른 표현과 문장 구조를 사용하세요
+
+[슬라이더 해석 기준 — 각 값은 0~100]
+에너지 70+: 활력 넘치는 상태 / 에너지 40~69: 보통 / 에너지 ~39: 피곤하거나 지친 상태
+기분 70+: 기분 좋은 상태 / 기분 40~69: 무난한 하루 / 기분 ~39: 기분이 다운된 상태
+수분 70+: 수분 섭취 충분 / 수분 40~69: 보통 / 수분 ~39: 수분 섭취 부족
+
+[데이터]
+에너지: ${energy ?? '미입력'} | 기분: ${mood ?? '미입력'} | 수분 섭취: ${hydration ?? '미입력'}
+오늘 식단: ${dietSummary || '기록 없음'}
+영양제: ${supplementText}
+몸무게: ${weight != null ? weight + 'kg' : '미입력'}${weightChange}
+
+브리핑을 작성하세요:`;
+}
+
+function buildSkinPrompt(data) {
   const { current, previous, timeOfDay, skinType, todayCount, stableSkinAge } = data;
 
   let comparison = '';
@@ -115,21 +156,27 @@ export default async function handler(req, res) {
   if (!apiKey) return res.status(500).json({ error: 'API key not configured' });
 
   try {
-    const { current, previous, skinType, todayCount, stableSkinAge } = req.body;
-    if (!current || !current.overallScore) {
-      return res.status(400).json({ error: 'Current scores required' });
-    }
+    const { type } = req.body;
 
     // Use KST (UTC+9) since Vercel runs in UTC
     const kstNow = new Date(Date.now() + 9 * 3600 * 1000);
     const hour = kstNow.getUTCHours();
     const timeOfDay = getTimeOfDay(hour);
 
-    const prompt = buildPrompt({
-      current, previous, timeOfDay, skinType,
-      todayCount: todayCount || 1,
-      stableSkinAge,
-    });
+    let prompt, maxTokens;
+
+    if (type === 'body') {
+      const { energy, mood, hydration, dietSummary, supplements, weight, previousWeight } = req.body;
+      prompt = buildBodyPrompt({ energy, mood, hydration, dietSummary, supplements, weight, previousWeight, timeOfDay });
+      maxTokens = 150;
+    } else {
+      const { current, previous, skinType, todayCount, stableSkinAge } = req.body;
+      if (!current || !current.overallScore) {
+        return res.status(400).json({ error: 'Current scores required' });
+      }
+      prompt = buildSkinPrompt({ current, previous, timeOfDay, skinType, todayCount: todayCount || 1, stableSkinAge });
+      maxTokens = 200;
+    }
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -137,7 +184,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [{ role: 'user', content: prompt }],
-        max_tokens: 200,
+        max_tokens: maxTokens,
         temperature: 0.7,
       }),
     });
