@@ -220,6 +220,11 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         supplements: [],
         weight: latestW?.weight ?? null,
         previousWeight: prevWeight,
+        routine: {
+          skin: { done: skinRoutine.done, total: skinRoutine.total },
+          food: { done: foodRoutine.done, total: foodRoutine.total },
+          body: { done: bodyRoutine.done, total: bodyRoutine.total },
+        },
       }),
     })
       .then(r => r.ok ? r.json() : null)

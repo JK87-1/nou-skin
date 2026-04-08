@@ -26,7 +26,7 @@ function getTimeOfDay(hour) {
 }
 
 function buildBodyPrompt(data) {
-  const { energy, mood, hydration, dietSummary, supplements, weight, previousWeight, timeOfDay } = data;
+  const { energy, mood, hydration, dietSummary, supplements, weight, previousWeight, timeOfDay, routine } = data;
 
   let weightChange = '';
   if (previousWeight != null && weight != null) {
@@ -62,6 +62,7 @@ function buildBodyPrompt(data) {
 오늘 식단: ${dietSummary || '기록 없음'}
 영양제: ${supplementText}
 몸무게: ${weight != null ? weight + 'kg' : '미입력'}${weightChange}
+루틴 체크: 스킨케어 ${routine?.skin ? `${routine.skin.done}/${routine.skin.total}` : '미설정'} | 식단 ${routine?.food ? `${routine.food.done}/${routine.food.total}` : '미설정'} | 바디케어 ${routine?.body ? `${routine.body.done}/${routine.body.total}` : '미설정'}
 
 브리핑을 작성하세요:`;
 }
@@ -166,8 +167,8 @@ export default async function handler(req, res) {
     let prompt, maxTokens;
 
     if (type === 'body') {
-      const { energy, mood, hydration, dietSummary, supplements, weight, previousWeight } = req.body;
-      prompt = buildBodyPrompt({ energy, mood, hydration, dietSummary, supplements, weight, previousWeight, timeOfDay });
+      const { energy, mood, hydration, dietSummary, supplements, weight, previousWeight, routine } = req.body;
+      prompt = buildBodyPrompt({ energy, mood, hydration, dietSummary, supplements, weight, previousWeight, timeOfDay, routine });
       maxTokens = 150;
     } else {
       const { current, previous, skinType, todayCount, stableSkinAge } = req.body;
