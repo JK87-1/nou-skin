@@ -31,6 +31,19 @@ import EternalPearl from '../components/icons/EternalPearl';
 import { getDefaultTheme } from '../data/BadgeData';
 import { getFoodRecords, deleteFoodRecord } from '../storage/FoodStorage';
 import { getBodyRecords } from '../storage/BodyStorage';
+import { getPhotoDB } from '../storage/PhotoDB';
+
+// 식단 사진: IndexedDB photoId면 로드, 기존 base64면 그대로 표시
+function FoodPhoto({ photo, style, alt = '' }) {
+  const [src, setSrc] = useState(null);
+  useEffect(() => {
+    if (!photo) return;
+    if (photo.startsWith('data:')) { setSrc(photo); return; }
+    getPhotoDB(photo).then(url => { if (url) setSrc(url); });
+  }, [photo]);
+  if (!src) return null;
+  return <img src={src} alt={alt} style={style} />;
+}
 
 // ===== MINI LINE GRAPH (Canvas-based, no dependencies) =====
 function TrendGraph({ data, color = '#ADEBB3', height = 160, metricKey = 'skinAge', inverse = false, showAllLabels = false }) {
@@ -393,7 +406,7 @@ export default function AlbumPage({ onBack, onMeasure, onOpenConsult, onTabChang
                       {foods.map(food => (
                         <div key={food.id} onClick={() => setSelectedFood({ ...food, _date: date })} style={{ aspectRatio: '1', borderRadius: 5, overflow: 'hidden', background: 'var(--bg-card-hover)', position: 'relative', cursor: 'pointer' }}>
                           {food.photo ? (
-                            <img src={food.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <FoodPhoto photo={food.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           ) : (
                             <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(129,228,189,0.08)' }}>
                               <span style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', padding: 4 }}>{food.name}</span>
@@ -1773,7 +1786,7 @@ function HistoryFoodDetailModal({ food, onClose, onDelete }) {
         {/* Food info */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
           {food.photo ? (
-            <img src={food.photo} alt="" style={{ width: 56, height: 56, borderRadius: 14, objectFit: 'cover', flexShrink: 0 }} />
+            <FoodPhoto photo={food.photo} style={{ width: 56, height: 56, borderRadius: 14, objectFit: 'cover', flexShrink: 0 }} />
           ) : (
             <div style={{ width: 56, height: 56, borderRadius: 14, background: 'rgba(129,228,189,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🍽️</div>
           )}

@@ -3,8 +3,22 @@ import { getTodayFoods, getTodayNutrition, getFoodRecords, getNutritionForDate, 
 import WeekDateHeader from '../components/WeekDateHeader';
 import { getRecords, getChanges, getTotalChanges, getAllThumbnailsAsync } from '../storage/SkinStorage';
 import { getBodyRecords, getLatestWeight, getStartWeight, getBodyGoal, getBodyProfile, calcBMI, saveBodyRecord, deleteBodyRecord } from '../storage/BodyStorage';
+import { savePhotoDB, getPhotoDB, resizeImage } from '../storage/PhotoDB';
 
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
+
+// 식단 사진: IndexedDB photoId면 로드, 기존 base64면 그대로 표시
+function FoodPhoto({ photo, style, alt = '' }) {
+  const [src, setSrc] = useState(null);
+  useEffect(() => {
+    if (!photo) return;
+    if (photo.startsWith('data:')) { setSrc(photo); return; }
+    // IndexedDB photoId
+    getPhotoDB(photo).then(url => { if (url) setSrc(url); });
+  }, [photo]);
+  if (!src) return null;
+  return <img src={src} alt={alt} style={style} />;
+}
 const MEAL_LABELS = ['아침', '점심', '저녁', '간식'];
 const MEAL_GRADIENTS = [
   'var(--accent-primary)',
@@ -308,7 +322,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                 position: 'relative', cursor: 'pointer',
               }}>
                 {slot.food.photo ? (
-                  <img src={slot.food.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
+                  <FoodPhoto photo={slot.food.photo} style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
                 ) : null}
                 <div style={{
                   fontSize: 9, color: '#fff', fontWeight: 600, padding: '3px 6px',
@@ -631,17 +645,14 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
     return () => vv.removeEventListener('resize', onResize);
   }, []);
 
-  const getThumb = () => {
+  const saveThumbToDB = async () => {
     if (!preview) return null;
     try {
-      const canvas = document.createElement('canvas');
-      canvas.width = 120; canvas.height = 120;
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
-      img.src = preview;
-      ctx.drawImage(img, 0, 0, 120, 120);
-      return canvas.toDataURL('image/jpeg', 0.6);
-    } catch { return preview; }
+      const photoId = `food_photo_${Date.now()}`;
+      const resized = await resizeImage(preview, 512, 0.82);
+      await savePhotoDB(photoId, resized);
+      return photoId;
+    } catch { return null; }
   };
 
   const handleAnalyze = async () => {
@@ -664,11 +675,11 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
     setAnalyzing(false);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!aiResult) return;
-    const thumb = getThumb();
+    const photoId = await saveThumbToDB();
     onAdd({
-      name: aiResult.name, meal, photo: thumb,
+      name: aiResult.name, meal, photo: photoId,
       kcal: aiResult.kcal || 0,
       carb: aiResult.carb || 0,
       protein: aiResult.protein || 0,
@@ -1267,7 +1278,7 @@ function FoodDetailModal({ food, onClose, onDelete }) {
         {/* Photo + Name header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
           {food.photo ? (
-            <img src={food.photo} alt="" style={{ width: 56, height: 56, borderRadius: 14, objectFit: 'cover', flexShrink: 0 }} />
+            <FoodPhoto photo={food.photo} style={{ width: 56, height: 56, borderRadius: 14, objectFit: 'cover', flexShrink: 0 }} />
           ) : (
             <div style={{ width: 56, height: 56, borderRadius: 14, background: 'rgba(129,228,189,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🍽️</div>
           )}
