@@ -2,9 +2,10 @@ import { useState, useEffect, useMemo } from 'react';
 import SkinWeather from '../components/SkinWeather';
 import { getLatestRecord } from '../storage/SkinStorage';
 import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, GENDER_OPTIONS } from '../storage/ProfileStorage';
-import { getTodayNutrition, getFoodGoal } from '../storage/FoodStorage';
+import { getTodayNutrition, getTodayFoods, getFoodGoal } from '../storage/FoodStorage';
 import { getWeatherData } from '../storage/WeatherStorage';
 import { getTodayProgress } from '../storage/RoutineCheckStorage';
+import { getLatestWeight, getBodyRecords } from '../storage/BodyStorage';
 import {
   getTodayChecks, getLatestCheck, saveConditionCheck,
   shouldResetCheck, getMinutesSinceLastCheck,
@@ -164,6 +165,8 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [justUpdated, setJustUpdated] = useState(false);
   const [todayChecks, setTodayChecks] = useState(getTodayChecks);
   const [minutesAgo, setMinutesAgo] = useState(getMinutesSinceLastCheck);
+  const [bodyBriefing, setBodyBriefing] = useState('');
+  const [briefingLoading, setBriefingLoading] = useState(false);
 
   // Update minutes ago every 60s
   useEffect(() => {
@@ -180,6 +183,35 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
     setTodayChecks(getTodayChecks());
     setJustUpdated(true);
     setMinutesAgo(0);
+
+    // Body briefing API 호출
+    setBriefingLoading(true);
+    const sliderTo100 = v => Math.round(((v - 1) / 4) * 100); // 1~5 → 0~100
+    const foods = getTodayFoods();
+    const dietSummary = foods.length > 0
+      ? foods.map(f => f.name).filter(Boolean).join(', ')
+      : '';
+    const latestW = getLatestWeight();
+    const bodyRecords = getBodyRecords();
+    const prevWeight = bodyRecords.length >= 2 ? bodyRecords[bodyRecords.length - 2].weight : null;
+
+    fetch('/api/body-briefing', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        energy: sliderTo100(selections.energy),
+        mood: sliderTo100(selections.mood),
+        hydration: sliderTo100(selections.water),
+        dietSummary,
+        supplements: [],
+        weight: latestW?.weight ?? null,
+        previousWeight: prevWeight,
+      }),
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.briefing) setBodyBriefing(data.briefing); })
+      .catch(() => {})
+      .finally(() => setBriefingLoading(false));
   };
 
   const handleSelect = (id, val) => {
@@ -351,23 +383,33 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
             <span style={{ fontSize: 18, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>인사이트</span>
-            <span style={{ fontSize: 11, color: '#4DB8A0', fontWeight: 500 }}>● 분석 중</span>
+            <span style={{ fontSize: 11, color: '#4DB8A0', fontWeight: 500 }}>
+              {briefingLoading ? '● AI 분석 중...' : bodyBriefing ? '● AI 브리핑' : '● 분석 중'}
+            </span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', marginBottom: 6 }}>
-            {(TIER_INSIGHT[activeCheck ? tier : liveTier].flow).map((step, i) => (
-              <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <span style={{
-                  fontSize: 12, fontWeight: 600, color: '#0D3028',
-                  background: i === 0 ? 'rgba(255,179,71,0.2)' : i === 2 ? 'rgba(78,184,160,0.2)' : 'rgba(255,243,176,0.4)',
-                  padding: '3px 8px', borderRadius: 8,
-                }}>{step}</span>
-                {i < 2 && <span style={{ fontSize: 12, color: '#ccc' }}>→</span>}
-              </span>
-            ))}
-          </div>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-            {TIER_INSIGHT[activeCheck ? tier : liveTier].desc}
-          </div>
+          {bodyBriefing ? (
+            <div style={{ fontSize: 13, color: '#0D3028', lineHeight: 1.6 }}>
+              {bodyBriefing}
+            </div>
+          ) : (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', marginBottom: 6 }}>
+                {(TIER_INSIGHT[activeCheck ? tier : liveTier].flow).map((step, i) => (
+                  <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <span style={{
+                      fontSize: 12, fontWeight: 600, color: '#0D3028',
+                      background: i === 0 ? 'rgba(255,179,71,0.2)' : i === 2 ? 'rgba(78,184,160,0.2)' : 'rgba(255,243,176,0.4)',
+                      padding: '3px 8px', borderRadius: 8,
+                    }}>{step}</span>
+                    {i < 2 && <span style={{ fontSize: 12, color: '#ccc' }}>→</span>}
+                  </span>
+                ))}
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                {TIER_INSIGHT[activeCheck ? tier : liveTier].desc}
+              </div>
+            </>
+          )}
         </div>
 
         {/* ===== 6. 에너지·기분 흐름 그래프 ===== */}
