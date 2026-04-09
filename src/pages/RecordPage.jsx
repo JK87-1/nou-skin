@@ -87,7 +87,7 @@ function getStatus(value, goal) {
 }
 
 const STATUS_SYMBOL = { '적정': '○', '부족': '△', '과잉': '↑', '-': '✕' };
-const STATUS_COLOR = { '적정': '#4db87a', '부족': '#1a5c3a', '과잉': '#F5A623', '-': '#1a1a1a' };
+const STATUS_COLOR = { '적정': '#1D9E75', '부족': '#E5C100', '과잉': '#5F5E5A', '-': '#999' };
 
 function getScoreComment(score) {
   if (score >= 90) return '완벽한 하루예요! 🌟';
