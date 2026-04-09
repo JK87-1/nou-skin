@@ -380,7 +380,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
         </div>
       )}
 
-      {/* 3. 오늘 식단 요약 */}
+      {/* 3. 오늘 식단 요약 + AI 인사이트 통합 */}
       {(() => {
         // AI 생성 키워드 수집 (각 음식의 tags 합산, 중복 제거)
         const aiTags = [...new Set(foods.flatMap(f => f.tags || []))];
@@ -388,7 +388,6 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
         const carbN = nutrients.find(n => n.key === 'carb');
         const fiberN = nutrients.find(n => n.key === 'fiber');
-
         const proteinN = nutrients.find(n => n.key === 'protein');
         const fatN = nutrients.find(n => n.key === 'fat');
         const sugarN = nutrients.find(n => n.key === 'sugar');
@@ -397,36 +396,16 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
         // 내 몸에 미치는 영향: 긍정 먼저 → 주의
         const impacts = [];
-        // 긍정 영향
-        if (proteinN?.status === '적정') {
-          impacts.push({ icon: '💪', text: '근육·회복에 도움', type: 'ok' });
-        }
-        if (fatN?.status === '적정' && proteinN?.status === '적정') {
-          impacts.push({ icon: '✨', text: '피부 보습 유지', type: 'ok' });
-        }
-        if (fiberN?.status === '적정') {
-          impacts.push({ icon: '🌿', text: '장 건강 도움', type: 'ok' });
-        }
-        if (calciumN?.status === '적정') {
-          impacts.push({ icon: '🦴', text: '뼈 건강 유지', type: 'ok' });
-        }
-        if (ironN?.status === '적정') {
-          impacts.push({ icon: '🩸', text: '빈혈 예방', type: 'ok' });
-        }
-        // 주의 영향
-        if (proteinN?.status === '부족' || carbN?.status === '과잉') {
-          impacts.push({ icon: '⚡', text: '에너지 하락 가능', type: 'warn' });
-        }
-        if (carbN?.status === '과잉') {
-          impacts.push({ icon: '😊', text: '기분 변동 가능', type: 'warn' });
-        }
-        if (sugarN?.status === '과잉' || carbN?.status === '과잉') {
-          impacts.push({ icon: '⚠️', text: '피부 트러블 가능성', type: 'caution' });
-        }
+        if (proteinN?.status === '적정') impacts.push({ icon: '💪', text: '근육·회복에 도움', type: 'ok' });
+        if (fatN?.status === '적정' && proteinN?.status === '적정') impacts.push({ icon: '✨', text: '피부 보습 유지', type: 'ok' });
+        if (fiberN?.status === '적정') impacts.push({ icon: '🌿', text: '장 건강 도움', type: 'ok' });
+        if (calciumN?.status === '적정') impacts.push({ icon: '🦴', text: '뼈 건강 유지', type: 'ok' });
+        if (ironN?.status === '적정') impacts.push({ icon: '🩸', text: '빈혈 예방', type: 'ok' });
+        if (proteinN?.status === '부족' || carbN?.status === '과잉') impacts.push({ icon: '⚡', text: '에너지 하락 가능', type: 'warn' });
+        if (carbN?.status === '과잉') impacts.push({ icon: '😊', text: '기분 변동 가능', type: 'warn' });
+        if (sugarN?.status === '과잉' || carbN?.status === '과잉') impacts.push({ icon: '⚠️', text: '피부 트러블 가능성', type: 'caution' });
 
         const tagStyle = {
-          lack: { background: 'rgba(255,143,171,0.15)', color: '#C2185B' },
-          high: { background: 'rgba(255,179,71,0.15)', color: '#C4580A' },
           ok: { background: 'rgba(78,184,160,0.15)', color: '#0F6E56' },
           ai: { background: 'rgba(78,184,160,0.12)', color: '#0F6E56', border: '0.5px solid rgba(78,184,160,0.25)' },
         };
@@ -436,35 +415,98 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
           ok: { background: 'rgba(78,184,160,0.1)', border: '0.5px solid rgba(78,184,160,0.3)', color: '#0F6E56' },
         };
 
+        // AI 인사이트 메시지 생성 (FoodCoachCard 로직 통합)
+        const latestFood = foods.length > 0 ? foods[foods.length - 1] : null;
+        const coachMessages = [];
+        if (latestFood) {
+          const recordedMeals = [...new Set(foods.filter(f => !f.name?.startsWith('물 ')).map(f => f.meal))];
+          const allMeals = ['아침', '점심', '저녁'];
+          const mealBasis = recordedMeals.length > 0 ? `${recordedMeals.join('·')} 기준` : '';
+
+          const positives = [];
+          const foodNames = foods.filter(f => !f.name?.startsWith('물 ')).map(f => f.name).filter(Boolean);
+          const goodSkin = foods.filter(f => f.skinImpact === '좋음');
+          const lowSugarF = foods.filter(f => f.bloodSugar === '낮음');
+          const noSleepy = foods.filter(f => f.drowsiness === '낮음');
+          const goodNutrients = NUTRIENT_META.filter(n => {
+            const val = nutrition[n.key] || 0;
+            const goalVal = n.goalKey ? goal[n.goalKey] : 0;
+            return goalVal && (val / goalVal) >= 0.7;
+          }).map(n => n.label);
+
+          if (goodSkin.length > 0) positives.push(`${goodSkin[0].name}은 피부 건강에 좋은 선택이에요`);
+          if (lowSugarF.length > 0 && positives.length === 0) positives.push(`${lowSugarF[0].name}은 혈당에 부담이 적어요`);
+          if (noSleepy.length > 0 && positives.length === 0) positives.push('식후에도 활력을 유지할 수 있는 식단이에요');
+          if (goodNutrients.length >= 3 && positives.length === 0) positives.push(`${goodNutrients.slice(0, 3).join('·')} 섭취가 잘 되고 있어요`);
+          if (score >= 70 && positives.length === 0) positives.push('영양 균형이 잘 맞는 식사예요');
+          if (positives.length === 0 && foodNames.length > 0) positives.push(`${foodNames[foodNames.length - 1]}, 괜찮은 선택이에요`);
+
+          const warnings = [];
+          const kcalRatio = goal.kcal ? nutrition.kcal / goal.kcal : 0;
+          if (kcalRatio > 1.2) warnings.push({ icon: '🍽️', text: `${mealBasis} 칼로리가 ${Math.round((kcalRatio - 1) * 100)}% 초과했어요.` });
+          if (latestFood.bloodSugar === '높음') warnings.push({ icon: '📈', text: latestFood.bloodSugarNote || `${latestFood.name}은 혈당을 빠르게 올릴 수 있어요.` });
+          if (latestFood.drowsiness === '높음') warnings.push({ icon: '😴', text: latestFood.drowsinessNote || `${latestFood.name} 식후 졸릴 수 있어요.` });
+          if (latestFood.skinImpact === '주의') warnings.push({ icon: '⚠️', text: latestFood.skinImpactNote || `${latestFood.name}은 피부 트러블에 영향을 줄 수 있어요.` });
+
+          const hour = new Date().getHours();
+          const futureMeals = allMeals.filter(m => {
+            if (m === '아침') return hour < 10;
+            if (m === '점심') return hour < 14;
+            if (m === '저녁') return hour < 21;
+            return false;
+          });
+          const nextMeal = futureMeals.find(m => !recordedMeals.includes(m));
+          let suggestion = '';
+          if (lacking.length > 0 && nextMeal) suggestion = `${nextMeal}에 ${lacking.slice(0, 2).join('·')}을 보충하면 균형이 맞아요.`;
+          else if (lacking.length > 0 && !nextMeal) suggestion = `내일 아침에 ${lacking.slice(0, 2).join('·')}을 챙겨보세요.`;
+
+          if (positives.length > 0) coachMessages.push({ icon: '✨', text: positives[0] + (suggestion ? ` ${suggestion}` : '') });
+          if (warnings.length > 0) coachMessages.push(warnings[0]);
+          else if (suggestion && positives.length === 0) coachMessages.push({ icon: '💡', text: suggestion });
+          if (!latestFood.bloodSugar && !latestFood.drowsiness && !latestFood.skinImpact && coachMessages.length === 0) {
+            coachMessages.push({ icon: '💡', text: `${latestFood.name} — 새로 기록하면 혈당·졸림·피부 영향까지 분석해드려요.` });
+          }
+          if (coachMessages.length === 0) coachMessages.push({ icon: '👍', text: `${latestFood.name}, 괜찮은 선택이에요!` });
+        }
+
         return (
           <div style={{
-            margin: '0 16px 10px', borderRadius: 14, padding: '11px 13px',
+            margin: '0 16px 10px', borderRadius: 16, padding: '14px 16px',
             background: 'rgba(255,255,255,0.3)',
             backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
             border: '1px solid rgba(255,255,255,0.3)',
             boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
             ...fadeUp(0.1),
           }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(0,0,0,0.8)', marginBottom: 8 }}>오늘 식단 요약</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+              <CoachStarIcon />
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>오늘 식단 요약</div>
+            </div>
 
             {foods.length === 0 ? (
-              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>식사를 기록하면 영양 요약이 나타나요</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>식사를 기록하면 맞춤 분석을 받을 수 있어요</div>
             ) : (
               <>
-                {/* 영양소 태그 */}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: summaryTags.length > 0 ? 10 : 0 }}>
-                  {summaryTags.length === 0 ? (
-                    <span style={{
-                      fontSize: 10, fontWeight: 500, borderRadius: 99, padding: '3px 9px',
-                      ...tagStyle.ok,
-                    }}>전체 영양 균형 적정</span>
-                  ) : summaryTags.map((t, i) => (
-                    <span key={i} style={{
-                      fontSize: 10, fontWeight: 500, borderRadius: 99, padding: '3px 9px',
-                      ...tagStyle[t.type],
-                    }}>{t.text}</span>
+                {/* AI 인사이트 메시지 */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: summaryTags.length > 0 || impacts.length > 0 ? 12 : 0 }}>
+                  {coachMessages.map((m, i) => (
+                    <div key={i} style={{ fontSize: 13, color: '#4E5968', lineHeight: 1.6 }}>
+                      <span style={{ marginRight: 6 }}>{m.icon}</span>{m.text}
+                    </div>
                   ))}
                 </div>
+
+                {/* AI 키워드 태그 */}
+                {summaryTags.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: impacts.length > 0 ? 10 : 0 }}>
+                    {summaryTags.map((t, i) => (
+                      <span key={i} style={{
+                        fontSize: 10, fontWeight: 500, borderRadius: 99, padding: '3px 9px',
+                        ...tagStyle[t.type],
+                      }}>{t.text}</span>
+                    ))}
+                  </div>
+                )}
 
                 {/* 내 몸에 미치는 영향 */}
                 {impacts.length > 0 && (
@@ -533,8 +575,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
         </div>
       </div>
 
-      {/* 5. LUA AI Coach Card — AiInsightCard 디자인 통일 */}
-      <FoodCoachCard foods={foods} nutrition={nutrition} goal={goal} score={score} lacking={lacking} />
+      {/* FoodCoachCard 통합됨 — 첫번째 카드에 포함 */}
 
       </>}
 
