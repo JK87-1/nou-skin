@@ -397,16 +397,30 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
         const calciumN = nutrients.find(n => n.key === 'calcium');
         const ironN = nutrients.find(n => n.key === 'iron');
 
-        // 내 몸에 미치는 영향: 긍정 먼저 → 주의
+        // 내 몸에 미치는 영향: 식품 특성 + 영양소 기반, 긍정 먼저 → 주의
         const impacts = [];
+        // 식품 특성 기반 (음식별 AI 분석 데이터)
+        const hasLowSugar = foods.some(f => f.bloodSugar === '낮음');
+        const hasHighSugar = foods.some(f => f.bloodSugar === '높음');
+        const hasLowDrowsy = foods.some(f => f.drowsiness === '낮음');
+        const hasHighDrowsy = foods.some(f => f.drowsiness === '높음');
+        const hasGoodSkin = foods.some(f => f.skinImpact === '좋음');
+        const hasBadSkin = foods.some(f => f.skinImpact === '주의');
+        // 긍정 영향
+        if (hasLowSugar) impacts.push({ icon: '📉', text: '혈당 안정 예상', type: 'ok' });
+        if (hasGoodSkin) impacts.push({ icon: '✨', text: '피부 건강에 도움', type: 'ok' });
+        if (hasLowDrowsy) impacts.push({ icon: '⚡', text: '식후 활력 유지', type: 'ok' });
         if (proteinN?.status === '적정') impacts.push({ icon: '💪', text: '근육·회복에 도움', type: 'ok' });
-        if (fatN?.status === '적정' && proteinN?.status === '적정') impacts.push({ icon: '✨', text: '피부 보습 유지', type: 'ok' });
+        if (fatN?.status === '적정' && proteinN?.status === '적정') impacts.push({ icon: '🧴', text: '피부 보습 유지', type: 'ok' });
         if (fiberN?.status === '적정') impacts.push({ icon: '🌿', text: '장 건강 도움', type: 'ok' });
         if (calciumN?.status === '적정') impacts.push({ icon: '🦴', text: '뼈 건강 유지', type: 'ok' });
         if (ironN?.status === '적정') impacts.push({ icon: '🩸', text: '빈혈 예방', type: 'ok' });
+        // 주의 영향
+        if (hasHighSugar) impacts.push({ icon: '📈', text: '혈당 상승 가능', type: 'warn' });
+        if (hasHighDrowsy) impacts.push({ icon: '😴', text: '식후 졸림 가능', type: 'warn' });
+        if (hasBadSkin) impacts.push({ icon: '⚠️', text: '피부 트러블 주의', type: 'caution' });
         if (proteinN?.status === '부족' || carbN?.status === '과잉') impacts.push({ icon: '⚡', text: '에너지 하락 가능', type: 'warn' });
-        if (carbN?.status === '과잉') impacts.push({ icon: '😊', text: '기분 변동 가능', type: 'warn' });
-        if (sugarN?.status === '과잉' || carbN?.status === '과잉') impacts.push({ icon: '⚠️', text: '피부 트러블 가능성', type: 'caution' });
+        if (sugarN?.status === '과잉' || carbN?.status === '과잉') impacts.push({ icon: '🍬', text: '당류 과다 주의', type: 'caution' });
 
         const tagStyle = {
           ok: { background: '#fff', color: '#0F6E56', border: '1px solid rgba(78,184,160,0.25)' },
