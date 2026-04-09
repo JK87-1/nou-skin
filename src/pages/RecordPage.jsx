@@ -382,8 +382,13 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
       {/* 3. 오늘 식단 요약 */}
       {(() => {
-        const summaryTags = nutrients
-          .filter(n => n.status !== '적정')
+        // 잘 챙긴 영양소 태그 (초록)
+        const goodTags = nutrients
+          .filter(n => n.status === '적정')
+          .map(n => ({ text: `${n.label} 양호`, type: 'ok' }));
+        // 부족/과잉 태그
+        const badTags = nutrients
+          .filter(n => n.status !== '적정' && n.status !== '-')
           .map(n => ({
             text: `${n.label} ${n.status === '부족' ? '부족' : '높음'}`,
             type: n.status === '부족' ? 'lack' : 'high',
@@ -392,14 +397,36 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
         const carbN = nutrients.find(n => n.key === 'carb');
         const fiberN = nutrients.find(n => n.key === 'fiber');
         if (carbN?.status === '과잉' && fiberN?.status === '부족') {
-          summaryTags.push({ text: '혈당 상승 가능', type: 'high' });
+          badTags.push({ text: '혈당 상승 가능', type: 'high' });
         }
+        // 잘 챙긴 것 먼저 → 부족한 것
+        const summaryTags = [...goodTags, ...badTags];
 
         const proteinN = nutrients.find(n => n.key === 'protein');
         const fatN = nutrients.find(n => n.key === 'fat');
         const sugarN = nutrients.find(n => n.key === 'sugar');
+        const calciumN = nutrients.find(n => n.key === 'calcium');
+        const ironN = nutrients.find(n => n.key === 'iron');
 
+        // 내 몸에 미치는 영향: 긍정 먼저 → 주의
         const impacts = [];
+        // 긍정 영향
+        if (proteinN?.status === '적정') {
+          impacts.push({ icon: '💪', text: '근육·회복에 도움', type: 'ok' });
+        }
+        if (fatN?.status === '적정' && proteinN?.status === '적정') {
+          impacts.push({ icon: '✨', text: '피부 보습 유지', type: 'ok' });
+        }
+        if (fiberN?.status === '적정') {
+          impacts.push({ icon: '🌿', text: '장 건강 도움', type: 'ok' });
+        }
+        if (calciumN?.status === '적정') {
+          impacts.push({ icon: '🦴', text: '뼈 건강 유지', type: 'ok' });
+        }
+        if (ironN?.status === '적정') {
+          impacts.push({ icon: '🩸', text: '빈혈 예방', type: 'ok' });
+        }
+        // 주의 영향
         if (proteinN?.status === '부족' || carbN?.status === '과잉') {
           impacts.push({ icon: '⚡', text: '에너지 하락 가능', type: 'warn' });
         }
@@ -407,10 +434,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
           impacts.push({ icon: '😊', text: '기분 변동 가능', type: 'warn' });
         }
         if (sugarN?.status === '과잉' || carbN?.status === '과잉') {
-          impacts.push({ icon: '✨', text: '피부 트러블 가능성', type: 'caution' });
-        }
-        if (fatN?.status === '적정' && proteinN?.status === '적정') {
-          impacts.push({ icon: '✨', text: '피부 보습 유지', type: 'ok' });
+          impacts.push({ icon: '⚠️', text: '피부 트러블 가능성', type: 'caution' });
         }
 
         const tagStyle = {
