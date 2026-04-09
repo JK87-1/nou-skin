@@ -112,7 +112,7 @@ export default function InsightPage() {
       />
 
       {/* Category Tabs */}
-      <div style={{ padding: '12px 18px 0' }}>
+      <div style={{ padding: '12px 10px 0' }}>
         <div className="segment-control" data-active={insightTab === 'skin' ? 'first' : insightTab === 'body' ? 'last' : 'mid'}>
           <button className={`segment-btn${insightTab === 'skin' ? ' active' : ''}`}
             onClick={() => setInsightTab('skin')}>피부</button>

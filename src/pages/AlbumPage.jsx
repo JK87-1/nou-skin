@@ -334,7 +334,7 @@ export default function AlbumPage({ onBack, onMeasure, onOpenConsult, onTabChang
         const avgScore = records.length > 0
           ? Math.round(records.reduce((s, r) => s + r.overallScore, 0) / records.length) : 0;
         return (
-          <div style={{ padding: '27px 18px 0' }}>
+          <div style={{ padding: '27px 10px 0' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12 }}>
               <div style={{
                 width: 72, height: 72, borderRadius: '50%', flexShrink: 0,

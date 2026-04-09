@@ -763,7 +763,7 @@ export default function RoutinePage({ themeColors, onBack, initialMode }) {
       />
 
       {/* Mode Toggle */}
-      <div style={{ padding: '12px 18px 0' }}>
+      <div style={{ padding: '12px 10px 0' }}>
         <div className="segment-control" data-active={pageMode === 'routine' ? 'first' : pageMode === 'mission' ? 'last' : 'mid'}>
           <button className={`segment-btn${pageMode === 'routine' ? ' active' : ''}`}
             onClick={() => setPageMode('routine')}>피부</button>

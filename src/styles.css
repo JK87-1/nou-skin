@@ -821,7 +821,7 @@
 .segment-btn:first-child.active::before { display: none; }
 .segment-btn:last-child.active::after { display: none; }
 .tab-content-panel {
-  margin: 0 18px 16px;
+  margin: 0 10px 16px;
   padding: 16px 0;
   background: rgba(255,255,255,0.3);
   backdrop-filter: blur(16px);
