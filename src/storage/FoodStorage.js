@@ -74,26 +74,40 @@ export function getFoodGoal() {
  * ~17시: 아침+점심 (65%)
  * ~24시: 하루 전체 (100%)
  */
+// 끼니별 영양소 비율
+const MEAL_RATIO = {
+  kcal:    { '아침': 0.25, '점심': 0.40, '저녁': 0.35 },
+  carb:    { '아침': 0.25, '점심': 0.40, '저녁': 0.35 },
+  protein: { '아침': 0.30, '점심': 0.35, '저녁': 0.35 },
+  fat:     { '아침': 0.30, '점심': 0.35, '저녁': 0.35 },
+};
+
+function getMealRatio(key, recordedMeals) {
+  const ratioMap = MEAL_RATIO[key];
+  if (!ratioMap) return recordedMeals.length / 3; // 나머지 영양소: 균등 1/3
+  return recordedMeals.reduce((sum, m) => sum + (ratioMap[m] || 1/3), 0);
+}
+
 export function getTimeAdjustedGoal() {
   const full = getFoodGoal();
   const foods = getTodayFoods().filter(f => !f.name?.startsWith('물 '));
-  const meals = new Set(foods.map(f => f.meal));
-  const mealCount = Math.min(meals.size, 3) || 1;
-  const ratio = mealCount / 3;
-  const mealLabel = [...meals].join('·') || '미기록';
+  const meals = [...new Set(foods.map(f => f.meal))].filter(m => ['아침', '점심', '저녁'].includes(m));
+  const mealCount = meals.length || 1;
+  const mealLabel = meals.join('·') || '미기록';
+  const evenRatio = mealCount / 3;
   return {
     ...full,
-    kcal: Math.round(full.kcal * ratio),
-    carb: Math.round(full.carb * ratio),
-    protein: Math.round(full.protein * ratio),
-    fat: Math.round(full.fat * ratio),
-    vitamin: Math.round(full.vitamin * ratio),
-    mineral: Math.round(full.mineral * ratio),
-    fiber: Math.round(full.fiber * ratio),
-    calcium: Math.round(full.calcium * ratio),
-    iron: Math.round(full.iron * ratio),
-    sugar: Math.round(full.sugar * ratio),
-    _ratio: ratio,
+    kcal: Math.round(full.kcal * getMealRatio('kcal', meals)),
+    carb: Math.round(full.carb * getMealRatio('carb', meals)),
+    protein: Math.round(full.protein * getMealRatio('protein', meals)),
+    fat: Math.round(full.fat * getMealRatio('fat', meals)),
+    vitamin: Math.round(full.vitamin * evenRatio),
+    mineral: Math.round(full.mineral * evenRatio),
+    fiber: Math.round(full.fiber * evenRatio),
+    calcium: Math.round(full.calcium * evenRatio),
+    iron: Math.round(full.iron * evenRatio),
+    sugar: Math.round(full.sugar * evenRatio),
+    _ratio: evenRatio,
     _mealLabel: mealLabel,
     _mealCount: mealCount,
   };
