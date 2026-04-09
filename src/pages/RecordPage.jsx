@@ -1133,13 +1133,20 @@ function FoodCoachCard({ foods, nutrition, goal, score, lacking }) {
   if (latestFood.drowsiness === '높음') warnings.push({ icon: '😴', text: latestFood.drowsinessNote || `${latestFood.name} 식후 졸릴 수 있어요.` });
   if (latestFood.skinImpact === '주의') warnings.push({ icon: '⚠️', text: latestFood.skinImpactNote || `${latestFood.name}은 피부 트러블에 영향을 줄 수 있어요.` });
 
-  // 3단계: 다음 식사 보충 제안
-  const nextMeal = unrecordedMeals[0];
+  // 3단계: 현재 시간 기준 앞으로 남은 끼니에서만 보충 제안
+  const hour = new Date().getHours();
+  const futureMeals = allMeals.filter(m => {
+    if (m === '아침') return hour < 10;
+    if (m === '점심') return hour < 14;
+    if (m === '저녁') return hour < 21;
+    return false;
+  });
+  const nextMeal = futureMeals.find(m => !recordedMeals.includes(m));
   let suggestion = '';
   if (lacking.length > 0 && nextMeal) {
     suggestion = `${nextMeal}에 ${lacking.slice(0, 2).join('·')}을 보충하면 균형이 맞아요.`;
-  } else if (lacking.length > 0) {
-    suggestion = `다음 식사에서 ${lacking.slice(0, 2).join('·')}을 챙겨보세요.`;
+  } else if (lacking.length > 0 && !nextMeal) {
+    suggestion = `내일 아침에 ${lacking.slice(0, 2).join('·')}을 챙겨보세요.`;
   }
 
   // 메시지 조합: 좋은 점 → 경고 → 보충 제안
