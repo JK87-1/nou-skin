@@ -535,7 +535,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                       {impacts.slice(0, 2).map((imp, i) => (
                         <span key={i} style={{
                           display: 'inline-flex', alignItems: 'center', gap: 4,
-                          fontSize: 10, fontWeight: 500, borderRadius: 10, padding: '5px 10px',
+                          fontSize: 10, fontWeight: 500, borderRadius: 99, padding: '5px 12px',
                           ...impactStyle[imp.type],
                         }}>
                           <span style={{ fontSize: 12 }}>{imp.icon}</span>{imp.text}
