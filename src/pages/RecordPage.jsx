@@ -86,12 +86,8 @@ function getStatus(value, goal) {
   return '적정';
 }
 
-const statusStyle = {
-  '적정': { background: '#E8F8F0', color: '#0F6E56' },
-  '부족': { background: '#FBEAF0', color: '#993556' },
-  '과잉': { background: '#FFF3E0', color: '#E65100' },
-  '-': { background: 'transparent', color: 'rgba(255,255,255,0.8)' },
-};
+const STATUS_SYMBOL = { '적정': '○', '부족': '△', '과잉': '↑', '-': '✕' };
+const STATUS_COLOR = { '적정': '#4db87a', '부족': '#1a5c3a', '과잉': '#F5A623', '-': '#1a1a1a' };
 
 function getScoreComment(score) {
   if (score >= 90) return '완벽한 하루예요! 🌟';
@@ -549,9 +545,8 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
               <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(0,0,0,0.7)' }}>{n.label}</div>
               <div style={{ fontSize: 9, color: 'rgba(0,0,0,0.5)', fontFamily: 'var(--font-display)' }}>{n.displayVal}</div>
               <span style={{
-                fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 8,
-                ...statusStyle[n.status],
-              }}>{n.status}</span>
+                fontSize: 13, fontWeight: 700, color: STATUS_COLOR[n.status],
+              }}>{STATUS_SYMBOL[n.status]}</span>
             </div>
           ))}
         </div>
@@ -568,9 +563,8 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
               <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(0,0,0,0.7)' }}>{n.label}</div>
               <div style={{ fontSize: 9, color: 'rgba(0,0,0,0.5)', fontFamily: 'var(--font-display)' }}>{n.displayVal}</div>
               <span style={{
-                fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 8,
-                ...statusStyle[n.status],
-              }}>{n.status}</span>
+                fontSize: 13, fontWeight: 700, color: STATUS_COLOR[n.status],
+              }}>{STATUS_SYMBOL[n.status]}</span>
             </div>
           ))}
         </div>
