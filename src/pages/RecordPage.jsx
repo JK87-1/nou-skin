@@ -543,7 +543,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                   {impacts.length > 0 && (
                     <>
                       <div style={{ height: 1, background: 'rgba(78,184,160,0.15)', margin: '12px 0' }} />
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>내 몸에 미치는 영향</div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(0,0,0,0.8)', marginBottom: 8 }}>내 몸에 미치는 영향</div>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                         {impacts.slice(0, 2).map((imp, i) => (
                           <span key={i} style={{
@@ -574,7 +574,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '2px 8px', cursor: 'pointer',
         }}>
-          <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(0,0,0,0.7)' }}>영양소 상세</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>영양소 상세</span>
           <svg width="16" height="16" viewBox="0 0 16 16" style={{
             transition: 'transform 0.25s ease',
             transform: nutrientOpen ? 'rotate(180deg)' : 'rotate(0deg)',
