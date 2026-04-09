@@ -803,16 +803,14 @@
   background: rgba(255,255,255,0.3);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(0,0,0,0.08);
-  border-top: none;
-  border-radius: 0 0 16px 16px;
+  border: none;
+  border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.03);
   position: relative;
   z-index: 1;
 }
 [data-theme="light"] .tab-content-panel {
   background: rgba(255,255,255,0.35);
-  border-color: rgba(0,0,0,0.08);
 }
 
 /* ===== Score Ring Animation ===== */

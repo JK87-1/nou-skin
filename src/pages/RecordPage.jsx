@@ -226,7 +226,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
       {/* Category Tabs */}
       <div style={{ padding: '12px 18px 0' }}>
-        <div className="segment-control">
+        <div className="segment-control" style={{ margin: '0 12px' }}>
           <button className={`segment-btn${foodTab === 'skin' ? ' active' : ''}`}
             onClick={() => setFoodTab('skin')}>피부</button>
           <button className={`segment-btn${foodTab === 'food' ? ' active' : ''}`}
