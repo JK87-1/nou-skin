@@ -86,14 +86,14 @@ function getStatus(value, goal) {
   return '적정';
 }
 
-const STATUS_COLOR = { '적정': '#1D9E75', '부족': '#E5C100', '과잉': '#5F5E5A', '-': '#999' };
+const STATUS_COLOR = { '적정': '#1D9E75', '부족': '#E5C100', '과잉': '#5F5E5A', '-': '#fff' };
 function StatusIcon({ status }) {
-  const c = STATUS_COLOR[status] || '#999';
+  const c = STATUS_COLOR[status] || '#fff';
   const s = 14;
   if (status === '적정') return <svg width={s} height={s} viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" fill="none" stroke={c} strokeWidth="1.8"/></svg>;
   if (status === '부족') return <svg width={s} height={s} viewBox="0 0 14 14"><path d="M7 2.5 L12.5 11.5 Q12.5 12.5 11.5 12.5 L2.5 12.5 Q1.5 12.5 1.5 11.5 Z" fill="none" stroke={c} strokeWidth="1.5" strokeLinejoin="round"/></svg>;
   if (status === '과잉') return <svg width={s} height={s} viewBox="0 0 14 14"><path d="M7 2 L7 9 M7 2 L4 5.5 M7 2 L10 5.5" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
-  return <svg width={s} height={s} viewBox="0 0 14 14"><path d="M4 4 L10 10 M10 4 L4 10" stroke={c} strokeWidth="1.5" strokeLinecap="round"/></svg>;
+  return <span style={{ fontSize: 13, fontWeight: 600, color: c }}>-</span>;
 }
 
 function getScoreComment(score) {
