@@ -366,7 +366,7 @@ export default function AlbumPage({ onBack, onMeasure, onOpenConsult, onTabChang
                 </div>
               </div>
             </div>
-            <div className="segment-control">
+            <div className="segment-control" data-active={albumCategory === 'skin' ? 'first' : albumCategory === 'body' ? 'last' : 'mid'}>
               <button className={`segment-btn${albumCategory === 'skin' ? ' active' : ''}`}
                 onClick={() => setAlbumCategory('skin')}>피부</button>
               <button className={`segment-btn${albumCategory === 'food' ? ' active' : ''}`}

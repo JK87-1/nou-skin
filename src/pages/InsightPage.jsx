@@ -112,8 +112,8 @@ export default function InsightPage() {
       />
 
       {/* Category Tabs */}
-      <div style={{ padding: '12px 18px 16px' }}>
-        <div className="segment-control">
+      <div style={{ padding: '12px 18px 0' }}>
+        <div className="segment-control" data-active={insightTab === 'skin' ? 'first' : insightTab === 'body' ? 'last' : 'mid'}>
           <button className={`segment-btn${insightTab === 'skin' ? ' active' : ''}`}
             onClick={() => setInsightTab('skin')}>피부</button>
           <button className={`segment-btn${insightTab === 'food' ? ' active' : ''}`}
@@ -122,6 +122,7 @@ export default function InsightPage() {
             onClick={() => setInsightTab('body')}>바디</button>
         </div>
       </div>
+      <div className="tab-content-panel" data-active={insightTab === 'skin' ? 'first' : insightTab === 'body' ? 'last' : 'mid'}>
 
       {/* Skin Tab */}
       {insightTab === 'skin' && (
@@ -338,6 +339,8 @@ export default function InsightPage() {
           }}>오늘 기록하기</button>
         </div>
       </div>}
+
+      </div>{/* end tab-content-panel */}
 
       {/* Add Weight Modal */}
       {showAdd && <AddWeightModal onSave={handleSave} onClose={() => setShowAdd(false)} latest={latest} />}

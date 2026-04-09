@@ -763,8 +763,8 @@ export default function RoutinePage({ themeColors, onBack, initialMode }) {
       />
 
       {/* Mode Toggle */}
-      <div style={{ padding: '12px 18px 16px' }}>
-        <div className="segment-control">
+      <div style={{ padding: '12px 18px 0' }}>
+        <div className="segment-control" data-active={pageMode === 'routine' ? 'first' : pageMode === 'mission' ? 'last' : 'mid'}>
           <button className={`segment-btn${pageMode === 'routine' ? ' active' : ''}`}
             onClick={() => setPageMode('routine')}>피부</button>
           <button className={`segment-btn${pageMode === 'insights' ? ' active' : ''}`}
@@ -773,11 +773,12 @@ export default function RoutinePage({ themeColors, onBack, initialMode }) {
             onClick={() => setPageMode('mission')}>바디</button>
         </div>
       </div>
-
+      <div className="tab-content-panel" data-active={pageMode === 'routine' ? 'first' : pageMode === 'mission' ? 'last' : 'mid'}>
       {/* Routine checklist for each category */}
       {pageMode === 'routine' && <RoutineChecklist category="skin" label="피부" selectedDate={selectedDate} />}
       {pageMode === 'insights' && <RoutineChecklist category="food" label="식단" selectedDate={selectedDate} />}
       {pageMode === 'mission' && <RoutineChecklist category="body" label="바디" selectedDate={selectedDate} />}
+      </div>
 
       {/* Tracker mode — existing tracker content (hidden) */}
       {pageMode === '__tracker__' && <>
