@@ -86,8 +86,15 @@ function getStatus(value, goal) {
   return '적정';
 }
 
-const STATUS_SYMBOL = { '적정': '○', '부족': '△', '과잉': '↑', '-': '✕' };
 const STATUS_COLOR = { '적정': '#1D9E75', '부족': '#E5C100', '과잉': '#5F5E5A', '-': '#999' };
+function StatusIcon({ status }) {
+  const c = STATUS_COLOR[status] || '#999';
+  const s = 14;
+  if (status === '적정') return <svg width={s} height={s} viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" fill="none" stroke={c} strokeWidth="1.8"/></svg>;
+  if (status === '부족') return <svg width={s} height={s} viewBox="0 0 14 14"><path d="M7 2.5 L12.5 11.5 Q12.5 12.5 11.5 12.5 L2.5 12.5 Q1.5 12.5 1.5 11.5 Z" fill="none" stroke={c} strokeWidth="1.5" strokeLinejoin="round"/></svg>;
+  if (status === '과잉') return <svg width={s} height={s} viewBox="0 0 14 14"><path d="M7 2 L7 9 M7 2 L4 5.5 M7 2 L10 5.5" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
+  return <svg width={s} height={s} viewBox="0 0 14 14"><path d="M4 4 L10 10 M10 4 L4 10" stroke={c} strokeWidth="1.5" strokeLinecap="round"/></svg>;
+}
 
 function getScoreComment(score) {
   if (score >= 90) return '완벽한 하루예요! 🌟';
@@ -544,9 +551,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
               }}>{n.key === 'kcal' ? <span style={{ fontSize: 14 }}>🔥</span> : n.key === 'protein' ? <span style={{ fontSize: 14 }}>🥩</span> : n.key === 'carb' ? <span style={{ fontSize: 14 }}>🍞</span> : n.key === 'fat' ? <span style={{ fontSize: 14 }}>🥑</span> : '·'}</div>
               <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(0,0,0,0.7)' }}>{n.label}</div>
               <div style={{ fontSize: 9, color: 'rgba(0,0,0,0.5)', fontFamily: 'var(--font-display)' }}>{n.displayVal}</div>
-              <span style={{
-                fontSize: 13, fontWeight: 700, color: STATUS_COLOR[n.status],
-              }}>{STATUS_SYMBOL[n.status]}</span>
+              <StatusIcon status={n.status} />
             </div>
           ))}
         </div>
@@ -562,9 +567,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
               </div>
               <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(0,0,0,0.7)' }}>{n.label}</div>
               <div style={{ fontSize: 9, color: 'rgba(0,0,0,0.5)', fontFamily: 'var(--font-display)' }}>{n.displayVal}</div>
-              <span style={{
-                fontSize: 13, fontWeight: 700, color: STATUS_COLOR[n.status],
-              }}>{STATUS_SYMBOL[n.status]}</span>
+              <StatusIcon status={n.status} />
             </div>
           ))}
         </div>
