@@ -137,6 +137,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
   const [detailFood, setDetailFood] = useState(null);
   const [showMealPicker, setShowMealPicker] = useState(false);
   const [showBodyAdd, setShowBodyAdd] = useState(false);
+  const [nutrientOpen, setNutrientOpen] = useState(false);
   const [bodyWeight, setBodyWeight] = useState('');
 
   useEffect(() => {
@@ -549,42 +550,57 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
         );
       })()}
 
-      {/* 4. Nutrient Card */}
+      {/* 4. Nutrient Card (접기/펼치기) */}
       <div style={{
         margin: '0 16px 10px', borderRadius: 16, padding: '12px 8px',
         background: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.3)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
-        display: 'flex', flexDirection: 'column', gap: 10,
         ...fadeUp(0.15),
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          {nutrients.slice(0, 4).map(n => (
-            <div key={n.key} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-              <div style={{
-                width: 32, height: 32, borderRadius: 10,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>{n.key === 'kcal' ? <span style={{ fontSize: 14 }}>🔥</span> : n.key === 'protein' ? <span style={{ fontSize: 14 }}>🥩</span> : n.key === 'carb' ? <span style={{ fontSize: 14 }}>🍞</span> : n.key === 'fat' ? <span style={{ fontSize: 14 }}>🥑</span> : '·'}</div>
-              <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(0,0,0,0.7)' }}>{n.label}</div>
-              <div style={{ fontSize: 9, color: 'rgba(0,0,0,0.5)', fontFamily: 'var(--font-display)' }}>{n.displayVal}</div>
-              <StatusIcon status={n.status} />
-            </div>
-          ))}
+        <div onClick={() => setNutrientOpen(!nutrientOpen)} style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '2px 8px', cursor: 'pointer',
+        }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(0,0,0,0.7)' }}>영양소 상세</span>
+          <svg width="16" height="16" viewBox="0 0 16 16" style={{
+            transition: 'transform 0.25s ease',
+            transform: nutrientOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+          }}>
+            <path d="M4 6 L8 10 L12 6" fill="none" stroke="rgba(0,0,0,0.4)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-          {nutrients.slice(4).map(n => (
-            <div key={n.key} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-              <div style={{
-                width: 32, height: 32, borderRadius: 10,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 14,
-              }}>
-                {n.key === 'fiber' ? '🥕' : n.key === 'sugar' ? '🍯' : n.key === 'iron' ? '🥦' : '🐟'}
-              </div>
-              <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(0,0,0,0.7)' }}>{n.label}</div>
-              <div style={{ fontSize: 9, color: 'rgba(0,0,0,0.5)', fontFamily: 'var(--font-display)' }}>{n.displayVal}</div>
-              <StatusIcon status={n.status} />
+        {nutrientOpen && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              {nutrients.slice(0, 4).map(n => (
+                <div key={n.key} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                  <div style={{
+                    width: 32, height: 32, borderRadius: 10,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>{n.key === 'kcal' ? <span style={{ fontSize: 14 }}>🔥</span> : n.key === 'protein' ? <span style={{ fontSize: 14 }}>🥩</span> : n.key === 'carb' ? <span style={{ fontSize: 14 }}>🍞</span> : n.key === 'fat' ? <span style={{ fontSize: 14 }}>🥑</span> : '·'}</div>
+                  <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(0,0,0,0.7)' }}>{n.label}</div>
+                  <div style={{ fontSize: 9, color: 'rgba(0,0,0,0.5)', fontFamily: 'var(--font-display)' }}>{n.displayVal}</div>
+                  <StatusIcon status={n.status} />
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+            <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+              {nutrients.slice(4).map(n => (
+                <div key={n.key} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                  <div style={{
+                    width: 32, height: 32, borderRadius: 10,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 14,
+                  }}>
+                    {n.key === 'fiber' ? '🥕' : n.key === 'sugar' ? '🍯' : n.key === 'iron' ? '🥦' : '🐟'}
+                  </div>
+                  <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(0,0,0,0.7)' }}>{n.label}</div>
+                  <div style={{ fontSize: 9, color: 'rgba(0,0,0,0.5)', fontFamily: 'var(--font-display)' }}>{n.displayVal}</div>
+                  <StatusIcon status={n.status} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* FoodCoachCard 통합됨 — 첫번째 카드에 포함 */}
