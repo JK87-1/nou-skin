@@ -491,7 +491,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: summaryTags.length > 0 || impacts.length > 0 ? 14 : 0 }}>
                   {coachMessages.map((m, i) => (
                     <div key={i} style={{ fontSize: 13, color: '#4E5968', lineHeight: 1.6 }}>
-                      <span style={{ marginRight: 6 }}>{m.icon}</span>{m.text}
+                      {m.text}
                     </div>
                   ))}
                 </div>
