@@ -490,7 +490,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
         return (
           <div style={{
-            margin: '0 16px 10px', borderRadius: 16, padding: '14px 16px',
+            margin: '0 16px 10px', borderRadius: 16, padding: '16px 20px',
             background: 'rgba(255,255,255,0.3)',
             backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
             border: '1px solid rgba(255,255,255,0.3)',
@@ -501,10 +501,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
               display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer',
               marginBottom: summaryOpen ? 12 : 0,
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontSize: 16 }}>🍽️</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>오늘 식단 요약</span>
-              </div>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>오늘 식단 요약</span>
               <svg width="16" height="16" viewBox="0 0 16 16" style={{
                 transition: 'transform 0.25s ease',
                 transform: summaryOpen ? 'rotate(180deg)' : 'rotate(0deg)',
@@ -566,7 +563,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
       {/* 4. Nutrient Card (접기/펼치기) */}
       <div style={{
-        margin: '0 16px 10px', borderRadius: 16, padding: '12px 8px',
+        margin: '0 16px 10px', borderRadius: 16, padding: '16px 20px',
         background: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.3)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
         ...fadeUp(0.15),
       }}>
