@@ -137,6 +137,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
   const [detailFood, setDetailFood] = useState(null);
   const [showMealPicker, setShowMealPicker] = useState(false);
   const [showBodyAdd, setShowBodyAdd] = useState(false);
+  const [summaryOpen, setSummaryOpen] = useState(true);
   const [nutrientOpen, setNutrientOpen] = useState(false);
   const [bodyWeight, setBodyWeight] = useState('');
 
@@ -496,55 +497,68 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
             boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
             ...fadeUp(0.1),
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-              <span style={{ fontSize: 16 }}>🍽️</span>
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>오늘 식단 요약</div>
+            <div onClick={() => setSummaryOpen(!summaryOpen)} style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer',
+              marginBottom: summaryOpen ? 12 : 0,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 16 }}>🍽️</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>오늘 식단 요약</span>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 16 16" style={{
+                transition: 'transform 0.25s ease',
+                transform: summaryOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+              }}>
+                <path d="M4 6 L8 10 L12 6" fill="none" stroke="rgba(0,0,0,0.4)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             </div>
 
-            {foods.length === 0 ? (
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>식사를 기록하면 맞춤 분석을 받을 수 있어요</div>
-            ) : (
-              <>
-                {/* AI 인사이트 메시지 */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: summaryTags.length > 0 || impacts.length > 0 ? 14 : 0 }}>
-                  {coachMessages.map((m, i) => (
-                    <div key={i} style={{ fontSize: 13, color: '#4E5968', lineHeight: 1.6 }}>
-                      {m.text}
-                    </div>
-                  ))}
-                </div>
-
-                {/* AI 키워드 태그 */}
-                {summaryTags.length > 0 && (
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: impacts.length > 0 ? 0 : 0 }}>
-                    {summaryTags.map((t, i) => (
-                      <span key={i} style={{
-                        fontSize: 10, fontWeight: 500, borderRadius: 99, padding: '4px 10px',
-                        ...tagStyle[t.type],
-                      }}>{t.text}</span>
+            {summaryOpen && (
+              foods.length === 0 ? (
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>식사를 기록하면 맞춤 분석을 받을 수 있어요</div>
+              ) : (
+                <>
+                  {/* AI 인사이트 메시지 */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: summaryTags.length > 0 || impacts.length > 0 ? 14 : 0 }}>
+                    {coachMessages.map((m, i) => (
+                      <div key={i} style={{ fontSize: 13, color: '#4E5968', lineHeight: 1.6 }}>
+                        {m.text}
+                      </div>
                     ))}
                   </div>
-                )}
 
-                {/* 구분선 + 내 몸에 미치는 영향 */}
-                {impacts.length > 0 && (
-                  <>
-                    <div style={{ height: 1, background: 'rgba(78,184,160,0.15)', margin: '12px 0' }} />
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>내 몸에 미치는 영향</div>
+                  {/* AI 키워드 태그 */}
+                  {summaryTags.length > 0 && (
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                      {impacts.slice(0, 2).map((imp, i) => (
+                      {summaryTags.map((t, i) => (
                         <span key={i} style={{
-                          display: 'inline-flex', alignItems: 'center', gap: 4,
-                          fontSize: 10, fontWeight: 500, borderRadius: 99, padding: '5px 12px',
-                          ...impactStyle[imp.type],
-                        }}>
-                          <span style={{ fontSize: 12 }}>{imp.icon}</span>{imp.text}
-                        </span>
+                          fontSize: 10, fontWeight: 500, borderRadius: 99, padding: '4px 10px',
+                          ...tagStyle[t.type],
+                        }}>{t.text}</span>
                       ))}
                     </div>
-                  </>
-                )}
-              </>
+                  )}
+
+                  {/* 구분선 + 내 몸에 미치는 영향 */}
+                  {impacts.length > 0 && (
+                    <>
+                      <div style={{ height: 1, background: 'rgba(78,184,160,0.15)', margin: '12px 0' }} />
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>내 몸에 미치는 영향</div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                        {impacts.slice(0, 2).map((imp, i) => (
+                          <span key={i} style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 4,
+                            fontSize: 10, fontWeight: 500, borderRadius: 99, padding: '5px 12px',
+                            ...impactStyle[imp.type],
+                          }}>
+                            <span style={{ fontSize: 12 }}>{imp.icon}</span>{imp.text}
+                          </span>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </>
+              )
             )}
           </div>
         );
