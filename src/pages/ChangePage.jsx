@@ -11,7 +11,7 @@ import BeforeAfterSlider from '../components/BeforeAfterSlider';
 
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
 
-export default function InsightPage() {
+export default function ChangePage() {
   const [records, setRecords] = useState(getBodyRecords);
   const [goal, setGoal] = useState(getBodyGoal);
   const [profile, setProfile] = useState(getBodyProfile);
