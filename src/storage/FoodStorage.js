@@ -76,11 +76,11 @@ export function getFoodGoal() {
  */
 export function getTimeAdjustedGoal() {
   const full = getFoodGoal();
-  const hour = new Date().getHours();
-  let ratio;
-  if (hour < 11) ratio = 0.3;
-  else if (hour < 17) ratio = 0.6;
-  else ratio = 1.0;
+  const foods = getTodayFoods().filter(f => !f.name?.startsWith('물 '));
+  const meals = new Set(foods.map(f => f.meal));
+  const mealCount = Math.min(meals.size, 3) || 1;
+  const ratio = mealCount / 3;
+  const mealLabel = [...meals].join('·') || '미기록';
   return {
     ...full,
     kcal: Math.round(full.kcal * ratio),
@@ -89,8 +89,13 @@ export function getTimeAdjustedGoal() {
     fat: Math.round(full.fat * ratio),
     vitamin: Math.round(full.vitamin * ratio),
     mineral: Math.round(full.mineral * ratio),
+    fiber: Math.round(full.fiber * ratio),
+    calcium: Math.round(full.calcium * ratio),
+    iron: Math.round(full.iron * ratio),
+    sugar: Math.round(full.sugar * ratio),
     _ratio: ratio,
-    _mealLabel: ratio === 0.3 ? '아침' : ratio === 0.65 ? '아침·점심' : '하루',
+    _mealLabel: mealLabel,
+    _mealCount: mealCount,
   };
 }
 

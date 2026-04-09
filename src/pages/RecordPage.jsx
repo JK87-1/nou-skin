@@ -1097,47 +1097,60 @@ function FoodCoachCard({ foods, nutrition, goal, score, lacking }) {
     );
   }
 
-  // 우선순위별 후보 생성 (주의/경고 > 긍정 > 보통)
-  const all = [];
+  // 기록된 끼니 분석
+  const recordedMeals = [...new Set(foods.filter(f => !f.name?.startsWith('물 ')).map(f => f.meal))];
+  const mealCount = recordedMeals.length;
+  const allMeals = ['아침', '점심', '저녁'];
+  const unrecordedMeals = allMeals.filter(m => !recordedMeals.includes(m));
+  const mealBasis = mealCount > 0 ? `${recordedMeals.join('·')} 기준` : '';
 
-  // 1. 과식 여부 (가장 중요)
+  // 1단계: 오늘 먹은 음식의 좋은 점 찾기
+  const positives = [];
+  const foodNames = foods.filter(f => !f.name?.startsWith('물 ')).map(f => f.name).filter(Boolean);
+
+  // 긍정 속성 확인
+  const goodSkin = foods.filter(f => f.skinImpact === '좋음');
+  const lowSugar = foods.filter(f => f.bloodSugar === '낮음');
+  const noSleepy = foods.filter(f => f.drowsiness === '낮음');
+  const goodNutrients = NUTRIENT_META.filter(n => {
+    const val = nutrition[n.key] || 0;
+    const goalVal = n.goalKey ? goal[n.goalKey] : 0;
+    return goalVal && (val / goalVal) >= 0.7;
+  }).map(n => n.label);
+
+  if (goodSkin.length > 0) positives.push(`${goodSkin[0].name}은 피부 건강에 좋은 선택이에요`);
+  if (lowSugar.length > 0 && positives.length === 0) positives.push(`${lowSugar[0].name}은 혈당에 부담이 적어요`);
+  if (noSleepy.length > 0 && positives.length === 0) positives.push('식후에도 활력을 유지할 수 있는 식단이에요');
+  if (goodNutrients.length >= 3 && positives.length === 0) positives.push(`${goodNutrients.slice(0, 3).join('·')} 섭취가 잘 되고 있어요`);
+  if (score >= 70 && positives.length === 0) positives.push('영양 균형이 잘 맞는 식사예요');
+  if (positives.length === 0 && foodNames.length > 0) positives.push(`${foodNames[foodNames.length - 1]}, 괜찮은 선택이에요`);
+
+  // 2단계: 주의사항 (경고)
+  const warnings = [];
   const kcalRatio = goal.kcal ? nutrition.kcal / goal.kcal : 0;
-  if (kcalRatio > 1.2) {
-    all.push({ priority: 1, icon: '🍽️', text: `${latestFood.name} — ${goal._mealLabel} 기준 칼로리 ${Math.round((kcalRatio - 1) * 100)}% 초과. 다음 끼니는 가볍게 드세요.` });
+  if (kcalRatio > 1.2) warnings.push({ icon: '🍽️', text: `${mealBasis} 칼로리가 ${Math.round((kcalRatio - 1) * 100)}% 초과했어요.` });
+  if (latestFood.bloodSugar === '높음') warnings.push({ icon: '📈', text: latestFood.bloodSugarNote || `${latestFood.name}은 혈당을 빠르게 올릴 수 있어요.` });
+  if (latestFood.drowsiness === '높음') warnings.push({ icon: '😴', text: latestFood.drowsinessNote || `${latestFood.name} 식후 졸릴 수 있어요.` });
+  if (latestFood.skinImpact === '주의') warnings.push({ icon: '⚠️', text: latestFood.skinImpactNote || `${latestFood.name}은 피부 트러블에 영향을 줄 수 있어요.` });
+
+  // 3단계: 다음 식사 보충 제안
+  const nextMeal = unrecordedMeals[0];
+  let suggestion = '';
+  if (lacking.length > 0 && nextMeal) {
+    suggestion = `${nextMeal}에 ${lacking.slice(0, 2).join('·')}을 보충하면 균형이 맞아요.`;
+  } else if (lacking.length > 0) {
+    suggestion = `다음 식사에서 ${lacking.slice(0, 2).join('·')}을 챙겨보세요.`;
   }
 
-  // 2. 혈당 상승
-  if (latestFood.bloodSugar === '높음') {
-    all.push({ priority: 1, icon: '📈', text: latestFood.bloodSugarNote || `${latestFood.name}은 혈당을 빠르게 올려요. 식이섬유와 함께 드세요.` });
-  } else if (latestFood.bloodSugar === '낮음') {
-    all.push({ priority: 3, icon: '📉', text: `${latestFood.name}은 혈당에 부담이 적어요. 좋은 선택!` });
+  // 메시지 조합: 좋은 점 → 경고 → 보충 제안
+  if (positives.length > 0) {
+    messages.push({ icon: '✨', text: positives[0] + (suggestion ? ` ${suggestion}` : '') });
   }
-
-  // 3. 졸림 확률
-  if (latestFood.drowsiness === '높음') {
-    all.push({ priority: 1, icon: '😴', text: latestFood.drowsinessNote || `${latestFood.name} 식후 졸릴 수 있어요. 가벼운 산책을 추천해요.` });
-  } else if (latestFood.drowsiness === '낮음') {
-    all.push({ priority: 3, icon: '⚡', text: `식후에도 활력이 유지될 거예요.` });
+  if (warnings.length > 0) {
+    messages.push(warnings[0]);
+  } else if (suggestion && positives.length === 0) {
+    messages.push({ icon: '💡', text: suggestion });
   }
-
-  // 4. 피부 트러블
-  if (latestFood.skinImpact === '주의') {
-    all.push({ priority: 1, icon: '⚠️', text: latestFood.skinImpactNote || `${latestFood.name}은 피부 트러블에 영향을 줄 수 있어요.` });
-  } else if (latestFood.skinImpact === '좋음') {
-    all.push({ priority: 3, icon: '✨', text: latestFood.skinImpactNote || `${latestFood.name}은 피부 건강에 도움이 돼요!` });
-  }
-
-  // 5. 영양소 균형
-  if (lacking.length > 0) {
-    all.push({ priority: 2, icon: '⚖️', text: `${lacking.join(', ')}이 부족해요. 다음 식사에서 보충해보세요.` });
-  } else if (score >= 70) {
-    all.push({ priority: 3, icon: '⚖️', text: `영양 균형이 잘 맞아요! 이 패턴을 유지하세요.` });
-  }
-
-  // 우선순위 정렬 후 상위 1~2개 선택
-  all.sort((a, b) => a.priority - b.priority);
-  const picked = all.slice(0, all.some(m => m.priority === 1) ? 2 : 1);
-  picked.forEach(m => messages.push(m));
 
   // 데이터 없는 기존 기록
   if (!latestFood.bloodSugar && !latestFood.drowsiness && !latestFood.skinImpact && messages.length === 0) {
