@@ -804,7 +804,7 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: none;
-  border-radius: 16px;
+  border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.03);
   position: relative;
   z-index: 1;
