@@ -1,1695 +1,1716 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { createPortal } from 'react-dom';
-import {
-  getProfile, saveProfile,
-  SKIN_TYPES, SKIN_CONCERNS, SENSITIVITY_OPTIONS, GENDER_OPTIONS,
-} from '../storage/ProfileStorage';
-import { getRecords, getTotalChanges } from '../storage/SkinStorage';
-import { clearBaseline, hasBaseline } from '../engine/HybridAnalysis';
-import {
-  isPushSupported, isStandalone, isIOS, getPermissionState,
-  subscribeToPush, saveSubscriptionToServer,
-  unsubscribeFromPush, updateReminderTime,
-  updateTipSettings, syncSkinDataToServer,
-} from '../utils/pushNotification';
-import { getLatestRecord } from '../storage/SkinStorage';
-import { getGoal, saveGoal, clearGoal, getDaysRemaining, getGoalProgress, getOverallProgress, METRIC_META } from '../storage/GoalStorage';
-import { getAllPhotosRaw, restorePhotos } from '../storage/PhotoDB';
-import { MoonIcon, SunIcon, CameraIcon, SaveIcon, PastelIcon } from '../components/icons/PastelIcons';
+/**
+ * LUA History Page v2.0
+ *
+ * Redesigned: compact calendar, trend stats bar, clear photo gallery with hover overlay
+ *
+ * Sections (top - new design):
+ * 1. Page header (Skin Journal)
+ * 2. Month navigator + compact calendar
+ * 3. Trend stats bar (avg score, change, record days)
+ * 4. Photo gallery (3-col grid, score badges, hover overlay)
+ *
+ * Sections (bottom - preserved from v1):
+ * 5. Motivation Card
+ * 6. Skin Age Trend Graph
+ * 7. Metric Changes
+ * 8. Record List
+ * 9. Streak & Stats
+ */
 
-export default function MyPage({ colorMode, setColorMode, onThemeChange }) {
-  const [profile, setProfile] = useState(getProfile);
-  const [toast, setToast] = useState(false);
-  const [toastMsg, setToastMsg] = useState('저장되었습니다');
-  const [settingsOpen, setSettingsOpen] = useState(false);
+import { useState, useEffect, useRef, useMemo } from 'react';
+import {
+  getRecords, getChanges, getTotalChanges, getTimeSeries,
+  getMotivation, getNextMeasurementInfo, formatDateFull,
+  getAllThumbnailsAsync, saveThumbnail, deleteRecord,
+} from '../storage/SkinStorage';
+import { AnimatedNumber, ScoreRing, MetricBar } from '../components/UIComponents';
+import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, GENDER_OPTIONS } from '../storage/ProfileStorage';
+import AiInsightCard from '../components/AiInsightCard';
+import { ChartIcon, CameraIcon, MicroscopeIcon, SparkleIcon, DiamondIcon, DropletIcon, RulerIcon, PaletteIcon, LotionIcon, EyeIcon, BubbleIcon, TargetIcon, ClockIcon, LuaMiniIcon } from '../components/icons/PastelIcons';
+import EternalPearl from '../components/icons/EternalPearl';
+import { getDefaultTheme } from '../data/BadgeData';
+import { getFoodRecords, deleteFoodRecord } from '../storage/FoodStorage';
+import { getBodyRecords } from '../storage/BodyStorage';
+import { getPhotoDB } from '../storage/PhotoDB';
 
-  const showToast = (msg) => {
-    setToastMsg(msg);
-    setToast(true);
-    setTimeout(() => setToast(false), 2500);
+// 식단 사진: IndexedDB photoId면 로드, 기존 base64면 그대로 표시
+function FoodPhoto({ photo, style, alt = '' }) {
+  const [src, setSrc] = useState(null);
+  useEffect(() => {
+    if (!photo) return;
+    if (photo.startsWith('data:')) { setSrc(photo); return; }
+    getPhotoDB(photo).then(url => { if (url) setSrc(url); });
+  }, [photo]);
+  if (!src) return null;
+  return <img src={src} alt={alt} style={style} />;
+}
+
+// ===== MINI LINE GRAPH (Canvas-based, no dependencies) =====
+function TrendGraph({ data, color = '#ADEBB3', height = 160, metricKey = 'skinAge', inverse = false, showAllLabels = false }) {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || data.length < 2) return;
+
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const W = canvas.clientWidth;
+    const H = height;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    ctx.scale(dpr, dpr);
+
+    const values = data.map(d => d.value);
+    const minV = Math.min(...values) - 2;
+    const maxV = Math.max(...values) + 2;
+    const range = maxV - minV || 1;
+
+    const padL = 36, padR = 16, padT = showAllLabels ? 28 : 20, padB = 32;
+    const gW = W - padL - padR;
+    const gH = H - padT - padB;
+
+    const getX = (i) => padL + (i / (data.length - 1)) * gW;
+    const getY = (v) => padT + (1 - (v - minV) / range) * gH;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Read CSS variable values for canvas drawing
+    const cs = getComputedStyle(document.documentElement);
+    const colorGrid = cs.getPropertyValue('--border-light').trim() || 'rgba(255,255,255,0.06)';
+    const colorMuted = cs.getPropertyValue('--text-muted').trim() || '#8888a0';
+    const colorSecondary = cs.getPropertyValue('--text-secondary').trim() || '#e0e0e8';
+    const colorBgCard = cs.getPropertyValue('--bg-card').trim() || 'rgba(255,255,255,0.04)';
+
+    // Grid lines
+    ctx.strokeStyle = colorGrid;
+    ctx.lineWidth = 1;
+    const gridSteps = 4;
+    for (let i = 0; i <= gridSteps; i++) {
+      const y = padT + (i / gridSteps) * gH;
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+      const val = Math.round(maxV - (i / gridSteps) * range);
+      ctx.fillStyle = colorMuted; ctx.font = '10px sans-serif'; ctx.textAlign = 'right';
+      ctx.fillText(val, padL - 6, y + 3);
+    }
+
+    // Gradient fill under line
+    const gradient = ctx.createLinearGradient(0, padT, 0, H - padB);
+    gradient.addColorStop(0, color + '30');
+    gradient.addColorStop(1, color + '05');
+    ctx.beginPath();
+    ctx.moveTo(getX(0), H - padB);
+    data.forEach((d, i) => ctx.lineTo(getX(i), getY(d.value)));
+    ctx.lineTo(getX(data.length - 1), H - padB);
+    ctx.closePath();
+    ctx.fillStyle = gradient;
+    ctx.fill();
+
+    // Line
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.5;
+    ctx.lineJoin = 'round';
+    data.forEach((d, i) => {
+      if (i === 0) ctx.moveTo(getX(i), getY(d.value));
+      else ctx.lineTo(getX(i), getY(d.value));
+    });
+    ctx.stroke();
+
+    // Points
+    data.forEach((d, i) => {
+      const x = getX(i), y = getY(d.value);
+      ctx.beginPath();
+      ctx.arc(x, y, i === data.length - 1 ? 5 : 3, 0, Math.PI * 2);
+      ctx.fillStyle = i === data.length - 1 ? color : colorBgCard;
+      ctx.fill();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Show value labels above points
+      if (showAllLabels || i === data.length - 1) {
+        const labelInterval = Math.max(1, Math.ceil(data.length / 8));
+        if (!showAllLabels || i % labelInterval === 0 || i === data.length - 1 || i === 0) {
+          ctx.fillStyle = colorSecondary;
+          ctx.font = 'bold 12px Outfit, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(d.value, x, y - 14);
+        }
+      }
+    });
+
+    // X-axis date labels
+    ctx.fillStyle = colorMuted;
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'center';
+    const labelInterval = data.length <= 6 ? 1 : Math.ceil(data.length / 6);
+    data.forEach((d, i) => {
+      if (i % labelInterval === 0 || i === data.length - 1) {
+        ctx.fillText(d.label, getX(i), H - padB + 16);
+      }
+    });
+
+    // Trend arrow (hidden when showAllLabels — shown externally)
+    if (!showAllLabels && data.length >= 2) {
+      const first = data[0].value, last = data[data.length - 1].value;
+      const diff = last - first;
+      const improving = inverse ? diff < 0 : diff > 0;
+      if (Math.abs(diff) >= 1) {
+        ctx.fillStyle = improving ? '#4ade80' : '#f44336';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'left';
+        const arrow = improving ? '▲' : '▼';
+        const text = `${arrow} ${Math.abs(diff)}${inverse ? '세' : '점'}`;
+        ctx.fillText(text, padL + 4, padT - 6);
+      }
+    }
+
+  }, [data, color, height, inverse]);
+
+  if (data.length < 2) {
+    return (
+      <div style={{ height, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-dim)', fontSize: 13 }}>
+        2회 이상 측정하면 그래프가 나타나요 <span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><ChartIcon size={13} /></span>
+      </div>
+    );
+  }
+
+  return <canvas ref={canvasRef} style={{ width: '100%', height, display: 'block' }} />;
+}
+
+// ===== CHANGE INDICATOR =====
+function ChangeIndicator({ diff, unit = '점', inverse = false, size = 'normal' }) {
+  if (diff === 0 || diff === undefined) return <span style={{ fontSize: size === 'small' ? 10 : 12, color: 'var(--text-muted)' }}>—</span>;
+  const improved = inverse ? diff < 0 : diff > 0;
+  const color = improved ? '#4ade80' : '#f44336';
+  const arrow = improved ? '↑' : '↓';
+  const fs = size === 'small' ? 10 : 12;
+  return (
+    <span style={{ fontSize: fs, fontWeight: 700, color }}>
+      {arrow}{Math.abs(diff)}{unit}
+    </span>
+  );
+}
+
+// ===== MAIN HISTORY PAGE =====
+export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, initialMode, galleryOnly }) {
+  const [mode, setMode] = useState(initialMode || 'gallery');
+  const [albumCategory, setAlbumCategory] = useState('skin');
+  const [insightMode, setInsightMode] = useState('timeline');
+  const [records, setRecords] = useState([]);
+  const [graphMetric, setGraphMetric] = useState('skinAge');
+  const [motivation, setMotivation] = useState(null);
+  const [changes, setChanges] = useState(null);
+  const [totalChanges, setTotalChanges] = useState(null);
+  const [nextInfo, setNextInfo] = useState(null);
+  const [viewDate, setViewDate] = useState(new Date());
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [thumbs, setThumbs] = useState({});
+  const [selectedFood, setSelectedFood] = useState(null);
+  const [foodRefreshKey, setFoodRefreshKey] = useState(0);
+  const [showSettingsPage, setShowSettingsPage] = useState(false);
+
+  useEffect(() => {
+    setRecords(getRecords());
+    setMotivation(getMotivation());
+    setChanges(getChanges());
+    setTotalChanges(getTotalChanges());
+    setNextInfo(getNextMeasurementInfo());
+    // Load high-res thumbnails from IndexedDB
+    getAllThumbnailsAsync().then(setThumbs);
+  }, []);
+
+  const graphData = getTimeSeries(graphMetric);
+  const graphOptions = [
+    { key: 'skinAge', label: '피부나이', color: '#ADEBB3', inverse: true },
+    { key: 'overallScore', label: '종합점수', color: '#ADEBB3', inverse: false },
+    { key: 'moisture', label: '수분도', color: '#A8DEFF', inverse: false },
+    { key: 'wrinkleScore', label: '주름', color: '#F5D0B8', inverse: false },
+    { key: 'elasticityScore', label: '탄력', color: '#FFD080', inverse: false },
+    { key: 'textureScore', label: '피부결', color: '#FFB0C8', inverse: false },
+    { key: 'darkCircleScore', label: '다크서클', color: '#C8B8E8', inverse: false },
+  ];
+  const currentGraphOption = graphOptions.find(o => o.key === graphMetric) || graphOptions[0];
+
+  // 10개 지표 변화 표시용
+  const metricChangeList = changes ? [
+    { ...changes.skinAge },
+    { ...changes.overallScore },
+    { ...changes.moisture },
+    { ...changes.skinTone },
+    { ...changes.wrinkleScore },
+    { ...changes.poreScore },
+    { ...changes.elasticityScore },
+    { ...changes.pigmentationScore },
+    { ...changes.textureScore },
+    { ...changes.darkCircleScore },
+  ] : [];
+
+  // Trend bar stats (based on calendar month)
+  const viewYear = viewDate.getFullYear();
+  const viewMonth = viewDate.getMonth();
+  const monthRecords = useMemo(() =>
+    records.filter(r => {
+      const d = new Date(r.date);
+      return d.getFullYear() === viewYear && d.getMonth() === viewMonth;
+    }), [records, viewYear, viewMonth]);
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const avgScore = monthRecords.length > 0
+    ? (monthRecords.reduce((s, r) => s + r.overallScore, 0) / monthRecords.length).toFixed(1) : 0;
+  const scoreChange = monthRecords.length >= 2
+    ? monthRecords[monthRecords.length - 1].overallScore - monthRecords[0].overallScore : 0;
+
+  // Derive selectedDate for calendar highlighting
+  const selectedDate = selectedRecord ? selectedRecord.date : null;
+
+  const handleSelectRecord = (record) => {
+    const isSame = selectedRecord && (
+      (record.id && selectedRecord.id === record.id) ||
+      (!record.id && selectedRecord.date === record.date && selectedRecord.timestamp === record.timestamp)
+    );
+    if (isSame) {
+      setSelectedRecord(null); // toggle off
+    } else {
+      setSelectedRecord(record);
+    }
   };
 
-  const update = (key, value) => {
-    const next = saveProfile({ [key]: value });
-    setProfile(next);
+  // Refresh thumbs when gallery uploads
+  const refreshThumbs = () => {
+    setTimeout(() => getAllThumbnailsAsync().then(setThumbs), 300);
   };
 
   return (
     <div style={{ minHeight: '100dvh', paddingBottom: 40 }}>
-      <div style={{ padding: '0 18px 0' }}>
 
-
-        {/* App Info / Version Footer */}
-        <div style={{
-          textAlign: 'center',
-          padding: '20px 0 8px',
-          animation: 'breatheIn 0.8s ease 0.55s both',
-        }}>
-          <div style={{
-            fontSize: 11, fontWeight: 300, marginBottom: 4,
-            color: 'var(--text-muted)',
-          }}>루아 Beta v1.0.2</div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 16 }}>
-            <span style={{
-              fontSize: 11, cursor: 'pointer', fontWeight: 300,
-              color: 'var(--text-muted)',
-            }}>이용약관</span>
-            <span style={{
-              fontSize: 11, cursor: 'pointer', fontWeight: 300,
-              color: 'var(--text-muted)',
-            }}>개인정보처리방침</span>
+      {/* Header */}
+      <div style={{ padding: '16px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>마이 페이지</h1>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <div onClick={() => {
+            if (albumCategory === 'food' && onTabChange) onTabChange('food', { openAdd: true });
+            else onMeasure();
+          }} style={{
+            width: 34, height: 34, borderRadius: '50%', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M12 5v14M5 12h14" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </div>
+          <div onClick={() => setShowSettingsPage(true)} style={{
+            width: 34, height: 34, borderRadius: '50%', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+            </svg>
           </div>
         </div>
       </div>
 
-      {/* Settings Modal */}
-      {settingsOpen && createPortal(
-        <SettingsModal
-          profile={profile}
-          update={update}
-          onClose={() => setSettingsOpen(false)}
-          showToast={showToast}
-          colorMode={colorMode}
-          setColorMode={setColorMode}
-        />,
-        document.body,
-      )}
-
-      {/* Toast */}
-      {toast && (
-        <div style={{
-          position: 'fixed', bottom: 100, left: '50%', transform: 'translateX(-50%)',
-          background: 'rgba(240,144,112,0.9)', color: '#fff', padding: '10px 24px',
-          borderRadius: 20, fontSize: 13, fontWeight: 500, zIndex: 999,
-          animation: 'fadeIn 0.2s ease',
-        }}>{toastMsg}</div>
-      )}
-    </div>
-  );
-}
-
-// ===== Settings Modal =====
-
-function SettingsModal({ profile, update, onClose, showToast, colorMode, setColorMode }) {
-  const [editingProfile, setEditingProfile] = useState(false);
-  const [editingSkin, setEditingSkin] = useState(false);
-  const [goalModalOpen, setGoalModalOpen] = useState(false);
-  const [baselineExists, setBaselineExists] = useState(() => hasBaseline());
-  const [restoreConfirm, setRestoreConfirm] = useState(null); // { localStorage: {}, photos: [], stats }
-  const [restoring, setRestoring] = useState(false);
-  const [backupGuide, setBackupGuide] = useState(null); // { json, photoCount, lsCount }
-  const fileInputRef = useRef(null);
-
-  const currentYear = new Date().getFullYear();
-  const age = profile.birthYear ? currentYear - parseInt(profile.birthYear) : null;
-
-  const toggleConcern = (c) => {
-    const list = profile.skinConcerns.includes(c)
-      ? profile.skinConcerns.filter(x => x !== c)
-      : [...profile.skinConcerns, c];
-    update('skinConcerns', list);
-  };
-
-  const skinTypeEmoji = {
-    '건성': '💧', '지성': '🫧', '복합성': '🫧', '중성': '✨', '민감성': '🌸',
-  };
-
-  return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 1000,
-        background: 'var(--bg-modal-overlay)',
-        display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-        animation: 'fadeIn 0.2s ease',
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: '100%', maxWidth: 430,
-          maxHeight: '90vh', overflowY: 'auto',
-          background: 'var(--bg-modal)', borderRadius: '24px 24px 0 0',
-          padding: '24px 24px 40px',
-          border: '1px solid var(--border-subtle)',
-          borderBottom: 'none',
-          animation: 'slideUp 0.3s ease',
-        }}
-      >
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-          <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>설정</div>
-          <button onClick={onClose} style={{
-            width: 32, height: 32, borderRadius: '50%', border: 'none',
-            background: 'var(--bg-input)', color: 'var(--text-muted)',
-            fontSize: 16, cursor: 'pointer', display: 'flex',
-            alignItems: 'center', justifyContent: 'center',
-          }}>✕</button>
-        </div>
-
-        {/* Profile Edit */}
-        <SettingsSection label="프로필">
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 14,
-            padding: '16px 20px', cursor: 'pointer',
-          }} onClick={() => setEditingProfile(!editingProfile)}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 12,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 17, flexShrink: 0,
-              background: 'rgba(240,144,112,0.08)',
-            }}>👤</div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>프로필 편집</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, marginTop: 2 }}>
-                {profile.nickname || '사용자'} · {age ? `만 ${age}세` : '나이 미설정'}
-              </div>
-            </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" strokeWidth="1.5" strokeLinecap="round"
-              style={{ transform: editingProfile ? 'rotate(90deg)' : 'none', transition: 'transform 0.3s' }}>
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </div>
-
-          {editingProfile && (
-            <div style={{ padding: '0 20px 16px', animation: 'breatheIn 0.3s ease both' }}>
-              <Section label="닉네임">
-                <input
-                  type="text"
-                  value={profile.nickname}
-                  onChange={(e) => update('nickname', e.target.value)}
-                  placeholder="닉네임을 입력하세요"
-                  maxLength={20}
-                  style={inputStyle}
-                />
-              </Section>
-              <Section label="출생연도">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <input
-                    type="number"
-                    value={profile.birthYear}
-                    onChange={(e) => update('birthYear', e.target.value)}
-                    placeholder="예: 1995"
-                    min={1940} max={currentYear}
-                    style={{ ...inputStyle, flex: 1 }}
-                  />
-                  {age !== null && age > 0 && (
-                    <span style={{ fontSize: 13, color: '#ADEBB3', fontWeight: 600, whiteSpace: 'nowrap' }}>만 {age}세</span>
-                  )}
-                </div>
-              </Section>
-              <Section label="성별">
-                <ChipGroup
-                  options={GENDER_OPTIONS}
-                  selected={profile.gender}
-                  onSelect={(v) => update('gender', v)}
-                />
-              </Section>
-              <Section label="목표 체중">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <input
-                    type="number"
-                    value={profile.targetWeight}
-                    onChange={(e) => update('targetWeight', e.target.value)}
-                    placeholder="예: 65"
-                    min={30} max={200}
-                    style={{ ...inputStyle, flex: 1 }}
-                  />
-                  <span style={{ fontSize: 13, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>kg</span>
-                </div>
-              </Section>
-            </div>
-          )}
-
-          {/* Skin type */}
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 14,
-            padding: '16px 20px', cursor: 'pointer',
-            borderTop: '1px solid var(--border-separator)',
-          }} onClick={() => setEditingSkin(!editingSkin)}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 12,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 17, flexShrink: 0,
-              background: 'rgba(240,144,112,0.08)',
-            }}>{skinTypeEmoji[profile.skinType] || '🧬'}</div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>피부 타입</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, marginTop: 2 }}>
-                {profile.skinType || '미설정'}{profile.sensitivity ? ` · ${profile.sensitivity}` : ''}
-              </div>
-            </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" strokeWidth="1.5" strokeLinecap="round"
-              style={{ transform: editingSkin ? 'rotate(90deg)' : 'none', transition: 'transform 0.3s' }}>
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </div>
-
-          {editingSkin && (
-            <div style={{ padding: '0 20px 16px', animation: 'breatheIn 0.3s ease both' }}>
-              <Section label="피부 타입">
-                <ChipGroup
-                  options={SKIN_TYPES}
-                  selected={profile.skinType}
-                  onSelect={(v) => update('skinType', v)}
-                />
-              </Section>
-              <Section label="민감도">
-                <ChipGroup
-                  options={SENSITIVITY_OPTIONS}
-                  selected={profile.sensitivity}
-                  onSelect={(v) => update('sensitivity', v)}
-                />
-              </Section>
-              <Section label="피부 고민">
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {SKIN_CONCERNS.map((c) => {
-                    const active = profile.skinConcerns.includes(c);
-                    return (
-                      <div
-                        key={c}
-                        onClick={() => toggleConcern(c)}
-                        style={{
-                          padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 400,
-                          cursor: 'pointer', transition: 'all 0.2s',
-                          background: active ? 'rgba(240,144,112,0.08)' : 'var(--bg-card)',
-                          color: active ? '#ADEBB3' : 'var(--text-muted)',
-                          border: active ? '1px solid rgba(240,144,112,0.2)' : '1px solid var(--border-light)',
-                        }}
-                      >{c}</div>
-                    );
-                  })}
-                </div>
-              </Section>
-            </div>
-          )}
-        </SettingsSection>
-
-        {/* 관리 */}
-        <SettingsSection label="관리">
-          <ReminderItem
-            enabled={profile.reminderEnabled}
-            time={profile.reminderTime || '08:00'}
-            onToggle={(v) => update('reminderEnabled', v)}
-            onTimeChange={(v) => update('reminderTime', v)}
-            profile={profile}
-            tipEnabled={profile.tipEnabled}
-            showToast={showToast}
-          />
-          <BeautyTipItem
-            enabled={profile.tipEnabled}
-            time={profile.tipTime || '20:00'}
-            onToggle={(v) => update('tipEnabled', v)}
-            onTimeChange={(v) => update('tipTime', v)}
-            profile={profile}
-            reminderEnabled={profile.reminderEnabled}
-            showToast={showToast}
-          />
-          {/* Light/Dark Mode Toggle */}
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 14,
-            padding: '16px 20px', cursor: 'pointer',
-            borderTop: '1px solid var(--border-separator)',
-          }} onClick={() => setColorMode(colorMode === 'dark' ? 'light' : 'dark')}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 12,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 17, flexShrink: 0,
-              background: 'rgba(240,144,112,0.08)',
-            }}>{colorMode === 'dark' ? <MoonIcon size={17} /> : <SunIcon size={17} />}</div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>화면 모드</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, marginTop: 2 }}>
-                {colorMode === 'dark' ? '다크 모드' : '라이트 모드'}
-              </div>
-            </div>
-            {/* iOS-style toggle */}
-            <div style={{
-              width: 50, height: 28, borderRadius: 14, padding: 2,
-              background: colorMode === 'light' ? 'rgba(240,144,112,0.8)' : 'rgba(255,255,255,0.12)',
-              transition: 'background 0.3s',
-              position: 'relative',
-            }}>
-              <div style={{
-                width: 24, height: 24, borderRadius: 12,
-                background: '#fff',
-                boxShadow: 'none',
-                transition: 'transform 0.3s',
-                transform: colorMode === 'light' ? 'translateX(22px)' : 'translateX(0)',
-              }} />
-            </div>
-          </div>
-
-          <div
-            onClick={() => {
-              if (!baselineExists) return;
-              if (confirm('기준 측정을 초기화하면 다음 분석이 새로운 기준이 됩니다. 초기화할까요?')) {
-                clearBaseline();
-                setBaselineExists(false);
-                showToast('기준 측정이 초기화되었습니다');
-              }
-            }}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 14,
-              padding: '16px 20px', cursor: baselineExists ? 'pointer' : 'default',
-              borderTop: '1px solid var(--border-separator)',
-              opacity: baselineExists ? 1 : 0.45,
-            }}
-          >
-            <div style={{
-              width: 36, height: 36, borderRadius: 12,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 17, flexShrink: 0,
-              background: 'rgba(240,144,112,0.08)',
-            }}><CameraIcon size={17} /></div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>기준 측정 초기화</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, marginTop: 2 }}>
-                {baselineExists ? '다음 분석이 새 기준이 됩니다' : '기준 사진 없음 (첫 분석 시 자동 저장)'}
-              </div>
-            </div>
-            {baselineExists && (
-              <span style={{
-                padding: '4px 12px', borderRadius: 10, fontSize: 11, fontWeight: 500,
-                background: 'rgba(240,96,80,0.08)', color: '#e05545',
-              }}>초기화</span>
-            )}
-          </div>
-          <SettingsMenuItem icon="📊" label="피부 리포트" desc="월간 분석 리포트 받기" right="badge-new" onTap={() => showToast('피부 리포트는 준비 중이에요')} />
-          <SettingsMenuItem icon="🎯" label="피부 목표 설정" desc={(() => {
-            const g = getGoal();
-            if (!g || g.status === 'expired') return '나만의 피부 점수 목표 세우기';
-            if (g.status === 'completed') return '목표 달성 완료!';
-            const d = getDaysRemaining();
-            return `D-${d} 진행 중 · ${getOverallProgress()}%`;
-          })()} right="arrow" onTap={() => setGoalModalOpen(true)} />
-        </SettingsSection>
-
-        {/* 데이터 */}
-        <SettingsSection label="데이터">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".json"
-            style={{ display: 'none' }}
-            onChange={async (e) => {
-              const file = e.target.files?.[0];
-              if (!file) return;
-              try {
-                const text = await file.text();
-                const parsed = JSON.parse(text);
-                // v2 format: { version, timestamp, localStorage, photos }
-                if (parsed.version === 2 && parsed.localStorage) {
-                  const lsCount = Object.keys(parsed.localStorage).length;
-                  const photoCount = parsed.photos?.length || 0;
-                  setRestoreConfirm({
-                    localStorage: parsed.localStorage,
-                    photos: parsed.photos || [],
-                    stats: { lsCount, photoCount, date: new Date(parsed.timestamp).toLocaleDateString('ko-KR') },
-                  });
-                } else if (parsed.version === undefined && typeof parsed === 'object') {
-                  // v1 legacy: plain localStorage object (nou_* keys only)
-                  const lsCount = Object.keys(parsed).length;
-                  if (lsCount === 0) throw new Error('empty');
-                  setRestoreConfirm({
-                    localStorage: parsed,
-                    photos: [],
-                    stats: { lsCount, photoCount: 0, date: '알 수 없음' },
-                  });
-                } else {
-                  throw new Error('invalid format');
-                }
-              } catch {
-                showToast('유효하지 않은 백업 파일입니다');
-              }
-              e.target.value = '';
-            }}
-          />
-          <div
-            onClick={async () => {
-              try {
-                showToast('백업 준비 중...');
-                const lsData = {};
-                for (let i = 0; i < localStorage.length; i++) {
-                  const key = localStorage.key(i);
-                  if (key) lsData[key] = localStorage.getItem(key);
-                }
-                const photos = await getAllPhotosRaw();
-                const backup = {
-                  version: 2,
-                  timestamp: Date.now(),
-                  localStorage: lsData,
-                  photos,
-                };
-                const json = JSON.stringify(backup);
-                const photoCount = photos.length;
-                const lsCount = Object.keys(lsData).length;
-
-                // 모바일: 안내 모달 → 사용자 확인 후 공유 시트
-                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                if (isMobile) {
-                  setBackupGuide({ json, photoCount, lsCount });
-                  return;
-                }
-
-                // 데스크톱: 직접 다운로드
-                const dateStr = new Date().toISOString().slice(0, 10);
-                const blob = new Blob([json], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `lua-backup-${dateStr}.json`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                localStorage.setItem('nou_last_manual_backup', String(Date.now()));
-                showToast(`백업 완료 (${lsCount}개 항목, ${photoCount}장 사진)`);
-              } catch {
-                showToast('백업 실패 — 다시 시도해주세요');
-              }
-            }}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 14,
-              padding: '16px 20px', cursor: 'pointer',
-              borderTop: '1px solid var(--border-separator)',
-            }}
-          >
-            <div style={{
-              width: 36, height: 36, borderRadius: 12,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 17, flexShrink: 0,
-              background: 'rgba(240,144,112,0.08)',
-            }}>
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ADEBB3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-              </svg>
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>전체 백업 다운로드</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, marginTop: 2 }}>기록, 사진, 뱃지를 파일로 저장</div>
-            </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" strokeWidth="1.5" strokeLinecap="round">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </div>
-          <div
-            onClick={() => fileInputRef.current?.click()}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 14,
-              padding: '16px 20px', cursor: 'pointer',
-              borderTop: '1px solid var(--border-separator)',
-            }}
-          >
-            <div style={{
-              width: 36, height: 36, borderRadius: 12,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 17, flexShrink: 0,
-              background: 'rgba(240,144,112,0.08)',
-            }}>
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ADEBB3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-              </svg>
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>백업에서 복원</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, marginTop: 2 }}>백업 파일 선택하여 복원</div>
-            </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" strokeWidth="1.5" strokeLinecap="round">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </div>
-        </SettingsSection>
-
-        {/* 설정 */}
-        <SettingsSection label="설정">
-          <SettingsMenuItem icon="🌐" label="언어" desc="한국어" right="arrow" onTap={() => showToast('현재 한국어만 지원돼요')} />
-          <SettingsMenuItem icon="🔒" label="개인정보 관리" right="arrow" onTap={() => showToast('모든 데이터는 기기에만 저장돼요')} />
-        </SettingsSection>
-
-        {/* 지원 */}
-        <SettingsSection label="지원">
-          <SettingsMenuItem icon="💬" label="피드백 보내기" right="arrow" onTap={() => {
-            const subject = encodeURIComponent('루아 피드백');
-            window.open(`mailto:luaskin.co@gmail.com?subject=${subject}`, '_blank');
-          }} />
-          <SettingsMenuItem icon="❓" label="자주 묻는 질문" right="arrow" onTap={() => showToast('FAQ는 준비 중이에요')} />
-        </SettingsSection>
-
-        <div style={{ marginTop: 10, textAlign: 'center' }}>
-          <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-            설정한 정보는 기기에만 저장되며 외부로 전송되지 않아요
-          </p>
-        </div>
-      </div>
-
-      {/* Backup Guide Modal — 공유 시트 띄우기 전 안내 */}
-      {backupGuide && (
-        <div
-          onClick={() => setBackupGuide(null)}
-          style={{
-            position: 'fixed', inset: 0, zIndex: 1001,
-            background: 'var(--bg-modal-overlay)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: 24,
+      {/* Record Detail Modal */}
+      {selectedRecord && (
+        <RecordDetailModal
+          record={selectedRecord}
+          thumbnail={thumbs[String(selectedRecord.id)] || thumbs[selectedRecord.date]}
+          onClose={() => setSelectedRecord(null)}
+          onDelete={(idOrDate) => {
+            deleteRecord(idOrDate);
+            setSelectedRecord(null);
+            setRecords(getRecords());
+            refreshThumbs();
           }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              maxWidth: 340, width: '100%',
-              background: 'var(--bg-modal)', borderRadius: 24, padding: 28,
-              border: '1px solid var(--border-subtle)',
-            }}
-          >
-            <div style={{ textAlign: 'center', marginBottom: 16 }}>
-              <div style={{ marginBottom: 4 }}><SaveIcon size={44} /></div>
-              <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
-                백업 파일 저장하기
-              </div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                {backupGuide.lsCount}개 항목 · {backupGuide.photoCount}장 사진
-              </div>
-            </div>
-
-            {/* 시각적 안내 */}
-            <div style={{
-              background: 'rgba(240,144,112,0.06)', borderRadius: 16, padding: '18px 16px',
-              marginBottom: 20,
-            }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 14 }}>
-                다음 화면에서 이렇게 해주세요
-              </div>
-              {/* 가짜 공유 시트 미리보기 */}
-              <div style={{
-                background: 'var(--bg-card, #fff)', borderRadius: 12, padding: '12px 14px',
-                border: '1px solid var(--border-subtle, #e5e7eb)',
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 8 }}>
-                  {['AirDrop', '메시지', 'Mail', '메모'].map(label => (
-                    <div key={label} style={{ textAlign: 'center', opacity: 0.35 }}>
-                      <div style={{ width: 36, height: 36, borderRadius: 10, background: '#ddd', marginBottom: 4 }} />
-                      <div style={{ fontSize: 9 }}>{label}</div>
-                    </div>
-                  ))}
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: 16 }}>
-                  {[
-                    { label: '복사', highlight: false },
-                    { label: '빠른 메모', highlight: false },
-                    { label: '파일에 저장', highlight: true },
-                    { label: '더 보기', highlight: false },
-                  ].map(item => (
-                    <div key={item.label} style={{ textAlign: 'center', position: 'relative' }}>
-                      <div style={{
-                        width: 44, height: 44, borderRadius: 22,
-                        background: item.highlight ? '#81E4BD' : '#ddd',
-                        marginBottom: 4,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        boxShadow: 'none',
-                        transition: 'all 0.3s',
-                      }}>
-                        {item.highlight && (
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round">
-                            <path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/>
-                          </svg>
-                        )}
-                      </div>
-                      <div style={{
-                        fontSize: 9,
-                        fontWeight: item.highlight ? 700 : 400,
-                        color: item.highlight ? '#81E4BD' : 'var(--text-muted)',
-                      }}>{item.label}</div>
-                      {item.highlight && (
-                        <div style={{
-                          position: 'absolute', top: -8, left: '50%', transform: 'translateX(-50%)',
-                          fontSize: 14,
-                        }}>👆</div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div style={{
-                marginTop: 12, fontSize: 13, color: '#81E4BD', fontWeight: 600, textAlign: 'center',
-              }}>
-                "파일에 저장"을 눌러주세요!
-              </div>
-            </div>
-
-            <button
-              onClick={async () => {
-                const { json, lsCount, photoCount } = backupGuide;
-                setBackupGuide(null);
-                const dateStr = new Date().toISOString().slice(0, 10);
-                const fileName = `lua-backup-${dateStr}.json`;
-                const blob = new Blob([json], { type: 'application/json' });
-
-                try {
-                  const file = new File([blob], fileName, { type: 'application/json', lastModified: Date.now() });
-                  if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share({ files: [file] });
-                    localStorage.setItem('nou_last_manual_backup', String(Date.now()));
-                    showToast(`백업 완료! (${lsCount}개 항목, ${photoCount}장 사진)`);
-                    return;
-                  }
-                } catch (e) {
-                  if (e.name === 'AbortError') return;
-                }
-
-                // share 미지원 폴백: 서버 경유
-                try {
-                  const resp = await fetch('/api/backup-download', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: json,
-                  });
-                  if (resp.ok) {
-                    const dlBlob = await resp.blob();
-                    const dlUrl = URL.createObjectURL(dlBlob);
-                    window.location.href = dlUrl;
-                    setTimeout(() => URL.revokeObjectURL(dlUrl), 10000);
-                  }
-                } catch {}
-                localStorage.setItem('nou_last_manual_backup', String(Date.now()));
-                showToast(`백업 완료! (${lsCount}개 항목, ${photoCount}장 사진)`);
-              }}
-              style={{
-                width: '100%', padding: 15, borderRadius: 14, border: 'none',
-                background: 'var(--btn-primary-bg, linear-gradient(135deg, #81E4BD, #81E4BD))',
-                color: '#fff', fontSize: 15, fontWeight: 700,
-                cursor: 'pointer', fontFamily: 'inherit',
-                boxShadow: 'none',
-                marginBottom: 10,
-              }}
-            >확인 — 저장 화면 열기</button>
-            <button
-              onClick={() => setBackupGuide(null)}
-              style={{
-                width: '100%', padding: 12, borderRadius: 14,
-                border: '1px solid var(--border-subtle)', background: 'transparent',
-                color: 'var(--text-muted)', fontSize: 13, fontWeight: 500,
-                cursor: 'pointer', fontFamily: 'inherit',
-              }}
-            >취소</button>
-          </div>
-        </div>
-      )}
-
-      {/* Restore Confirmation Modal */}
-      {restoreConfirm && (
-        <div
-          onClick={(e) => { e.stopPropagation(); if (!restoring) setRestoreConfirm(null); }}
-          style={{
-            position: 'fixed', inset: 0, zIndex: 1001,
-            background: 'var(--bg-modal-overlay)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: 24,
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              width: '100%', maxWidth: 360,
-              background: 'var(--bg-modal)', borderRadius: 24, padding: 24,
-              border: '1px solid var(--border-subtle)',
-            }}
-          >
-            <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>
-              {restoring ? '복원 중...' : '백업 복원'}
-            </div>
-            {!restoring ? (
-              <>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16, lineHeight: 1.6 }}>
-                  기존 데이터를 백업 파일로 대체합니다.<br />
-                  <span style={{ color: 'var(--text-secondary)' }}>
-                    {restoreConfirm.stats.lsCount}개 항목, {restoreConfirm.stats.photoCount}장 사진
-                  </span>
-                  <br />백업 날짜: {restoreConfirm.stats.date}
-                </div>
-                <div style={{ display: 'flex', gap: 10 }}>
-                  <button
-                    onClick={() => setRestoreConfirm(null)}
-                    style={{
-                      flex: 1, padding: 12, borderRadius: 14, border: '1px solid var(--border-subtle)',
-                      background: 'transparent', color: 'var(--text-muted)', fontSize: 14, fontWeight: 500,
-                      cursor: 'pointer', fontFamily: 'inherit',
-                    }}
-                  >취소</button>
-                  <button
-                    onClick={async () => {
-                      setRestoring(true);
-                      try {
-                        // Restore localStorage
-                        const lsData = restoreConfirm.localStorage;
-                        for (const [key, value] of Object.entries(lsData)) {
-                          localStorage.setItem(key, value);
-                        }
-                        // Restore IndexedDB photos
-                        const photoCount = await restorePhotos(restoreConfirm.photos);
-                        const lsCount = Object.keys(lsData).length;
-                        setRestoring(false);
-                        setRestoreConfirm(null);
-                        showToast(`${lsCount}개 항목, ${photoCount}장 사진 복원 완료!`);
-                        setTimeout(() => window.location.reload(), 1200);
-                      } catch {
-                        setRestoring(false);
-                        showToast('복원 실패 — 다시 시도해주세요');
-                      }
-                    }}
-                    style={{
-                      flex: 1, padding: 12, borderRadius: 14, border: 'none',
-                      background: 'var(--btn-primary-bg)',
-                      color: '#fff', fontSize: 14, fontWeight: 600,
-                      cursor: 'pointer', fontFamily: 'inherit',
-                    }}
-                  >복원하기</button>
-                </div>
-              </>
-            ) : (
-              <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                <div style={{
-                  width: 32, height: 32, border: '3px solid rgba(240,144,112,0.2)',
-                  borderTopColor: '#81E4BD', borderRadius: '50%',
-                  animation: 'spin 0.8s linear infinite',
-                  margin: '0 auto 12px',
-                }} />
-                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-                <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>데이터를 복원하고 있어요...</div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Goal Setting Modal */}
-      {goalModalOpen && (
-        <GoalSettingModal
-          onClose={() => setGoalModalOpen(false)}
-          showToast={showToast}
         />
       )}
-    </div>
-  );
-}
 
-// ===== Goal Setting Modal =====
-
-function GoalSettingModal({ onClose, showToast }) {
-  const [step, setStep] = useState(1);
-  const [selectedMetrics, setSelectedMetrics] = useState([]);
-  const [targets, setTargets] = useState({});
-  const [duration, setDuration] = useState(90);
-  const latestRecord = getLatestRecord();
-  const existingGoal = getGoal();
-
-  const sortedMetrics = METRIC_META.map((m) => ({
-    ...m,
-    value: latestRecord ? (latestRecord[m.key] ?? 0) : 0,
-  })).sort((a, b) => a.value - b.value);
-
-  const toggleMetric = (key) => {
-    setSelectedMetrics((prev) => {
-      if (prev.includes(key)) return prev.filter((k) => k !== key);
-      if (prev.length >= 3) return prev;
-      return [...prev, key];
-    });
-  };
-
-  const applyPreset = (delta) => {
-    const next = {};
-    for (const key of selectedMetrics) {
-      const current = latestRecord ? (latestRecord[key] ?? 0) : 50;
-      next[key] = Math.min(100, current + delta);
-    }
-    setTargets(next);
-  };
-
-  const handleSave = () => {
-    const today = new Date();
-    const endDate = new Date(today);
-    endDate.setDate(endDate.getDate() + duration);
-
-    const goal = {
-      status: 'active',
-      startDate: today.toISOString().split('T')[0],
-      endDate: endDate.toISOString().split('T')[0],
-      durationDays: duration,
-      metrics: selectedMetrics.map((key) => {
-        const meta = METRIC_META.find((m) => m.key === key);
-        const startValue = latestRecord ? (latestRecord[key] ?? 0) : 50;
-        return {
-          key,
-          label: meta.label,
-          icon: meta.icon,
-          startValue,
-          targetValue: targets[key] || Math.min(100, startValue + 10),
-          currentValue: startValue,
-        };
-      }),
-      createdAt: today.toISOString(),
-      completedAt: null,
-    };
-
-    saveGoal(goal);
-    showToast('피부 목표가 설정되었어요!');
-    onClose();
-  };
-
-  const handleReset = () => {
-    if (confirm('현재 목표를 삭제할까요?')) {
-      clearGoal();
-      showToast('목표가 초기화되었어요');
-      onClose();
-    }
-  };
-
-  return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 1002,
-        background: 'var(--bg-modal-overlay)',
-        display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-        animation: 'fadeIn 0.2s ease',
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: '100%', maxWidth: 420,
-          maxHeight: '85vh', overflowY: 'auto',
-          background: 'var(--bg-modal)', borderRadius: '24px 24px 0 0',
-          padding: '24px 24px 40px',
-          border: '1px solid var(--border-subtle)',
-          borderBottom: 'none',
-          animation: 'slideUp 0.3s ease',
-        }}
-      >
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>
-              {step === 1 && '지표 선택'}
-              {step === 2 && '목표 설정'}
-              {step === 3 && '목표 확인'}
-            </div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-              {step === 1 && '개선하고 싶은 지표를 선택하세요 (최대 3개)'}
-              {step === 2 && '목표 점수와 기간을 설정하세요'}
-              {step === 3 && '설정한 목표를 확인하세요'}
-            </div>
-          </div>
-          <button onClick={onClose} style={{
-            width: 32, height: 32, borderRadius: '50%', border: 'none',
-            background: 'var(--bg-input)', color: 'var(--text-muted)',
-            fontSize: 16, cursor: 'pointer', display: 'flex',
-            alignItems: 'center', justifyContent: 'center',
-          }}>✕</button>
-        </div>
-
-        {/* Step indicator */}
-        <div style={{ display: 'flex', gap: 6, marginBottom: 24 }}>
-          {[1, 2, 3].map((s) => (
-            <div key={s} style={{
-              flex: 1, height: 3, borderRadius: 2,
-              background: s <= step ? '#ADEBB3' : 'var(--bg-input)',
-              transition: 'background 0.3s',
-            }} />
-          ))}
-        </div>
-
-        {/* STEP 1: Metric selection */}
-        {step === 1 && (
-          <div>
-            {!latestRecord && (
+      {/* ===== Profile + Category Tabs ===== */}
+      {(() => {
+        const latestRecord = records.length > 0 ? records[records.length - 1] : null;
+        const profileImg = getProfile().profileImage;
+        const avatarSrc = profileImg || (latestRecord ? (thumbs[String(latestRecord.id)] || thumbs[latestRecord.date]) : null);
+        const avgScore = records.length > 0
+          ? Math.round(records.reduce((s, r) => s + r.overallScore, 0) / records.length) : 0;
+        return (
+          <div style={{ padding: '27px 10px 0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12 }}>
               <div style={{
-                padding: '12px 16px', borderRadius: 14, marginBottom: 16,
-                background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)',
+                width: 72, height: 72, borderRadius: '50%', flexShrink: 0,
+                background: 'var(--btn-primary-bg)', padding: 2,
               }}>
-                <div style={{ fontSize: 12, color: '#f59e0b', lineHeight: 1.5 }}>
-                  먼저 피부 분석을 해야 현재 점수를 확인할 수 있어요. 분석 후 목표를 설정해보세요!
+                <div style={{
+                  width: '100%', height: '100%', borderRadius: '50%',
+                  overflow: 'hidden', background: 'var(--bg-secondary)',
+                }}>
+                  {avatarSrc ? (
+                    <img src={avatarSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
+                        <circle cx="12" cy="10" r="4" /><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" strokeLinecap="round" />
+                      </svg>
+                    </div>
+                  )}
                 </div>
               </div>
+              <div style={{ display: 'flex', flex: 1, justifyContent: 'space-around', textAlign: 'center' }}>
+                <div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{records.length}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>기록</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{avgScore}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>평균점수</div>
+                </div>
+              </div>
+            </div>
+            <div className="segment-control" data-active={albumCategory === 'skin' ? 'first' : albumCategory === 'body' ? 'last' : 'mid'}>
+              <button className={`segment-btn${albumCategory === 'skin' ? ' active' : ''}`}
+                onClick={() => setAlbumCategory('skin')}>피부</button>
+              <button className={`segment-btn${albumCategory === 'food' ? ' active' : ''}`}
+                onClick={() => setAlbumCategory('food')}>식단</button>
+              <button className={`segment-btn${albumCategory === 'body' ? ' active' : ''}`}
+                onClick={() => setAlbumCategory('body')}>바디</button>
+            </div>
+          </div>
+        );
+      })()}
+
+      <div className="tab-content-panel" data-active={albumCategory === 'skin' ? 'first' : albumCategory === 'body' ? 'last' : 'mid'}>
+
+      {/* ===== FOOD ALBUM ===== */}
+      {albumCategory === 'food' && (() => {
+        const _refresh = foodRefreshKey; // trigger re-render on delete
+        const allFoods = getFoodRecords();
+        const dates = Object.keys(allFoods).sort().reverse();
+        return (
+          <div style={{ padding: '16px 18px 0', animation: 'breatheIn 0.5s ease both' }}>
+            {dates.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
+                <div style={{ fontSize: 14, fontWeight: 600 }}>식단 기록이 없어요</div>
+                <div style={{ fontSize: 12, marginTop: 6 }}>식단 탭에서 기록을 시작해보세요</div>
+              </div>
+            ) : (
+              dates.map(date => {
+                const foods = allFoods[date].filter(f => !f.name?.startsWith('물 '));
+                if (foods.length === 0) return null;
+                const d = new Date(date);
+                const totalKcal = foods.reduce((s, f) => s + (f.kcal || 0), 0);
+                return (
+                  <div key={date} style={{ marginBottom: 16 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{d.getMonth() + 1}월 {d.getDate()}일</span>
+                      <span style={{ fontSize: 12, color: 'var(--accent-primary)', fontWeight: 600 }}>{totalKcal}kcal</span>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, padding: '0' }}>
+                      {foods.map(food => (
+                        <div key={food.id} onClick={() => setSelectedFood({ ...food, _date: date })} style={{ aspectRatio: '1', borderRadius: 5, overflow: 'hidden', background: 'var(--bg-card-hover)', position: 'relative', cursor: 'pointer' }}>
+                          {food.photo ? (
+                            <FoodPhoto photo={food.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : (
+                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(129,228,189,0.08)' }}>
+                              <span style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', padding: 4 }}>{food.name}</span>
+                            </div>
+                          )}
+                          <span style={{ position: 'absolute', bottom: 4, left: 6, fontSize: 10, color: '#fff', fontWeight: 600, textShadow: '0 1px 3px rgba(0,0,0,0.6)' }}>{food.meal}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })
             )}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {sortedMetrics.map((m, idx) => {
-                const selected = selectedMetrics.includes(m.key);
-                return (
-                  <div
-                    key={m.key}
-                    onClick={() => latestRecord && toggleMetric(m.key)}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 12,
-                      padding: '14px 16px', borderRadius: 16,
-                      background: selected ? 'rgba(240,144,112,0.1)' : 'var(--bg-card)',
-                      border: selected ? '1px solid rgba(240,144,112,0.3)' : '1px solid var(--border-light)',
-                      cursor: latestRecord ? 'pointer' : 'default',
-                      opacity: latestRecord ? 1 : 0.5,
-                      transition: 'all 0.2s',
-                    }}
-                  >
-                    <span style={{ fontSize: 20 }}>{m.icon}</span>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-secondary)' }}>{m.label}</span>
-                        {idx < 3 && latestRecord && (
-                          <span style={{
-                            fontSize: 10, padding: '1px 6px', borderRadius: 6,
-                            background: 'rgba(240,96,80,0.1)', color: '#e05545',
-                          }}>추천</span>
-                        )}
-                      </div>
-                      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-                        현재 {m.value}점
-                      </div>
-                    </div>
-                    <div style={{
-                      width: 22, height: 22, borderRadius: 6,
-                      border: selected ? 'none' : '1.5px solid rgba(255,255,255,0.15)',
-                      background: selected ? '#ADEBB3' : 'transparent',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      flexShrink: 0, transition: 'all 0.2s',
-                    }}>
-                      {selected && (
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
           </div>
-        )}
+        );
+      })()}
 
-        {/* STEP 2: Target setting */}
-        {step === 2 && (
-          <div>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-              {[
-                { label: '조금 개선', delta: 10 },
-                { label: '적극 개선', delta: 20 },
-                { label: '최고 목표', delta: 30 },
-              ].map((p) => (
-                <button
-                  key={p.delta}
-                  onClick={() => applyPreset(p.delta)}
-                  style={{
-                    flex: 1, padding: '10px 8px', borderRadius: 14,
-                    border: '1px solid rgba(240,144,112,0.2)',
-                    background: 'rgba(240,144,112,0.06)',
-                    color: '#81E4BD', fontSize: 12, fontWeight: 600,
-                    cursor: 'pointer', fontFamily: 'inherit',
-                  }}
-                >+{p.delta}<br/><span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>{p.label}</span></button>
-              ))}
-            </div>
+      {/* Food Detail Modal */}
+      {selectedFood && (
+        <HistoryFoodDetailModal food={selectedFood} onClose={() => setSelectedFood(null)} onDelete={() => {
+          deleteFoodRecord(selectedFood._date, selectedFood.id);
+          setSelectedFood(null);
+          setFoodRefreshKey(k => k + 1);
+        }} />
+      )}
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {selectedMetrics.map((key) => {
-                const meta = METRIC_META.find((m) => m.key === key);
-                const current = latestRecord ? (latestRecord[key] ?? 0) : 50;
-                const target = targets[key] || Math.min(100, current + 10);
-
-                return (
-                  <div key={key} style={{
-                    padding: '16px', borderRadius: 16,
-                    background: 'var(--bg-card)',
-                    border: '1px solid var(--border-light)',
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ fontSize: 16 }}>{meta.icon}</span>
-                        <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-secondary)' }}>{meta.label}</span>
-                      </div>
-                      <span style={{ fontSize: 13, color: '#ADEBB3', fontWeight: 600 }}>
-                        {current} → {target}
-                      </span>
-                    </div>
-                    <div style={{
-                      width: '100%', height: 8, borderRadius: 4,
-                      background: 'var(--bg-card-hover)', position: 'relative',
-                      marginBottom: 10,
-                    }}>
-                      <div style={{
-                        width: `${current}%`, height: '100%', borderRadius: 4,
-                        background: 'var(--bg-input)',
-                      }} />
-                      <div style={{
-                        position: 'absolute', top: 0, left: 0,
-                        width: `${target}%`, height: '100%', borderRadius: 4,
-                        background: 'linear-gradient(90deg, #E87080, #81E4BD, #81E4BD)',
-                        opacity: 0.6,
-                      }} />
-                    </div>
-                    <input
-                      type="range"
-                      min={Math.min(current + 1, 100)}
-                      max={100}
-                      value={target}
-                      onChange={(e) => setTargets((prev) => ({ ...prev, [key]: parseInt(e.target.value) }))}
-                      style={{ width: '100%', accentColor: '#ADEBB3' }}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-
-            <div style={{ marginTop: 20 }}>
-              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 10 }}>목표 기간</div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {[30, 60, 90].map((d) => (
-                  <button
-                    key={d}
-                    onClick={() => setDuration(d)}
-                    style={{
-                      flex: 1, padding: '10px 0', borderRadius: 14,
-                      border: duration === d ? '1px solid #ADEBB3' : '1px solid var(--border-subtle)',
-                      background: duration === d ? 'rgba(240,144,112,0.12)' : 'transparent',
-                      color: duration === d ? '#ADEBB3' : 'var(--text-muted)',
-                      fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-                    }}
-                  >{d}일</button>
-                ))}
+      {/* ===== BODY ALBUM ===== */}
+      {albumCategory === 'body' && (() => {
+        const bodyRecords = getBodyRecords();
+        const sorted = [...bodyRecords].reverse();
+        return (
+          <div style={{ padding: '16px 18px 0', animation: 'breatheIn 0.5s ease both' }}>
+            {sorted.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
+                <div style={{ fontSize: 14, fontWeight: 600 }}>몸무게 기록이 없어요</div>
+                <div style={{ fontSize: 12, marginTop: 6 }}>바디 탭에서 기록을 시작해보세요</div>
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* STEP 3: Confirmation */}
-        {step === 3 && (
-          <div>
-            <div style={{
-              padding: 20, borderRadius: 20,
-              background: 'rgba(240,144,112,0.06)',
-              border: '1px solid rgba(240,144,112,0.15)',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>목표 요약</span>
-                <span style={{ fontSize: 12, color: '#ADEBB3', fontWeight: 500 }}>{duration}일</span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {selectedMetrics.map((key) => {
-                  const meta = METRIC_META.find((m) => m.key === key);
-                  const current = latestRecord ? (latestRecord[key] ?? 0) : 50;
-                  const target = targets[key] || Math.min(100, current + 10);
+            ) : (
+              <div>
+                {sorted.length >= 2 && (() => {
+                  const data = [...bodyRecords].slice(-14);
+                  const weights = data.map(r => r.weight);
+                  const min = Math.min(...weights) - 1, max = Math.max(...weights) + 1;
+                  const range = max - min || 1;
+                  const w = 280, h = 60;
+                  const points = data.map((r, i) => `${(i / (data.length - 1)) * w},${h - ((r.weight - min) / range) * h}`).join(' ');
                   return (
-                    <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ fontSize: 16 }}>{meta.icon}</span>
-                        <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{meta.label}</span>
-                      </div>
-                      <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>{current}</span>
-                        <span style={{ color: 'var(--text-dim)', margin: '0 6px' }}>→</span>
-                        <span style={{ color: '#ADEBB3', fontWeight: 600 }}>{target}</span>
-                      </div>
+                    <div style={{ marginBottom: 16 }}>
+                      <svg viewBox={`0 0 ${w} ${h}`} style={{ width: '100%', height: 60 }} preserveAspectRatio="none">
+                        <defs><linearGradient id="bgAlbum" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#81E4BD" /><stop offset="100%" stopColor="#81E4BD" /></linearGradient></defs>
+                        <polyline points={points} fill="none" stroke="url(#bgAlbum)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+                  );
+                })()}
+                {sorted.map(r => {
+                  const d = new Date(r.date);
+                  return (
+                    <div key={r.date} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-card)', borderRadius: 16, padding: '14px 18px', marginBottom: 8, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)' }}>
+                      <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{d.getMonth() + 1}월 {d.getDate()}일</span>
+                      <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--accent-primary)' }}>{r.weight} kg</span>
                     </div>
                   );
                 })}
               </div>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* ===== SKIN GALLERY ===== */}
+      {albumCategory === 'skin' && (() => {
+        const sorted = [...records].reverse();
+        return (
+          <div>
+            <div style={{ marginTop: 16 }} />
+
+            {/* Photo grid */}
+            {records.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" strokeWidth="1.2" strokeLinecap="round" style={{ marginBottom: 12 }}>
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                  <circle cx="12" cy="13" r="3" />
+                </svg>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-muted)' }}>아직 기록이 없어요</div>
+                <div style={{ fontSize: 12, marginTop: 6 }}>첫 측정을 시작해보세요</div>
+              </div>
+            ) : (
+              <div style={{
+                display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, padding: '0 18px',
+              }}>
+                {sorted.map((r) => {
+                  const thumb = thumbs[String(r.id)] || thumbs[r.date];
+                  return (
+                    <div key={r.id || r.timestamp || r.date} onClick={() => handleSelectRecord(r)} style={{
+                      position: 'relative', aspectRatio: '1', cursor: 'pointer',
+                      background: 'var(--bg-card-hover)', overflow: 'hidden', borderRadius: 5,
+                    }}>
+                      {thumb ? (
+                        <img src={thumb} alt={r.date} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      ) : (
+                        <div style={{
+                          width: '100%', height: '100%',
+                          background: 'linear-gradient(135deg, rgba(240,144,112,0.06), rgba(240,144,112,0.1))',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>No Photo</span>
+                        </div>
+                      )}
+                      <span style={{
+                        position: 'absolute', bottom: 5, left: 6,
+                        fontSize: 10, fontWeight: 500, color: '#fff',
+                        textShadow: '0 1px 3px rgba(0,0,0,0.6)',
+                        pointerEvents: 'none',
+                      }}>{String(new Date(r.date).getMonth() + 1).padStart(2, '0')}월 {String(new Date(r.date).getDate()).padStart(2, '0')}일</span>
+                      <span style={{
+                        position: 'absolute', bottom: 5, right: 6,
+                        fontSize: 13, fontWeight: 600, color: '#fff',
+                        textShadow: '0 1px 4px rgba(0,0,0,0.6)',
+                        pointerEvents: 'none',
+                      }}>{r.overallScore}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Skin Analysis CTA — exact copy from skin page */}
+            <div onClick={onMeasure} style={{
+              margin: '20px 18px 0', padding: '16px 18px',
+              background: 'var(--bg-card)', borderRadius: 20, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+              display: 'flex', alignItems: 'center', gap: 14,
+              cursor: 'pointer', animation: 'breatheIn 0.6s ease 0.3s both',
+              WebkitTapHighlightColor: 'transparent',
+            }}>
+              <div style={{ width: 48, height: 48, flexShrink: 0 }}>
+                <EternalPearl size={48} animated colors={getDefaultTheme('light')} theme="light" />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: -0.3 }}>
+                  피부 분석하기
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 3 }}>
+                  AI가 10개 지표를 정밀 분석합니다
+                </div>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M9 18l6-6-6-6" stroke="var(--text-dim)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ===== INSIGHTS MODE (Redesigned: Timeline + Compare) ===== */}
+      {albumCategory === 'skin' && mode === 'insights' && (() => {
+        const firstRecord = records.length > 0 ? records[0] : null;
+        const lastRecord = records.length > 0 ? records[records.length - 1] : null;
+        const overallDiff = totalChanges?.overallScore || 0;
+        const skinAgeDiff = totalChanges?.skinAge || 0;
+        const period = totalChanges?.period || 0;
+        const improvementPct = firstRecord && lastRecord && firstRecord.overallScore > 0
+          ? ((lastRecord.overallScore - firstRecord.overallScore) / firstRecord.overallScore * 100).toFixed(1)
+          : null;
+        const dayLabels = ['일', '월', '화', '수', '목', '금', '토'];
+        const formatShortDate = (dateStr) => {
+          const d = new Date(dateStr);
+          return `${d.getMonth() + 1}월 ${d.getDate()}일`;
+        };
+        const compareMetrics = [
+          { key: 'moisture', label: '수분', icon: <DropletIcon size={16} /> },
+          { key: 'oilBalance', label: '유분', icon: <BubbleIcon size={16} /> },
+          { key: 'elasticityScore', label: '탄력', icon: <DiamondIcon size={16} /> },
+          { key: 'wrinkleScore', label: '주름', icon: <RulerIcon size={16} /> },
+          { key: 'textureScore', label: '피부결', icon: <LotionIcon size={16} /> },
+          { key: 'poreScore', label: '모공', icon: <MicroscopeIcon size={16} /> },
+          { key: 'skinTone', label: '피부톤', icon: <SparkleIcon size={16} /> },
+          { key: 'pigmentationScore', label: '색소', icon: <PaletteIcon size={16} /> },
+          { key: 'darkCircleScore', label: '다크서클', icon: <EyeIcon size={16} /> },
+        ];
+        const sorted = [...records].reverse();
+
+        return (
+          <div style={{ padding: '0 18px' }}>
+            {/* === HEADER === */}
+            <div style={{ paddingTop: 20, marginBottom: 20, animation: 'breatheIn 0.6s ease both' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.5, color: 'var(--text-muted)' }}>SKIN TIMELINE</span>
+                {period > 0 && (
+                  <span style={{
+                    fontSize: 11, fontWeight: 600, color: '#fff',
+                    background: 'rgba(255,120,50,0.2)', border: '1px solid rgba(255,120,50,0.3)',
+                    borderRadius: 20, padding: '2px 10px',
+                  }}><span style={{ color: '#FF6B35' }}>●</span> {period}일째</span>
+                )}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>나의 피부 여정</h2>
+                <div style={{
+                  display: 'flex', background: 'var(--bg-card)',
+                  borderRadius: 10, padding: 3, gap: 2,
+                }}>
+                  {['timeline', 'compare'].map(m => (
+                    <button key={m} onClick={() => setInsightMode(m)} style={{
+                      border: insightMode === m ? '1.5px solid rgba(255,255,255,0.25)' : '1.5px solid transparent',
+                      background: insightMode === m ? 'var(--bg-input)' : 'transparent',
+                      color: insightMode === m ? 'var(--text-primary)' : 'var(--text-muted)',
+                      borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                    }}>{m === 'timeline' ? '타임라인' : '비교'}</button>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            {existingGoal && existingGoal.status === 'active' && (
-              <div style={{
-                marginTop: 12, padding: '10px 16px', borderRadius: 12,
-                background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.15)',
-              }}>
-                <div style={{ fontSize: 12, color: '#f59e0b', lineHeight: 1.5 }}>
-                  기존 목표가 새 목표로 대체됩니다.
+            {/* === SUMMARY CARDS === */}
+            {totalChanges && (
+              <div style={{ display: 'flex', gap: 12, marginBottom: 16, animation: 'breatheIn 0.6s ease 0.1s both' }}>
+                <div style={{
+                  flex: 1, background: 'var(--bg-card)',
+                  border: '1px solid rgba(255,255,255,0.3)', borderRadius: 16, padding: '14px 16px',
+                  backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+                  display: 'flex', alignItems: 'center', gap: 12,
+                }}>
+                  <div style={{
+                    width: 44, height: 44, borderRadius: 12,
+                    background: 'transparent',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22,
+                  }}><ChartIcon size={26} /></div>
+                  <div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>총 변화</div>
+                    <div style={{
+                      fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-display)',
+                      color: overallDiff >= 0 ? '#4ade80' : '#f0a050',
+                    }}>{overallDiff > 0 ? '+' : ''}{overallDiff}점</div>
+                  </div>
+                </div>
+                <div style={{
+                  flex: 1, background: 'var(--bg-card)',
+                  border: '1px solid rgba(255,255,255,0.3)', borderRadius: 16, padding: '14px 16px',
+                  backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+                  display: 'flex', alignItems: 'center', gap: 12,
+                }}>
+                  <div style={{
+                    width: 44, height: 44, borderRadius: 12,
+                    background: 'transparent',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22,
+                  }}><ClockIcon size={26} /></div>
+                  <div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>피부나이</div>
+                    <div style={{
+                      fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-display)',
+                      color: skinAgeDiff <= 0 ? '#4ade80' : '#f0a050',
+                    }}>{skinAgeDiff > 0 ? '+' : ''}{skinAgeDiff}세</div>
+                  </div>
                 </div>
               </div>
             )}
-          </div>
-        )}
 
-        {/* Navigation buttons */}
-        <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
-          {step > 1 && (
-            <button
-              onClick={() => setStep(step - 1)}
-              style={{
-                flex: 1, padding: 14, borderRadius: 16,
-                border: '1px solid var(--border-subtle)',
-                background: 'transparent', color: 'var(--text-muted)',
-                fontSize: 15, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
-              }}
-            >이전</button>
-          )}
-          {step < 3 && (
-            <button
-              onClick={() => {
-                if (step === 1 && selectedMetrics.length === 0) return;
-                if (step === 1) {
-                  const t = {};
-                  for (const key of selectedMetrics) {
-                    const v = latestRecord ? (latestRecord[key] ?? 0) : 50;
-                    t[key] = Math.min(100, v + 10);
-                  }
-                  setTargets((prev) => ({ ...t, ...prev }));
-                }
-                setStep(step + 1);
-              }}
-              disabled={step === 1 && selectedMetrics.length === 0}
-              style={{
-                flex: 1, padding: 14, borderRadius: 16, border: 'none',
-                background: (step === 1 && selectedMetrics.length === 0)
-                  ? 'var(--bg-input)' : 'var(--btn-primary-bg)',
-                color: (step === 1 && selectedMetrics.length === 0) ? 'var(--text-dim)' : '#fff',
-                fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-              }}
-            >다음</button>
-          )}
-          {step === 3 && (
-            <button
-              onClick={handleSave}
-              style={{
-                flex: 1, padding: 14, borderRadius: 16, border: 'none',
-                background: 'var(--btn-primary-bg)',
-                color: '#fff', fontSize: 15, fontWeight: 700,
-                cursor: 'pointer', fontFamily: 'inherit',
-                boxShadow: 'none',
-              }}
-            >목표 시작하기</button>
-          )}
-        </div>
+            {/* === TREND GRAPH === */}
+            <div className="card" style={{ padding: '16px 12px', marginBottom: 16, animation: 'breatheIn 0.6s ease 0.15s both', boxShadow: 'none', border: 'none' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}>종합 점수 추이</span>
+                {improvementPct !== null && Number(improvementPct) !== 0 && (
+                  <span style={{
+                    fontSize: 12, fontWeight: 600,
+                    color: Number(improvementPct) > 0 ? '#4ade80' : '#f0a050',
+                  }}>
+                    {Number(improvementPct) > 0 ? '▲' : '▼'} {Math.abs(Number(improvementPct))}% {Number(improvementPct) > 0 ? '개선' : '변화'}
+                  </span>
+                )}
+              </div>
+              <TrendGraph
+                data={getTimeSeries('overallScore')}
+                color="#ADEBB3"
+                height={180}
+                showAllLabels
+              />
+            </div>
 
-        {existingGoal && existingGoal.status === 'active' && step === 1 && (
-          <button
-            onClick={handleReset}
-            style={{
-              width: '100%', marginTop: 12, padding: 12, borderRadius: 14,
-              border: 'none', background: 'transparent',
-              color: '#e05545', fontSize: 13, fontWeight: 400,
-              cursor: 'pointer', fontFamily: 'inherit',
-            }}
-          >현재 목표 삭제</button>
-        )}
-      </div>
-    </div>
-  );
-}
+            {/* === TIMELINE MODE === */}
+            {insightMode === 'timeline' && (
+              <div style={{ animation: 'breatheIn 0.5s ease both' }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 12 }}>측정 기록</div>
+                {records.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
+                    <div style={{ fontSize: 36, marginBottom: 8 }}>📸</div>
+                    <div style={{ fontSize: 13 }}>아직 기록이 없어요</div>
+                  </div>
+                ) : (
+                  sorted.map((r, i) => {
+                    const d = new Date(r.date);
+                    const dayNum = d.getDate();
+                    const monthLabel = `${d.getMonth() + 1}월`;
+                    const dayOfWeek = dayLabels[d.getDay()] + '요일';
+                    const thumb = thumbs[String(r.id)] || thumbs[r.date];
+                    const prev = sorted[i + 1];
+                    const diff = prev ? r.overallScore - prev.overallScore : 0;
+                    const isLatest = i === 0;
+                    const ringR = 18;
+                    const circ = 2 * Math.PI * ringR;
 
-// ===== Sub-components =====
+                    return (
+                      <div key={r.id || r.timestamp} className="history-record-item" onClick={() => handleSelectRecord(r)} style={{
+                        display: 'flex', alignItems: 'center', gap: 14,
+                        padding: '14px 16px', marginBottom: 8,
+                        background: isLatest ? 'rgba(129,228,189,0.08)' : 'rgba(255,255,255,0.03)',
+                        border: isLatest ? '1px solid rgba(129,228,189,0.25)' : '1px solid var(--border-light)',
+                        borderRadius: 16, cursor: 'pointer',
+                        transition: 'border-color 0.2s',
+                      }}>
+                        {/* Date */}
+                        <div style={{ textAlign: 'center', minWidth: 36 }}>
+                          <div style={{ fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', lineHeight: 1 }}>{dayNum}</div>
+                          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{monthLabel}</div>
+                        </div>
 
-function Section({ label, children }) {
-  return (
-    <div style={{ marginBottom: 20 }}>
-      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 8 }}>{label}</div>
-      {children}
-    </div>
-  );
-}
+                        {/* Divider */}
+                        <div style={{ width: 1.5, height: 36, background: 'rgba(240,144,112,0.25)', borderRadius: 1, flexShrink: 0 }} />
 
-function ChipGroup({ options, selected, onSelect }) {
-  return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-      {options.map((opt) => {
-        const active = selected === opt;
-        return (
-          <div
-            key={opt}
-            onClick={() => onSelect(active ? '' : opt)}
-            style={{
-              padding: '7px 16px', borderRadius: 20, fontSize: 13, fontWeight: 500,
-              cursor: 'pointer', transition: 'all 0.2s',
-              background: active ? '#ADEBB3' : 'var(--bg-card)',
-              color: active ? '#fff' : 'var(--text-muted)',
-              border: active ? '1px solid #ADEBB3' : '1px solid var(--border-subtle)',
-            }}
-          >
-            {opt}
+                        {/* Thumbnail */}
+                        <div style={{
+                          width: 44, height: 44, borderRadius: 12, overflow: 'hidden', flexShrink: 0,
+                          background: 'var(--bg-card)',
+                        }}>
+                          {thumb ? (
+                            <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : (
+                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CameraIcon size={18} /></div>
+                          )}
+                        </div>
+
+                        {/* Score info */}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>종합 {r.overallScore}점</span>
+                            {diff !== 0 && (
+                              <span style={{
+                                fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 8,
+                                background: diff > 0 ? 'rgba(74,222,128,0.15)' : 'rgba(240,160,80,0.15)',
+                                color: diff > 0 ? '#4ade80' : '#f0a050',
+                              }}>{diff > 0 ? '+' : ''}{diff}</span>
+                            )}
+                            {diff > 0 && (
+                              <div style={{
+                                width: 4, height: 4, borderRadius: '50%',
+                                background: '#81E4BD',
+                                boxShadow: 'none',
+                                flexShrink: 0,
+                              }} />
+                            )}
+                          </div>
+                          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                            피부나이 {r.skinAge}세 · {dayOfWeek}
+                          </div>
+                        </div>
+
+                        {/* Score ring */}
+                        <div style={{ position: 'relative', width: 42, height: 42, flexShrink: 0 }}>
+                          <svg width="42" height="42" viewBox="0 0 42 42">
+                            <circle cx="21" cy="21" r={ringR} fill="none" stroke="var(--border-light)" strokeWidth="3" />
+                            <circle cx="21" cy="21" r={ringR} fill="none" stroke="#ADEBB3" strokeWidth="3"
+                              strokeDasharray={`${(r.overallScore / 100) * circ} ${circ}`}
+                              strokeLinecap="round" transform="rotate(-90 21 21)"
+                            />
+                          </svg>
+                          <div style={{
+                            position: 'absolute', inset: 0,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-secondary)',
+                          }}>{r.overallScore}</div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
+
+            {/* === COMPARE MODE === */}
+            {insightMode === 'compare' && (() => {
+              if (!firstRecord || !lastRecord || records.length < 2) {
+                return (
+                  <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
+                    <div style={{ fontSize: 36, marginBottom: 8 }}>📊</div>
+                    <div style={{ fontSize: 13 }}>2회 이상 측정하면 비교 분석을 볼 수 있어요</div>
+                  </div>
+                );
+              }
+              const bigR = 34, bigCirc = 2 * Math.PI * bigR;
+              return (
+                <div style={{ animation: 'breatheIn 0.5s ease both' }}>
+                  {/* Date comparison row */}
+                  <div style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    gap: 16, marginBottom: 28, padding: '0 8px',
+                  }}>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>시작</div>
+                      <div style={{
+                        fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)',
+                        background: 'var(--bg-card-hover)', borderRadius: 10, padding: '6px 14px',
+                      }}>{formatShortDate(firstRecord.date)}</div>
+                    </div>
+                    <div style={{ fontSize: 20, color: 'var(--text-dim)' }}>→</div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>현재</div>
+                      <div style={{
+                        fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)',
+                        background: 'rgba(240,144,112,0.12)', border: '1px solid rgba(240,144,112,0.25)',
+                        borderRadius: 10, padding: '6px 14px',
+                      }}>{formatShortDate(lastRecord.date)}</div>
+                    </div>
+                  </div>
+
+                  {/* Score ring comparison */}
+                  <div style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20,
+                    marginBottom: 32,
+                  }}>
+                    {/* Start ring */}
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ position: 'relative', width: 80, height: 80, margin: '0 auto 6px' }}>
+                        <svg width="80" height="80" viewBox="0 0 80 80">
+                          <circle cx="40" cy="40" r={bigR} fill="none" stroke="var(--border-light)" strokeWidth="5" />
+                          <circle cx="40" cy="40" r={bigR} fill="none" stroke="var(--text-dim)" strokeWidth="5"
+                            strokeDasharray={`${(firstRecord.overallScore / 100) * bigCirc} ${bigCirc}`}
+                            strokeLinecap="round" transform="rotate(-90 40 40)"
+                          />
+                        </svg>
+                        <div style={{
+                          position: 'absolute', inset: 0,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 24, fontWeight: 800, fontFamily: 'var(--font-display)', color: 'var(--text-secondary)',
+                        }}>{firstRecord.overallScore}</div>
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>시작</div>
+                    </div>
+
+                    {/* Diff */}
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{
+                        fontSize: 26, fontWeight: 900, fontFamily: 'var(--font-display)',
+                        color: overallDiff >= 0 ? '#4ade80' : '#f0a050',
+                      }}>{overallDiff > 0 ? '+' : ''}{overallDiff}</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>점 {overallDiff >= 0 ? '상승' : '변화'}</div>
+                    </div>
+
+                    {/* Current ring */}
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ position: 'relative', width: 80, height: 80, margin: '0 auto 6px' }}>
+                        <svg width="80" height="80" viewBox="0 0 80 80">
+                          <circle cx="40" cy="40" r={bigR} fill="none" stroke="rgba(240,144,112,0.12)" strokeWidth="5" />
+                          <circle cx="40" cy="40" r={bigR} fill="none" stroke="#ADEBB3" strokeWidth="5"
+                            strokeDasharray={`${(lastRecord.overallScore / 100) * bigCirc} ${bigCirc}`}
+                            strokeLinecap="round" transform="rotate(-90 40 40)"
+                          />
+                        </svg>
+                        <div style={{
+                          position: 'absolute', inset: 0,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 24, fontWeight: 800, fontFamily: 'var(--font-display)', color: 'var(--text-primary)',
+                        }}>{lastRecord.overallScore}</div>
+                      </div>
+                      <div style={{ fontSize: 11, color: '#ADEBB3', fontWeight: 600 }}>현재</div>
+                    </div>
+                  </div>
+
+                  {/* Metric-by-metric comparison */}
+                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 12 }}>항목별 변화</div>
+                  <div className="card" style={{ padding: '4px 14px' }}>
+                    {compareMetrics.map((m, i) => {
+                      const firstVal = firstRecord[m.key] ?? 0;
+                      const lastVal = lastRecord[m.key] ?? 0;
+                      const diff = lastVal - firstVal;
+                      const improved = diff > 0;
+
+                      return (
+                        <div key={m.key} style={{
+                          padding: '12px 0',
+                          borderBottom: i < compareMetrics.length - 1 ? '1px solid var(--border-separator)' : 'none',
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', width: 26 }}>{m.icon}</span>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', flex: 1 }}>{m.label}</span>
+                            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{firstVal}</span>
+                            <span style={{ fontSize: 12, color: 'var(--text-dim)', margin: '0 4px' }}>→</span>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{lastVal}</span>
+                            {diff !== 0 && (
+                              <span style={{
+                                fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 8, marginLeft: 6,
+                                background: improved ? 'rgba(74,222,128,0.15)' : 'rgba(240,160,80,0.15)',
+                                color: improved ? '#4ade80' : '#f0a050',
+                              }}>{improved ? '↑' : '↓'}{diff > 0 ? '+' : ''}{diff}</span>
+                            )}
+                          </div>
+                          {/* Progress bar */}
+                          <div style={{
+                            height: 4, borderRadius: 2, background: 'var(--border-light)',
+                            marginLeft: 26,
+                          }}>
+                            <div style={{
+                              height: '100%', borderRadius: 2,
+                              width: `${Math.min(100, Math.max(0, lastVal))}%`,
+                              background: improved || diff === 0 ? '#ADEBB3' : 'var(--text-dim)',
+                              transition: 'width 0.8s ease',
+                            }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {records.length > 0 && (
+              <p style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-dim)', marginTop: 16, marginBottom: 8 }}>
+                매주 같은 조건(시간, 조명, 맨얼굴)에서 측정하면 정확도가 높아져요
+              </p>
+            )}
           </div>
         );
-      })}
+      })()}
+
+      </div>{/* end tab-content-panel */}
+
+      {/* Settings Drawer */}
+      <SettingsPage open={showSettingsPage} onClose={() => setShowSettingsPage(false)} />
     </div>
   );
 }
 
-function JourneyStat({ value, unit, label, hasDivider }) {
+// ===== SETTINGS PAGE =====
+function SettingsPage({ open, onClose }) {
+  const [showProfilePage, setShowProfilePage] = useState(false);
+
+  const menuSections = [
+    {
+      title: '계정',
+      items: [
+        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>, label: '프로필 설정', action: () => setShowProfilePage(true) },
+        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="22" x2="4" y2="2"/><path d="M4 3c3-1 6 1 9 0s6-2 8 0v10c-2-2-5 0-8 1s-6-1-9 0V3z"/></svg>, label: '목표 설정' },
+      ],
+    },
+    {
+      title: '앱 설정',
+      items: [
+        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>, label: '카테고리' },
+        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>, label: '화면' },
+        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>, label: '데이터' },
+      ],
+    },
+    {
+      title: '정보',
+      items: [
+        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>, label: '공지사항' },
+        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>, label: '앱 정보' },
+        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>, label: '문의하기' },
+      ],
+    },
+  ];
+
   return (
-    <div style={{ textAlign: 'center', position: 'relative' }}>
-      {hasDivider && (
-        <div style={{
-          position: 'absolute', left: 0, top: '15%', height: '70%',
-          width: 1, background: 'rgba(240,144,112,0.1)',
-        }} />
-      )}
+    <>
       <div style={{
-        fontFamily: 'inherit',
-        fontSize: 28, fontWeight: 400, color: '#ADEBB3',
-        lineHeight: 1, marginBottom: 6,
+        position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 2001,
+        width: '100%',
+        background: 'linear-gradient(to bottom, #ace2fc, #dfed89)',
+        transform: open ? 'translateX(0)' : 'translateX(100%)',
+        transition: 'transform 0.3s ease',
+        display: 'flex', flexDirection: 'column',
+        overflowY: 'auto', WebkitOverflowScrolling: 'touch',
       }}>
-        {value}{unit && <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>{unit}</span>}
+        <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+          <div onClick={onClose} style={{
+            width: 36, height: 36,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
+            zIndex: 1,
+          }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </div>
+          <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>설정</span>
+        </div>
+        <div style={{ flex: 1, padding: '8px 0' }}>
+          {menuSections.map((section) => (
+            <div key={section.title}>
+              <div style={{
+                padding: '14px 28px 6px',
+                fontSize: 11, fontWeight: 400, color: 'var(--text-dim)',
+                letterSpacing: 0.5,
+              }}>{section.title}</div>
+              {section.items.map((item) => (
+                <div key={item.label} onClick={() => item.action ? item.action() : null} style={{
+                  display: 'flex', alignItems: 'center', gap: 16,
+                  padding: '11px 28px', cursor: 'pointer',
+                  WebkitTapHighlightColor: 'transparent',
+                  color: 'var(--text-primary)',
+                }}>
+                  {item.icon}
+                  <span style={{ fontSize: 15, fontWeight: 500, flex: 1 }}>{item.label}</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.6)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 6l6 6-6 6" />
+                  </svg>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+        <div style={{ padding: '12px 28px 40px', borderTop: '1px solid var(--border-light, #eee)' }}>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12 }}>버전 1.0.0</div>
+          <div onClick={() => {}} style={{ fontSize: 13, color: 'var(--text-muted)', cursor: 'pointer' }}>로그아웃</div>
+        </div>
       </div>
-      <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, letterSpacing: 0.3 }}>{label}</div>
-    </div>
+      {showProfilePage && <ProfileSettingsPage onClose={() => setShowProfilePage(false)} />}
+    </>
   );
 }
 
-function SettingsSection({ label, children }) {
-  return (
-    <div style={{ marginBottom: 20 }}>
-      <div style={{
-        fontSize: 11, fontWeight: 400, color: 'var(--text-muted)',
-        letterSpacing: 2, textTransform: 'uppercase', marginBottom: 10,
-      }}>{label}</div>
-      <div style={{
-        display: 'flex', flexDirection: 'column', gap: 0,
-        background: 'var(--bg-card)', borderRadius: 20, overflow: 'hidden',
-        border: '1px solid var(--border-separator)',
-      }}>
-        {children}
-      </div>
-    </div>
-  );
-}
+// ===== PROFILE SETTINGS PAGE =====
+function ProfileSettingsPage({ onClose }) {
+  const [profile, setProfile] = useState(getProfile);
+  const currentYear = new Date().getFullYear();
+  const age = profile.birthYear ? currentYear - parseInt(profile.birthYear) : null;
 
-function SettingsMenuItem({ icon, label, desc, right, onTap }) {
+  const onUpdate = (key, value) => {
+    const next = saveProfile({ [key]: value });
+    setProfile(next);
+  };
+
+  const inputStyle = {
+    width: '100%', padding: '12px 14px', borderRadius: 12, border: 'none',
+    background: 'var(--bg-input, #F2F3F5)', fontSize: 14,
+    color: 'var(--text-primary)', fontFamily: 'inherit', outline: 'none',
+  };
+
   return (
-    <div onClick={onTap} style={{
-      display: 'flex', alignItems: 'center', gap: 14,
-      padding: '16px 20px', cursor: 'pointer',
-      borderTop: '1px solid var(--border-separator)',
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 2002,
+      background: 'linear-gradient(to bottom, #ace2fc, #dfed89)',
+      overflowY: 'auto', WebkitOverflowScrolling: 'touch',
     }}>
-      <div style={{
-        width: 36, height: 36, borderRadius: 12,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexShrink: 0,
-        background: 'transparent',
-      }}><PastelIcon emoji={icon} size={20} /></div>
-      <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>{label}</div>
-        {desc && <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, marginTop: 2 }}>{desc}</div>}
-      </div>
-      {right === 'arrow' && (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" strokeWidth="1.5" strokeLinecap="round">
-          <polyline points="9 18 15 12 9 6" />
-        </svg>
-      )}
-      {right === 'badge-new' && (
-        <span style={{
-          padding: '3px 10px', borderRadius: 10, fontSize: 11, fontWeight: 500,
-          background: 'rgba(74,222,128,0.12)', color: '#4ade80',
-        }}>NEW</span>
-      )}
-    </div>
-  );
-}
-
-function ReminderItem({ enabled, time, onToggle, onTimeChange, profile, tipEnabled, showToast }) {
-  const [showPicker, setShowPicker] = useState(false);
-  const [subscribing, setSubscribing] = useState(false);
-
-  const formatTime = (t) => {
-    const [h, m] = t.split(':');
-    const hour = parseInt(h);
-    const ampm = hour < 12 ? '오전' : '오후';
-    const h12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-    return `매일 ${ampm} ${h12}:${m.padStart(2, '0')}`;
-  };
-
-  const handleToggle = async () => {
-    if (!enabled) {
-      if (!isPushSupported()) {
-        showToast('이 브라우저에서는 알림을 지원하지 않아요');
-        return;
-      }
-      if (isIOS() && !isStandalone()) {
-        showToast('홈 화면에 추가한 후 알림을 설정할 수 있어요');
-        return;
-      }
-      if (getPermissionState() === 'denied') {
-        showToast('알림이 차단되어 있어요. 설정에서 허용해주세요');
-        return;
-      }
-
-      setSubscribing(true);
-      try {
-        const subscription = await subscribeToPush();
-        if (!subscription) {
-          showToast('알림 권한을 허용해주세요');
-          return;
-        }
-        const ok = await saveSubscriptionToServer(subscription, time, profile?.nickname);
-        if (ok) {
-          onToggle(true);
-          showToast('매일 알림이 설정되었어요!');
-        } else {
-          showToast('알림 등록에 실패했어요. 다시 시도해주세요');
-        }
-      } catch (err) {
-        console.error('Push subscribe error:', err);
-        showToast('알림 설정 중 오류가 발생했어요');
-      } finally {
-        setSubscribing(false);
-      }
-    } else {
-      if (!tipEnabled) {
-        await unsubscribeFromPush();
-      }
-      onToggle(false);
-      showToast('알림이 해제되었어요');
-    }
-  };
-
-  const handleTimeChange = async (newTime) => {
-    onTimeChange(newTime);
-    setShowPicker(false);
-    if (enabled) {
-      await updateReminderTime(newTime, profile?.nickname);
-    }
-  };
-
-  return (
-    <div style={{ borderTop: '1px solid var(--border-separator)' }}>
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 14,
-        padding: '16px 20px',
-      }}>
-        <div style={{
-          width: 36, height: 36, borderRadius: 12,
+      {/* Header */}
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+        <div onClick={onClose} style={{
+          width: 36, height: 36,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 17, flexShrink: 0,
-          background: 'rgba(240,144,112,0.08)',
-        }}>🔔</div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>진단 리마인더</div>
-          {enabled && (
-            <div
-              onClick={() => setShowPicker(true)}
-              style={{ fontSize: 11, color: '#ADEBB3', fontWeight: 400, marginTop: 2, cursor: 'pointer' }}
-            >
-              {formatTime(time)} ✎
-            </div>
-          )}
-          {!enabled && (
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, marginTop: 2 }}>꺼짐</div>
-          )}
+          cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
+          zIndex: 1,
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
         </div>
-        <div
-          onClick={subscribing ? undefined : handleToggle}
-          style={{
-            width: 44, height: 26, borderRadius: 13,
-            background: enabled ? '#ADEBB3' : 'rgba(255,255,255,0.15)',
-            position: 'relative', flexShrink: 0, cursor: subscribing ? 'wait' : 'pointer',
-            transition: 'background 0.3s',
-            opacity: subscribing ? 0.6 : 1,
-          }}
-        >
-          <div style={{
-            position: 'absolute', top: 3,
-            left: enabled ? 21 : 3,
-            width: 20, height: 20, borderRadius: '50%',
-            background: '#e0e0e8', boxShadow: 'none',
-            transition: 'left 0.3s',
-          }} />
-        </div>
+        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>프로필 설정</span>
       </div>
 
-      {showPicker && createPortal(
-        <TimePicker
-          value={time}
-          onChange={handleTimeChange}
-          onClose={() => setShowPicker(false)}
-        />,
-        document.body,
-      )}
+      <div style={{ padding: '20px 24px 40px' }}>
+        {/* Profile photo */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+          <div onClick={() => document.getElementById('profile-photo-input')?.click()} style={{
+            position: 'relative', width: 96, height: 96, borderRadius: '50%', cursor: 'pointer',
+            overflow: 'hidden', background: 'var(--bg-secondary)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            {profile.profileImage ? (
+              <img src={profile.profileImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
+                <circle cx="12" cy="10" r="4" /><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" strokeLinecap="round" />
+              </svg>
+            )}
+            <div style={{
+              position: 'absolute', bottom: 0, left: 0, right: 0, height: 24,
+              background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="#fff" strokeWidth="1.5" />
+                <circle cx="12" cy="13" r="3" stroke="#fff" strokeWidth="1.5" />
+              </svg>
+            </div>
+            <input id="profile-photo-input" type="file" accept="image/*" onChange={e => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              const reader = new FileReader();
+              reader.onload = (ev) => {
+                const img = new Image();
+                img.onload = () => {
+                  const canvas = document.createElement('canvas');
+                  canvas.width = 200; canvas.height = 200;
+                  const ctx = canvas.getContext('2d');
+                  const size = Math.min(img.width, img.height);
+                  const sx = (img.width - size) / 2, sy = (img.height - size) / 2;
+                  ctx.drawImage(img, sx, sy, size, size, 0, 0, 200, 200);
+                  onUpdate('profileImage', canvas.toDataURL('image/jpeg', 0.8));
+                };
+                img.src = ev.target.result;
+              };
+              reader.readAsDataURL(file);
+            }} style={{ display: 'none' }} />
+          </div>
+        </div>
+
+        {/* Nickname */}
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>닉네임</div>
+          <input value={profile.nickname || ''} onChange={e => onUpdate('nickname', e.target.value)}
+            placeholder="닉네임" maxLength={20} style={inputStyle} />
+        </div>
+
+        {/* 기본 정보 */}
+        <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', margin: '24px 0 12px' }}>기본 정보</div>
+
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>생년월일</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <input value={profile.birthYear || ''} onChange={e => onUpdate('birthYear', e.target.value)}
+              placeholder="예: 1995" type="number" min={1940} max={currentYear} style={{ ...inputStyle, flex: 1 }} />
+            {age > 0 && <span style={{ fontSize: 13, color: 'var(--accent-primary)', fontWeight: 600, whiteSpace: 'nowrap' }}>만 {age}세</span>}
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>성별</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {GENDER_OPTIONS.map(g => (
+              <button key={g} onClick={() => onUpdate('gender', g)} style={{
+                flex: 1, padding: '10px 0', borderRadius: 10, border: 'none',
+                background: profile.gender === g ? 'var(--accent-primary)' : 'var(--bg-input, #F2F3F5)',
+                color: profile.gender === g ? '#fff' : 'var(--text-muted)',
+                fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+              }}>{g}</button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>키 (cm)</div>
+            <input value={profile.height || ''} onChange={e => onUpdate('height', e.target.value)}
+              placeholder="165" type="number" style={inputStyle} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>현재 몸무게 (kg)</div>
+            <input value={profile.currentWeight || ''} onChange={e => onUpdate('currentWeight', e.target.value)}
+              placeholder="60" type="number" step="0.1" style={inputStyle} />
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>목표 몸무게 (kg)</div>
+          <input value={profile.goalWeight || ''} onChange={e => onUpdate('goalWeight', e.target.value)}
+            placeholder="55" type="number" step="0.1" style={inputStyle} />
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>활동 수준</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {['거의 없음', '가벼운 활동', '보통', '활발한 활동', '매우 활발'].map(level => (
+              <button key={level} onClick={() => onUpdate('activityLevel', level)} style={{
+                padding: '8px 14px', borderRadius: 10, border: 'none',
+                background: profile.activityLevel === level ? 'var(--accent-primary)' : 'var(--bg-input, #F2F3F5)',
+                color: profile.activityLevel === level ? '#fff' : 'var(--text-muted)',
+                fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+              }}>{level}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* 피부 정보 */}
+        <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', margin: '24px 0 12px' }}>피부 정보</div>
+
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>피부 타입</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {SKIN_TYPES.map(t => (
+              <button key={t} onClick={() => onUpdate('skinType', t)} style={{
+                padding: '8px 14px', borderRadius: 10, border: 'none',
+                background: profile.skinType === t ? 'var(--accent-primary)' : 'var(--bg-input, #F2F3F5)',
+                color: profile.skinType === t ? '#fff' : 'var(--text-muted)',
+                fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+              }}>{t}</button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>주요 피부 고민</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {SKIN_CONCERNS.map(c => {
+              const active = (profile.skinConcerns || []).includes(c);
+              return (
+                <button key={c} onClick={() => {
+                  const list = active ? profile.skinConcerns.filter(x => x !== c) : [...(profile.skinConcerns || []), c];
+                  onUpdate('skinConcerns', list);
+                }} style={{
+                  padding: '8px 14px', borderRadius: 10, border: 'none',
+                  background: active ? 'var(--accent-primary)' : 'var(--bg-input, #F2F3F5)',
+                  color: active ? '#fff' : 'var(--text-muted)',
+                  fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+                }}>{c}</button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
-function BeautyTipItem({ enabled, time, onToggle, onTimeChange, profile, reminderEnabled, showToast }) {
-  const [showPicker, setShowPicker] = useState(false);
-  const [subscribing, setSubscribing] = useState(false);
+// ===== CALENDAR COMPONENT (v2 - compact, no card wrapper) =====
+function CalendarSection({ records, viewDate, onViewDateChange, selectedDate, onSelectRecord }) {
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const today = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
 
-  const formatTime = (t) => {
-    const [h, m] = t.split(':');
-    const hour = parseInt(h);
-    const ampm = hour < 12 ? '오전' : '오후';
-    const h12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-    return `매일 ${ampm} ${h12}:${m.padStart(2, '0')}`;
+  const recordDates = useMemo(() => new Set(records.map(r => r.date)), [records]);
+  const recordMap = useMemo(() => {
+    const m = {};
+    records.forEach(r => { m[r.date] = r; });
+    return m;
+  }, [records]);
+
+  // Calendar grid
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const cells = [];
+  for (let i = 0; i < firstDay; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+
+  const prevMonth = () => onViewDateChange(new Date(year, month - 1, 1));
+  const nextMonth = () => {
+    const next = new Date(year, month + 1, 1);
+    if (next <= new Date()) onViewDateChange(next);
   };
 
-  const handleToggle = async () => {
-    if (!enabled) {
-      if (!isPushSupported()) {
-        showToast('이 브라우저에서는 알림을 지원하지 않아요');
-        return;
-      }
-      if (isIOS() && !isStandalone()) {
-        showToast('홈 화면에 추가한 후 알림을 설정할 수 있어요');
-        return;
-      }
-      if (getPermissionState() === 'denied') {
-        showToast('알림이 차단되어 있어요. 설정에서 허용해주세요');
-        return;
-      }
+  const monthName = viewDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
-      setSubscribing(true);
-      try {
-        let subscription = await (await navigator.serviceWorker.ready).pushManager.getSubscription();
-        if (!subscription) {
-          subscription = await subscribeToPush();
-          if (!subscription) {
-            showToast('알림 권한을 허용해주세요');
-            return;
-          }
-          await saveSubscriptionToServer(subscription, profile.reminderTime || '08:00', profile?.nickname);
-        }
+  return (
+    <>
+      {/* Month Navigator */}
+      <div className="month-nav" style={{ animation: 'breatheIn 0.8s ease 0.1s both' }}>
+        <div className="month-label">{monthName}</div>
+        <div className="month-arrows">
+          <button className="month-arrow" onClick={prevMonth}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.8" strokeLinecap="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <button className="month-arrow" onClick={nextMonth}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.8" strokeLinecap="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+        </div>
+      </div>
 
-        const ok = await updateTipSettings(true, time);
-        if (ok) {
-          onToggle(true);
-          const latest = getLatestRecord();
-          if (latest) {
-            syncSkinDataToServer(latest, profile).catch(() => {});
-          }
-          showToast('뷰티 팁 알림이 설정되었어요!');
-        } else {
-          showToast('설정에 실패했어요. 다시 시도해주세요');
-        }
-      } catch (err) {
-        console.error('Tip subscribe error:', err);
-        showToast('설정 중 오류가 발생했어요');
-      } finally {
-        setSubscribing(false);
-      }
+      {/* Calendar Grid */}
+      <div style={{ marginBottom: 24, animation: 'breatheIn 0.8s ease 0.15s both' }}>
+        <div className="cal-weekdays">
+          {['일', '월', '화', '수', '목', '금', '토'].map(d => (
+            <span key={d} className="cal-weekday">{d}</span>
+          ))}
+        </div>
+        <div className="cal-days">
+          {cells.map((day, i) => {
+            if (day === null) return <div key={`e-${i}`} />;
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const isToday = dateStr === today;
+            const isFuture = dateStr > today;
+            const hasRecord = recordDates.has(dateStr);
+            const isSelected = selectedDate === dateStr;
+
+            let className = 'cal-day';
+            if (isToday) className += ' cal-today';
+            else if (isFuture) className += ' future';
+            else if (hasRecord) className += ' recorded';
+            else className += ' missed';
+            if (isSelected && !isToday) className += ' cal-selected';
+
+            return (
+              <div
+                key={dateStr}
+                className={className}
+                onClick={() => {
+                  if (!isFuture && hasRecord) onSelectRecord(recordMap[dateStr]);
+                }}
+              >
+                {day}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ===== RECORD DETAIL MODAL (RPG stat card style) =====
+function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [dragY, setDragY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const dragStart = useRef(null);
+  const sheetRef = useRef(null);
+
+  const handleTouchStart = (e) => {
+    const el = sheetRef.current;
+    if (el && el.scrollTop > 0) return;
+    dragStart.current = e.touches[0].clientY;
+    setIsDragging(true);
+  };
+  const handleTouchMove = (e) => {
+    if (dragStart.current === null) return;
+    const dy = e.touches[0].clientY - dragStart.current;
+    if (dy > 0) setDragY(dy);
+  };
+  const handleTouchEnd = () => {
+    if (dragY > 120) {
+      setClosing(true);
+      setDragY(window.innerHeight);
+      setTimeout(onClose, 250);
     } else {
-      await updateTipSettings(false, time);
-      if (!reminderEnabled) {
-        await unsubscribeFromPush();
-      }
-      onToggle(false);
-      showToast('뷰티 팁 알림이 해제되었어요');
+      setDragY(0);
     }
+    dragStart.current = null;
+    setIsDragging(false);
   };
 
-  const handleTimeChange = async (newTime) => {
-    onTimeChange(newTime);
-    setShowPicker(false);
-    if (enabled) {
-      await updateTipSettings(true, newTime);
-    }
+  if (!record) return null;
+
+  const dayLabels = ['일', '월', '화', '수', '목', '금', '토'];
+  const d = new Date(record.date);
+  const timeStr = record.timestamp ? new Date(record.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) : '';
+  const dateStr = `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 ${dayLabels[d.getDay()]}요일${timeStr ? ` ${timeStr}` : ''}`;
+
+  const getGrade = (score) => {
+    if (score >= 85) return { letter: 'S', label: '최상', gradient: 'linear-gradient(135deg, #81E4BD, #98FBCB)', color: '#81E4BD', bg: 'rgba(125,255,192,0.12)' };
+    if (score >= 70) return { letter: 'A', label: '우수', gradient: 'linear-gradient(135deg, #ADEBB3, #98FBCB)', color: '#ADEBB3', bg: 'rgba(173,235,179,0.12)' };
+    if (score >= 55) return { letter: 'B', label: '양호', gradient: 'linear-gradient(135deg, #81E4BD, #ADEBB3)', color: '#81E4BD', bg: 'rgba(125,255,192,0.12)' };
+    return { letter: 'C', label: '관리 필요', gradient: 'linear-gradient(135deg, #BDBDBD, #9E9E9E)', color: '#757575', bg: 'rgba(158,158,158,0.12)' };
   };
+
+  const grade = getGrade(record.overallScore);
+
+  const agingMetrics = [
+    { label: '피부결', value: record.textureScore, icon: <LotionIcon size={16} />, color: '#FFB0C8' },
+    { label: '탄력', value: record.elasticityScore, icon: <DiamondIcon size={16} />, color: '#FFD080' },
+    { label: '주름', value: record.wrinkleScore, icon: <RulerIcon size={16} />, color: '#F5D0B8' },
+    { label: '모공', value: record.poreScore, icon: <MicroscopeIcon size={16} />, color: '#E8D8C8' },
+    { label: '색소', value: record.pigmentationScore, icon: <PaletteIcon size={16} />, color: '#C0A890' },
+  ];
+
+  const conditionMetrics = [
+    { label: '수분도', value: record.moisture, icon: <DropletIcon size={16} />, color: '#A8DEFF', unit: '%' },
+    { label: '유분', value: record.oilBalance, icon: <BubbleIcon size={16} />, color: '#F0E0A8', unit: '%' },
+    { label: '피부톤', value: record.skinTone, icon: <SparkleIcon size={16} />, color: '#FFE082' },
+    { label: '트러블', value: record.troubleCount, icon: <TargetIcon size={14} />, color: '#FFB0B0', unit: '개' },
+    { label: '다크서클', value: record.darkCircleScore, icon: <EyeIcon size={16} />, color: '#C8B8E8' },
+  ];
 
   return (
-    <div style={{ borderTop: '1px solid var(--border-separator)' }}>
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 14,
-        padding: '16px 20px',
-      }}>
-        <div style={{
-          width: 36, height: 36, borderRadius: 12,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 17, flexShrink: 0,
-          background: 'rgba(240,144,112,0.08)',
-        }}>💡</div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>뷰티 팁 알림</div>
-          {enabled ? (
-            <div
-              onClick={() => setShowPicker(true)}
-              style={{ fontSize: 11, color: '#ADEBB3', fontWeight: 400, marginTop: 2, cursor: 'pointer' }}
-            >
-              {formatTime(time)} ✎
-            </div>
-          ) : (
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, marginTop: 2 }}>
-              내 피부에 맞는 뷰티 팁을 매일 받아보세요
-            </div>
-          )}
-        </div>
-        <div
-          onClick={subscribing ? undefined : handleToggle}
-          style={{
-            width: 44, height: 26, borderRadius: 13,
-            background: enabled ? '#ADEBB3' : 'rgba(255,255,255,0.15)',
-            position: 'relative', flexShrink: 0,
-            cursor: subscribing ? 'wait' : 'pointer',
-            transition: 'background 0.3s',
-            opacity: subscribing ? 0.6 : 1,
-          }}
-        >
-          <div style={{
-            position: 'absolute', top: 3,
-            left: enabled ? 21 : 3,
-            width: 20, height: 20, borderRadius: '50%',
-            background: '#e0e0e8', boxShadow: 'none',
-            transition: 'left 0.3s',
-          }} />
-        </div>
-      </div>
-
-      {showPicker && createPortal(
-        <TimePicker
-          value={time}
-          onChange={handleTimeChange}
-          onClose={() => setShowPicker(false)}
-        />,
-        document.body,
-      )}
-    </div>
-  );
-}
-
-function TimePicker({ value, onChange, onClose }) {
-  const [h, m] = value.split(':').map(Number);
-  const [ampm, setAmpm] = useState(h < 12 ? 'AM' : 'PM');
-  const [hour, setHour] = useState(h === 0 ? 12 : h > 12 ? h - 12 : h);
-  const [minute, setMinute] = useState(m);
-
-  const hourRef = useRef(null);
-  const minRef = useRef(null);
-
-  const ITEM_H = 44;
-  const hours = Array.from({ length: 12 }, (_, i) => i + 1);
-  const minutes = Array.from({ length: 60 }, (_, i) => i);
-
-  useEffect(() => {
-    if (hourRef.current) {
-      hourRef.current.scrollTop = (hour - 1) * ITEM_H;
-    }
-    if (minRef.current) {
-      minRef.current.scrollTop = minute * ITEM_H;
-    }
-  }, []);
-
-  const handleScroll = useCallback((ref, items, setter) => {
-    const el = ref.current;
-    if (!el) return;
-    const idx = Math.round(el.scrollTop / ITEM_H);
-    const clamped = Math.max(0, Math.min(idx, items.length - 1));
-    setter(items[clamped]);
-  }, []);
-
-  const handleConfirm = () => {
-    let h24 = hour;
-    if (ampm === 'AM' && hour === 12) h24 = 0;
-    else if (ampm === 'PM' && hour !== 12) h24 = hour + 12;
-    onChange(`${String(h24).padStart(2, '0')}:${String(minute).padStart(2, '0')}`);
-  };
-
-  const colStyle = {
-    height: ITEM_H * 3, overflow: 'hidden', overflowY: 'auto',
-    scrollSnapType: 'y mandatory', WebkitOverflowScrolling: 'touch',
-    scrollbarWidth: 'none', msOverflowStyle: 'none',
-    flex: 1, position: 'relative',
-  };
-
-  const itemStyle = (active) => ({
-    height: ITEM_H, display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontSize: active ? 22 : 16, fontWeight: active ? 600 : 300,
-    color: active ? '#ADEBB3' : 'var(--text-dim)',
-    scrollSnapAlign: 'center', transition: 'all 0.15s',
-    cursor: 'pointer',
-  });
-
-  return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 1100,
-        background: 'var(--bg-modal-overlay)',
-        display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-        animation: 'fadeIn 0.2s ease',
-      }}
-    >
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 200,
+      background: `rgba(0,0,0,${Math.max(0, 0.45 - dragY * 0.003).toFixed(2)})`,
+      display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+      animation: closing ? 'none' : 'fadeIn 0.2s ease',
+    }} onClick={onClose}>
       <div
-        onClick={(e) => e.stopPropagation()}
+        ref={sheetRef}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
         style={{
           width: '100%', maxWidth: 430,
-          background: 'var(--bg-modal)', borderRadius: '24px 24px 0 0',
-          padding: '20px 20px calc(20px + env(safe-area-inset-bottom, 0px))',
-          animation: 'slideUp 0.3s ease',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <span onClick={onClose} style={{ fontSize: 14, color: 'var(--text-muted)', cursor: 'pointer', fontWeight: 400 }}>취소</span>
-          <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>알림 시간</span>
-          <span onClick={handleConfirm} style={{ fontSize: 14, color: '#ADEBB3', cursor: 'pointer', fontWeight: 600 }}>확인</span>
+          background: 'var(--bg-secondary)',
+          borderRadius: '24px 24px 0 0',
+          padding: '12px 20px 40px',
+          maxHeight: '88vh', overflowY: dragY > 0 ? 'hidden' : 'auto',
+          animation: closing ? 'none' : 'slideUp 0.3s ease-out',
+          transform: `translateY(${dragY}px)`,
+          transition: isDragging ? 'none' : 'transform 0.25s ease-out',
+        }} onClick={e => e.stopPropagation()}>
+        {/* Handle bar + back/delete buttons */}
+        <div style={{ display: 'flex', justifyContent: 'center', position: 'relative', marginBottom: 14 }}>
+          <div onClick={onClose} style={{
+            position: 'absolute', left: -4, top: 2,
+            width: 32, height: 32, borderRadius: '50%', cursor: 'pointer',
+            background: 'var(--bg-card-hover)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M15 18l-6-6 6-6" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--bg-input)', marginTop: 10 }} />
+          <div onClick={() => setShowConfirm(true)} style={{
+            position: 'absolute', right: -4, top: 2,
+            width: 32, height: 32, borderRadius: '50%', cursor: 'pointer',
+            background: 'var(--bg-card-hover)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M6 12h12" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round" />
+            </svg>
+          </div>
         </div>
 
+        {/* Delete confirm popup */}
+        {showConfirm && (
+          <div style={{
+            position: 'fixed', inset: 0, zIndex: 300,
+            background: 'rgba(0,0,0,0.4)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            animation: 'fadeIn 0.15s ease',
+          }} onClick={() => setShowConfirm(false)}>
+            <div onClick={e => e.stopPropagation()} style={{
+              background: 'var(--bg-card)', backdropFilter: 'var(--card-backdrop)', WebkitBackdropFilter: 'var(--card-backdrop)',
+              borderRadius: 20, padding: '28px 24px',
+              width: 280, textAlign: 'center',
+              border: '1px solid var(--border-subtle)',
+              boxShadow: 'none',
+            }}>
+              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>이 기록을 삭제할까요?</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 20 }}>삭제된 기록은 복구할 수 없습니다.</div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button onClick={() => setShowConfirm(false)} style={{
+                  flex: 1, padding: '12px 0', borderRadius: 12, border: 'none',
+                  background: 'var(--bg-input)', color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                }}>아니오</button>
+                <button onClick={() => { onDelete(record.id || record.date); setShowConfirm(false); }} style={{
+                  flex: 1, padding: '12px 0', borderRadius: 12, border: 'none',
+                  background: '#e05545', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                }}>삭제</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Header: date */}
+        <div style={{ textAlign: 'center', marginBottom: 16 }}>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 400, letterSpacing: 0.3 }}>{dateStr}</div>
+        </div>
+
+        {/* Hero: skinAge + overallScore */}
+        <div style={{ display: 'flex', gap: 10, marginBottom: 16, animation: 'fadeUp 0.3s ease 0.1s both' }}>
+          <div style={{
+            flex: 1, background: 'var(--bg-card)', borderRadius: 20, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+            border: '1px solid var(--border-light)', padding: '16px 14px', textAlign: 'center',
+          }}>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>피부나이</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>
+              <AnimatedNumber target={record.skinAge} duration={1000} />
+              <span style={{ fontSize: 16, fontWeight: 600 }}> 세</span>
+            </div>
+          </div>
+          <div style={{
+            flex: 1, background: 'var(--bg-card)', borderRadius: 20, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+            border: '1px solid var(--border-light)', padding: '16px 14px', textAlign: 'center',
+          }}>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>종합 점수</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 800, lineHeight: 1 }}>
+              <span style={{ background: grade.gradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                <AnimatedNumber target={record.overallScore} duration={1000} />
+              </span>
+              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-muted)' }}> 점</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Photo */}
+        {thumbnail && (
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16, animation: 'popIn 0.4s ease 0.15s both' }}>
+            <img src={thumbnail} alt="" style={{
+              width: '100%', maxWidth: 320, height: 'auto', aspectRatio: '1/1', borderRadius: 24, objectFit: 'cover',
+              border: '3px solid rgba(240,144,112,0.15)',
+              boxShadow: 'none',
+            }} />
+          </div>
+        )}
+
+        {/* 피부 타입 정보 */}
         <div style={{
-          display: 'flex', alignItems: 'flex-start', gap: 0,
-          background: 'var(--bg-card)', borderRadius: 20, overflow: 'hidden',
-          border: '1px solid var(--border-light)',
-          position: 'relative',
+          animation: 'fadeUp 0.3s ease 0.2s both',
+          background: 'var(--bg-card)', borderRadius: 22, padding: '16px 18px', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+          border: '1px solid var(--border-subtle)', marginBottom: 12,
+          boxShadow: 'none',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+            <LuaMiniIcon size={14} />
+            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>피부 타입 정보</span>
+          </div>
+          {/* Skin type */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0', marginBottom: 4 }}>
+            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>피부 타입</span>
+            <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{record.skinType}</span>
+          </div>
+          {/* Analysis mode */}
+          {record.analysisMode && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0', marginBottom: 4 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 14 }}>{record.analysisMode === 'hybrid' ? '🧠' : '📊'}</span>
+                <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>분석 모드</span>
+              </div>
+              <span style={{
+                fontSize: 11, fontWeight: 600,
+                color: record.analysisMode === 'hybrid' ? '#81E4BD' : 'var(--text-muted)',
+                background: record.analysisMode === 'hybrid' ? 'rgba(124,92,252,0.12)' : 'rgba(184,137,110,0.1)',
+                padding: '3px 10px', borderRadius: 10,
+              }}>{record.analysisMode === 'hybrid' ? 'AI + CV 하이브리드' : 'CV 비전 분석'}</span>
+            </div>
+          )}
+          {/* Confidence */}
+          {record.confidence != null && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0', marginBottom: 4 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 14 }}>📊</span>
+                <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>측정 신뢰도</span>
+              </div>
+              <span style={{
+                fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-display)',
+                color: record.confidence >= 70 ? '#4ecb71' : record.confidence >= 50 ? '#d4900a' : '#f06050',
+              }}>{record.confidence}%</span>
+            </div>
+          )}
+          {/* Concerns */}
+          {(record.concerns || []).length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 14 }}>⚡</span>
+                <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>관심 사항</span>
+              </div>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginLeft: 'auto' }}>
+                {record.concerns.map((c, i) => (
+                  <span key={i} style={{
+                    fontSize: 11, fontWeight: 500,
+                    color: i === 0 ? '#e05545' : '#d4900a',
+                    background: i === 0 ? 'rgba(240,96,80,0.1)' : 'rgba(245,166,35,0.1)',
+                    border: `1px solid ${i === 0 ? 'rgba(240,96,80,0.18)' : 'rgba(245,166,35,0.18)'}`,
+                    padding: '3px 10px', borderRadius: 20,
+                  }}>{c}</span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 컨디션 브리핑 */}
+        {(() => {
+          const cScore = record.conditionScore ?? record.overallScore;
+          const cGrade = cScore >= 85 ? { letter: 'S', color: '#81E4BD', bg: 'rgba(125,255,192,0.15)', border: 'rgba(125,255,192,0.3)' }
+            : cScore >= 70 ? { letter: 'A', color: '#81E4BD', bg: 'rgba(124,92,252,0.15)', border: 'rgba(124,92,252,0.3)' }
+            : cScore >= 55 ? { letter: 'B', color: '#f59e0b', bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.3)' }
+            : cScore >= 40 ? { letter: 'C', color: '#8888a0', bg: 'rgba(136,136,160,0.12)', border: 'rgba(136,136,160,0.2)' }
+            : { letter: 'D', color: '#f06050', bg: 'rgba(240,96,80,0.12)', border: 'rgba(240,96,80,0.2)' };
+          return (
+            <div style={{
+              animation: 'fadeUp 0.3s ease 0.3s both',
+              background: 'var(--bg-card)', borderRadius: 22, padding: '16px 18px', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+              border: '1px solid var(--border-subtle)', marginBottom: 12,
+              boxShadow: 'none',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                <LuaMiniIcon size={14} />
+                <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>컨디션 브리핑</span>
+                <div style={{ marginLeft: 'auto', padding: '4px 10px', borderRadius: 8, background: cGrade.bg, border: `1px solid ${cGrade.border}`, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ fontSize: 14, fontWeight: 800, color: cGrade.color, fontFamily: 'var(--font-display)' }}>{cGrade.letter}</span>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: cGrade.color }}>{cScore}점</span>
+                </div>
+              </div>
+              {record.conditionBriefing ? (
+                <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.8, margin: 0 }}>{record.conditionBriefing}</p>
+              ) : (
+                <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.8, margin: 0, fontStyle: 'italic' }}>
+                  컨디션 브리핑은 이후 측정부터 저장됩니다.
+                </p>
+              )}
+            </div>
+          );
+        })()}
+
+        {/* 전체 피부 분석 (advice) */}
+        {record.advice && (
+          <div style={{
+            animation: 'fadeUp 0.3s ease 0.4s both',
+            background: 'var(--bg-card)', borderRadius: 22, padding: '16px 18px', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+            border: '1px solid var(--border-subtle)', marginBottom: 12,
+            boxShadow: 'none',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+              <LuaMiniIcon size={14} />
+              <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>전체 피부 분석</span>
+            </div>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.75, margin: 0 }}>{record.advice}</p>
+            {/* AI 정밀 판독 */}
+            {record.aiNotes && (() => {
+              const filtered = record.aiNotes
+                .replace(/[^.。!]*(?:동일\s*인물|같은\s*(?:사람|인물)|다른\s*(?:사람|인물)|differentPerson|두\s*사진\s*(?:은|이|를))[^.。!]*[.。!]\s*/gi, '')
+                .trim();
+              if (!filtered) return null;
+              return (
+                <div style={{
+                  marginTop: 12, padding: '10px 14px', borderRadius: 12,
+                  background: 'linear-gradient(135deg, rgba(240,144,112,0.08), rgba(240,144,112,0.04))',
+                  border: '1px solid rgba(240,144,112,0.15)',
+                }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: '#81E4BD', marginBottom: 4 }}>AI 정밀 판독</div>
+                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>{filtered}</p>
+                </div>
+              );
+            })()}
+          </div>
+        )}
+
+        {/* Condition metrics group */}
+        <div style={{
+          animation: 'fadeUp 0.3s ease 0.5s both',
+          background: 'var(--bg-card)',
+          border: '1px solid rgba(255,255,255,0.3)',
+          borderRadius: 22, padding: '14px 6px 2px',
+          marginBottom: 12,
+          backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingLeft: 14, marginBottom: 4 }}>
+            <LuaMiniIcon size={14} />
+            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>컨디션 지표</span>
+          </div>
+          {conditionMetrics.map((m, i) => (
+            <MetricBar
+              key={m.label}
+              label={m.label}
+              value={m.value}
+              unit={m.unit || ''}
+              color={m.color}
+              icon={m.icon}
+              delay={i * 80}
+            />
+          ))}
+        </div>
+
+        {/* Aging metrics group */}
+        <div style={{
+          animation: 'fadeUp 0.3s ease 0.6s both',
+          background: 'var(--bg-card)',
+          border: '1px solid rgba(255,255,255,0.3)',
+          borderRadius: 22, padding: '14px 6px 2px',
+          marginBottom: 12,
+          backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingLeft: 14, marginBottom: 4 }}>
+            <LuaMiniIcon size={14} />
+            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>노화 지표</span>
+          </div>
+          {agingMetrics.map((m, i) => (
+            <MetricBar
+              key={m.label}
+              label={m.label}
+              value={m.value}
+              unit=""
+              color={m.color}
+              icon={m.icon}
+              delay={i * 80}
+            />
+          ))}
+        </div>
+
+        {/* SKIN LEVEL footer */}
+        <div style={{
+          animation: 'fadeUp 0.3s ease 0.7s both',
+          background: 'linear-gradient(135deg, rgba(240,144,112,0.06), rgba(240,144,112,0.1))',
+          borderRadius: 18, padding: '16px 20px',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14,
+          border: '1px solid rgba(240,144,112,0.1)',
         }}>
           <div style={{
-            position: 'absolute', left: 8, right: 8,
-            top: ITEM_H, height: ITEM_H,
-            background: 'rgba(240,144,112,0.08)', borderRadius: 12,
-            pointerEvents: 'none', zIndex: 0,
-          }} />
-
-          <div style={{ width: 64, height: ITEM_H * 3, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: ITEM_H, zIndex: 1 }}>
-            {['AM', 'PM'].map((v) => (
-              <div
-                key={v}
-                onClick={() => setAmpm(v)}
-                style={{
-                  height: ITEM_H, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: ampm === v ? 18 : 15, fontWeight: ampm === v ? 600 : 300,
-                  color: ampm === v ? '#ADEBB3' : 'var(--text-dim)',
-                  cursor: 'pointer', transition: 'all 0.15s',
-                }}
-              >{v === 'AM' ? '오전' : '오후'}</div>
-            ))}
+            fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: 2,
+            textTransform: 'uppercase',
+          }}>SKIN LEVEL</div>
+          <div style={{
+            fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 900,
+            background: 'var(--btn-primary-bg)',
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            lineHeight: 1,
+          }}>
+            <AnimatedNumber target={record.skinAge} suffix="세" duration={1400} />
           </div>
-
-          <div
-            ref={hourRef}
-            onScroll={() => handleScroll(hourRef, hours, setHour)}
-            className="hide-scrollbar"
-            style={{ ...colStyle, zIndex: 1 }}
-          >
-            <div style={{ height: ITEM_H }} />
-            {hours.map((h) => (
-              <div key={h} style={itemStyle(h === hour)}
-                onClick={() => { setHour(h); if (hourRef.current) hourRef.current.scrollTo({ top: (h - 1) * ITEM_H, behavior: 'smooth' }); }}
-              >{h}</div>
-            ))}
-            <div style={{ height: ITEM_H }} />
-          </div>
-
-          <div style={{ fontSize: 22, fontWeight: 600, color: '#ADEBB3', zIndex: 1 }}>:</div>
-
-          <div
-            ref={minRef}
-            onScroll={() => handleScroll(minRef, minutes, setMinute)}
-            className="hide-scrollbar"
-            style={{ ...colStyle, zIndex: 1 }}
-          >
-            <div style={{ height: ITEM_H }} />
-            {minutes.map((m) => (
-              <div key={m} style={itemStyle(m === minute)}
-                onClick={() => { setMinute(m); if (minRef.current) minRef.current.scrollTo({ top: m * ITEM_H, behavior: 'smooth' }); }}
-              >{String(m).padStart(2, '0')}</div>
-            ))}
-            <div style={{ height: ITEM_H }} />
+          <div style={{
+            background: grade.gradient, borderRadius: 8,
+            padding: '3px 10px',
+          }}>
+            <span style={{
+              fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 800,
+              color: '#fff',
+            }}>{grade.letter}</span>
           </div>
         </div>
       </div>
@@ -1697,47 +1718,115 @@ function TimePicker({ value, onChange, onClose }) {
   );
 }
 
-function DarkModeItem({ enabled, onToggle }) {
+// ===== History Food Detail Modal =====
+function HistoryFoodDetailModal({ food, onClose, onDelete }) {
+  const [showConfirm, setShowConfirm] = useState(false);
+
   return (
-    <div
-      onClick={() => onToggle(!enabled)}
-      style={{
-        display: 'flex', alignItems: 'center', gap: 14,
-        padding: '16px 20px', cursor: 'pointer',
-        borderTop: '1px solid var(--border-separator)',
-      }}
-    >
-      <div style={{
-        width: 36, height: 36, borderRadius: 12,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 17, flexShrink: 0,
-        background: 'var(--bg-card-hover)',
-      }}><MoonIcon size={17} /></div>
-      <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>다크모드</div>
-      </div>
-      <div style={{
-        width: 44, height: 26, borderRadius: 13,
-        background: enabled ? '#ADEBB3' : 'rgba(255,255,255,0.15)',
-        position: 'relative', flexShrink: 0,
-        transition: 'background 0.3s',
+    <div onClick={onClose} style={{
+      position: 'fixed', inset: 0, zIndex: 1100,
+      background: 'rgba(0,0,0,0.45)',
+      display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: 'var(--bg-secondary, #fff)', borderRadius: '24px 24px 0 0',
+        padding: '12px 20px 40px', width: '100%', maxWidth: 430,
+        maxHeight: '88vh', overflowY: 'auto',
       }}>
-        <div style={{
-          position: 'absolute', top: 3,
-          left: enabled ? 21 : 3,
-          width: 20, height: 20, borderRadius: '50%',
-          background: 'var(--text-secondary)', boxShadow: 'none',
-          transition: 'left 0.3s',
-        }} />
+        {/* Handle bar + back/delete */}
+        <div style={{ display: 'flex', justifyContent: 'center', position: 'relative', marginBottom: 28 }}>
+          <div onClick={onClose} style={{
+            position: 'absolute', left: -4, top: 2,
+            width: 32, height: 32, borderRadius: '50%', cursor: 'pointer',
+            background: 'var(--bg-card-hover, #F2F3F5)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M15 18l-6-6 6-6" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--bg-input, #E0E0E0)', marginTop: 10 }} />
+          <div onClick={() => setShowConfirm(true)} style={{
+            position: 'absolute', right: -4, top: 2,
+            width: 32, height: 32, borderRadius: '50%', cursor: 'pointer',
+            background: 'var(--bg-card-hover, #F2F3F5)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M6 12h12" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Delete confirm */}
+        {showConfirm && (
+          <div style={{
+            position: 'fixed', inset: 0, zIndex: 1200,
+            background: 'rgba(0,0,0,0.4)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }} onClick={() => setShowConfirm(false)}>
+            <div onClick={e => e.stopPropagation()} style={{
+              background: 'var(--bg-card, #fff)',
+              borderRadius: 20, padding: '28px 24px',
+              width: 280, textAlign: 'center',
+              border: '1px solid var(--border-subtle, #eee)',
+            }}>
+              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>이 기록을 삭제할까요?</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 20 }}>삭제된 기록은 복구할 수 없습니다.</div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button onClick={() => setShowConfirm(false)} style={{
+                  flex: 1, padding: '12px 0', borderRadius: 12, border: 'none',
+                  background: 'var(--bg-input, #F2F3F5)', color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                }}>아니오</button>
+                <button onClick={() => { onDelete(); setShowConfirm(false); }} style={{
+                  flex: 1, padding: '12px 0', borderRadius: 12, border: 'none',
+                  background: '#e05545', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                }}>삭제</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Food info */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+          {food.photo ? (
+            <FoodPhoto photo={food.photo} style={{ width: 56, height: 56, borderRadius: 14, objectFit: 'cover', flexShrink: 0 }} />
+          ) : (
+            <div style={{ width: 56, height: 56, borderRadius: 14, background: 'rgba(129,228,189,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🍽️</div>
+          )}
+          <div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{food.name}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{food.meal}</div>
+          </div>
+        </div>
+
+        {/* Nutrition */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
+          {[
+            { label: '칼로리', value: food.kcal, unit: 'kcal' },
+            { label: '탄수화물', value: food.carb, unit: 'g' },
+            { label: '단백질', value: food.protein, unit: 'g' },
+          ].map(n => (
+            <div key={n.label} style={{ textAlign: 'center', padding: '10px 4px', borderRadius: 12, background: 'var(--bg-card)' }}>
+              <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.value}<span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>{n.unit}</span></div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{n.label}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+          {[
+            { label: '지방', value: food.fat, unit: 'g' },
+            { label: '비타민', value: food.vitamin || 0, unit: '%' },
+            { label: '미네랄', value: food.mineral || 0, unit: '%' },
+          ].map(n => (
+            <div key={n.label} style={{ textAlign: 'center', padding: '10px 4px', borderRadius: 12, background: 'var(--bg-card)' }}>
+              <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.value}<span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>{n.unit}</span></div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{n.label}</div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
 }
 
-const inputStyle = {
-  width: '100%', padding: '12px 14px', borderRadius: 14,
-  border: '1px solid var(--border-subtle)', background: 'var(--bg-card-hover)',
-  fontSize: 14, color: 'var(--text-primary)', outline: 'none',
-  fontFamily: 'inherit',
-  transition: 'border-color 0.2s',
-};

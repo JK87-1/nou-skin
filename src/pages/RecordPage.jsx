@@ -245,7 +245,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
           const slots = [];
           const recent = [...skinRecords].reverse().slice(0, 2);
           recent.forEach(r => {
-            const thumb = null; // thumbnails loaded async in AlbumPage, here just show score
+            const thumb = null; // thumbnails loaded async in MyPage, here just show score
             slots.push({ type: 'record', record: r });
           });
           const addCount = Math.max(1, 3 - slots.length);

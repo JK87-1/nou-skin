@@ -10,9 +10,8 @@ import CameraCapture from './components/CameraCapture';
 import { saveRecord, updateRecord, getRecords, getNextMeasurementInfo, getChanges, generateShareText, getLatestRecord, hasTodayRecord, saveThumbnail, saveComparisonPhoto, getTodayRecords, getStableSkinAge } from './storage/SkinStorage';
 import { migrateFromLocalStorage } from './storage/PhotoDB';
 import { createAutoBackup, verifyDataIntegrity, restoreFromAutoBackup, startPeriodicBackup, getBackupInfo } from './storage/AutoBackup';
-import AlbumPage from './pages/AlbumPage';
-import TabBar from './components/TabBar';
 import MyPage from './pages/MyPage';
+import TabBar from './components/TabBar';
 import HomePage from './pages/HomePage';
 import RecordPage from './pages/RecordPage';
 import InsightPage from './pages/InsightPage';
@@ -705,7 +704,7 @@ export default function App() {
 
       {/* ===== ALBUM TAB (gallery + insights merged) ===== */}
       {activeTab === 'album' && (
-        <AlbumPage onBack={goToLanding} onMeasure={openCamera} onOpenConsult={() => switchTab('home')} onTabChange={switchTab} initialMode={historyInitMode} />
+        <MyPage onBack={goToLanding} onMeasure={openCamera} onOpenConsult={() => switchTab('home')} onTabChange={switchTab} initialMode={historyInitMode} />
       )}
 
 
