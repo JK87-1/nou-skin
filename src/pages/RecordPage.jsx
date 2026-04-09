@@ -382,25 +382,12 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
       {/* 3. 오늘 식단 요약 */}
       {(() => {
-        // 잘 챙긴 영양소 태그 (초록)
-        const goodTags = nutrients
-          .filter(n => n.status === '적정')
-          .map(n => ({ text: `${n.label} 양호`, type: 'ok' }));
-        // 부족/과잉 태그
-        const badTags = nutrients
-          .filter(n => n.status !== '적정' && n.status !== '-')
-          .map(n => ({
-            text: `${n.label} ${n.status === '부족' ? '부족' : '높음'}`,
-            type: n.status === '부족' ? 'lack' : 'high',
-          }));
-        // 혈당 상승 가능 여부
+        // AI 생성 키워드 수집 (각 음식의 tags 합산, 중복 제거)
+        const aiTags = [...new Set(foods.flatMap(f => f.tags || []))];
+        const summaryTags = aiTags.map(t => ({ text: t, type: 'ai' }));
+
         const carbN = nutrients.find(n => n.key === 'carb');
         const fiberN = nutrients.find(n => n.key === 'fiber');
-        if (carbN?.status === '과잉' && fiberN?.status === '부족') {
-          badTags.push({ text: '혈당 상승 가능', type: 'high' });
-        }
-        // 잘 챙긴 것 먼저 → 부족한 것
-        const summaryTags = [...goodTags, ...badTags];
 
         const proteinN = nutrients.find(n => n.key === 'protein');
         const fatN = nutrients.find(n => n.key === 'fat');
@@ -441,6 +428,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
           lack: { background: 'rgba(255,143,171,0.15)', color: '#C2185B' },
           high: { background: 'rgba(255,179,71,0.15)', color: '#C4580A' },
           ok: { background: 'rgba(78,184,160,0.15)', color: '#0F6E56' },
+          ai: { background: 'rgba(78,184,160,0.12)', color: '#0F6E56', border: '0.5px solid rgba(78,184,160,0.25)' },
         };
         const impactStyle = {
           warn: { background: 'rgba(255,143,171,0.1)', border: '0.5px solid rgba(255,143,171,0.3)', color: '#C2185B' },
@@ -720,6 +708,7 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
       drowsinessNote: aiResult.drowsinessNote || '',
       skinImpact: aiResult.skinImpact || '',
       skinImpactNote: aiResult.skinImpactNote || '',
+      tags: aiResult.tags || [],
       water: 0,
     });
   };
