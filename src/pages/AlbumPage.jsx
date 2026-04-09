@@ -378,6 +378,8 @@ export default function AlbumPage({ onBack, onMeasure, onOpenConsult, onTabChang
         );
       })()}
 
+      <div className="tab-content-panel" data-active={albumCategory === 'skin' ? 'first' : albumCategory === 'body' ? 'last' : 'mid'}>
+
       {/* ===== FOOD ALBUM ===== */}
       {albumCategory === 'food' && (() => {
         const _refresh = foodRefreshKey; // trigger re-render on delete
@@ -932,6 +934,8 @@ export default function AlbumPage({ onBack, onMeasure, onOpenConsult, onTabChang
           </div>
         );
       })()}
+
+      </div>{/* end tab-content-panel */}
 
       {/* Settings Drawer */}
       <SettingsPage open={showSettingsPage} onClose={() => setShowSettingsPage(false)} />
