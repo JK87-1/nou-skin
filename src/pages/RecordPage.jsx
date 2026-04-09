@@ -569,7 +569,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
       }}>
         <div onClick={() => setNutrientOpen(!nutrientOpen)} style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '2px 8px', cursor: 'pointer',
+          cursor: 'pointer',
         }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>영양소 상세</span>
           <svg width="16" height="16" viewBox="0 0 16 16" style={{
