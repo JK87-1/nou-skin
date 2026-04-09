@@ -406,8 +406,8 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
         if (sugarN?.status === '과잉' || carbN?.status === '과잉') impacts.push({ icon: '⚠️', text: '피부 트러블 가능성', type: 'caution' });
 
         const tagStyle = {
-          ok: { background: 'rgba(78,184,160,0.15)', color: '#0F6E56' },
-          ai: { background: 'rgba(78,184,160,0.12)', color: '#0F6E56', border: '0.5px solid rgba(78,184,160,0.25)' },
+          ok: { background: '#fff', color: '#0F6E56', border: '1px solid rgba(78,184,160,0.25)' },
+          ai: { background: '#fff', color: '#0F6E56', border: '1px solid rgba(78,184,160,0.25)' },
         };
         const impactStyle = {
           warn: { background: 'rgba(255,143,171,0.1)', border: '0.5px solid rgba(255,143,171,0.3)', color: '#C2185B' },
@@ -478,17 +478,17 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
             boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
             ...fadeUp(0.1),
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-              <CoachStarIcon />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+              <span style={{ fontSize: 16 }}>🍽️</span>
               <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>오늘 식단 요약</div>
             </div>
 
             {foods.length === 0 ? (
-              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>식사를 기록하면 맞춤 분석을 받을 수 있어요</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>식사를 기록하면 맞춤 분석을 받을 수 있어요</div>
             ) : (
               <>
                 {/* AI 인사이트 메시지 */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: summaryTags.length > 0 || impacts.length > 0 ? 12 : 0 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: summaryTags.length > 0 || impacts.length > 0 ? 14 : 0 }}>
                   {coachMessages.map((m, i) => (
                     <div key={i} style={{ fontSize: 13, color: '#4E5968', lineHeight: 1.6 }}>
                       <span style={{ marginRight: 6 }}>{m.icon}</span>{m.text}
@@ -498,25 +498,26 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
                 {/* AI 키워드 태그 */}
                 {summaryTags.length > 0 && (
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: impacts.length > 0 ? 10 : 0 }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: impacts.length > 0 ? 0 : 0 }}>
                     {summaryTags.map((t, i) => (
                       <span key={i} style={{
-                        fontSize: 10, fontWeight: 500, borderRadius: 99, padding: '3px 9px',
+                        fontSize: 10, fontWeight: 500, borderRadius: 99, padding: '4px 10px',
                         ...tagStyle[t.type],
                       }}>{t.text}</span>
                     ))}
                   </div>
                 )}
 
-                {/* 내 몸에 미치는 영향 */}
+                {/* 구분선 + 내 몸에 미치는 영향 */}
                 {impacts.length > 0 && (
                   <>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>내 몸에 미치는 영향</div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-                      {impacts.map((imp, i) => (
+                    <div style={{ height: 1, background: 'rgba(78,184,160,0.15)', margin: '12px 0' }} />
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>내 몸에 미치는 영향</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                      {impacts.slice(0, 2).map((imp, i) => (
                         <span key={i} style={{
-                          display: 'inline-flex', alignItems: 'center', gap: 3,
-                          fontSize: 10, fontWeight: 500, borderRadius: 10, padding: '5px 9px',
+                          display: 'inline-flex', alignItems: 'center', gap: 4,
+                          fontSize: 10, fontWeight: 500, borderRadius: 10, padding: '5px 10px',
                           ...impactStyle[imp.type],
                         }}>
                           <span style={{ fontSize: 12 }}>{imp.icon}</span>{imp.text}
