@@ -818,6 +818,8 @@
   right: -10px;
   background: radial-gradient(circle at 100% 0, transparent 10px, rgba(255,255,255,0.3) 10px);
 }
+.segment-btn:first-child.active::before { display: none; }
+.segment-btn:last-child.active::after { display: none; }
 .tab-content-panel {
   margin: 0 18px 16px;
   padding: 16px 0;
