@@ -225,7 +225,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
       />
 
       {/* Category Tabs */}
-      <div style={{ padding: '12px 18px 16px' }}>
+      <div style={{ padding: '12px 18px 0' }}>
         <div className="segment-control">
           <button className={`segment-btn${foodTab === 'skin' ? ' active' : ''}`}
             onClick={() => setFoodTab('skin')}>피부</button>
@@ -235,6 +235,9 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
             onClick={() => setFoodTab('body')}>바디</button>
         </div>
       </div>
+
+      {/* Tab content panel */}
+      <div className="tab-content-panel">
 
       {/* Skin content */}
       {foodTab === 'skin' && <>
@@ -669,6 +672,8 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
         })()}
         <BodyInsightsSection />
       </>}
+
+      </div>{/* end tab-content-panel */}
 
       {/* Body Weight Quick Add */}
       {showBodyAdd && (

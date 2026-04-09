@@ -812,6 +812,23 @@
   z-index: 2;
   margin-bottom: -1px;
 }
+.tab-content-panel {
+  margin: 0 18px 16px;
+  padding: 16px 0;
+  background: rgba(255,255,255,0.3);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0,0,0,0.08);
+  border-top: none;
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  position: relative;
+  z-index: 1;
+}
+[data-theme="light"] .tab-content-panel {
+  background: rgba(255,255,255,0.35);
+  border-color: rgba(0,0,0,0.08);
+}
 
 /* ===== Score Ring Animation ===== */
 @keyframes ringRotate {
