@@ -24,7 +24,7 @@ import {
   getAllThumbnailsAsync, saveThumbnail, deleteRecord,
 } from '../storage/SkinStorage';
 import { AnimatedNumber, ScoreRing, MetricBar } from '../components/UIComponents';
-import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, GENDER_OPTIONS } from '../storage/ProfileStorage';
+import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, GENDER_OPTIONS, getCategories, getEnabledCategories, saveCategories } from '../storage/ProfileStorage';
 import AiInsightCard from '../components/AiInsightCard';
 import { ChartIcon, CameraIcon, MicroscopeIcon, SparkleIcon, DiamondIcon, DropletIcon, RulerIcon, PaletteIcon, LotionIcon, EyeIcon, BubbleIcon, TargetIcon, ClockIcon, LuaMiniIcon } from '../components/icons/PastelIcons';
 import EternalPearl from '../components/icons/EternalPearl';
@@ -196,7 +196,18 @@ function ChangeIndicator({ diff, unit = '점', inverse = false, size = 'normal' 
 // ===== MAIN HISTORY PAGE =====
 export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, initialMode, galleryOnly }) {
   const [mode, setMode] = useState(initialMode || 'gallery');
-  const [albumCategory, setAlbumCategory] = useState('skin');
+  const [enabledCats, setEnabledCats] = useState(() => getEnabledCategories());
+  const [albumCategory, setAlbumCategory] = useState(() => {
+    const cats = getEnabledCategories();
+    return cats.length > 0 ? cats[0].key : 'skin';
+  });
+  const refreshCategories = () => {
+    const cats = getEnabledCategories();
+    setEnabledCats(cats);
+    if (!cats.find(c => c.key === albumCategory)) {
+      setAlbumCategory(cats[0]?.key || 'skin');
+    }
+  };
   const [insightMode, setInsightMode] = useState('timeline');
   const [records, setRecords] = useState([]);
   const [graphMetric, setGraphMetric] = useState('skinAge');
@@ -366,19 +377,21 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
                 </div>
               </div>
             </div>
-            <div className="segment-control" data-active={albumCategory === 'skin' ? 'first' : albumCategory === 'body' ? 'last' : 'mid'}>
-              <button className={`segment-btn${albumCategory === 'skin' ? ' active' : ''}`}
-                onClick={() => setAlbumCategory('skin')}>피부</button>
-              <button className={`segment-btn${albumCategory === 'food' ? ' active' : ''}`}
-                onClick={() => setAlbumCategory('food')}>식단</button>
-              <button className={`segment-btn${albumCategory === 'body' ? ' active' : ''}`}
-                onClick={() => setAlbumCategory('body')}>바디</button>
+            <div className="segment-control" data-active={
+              albumCategory === enabledCats[0]?.key ? 'first' : albumCategory === enabledCats[enabledCats.length - 1]?.key ? 'last' : 'mid'
+            }>
+              {enabledCats.map(cat => (
+                <button key={cat.key} className={`segment-btn${albumCategory === cat.key ? ' active' : ''}`}
+                  onClick={() => setAlbumCategory(cat.key)}>{cat.label}</button>
+              ))}
             </div>
           </div>
         );
       })()}
 
-      <div className="tab-content-panel" data-active={albumCategory === 'skin' ? 'first' : albumCategory === 'body' ? 'last' : 'mid'}>
+      <div className="tab-content-panel" data-active={
+        albumCategory === enabledCats[0]?.key ? 'first' : albumCategory === enabledCats[enabledCats.length - 1]?.key ? 'last' : 'mid'
+      }>
 
       {/* ===== FOOD ALBUM ===== */}
       {albumCategory === 'food' && (() => {
@@ -938,14 +951,15 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
       </div>{/* end tab-content-panel */}
 
       {/* Settings Drawer */}
-      <SettingsPage open={showSettingsPage} onClose={() => setShowSettingsPage(false)} />
+      <SettingsPage open={showSettingsPage} onClose={() => setShowSettingsPage(false)} onCategoriesChanged={refreshCategories} />
     </div>
   );
 }
 
 // ===== SETTINGS PAGE =====
-function SettingsPage({ open, onClose }) {
+function SettingsPage({ open, onClose, onCategoriesChanged }) {
   const [showProfilePage, setShowProfilePage] = useState(false);
+  const [showCategoryPage, setShowCategoryPage] = useState(false);
 
   const menuSections = [
     {
@@ -958,7 +972,7 @@ function SettingsPage({ open, onClose }) {
     {
       title: '앱 설정',
       items: [
-        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>, label: '카테고리' },
+        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>, label: '카테고리', action: () => setShowCategoryPage(true) },
         { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>, label: '화면' },
         { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>, label: '데이터' },
       ],
@@ -1028,7 +1042,148 @@ function SettingsPage({ open, onClose }) {
         </div>
       </div>
       {showProfilePage && <ProfileSettingsPage onClose={() => setShowProfilePage(false)} />}
+      {showCategoryPage && <CategorySettingsPage onClose={() => setShowCategoryPage(false)} onSave={onCategoriesChanged} />}
     </>
+  );
+}
+
+// ===== CATEGORY SETTINGS PAGE =====
+function CategorySettingsPage({ onClose, onSave }) {
+  const [categories, setCategories] = useState(() => getCategories());
+  const [dragging, setDragging] = useState(null);
+  const [dragOver, setDragOver] = useState(null);
+  const touchStart = useRef(null);
+  const itemRefs = useRef([]);
+
+  const enabledCount = categories.filter(c => c.enabled).length;
+
+  const toggle = (idx) => {
+    const next = [...categories];
+    if (next[idx].enabled && enabledCount <= 1) return; // 최소 1개
+    next[idx].enabled = !next[idx].enabled;
+    setCategories(next);
+    saveCategories(next);
+    onSave?.();
+  };
+
+  const moveItem = (from, to) => {
+    if (from === to) return;
+    const next = [...categories];
+    const [item] = next.splice(from, 1);
+    next.splice(to, 0, item);
+    setCategories(next);
+    saveCategories(next);
+    onSave?.();
+  };
+
+  // Touch drag handlers
+  const onTouchStart = (e, idx) => {
+    touchStart.current = { idx, y: e.touches[0].clientY };
+    setDragging(idx);
+  };
+  const onTouchMove = (e, idx) => {
+    if (dragging === null) return;
+    const y = e.touches[0].clientY;
+    for (let i = 0; i < itemRefs.current.length; i++) {
+      const el = itemRefs.current[i];
+      if (!el) continue;
+      const rect = el.getBoundingClientRect();
+      if (y >= rect.top && y <= rect.bottom && i !== dragging) {
+        setDragOver(i);
+        return;
+      }
+    }
+  };
+  const onTouchEnd = () => {
+    if (dragging !== null && dragOver !== null && dragging !== dragOver) {
+      moveItem(dragging, dragOver);
+    }
+    setDragging(null);
+    setDragOver(null);
+    touchStart.current = null;
+  };
+
+  return (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 2002,
+      background: 'linear-gradient(to bottom, #ace2fc, #dfed89)',
+      display: 'flex', flexDirection: 'column',
+      animation: 'slideInRight 0.3s ease',
+    }}>
+      <style>{`
+        @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+      `}</style>
+      {/* Header */}
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+        <div onClick={onClose} style={{
+          width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1,
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </div>
+        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>카테고리 설정</span>
+      </div>
+
+      {/* Description */}
+      <div style={{ padding: '20px 28px 8px' }}>
+        <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>카테고리를 켜거나 끄고, 드래그하여 순서를 변경할 수 있어요.</div>
+        <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 4 }}>최소 1개의 카테고리는 활성화되어야 해요.</div>
+      </div>
+
+      {/* Category list */}
+      <div style={{ padding: '8px 20px', flex: 1 }}>
+        {categories.map((cat, idx) => (
+          <div
+            key={cat.key}
+            ref={el => itemRefs.current[idx] = el}
+            onTouchStart={e => onTouchStart(e, idx)}
+            onTouchMove={e => onTouchMove(e, idx)}
+            onTouchEnd={onTouchEnd}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 14,
+              padding: '14px 18px', marginBottom: 8,
+              background: dragging === idx ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.45)',
+              borderRadius: 16,
+              border: dragOver === idx ? '2px solid var(--accent-primary, #81E4BD)' : '1px solid rgba(255,255,255,0.5)',
+              backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+              boxShadow: dragging === idx ? '0 4px 16px rgba(0,0,0,0.1)' : '0 2px 8px rgba(0,0,0,0.04)',
+              transition: 'all 0.2s ease',
+              touchAction: 'none',
+              userSelect: 'none',
+              opacity: cat.enabled ? 1 : 0.5,
+            }}
+          >
+            {/* Drag handle */}
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.3)" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0, cursor: 'grab' }}>
+              <line x1="8" y1="6" x2="16" y2="6" /><line x1="8" y1="12" x2="16" y2="12" /><line x1="8" y1="18" x2="16" y2="18" />
+            </svg>
+
+            {/* Label */}
+            <span style={{ flex: 1, fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{cat.label}</span>
+
+            {/* Toggle */}
+            <div onClick={() => toggle(idx)} style={{
+              width: 46, height: 26, borderRadius: 13,
+              background: cat.enabled ? 'var(--accent-primary, #81E4BD)' : 'rgba(0,0,0,0.12)',
+              position: 'relative', cursor: 'pointer',
+              transition: 'background 0.2s ease',
+              flexShrink: 0,
+            }}>
+              <div style={{
+                width: 22, height: 22, borderRadius: 11,
+                background: '#fff',
+                position: 'absolute', top: 2,
+                left: cat.enabled ? 22 : 2,
+                transition: 'left 0.2s ease',
+                boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
+              }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 

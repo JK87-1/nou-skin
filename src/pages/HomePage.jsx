@@ -11,9 +11,9 @@ import {
   shouldResetCheck, getMinutesSinceLastCheck,
 } from '../storage/ConditionStorage';
 
-const ENERGY_LABELS = ['매우 낮음', '낮음', '보통', '좋음', '활기참'];
-const MOOD_LABELS = ['우울', '기분 다운', '평온', '좋음', '행복'];
-const WATER_LABELS = ['갈증', '약간 부족', '보통', '충분', '매우 충분'];
+const ENERGY_LABELS = ['매우 낮음', '낮음', '약간 낮음', '조금 부족', '보통', '괜찮음', '좋음', '활발', '높음', '활기참'];
+const MOOD_LABELS = ['우울', '기분 다운', '침울', '약간 다운', '평온', '무난', '좋음', '기분 좋음', '매우 좋음', '행복'];
+const WATER_LABELS = ['갈증', '많이 부족', '부족', '약간 부족', '보통', '괜찮음', '적당', '충분', '넉넉', '매우 충분'];
 
 const STATUS_MAP = {
   1: { text: '저하', bg: 'rgba(255,143,171,.1)', color: '#C2185B' },
@@ -31,8 +31,8 @@ const HERO_GRAD = {
 
 function getTier(energy, mood) {
   const avg = (energy + mood) / 2;
-  if (avg >= 4) return 'high';
-  if (avg >= 2.5) return 'mid';
+  if (avg >= 7) return 'high';
+  if (avg >= 4) return 'mid';
   return 'low';
 }
 
@@ -56,34 +56,34 @@ const TIER_CTA = {
 
 // ===== AI 인사이트 생성 (로컬) =====
 function generateInsight(check, skinResult, nutrition, weather) {
-  const e = check?.energy || 3, s = check?.skin || 3, m = check?.mood || 3, g = check?.gut || 3;
+  const e = check?.energy || 7, s = check?.skin || 7, m = check?.mood || 7, g = check?.gut || 7;
   const avg = (e + s + m + g) / 4;
 
   // 인과관계 흐름 생성
   const flows = [];
   const descs = [];
 
-  if (e <= 2 && g <= 2) {
+  if (e <= 4 && g <= 4) {
     flows.push({ flow: ['장 불편', '영양 흡수 저하', '피로 + 피부 예민'], desc: '장 컨디션이 에너지와 피부에 영향을 줄 수 있어요' });
   }
-  if (e <= 2 && nutrition?.kcal > 800) {
+  if (e <= 4 && nutrition?.kcal > 800) {
     flows.push({ flow: ['식후 혈당 변화', '에너지 저하', '집중력 감소'], desc: '식사 후 혈당 변화가 피로감의 원인일 수 있어요' });
   }
-  if (s <= 2 && weather?.humidity < 40) {
+  if (s <= 4 && weather?.humidity < 40) {
     flows.push({ flow: ['낮은 습도', '수분 증발', '피부 예민'], desc: '건조한 환경이 피부 컨디션에 영향을 줘요' });
   }
-  if (s <= 2 && skinResult?.moisture < 50) {
+  if (s <= 4 && skinResult?.moisture < 50) {
     flows.push({ flow: ['수분 부족', '피부 장벽 약화', '피부 예민'], desc: '피부 수분도가 낮아 예민해질 수 있어요' });
   }
-  if (m <= 2 && e <= 2) {
+  if (m <= 4 && e <= 4) {
     flows.push({ flow: ['수면 부족', '피로 누적', '기분 저하'], desc: '충분한 휴식이 기분 회복에 도움이 돼요' });
   }
-  if (e >= 4 && s >= 4) {
+  if (e >= 7 && s >= 7) {
     flows.push({ flow: ['충분한 휴식', '좋은 컨디션', '피부 회복'], desc: '현재 컨디션이 좋아서 피부도 안정적이에요' });
   }
 
   if (flows.length === 0) {
-    if (avg >= 3.5) {
+    if (avg >= 6) {
       flows.push({ flow: ['균형 잡힌 생활', '안정적 컨디션', '좋은 상태 유지'], desc: '전반적으로 균형 잡힌 상태예요' });
     } else {
       flows.push({ flow: ['컨디션 변화 감지', '원인 분석 중', '맞춤 케어 필요'], desc: '데이터를 더 모으면 정확한 분석이 가능해요' });
@@ -99,22 +99,22 @@ function generateHeroStatus(check) {
   const avg = (e + s + m + g) / 4;
 
   const lowItems = [];
-  if (e <= 2) lowItems.push('피로');
-  if (s <= 2) lowItems.push('피부 예민');
-  if (m <= 2) lowItems.push('기분 저하');
-  if (g <= 2) lowItems.push('장 불편');
+  if (e <= 4) lowItems.push('피로');
+  if (s <= 4) lowItems.push('피부 예민');
+  if (m <= 4) lowItems.push('기분 저하');
+  if (g <= 4) lowItems.push('장 불편');
 
   const highItems = [];
-  if (e >= 4) highItems.push('에너지 좋음');
-  if (s >= 4) highItems.push('피부 좋음');
-  if (m >= 4) highItems.push('기분 좋음');
-  if (g >= 4) highItems.push('장 상태 좋음');
+  if (e >= 7) highItems.push('에너지 좋음');
+  if (s >= 7) highItems.push('피부 좋음');
+  if (m >= 7) highItems.push('기분 좋음');
+  if (g >= 7) highItems.push('장 상태 좋음');
 
   let status, sub;
-  if (avg >= 4) {
+  if (avg >= 7) {
     status = '오늘 컨디션이 아주 좋아요';
     sub = highItems.slice(0, 2).join(' · ');
-  } else if (avg >= 3) {
+  } else if (avg >= 5) {
     status = '오늘 전반적으로 괜찮아요';
     sub = lowItems.length > 0 ? `${lowItems[0]}만 좀 신경 쓰면 돼요` : '무난한 하루를 보내고 있어요';
   } else {
@@ -128,11 +128,11 @@ function generateAction(check) {
   if (!check) return '지금 → 컨디션 체크 시작 →';
   const e = check.energy, s = check.skin, g = check.gut;
 
-  if (e <= 2 && g <= 2) return '지금 → 따뜻한 물 + 가벼운 산책 →';
-  if (e <= 2) return '지금 → 10분 스트레칭 추천 →';
-  if (s <= 2) return '지금 → 물 한 잔 + 수분크림 →';
-  if (g <= 2) return '지금 → 따뜻한 차 한 잔 →';
-  if (check.mood <= 2) return '지금 → 5분 심호흡 추천 →';
+  if (e <= 4 && g <= 4) return '지금 → 따뜻한 물 + 가벼운 산책 →';
+  if (e <= 4) return '지금 → 10분 스트레칭 추천 →';
+  if (s <= 4) return '지금 → 물 한 잔 + 수분크림 →';
+  if (g <= 4) return '지금 → 따뜻한 차 한 잔 →';
+  if (check.mood <= 4) return '지금 → 5분 심호흡 추천 →';
   return '지금 → 현재 루틴 유지 추천 →';
 }
 
@@ -158,9 +158,9 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const resetNeeded = shouldResetCheck();
   const [selections, setSelections] = useState(() => {
     if (!resetNeeded && latestCheck) {
-      return { energy: latestCheck.energy || 3, mood: latestCheck.mood || 3, water: latestCheck.water || 3 };
+      return { energy: latestCheck.energy || 7, mood: latestCheck.mood || 7, water: latestCheck.water || 7 };
     }
-    return { energy: 3, mood: 3, water: 3 };
+    return { energy: 7, mood: 7, water: 7 };
   });
   const [justUpdated, setJustUpdated] = useState(false);
   const [todayChecks, setTodayChecks] = useState(getTodayChecks);
@@ -192,14 +192,14 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const liveTier = getTier(selections.energy, selections.mood);
 
   const handleUpdate = () => {
-    const saved = saveConditionCheck({ ...selections, skin: 3, gut: 3 });
+    const saved = saveConditionCheck({ ...selections, skin: 7, gut: 7 });
     setTodayChecks(getTodayChecks());
     setJustUpdated(true);
     setMinutesAgo(0);
 
     // Body briefing API 호출
     setBriefingLoading(true);
-    const sliderTo100 = v => Math.round(((v - 1) / 4) * 100); // 1~5 → 0~100
+    const sliderTo100 = v => Math.round(((v - 1) / 9) * 100); // 1~10 → 0~100
     const foods = getTodayFoods();
     const dietSummary = foods.length > 0
       ? foods.map(f => f.name).filter(Boolean).join(', ')
@@ -278,7 +278,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
             </svg>
           </div>
-          <img src="/luaicon2.png" alt="lua" style={{ height: 30, objectFit: 'contain', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }} />
+          <img src="/luasky.svg" alt="lua" style={{ height: 30, objectFit: 'contain', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }} />
           <div onClick={onMeasure} style={{
             cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1,
           }}>
@@ -300,21 +300,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       </div>
 
       {/* ===== 2. 컨디션 체크 카드 ===== */}
-      <style>{`
-        .lua-slider::-webkit-slider-thumb {
-          -webkit-appearance: none; appearance: none;
-          width: 18px; height: 18px; border-radius: 50%;
-          background: #fff; border: 1.5px solid rgba(0,0,0,0.12);
-          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-          cursor: pointer;
-        }
-        .lua-slider::-moz-range-thumb {
-          width: 18px; height: 18px; border-radius: 50%;
-          background: #fff; border: 1.5px solid rgba(0,0,0,0.12);
-          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-          cursor: pointer;
-        }
-      `}</style>
       <div style={{
         margin: '0 18px', marginTop: -10, position: 'relative', zIndex: 1,
         background: 'rgba(255,255,255,0.2)', borderRadius: 16, padding: '12px 13px',
@@ -324,68 +309,59 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       }}>
         <div style={{ fontSize: 18, fontWeight: 600, color: 'rgba(0,0,0,0.8)', marginBottom: 12 }}>지금 느낌은?</div>
 
-        {/* 에너지 슬라이더 */}
-        <div style={{ marginBottom: 14 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-            <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>에너지</span>
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#0F6E56' }}>{ENERGY_LABELS[selections.energy - 1]}</span>
-          </div>
-          <input type="range" min={1} max={5} step={1} value={selections.energy}
-            onChange={e => handleSelect('energy', Number(e.target.value))}
-            className="lua-slider"
-            style={{
-              width: '100%', height: 6, borderRadius: 3, appearance: 'none', outline: 'none',
-              background: 'linear-gradient(90deg, rgba(255,255,0,0.5), rgba(255,255,255,0.5))',
-            }}
-          />
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
-            <span style={{ fontSize: 11, color: '#ccc' }}>매우 낮음</span>
-            <span style={{ fontSize: 11, color: '#ccc' }}>보통</span>
-            <span style={{ fontSize: 11, color: '#ccc' }}>활기참</span>
-          </div>
-        </div>
-
-        {/* 기분 슬라이더 */}
-        <div style={{ marginBottom: 12 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-            <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>기분</span>
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#0F6E56' }}>{MOOD_LABELS[selections.mood - 1]}</span>
-          </div>
-          <input type="range" min={1} max={5} step={1} value={selections.mood}
-            onChange={e => handleSelect('mood', Number(e.target.value))}
-            className="lua-slider"
-            style={{
-              width: '100%', height: 6, borderRadius: 3, appearance: 'none', outline: 'none',
-              background: 'linear-gradient(90deg, rgba(255,255,0,0.5), rgba(255,255,255,0.5))',
-            }}
-          />
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
-            <span style={{ fontSize: 11, color: '#ccc' }}>우울</span>
-            <span style={{ fontSize: 11, color: '#ccc' }}>평온</span>
-            <span style={{ fontSize: 11, color: '#ccc' }}>행복</span>
-          </div>
-        </div>
-
-        {/* 수분 슬라이더 */}
-        <div style={{ marginBottom: 12 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-            <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>수분</span>
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#0F6E56' }}>{WATER_LABELS[selections.water - 1]}</span>
-          </div>
-          <input type="range" min={1} max={5} step={1} value={selections.water}
-            onChange={e => handleSelect('water', Number(e.target.value))}
-            className="lua-slider"
-            style={{
-              width: '100%', height: 6, borderRadius: 3, appearance: 'none', outline: 'none',
-              background: 'linear-gradient(90deg, rgba(255,255,0,0.5), rgba(255,255,255,0.5))',
-            }}
-          />
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
-            <span style={{ fontSize: 11, color: '#ccc' }}>갈증</span>
-            <span style={{ fontSize: 11, color: '#ccc' }}>보통</span>
-            <span style={{ fontSize: 11, color: '#ccc' }}>충분</span>
-          </div>
-        </div>
+        {[
+          { key: 'mood', label: '기분', color: '#F5C2CB', textColor: '#D4707E', labels: MOOD_LABELS, ends: ['우울', '평온', '행복'] },
+          { key: 'energy', label: '에너지', color: '#F5E6A3', textColor: '#E8A135', labels: ENERGY_LABELS, ends: ['매우 낮음', '보통', '활기참'] },
+          { key: 'water', label: '수분', color: '#C2EAFF', textColor: '#5BA3D4', labels: WATER_LABELS, ends: ['갈증', '보통', '충분'] },
+        ].map((s, si) => {
+          const val = selections[s.key];
+          const pct = ((val - 1) / 9) * 100;
+          const trackH = 14;
+          const handleTouch = (e) => {
+            const bar = e.currentTarget;
+            const rect = bar.getBoundingClientRect();
+            const update = (clientX) => {
+              const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
+              const v = Math.round((x / rect.width) * 9) + 1;
+              handleSelect(s.key, Math.max(1, Math.min(10, v)));
+            };
+            if (e.type === 'touchstart' || e.type === 'touchmove') {
+              update(e.touches[0].clientX);
+            } else {
+              update(e.clientX);
+            }
+          };
+          return (
+            <div key={s.key} style={{ marginBottom: si < 2 ? 14 : 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>{s.label}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: s.textColor }}>{s.labels[val - 1]}</span>
+              </div>
+              <div
+                onTouchStart={handleTouch}
+                onTouchMove={handleTouch}
+                onClick={handleTouch}
+                style={{
+                  position: 'relative', width: '100%', height: trackH, borderRadius: trackH / 2,
+                  background: 'rgba(0,0,0,0.06)',
+                  cursor: 'pointer', touchAction: 'none',
+                }}
+              >
+                <div style={{
+                  position: 'absolute', top: 0, left: 0, height: '100%',
+                  width: `${Math.max(pct, 5)}%`,
+                  borderRadius: trackH / 2,
+                  background: `linear-gradient(90deg, rgba(255,255,255,0.7), ${s.color})`,
+                  boxShadow: `0 1px 4px ${s.color}44, inset 0 1px 1px rgba(255,255,255,0.6)`,
+                  transition: 'width 0.15s ease',
+                }} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
+                {s.ends.map(t => <span key={t} style={{ fontSize: 11, color: '#ccc' }}>{t}</span>)}
+              </div>
+            </div>
+          );
+        })}
 
         {/* 업데이트 버튼 */}
         <button onClick={handleUpdate} style={{
@@ -454,12 +430,16 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           {/* 범례 */}
           <div style={{ display: 'flex', gap: 14, marginBottom: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <div style={{ width: 12, height: 2, borderRadius: 1, background: '#4DB8A0' }} />
+              <div style={{ width: 12, height: 2, borderRadius: 1, background: '#F5C2CB' }} />
+              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>기분</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <div style={{ width: 12, height: 2, borderRadius: 1, background: '#F5E6A3' }} />
               <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>에너지</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <div style={{ width: 12, height: 2, borderRadius: 1, background: '#FFB347', backgroundImage: 'repeating-linear-gradient(90deg, #FFB347 0 3px, transparent 3px 5px)' }} />
-              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>기분</span>
+              <div style={{ width: 12, height: 2, borderRadius: 1, background: '#C2EAFF' }} />
+              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>수분</span>
             </div>
           </div>
 
@@ -473,16 +453,20 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           ) : (() => {
             const svgW = Math.max(graphData.length * 70, 220);
             const H = 56;
-            const toY = (val) => Math.round(H - (val / 5) * (H - 12) - 6);
+            const toY = (val) => Math.round(H - (val / 10) * (H - 12) - 6);
             const pad = 16;
 
-            const energyPts = graphData.map((d, i) => {
-              const x = (i / (graphData.length - 1)) * (svgW - pad * 2) + pad;
-              return { x, y: toY(todayChecks[i]?.energy || 3) };
-            });
             const moodPts = graphData.map((d, i) => {
               const x = (i / (graphData.length - 1)) * (svgW - pad * 2) + pad;
-              return { x, y: toY(todayChecks[i]?.mood || 3) };
+              return { x, y: toY(todayChecks[i]?.mood || 7) };
+            });
+            const energyPts = graphData.map((d, i) => {
+              const x = (i / (graphData.length - 1)) * (svgW - pad * 2) + pad;
+              return { x, y: toY(todayChecks[i]?.energy || 7) };
+            });
+            const waterPts = graphData.map((d, i) => {
+              const x = (i / (graphData.length - 1)) * (svgW - pad * 2) + pad;
+              return { x, y: toY(todayChecks[i]?.water || 7) };
             });
 
             const makePath = (pts) => {
@@ -504,23 +488,28 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               <>
                 <svg width="100%" height={H} viewBox={`0 0 ${svgW} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: 'block' }}>
                   <defs>
-                    <linearGradient id="energyFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#4DB8A0" stopOpacity="0.15" />
-                      <stop offset="100%" stopColor="#4DB8A0" stopOpacity="0" />
+                    <linearGradient id="moodFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#F5C2CB" stopOpacity="0.15" />
+                      <stop offset="100%" stopColor="#F5C2CB" stopOpacity="0" />
                     </linearGradient>
                   </defs>
-                  {/* 에너지 영역 채움 */}
-                  <path d={makeAreaPath(energyPts)} fill="url(#energyFill)" />
-                  {/* 에너지 선 (민트 실선) */}
-                  <path d={makePath(energyPts)} fill="none" stroke="#4DB8A0" strokeWidth="2" strokeLinecap="round" />
-                  {/* 기분 선 (오렌지 점선) */}
-                  <path d={makePath(moodPts)} fill="none" stroke="#FFB347" strokeWidth="2" strokeLinecap="round" strokeDasharray="4 3" />
+                  {/* 기분 영역 채움 */}
+                  <path d={makeAreaPath(moodPts)} fill="url(#moodFill)" />
+                  {/* 기분 선 (핑크) */}
+                  <path d={makePath(moodPts)} fill="none" stroke="#F5C2CB" strokeWidth="2" strokeLinecap="round" />
+                  {/* 에너지 선 (옐로우) */}
+                  <path d={makePath(energyPts)} fill="none" stroke="#F5E6A3" strokeWidth="2" strokeLinecap="round" />
+                  {/* 수분 선 (스카이블루) */}
+                  <path d={makePath(waterPts)} fill="none" stroke="#C2EAFF" strokeWidth="2" strokeLinecap="round" />
                   {/* 포인트 */}
-                  {energyPts.map((p, i) => (
-                    <circle key={`e${i}`} cx={p.x} cy={p.y} r="3" fill="#fff" stroke="#4DB8A0" strokeWidth="1.5" />
-                  ))}
                   {moodPts.map((p, i) => (
-                    <circle key={`m${i}`} cx={p.x} cy={p.y} r="3" fill="#fff" stroke="#FFB347" strokeWidth="1.5" />
+                    <circle key={`m${i}`} cx={p.x} cy={p.y} r="3" fill="#fff" stroke="#F5C2CB" strokeWidth="1.5" />
+                  ))}
+                  {energyPts.map((p, i) => (
+                    <circle key={`e${i}`} cx={p.x} cy={p.y} r="3" fill="#fff" stroke="#F5E6A3" strokeWidth="1.5" />
+                  ))}
+                  {waterPts.map((p, i) => (
+                    <circle key={`w${i}`} cx={p.x} cy={p.y} r="3" fill="#fff" stroke="#C2EAFF" strokeWidth="1.5" />
                   ))}
                 </svg>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 4px', marginTop: 4 }}>

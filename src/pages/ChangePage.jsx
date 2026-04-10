@@ -5,7 +5,7 @@ import {
   getBodyGoal, saveBodyGoal, getBodyProfile, saveBodyProfile,
   calcBMI, getLatestWeight, getStartWeight,
 } from '../storage/BodyStorage';
-import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, SENSITIVITY_OPTIONS, GENDER_OPTIONS } from '../storage/ProfileStorage';
+import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, SENSITIVITY_OPTIONS, GENDER_OPTIONS, getEnabledCategories } from '../storage/ProfileStorage';
 import { getRecords, getAllThumbnailsAsync } from '../storage/SkinStorage';
 import BeforeAfterSlider from '../components/BeforeAfterSlider';
 
@@ -20,7 +20,11 @@ export default function ChangePage() {
   const [showSettings, setShowSettings] = useState(false);
   const [userProfile, setUserProfile] = useState(getProfile);
   const [headerTitle, setHeaderTitle] = useState('');
-  const [insightTab, setInsightTab] = useState('skin');
+  const enabledCats = useMemo(() => getEnabledCategories(), []);
+  const [insightTab, setInsightTab] = useState(() => {
+    const cats = getEnabledCategories();
+    return cats.length > 0 ? cats[0].key : 'skin';
+  });
   const todayKey = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`;
   const [selectedDate, setSelectedDate] = useState(todayKey);
   const [skinRecords, setSkinRecords] = useState([]);
@@ -113,16 +117,18 @@ export default function ChangePage() {
 
       {/* Category Tabs */}
       <div style={{ padding: '12px 10px 0' }}>
-        <div className="segment-control" data-active={insightTab === 'skin' ? 'first' : insightTab === 'body' ? 'last' : 'mid'}>
-          <button className={`segment-btn${insightTab === 'skin' ? ' active' : ''}`}
-            onClick={() => setInsightTab('skin')}>피부</button>
-          <button className={`segment-btn${insightTab === 'food' ? ' active' : ''}`}
-            onClick={() => setInsightTab('food')}>식단</button>
-          <button className={`segment-btn${insightTab === 'body' ? ' active' : ''}`}
-            onClick={() => setInsightTab('body')}>바디</button>
+        <div className="segment-control" data-active={
+          insightTab === enabledCats[0]?.key ? 'first' : insightTab === enabledCats[enabledCats.length - 1]?.key ? 'last' : 'mid'
+        }>
+          {enabledCats.map(cat => (
+            <button key={cat.key} className={`segment-btn${insightTab === cat.key ? ' active' : ''}`}
+              onClick={() => setInsightTab(cat.key)}>{cat.label}</button>
+          ))}
         </div>
       </div>
-      <div className="tab-content-panel" data-active={insightTab === 'skin' ? 'first' : insightTab === 'body' ? 'last' : 'mid'}>
+      <div className="tab-content-panel" data-active={
+        insightTab === enabledCats[0]?.key ? 'first' : insightTab === enabledCats[enabledCats.length - 1]?.key ? 'last' : 'mid'
+      }>
 
       {/* Skin Tab */}
       {insightTab === 'skin' && (

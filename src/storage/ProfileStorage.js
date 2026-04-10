@@ -16,6 +16,11 @@ const DEFAULTS = {
   selectedTitleLevel: null,
   activeTheme: null,
   colorMode: 'light',
+  categories: [
+    { key: 'skin', label: '피부', enabled: true },
+    { key: 'food', label: '식단', enabled: true },
+    { key: 'body', label: '바디', enabled: true },
+  ],
 };
 
 export function getProfile() {
@@ -40,6 +45,23 @@ export function getDeviceId() {
     localStorage.setItem('nou_device_id', id);
   }
   return id;
+}
+
+export function getCategories() {
+  const profile = getProfile();
+  const cats = profile.categories || DEFAULTS.categories;
+  // 최소 1개는 활성화
+  const enabled = cats.filter(c => c.enabled);
+  if (enabled.length === 0) cats[0].enabled = true;
+  return cats;
+}
+
+export function getEnabledCategories() {
+  return getCategories().filter(c => c.enabled);
+}
+
+export function saveCategories(categories) {
+  saveProfile({ categories });
 }
 
 export const SKIN_TYPES = ['건성', '지성', '복합성', '중성', '민감성'];
