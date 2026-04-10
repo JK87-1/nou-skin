@@ -208,6 +208,10 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
       setAlbumCategory(cats[0]?.key || 'skin');
     }
   };
+  useEffect(() => {
+    window.addEventListener('lua:categories-changed', refreshCategories);
+    return () => window.removeEventListener('lua:categories-changed', refreshCategories);
+  });
   const [insightMode, setInsightMode] = useState('timeline');
   const [records, setRecords] = useState([]);
   const [graphMetric, setGraphMetric] = useState('skinAge');

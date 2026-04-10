@@ -73,6 +73,8 @@ export function getEnabledCategories() {
 
 export function saveCategories(categories) {
   saveProfile({ categories });
+  // 다른 마운트된 페이지에도 변경 알림 (탭 전환 없이 즉시 반영)
+  try { window.dispatchEvent(new CustomEvent('lua:categories-changed')); } catch {}
 }
 
 export const SKIN_TYPES = ['건성', '지성', '복합성', '중성', '민감성'];

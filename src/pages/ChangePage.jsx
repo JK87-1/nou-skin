@@ -20,11 +20,20 @@ export default function ChangePage() {
   const [showSettings, setShowSettings] = useState(false);
   const [userProfile, setUserProfile] = useState(getProfile);
   const [headerTitle, setHeaderTitle] = useState('');
-  const enabledCats = useMemo(() => getEnabledCategories(), []);
+  const [enabledCats, setEnabledCats] = useState(() => getEnabledCategories());
   const [insightTab, setInsightTab] = useState(() => {
     const cats = getEnabledCategories();
     return cats.length > 0 ? cats[0].key : 'skin';
   });
+  useEffect(() => {
+    const handler = () => {
+      const cats = getEnabledCategories();
+      setEnabledCats(cats);
+      if (!cats.find(c => c.key === insightTab)) setInsightTab(cats[0]?.key || 'skin');
+    };
+    window.addEventListener('lua:categories-changed', handler);
+    return () => window.removeEventListener('lua:categories-changed', handler);
+  }, [insightTab]);
   const todayKey = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`;
   const [selectedDate, setSelectedDate] = useState(todayKey);
   const [skinRecords, setSkinRecords] = useState([]);

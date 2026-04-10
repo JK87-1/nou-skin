@@ -8,6 +8,7 @@ import WeekDateHeader from '../components/WeekDateHeader';
 import { createPortal } from 'react-dom';
 import { SunIcon, MoonIcon, LotionIcon, PastelIcon } from '../components/icons/PastelIcons';
 import { getWeeklyRoutineStatus } from '../storage/RoutineCheckStorage';
+import { getEnabledCategories } from '../storage/ProfileStorage';
 import { getRoutineItems, saveRoutineItem, deleteRoutineItem, getChecks, toggleCheck, getTodayProgress } from '../storage/RoutineCheckStorage';
 import {
   TRACKER_CATEGORIES, getProducts, saveProduct, deleteProduct,
@@ -649,6 +650,20 @@ function getTodayStr() {
 }
 
 export default function RoutinePage({ themeColors, onBack, initialMode }) {
+  const [enabledCats, setEnabledCats] = useState(() => getEnabledCategories());
+  const [routineCat, setRoutineCat] = useState(() => {
+    const cats = getEnabledCategories();
+    return cats.find(c => c.key === 'skin') ? 'skin' : (cats[0]?.key || 'skin');
+  });
+  useEffect(() => {
+    const handler = () => {
+      const cats = getEnabledCategories();
+      setEnabledCats(cats);
+      if (!cats.find(c => c.key === routineCat)) setRoutineCat(cats[0]?.key || 'skin');
+    };
+    window.addEventListener('lua:categories-changed', handler);
+    return () => window.removeEventListener('lua:categories-changed', handler);
+  }, [routineCat]);
   const [pageMode, setPageMode] = useState(initialMode || 'routine');
   const [section, setSection] = useState('products');
   const [products, setProducts] = useState(() => getProducts());
@@ -762,22 +777,38 @@ export default function RoutinePage({ themeColors, onBack, initialMode }) {
         onTitleChange={setHeaderTitle}
       />
 
-      {/* Mode Toggle */}
+      {/* Category Tabs */}
       <div style={{ padding: '12px 10px 0' }}>
-        <div className="segment-control" data-active={pageMode === 'routine' ? 'first' : pageMode === 'mission' ? 'last' : 'mid'}>
-          <button className={`segment-btn${pageMode === 'routine' ? ' active' : ''}`}
-            onClick={() => setPageMode('routine')}>피부</button>
-          <button className={`segment-btn${pageMode === 'insights' ? ' active' : ''}`}
-            onClick={() => setPageMode('insights')}>식단</button>
-          <button className={`segment-btn${pageMode === 'mission' ? ' active' : ''}`}
-            onClick={() => setPageMode('mission')}>바디</button>
+        <div className="segment-control" data-active={
+          routineCat === enabledCats[0]?.key ? 'first' : routineCat === enabledCats[enabledCats.length - 1]?.key ? 'last' : 'mid'
+        }>
+          {enabledCats.map(cat => (
+            <button key={cat.key} className={`segment-btn${routineCat === cat.key ? ' active' : ''}`}
+              onClick={() => setRoutineCat(cat.key)}>{cat.label}</button>
+          ))}
         </div>
       </div>
-      <div className="tab-content-panel" data-active={pageMode === 'routine' ? 'first' : pageMode === 'mission' ? 'last' : 'mid'}>
+      <div className="tab-content-panel" data-active={
+        routineCat === enabledCats[0]?.key ? 'first' : routineCat === enabledCats[enabledCats.length - 1]?.key ? 'last' : 'mid'
+      }>
       {/* Routine checklist for each category */}
-      {pageMode === 'routine' && <RoutineChecklist category="skin" label="피부" selectedDate={selectedDate} />}
-      {pageMode === 'insights' && <RoutineChecklist category="food" label="식단" selectedDate={selectedDate} />}
-      {pageMode === 'mission' && <RoutineChecklist category="body" label="바디" selectedDate={selectedDate} />}
+      {routineCat === 'skin' && <RoutineChecklist category="skin" label="피부" selectedDate={selectedDate} />}
+      {routineCat === 'food' && <RoutineChecklist category="food" label="식단" selectedDate={selectedDate} />}
+      {routineCat === 'body' && <RoutineChecklist category="body" label="몸무게" selectedDate={selectedDate} />}
+      {routineCat === 'face' && (
+        <div style={{ padding: '60px 24px', textAlign: 'center' }}>
+          <div style={{ fontSize: 28, marginBottom: 12 }}>🙂</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>얼굴 루틴</div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>곧 출시 예정이에요</div>
+        </div>
+      )}
+      {routineCat === 'shape' && (
+        <div style={{ padding: '60px 24px', textAlign: 'center' }}>
+          <div style={{ fontSize: 28, marginBottom: 12 }}>💪</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>바디 루틴</div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>곧 출시 예정이에요</div>
+        </div>
+      )}
       </div>
 
       {/* Tracker mode — existing tracker content (hidden) */}

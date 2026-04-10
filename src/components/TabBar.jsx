@@ -1,5 +1,20 @@
 import { useState } from 'react';
 
+// 단일 AudioContext 재사용 (매 탭마다 새로 만들면 브라우저 한도 초과로 사운드가 끊김)
+let _audioCtx = null;
+function getAudioCtx() {
+  if (!_audioCtx) {
+    try {
+      _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch { return null; }
+  }
+  // suspended 상태면 resume (iOS Safari 등에서 사용자 제스처 후에만 재생 가능)
+  if (_audioCtx.state === 'suspended') {
+    _audioCtx.resume().catch(() => {});
+  }
+  return _audioCtx;
+}
+
 const TAB_BOUNCE_STYLE = document.createElement('style');
 TAB_BOUNCE_STYLE.textContent = `
   @keyframes tabBounce {
@@ -19,38 +34,19 @@ export default function TabBar({ activeTab, onTabChange }) {
 
   const playTick = () => {
     try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const ctx = getAudioCtx();
+      if (!ctx) return;
       const now = ctx.currentTime;
-      const dur = 0.22;
-
-      // 글래스 사운드: 고주파 사인파 + 살짝 디튠된 배음으로 유리잔 톡 느낌
-      const osc1 = ctx.createOscillator();
-      osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(2800, now);
-      osc1.frequency.exponentialRampToValueAtTime(2700, now + dur);
-
-      const osc2 = ctx.createOscillator();
-      osc2.type = 'sine';
-      osc2.frequency.setValueAtTime(2810, now); // 약간 디튠으로 코러스/살짝 떨림
-      osc2.frequency.exponentialRampToValueAtTime(2705, now + dur);
-
-      // 부드러운 어택 + 긴 디케이 (잔향)
-      const gain1 = ctx.createGain();
-      gain1.gain.setValueAtTime(0.0001, now);
-      gain1.gain.exponentialRampToValueAtTime(0.04, now + 0.015);
-      gain1.gain.exponentialRampToValueAtTime(0.0001, now + dur);
-
-      const gain2 = ctx.createGain();
-      gain2.gain.setValueAtTime(0.0001, now);
-      gain2.gain.exponentialRampToValueAtTime(0.025, now + 0.018);
-      gain2.gain.exponentialRampToValueAtTime(0.0001, now + dur);
-
-      osc1.connect(gain1).connect(ctx.destination);
-      osc2.connect(gain2).connect(ctx.destination);
-
-      osc1.start(now); osc1.stop(now + dur);
-      osc2.start(now); osc2.stop(now + dur);
-      setTimeout(() => ctx.close(), 300);
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 1800;
+      gain.gain.setValueAtTime(0.03, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+      osc.start(now);
+      osc.stop(now + 0.04);
+      // ctx는 닫지 않고 재사용 — osc/gain은 stop 후 자동 GC
     } catch {}
   };
 

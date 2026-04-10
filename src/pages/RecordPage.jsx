@@ -125,11 +125,20 @@ function getDateKey(d) {
 }
 
 export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
-  const enabledCats = getEnabledCategories();
+  const [enabledCats, setEnabledCats] = useState(() => getEnabledCategories());
   const [foodTab, setFoodTab] = useState(() => {
     const cats = getEnabledCategories();
     return cats.find(c => c.key === 'food') ? 'food' : (cats[0]?.key || 'food');
   });
+  useEffect(() => {
+    const handler = () => {
+      const cats = getEnabledCategories();
+      setEnabledCats(cats);
+      if (!cats.find(c => c.key === foodTab)) setFoodTab(cats[0]?.key || 'food');
+    };
+    window.addEventListener('lua:categories-changed', handler);
+    return () => window.removeEventListener('lua:categories-changed', handler);
+  }, [foodTab]);
   const today = new Date();
   const todayStr = getDateKey(today);
   const [selectedDate, setSelectedDate] = useState(todayStr);
