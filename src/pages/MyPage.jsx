@@ -492,6 +492,24 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
         );
       })()}
 
+      {/* ===== FACE PLACEHOLDER ===== */}
+      {albumCategory === 'face' && (
+        <div style={{ padding: '80px 24px', textAlign: 'center', animation: 'breatheIn 0.5s ease both' }}>
+          <div style={{ fontSize: 32, marginBottom: 12 }}>🙂</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>얼굴 앨범</div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>곧 출시 예정이에요</div>
+        </div>
+      )}
+
+      {/* ===== BODY SHAPE PLACEHOLDER ===== */}
+      {albumCategory === 'shape' && (
+        <div style={{ padding: '80px 24px', textAlign: 'center', animation: 'breatheIn 0.5s ease both' }}>
+          <div style={{ fontSize: 32, marginBottom: 12 }}>💪</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>바디 앨범</div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>곧 출시 예정이에요</div>
+        </div>
+      )}
+
       {/* ===== SKIN GALLERY ===== */}
       {albumCategory === 'skin' && (() => {
         const sorted = [...records].reverse();

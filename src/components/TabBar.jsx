@@ -4,8 +4,8 @@ const TAB_BOUNCE_STYLE = document.createElement('style');
 TAB_BOUNCE_STYLE.textContent = `
   @keyframes tabBounce {
     0% { transform: scale(1); }
-    40% { transform: scale(0.97); }
-    70% { transform: scale(1.01); }
+    40% { transform: scale(0.95); }
+    70% { transform: scale(1.02); }
     100% { transform: scale(1); }
   }
 `;
@@ -20,16 +20,37 @@ export default function TabBar({ activeTab, onTabChange }) {
   const playTick = () => {
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const now = ctx.currentTime;
+      const dur = 0.18;
+
+      // 메인 톤: 고음 사인파 + 살짝 피치 드롭으로 청량한 핑
       const osc = ctx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(3200, now);
+      osc.frequency.exponentialRampToValueAtTime(2400, now + dur);
+
+      // 배음: 한 옥타브 위 살짝 섞어서 반짝임 추가
+      const osc2 = ctx.createOscillator();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(6400, now);
+      osc2.frequency.exponentialRampToValueAtTime(4800, now + dur);
+
       const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.frequency.value = 1800;
-      gain.gain.value = 0.03;
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.03);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.03);
-      setTimeout(() => ctx.close(), 100);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.06, now + 0.005);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+
+      const gain2 = ctx.createGain();
+      gain2.gain.setValueAtTime(0.0001, now);
+      gain2.gain.exponentialRampToValueAtTime(0.02, now + 0.004);
+      gain2.gain.exponentialRampToValueAtTime(0.0001, now + dur * 0.7);
+
+      osc.connect(gain).connect(ctx.destination);
+      osc2.connect(gain2).connect(ctx.destination);
+
+      osc.start(now); osc.stop(now + dur);
+      osc2.start(now); osc2.stop(now + dur);
+      setTimeout(() => ctx.close(), 250);
     } catch {}
   };
 

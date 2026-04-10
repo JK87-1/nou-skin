@@ -430,15 +430,15 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           {/* 범례 */}
           <div style={{ display: 'flex', gap: 14, marginBottom: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <div style={{ width: 12, height: 2, borderRadius: 1, background: '#F5C2CB' }} />
+              <div style={{ width: 12, height: 2, borderRadius: 1, background: '#D4707E' }} />
               <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>기분</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <div style={{ width: 12, height: 2, borderRadius: 1, background: '#F5E6A3' }} />
+              <div style={{ width: 12, height: 2, borderRadius: 1, background: '#E8A135' }} />
               <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>에너지</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <div style={{ width: 12, height: 2, borderRadius: 1, background: '#C2EAFF' }} />
+              <div style={{ width: 12, height: 2, borderRadius: 1, background: '#5BA3D4' }} />
               <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>수분</span>
             </div>
           </div>
@@ -486,30 +486,30 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
             return (
               <>
-                <svg width="100%" height={H} viewBox={`0 0 ${svgW} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: 'block' }}>
+                <svg width="100%" height={H} viewBox={`0 0 ${svgW} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: 'block', overflow: 'visible' }}>
                   <defs>
                     <linearGradient id="moodFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#F5C2CB" stopOpacity="0.15" />
-                      <stop offset="100%" stopColor="#F5C2CB" stopOpacity="0" />
+                      <stop offset="0%" stopColor="#D4707E" stopOpacity="0.12" />
+                      <stop offset="100%" stopColor="#D4707E" stopOpacity="0" />
                     </linearGradient>
                   </defs>
                   {/* 기분 영역 채움 */}
                   <path d={makeAreaPath(moodPts)} fill="url(#moodFill)" />
-                  {/* 기분 선 (핑크) */}
-                  <path d={makePath(moodPts)} fill="none" stroke="#F5C2CB" strokeWidth="2" strokeLinecap="round" />
-                  {/* 에너지 선 (옐로우) */}
-                  <path d={makePath(energyPts)} fill="none" stroke="#F5E6A3" strokeWidth="2" strokeLinecap="round" />
-                  {/* 수분 선 (스카이블루) */}
-                  <path d={makePath(waterPts)} fill="none" stroke="#C2EAFF" strokeWidth="2" strokeLinecap="round" />
+                  {/* 기분 선 (진한 핑크) */}
+                  <path d={makePath(moodPts)} fill="none" stroke="#D4707E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  {/* 에너지 선 (망고) */}
+                  <path d={makePath(energyPts)} fill="none" stroke="#E8A135" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="5 3" />
+                  {/* 수분 선 (진한 스카이블루) */}
+                  <path d={makePath(waterPts)} fill="none" stroke="#5BA3D4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="2 3" />
                   {/* 포인트 */}
                   {moodPts.map((p, i) => (
-                    <circle key={`m${i}`} cx={p.x} cy={p.y} r="3" fill="#fff" stroke="#F5C2CB" strokeWidth="1.5" />
+                    <circle key={`m${i}`} cx={p.x} cy={p.y} r="3" fill="#fff" stroke="#D4707E" strokeWidth="1.5" />
                   ))}
                   {energyPts.map((p, i) => (
-                    <circle key={`e${i}`} cx={p.x} cy={p.y} r="3" fill="#fff" stroke="#F5E6A3" strokeWidth="1.5" />
+                    <circle key={`e${i}`} cx={p.x} cy={p.y} r="3" fill="#fff" stroke="#E8A135" strokeWidth="1.5" />
                   ))}
                   {waterPts.map((p, i) => (
-                    <circle key={`w${i}`} cx={p.x} cy={p.y} r="3" fill="#fff" stroke="#C2EAFF" strokeWidth="1.5" />
+                    <circle key={`w${i}`} cx={p.x} cy={p.y} r="3" fill="#fff" stroke="#5BA3D4" strokeWidth="1.5" />
                   ))}
                 </svg>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 4px', marginTop: 4 }}>

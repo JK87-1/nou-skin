@@ -3,6 +3,7 @@ import { getTodayFoods, getTodayNutrition, getFoodRecords, getNutritionForDate, 
 import WeekDateHeader from '../components/WeekDateHeader';
 import { getRecords, getChanges, getTotalChanges, getAllThumbnailsAsync } from '../storage/SkinStorage';
 import { getBodyRecords, getLatestWeight, getStartWeight, getBodyGoal, getBodyProfile, calcBMI, saveBodyRecord, deleteBodyRecord } from '../storage/BodyStorage';
+import { getEnabledCategories } from '../storage/ProfileStorage';
 import { savePhotoDB, getPhotoDB, resizeImage } from '../storage/PhotoDB';
 
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
@@ -124,7 +125,11 @@ function getDateKey(d) {
 }
 
 export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
-  const [foodTab, setFoodTab] = useState('food');
+  const enabledCats = getEnabledCategories();
+  const [foodTab, setFoodTab] = useState(() => {
+    const cats = getEnabledCategories();
+    return cats.find(c => c.key === 'food') ? 'food' : (cats[0]?.key || 'food');
+  });
   const today = new Date();
   const todayStr = getDateKey(today);
   const [selectedDate, setSelectedDate] = useState(todayStr);
@@ -226,16 +231,18 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
       {/* Category Tabs */}
       <div style={{ padding: '12px 10px 0' }}>
-        <div className="segment-control" data-active={foodTab === 'skin' ? 'first' : foodTab === 'body' ? 'last' : 'mid'}>
-          <button className={`segment-btn${foodTab === 'skin' ? ' active' : ''}`}
-            onClick={() => setFoodTab('skin')}>피부</button>
-          <button className={`segment-btn${foodTab === 'food' ? ' active' : ''}`}
-            onClick={() => setFoodTab('food')}>식단</button>
-          <button className={`segment-btn${foodTab === 'body' ? ' active' : ''}`}
-            onClick={() => setFoodTab('body')}>바디</button>
+        <div className="segment-control" data-active={
+          foodTab === enabledCats[0]?.key ? 'first' : foodTab === enabledCats[enabledCats.length - 1]?.key ? 'last' : 'mid'
+        }>
+          {enabledCats.map(cat => (
+            <button key={cat.key} className={`segment-btn${foodTab === cat.key ? ' active' : ''}`}
+              onClick={() => setFoodTab(cat.key)}>{cat.label}</button>
+          ))}
         </div>
       </div>
-      <div className="tab-content-panel" data-active={foodTab === 'skin' ? 'first' : foodTab === 'body' ? 'last' : 'mid'}>
+      <div className="tab-content-panel" data-active={
+        foodTab === enabledCats[0]?.key ? 'first' : foodTab === enabledCats[enabledCats.length - 1]?.key ? 'last' : 'mid'
+      }>
 
       {/* Skin content */}
       {foodTab === 'skin' && <>
@@ -670,6 +677,24 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
         })()}
         <BodyInsightsSection />
       </>}
+
+      {/* Face content (placeholder) */}
+      {foodTab === 'face' && (
+        <div style={{ padding: '60px 24px', textAlign: 'center', ...fadeUp(0.05) }}>
+          <div style={{ fontSize: 28, marginBottom: 12 }}>🙂</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>얼굴 기록</div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>곧 출시 예정이에요</div>
+        </div>
+      )}
+
+      {/* Body shape content (placeholder) */}
+      {foodTab === 'shape' && (
+        <div style={{ padding: '60px 24px', textAlign: 'center', ...fadeUp(0.05) }}>
+          <div style={{ fontSize: 28, marginBottom: 12 }}>💪</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>바디 기록</div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>곧 출시 예정이에요</div>
+        </div>
+      )}
 
       </div>{/* end tab-content-panel */}
 

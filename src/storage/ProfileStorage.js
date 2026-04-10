@@ -17,9 +17,11 @@ const DEFAULTS = {
   activeTheme: null,
   colorMode: 'light',
   categories: [
+    { key: 'face', label: '얼굴', enabled: false },
     { key: 'skin', label: '피부', enabled: true },
     { key: 'food', label: '식단', enabled: true },
-    { key: 'body', label: '바디', enabled: true },
+    { key: 'shape', label: '바디', enabled: false },
+    { key: 'body', label: '몸무게', enabled: true },
   ],
 };
 
@@ -49,11 +51,20 @@ export function getDeviceId() {
 
 export function getCategories() {
   const profile = getProfile();
-  const cats = profile.categories || DEFAULTS.categories;
-  // 최소 1개는 활성화
-  const enabled = cats.filter(c => c.enabled);
-  if (enabled.length === 0) cats[0].enabled = true;
-  return cats;
+  const saved = profile.categories || [];
+  const labelMap = Object.fromEntries(DEFAULTS.categories.map(c => [c.key, c.label]));
+  // 1) 저장된 카테고리는 순서·활성 상태 유지하며 라벨만 최신화
+  const migrated = saved
+    .filter(c => labelMap[c.key])
+    .map(c => ({ ...c, label: labelMap[c.key] }));
+  // 2) 저장본에 없는 신규 카테고리는 디폴트 상태로 뒤에 추가
+  const savedKeys = new Set(migrated.map(c => c.key));
+  DEFAULTS.categories.forEach(d => {
+    if (!savedKeys.has(d.key)) migrated.push({ ...d });
+  });
+  // 3) 최소 1개는 활성화
+  if (!migrated.some(c => c.enabled)) migrated[0].enabled = true;
+  return migrated;
 }
 
 export function getEnabledCategories() {

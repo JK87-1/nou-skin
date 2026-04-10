@@ -130,6 +130,24 @@ export default function ChangePage() {
         insightTab === enabledCats[0]?.key ? 'first' : insightTab === enabledCats[enabledCats.length - 1]?.key ? 'last' : 'mid'
       }>
 
+      {/* Face placeholder */}
+      {insightTab === 'face' && (
+        <div style={{ padding: '80px 24px', textAlign: 'center', ...fadeUp(0.05) }}>
+          <div style={{ fontSize: 32, marginBottom: 12 }}>🙂</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>얼굴 분석</div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>곧 출시 예정이에요</div>
+        </div>
+      )}
+
+      {/* Body shape placeholder */}
+      {insightTab === 'shape' && (
+        <div style={{ padding: '80px 24px', textAlign: 'center', ...fadeUp(0.05) }}>
+          <div style={{ fontSize: 32, marginBottom: 12 }}>💪</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>바디 분석</div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>곧 출시 예정이에요</div>
+        </div>
+      )}
+
       {/* Skin Tab */}
       {insightTab === 'skin' && (
         <div style={{ padding: '0 18px' }}>
