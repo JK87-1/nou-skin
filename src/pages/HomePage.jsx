@@ -316,7 +316,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         ].map((s, si) => {
           const val = selections[s.key];
           const pct = ((val - 1) / 9) * 100;
-          const trackH = 14;
+          const trackH = 9;
           const handleTouch = (e) => {
             const bar = e.currentTarget;
             const rect = bar.getBoundingClientRect();
@@ -334,7 +334,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           return (
             <div key={s.key} style={{ marginBottom: si < 2 ? 14 : 12 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>{s.label}</span>
+                <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{s.label}</span>
                 <span style={{ fontSize: 13, fontWeight: 600, color: s.textColor }}>{s.labels[val - 1]}</span>
               </div>
               <div

@@ -673,36 +673,21 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
       </div>{/* end tab-content-panel */}
 
-      {/* Body Weight Quick Add */}
+      {/* Body Weight Quick Add — 그리드 + 아이콘 클릭 시 */}
       {showBodyAdd && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setShowBodyAdd(false)}>
-          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)' }} />
-          <div onClick={e => e.stopPropagation()} style={{
-            position: 'relative', background: '#fff', borderRadius: 20, padding: 24, width: 280,
-          }}>
-            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, color: 'var(--text-primary)' }}>몸무게 기록</div>
-            <input
-              type="number" step="0.1" placeholder="kg" value={bodyWeight}
-              onChange={e => setBodyWeight(e.target.value)}
-              style={{
-                width: '100%', padding: '12px 14px', borderRadius: 12, border: '1.5px solid var(--border-subtle)',
-                fontSize: 18, fontWeight: 600, textAlign: 'center', outline: 'none',
-              }}
-              autoFocus
-            />
-            <button onClick={() => {
-              const w = parseFloat(bodyWeight);
-              if (w && w >= 20 && w <= 300) {
-                saveBodyRecord(w);
-                setShowBodyAdd(false);
-                setBodyWeight('');
-              }
-            }} style={{
-              width: '100%', marginTop: 12, padding: '12px 0', borderRadius: 12, border: 'none',
-              background: 'var(--accent-primary)', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-            }}>저장</button>
-          </div>
-        </div>
+        <WeightInputModal
+          value={bodyWeight}
+          onChange={setBodyWeight}
+          onConfirm={() => {
+            const w = parseFloat(bodyWeight);
+            if (w && w >= 20 && w <= 300) {
+              saveBodyRecord(w);
+              setShowBodyAdd(false);
+              setBodyWeight('');
+            }
+          }}
+          onClose={() => setShowBodyAdd(false)}
+        />
       )}
 
       {/* Add Food Modal */}
@@ -1650,63 +1635,119 @@ function BodyInsightsSection() {
   const bmiDash = scoreCirc * (bmiPct / 100);
   const bmiLabel = bmiNum < 18.5 ? '저체중' : bmiNum < 23 ? '정상' : bmiNum < 25 ? '과체중' : '비만';
 
-  // AI insight
+  // ===== Body Insights 분석 =====
+  const today = new Date();
+  const daysAgo = (n) => {
+    const d = new Date(today); d.setDate(d.getDate() - n);
+    return d.toISOString().slice(0, 10);
+  };
+  const recordsByDate = Object.fromEntries(records.map(r => [r.date, r.weight]));
+  const allDates = records.map(r => r.date).sort();
+  const firstDate = allDates[0];
+  const daysTracking = firstDate ? Math.max(1, Math.round((today - new Date(firstDate)) / 86400000) + 1) : 0;
+
+  // 최근 7일/14일 평균
+  const recentN = (n) => {
+    const cutoff = daysAgo(n);
+    return records.filter(r => r.date >= cutoff).map(r => r.weight);
+  };
+  const last7 = recentN(6);
+  const last14 = recentN(13);
+  const avg7 = last7.length > 0 ? (last7.reduce((a, b) => a + b, 0) / last7.length) : null;
+  const avg14 = last14.length > 0 ? (last14.reduce((a, b) => a + b, 0) / last14.length) : null;
+
+  // 7일 변화 (최근7일 평균 - 그 이전7일 평균)
+  const prev7 = records.filter(r => r.date >= daysAgo(13) && r.date < daysAgo(6)).map(r => r.weight);
+  const prev7Avg = prev7.length > 0 ? (prev7.reduce((a, b) => a + b, 0) / prev7.length) : null;
+  const weeklyChange = (avg7 != null && prev7Avg != null) ? (avg7 - prev7Avg) : null;
+
+  // 변동성 (표준편차) - 최근 14일
+  const volatility = (() => {
+    if (last14.length < 2) return null;
+    const mean = last14.reduce((a, b) => a + b, 0) / last14.length;
+    const variance = last14.reduce((s, v) => s + (v - mean) ** 2, 0) / last14.length;
+    return Math.sqrt(variance);
+  })();
+
+  // 최저/최고
+  const minWeight = records.length > 0 ? Math.min(...records.map(r => r.weight)) : null;
+  const maxWeight = records.length > 0 ? Math.max(...records.map(r => r.weight)) : null;
+
+  // 목표 진척도
+  let goalProgress = null;
+  let goalRemaining = null;
+  let goalETA = null;
+  if (goal && latest && start) {
+    const totalGap = start.weight - goal;
+    const currentGap = latest.weight - goal;
+    if (Math.abs(totalGap) > 0.01) {
+      goalProgress = Math.max(0, Math.min(100, ((totalGap - currentGap) / totalGap) * 100));
+    }
+    goalRemaining = (latest.weight - goal).toFixed(1);
+    // 주간 변화량으로 ETA 계산 (감량 방향이 일치할 때만)
+    if (weeklyChange != null && Math.abs(weeklyChange) > 0.1) {
+      const dirMatch = (totalGap > 0 && weeklyChange < 0) || (totalGap < 0 && weeklyChange > 0);
+      if (dirMatch) {
+        const weeksToGoal = Math.abs(currentGap / weeklyChange);
+        goalETA = Math.round(weeksToGoal);
+      }
+    }
+  }
+
+  // 스마트 인사이트 메시지
   let bodyInsight = '';
-  if (goal && latest) {
-    const diff = (latest.weight - goal).toFixed(1);
-    bodyInsight = diff > 0 ? `목표까지 ${diff}kg 남았어요. 꾸준히 관리하세요!` : `목표 체중을 달성했어요! 유지가 중요해요.`;
-  } else if (records.length >= 2) {
-    bodyInsight = `시작 대비 ${weightDiff > 0 ? '+' : ''}${weightDiff}kg 변화. ${Math.abs(weightDiff) < 0.5 ? '안정적으로 유지 중이에요.' : weightDiff < 0 ? '감량이 진행되고 있어요!' : '식단 조절이 필요할 수 있어요.'}`;
+  if (records.length === 1) {
+    bodyInsight = '첫 기록을 시작했어요! 일주일 이상 꾸준히 기록하면 변화 패턴이 보여요.';
+  } else if (weeklyChange != null) {
+    const wcAbs = Math.abs(weeklyChange).toFixed(1);
+    if (volatility != null && volatility > 1.5) {
+      bodyInsight = `최근 변동이 ±${volatility.toFixed(1)}kg로 큰 편이에요. 같은 시간(아침 공복)에 측정하면 더 정확해요.`;
+    } else if (Math.abs(weeklyChange) < 0.2) {
+      bodyInsight = `지난주 대비 거의 변화가 없어요(${weeklyChange > 0 ? '+' : ''}${wcAbs}kg). 안정적으로 유지 중입니다.`;
+    } else if (weeklyChange < 0) {
+      bodyInsight = `지난주 대비 ${wcAbs}kg 감소했어요. 건강한 감량 속도(주 0.5~1kg)인지 점검해보세요.`;
+    } else {
+      bodyInsight = `지난주 대비 ${wcAbs}kg 증가했어요. 식단·수분·수면을 함께 살펴볼 시점이에요.`;
+    }
+  } else if (goal) {
+    bodyInsight = `목표 ${goal}kg 설정됨. 일주일 더 기록하면 도달 예상 시기를 알려드릴게요.`;
   } else {
-    bodyInsight = '꾸준히 기록하면 체중 변화 트렌드를 분석해드려요.';
+    bodyInsight = '꾸준히 기록하면 주간 변화 트렌드를 분석해드려요.';
   }
 
   return (
     <div style={{ animation: 'breatheIn 0.5s ease both' }}>
-      {/* Weight + BMI Card */}
+      {/* Weight + BMI + Stats Card (merged) */}
       <div style={{
         margin: '0 16px 10px', borderRadius: 16, padding: 13,
         background: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.3)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
-        display: 'flex', alignItems: 'center', gap: 14,
       }}>
-        <div style={{ position: 'relative', width: 62, height: 62, flexShrink: 0 }}>
-          <svg viewBox="0 0 62 62" style={{ width: 62, height: 62 }}>
-            <circle cx="31" cy="31" r={scoreR} fill="none" stroke="#F0EDE8" strokeWidth="6" />
-            <circle cx="31" cy="31" r={scoreR} fill="none" stroke="var(--accent-primary)" strokeWidth="6"
-              strokeLinecap="round" strokeDasharray={`${bmiDash} ${scoreCirc - bmiDash}`} transform="rotate(-90 31 31)" />
-          </svg>
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--accent-primary)', fontFamily: 'var(--font-display)', lineHeight: 1 }}>{bmi}</span>
-            <span style={{ fontSize: 8, color: '#888' }}>BMI</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>
+              {latest.weight}kg · {bmiLabel}
+            </div>
+            <div style={{ fontSize: 10, color: '#888', lineHeight: 1.5, marginTop: 3 }}>
+              {goal ? `목표 ${goal}kg · 시작 대비 ${weightDiff > 0 ? '+' : ''}${weightDiff}kg` : `시작 대비 ${weightDiff > 0 ? '+' : ''}${weightDiff}kg`}
+            </div>
           </div>
         </div>
-        <div>
-          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>
-            {latest.weight}kg · {bmiLabel}
-          </div>
-          <div style={{ fontSize: 10, color: '#888', lineHeight: 1.5, marginTop: 3 }}>
-            {goal ? `목표 ${goal}kg · 시작 대비 ${weightDiff > 0 ? '+' : ''}${weightDiff}kg` : `시작 대비 ${weightDiff > 0 ? '+' : ''}${weightDiff}kg`}
-          </div>
-        </div>
-      </div>
 
-      {/* Stats Row */}
-      <div style={{
-        margin: '0 16px 10px', borderRadius: 16, padding: '12px 8px',
-        background: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.3)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
-        display: 'flex', justifyContent: 'space-between',
-      }}>
-        {[
-          { label: '현재', value: `${latest.weight}`, unit: 'kg' },
-          { label: '시작', value: `${start.weight}`, unit: 'kg' },
-          { label: '변화', value: `${weightDiff > 0 ? '+' : ''}${weightDiff}`, unit: 'kg' },
-          { label: '기록', value: `${records.length}`, unit: '회' },
-        ].map(s => (
-          <div key={s.label} style={{ flex: 1, textAlign: 'center' }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{s.value}<span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>{s.unit}</span></div>
-            <div style={{ fontSize: 9, color: '#888' }}>{s.label}</div>
-          </div>
-        ))}
+        <div style={{ height: 1, background: 'rgba(0,0,0,0.06)', margin: '12px 0 10px' }} />
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 4px' }}>
+          {[
+            { label: '현재', value: `${latest.weight}`, unit: 'kg' },
+            { label: '시작', value: `${start.weight}`, unit: 'kg' },
+            { label: '변화', value: `${weightDiff > 0 ? '+' : ''}${weightDiff}`, unit: 'kg' },
+            { label: '기록', value: `${records.length}`, unit: '회' },
+          ].map(s => (
+            <div key={s.label} style={{ flex: 1, textAlign: 'center' }}>
+              <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{s.value}<span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>{s.unit}</span></div>
+              <div style={{ fontSize: 9, color: '#888' }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Recent Records */}
@@ -1729,23 +1770,81 @@ function BodyInsightsSection() {
         })}
       </div>
 
-      {/* Add button */}
-      <div style={{ margin: '0 16px 10px' }}>
-        <button onClick={() => setShowAddWeight(true)} style={{
-          width: '100%', padding: '13px 0', borderRadius: 14, border: 'none',
-          background: 'rgba(129,228,189,0.15)', color: 'var(--accent-primary)',
-          fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-        }}>+ 오늘 체중 기록</button>
-      </div>
+      {/* ===== Body Insights Card ===== */}
+      <div style={{ margin: '0 16px 14px', padding: '16px 18px', borderRadius: 16, background: 'rgba(255,255,255,0.3)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)' }}>
 
-      {/* AI Insight */}
-      <div style={{ margin: '0 16px 14px', padding: '20px', borderRadius: 16, background: 'rgba(255,255,255,0.3)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        {/* 헤더 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
           <CoachStarIcon />
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, color: '#8B95A1' }}>AI 인사이트</div>
-            <div style={{ fontSize: 14, color: '#4E5968', marginTop: 4, lineHeight: 1.5 }}>{bodyInsight}</div>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>몸무게 인사이트</span>
+        </div>
+
+        {/* 메트릭 그리드 (2x2) */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
+          {/* 7일 변화 */}
+          <div style={{ padding: '10px 12px', borderRadius: 12, background: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.3)' }}>
+            <div style={{ fontSize: 10, color: '#888', marginBottom: 4 }}>지난주 대비</div>
+            <div style={{ fontSize: 16, fontWeight: 500, color: weeklyChange == null ? '#bbb' : weeklyChange < -0.1 ? '#0F6E56' : weeklyChange > 0.1 ? '#C2185B' : 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
+              {weeklyChange == null ? '—' : `${weeklyChange > 0 ? '+' : ''}${weeklyChange.toFixed(1)}`}
+              <span style={{ fontSize: 10, fontWeight: 400, color: '#999', marginLeft: 2 }}>kg</span>
+            </div>
           </div>
+
+          {/* 7일 평균 */}
+          <div style={{ padding: '10px 12px', borderRadius: 12, background: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.3)' }}>
+            <div style={{ fontSize: 10, color: '#888', marginBottom: 4 }}>최근 7일 평균</div>
+            <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
+              {avg7 == null ? '—' : avg7.toFixed(1)}
+              <span style={{ fontSize: 10, fontWeight: 400, color: '#999', marginLeft: 2 }}>kg</span>
+            </div>
+          </div>
+
+          {/* 변동성 */}
+          <div style={{ padding: '10px 12px', borderRadius: 12, background: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.3)' }}>
+            <div style={{ fontSize: 10, color: '#888', marginBottom: 4 }}>변동성 (14일)</div>
+            <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
+              {volatility == null ? '—' : `±${volatility.toFixed(1)}`}
+              <span style={{ fontSize: 10, fontWeight: 400, color: '#999', marginLeft: 2 }}>kg</span>
+            </div>
+          </div>
+
+          {/* 최저/최고 */}
+          <div style={{ padding: '10px 12px', borderRadius: 12, background: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.3)' }}>
+            <div style={{ fontSize: 10, color: '#888', marginBottom: 4 }}>최저 · 최고</div>
+            <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
+              {minWeight == null ? '—' : `${minWeight.toFixed(1)} · ${maxWeight.toFixed(1)}`}
+              <span style={{ fontSize: 10, fontWeight: 400, color: '#999', marginLeft: 2 }}>kg</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 목표 진척도 (목표 설정 시) */}
+        {goal && goalProgress != null && (
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+              <span style={{ fontSize: 11, color: '#888' }}>목표 {goal}kg 진척도</span>
+              <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent-primary)' }}>
+                {goalProgress.toFixed(0)}%{goalETA != null && goalETA > 0 && ` · 약 ${goalETA}주 후`}
+              </span>
+            </div>
+            <div style={{ width: '100%', height: 6, background: 'rgba(0,0,0,0.06)', borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{ width: `${goalProgress}%`, height: '100%', background: 'var(--accent-primary)', borderRadius: 3, transition: 'width 0.3s ease' }} />
+            </div>
+            <div style={{ fontSize: 10, color: '#999', marginTop: 4 }}>
+              남은 거리 {Math.abs(goalRemaining)}kg · 시작 {start.weight}kg → 현재 {latest.weight}kg → 목표 {goal}kg
+            </div>
+          </div>
+        )}
+
+        {/* 스마트 인사이트 메시지 */}
+        <div style={{ padding: '10px 12px', borderRadius: 12, background: 'rgba(129,228,189,0.12)', border: '1px solid rgba(129,228,189,0.2)' }}>
+          <div style={{ fontSize: 12, color: '#4E5968', lineHeight: 1.5 }}>{bodyInsight}</div>
+        </div>
+
+        {/* 푸터 메타 */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, fontSize: 10, color: '#aaa' }}>
+          <span>기록 시작 {daysTracking}일째</span>
+          <span>총 {records.length}회 측정</span>
         </div>
       </div>
 
