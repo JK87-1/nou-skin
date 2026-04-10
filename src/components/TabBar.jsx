@@ -4,8 +4,8 @@ const TAB_BOUNCE_STYLE = document.createElement('style');
 TAB_BOUNCE_STYLE.textContent = `
   @keyframes tabBounce {
     0% { transform: scale(1); }
-    40% { transform: scale(0.95); }
-    70% { transform: scale(1.02); }
+    40% { transform: scale(0.90); }
+    70% { transform: scale(1.05); }
     100% { transform: scale(1); }
   }
 `;
@@ -21,36 +21,36 @@ export default function TabBar({ activeTab, onTabChange }) {
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
       const now = ctx.currentTime;
-      const dur = 0.18;
+      const dur = 0.22;
 
-      // 메인 톤: 고음 사인파 + 살짝 피치 드롭으로 청량한 핑
-      const osc = ctx.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(3200, now);
-      osc.frequency.exponentialRampToValueAtTime(2400, now + dur);
+      // 글래스 사운드: 고주파 사인파 + 살짝 디튠된 배음으로 유리잔 톡 느낌
+      const osc1 = ctx.createOscillator();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(2800, now);
+      osc1.frequency.exponentialRampToValueAtTime(2700, now + dur);
 
-      // 배음: 한 옥타브 위 살짝 섞어서 반짝임 추가
       const osc2 = ctx.createOscillator();
       osc2.type = 'sine';
-      osc2.frequency.setValueAtTime(6400, now);
-      osc2.frequency.exponentialRampToValueAtTime(4800, now + dur);
+      osc2.frequency.setValueAtTime(2810, now); // 약간 디튠으로 코러스/살짝 떨림
+      osc2.frequency.exponentialRampToValueAtTime(2705, now + dur);
 
-      const gain = ctx.createGain();
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(0.06, now + 0.005);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+      // 부드러운 어택 + 긴 디케이 (잔향)
+      const gain1 = ctx.createGain();
+      gain1.gain.setValueAtTime(0.0001, now);
+      gain1.gain.exponentialRampToValueAtTime(0.04, now + 0.015);
+      gain1.gain.exponentialRampToValueAtTime(0.0001, now + dur);
 
       const gain2 = ctx.createGain();
       gain2.gain.setValueAtTime(0.0001, now);
-      gain2.gain.exponentialRampToValueAtTime(0.02, now + 0.004);
-      gain2.gain.exponentialRampToValueAtTime(0.0001, now + dur * 0.7);
+      gain2.gain.exponentialRampToValueAtTime(0.025, now + 0.018);
+      gain2.gain.exponentialRampToValueAtTime(0.0001, now + dur);
 
-      osc.connect(gain).connect(ctx.destination);
+      osc1.connect(gain1).connect(ctx.destination);
       osc2.connect(gain2).connect(ctx.destination);
 
-      osc.start(now); osc.stop(now + dur);
+      osc1.start(now); osc1.stop(now + dur);
       osc2.start(now); osc2.stop(now + dur);
-      setTimeout(() => ctx.close(), 250);
+      setTimeout(() => ctx.close(), 300);
     } catch {}
   };
 
