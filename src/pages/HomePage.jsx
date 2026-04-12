@@ -340,7 +340,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         border: '1px solid rgba(255,255,255,0.3)',
         boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
       }}>
-        <div style={{ fontSize: 15, fontWeight: 600, color: 'rgba(0,0,0,0.8)', marginBottom: 12 }}>지금 느낌은 어때요?</div>
+        <div style={{ fontSize: 15, fontWeight: 600, color: 'rgba(0,0,0,0.8)', marginBottom: 30 }}>지금 느낌은 어때요?</div>
 
         {[
           { key: 'mood', label: '기분', color: '#F5C2CB', textColor: '#D4707E', labels: MOOD_LABELS, ends: ['우울', '평온', '행복'] },
@@ -365,7 +365,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             }
           };
           return (
-            <div key={s.key} style={{ marginBottom: si < 2 ? 14 : 12 }}>
+            <div key={s.key} style={{ marginBottom: si < 2 ? 21 : 18 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                 <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{s.label}</span>
                 <span style={{ fontSize: 13, fontWeight: 600, color: s.textColor }}>{s.labels[val - 1]}</span>
@@ -386,7 +386,18 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                   borderRadius: trackH / 2,
                   background: `linear-gradient(90deg, rgba(255,255,255,0.7), ${s.color})`,
                   boxShadow: `0 1px 4px ${s.color}44, inset 0 1px 1px rgba(255,255,255,0.6)`,
-                  transition: 'width 0.15s ease',
+                  transition: 'none',
+                }} />
+                {/* 동그라미 핸들 */}
+                <div style={{
+                  position: 'absolute', top: '50%', left: `${Math.max(pct, 2)}%`,
+                  transform: 'translate(-50%, -50%)',
+                  width: 20, height: 20, borderRadius: '50%',
+                  background: `color-mix(in srgb, ${s.color} ${Math.round(pct)}%, #fff)`,
+                  border: '2px solid rgba(255,255,255,0.9)',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
+                  transition: 'none',
+                  pointerEvents: 'none',
                 }} />
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
