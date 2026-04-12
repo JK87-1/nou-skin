@@ -179,6 +179,13 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
     }
     return { energy: 7, mood: 7, water: 7 };
   });
+  // Continuous slider positions (0~100%) for smooth visual
+  const [sliderPcts, setSliderPcts] = useState(() => {
+    const init = (!resetNeeded && latestCheck)
+      ? { energy: latestCheck.energy || 7, mood: latestCheck.mood || 7, water: latestCheck.water || 7 }
+      : { energy: 7, mood: 7, water: 7 };
+    return { energy: ((init.energy - 1) / 9) * 100, mood: ((init.mood - 1) / 9) * 100, water: ((init.water - 1) / 9) * 100 };
+  });
   const [justUpdated, setJustUpdated] = useState(false);
   const [todayChecks, setTodayChecks] = useState(getTodayChecks);
   const [minutesAgo, setMinutesAgo] = useState(getMinutesSinceLastCheck);
@@ -335,7 +342,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       {/* ===== 2. 컨디션 체크 카드 ===== */}
       <div style={{
         margin: '0 18px', marginTop: 24, position: 'relative', zIndex: 1,
-        background: 'rgba(255,255,255,0.2)', borderRadius: 16, padding: '30px 13px',
+        background: 'rgba(255,255,255,0.2)', borderRadius: 16, padding: '30px 22px',
         backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
         border: '1px solid rgba(255,255,255,0.3)',
         boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
@@ -343,26 +350,25 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         <div style={{ fontSize: 15, fontWeight: 600, color: 'rgba(0,0,0,0.8)', marginBottom: 30 }}>지금 느낌은 어때요?</div>
 
         {[
-          { key: 'mood', label: '기분', color: '#F5C2CB', textColor: '#D4707E', labels: MOOD_LABELS, ends: ['우울', '평온', '행복'] },
-          { key: 'energy', label: '에너지', color: '#F5E6A3', textColor: '#E8A135', labels: ENERGY_LABELS, ends: ['매우 낮음', '보통', '활기참'] },
-          { key: 'water', label: '수분', color: '#C2EAFF', textColor: '#5BA3D4', labels: WATER_LABELS, ends: ['갈증', '보통', '충분'] },
+          { key: 'mood', label: '기분', color: '#F5C2CB', rgb: [245,194,203], textColor: '#D4707E', labels: MOOD_LABELS, ends: ['우울', '평온', '행복'] },
+          { key: 'energy', label: '에너지', color: '#F5E6A3', rgb: [245,230,163], textColor: '#E8A135', labels: ENERGY_LABELS, ends: ['매우 낮음', '보통', '활기참'] },
+          { key: 'water', label: '수분', color: '#C2EAFF', rgb: [194,234,255], textColor: '#5BA3D4', labels: WATER_LABELS, ends: ['갈증', '보통', '충분'] },
         ].map((s, si) => {
           const val = selections[s.key];
-          const pct = ((val - 1) / 9) * 100;
+          const pct = sliderPcts[s.key];
           const trackH = 9;
+          let cachedRect = null;
           const handleTouch = (e) => {
-            const bar = e.currentTarget;
-            const rect = bar.getBoundingClientRect();
-            const update = (clientX) => {
-              const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
-              const v = Math.round((x / rect.width) * 9) + 1;
-              handleSelect(s.key, Math.max(1, Math.min(10, v)));
-            };
-            if (e.type === 'touchstart' || e.type === 'touchmove') {
-              update(e.touches[0].clientX);
-            } else {
-              update(e.clientX);
+            if (e.type === 'touchstart' || e.type === 'click') {
+              cachedRect = e.currentTarget.getBoundingClientRect();
             }
+            const rect = cachedRect || e.currentTarget.getBoundingClientRect();
+            const clientX = (e.type === 'touchstart' || e.type === 'touchmove') ? e.touches[0].clientX : e.clientX;
+            const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
+            const rawPct = (x / rect.width) * 100;
+            setSliderPcts(prev => ({ ...prev, [s.key]: rawPct }));
+            const v = Math.round((x / rect.width) * 9) + 1;
+            handleSelect(s.key, Math.max(1, Math.min(10, v)));
           };
           return (
             <div key={s.key} style={{ marginBottom: si < 2 ? 21 : 18 }}>
@@ -393,8 +399,8 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                   position: 'absolute', top: '50%', left: `${Math.max(pct, 2)}%`,
                   transform: 'translate(-50%, -50%)',
                   width: 20, height: 20, borderRadius: '50%',
-                  background: `color-mix(in srgb, ${s.color} ${Math.round(pct)}%, #fff)`,
-                  border: '2px solid rgba(255,255,255,0.9)',
+                  background: `rgb(${Math.round(255+(s.rgb[0]-255)*pct/100)},${Math.round(255+(s.rgb[1]-255)*pct/100)},${Math.round(255+(s.rgb[2]-255)*pct/100)})`,
+                  border: '1px solid rgba(255,255,255,0.9)',
                   boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
                   transition: 'none',
                   pointerEvents: 'none',
@@ -409,7 +415,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
         {/* 업데이트 버튼 */}
         <button onClick={handleUpdate} style={{
-          width: '100%', padding: '10px 0',
+          marginTop: 30, width: '100%', padding: '10px 0',
           background: 'linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.7))',
           backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
           color: '#0D3028', border: '1px solid rgba(255,255,255,0.5)', borderRadius: 10,
