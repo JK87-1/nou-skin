@@ -14,16 +14,16 @@ import {
 function getGreeting() {
   const h = new Date().getHours();
   const greets = [
-    { from:5,  to:7,  main:'가장 조용한 시간\n나를 위한 시작이에요',  sub:'오늘 하루의 루틴을 열어봐요' },
-    { from:7,  to:9,  main:'좋은 아침이에요',                         sub:'오늘 컨디션을 먼저 체크해봐요' },
-    { from:9,  to:11, main:'오전 에너지가\n중요한 시간이에요',         sub:'수분 보충 잊지 않으셨죠?' },
-    { from:11, to:13, main:'점심 뭐 드실\n예정이에요?',                sub:'식단 기록하면 오후 컨디션이 달라져요' },
-    { from:13, to:15, main:'식사 후 몸 상태는\n어때요?',               sub:'식단과 컨디션을 연결해봐요' },
-    { from:15, to:17, main:'오후 에너지가\n살짝 떨어질 수 있어요',     sub:'지금 컨디션을 체크해봐요' },
-    { from:17, to:19, main:'하루 중 가장\n변화가 많은 시간이에요',     sub:'저녁 식사 전 루틴 확인해봐요' },
-    { from:19, to:21, main:'저녁 시간이에요',                         sub:'오늘 식단과 컨디션은 어땠나요?' },
-    { from:21, to:23, main:'오늘 하루\n수고했어요',                    sub:'피부 케어 루틴 잊지 마세요' },
-    { from:23, to:29, main:'충분한 수면이\n내일의 피부를 만들어요',    sub:'오늘 기록을 마무리해봐요' },
+    { from:5,  to:7,  main:'이른 아침,\n몸이 깨어나는 시간이에요',           sub:'오늘 에너지를 어떻게 시작할지 정해봐요' },
+    { from:7,  to:9,  main:'좋은 아침이에요\n오늘 컨디션은 어때요?',          sub:'하루의 첫 체크가 하루를 바꿔줘요' },
+    { from:9,  to:11, main:'오전 집중력이\n가장 높은 시간이에요',             sub:'지금 에너지 상태를 기록해봐요' },
+    { from:11, to:13, main:'점심 전,\n에너지가 떨어질 수 있어요',             sub:'식사 전 컨디션을 체크해봐요' },
+    { from:13, to:15, main:'식사 후 몸이\n어떻게 반응하고 있나요?',           sub:'식단이 에너지에 미치는 영향을 확인해봐요' },
+    { from:15, to:17, main:'오후 슬럼프\n느껴지고 있나요?',                   sub:'지금 컨디션을 기록하면 패턴이 보여요' },
+    { from:17, to:19, main:'하루 에너지의\n마무리 시간이에요',                sub:'오늘 컨디션 변화를 돌아봐요' },
+    { from:19, to:21, main:'저녁 시간,\n몸의 긴장이 풀리나요?',              sub:'식사 후 기분과 에너지를 체크해봐요' },
+    { from:21, to:23, main:'오늘 하루\n몸이 수고했어요',                      sub:'마지막 컨디션을 기록하고 마무리해봐요' },
+    { from:23, to:29, main:'좋은 수면이\n내일의 에너지를 만들어요',           sub:'오늘 컨디션 기록을 완성해봐요' },
   ];
   return greets.find(g => h >= g.from && h < g.to) || greets[greets.length - 1];
 }
@@ -319,7 +319,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               <div style={{ fontSize: 26, fontWeight: 500, color: '#0D3028', lineHeight: 1.35, whiteSpace: 'pre-line', marginBottom: 12 }}>
                 {greeting.main}
               </div>
-              <div style={{ fontSize: 19, color: 'rgba(0,0,0,0.4)' }}>
+              <div style={{ fontSize: 16, fontWeight: 500, color: 'rgba(0,0,0,0.3)' }}>
                 {greeting.sub}
               </div>
             </div>
@@ -335,12 +335,12 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       {/* ===== 2. 컨디션 체크 카드 ===== */}
       <div style={{
         margin: '0 18px', marginTop: 24, position: 'relative', zIndex: 1,
-        background: 'rgba(255,255,255,0.2)', borderRadius: 16, padding: '12px 13px',
+        background: 'rgba(255,255,255,0.2)', borderRadius: 16, padding: '30px 13px',
         backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
         border: '1px solid rgba(255,255,255,0.3)',
         boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
       }}>
-        <div style={{ fontSize: 15, fontWeight: 600, color: 'rgba(0,0,0,0.8)', marginBottom: 12 }}>지금 느낌은?</div>
+        <div style={{ fontSize: 15, fontWeight: 600, color: 'rgba(0,0,0,0.8)', marginBottom: 12 }}>지금 느낌은 어때요?</div>
 
         {[
           { key: 'mood', label: '기분', color: '#F5C2CB', textColor: '#D4707E', labels: MOOD_LABELS, ends: ['우울', '평온', '행복'] },
@@ -408,8 +408,8 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
       <div style={{ padding: '0 18px' }}>
 
-        {/* ===== 인사이트 + 오늘 흐름 통합 카드 ===== */}
-        <div style={{
+        {/* ===== 인사이트 + 오늘 흐름 통합 카드 (업데이트 후 표시) ===== */}
+        {justUpdated && <div style={{
           marginTop: 12,
           background: 'rgba(255,255,255,0.35)',
           borderRadius: 16, padding: '14px 16px',
@@ -543,7 +543,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               </>
             );
           })()}
-        </div>
+        </div>}
       </div>
 
       {/* Skin Weather Page */}
