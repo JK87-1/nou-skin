@@ -350,12 +350,12 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         <div style={{ fontSize: 18, fontWeight: 600, color: 'rgba(0,0,0,0.8)', marginBottom: 30 }}>지금 느낌은 어때요?</div>
 
         {[
-          { key: 'mood', label: '기분', color: '#F5C2CB', rgb: [245,194,203], textColor: '#D4707E', labels: MOOD_LABELS, ends: ['우울', '평온', '행복'],
-            icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 4.5C10 2 6.5 1.5 4.5 4c-2 2.5-1.5 6 1 8.5L12 20l6.5-7.5c2.5-2.5 3-6 1-8.5C17.5 1.5 14 2 12 4.5z" fill="#D4707E" opacity="0.7"/></svg> },
-          { key: 'energy', label: '에너지', color: '#F5E6A3', rgb: [245,230,163], textColor: '#E8A135', labels: ENERGY_LABELS, ends: ['매우 낮음', '보통', '활기참'],
-            icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M14 1L3 14h8l-3 9 12-13h-8l2-9z" fill="#E8A135" opacity="0.7"/></svg> },
-          { key: 'water', label: '수분', color: '#C2EAFF', rgb: [194,234,255], textColor: '#5BA3D4', labels: WATER_LABELS, ends: ['갈증', '보통', '충분'],
-            icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 1c-4 5.5-9 10-9 14.5a9 9 0 0018 0c0-4.5-5-9-9-14.5z" fill="#5BA3D4" opacity="0.7"/></svg> },
+          { key: 'mood', label: '기분', color: '#F5C2CB', rgb: [245,194,203], textColor: '#E8A0AE', labels: MOOD_LABELS, ends: ['우울', '행복'],
+            icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(212,112,126,0.3))' }}><defs><linearGradient id="heartG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F0B8C0"/><stop offset="100%" stopColor="#D4707E"/></linearGradient></defs><path d="M12 4.5C10 2 6.5 1.5 4.5 4c-2 2.5-1.5 6 1 8.5L12 20l6.5-7.5c2.5-2.5 3-6 1-8.5C17.5 1.5 14 2 12 4.5z" fill="url(#heartG)" opacity="0.6"/></svg> },
+          { key: 'energy', label: '에너지', color: '#F5E6A3', rgb: [245,230,163], textColor: '#E8B860', labels: ENERGY_LABELS, ends: ['매우 낮음', '활기참'],
+            icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(232,161,53,0.3))' }}><defs><linearGradient id="boltG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F5DFA0"/><stop offset="100%" stopColor="#E8A135"/></linearGradient></defs><path d="M14 1L3 14h8l-3 9 12-13h-8l2-9z" fill="url(#boltG)" opacity="0.6"/></svg> },
+          { key: 'water', label: '수분', color: '#C2EAFF', rgb: [194,234,255], textColor: '#7DBDE0', labels: WATER_LABELS, ends: ['갈증', '충분'],
+            icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(91,163,212,0.3))' }}><defs><linearGradient id="dropG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#B8E0F5"/><stop offset="100%" stopColor="#5BA3D4"/></linearGradient></defs><path d="M12 2.5c0 0-7.5 8-7.5 13a7.5 7.5 0 0015 0c0-5-7.5-13-7.5-13z" fill="url(#dropG)" opacity="0.6"/></svg> },
         ].map((s, si) => {
           const val = selections[s.key];
           const pct = sliderPcts[s.key];
