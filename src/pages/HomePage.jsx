@@ -312,14 +312,14 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           const dateStr = `${now.getFullYear()}. ${String(now.getMonth()+1).padStart(2,'0')}. ${String(now.getDate()).padStart(2,'0')}  ${days[now.getDay()]}요일`;
           const greeting = getGreeting();
           return (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <div style={{ fontSize: 14, fontWeight: 500, color: '#ffffff' }}>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <div style={{ fontSize: 14, fontWeight: 500, color: '#ffffff', marginBottom: 12 }}>
                 {dateStr}
               </div>
-              <div style={{ fontSize: 26, fontWeight: 500, color: '#0D3028', lineHeight: 1.35, whiteSpace: 'pre-line' }}>
+              <div style={{ fontSize: 26, fontWeight: 500, color: '#0D3028', lineHeight: 1.35, whiteSpace: 'pre-line', marginBottom: 12 }}>
                 {greeting.main}
               </div>
-              <div style={{ fontSize: 13, color: '#5A9A8A' }}>
+              <div style={{ fontSize: 19, color: 'rgba(0,0,0,0.4)' }}>
                 {greeting.sub}
               </div>
             </div>
@@ -334,7 +334,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
       {/* ===== 2. 컨디션 체크 카드 ===== */}
       <div style={{
-        margin: '0 18px', marginTop: -10, position: 'relative', zIndex: 1,
+        margin: '0 18px', marginTop: 24, position: 'relative', zIndex: 1,
         background: 'rgba(255,255,255,0.2)', borderRadius: 16, padding: '12px 13px',
         backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
         border: '1px solid rgba(255,255,255,0.3)',
@@ -408,7 +408,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
       <div style={{ padding: '0 18px' }}>
 
-        {/* ===== 4. 인사이트 카드 ===== */}
+        {/* ===== 인사이트 + 오늘 흐름 통합 카드 ===== */}
         <div style={{
           marginTop: 12,
           background: 'rgba(255,255,255,0.35)',
@@ -417,6 +417,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           border: '1px solid rgba(255,255,255,0.35)',
           boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
         }}>
+          {/* 인사이트 */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
             <span style={{ fontSize: 15, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>인사이트</span>
             <span style={{ fontSize: 11, color: '#4DB8A0', fontWeight: 500 }}>
@@ -446,21 +447,15 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               </div>
             </>
           )}
-        </div>
 
-        {/* ===== 6. 에너지·기분 흐름 그래프 ===== */}
-        <div style={{
-          marginTop: 12, background: 'rgba(255,255,255,0.5)',
-          borderRadius: 16, padding: '14px 16px',
-          backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-          border: '1px solid rgba(255,255,255,0.4)',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
-        }}>
+          {/* 구분선 */}
+          <div style={{ height: 1, background: 'rgba(0,0,0,0.06)', margin: '14px 0' }} />
+
+          {/* 오늘 흐름 */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
             <span style={{ fontSize: 15, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>오늘 흐름</span>
             <span onClick={() => onTabChange('body')} style={{ fontSize: 12, color: 'var(--text-muted)', cursor: 'pointer' }}>분석 탭 →</span>
           </div>
-          {/* 범례 */}
           <div style={{ display: 'flex', gap: 14, marginBottom: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               <div style={{ width: 12, height: 2, borderRadius: 1, background: '#D4707E' }} />
@@ -526,15 +521,10 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                       <stop offset="100%" stopColor="#D4707E" stopOpacity="0" />
                     </linearGradient>
                   </defs>
-                  {/* 기분 영역 채움 */}
                   <path d={makeAreaPath(moodPts)} fill="url(#moodFill)" />
-                  {/* 기분 선 (진한 핑크) */}
                   <path d={makePath(moodPts)} fill="none" stroke="#D4707E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  {/* 에너지 선 (망고) */}
                   <path d={makePath(energyPts)} fill="none" stroke="#E8A135" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="5 3" />
-                  {/* 수분 선 (진한 스카이블루) */}
                   <path d={makePath(waterPts)} fill="none" stroke="#5BA3D4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="2 3" />
-                  {/* 포인트 */}
                   {moodPts.map((p, i) => (
                     <circle key={`m${i}`} cx={p.x} cy={p.y} r="3" fill="#fff" stroke="#D4707E" strokeWidth="1.5" />
                   ))}
