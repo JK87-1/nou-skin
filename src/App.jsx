@@ -85,7 +85,7 @@ export default function App() {
       body.style.backgroundColor = '#000000';
       body.style.color = '#f0f0f5';
     } else {
-      html.style.backgroundColor = '#ffffff';
+      html.style.backgroundColor = '#ace2fc';
       body.style.backgroundColor = 'transparent';
       body.style.color = '#191F28';
     }

@@ -62,7 +62,7 @@ export default function SplashScreen({ exiting, onAnimationEnd, cloverTheme }) {
         animation: exiting
           ? 'splashTextExit 0.15s ease-in forwards'
           : 'splashFade 0.5s ease-out 0.6s both',
-      }}>YOUR INNER GLOW</div>
+      }}>Feel yourself, every day</div>
     </div>
   );
 }
