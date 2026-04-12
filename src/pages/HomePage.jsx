@@ -347,7 +347,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         border: '1px solid rgba(255,255,255,0.3)',
         boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
       }}>
-        <div style={{ fontSize: 15, fontWeight: 600, color: 'rgba(0,0,0,0.8)', marginBottom: 30 }}>지금 느낌은 어때요?</div>
+        <div style={{ fontSize: 17, fontWeight: 600, color: 'rgba(0,0,0,0.8)', marginBottom: 30 }}>지금 느낌은 어때요?</div>
 
         {[
           { key: 'mood', label: '기분', color: '#F5C2CB', rgb: [245,194,203], textColor: '#D4707E', labels: MOOD_LABELS, ends: ['우울', '평온', '행복'] },
@@ -371,10 +371,10 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             handleSelect(s.key, Math.max(1, Math.min(10, v)));
           };
           return (
-            <div key={s.key} style={{ marginBottom: si < 2 ? 21 : 18 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{s.label}</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: s.textColor }}>{s.labels[val - 1]}</span>
+            <div key={s.key} style={{ marginBottom: si < 2 ? 28 : 24 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <span style={{ fontSize: 17, fontWeight: 500, color: 'var(--text-muted)' }}>{s.label}</span>
+                <span style={{ fontSize: 17, fontWeight: 600, color: s.textColor }}>{s.labels[val - 1]}</span>
               </div>
               <div
                 onTouchStart={handleTouch}
@@ -390,8 +390,8 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                   position: 'absolute', top: 0, left: 0, height: '100%',
                   width: `${Math.max(pct, 5)}%`,
                   borderRadius: trackH / 2,
-                  background: `linear-gradient(90deg, rgba(255,255,255,0.7), ${s.color})`,
-                  boxShadow: `0 1px 4px ${s.color}44, inset 0 1px 1px rgba(255,255,255,0.6)`,
+                  background: `linear-gradient(90deg, rgba(255,255,255,0.3), ${s.color}40)`,
+                  boxShadow: 'none',
                   transition: 'none',
                 }} />
                 {/* 동그라미 핸들 */}
@@ -406,7 +406,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                   pointerEvents: 'none',
                 }} />
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
                 {s.ends.map(t => <span key={t} style={{ fontSize: 11, color: '#ccc' }}>{t}</span>)}
               </div>
             </div>
@@ -423,145 +423,121 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         }}>업데이트 →</button>
       </div>
 
-      <div style={{ padding: '0 18px' }}>
-
-        {/* ===== 인사이트 + 오늘 흐름 통합 카드 (업데이트 후 표시) ===== */}
-        {justUpdated && <div style={{
-          marginTop: 12,
-          background: 'rgba(255,255,255,0.35)',
-          borderRadius: 16, padding: '14px 16px',
-          backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-          border: '1px solid rgba(255,255,255,0.35)',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+      {/* ===== 인사이트 + 오늘 흐름 모달 (업데이트 후 표시) ===== */}
+      {justUpdated && (
+        <div onClick={() => setJustUpdated(false)} style={{
+          position: 'fixed', inset: 0, zIndex: 1100,
+          background: 'rgba(0,0,0,0.35)',
+          display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+          animation: 'fadeIn 0.2s ease',
         }}>
-          {/* 인사이트 */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-            <span style={{ fontSize: 15, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>인사이트</span>
-            <span style={{ fontSize: 11, color: '#4DB8A0', fontWeight: 500 }}>
-              {briefingLoading ? '● AI 분석 중...' : bodyBriefing && briefingTime ? `${briefingTime} 기준` : '● 분석 중'}
-            </span>
-          </div>
-          {bodyBriefing ? (
-            <div style={{ fontSize: 13, color: '#0D3028', lineHeight: 1.6 }}>
-              {bodyBriefing}
+          <div onClick={e => e.stopPropagation()} style={{
+            width: '100%', maxWidth: 430,
+            background: '#fff', borderRadius: '22px 22px 0 0',
+            padding: '24px 20px calc(env(safe-area-inset-bottom, 0px) + 24px)',
+            animation: 'slideUp 0.3s ease',
+          }}>
+            <style>{`
+              @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+              @keyframes slideUp { from { transform: translateY(100%) } to { transform: translateY(0) } }
+            `}</style>
+
+            {/* 핸들 바 */}
+            <div style={{ width: 36, height: 4, borderRadius: 2, background: '#ddd', margin: '0 auto 20px' }} />
+
+            {/* 인사이트 */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ fontSize: 15, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>인사이트</span>
+              <span style={{ fontSize: 11, color: '#4DB8A0', fontWeight: 500 }}>
+                {briefingLoading ? '● AI 분석 중...' : bodyBriefing && briefingTime ? `${briefingTime} 기준` : '● 분석 중'}
+              </span>
             </div>
-          ) : (
-            <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', marginBottom: 6 }}>
-                {(TIER_INSIGHT[activeCheck ? tier : liveTier].flow).map((step, i) => (
-                  <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span style={{
-                      fontSize: 12, fontWeight: 600, color: '#0D3028',
-                      background: i === 0 ? 'rgba(255,179,71,0.2)' : i === 2 ? 'rgba(78,184,160,0.2)' : 'rgba(255,243,176,0.4)',
-                      padding: '3px 8px', borderRadius: 8,
-                    }}>{step}</span>
-                    {i < 2 && <span style={{ fontSize: 12, color: '#ccc' }}>→</span>}
-                  </span>
-                ))}
+            {bodyBriefing ? (
+              <div style={{ fontSize: 13, color: '#0D3028', lineHeight: 1.6 }}>
+                {bodyBriefing}
               </div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                {TIER_INSIGHT[activeCheck ? tier : liveTier].desc}
-              </div>
-            </>
-          )}
-
-          {/* 구분선 */}
-          <div style={{ height: 1, background: 'rgba(0,0,0,0.06)', margin: '14px 0' }} />
-
-          {/* 오늘 흐름 */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-            <span style={{ fontSize: 15, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>오늘 흐름</span>
-            <span onClick={() => onTabChange('body')} style={{ fontSize: 12, color: 'var(--text-muted)', cursor: 'pointer' }}>분석 탭 →</span>
-          </div>
-          <div style={{ display: 'flex', gap: 14, marginBottom: 10 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <div style={{ width: 12, height: 2, borderRadius: 1, background: '#D4707E' }} />
-              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>기분</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <div style={{ width: 12, height: 2, borderRadius: 1, background: '#E8A135' }} />
-              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>에너지</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <div style={{ width: 12, height: 2, borderRadius: 1, background: '#5BA3D4' }} />
-              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>수분</span>
-            </div>
-          </div>
-
-          {graphData.length < 2 ? (
-            <div style={{ textAlign: 'center', padding: '16px 0' }}>
-              <div style={{ fontSize: 20, marginBottom: 6, opacity: 0.4 }}>📈</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                {graphData.length === 0 ? '업데이트하면 흐름이 기록돼요' : '한 번 더 체크하면 그래프가 나타나요'}
-              </div>
-            </div>
-          ) : (() => {
-            const svgW = Math.max(graphData.length * 70, 220);
-            const H = 56;
-            const toY = (val) => Math.round(H - (val / 10) * (H - 12) - 6);
-            const pad = 16;
-
-            const moodPts = graphData.map((d, i) => {
-              const x = (i / (graphData.length - 1)) * (svgW - pad * 2) + pad;
-              return { x, y: toY(todayChecks[i]?.mood || 7) };
-            });
-            const energyPts = graphData.map((d, i) => {
-              const x = (i / (graphData.length - 1)) * (svgW - pad * 2) + pad;
-              return { x, y: toY(todayChecks[i]?.energy || 7) };
-            });
-            const waterPts = graphData.map((d, i) => {
-              const x = (i / (graphData.length - 1)) * (svgW - pad * 2) + pad;
-              return { x, y: toY(todayChecks[i]?.water || 7) };
-            });
-
-            const makePath = (pts) => {
-              let d = `M${pts[0].x} ${pts[0].y}`;
-              for (let i = 1; i < pts.length; i++) {
-                const cp = (pts[i].x + pts[i - 1].x) / 2;
-                d += ` C${cp} ${pts[i - 1].y} ${cp} ${pts[i].y} ${pts[i].x} ${pts[i].y}`;
-              }
-              return d;
-            };
-
-            const makeAreaPath = (pts) => {
-              let d = makePath(pts);
-              d += ` L${pts[pts.length - 1].x} ${H} L${pts[0].x} ${H} Z`;
-              return d;
-            };
-
-            return (
+            ) : (
               <>
-                <svg width="100%" height={H} viewBox={`0 0 ${svgW} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: 'block', overflow: 'visible' }}>
-                  <defs>
-                    <linearGradient id="moodFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#D4707E" stopOpacity="0.12" />
-                      <stop offset="100%" stopColor="#D4707E" stopOpacity="0" />
-                    </linearGradient>
-                  </defs>
-                  <path d={makeAreaPath(moodPts)} fill="url(#moodFill)" />
-                  <path d={makePath(moodPts)} fill="none" stroke="#D4707E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d={makePath(energyPts)} fill="none" stroke="#E8A135" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="5 3" />
-                  <path d={makePath(waterPts)} fill="none" stroke="#5BA3D4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="2 3" />
-                  {moodPts.map((p, i) => (
-                    <circle key={`m${i}`} cx={p.x} cy={p.y} r="3" fill="#fff" stroke="#D4707E" strokeWidth="1.5" />
-                  ))}
-                  {energyPts.map((p, i) => (
-                    <circle key={`e${i}`} cx={p.x} cy={p.y} r="3" fill="#fff" stroke="#E8A135" strokeWidth="1.5" />
-                  ))}
-                  {waterPts.map((p, i) => (
-                    <circle key={`w${i}`} cx={p.x} cy={p.y} r="3" fill="#fff" stroke="#5BA3D4" strokeWidth="1.5" />
-                  ))}
-                </svg>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 4px', marginTop: 4 }}>
-                  {graphData.map((d, i) => (
-                    <span key={i} style={{ fontSize: 11, color: 'var(--text-muted)' }}>{d.time}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', marginBottom: 6 }}>
+                  {(TIER_INSIGHT[activeCheck ? tier : liveTier].flow).map((step, i) => (
+                    <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{
+                        fontSize: 12, fontWeight: 600, color: '#0D3028',
+                        background: i === 0 ? 'rgba(255,179,71,0.2)' : i === 2 ? 'rgba(78,184,160,0.2)' : 'rgba(255,243,176,0.4)',
+                        padding: '3px 8px', borderRadius: 8,
+                      }}>{step}</span>
+                      {i < 2 && <span style={{ fontSize: 12, color: '#ccc' }}>→</span>}
+                    </span>
                   ))}
                 </div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                  {TIER_INSIGHT[activeCheck ? tier : liveTier].desc}
+                </div>
               </>
-            );
-          })()}
-        </div>}
-      </div>
+            )}
+
+            {/* 구분선 */}
+            <div style={{ height: 1, background: 'rgba(0,0,0,0.06)', margin: '18px 0' }} />
+
+            {/* 오늘 흐름 */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+              <span style={{ fontSize: 15, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>오늘 흐름</span>
+              <span onClick={() => { setJustUpdated(false); onTabChange('body'); }} style={{ fontSize: 12, color: 'var(--text-muted)', cursor: 'pointer' }}>분석 탭 →</span>
+            </div>
+            <div style={{ display: 'flex', gap: 14, marginBottom: 10 }}>
+              {[{ c: '#D4707E', l: '기분' }, { c: '#E8A135', l: '에너지' }, { c: '#5BA3D4', l: '수분' }].map(x => (
+                <div key={x.l} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div style={{ width: 12, height: 2, borderRadius: 1, background: x.c }} />
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{x.l}</span>
+                </div>
+              ))}
+            </div>
+
+            {graphData.length < 2 ? (
+              <div style={{ textAlign: 'center', padding: '16px 0' }}>
+                <div style={{ fontSize: 20, marginBottom: 6, opacity: 0.4 }}>📈</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                  {graphData.length === 0 ? '업데이트하면 흐름이 기록돼요' : '한 번 더 체크하면 그래프가 나타나요'}
+                </div>
+              </div>
+            ) : (() => {
+              const svgW = Math.max(graphData.length * 70, 220);
+              const H = 56;
+              const toY = (val) => Math.round(H - (val / 10) * (H - 12) - 6);
+              const pad = 16;
+              const moodPts = graphData.map((d, i) => ({ x: (i / (graphData.length - 1)) * (svgW - pad * 2) + pad, y: toY(todayChecks[i]?.mood || 7) }));
+              const energyPts = graphData.map((d, i) => ({ x: (i / (graphData.length - 1)) * (svgW - pad * 2) + pad, y: toY(todayChecks[i]?.energy || 7) }));
+              const waterPts = graphData.map((d, i) => ({ x: (i / (graphData.length - 1)) * (svgW - pad * 2) + pad, y: toY(todayChecks[i]?.water || 7) }));
+              const makePath = (pts) => { let d = `M${pts[0].x} ${pts[0].y}`; for (let i = 1; i < pts.length; i++) { const cp = (pts[i].x + pts[i-1].x)/2; d += ` C${cp} ${pts[i-1].y} ${cp} ${pts[i].y} ${pts[i].x} ${pts[i].y}`; } return d; };
+              const makeAreaPath = (pts) => makePath(pts) + ` L${pts[pts.length-1].x} ${H} L${pts[0].x} ${H} Z`;
+              return (
+                <>
+                  <svg width="100%" height={H} viewBox={`0 0 ${svgW} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: 'block', overflow: 'visible' }}>
+                    <defs><linearGradient id="moodFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#D4707E" stopOpacity="0.12" /><stop offset="100%" stopColor="#D4707E" stopOpacity="0" /></linearGradient></defs>
+                    <path d={makeAreaPath(moodPts)} fill="url(#moodFill)" />
+                    <path d={makePath(moodPts)} fill="none" stroke="#D4707E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d={makePath(energyPts)} fill="none" stroke="#E8A135" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="5 3" />
+                    <path d={makePath(waterPts)} fill="none" stroke="#5BA3D4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="2 3" />
+                    {moodPts.map((p, i) => <circle key={`m${i}`} cx={p.x} cy={p.y} r="3" fill="#fff" stroke="#D4707E" strokeWidth="1.5" />)}
+                    {energyPts.map((p, i) => <circle key={`e${i}`} cx={p.x} cy={p.y} r="3" fill="#fff" stroke="#E8A135" strokeWidth="1.5" />)}
+                    {waterPts.map((p, i) => <circle key={`w${i}`} cx={p.x} cy={p.y} r="3" fill="#fff" stroke="#5BA3D4" strokeWidth="1.5" />)}
+                  </svg>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 4px', marginTop: 4 }}>
+                    {graphData.map((d, i) => <span key={i} style={{ fontSize: 11, color: 'var(--text-muted)' }}>{d.time}</span>)}
+                  </div>
+                </>
+              );
+            })()}
+
+            {/* 닫기 버튼 */}
+            <button onClick={() => setJustUpdated(false)} style={{
+              marginTop: 20, width: '100%', padding: '12px 0',
+              background: 'rgba(0,0,0,0.05)', border: 'none', borderRadius: 12,
+              fontSize: 14, fontWeight: 600, color: '#0D3028', cursor: 'pointer', fontFamily: 'inherit',
+            }}>닫기</button>
+          </div>
+        </div>
+      )}
 
       {/* Skin Weather Page */}
       {showWeather && (
