@@ -85,12 +85,12 @@ export default function App() {
       body.style.backgroundColor = '#000000';
       body.style.color = '#f0f0f5';
     } else {
-      html.style.backgroundColor = '#ace2fc';
+      html.style.backgroundColor = '#ffffff';
       body.style.backgroundColor = 'transparent';
       body.style.color = '#191F28';
     }
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.content = colorMode === 'light' ? '#ace2fc' : '#000000';
+    if (meta) meta.content = colorMode === 'light' ? '#ace2fc' : '#000000'; // theme-color stays sky for status bar
   }, [colorMode]);
 
   const setColorMode = useCallback((mode) => {

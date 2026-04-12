@@ -1,5 +1,3 @@
-import SoftCloverIcon from './icons/SoftCloverIcon';
-
 const splashKeyframes = `
   /* ── Entrance ── */
   @keyframes splashPearlIn {
@@ -54,26 +52,16 @@ export default function SplashScreen({ exiting, onAnimationEnd, cloverTheme }) {
       <div style={{
         animation: exiting ? undefined : 'splashPearlIn 0.8s ease-out both',
       }}>
-        <SoftCloverIcon theme={cloverTheme || 'morningLight'} size={120} animate={!exiting} />
+        <img src="/luasky.svg" alt="lua" style={{ width: 200, height: 'auto', objectFit: 'contain' }} />
       </div>
 
       <div style={{
-        marginTop: 24,
-        fontSize: 32, fontWeight: 700, letterSpacing: 8, paddingLeft: 8,
-        color: 'var(--text-primary)',
-        fontFamily: "'Outfit', sans-serif",
-        animation: exiting
-          ? 'splashTextExit 0.2s ease-in forwards'
-          : 'splashTextIn 0.6s ease-out 0.4s both',
-      }}>루아</div>
-
-      <div style={{
-        marginTop: 8,
+        marginTop: 16,
         fontSize: 10, letterSpacing: 2,
         color: 'var(--text-dim)',
         animation: exiting
           ? 'splashTextExit 0.15s ease-in forwards'
-          : 'splashFade 0.5s ease-out 0.8s both',
+          : 'splashFade 0.5s ease-out 0.6s both',
       }}>YOUR INNER GLOW</div>
     </div>
   );

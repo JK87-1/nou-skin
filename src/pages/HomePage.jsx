@@ -288,10 +288,15 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           </div>
         </div>
 
-        {/* 상태 문장 */}
-        <div style={{ fontSize: 15, fontWeight: 500, color: '#0D3028', marginBottom: 4 }}>
-          {activeCheck ? TIER_STATUS[tier] : `안녕하세요, ${profile.nickname || '사용자'}`}
+        {/* 인사 + 상태 문장 */}
+        <div style={{ fontSize: 16, fontWeight: 600, color: '#0D3028', marginBottom: 4 }}>
+          안녕하세요, {profile.nickname || '사용자'}님
         </div>
+        {activeCheck && (
+          <div style={{ fontSize: 13, fontWeight: 500, color: 'rgba(13,48,40,0.7)', marginBottom: 4 }}>
+            {TIER_STATUS[tier]}
+          </div>
+        )}
         <div style={{ fontSize: 9, color: 'rgba(13,48,40,0.45)' }}>
           {minutesAgo !== null
             ? minutesAgo < 1 ? '방금 업데이트' : `${minutesAgo}분 전 업데이트`
@@ -307,7 +312,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         border: '1px solid rgba(255,255,255,0.3)',
         boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
       }}>
-        <div style={{ fontSize: 18, fontWeight: 600, color: 'rgba(0,0,0,0.8)', marginBottom: 12 }}>지금 느낌은?</div>
+        <div style={{ fontSize: 15, fontWeight: 600, color: 'rgba(0,0,0,0.8)', marginBottom: 12 }}>지금 느낌은?</div>
 
         {[
           { key: 'mood', label: '기분', color: '#F5C2CB', textColor: '#D4707E', labels: MOOD_LABELS, ends: ['우울', '평온', '행복'] },
@@ -385,7 +390,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-            <span style={{ fontSize: 18, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>인사이트</span>
+            <span style={{ fontSize: 15, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>인사이트</span>
             <span style={{ fontSize: 11, color: '#4DB8A0', fontWeight: 500 }}>
               {briefingLoading ? '● AI 분석 중...' : bodyBriefing && briefingTime ? `${briefingTime} 기준` : '● 분석 중'}
             </span>
@@ -424,7 +429,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-            <span style={{ fontSize: 18, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>오늘 흐름</span>
+            <span style={{ fontSize: 15, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>오늘 흐름</span>
             <span onClick={() => onTabChange('body')} style={{ fontSize: 12, color: 'var(--text-muted)', cursor: 'pointer' }}>분석 탭 →</span>
           </div>
           {/* 범례 */}
@@ -527,7 +532,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       {showWeather && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 1200,
-          background: 'linear-gradient(to bottom, #ace2fc, #dfed89)',
+          background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
           overflowY: 'auto', WebkitOverflowScrolling: 'touch',
         }}>
           <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>

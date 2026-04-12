@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Splash Preview</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Outfit', 'Pretendard', -apple-system, sans-serif;
+    background: #ffffff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  @keyframes splashPearlIn {
+    from { opacity: 0; transform: scale(0.85); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes splashFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .logo {
+    animation: splashPearlIn 0.8s ease-out both;
+  }
+  .logo img {
+    width: 200px; height: auto; object-fit: contain;
+  }
+  .tagline {
+    margin-top: 16px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: rgba(0,0,0,0.35);
+    animation: splashFade 0.5s ease-out 0.6s both;
+  }
+  .controls {
+    position: fixed; bottom: 30px;
+    display: flex; gap: 12px;
+  }
+  .controls button {
+    padding: 10px 20px; border-radius: 12px; border: none;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    background: rgba(0,0,0,0.08); color: #333;
+  }
+  .controls button:hover { background: rgba(0,0,0,0.15); }
+
+  @keyframes splashTextExit {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-16px); }
+  }
+  @keyframes splashDissolve {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+  .exiting .logo { /* pearl fades with overlay */ }
+  .exiting .tagline {
+    animation: splashTextExit 0.15s ease-in forwards;
+  }
+  .splash-overlay.exiting {
+    animation: splashDissolve 0.7s cubic-bezier(0.4, 0, 0.6, 1) 0.15s forwards;
+  }
+</style>
+</head>
+<body>
+  <div class="splash-overlay" id="splash" style="display:flex;flex-direction:column;align-items:center;justify-content:center;position:fixed;inset:0;background:#ffffff;">
+    <div style="display:flex;flex-direction:column;align-items:center;">
+      <div class="logo">
+        <img src="/luasky.svg" alt="lua">
+      </div>
+      <div class="tagline" style="text-align:center;">Feel yourself, every day</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button onclick="replay()">Replay Entrance</button>
+    <button onclick="playExit()">Play Exit</button>
+  </div>
+
+  <script>
+    function replay() {
+      const s = document.getElementById('splash');
+      s.classList.remove('exiting');
+      s.style.display = 'flex';
+      s.style.flexDirection = 'column';
+      s.style.alignItems = 'center';
+      s.style.justifyContent = 'center';
+      s.style.position = 'fixed';
+      s.style.inset = '0';
+      s.style.background = 'linear-gradient(to bottom, #ace2fc, #ffffff)';
+      s.style.opacity = '1';
+      // re-trigger animation
+      const clone = s.cloneNode(true);
+      s.parentNode.replaceChild(clone, s);
+      document.querySelector('.controls button:first-child').onclick = replay;
+      document.querySelector('.controls button:last-child').onclick = playExit;
+    }
+    function playExit() {
+      const s = document.getElementById('splash');
+      s.classList.add('exiting');
+      s.addEventListener('animationend', (e) => {
+        if (e.animationName === 'splashDissolve') {
+          s.style.display = 'none';
+        }
+      }, { once: true });
+    }
+  </script>
+</body>
+</html>
