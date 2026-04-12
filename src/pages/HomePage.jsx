@@ -11,6 +11,20 @@ import {
   shouldResetCheck, getMinutesSinceLastCheck,
 } from '../storage/ConditionStorage';
 
+function getGreeting(name) {
+  const h = new Date().getHours();
+  if (h >= 5  && h < 7)  return { main: `가장 조용한 시간, 나를 위한 시작이에요`,    sub: `오늘 하루의 루틴을 열어봐요` };
+  if (h >= 7  && h < 9)  return { main: `좋은 아침이에요, ${name}님`,               sub: `오늘 컨디션을 먼저 체크해봐요` };
+  if (h >= 9  && h < 11) return { main: `오전 에너지가 중요한 시간이에요`,           sub: `수분 보충 잊지 않으셨죠?` };
+  if (h >= 11 && h < 13) return { main: `점심 뭐 드실 예정이에요?`,                  sub: `식단 기록하면 오후 컨디션이 달라져요` };
+  if (h >= 13 && h < 15) return { main: `식사 후 몸 상태는 어때요?`,                 sub: `식단과 컨디션을 연결해봐요` };
+  if (h >= 15 && h < 17) return { main: `오후 에너지가 살짝 떨어질 수 있어요`,       sub: `지금 컨디션을 체크해봐요` };
+  if (h >= 17 && h < 19) return { main: `하루 중 가장 변화가 많은 시간이에요`,       sub: `저녁 식사 전 루틴 확인해봐요` };
+  if (h >= 19 && h < 21) return { main: `저녁 시간, ${name}님`,                     sub: `오늘 식단과 컨디션은 어땠나요?` };
+  if (h >= 21 && h < 23) return { main: `오늘 하루 수고했어요`,                      sub: `피부 케어 루틴 잊지 마세요` };
+  return                         { main: `충분한 수면이 내일의 피부를 만들어요`,      sub: `오늘 기록을 마무리해봐요` };
+}
+
 const ENERGY_LABELS = ['매우 낮음', '낮음', '약간 낮음', '조금 부족', '보통', '괜찮음', '좋음', '활발', '높음', '활기참'];
 const MOOD_LABELS = ['우울', '기분 다운', '침울', '약간 다운', '평온', '무난', '좋음', '기분 좋음', '매우 좋음', '행복'];
 const WATER_LABELS = ['갈증', '많이 부족', '부족', '약간 부족', '보통', '괜찮음', '적당', '충분', '넉넉', '매우 충분'];
@@ -268,7 +282,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
       {/* ===== 1. 히어로 영역 ===== */}
       <div style={{
-        padding: '14px 28px 22px',
+        padding: '14px 28px 12px',
         position: 'relative',
       }}>
         {/* 상단 row */}
@@ -288,15 +302,34 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           </div>
         </div>
 
+        {/* 날짜 */}
+        {(() => {
+          const now = new Date();
+          const days = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+          const y = now.getFullYear();
+          const m = String(now.getMonth() + 1).padStart(2, '0');
+          const d = String(now.getDate()).padStart(2, '0');
+          return (
+            <div style={{ fontSize: 12, fontWeight: 500, color: '#ffffff', marginBottom: 6 }}>
+              {`${y}. ${m}. ${d}  ${days[now.getDay()]}`}
+            </div>
+          );
+        })()}
+
         {/* 인사 + 상태 문장 */}
-        <div style={{ fontSize: 16, fontWeight: 600, color: '#0D3028', marginBottom: 4 }}>
-          안녕하세요, {profile.nickname || '사용자'}님
-        </div>
-        {activeCheck && (
-          <div style={{ fontSize: 13, fontWeight: 500, color: 'rgba(13,48,40,0.7)', marginBottom: 4 }}>
-            {TIER_STATUS[tier]}
-          </div>
-        )}
+        {(() => {
+          const greeting = getGreeting(profile.nickname || '사용자');
+          return (
+            <>
+              <div style={{ fontSize: 22, fontWeight: 700, color: '#0D3028', marginBottom: 6, lineHeight: 1.35 }}>
+                {greeting.main}
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 500, color: 'rgba(13,48,40,0.6)', marginBottom: 4 }}>
+                {greeting.sub}
+              </div>
+            </>
+          );
+        })()}
         <div style={{ fontSize: 9, color: 'rgba(13,48,40,0.45)' }}>
           {minutesAgo !== null
             ? minutesAgo < 1 ? '방금 업데이트' : `${minutesAgo}분 전 업데이트`
