@@ -351,11 +351,11 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
         {[
           { key: 'mood', label: '기분', color: '#F5C2CB', rgb: [245,194,203], textColor: '#D4707E', labels: MOOD_LABELS, ends: ['우울', '평온', '행복'],
-            icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><mask id="smile"><rect width="24" height="24" fill="white"/><circle cx="9" cy="10" r="1.5" fill="black"/><circle cx="15" cy="10" r="1.5" fill="black"/><path d="M8 14.5c1.2 2 6.8 2 8 0" stroke="black" strokeWidth="1.8" strokeLinecap="round" fill="none"/></mask><circle cx="12" cy="12" r="10" fill="#D4707E" opacity="0.7" mask="url(#smile)"/></svg> },
+            icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 4.5C10 2 6.5 1.5 4.5 4c-2 2.5-1.5 6 1 8.5L12 20l6.5-7.5c2.5-2.5 3-6 1-8.5C17.5 1.5 14 2 12 4.5z" fill="#D4707E" opacity="0.7"/></svg> },
           { key: 'energy', label: '에너지', color: '#F5E6A3', rgb: [245,230,163], textColor: '#E8A135', labels: ENERGY_LABELS, ends: ['매우 낮음', '보통', '활기참'],
-            icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><mask id="flame"><rect width="24" height="24" fill="white"/><path d="M12 17c-1.2 0-2.2-1-2.2-2.5 0-1.2 1-2.5 2.2-3.5 1.2 1 2.2 2.3 2.2 3.5 0 1.5-1 2.5-2.2 2.5z" fill="black"/></mask><path d="M12 2c0 4-5 7-5 13a5.5 5.5 0 0011 0c0-6-5-9-5-13z" fill="#E8A135" opacity="0.7" mask="url(#flame)"/></svg> },
+            icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M14 1L3 14h8l-3 9 12-13h-8l2-9z" fill="#E8A135" opacity="0.7"/></svg> },
           { key: 'water', label: '수분', color: '#C2EAFF', rgb: [194,234,255], textColor: '#5BA3D4', labels: WATER_LABELS, ends: ['갈증', '보통', '충분'],
-            icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><mask id="drop"><rect width="24" height="24" fill="white"/><ellipse cx="11" cy="14" rx="2.5" ry="3" fill="black" transform="rotate(-15 11 14)"/></mask><path d="M12 2c-3.5 5-8 9-8 13.5a8 8 0 0016 0c0-4.5-4.5-8.5-8-13.5z" fill="#5BA3D4" opacity="0.7" mask="url(#drop)"/></svg> },
+            icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 1c-4 5.5-9 10-9 14.5a9 9 0 0018 0c0-4.5-5-9-9-14.5z" fill="#5BA3D4" opacity="0.7"/></svg> },
         ].map((s, si) => {
           const val = selections[s.key];
           const pct = sliderPcts[s.key];
