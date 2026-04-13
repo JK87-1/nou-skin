@@ -8,7 +8,7 @@ import WeekDateHeader from '../components/WeekDateHeader';
 import { createPortal } from 'react-dom';
 import { SunIcon, MoonIcon, LotionIcon, PastelIcon } from '../components/icons/PastelIcons';
 import { getWeeklyRoutineStatus } from '../storage/RoutineCheckStorage';
-import { getEnabledCategories } from '../storage/ProfileStorage';
+import { getEnabledCategories, getCategoryColor, getCategories } from '../storage/ProfileStorage';
 import { getRoutineItems, saveRoutineItem, deleteRoutineItem, updateRoutineItem, saveRoutineOrder, getChecks, toggleCheck, getTodayProgress, getAllRoutineItems, getStreak, CAT_LABEL, CAT_COLOR } from '../storage/RoutineCheckStorage';
 import {
   TRACKER_CATEGORIES, getProducts, saveProduct, deleteProduct,
@@ -60,6 +60,23 @@ function resizeForApi(dataUrl, maxSize = 1024, quality = 0.85) {
     img.onerror = () => resolve(dataUrl);
     img.src = dataUrl;
   });
+}
+
+// hex 컬러를 amount만큼 어둡게
+function darkenColor(hex, amount = 0.4) {
+  const h = hex.replace('#', '');
+  const r = Math.round(parseInt(h.substring(0, 2), 16) * (1 - amount));
+  const g = Math.round(parseInt(h.substring(2, 4), 16) * (1 - amount));
+  const b = Math.round(parseInt(h.substring(4, 6), 16) * (1 - amount));
+  return `rgb(${r},${g},${b})`;
+}
+
+function hexToRgba(hex, alpha = 0.2) {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.substring(0, 2), 16);
+  const g = parseInt(h.substring(2, 4), 16);
+  const b = parseInt(h.substring(4, 6), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
 }
 
 // ===== MiniLineChart =====
@@ -796,7 +813,14 @@ export default function RoutinePage({ themeColors, onBack, initialMode }) {
               <div className="segment-control" data-active={pos}>
                 {allTabs.map(cat => (
                   <button key={cat.key} className={`segment-btn${routineCat === cat.key ? ' active' : ''}`}
-                    onClick={() => setRoutineCat(cat.key)}>{cat.label}</button>
+                    onClick={() => setRoutineCat(cat.key)}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                      {cat.key !== 'all' && cat.color && (
+                        <span style={{ width: 8, height: 8, borderRadius: 3, background: cat.color, flexShrink: 0 }} />
+                      )}
+                      {cat.label}
+                    </span>
+                  </button>
                 ))}
               </div>
             </div>
@@ -1132,14 +1156,7 @@ export default function RoutinePage({ themeColors, onBack, initialMode }) {
 
 // ===== Routine Management Component (루틴 관리) =====
 
-const ICON_BG = {
-  식단:   'linear-gradient(135deg, #FFE8A0, #FFD070)',
-  몸무게: 'linear-gradient(135deg, #C0E8F8, #80CCE8)',
-  피부:   'linear-gradient(135deg, #FFD8E8, #F8A8C0)',
-  얼굴:   'linear-gradient(135deg, #E8D0F0, #C8A0E0)',
-};
-
-const ICON_EMOJI = { 식단: '🍽️', 몸무게: '⚖️', 피부: '✨', 얼굴: '💆' };
+const ICON_EMOJI = { food: '🍽️', exercise: '🏃', sleep: '😴', skin: '✨', face: '💆', body: '⚖️' };
 
 function RoutineManagement({ enabledCats, initialTab, onBack }) {
   const [activeTab, setActiveTab] = useState(initialTab || 'all');
@@ -1250,9 +1267,10 @@ function RoutineManagement({ enabledCats, initialTab, onBack }) {
 
   // 아이템 렌더
   const renderItem = (item, idx, cat, isActive) => {
-    const catLabel = CAT_LABEL[cat] || cat;
-    const iconBg = ICON_BG[catLabel] || 'linear-gradient(135deg, #E0E0E0, #C0C0C0)';
-    const emoji = ICON_EMOJI[catLabel] || '📋';
+    const catLabel = CAT_LABEL[cat] || (enabledCats.find(c => c.key === cat)?.label) || cat;
+    const catClr = getCategoryColor(cat);
+    const iconBg = `linear-gradient(135deg, ${hexToRgba(catClr, 0.4)}, ${catClr})`;
+    const emoji = ICON_EMOJI[cat] || '📋';
     const isDragging = dragCat === cat && dragIdx === idx && isActive;
     const isDragOver = dragCat === cat && dragOverIdx === idx && isActive;
 
@@ -1375,7 +1393,7 @@ function RoutineManagement({ enabledCats, initialTab, onBack }) {
   const hasAnyItems = cats.some(ck => (itemsMap[ck] || []).length > 0);
 
   return (
-    <div style={{ minHeight: '100vh', paddingBottom: 100, background: 'var(--bg-primary)', animation: 'breatheIn 0.5s ease both' }}>
+    <div style={{ minHeight: '100vh', paddingBottom: 100, animation: 'breatheIn 0.5s ease both' }}>
       {/* 1. 헤더 */}
       <div style={{
         padding: '16px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -1408,7 +1426,14 @@ function RoutineManagement({ enabledCats, initialTab, onBack }) {
             <div className="segment-control" data-active={pos}>
               {allTabs.map(tab => (
                 <button key={tab.key} className={`segment-btn${activeTab === tab.key ? ' active' : ''}`}
-                  onClick={() => setActiveTab(tab.key)}>{tab.label}</button>
+                  onClick={() => setActiveTab(tab.key)}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                    {tab.key !== 'all' && tab.color && (
+                      <span style={{ width: 8, height: 8, borderRadius: 3, background: tab.color, flexShrink: 0 }} />
+                    )}
+                    {tab.label}
+                  </span>
+                </button>
               ))}
             </div>
           </div>
@@ -1798,18 +1823,23 @@ function RoutineChecklist({ mode, enabledCats, selectedDate }) {
                 <div style={{ fontSize: 10, fontWeight: 600, color: '#9ABBC8', marginBottom: 8 }}>{time}</div>
                 {timeItems.map(item => {
                   const checked = !!checksMap[item.category]?.[item.id];
-                  const catLabel = CAT_LABEL[item.category] || item.category;
-                  const catColor = CAT_COLOR[catLabel];
+                  const catLbl = CAT_LABEL[item.category] || (enabledCats.find(c => c.key === item.category)?.label) || item.category;
+                  const itemColor = getCategoryColor(item.category);
                   const streak = getStreak(item.category, item.id);
                   return (
                     <div key={`${item.category}_${item.id}`} style={{
-                      display: 'flex', alignItems: 'center', gap: 12,
+                      display: 'flex', alignItems: 'center', gap: 10,
                       padding: '14px 16px', marginBottom: 6,
                       background: 'var(--bg-card)', borderRadius: 14,
                       backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
                       border: '1px solid rgba(255,255,255,0.3)',
                       boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
                     }}>
+                      {/* Color bar */}
+                      <div style={{
+                        width: 4, height: 22, borderRadius: 3, flexShrink: 0,
+                        background: itemColor,
+                      }} />
                       {/* Check circle */}
                       <div onClick={() => handleToggle(item.category, item.id)} style={{
                         width: 24, height: 24, borderRadius: '50%', flexShrink: 0, cursor: 'pointer',
@@ -1832,12 +1862,12 @@ function RoutineChecklist({ mode, enabledCats, selectedDate }) {
                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                       }}>{item.name}</div>
                       {/* 전체 탭: 카테고리 뱃지 / 카테고리 탭: streak */}
-                      {isAll && catColor ? (
+                      {isAll ? (
                         <span style={{
                           fontSize: 9, fontWeight: 600, padding: '2px 6px', borderRadius: 99, flexShrink: 0,
-                          background: catColor.bg, color: catColor.text,
-                        }}>{catLabel}</span>
-                      ) : !isAll && streak > 0 ? (
+                          background: hexToRgba(itemColor, 0.2), color: darkenColor(itemColor, 0.4),
+                        }}>{catLbl}</span>
+                      ) : streak > 0 ? (
                         <span style={{ fontSize: 11, color: '#FF8C42', fontWeight: 600, flexShrink: 0 }}>
                           🔥 {streak}일
                         </span>

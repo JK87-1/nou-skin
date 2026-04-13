@@ -17,11 +17,12 @@ const DEFAULTS = {
   activeTheme: null,
   colorMode: 'light',
   categories: [
-    { key: 'face', label: '얼굴', enabled: false },
-    { key: 'skin', label: '피부', enabled: true },
-    { key: 'food', label: '식단', enabled: true },
-    { key: 'shape', label: '바디', enabled: false },
-    { key: 'body', label: '몸무게', enabled: true },
+    { key: 'food',     label: '식단',   color: '#FFD070', enabled: true },
+    { key: 'exercise', label: '운동',   color: '#90CCE8', enabled: true },
+    { key: 'sleep',    label: '수면',   color: '#C8A0E0', enabled: true },
+    { key: 'skin',     label: '피부',   color: '#F8A8C0', enabled: true },
+    { key: 'face',     label: '얼굴',   color: '#80D0A8', enabled: true },
+    { key: 'body',     label: '몸무게', color: '#D0D0D0', enabled: false },
   ],
 };
 
@@ -52,19 +53,31 @@ export function getDeviceId() {
 export function getCategories() {
   const profile = getProfile();
   const saved = profile.categories || [];
-  const labelMap = Object.fromEntries(DEFAULTS.categories.map(c => [c.key, c.label]));
-  // 1) 저장된 카테고리는 순서·활성 상태 유지하며 라벨만 최신화
-  const migrated = saved
-    .filter(c => labelMap[c.key])
-    .map(c => ({ ...c, label: labelMap[c.key] }));
-  // 2) 저장본에 없는 신규 카테고리는 디폴트 상태로 뒤에 추가
+  const defaultMap = Object.fromEntries(DEFAULTS.categories.map(c => [c.key, c]));
+  // 1) 저장된 카테고리는 순서·활성·컬러 유지, 라벨은 기본 카테고리만 최신화
+  const migrated = saved.map(c => {
+    const def = defaultMap[c.key];
+    return {
+      ...c,
+      label: def ? def.label : c.label,
+      color: c.color || (def ? def.color : '#D0D0D0'),
+    };
+  });
+  // 2) 저장본에 없는 신규 기본 카테고리는 뒤에 추가
   const savedKeys = new Set(migrated.map(c => c.key));
   DEFAULTS.categories.forEach(d => {
     if (!savedKeys.has(d.key)) migrated.push({ ...d });
   });
-  // 3) 최소 1개는 활성화
-  if (!migrated.some(c => c.enabled)) migrated[0].enabled = true;
-  return migrated;
+  // 3) 구형 'shape' 카테고리 제거
+  const filtered = migrated.filter(c => c.key !== 'shape');
+  // 4) 최소 1개는 활성화
+  if (!filtered.some(c => c.enabled)) filtered[0].enabled = true;
+  return filtered;
+}
+
+export function getCategoryColor(categoryKey) {
+  const cats = getCategories();
+  return cats.find(c => c.key === categoryKey)?.color || '#D0D0D0';
 }
 
 export function getEnabledCategories() {

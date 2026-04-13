@@ -1070,22 +1070,52 @@ function SettingsPage({ open, onClose, onCategoriesChanged }) {
 }
 
 // ===== CATEGORY SETTINGS PAGE =====
+
+const COLOR_OPTIONS = [
+  '#E8C8F8', '#C8E4FC', '#D8FAD8', '#FCDDA8',
+  '#FCEFA8', '#FCCABC', '#F88878', '#FCDCE8',
+];
+
 function CategorySettingsPage({ onClose, onSave }) {
   const [categories, setCategories] = useState(() => getCategories());
   const [dragging, setDragging] = useState(null);
   const [dragOver, setDragOver] = useState(null);
+  const [colorOpen, setColorOpen] = useState(null); // key of category with color picker open
+  const [showAddSheet, setShowAddSheet] = useState(false);
+  const [toast, setToast] = useState('');
   const touchStart = useRef(null);
   const itemRefs = useRef([]);
 
   const enabledCount = categories.filter(c => c.enabled).length;
 
-  const toggle = (idx) => {
-    const next = [...categories];
-    if (next[idx].enabled && enabledCount <= 1) return; // 최소 1개
-    next[idx].enabled = !next[idx].enabled;
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 2000); };
+
+  const updateAndSave = (next) => {
     setCategories(next);
     saveCategories(next);
     onSave?.();
+  };
+
+  const toggle = (idx) => {
+    const next = [...categories];
+    if (next[idx].enabled && enabledCount <= 1) {
+      showToast('최소 1개의 카테고리는 활성화되어야 해요');
+      return;
+    }
+    next[idx].enabled = !next[idx].enabled;
+    updateAndSave(next);
+  };
+
+  const selectColor = (key, color) => {
+    const next = categories.map(c => c.key === key ? { ...c, color } : c);
+    updateAndSave(next);
+  };
+
+  const addCustomCategory = (name, color) => {
+    const key = 'custom_' + Date.now();
+    const next = [...categories, { key, label: name, color, enabled: true }];
+    updateAndSave(next);
+    setShowAddSheet(false);
   };
 
   const moveItem = (from, to) => {
@@ -1093,9 +1123,7 @@ function CategorySettingsPage({ onClose, onSave }) {
     const next = [...categories];
     const [item] = next.splice(from, 1);
     next.splice(to, 0, item);
-    setCategories(next);
-    saveCategories(next);
-    onSave?.();
+    updateAndSave(next);
   };
 
   // Touch drag handlers
@@ -1131,6 +1159,7 @@ function CategorySettingsPage({ onClose, onSave }) {
       background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
       display: 'flex', flexDirection: 'column',
       animation: 'slideInRight 0.3s ease',
+      overflowY: 'auto',
     }}>
       <style>{`
         @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
@@ -1141,69 +1170,184 @@ function CategorySettingsPage({ onClose, onSave }) {
           width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1,
         }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
+          <span style={{ fontSize: 16, color: '#5AAABB', fontWeight: 500 }}>‹</span>
         </div>
-        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>카테고리 설정</span>
+        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 15, fontWeight: 500, color: '#1A3A4A' }}>카테고리 설정</span>
       </div>
 
       {/* Description */}
       <div style={{ padding: '20px 28px 8px' }}>
-        <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>카테고리를 켜거나 끄고, 드래그하여 순서를 변경할 수 있어요.</div>
-        <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 4 }}>최소 1개의 카테고리는 활성화되어야 해요.</div>
+        <div style={{ fontSize: 10, color: '#7AAABB' }}>카테고리를 켜거나 끄고, 드래그하여 순서를 변경할 수 있어요.</div>
+        <div style={{ fontSize: 9, color: '#9ABBC8', marginTop: 4 }}>최소 1개의 카테고리는 활성화되어야 해요.</div>
       </div>
 
       {/* Category list */}
-      <div style={{ padding: '8px 20px', flex: 1 }}>
+      <div style={{ padding: '8px 20px', flex: 1, paddingBottom: 120 }}>
         {categories.map((cat, idx) => (
-          <div
-            key={cat.key}
-            ref={el => itemRefs.current[idx] = el}
-            onTouchStart={e => onTouchStart(e, idx)}
-            onTouchMove={e => onTouchMove(e, idx)}
-            onTouchEnd={onTouchEnd}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 14,
-              padding: '14px 18px', marginBottom: 8,
-              background: dragging === idx ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.45)',
-              borderRadius: 16,
-              border: dragOver === idx ? '2px solid var(--accent-primary, #89cef5)' : '1px solid rgba(255,255,255,0.5)',
-              backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-              boxShadow: dragging === idx ? '0 4px 16px rgba(0,0,0,0.1)' : '0 2px 8px rgba(0,0,0,0.04)',
-              transition: 'all 0.2s ease',
-              touchAction: 'none',
-              userSelect: 'none',
-              opacity: cat.enabled ? 1 : 0.5,
-            }}
-          >
-            {/* Drag handle */}
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.3)" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0, cursor: 'grab' }}>
-              <line x1="8" y1="6" x2="16" y2="6" /><line x1="8" y1="12" x2="16" y2="12" /><line x1="8" y1="18" x2="16" y2="18" />
-            </svg>
+          <div key={cat.key}>
+            <div
+              ref={el => itemRefs.current[idx] = el}
+              onTouchStart={e => onTouchStart(e, idx)}
+              onTouchMove={e => onTouchMove(e, idx)}
+              onTouchEnd={onTouchEnd}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '11px 13px', marginBottom: colorOpen === cat.key ? 0 : 8,
+                background: dragging === idx ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.75)',
+                borderRadius: colorOpen === cat.key ? '14px 14px 0 0' : 14,
+                border: dragOver === idx ? '2px solid #60AADD' : '0.5px solid rgba(255,255,255,0.95)',
+                boxShadow: dragging === idx ? '0 4px 16px rgba(0,0,0,0.1)' : '0 1px 4px rgba(0,0,0,0.03)',
+                transition: 'all 0.2s ease',
+                touchAction: 'none', userSelect: 'none',
+                opacity: cat.enabled ? 1 : 0.55,
+              }}
+            >
+              {/* Drag handle */}
+              <span style={{ fontSize: 14, color: 'rgba(0,0,0,0.25)', cursor: 'grab', flexShrink: 0 }}>≡</span>
 
-            {/* Label */}
-            <span style={{ flex: 1, fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{cat.label}</span>
+              {/* Color chip */}
+              <div
+                onClick={() => setColorOpen(colorOpen === cat.key ? null : cat.key)}
+                style={{
+                  width: 22, height: 22, borderRadius: 6, flexShrink: 0, cursor: 'pointer',
+                  background: cat.color || '#D0D0D0',
+                  border: '2px solid rgba(255,255,255,0.8)',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                }}
+              />
 
-            {/* Toggle */}
-            <div onClick={() => toggle(idx)} style={{
-              width: 46, height: 26, borderRadius: 13,
-              background: cat.enabled ? 'var(--accent-primary, #89cef5)' : 'rgba(0,0,0,0.12)',
-              position: 'relative', cursor: 'pointer',
-              transition: 'background 0.2s ease',
-              flexShrink: 0,
-            }}>
-              <div style={{
-                width: 22, height: 22, borderRadius: 11,
-                background: '#fff',
-                position: 'absolute', top: 2,
-                left: cat.enabled ? 22 : 2,
-                transition: 'left 0.2s ease',
-                boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
-              }} />
+              {/* Label */}
+              <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>{cat.label}</span>
+
+              {/* Toggle */}
+              <div onClick={() => toggle(idx)} style={{
+                width: 36, height: 20, borderRadius: 10, flexShrink: 0,
+                background: cat.enabled ? 'linear-gradient(120deg, #90CCE8, #60AADD)' : 'rgba(180,200,210,.3)',
+                position: 'relative', cursor: 'pointer',
+                transition: 'background 0.2s ease',
+              }}>
+                <div style={{
+                  width: 16, height: 16, borderRadius: '50%', background: '#fff',
+                  position: 'absolute', top: 2,
+                  left: cat.enabled ? 18 : 2,
+                  transition: 'left 0.2s ease',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                }} />
+              </div>
             </div>
+
+            {/* Inline color picker */}
+            {colorOpen === cat.key && (
+              <div style={{
+                background: 'rgba(255,255,255,0.9)',
+                borderRadius: '0 0 14px 14px',
+                padding: '12px 14px',
+                border: '0.5px solid rgba(100,180,220,0.2)',
+                borderTop: 'none',
+                marginBottom: 8,
+                display: 'flex', gap: 8, flexWrap: 'wrap',
+              }}>
+                {COLOR_OPTIONS.map(c => (
+                  <div key={c} onClick={() => selectColor(cat.key, c)} style={{
+                    width: 26, height: 26, borderRadius: 7, cursor: 'pointer',
+                    background: c,
+                    border: cat.color === c ? '2px solid #1A3A4A' : '2px solid transparent',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+                    transition: 'border 0.15s ease',
+                  }} />
+                ))}
+              </div>
+            )}
           </div>
         ))}
+
+        {/* + 카테고리 직접 추가 */}
+        <button onClick={() => setShowAddSheet(true)} style={{
+          width: '100%', padding: '10px 0', borderRadius: 12,
+          background: 'rgba(100,180,220,.04)',
+          border: '1.5px dashed rgba(100,180,220,.3)',
+          color: '#5AAABB', fontSize: 11, fontWeight: 500,
+          cursor: 'pointer', fontFamily: 'inherit', marginTop: 4,
+        }}>+ 카테고리 직접 추가</button>
+      </div>
+
+      {/* Toast */}
+      {toast && (
+        <div style={{
+          position: 'fixed', bottom: 100, left: '50%', transform: 'translateX(-50%)',
+          background: 'rgba(26,58,74,0.9)', color: '#fff', padding: '10px 20px',
+          borderRadius: 12, fontSize: 12, fontWeight: 500, zIndex: 9999,
+          animation: 'breatheIn 0.3s ease',
+        }}>{toast}</div>
+      )}
+
+      {/* Add custom category sheet */}
+      {showAddSheet && (
+        <AddCategorySheet
+          onSave={addCustomCategory}
+          onClose={() => setShowAddSheet(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+function AddCategorySheet({ onSave, onClose }) {
+  const [name, setName] = useState('');
+  const [color, setColor] = useState(COLOR_OPTIONS[0]);
+
+  return (
+    <div onClick={onClose} style={{
+      position: 'fixed', inset: 0, zIndex: 2100,
+      background: 'rgba(0,0,0,0.5)',
+      display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: '#fff', borderRadius: '24px 24px 0 0',
+        padding: '24px 24px 40px', width: '100%', maxWidth: 420,
+      }}>
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: '#ccc', margin: '0 auto 20px', opacity: 0.5 }} />
+        <div style={{ fontSize: 17, fontWeight: 700, color: '#1A3A4A', marginBottom: 20 }}>카테고리 추가</div>
+
+        <input
+          value={name}
+          onChange={e => setName(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && name.trim() && onSave(name.trim(), color)}
+          placeholder="카테고리 이름"
+          style={{
+            width: '100%', padding: '14px', borderRadius: 12, border: 'none',
+            background: '#F2F3F5', fontSize: 14, color: '#1A3A4A',
+            fontFamily: 'inherit', outline: 'none', marginBottom: 16, boxSizing: 'border-box',
+          }}
+          autoFocus
+        />
+
+        <div style={{ fontSize: 12, fontWeight: 600, color: '#9ABBC8', marginBottom: 8 }}>컬러 선택</div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
+          {COLOR_OPTIONS.map(c => (
+            <div key={c} onClick={() => setColor(c)} style={{
+              width: 32, height: 32, borderRadius: 8, cursor: 'pointer',
+              background: c,
+              border: color === c ? '2.5px solid #1A3A4A' : '2px solid transparent',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+            }} />
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button onClick={onClose} style={{
+            flex: 1, padding: '14px 0', borderRadius: 14, border: 'none',
+            background: '#F2F3F5', color: '#9ABBC8', fontSize: 14, fontWeight: 600,
+            cursor: 'pointer', fontFamily: 'inherit',
+          }}>취소</button>
+          <button onClick={() => name.trim() && onSave(name.trim(), color)} style={{
+            flex: 1, padding: '14px 0', borderRadius: 14, border: 'none',
+            background: 'linear-gradient(120deg, #90CCE8, #60AADD)',
+            color: '#fff', fontSize: 14, fontWeight: 700,
+            cursor: 'pointer', fontFamily: 'inherit',
+            opacity: name.trim() ? 1 : 0.4,
+          }}>추가</button>
+        </div>
       </div>
     </div>
   );

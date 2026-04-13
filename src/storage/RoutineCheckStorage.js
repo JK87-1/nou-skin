@@ -117,7 +117,9 @@ export function getWeeklyRoutineStatus() {
   const dayOfWeek = today.getDay();
   const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
   const labels = ['월', '화', '수', '목', '금', '토', '일'];
-  const categories = ['skin', 'food', 'body'];
+  // 저장된 모든 카테고리 키를 동적으로 가져옴
+  const allItems = JSON.parse(localStorage.getItem(ITEMS_KEY) || '{}');
+  const categories = Object.keys(allItems);
 
   return labels.map((label, i) => {
     const d = new Date(today);
