@@ -1156,8 +1156,6 @@ export default function RoutinePage({ themeColors, onBack, initialMode }) {
 
 // ===== Routine Management Component (루틴 관리) =====
 
-const ICON_EMOJI = { food: '🍽️', exercise: '🏃', sleep: '😴', skin: '✨', face: '💆', body: '⚖️' };
-
 function RoutineManagement({ enabledCats, initialTab, onBack }) {
   const [activeTab, setActiveTab] = useState(initialTab || 'all');
   const isAll = activeTab === 'all';
@@ -1269,8 +1267,6 @@ function RoutineManagement({ enabledCats, initialTab, onBack }) {
   const renderItem = (item, idx, cat, isActive) => {
     const catLabel = CAT_LABEL[cat] || (enabledCats.find(c => c.key === cat)?.label) || cat;
     const catClr = getCategoryColor(cat);
-    const iconBg = `linear-gradient(135deg, ${hexToRgba(catClr, 0.4)}, ${catClr})`;
-    const emoji = ICON_EMOJI[cat] || '📋';
     const isDragging = dragCat === cat && dragIdx === idx && isActive;
     const isDragOver = dragCat === cat && dragOverIdx === idx && isActive;
 
@@ -1298,13 +1294,13 @@ function RoutineManagement({ enabledCats, initialTab, onBack }) {
           boxShadow: isDragging ? '0 4px 16px rgba(0,0,0,0.1)' : '0 1px 4px rgba(0,0,0,0.03)',
         }}
       >
-        {/* 아이콘 */}
+        {/* 컬러칩 */}
         <div style={{
-          width: 30, height: 30, borderRadius: 8, flexShrink: 0,
-          background: iconBg,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 14,
-        }}>{emoji}</div>
+          width: 22, height: 22, borderRadius: 6, flexShrink: 0,
+          background: catClr,
+          border: '2px solid rgba(255,255,255,0.8)',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+        }} />
 
         {/* 이름 + 알림시간 */}
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -1396,21 +1392,25 @@ function RoutineManagement({ enabledCats, initialTab, onBack }) {
     <div style={{ minHeight: '100vh', paddingBottom: 100, animation: 'breatheIn 0.5s ease both' }}>
       {/* 1. 헤더 */}
       <div style={{
-        padding: '16px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '16px 20px 0', display: 'flex', alignItems: 'center', position: 'relative',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span
-            onClick={onBack}
-            style={{ fontSize: 11, color: '#5AAABB', cursor: 'pointer', fontWeight: 500 }}
-          >‹ 뒤로</span>
-          <span style={{ fontSize: 16, fontWeight: 500, color: '#1A3A4A' }}>루틴 관리</span>
+        <div onClick={onBack} style={{
+          width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1,
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
         </div>
+        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>루틴 관리</span>
+        <div style={{ flex: 1 }} />
         <div
           onClick={() => setShowAddSheet(true)}
           style={{
             width: 28, height: 28, borderRadius: 9, cursor: 'pointer',
             background: 'linear-gradient(120deg, #90CCE8, #60AADD)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 1,
           }}
         >
           <span style={{ color: '#fff', fontSize: 11, fontWeight: 700, lineHeight: 1 }}>+</span>
