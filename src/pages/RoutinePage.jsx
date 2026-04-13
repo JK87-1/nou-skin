@@ -9,7 +9,7 @@ import { createPortal } from 'react-dom';
 import { SunIcon, MoonIcon, LotionIcon, PastelIcon } from '../components/icons/PastelIcons';
 import { getWeeklyRoutineStatus } from '../storage/RoutineCheckStorage';
 import { getEnabledCategories } from '../storage/ProfileStorage';
-import { getRoutineItems, saveRoutineItem, deleteRoutineItem, getChecks, toggleCheck, getTodayProgress } from '../storage/RoutineCheckStorage';
+import { getRoutineItems, saveRoutineItem, deleteRoutineItem, updateRoutineItem, saveRoutineOrder, getChecks, toggleCheck, getTodayProgress, getAllRoutineItems, getStreak, CAT_LABEL, CAT_COLOR } from '../storage/RoutineCheckStorage';
 import {
   TRACKER_CATEGORIES, getProducts, saveProduct, deleteProduct,
   getProductsForMode,
@@ -651,20 +651,18 @@ function getTodayStr() {
 
 export default function RoutinePage({ themeColors, onBack, initialMode }) {
   const [enabledCats, setEnabledCats] = useState(() => getEnabledCategories());
-  const [routineCat, setRoutineCat] = useState(() => {
-    const cats = getEnabledCategories();
-    return cats.find(c => c.key === 'skin') ? 'skin' : (cats[0]?.key || 'skin');
-  });
+  const [routineCat, setRoutineCat] = useState('all');
   useEffect(() => {
     const handler = () => {
       const cats = getEnabledCategories();
       setEnabledCats(cats);
-      if (!cats.find(c => c.key === routineCat)) setRoutineCat(cats[0]?.key || 'skin');
+      if (routineCat !== 'all' && !cats.find(c => c.key === routineCat)) setRoutineCat('all');
     };
     window.addEventListener('lua:categories-changed', handler);
     return () => window.removeEventListener('lua:categories-changed', handler);
   }, [routineCat]);
   const [pageMode, setPageMode] = useState(initialMode || 'routine');
+  const [showManagement, setShowManagement] = useState(false);
   const [section, setSection] = useState('products');
   const [products, setProducts] = useState(() => getProducts());
   const [routineMode, setRoutineMode] = useState(new Date().getHours() >= 18 ? 'night' : 'morning');
@@ -680,7 +678,7 @@ export default function RoutinePage({ themeColors, onBack, initialMode }) {
   const [showManualForm, setShowManualForm] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
-  const accent = themeColors?.accent || '#81E4BD';
+  const accent = themeColors?.accent || '#89cef5';
   const getCat = (cat) => TRACKER_CATEGORIES[cat] || TRACKER_CATEGORIES['기타'];
 
   const handleSelectDate = (dateKey) => {
@@ -749,6 +747,16 @@ export default function RoutinePage({ themeColors, onBack, initialMode }) {
     { key: 'analysis', label: '효과 분석', icon: '📊' },
   ];
 
+  if (showManagement) {
+    return (
+      <RoutineManagement
+        enabledCats={enabledCats}
+        initialTab={routineCat}
+        onBack={() => setShowManagement(false)}
+      />
+    );
+  }
+
   return (
     <div style={{ minHeight: '100vh', paddingBottom: 100, animation: 'breatheIn 0.5s ease both' }}>
       {/* Header */}
@@ -760,7 +768,7 @@ export default function RoutinePage({ themeColors, onBack, initialMode }) {
               <path d="M12 5v14M5 12h14" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </div>
-          <div style={{ width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div onClick={() => setShowManagement(true)} style={{ width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="3" />
               <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
@@ -777,39 +785,32 @@ export default function RoutinePage({ themeColors, onBack, initialMode }) {
         onTitleChange={setHeaderTitle}
       />
 
-      {/* Category Tabs */}
-      <div style={{ padding: '12px 10px 0' }}>
-        <div className="segment-control" data-active={
-          routineCat === enabledCats[0]?.key ? 'first' : routineCat === enabledCats[enabledCats.length - 1]?.key ? 'last' : 'mid'
-        }>
-          {enabledCats.map(cat => (
-            <button key={cat.key} className={`segment-btn${routineCat === cat.key ? ' active' : ''}`}
-              onClick={() => setRoutineCat(cat.key)}>{cat.label}</button>
-          ))}
-        </div>
-      </div>
-      <div className="tab-content-panel" data-active={
-        routineCat === enabledCats[0]?.key ? 'first' : routineCat === enabledCats[enabledCats.length - 1]?.key ? 'last' : 'mid'
-      }>
-      {/* Routine checklist for each category */}
-      {routineCat === 'skin' && <RoutineChecklist category="skin" label="피부" selectedDate={selectedDate} />}
-      {routineCat === 'food' && <RoutineChecklist category="food" label="식단" selectedDate={selectedDate} />}
-      {routineCat === 'body' && <RoutineChecklist category="body" label="몸무게" selectedDate={selectedDate} />}
-      {routineCat === 'face' && (
-        <div style={{ padding: '60px 24px', textAlign: 'center' }}>
-          <div style={{ fontSize: 28, marginBottom: 12 }}>🙂</div>
-          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>얼굴 루틴</div>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>곧 출시 예정이에요</div>
-        </div>
-      )}
-      {routineCat === 'shape' && (
-        <div style={{ padding: '60px 24px', textAlign: 'center' }}>
-          <div style={{ fontSize: 28, marginBottom: 12 }}>💪</div>
-          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>바디 루틴</div>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>곧 출시 예정이에요</div>
-        </div>
-      )}
-      </div>
+      {/* Category Tabs — 전체 + enabled categories */}
+      {(() => {
+        const allTabs = [{ key: 'all', label: '전체' }, ...enabledCats];
+        const idx = allTabs.findIndex(t => t.key === routineCat);
+        const pos = idx === 0 ? 'first' : idx === allTabs.length - 1 ? 'last' : 'mid';
+        return (
+          <>
+            <div style={{ padding: '12px 10px 0' }}>
+              <div className="segment-control" data-active={pos}>
+                {allTabs.map(cat => (
+                  <button key={cat.key} className={`segment-btn${routineCat === cat.key ? ' active' : ''}`}
+                    onClick={() => setRoutineCat(cat.key)}>{cat.label}</button>
+                ))}
+              </div>
+            </div>
+            <div className="tab-content-panel" data-active={pos}>
+              <RoutineChecklist
+                key={routineCat}
+                mode={routineCat}
+                enabledCats={enabledCats}
+                selectedDate={selectedDate}
+              />
+            </div>
+          </>
+        );
+      })()}
 
       {/* Tracker mode — existing tracker content (hidden) */}
       {pageMode === '__tracker__' && <>
@@ -1014,7 +1015,7 @@ export default function RoutinePage({ themeColors, onBack, initialMode }) {
           ) : (
             analyses.map((a, idx) => {
               const cat = getCat(a.category);
-              const confColor = a.confidence === '높음' ? '#34d399' : a.confidence === '보통' ? '#F0B870' : '#8888a0';
+              const confColor = a.confidence === '높음' ? '#89cef5' : a.confidence === '보통' ? '#F0B870' : '#8888a0';
               return (
                 <div key={a.productId} className="card" style={{ padding: 20, marginBottom: 16, animation: `breatheIn 0.5s ease ${idx * 0.15}s both` }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
@@ -1038,11 +1039,11 @@ export default function RoutinePage({ themeColors, onBack, initialMode }) {
                         {a.metrics.map((m, mi) => (
                           <div key={mi} style={{
                             display: 'flex', alignItems: 'center', gap: 4, borderRadius: 10, padding: '6px 12px',
-                            background: m.improved ? 'rgba(52,211,153,0.1)' : 'rgba(239,68,68,0.1)',
-                            border: `1px solid ${m.improved ? 'rgba(52,211,153,0.2)' : 'rgba(239,68,68,0.2)'}`,
+                            background: m.improved ? 'rgba(137,206,245,0.1)' : 'rgba(239,68,68,0.1)',
+                            border: `1px solid ${m.improved ? 'rgba(137,206,245,0.2)' : 'rgba(239,68,68,0.2)'}`,
                           }}>
                             <span style={{ fontSize: 12, color: 'var(--tag-color)' }}>{m.label}</span>
-                            <span style={{ fontSize: 14, fontWeight: 700, color: m.improved ? '#34d399' : '#ef4444' }}>
+                            <span style={{ fontSize: 14, fontWeight: 700, color: m.improved ? '#89cef5' : '#ef4444' }}>
                               {m.improved ? '↑' : '↓'}{m.diff}
                             </span>
                           </div>
@@ -1129,98 +1130,688 @@ export default function RoutinePage({ themeColors, onBack, initialMode }) {
   );
 }
 
-// ===== Routine Checklist Component =====
-function getProgressForDate(category, dateStr) {
-  const items = getRoutineItems(category);
-  const chk = getChecks(category, dateStr);
-  const total = items.length;
-  const done = items.filter(i => chk[i.id]).length;
-  return { total, done, pct: total > 0 ? Math.round((done / total) * 100) : 0 };
+// ===== Routine Management Component (루틴 관리) =====
+
+const ICON_BG = {
+  식단:   'linear-gradient(135deg, #FFE8A0, #FFD070)',
+  몸무게: 'linear-gradient(135deg, #C0E8F8, #80CCE8)',
+  피부:   'linear-gradient(135deg, #FFD8E8, #F8A8C0)',
+  얼굴:   'linear-gradient(135deg, #E8D0F0, #C8A0E0)',
+};
+
+const ICON_EMOJI = { 식단: '🍽️', 몸무게: '⚖️', 피부: '✨', 얼굴: '💆' };
+
+function RoutineManagement({ enabledCats, initialTab, onBack }) {
+  const [activeTab, setActiveTab] = useState(initialTab || 'all');
+  const isAll = activeTab === 'all';
+  const catKey = isAll ? null : activeTab;
+  const label = catKey ? (CAT_LABEL[catKey] || catKey) : '전체';
+
+  // 아이템 로드
+  const loadItems = useCallback(() => {
+    const map = {};
+    const _isAll = activeTab === 'all';
+    const _catKey = _isAll ? null : activeTab;
+    const keys = _isAll ? enabledCats.map(c => c.key) : [_catKey];
+    keys.forEach(k => { map[k] = getRoutineItems(k); });
+    return map;
+  }, [activeTab, enabledCats]);
+
+  const [itemsMap, setItemsMap] = useState(loadItems);
+
+  useEffect(() => { setItemsMap(loadItems()); }, [loadItems]);
+
+  // 추가 바텀 시트
+  const [showAddSheet, setShowAddSheet] = useState(false);
+  // 수정 바텀 시트
+  const [editItem, setEditItem] = useState(null);
+  // 액션 시트 (길게 누르기)
+  const [actionItem, setActionItem] = useState(null);
+  // 드래그 상태
+  const [dragCat, setDragCat] = useState(null);
+  const [dragIdx, setDragIdx] = useState(null);
+  const [dragOverIdx, setDragOverIdx] = useState(null);
+  const longPressTimer = useRef(null);
+
+  // 플랫 리스트 (카테고리별)
+  const getCatItems = (ck) => {
+    const items = (itemsMap[ck] || []).map(i => ({ ...i, category: ck }));
+    const active = items.filter(i => i.active !== false);
+    const inactive = items.filter(i => i.active === false);
+    return { active, inactive };
+  };
+
+  // 토글 active
+  const handleToggleActive = (cat, id) => {
+    const items = itemsMap[cat] || [];
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    const newActive = item.active === false ? true : false;
+    updateRoutineItem(cat, id, { active: newActive });
+    setItemsMap(loadItems());
+  };
+
+  // 삭제
+  const handleDelete = (cat, id, name) => {
+    if (confirm(`"${name}"을 삭제할까요?\n연속 기록도 함께 삭제돼요.`)) {
+      deleteRoutineItem(cat, id);
+      setItemsMap(loadItems());
+      setActionItem(null);
+    }
+  };
+
+  // 드래그 순서 변경
+  const handleDragStart = (cat, idx) => {
+    setDragCat(cat);
+    setDragIdx(idx);
+  };
+
+  const handleDragOver = (e, idx) => {
+    e.preventDefault();
+    setDragOverIdx(idx);
+  };
+
+  const handleDrop = (cat, dropIdx) => {
+    if (dragCat !== cat || dragIdx === null || dragIdx === dropIdx) {
+      setDragIdx(null);
+      setDragOverIdx(null);
+      return;
+    }
+    const items = [...(itemsMap[cat] || [])];
+    // 활성 아이템만 대상
+    const activeItems = items.filter(i => i.active !== false);
+    const inactiveItems = items.filter(i => i.active === false);
+    const [moved] = activeItems.splice(dragIdx, 1);
+    activeItems.splice(dropIdx, 0, moved);
+    const reordered = [...activeItems, ...inactiveItems];
+    saveRoutineOrder(cat, reordered);
+    setItemsMap(loadItems());
+    setDragIdx(null);
+    setDragOverIdx(null);
+  };
+
+  // 터치 드래그
+  const touchStartY = useRef(0);
+  const touchItemRef = useRef(null);
+
+  // 롱 프레스
+  const handleTouchStart = (item) => {
+    longPressTimer.current = setTimeout(() => {
+      setActionItem(item);
+    }, 500);
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
+  // 아이템 렌더
+  const renderItem = (item, idx, cat, isActive) => {
+    const catLabel = CAT_LABEL[cat] || cat;
+    const iconBg = ICON_BG[catLabel] || 'linear-gradient(135deg, #E0E0E0, #C0C0C0)';
+    const emoji = ICON_EMOJI[catLabel] || '📋';
+    const isDragging = dragCat === cat && dragIdx === idx && isActive;
+    const isDragOver = dragCat === cat && dragOverIdx === idx && isActive;
+
+    return (
+      <div
+        key={`${cat}_${item.id}`}
+        draggable={isActive}
+        onDragStart={() => isActive && handleDragStart(cat, idx)}
+        onDragOver={(e) => isActive && handleDragOver(e, idx)}
+        onDrop={() => isActive && handleDrop(cat, idx)}
+        onDragEnd={() => { setDragIdx(null); setDragOverIdx(null); }}
+        onTouchStart={() => handleTouchStart({ ...item, category: cat })}
+        onTouchEnd={handleTouchEnd}
+        onContextMenu={(e) => { e.preventDefault(); setActionItem({ ...item, category: cat }); }}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 10,
+          padding: '10px 12px', marginBottom: 5,
+          background: 'rgba(255,255,255,.72)',
+          borderRadius: 13,
+          border: isDragOver ? '1.5px solid #60AADD' : '0.5px solid rgba(255,255,255,.95)',
+          opacity: isActive ? 1 : 0.5,
+          transform: isDragging ? 'scale(1.02)' : 'none',
+          transition: 'all 0.15s ease',
+          cursor: isActive ? 'default' : 'default',
+          boxShadow: isDragging ? '0 4px 16px rgba(0,0,0,0.1)' : '0 1px 4px rgba(0,0,0,0.03)',
+        }}
+      >
+        {/* 아이콘 */}
+        <div style={{
+          width: 30, height: 30, borderRadius: 8, flexShrink: 0,
+          background: iconBg,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 14,
+        }}>{emoji}</div>
+
+        {/* 이름 + 알림시간 */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{
+            fontSize: 13, fontWeight: 500, color: '#1A3A4A',
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }}>{item.name}</div>
+          {item.alarmTime && (
+            <div style={{ fontSize: 10, color: '#9ABBC8', marginTop: 1 }}>
+              🔔 {item.alarmTime}
+            </div>
+          )}
+          {!item.alarmTime && item.time && (
+            <div style={{ fontSize: 10, color: '#9ABBC8', marginTop: 1 }}>
+              {item.time}
+            </div>
+          )}
+        </div>
+
+        {/* 토글 */}
+        <div
+          onClick={(e) => { e.stopPropagation(); handleToggleActive(cat, item.id); }}
+          style={{
+            width: 30, height: 17, borderRadius: 99, flexShrink: 0, cursor: 'pointer',
+            position: 'relative',
+            background: isActive
+              ? 'linear-gradient(120deg, #90CCE8, #60AADD)'
+              : 'rgba(100,180,220,.15)',
+            border: isActive ? 'none' : '0.5px solid rgba(100,180,220,.2)',
+            transition: 'all 0.2s ease',
+          }}
+        >
+          <div style={{
+            width: 13, height: 13, borderRadius: '50%', background: '#fff',
+            position: 'absolute', top: 2,
+            left: isActive ? 15 : 2,
+            transition: 'left 0.2s ease',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+          }} />
+        </div>
+
+        {/* 드래그 핸들 */}
+        {isActive && (
+          <div style={{
+            fontSize: 12, color: '#AACCD8', cursor: 'grab',
+            marginLeft: 4, flexShrink: 0, userSelect: 'none',
+          }}>⋮⋮</div>
+        )}
+      </div>
+    );
+  };
+
+  // 카테고리별 섹션 렌더
+  const renderCategorySection = (ck) => {
+    const { active, inactive } = getCatItems(ck);
+    const catLabel = CAT_LABEL[ck] || ck;
+
+    return (
+      <div key={ck} style={{ marginBottom: 16 }}>
+        {isAll && (
+          <div style={{
+            fontSize: 10, color: '#9ABBC8', fontWeight: 600,
+            textTransform: 'uppercase', letterSpacing: '.05em',
+            margin: '10px 0 5px',
+          }}>{catLabel}</div>
+        )}
+
+        {active.map((item, idx) => renderItem(item, idx, ck, true))}
+
+        {inactive.length > 0 && (
+          <>
+            <div style={{
+              fontSize: 10, color: '#9ABBC8', fontWeight: 600,
+              textTransform: 'uppercase', letterSpacing: '.05em',
+              margin: '12px 0 5px',
+            }}>비활성</div>
+            {inactive.map((item, idx) => renderItem(item, idx, ck, false))}
+          </>
+        )}
+      </div>
+    );
+  };
+
+  const allTabs = [{ key: 'all', label: '전체' }, ...enabledCats];
+  const cats = isAll ? enabledCats.map(c => c.key) : [catKey];
+  const hasAnyItems = cats.some(ck => (itemsMap[ck] || []).length > 0);
+
+  return (
+    <div style={{ minHeight: '100vh', paddingBottom: 100, background: 'var(--bg-primary)', animation: 'breatheIn 0.5s ease both' }}>
+      {/* 1. 헤더 */}
+      <div style={{
+        padding: '16px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span
+            onClick={onBack}
+            style={{ fontSize: 11, color: '#5AAABB', cursor: 'pointer', fontWeight: 500 }}
+          >‹ 뒤로</span>
+          <span style={{ fontSize: 16, fontWeight: 500, color: '#1A3A4A' }}>루틴 관리</span>
+        </div>
+        <div
+          onClick={() => setShowAddSheet(true)}
+          style={{
+            width: 28, height: 28, borderRadius: 9, cursor: 'pointer',
+            background: 'linear-gradient(120deg, #90CCE8, #60AADD)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+        >
+          <span style={{ color: '#fff', fontSize: 11, fontWeight: 700, lineHeight: 1 }}>+</span>
+        </div>
+      </div>
+
+      {/* 2. 카테고리 탭 */}
+      {(() => {
+        const idx = allTabs.findIndex(t => t.key === activeTab);
+        const pos = idx === 0 ? 'first' : idx === allTabs.length - 1 ? 'last' : 'mid';
+        return (
+          <div style={{ padding: '12px 10px 0' }}>
+            <div className="segment-control" data-active={pos}>
+              {allTabs.map(tab => (
+                <button key={tab.key} className={`segment-btn${activeTab === tab.key ? ' active' : ''}`}
+                  onClick={() => setActiveTab(tab.key)}>{tab.label}</button>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* 3. 안내 텍스트 */}
+      <div style={{ padding: '10px 18px 0' }}>
+        <div style={{ fontSize: 10, color: '#9ABBC8', marginBottom: 8 }}>
+          ⋮⋮ 드래그로 순서 변경 · 토글로 활성화
+        </div>
+      </div>
+
+      {/* 4-5. 루틴 아이템 리스트 */}
+      <div style={{ padding: '0 18px' }}>
+        {!hasAnyItems ? (
+          <div style={{ textAlign: 'center', padding: '40px 0', color: '#9ABBC8' }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: '#5A9AAA' }}>아직 루틴이 없어요</div>
+            <div style={{ fontSize: 12, marginTop: 6 }}>아래 버튼으로 루틴을 추가해보세요</div>
+          </div>
+        ) : (
+          cats.map(ck => renderCategorySection(ck))
+        )}
+
+        {/* 6. 루틴 추가 버튼 */}
+        <button onClick={() => setShowAddSheet(true)} style={{
+          width: '100%', padding: '9px 0', borderRadius: 12,
+          background: 'rgba(100,180,220,.04)',
+          border: '1.5px dashed rgba(100,180,220,.3)',
+          color: '#5AAABB', fontSize: 11, fontWeight: 500,
+          cursor: 'pointer', fontFamily: 'inherit', marginTop: 4,
+        }}>+ {isAll ? '루틴' : label + ' 루틴'} 추가하기</button>
+      </div>
+
+      {/* 8. 루틴 추가/수정 바텀 시트 */}
+      {(showAddSheet || editItem) && (
+        <RoutineAddEditSheet
+          enabledCats={enabledCats}
+          defaultCategory={catKey}
+          editData={editItem}
+          onSave={(cat, item) => {
+            if (editItem) {
+              updateRoutineItem(cat, item.id, item);
+            } else {
+              saveRoutineItem(cat, { name: item.name, time: item.time, alarmTime: item.alarmTime, active: true });
+            }
+            setItemsMap(loadItems());
+            setShowAddSheet(false);
+            setEditItem(null);
+          }}
+          onClose={() => { setShowAddSheet(false); setEditItem(null); }}
+        />
+      )}
+
+      {/* 9. 액션 시트 (길게 누르기) */}
+      {actionItem && (
+        <div onClick={() => setActionItem(null)} style={{
+          position: 'fixed', inset: 0, zIndex: 1100,
+          background: 'rgba(0,0,0,0.4)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: '#fff', borderRadius: 16, padding: 0, width: 260,
+            overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+          }}>
+            <div style={{ padding: '16px 20px 12px', borderBottom: '1px solid #f0f0f0' }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>{actionItem.name}</div>
+            </div>
+            <div
+              onClick={() => {
+                setEditItem(actionItem);
+                setActionItem(null);
+              }}
+              style={{
+                padding: '14px 20px', cursor: 'pointer', fontSize: 14, color: '#1A3A4A',
+                borderBottom: '1px solid #f0f0f0',
+              }}
+            >수정하기</div>
+            <div
+              onClick={() => handleDelete(actionItem.category, actionItem.id, actionItem.name)}
+              style={{
+                padding: '14px 20px', cursor: 'pointer', fontSize: 14, color: '#E05050',
+              }}
+            >삭제하기</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
-function RoutineChecklist({ category, label, selectedDate }) {
+// ===== Routine Add/Edit Bottom Sheet =====
+
+function RoutineAddEditSheet({ enabledCats, defaultCategory, editData, onSave, onClose }) {
+  const isEdit = !!editData;
+  const [name, setName] = useState(editData?.name || '');
+  const [category, setCategory] = useState(editData?.category || defaultCategory || '');
+  const [timeSlot, setTimeSlot] = useState(editData?.time || '아침');
+  const [alarmEnabled, setAlarmEnabled] = useState(!!editData?.alarmTime);
+  const [alarmTime, setAlarmTime] = useState(editData?.alarmTime || '08:00');
+
+  const timeLabels = ['아침', '점심', '저녁'];
+  const catLabel = category ? (CAT_LABEL[category] || category) : '';
+
+  const handleSave = () => {
+    if (!name.trim() || !category) return;
+    const item = {
+      ...(editData || {}),
+      name: name.trim(),
+      time: timeSlot,
+      alarmTime: alarmEnabled ? alarmTime : null,
+    };
+    onSave(category, item);
+  };
+
+  return (
+    <div onClick={onClose} style={{
+      position: 'fixed', inset: 0, zIndex: 1100,
+      background: 'rgba(0,0,0,0.5)',
+      display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: '#fff', borderRadius: '24px 24px 0 0',
+        padding: '24px 24px 40px', width: '100%', maxWidth: 420,
+      }}>
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: '#ccc', margin: '0 auto 20px', opacity: 0.5 }} />
+        <div style={{ fontSize: 17, fontWeight: 700, color: '#1A3A4A', marginBottom: 20 }}>
+          {isEdit ? '루틴 수정' : '루틴 추가'}
+        </div>
+
+        {/* 루틴 이름 */}
+        <input
+          value={name}
+          onChange={e => setName(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && handleSave()}
+          placeholder="루틴 이름을 입력하세요"
+          style={{
+            width: '100%', padding: '14px', borderRadius: 12, border: 'none',
+            background: '#F2F3F5', fontSize: 14, color: '#1A3A4A',
+            fontFamily: 'inherit', outline: 'none', marginBottom: 16,
+            boxSizing: 'border-box',
+          }}
+          autoFocus
+        />
+
+        {/* 카테고리 선택 */}
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: '#9ABBC8', marginBottom: 8 }}>카테고리</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {enabledCats.map(c => {
+              const active = category === c.key;
+              return (
+                <button key={c.key} onClick={() => setCategory(c.key)} style={{
+                  flex: 1, padding: '10px 0', borderRadius: 10, border: 'none',
+                  background: active ? 'linear-gradient(120deg, #90CCE8, #60AADD)' : '#F2F3F5',
+                  color: active ? '#fff' : '#9ABBC8',
+                  fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                }}>{c.label}</button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 시간대 선택 */}
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: '#9ABBC8', marginBottom: 8 }}>시간대</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {timeLabels.map(t => {
+              const active = timeSlot === t;
+              return (
+                <button key={t} onClick={() => setTimeSlot(t)} style={{
+                  flex: 1, padding: '10px 0', borderRadius: 10, border: 'none',
+                  background: active ? 'linear-gradient(120deg, #90CCE8, #60AADD)' : '#F2F3F5',
+                  color: active ? '#fff' : '#9ABBC8',
+                  fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                }}>{t}</button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 알림 시간 설정 */}
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: '#9ABBC8' }}>알림 시간</div>
+            <div
+              onClick={() => setAlarmEnabled(!alarmEnabled)}
+              style={{
+                width: 30, height: 17, borderRadius: 99, cursor: 'pointer',
+                position: 'relative',
+                background: alarmEnabled ? 'linear-gradient(120deg, #90CCE8, #60AADD)' : 'rgba(100,180,220,.15)',
+                border: alarmEnabled ? 'none' : '0.5px solid rgba(100,180,220,.2)',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <div style={{
+                width: 13, height: 13, borderRadius: '50%', background: '#fff',
+                position: 'absolute', top: 2,
+                left: alarmEnabled ? 15 : 2,
+                transition: 'left 0.2s ease',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+              }} />
+            </div>
+          </div>
+          {alarmEnabled && (
+            <input
+              type="time"
+              value={alarmTime}
+              onChange={e => setAlarmTime(e.target.value)}
+              style={{
+                width: '100%', padding: '12px', borderRadius: 12, border: 'none',
+                background: '#F2F3F5', fontSize: 14, color: '#1A3A4A',
+                fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
+              }}
+            />
+          )}
+        </div>
+
+        {/* 버튼 */}
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button onClick={onClose} style={{
+            flex: 1, padding: '14px 0', borderRadius: 14,
+            border: 'none', background: '#F2F3F5',
+            color: '#9ABBC8', fontSize: 14, fontWeight: 600,
+            cursor: 'pointer', fontFamily: 'inherit',
+          }}>취소</button>
+          <button onClick={handleSave} style={{
+            flex: 1, padding: '14px 0', borderRadius: 14,
+            border: 'none', background: 'linear-gradient(120deg, #90CCE8, #60AADD)',
+            color: '#fff', fontSize: 14, fontWeight: 700,
+            cursor: 'pointer', fontFamily: 'inherit',
+            opacity: (!name.trim() || !category) ? 0.4 : 1,
+          }}>저장</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== Routine Checklist Component (v2 — 전체 + 카테고리 탭) =====
+
+function RoutineChecklist({ mode, enabledCats, selectedDate }) {
+  const isAll = mode === 'all';
   const today = new Date().toISOString().slice(0, 10);
   const dateStr = selectedDate || today;
   const isToday = dateStr === today;
-  const [items, setItems] = useState(() => getRoutineItems(category));
-  const [checks, setChecksState] = useState(() => getChecks(category, dateStr));
+  const catKey = isAll ? null : mode; // skin | food | body | face
+  const label = catKey ? (CAT_LABEL[catKey] || catKey) : '전체';
+
+  // 아이템 & 체크 상태
+  const [itemsMap, setItemsMap] = useState(() => {
+    if (isAll) {
+      const map = {};
+      enabledCats.forEach(c => { map[c.key] = getRoutineItems(c.key); });
+      return map;
+    }
+    return { [catKey]: getRoutineItems(catKey) };
+  });
+  const [checksMap, setChecksMap] = useState(() => {
+    const map = {};
+    const keys = isAll ? enabledCats.map(c => c.key) : [catKey];
+    keys.forEach(k => { map[k] = getChecks(k, dateStr); });
+    return map;
+  });
   const [showAdd, setShowAdd] = useState(false);
   const [newName, setNewName] = useState('');
   const [newTime, setNewTime] = useState('아침');
+  const [aiCoach, setAiCoach] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
 
   useEffect(() => {
-    setChecksState(getChecks(category, dateStr));
-  }, [category, dateStr]);
+    const keys = isAll ? enabledCats.map(c => c.key) : [catKey];
+    const map = {};
+    keys.forEach(k => { map[k] = getChecks(k, dateStr); });
+    setChecksMap(map);
+  }, [dateStr]);
 
-  const progress = getProgressForDate(category, dateStr);
+  // 모든 아이템 플랫 리스트 (category 필드 포함)
+  const flatItems = [];
+  const cats = isAll ? enabledCats.map(c => c.key) : [catKey];
+  cats.forEach(ck => {
+    (itemsMap[ck] || []).forEach(item => {
+      flatItems.push({ ...item, category: ck });
+    });
+  });
 
-  const handleToggle = (id) => {
-    const updated = toggleCheck(category, dateStr, id);
-    setChecksState(updated);
+  // 진행률
+  const total = flatItems.length;
+  const done = flatItems.filter(item => checksMap[item.category]?.[item.id]).length;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  const progressLabel = isAll ? '오늘의 루틴' : `${label} 루틴`;
+
+  const handleToggle = (cat, id) => {
+    const updated = toggleCheck(cat, dateStr, id);
+    setChecksMap(prev => ({ ...prev, [cat]: updated }));
   };
 
   const handleAdd = () => {
-    if (!newName.trim()) return;
-    const updated = saveRoutineItem(category, { name: newName.trim(), time: newTime });
-    setItems(updated);
+    if (!newName.trim() || !catKey) return;
+    const updated = saveRoutineItem(catKey, { name: newName.trim(), time: newTime });
+    setItemsMap(prev => ({ ...prev, [catKey]: updated }));
     setNewName('');
     setShowAdd(false);
   };
 
-  const handleDelete = (id) => {
-    const updated = deleteRoutineItem(category, id);
-    setItems(updated);
+  const handleDelete = (cat, id) => {
+    const updated = deleteRoutineItem(cat, id);
+    setItemsMap(prev => ({ ...prev, [cat]: updated }));
   };
 
-  const timeLabels = category === 'skin' ? ['아침', '저녁'] : category === 'food' ? ['아침', '점심', '저녁'] : ['아침', '저녁'];
+  // AI 코치 멘트 (카테고리 탭에서만)
+  useEffect(() => {
+    if (isAll || !catKey || flatItems.length === 0) return;
+    setAiLoading(true);
+    const maxStreak = flatItems.reduce((max, item) => Math.max(max, getStreak(item.category, item.id)), 0);
+    const completionRate = total > 0 ? Math.round((done / total) * 100) : 0;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+    fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: '당신은 스킨케어/건강 코치입니다. 이모지 포함 1문장 격려 멘트를 생성하세요. 한국어로 답하세요.' },
+          { role: 'user', content: `카테고리: ${label}, 완료율: ${completionRate}%, 최장연속일수: ${maxStreak}일, 루틴수: ${total}개` },
+        ],
+        max_tokens: 80,
+      }),
+      signal: controller.signal,
+    })
+      .then(r => r.json())
+      .then(data => {
+        const msg = data.choices?.[0]?.message?.content?.trim();
+        if (msg) setAiCoach(msg);
+      })
+      .catch(() => {})
+      .finally(() => { clearTimeout(timer); setAiLoading(false); });
+    return () => { controller.abort(); clearTimeout(timer); };
+  }, [catKey]);
+
+  const timeLabels = ['아침', '점심', '저녁'];
+  const timePlaceholders = { skin: '예: 토너 바르기, 선크림', food: '예: 물 2L 마시기, 채소 먹기', body: '예: 스트레칭, 걷기 30분', face: '예: 얼굴 마사지, 표정 운동' };
 
   return (
     <div style={{ padding: '0 18px', animation: 'breatheIn 0.5s ease both' }}>
       {/* Progress bar */}
       <div style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{isToday ? '오늘의' : `${new Date(dateStr + 'T00:00:00').getMonth() + 1}/${new Date(dateStr + 'T00:00:00').getDate()}`} {label} 루틴</span>
-          <span style={{ fontSize: 12, color: 'var(--accent-primary)', fontWeight: 600 }}>{progress.done}/{progress.total}</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+            {isToday ? progressLabel : `${new Date(dateStr + 'T00:00:00').getMonth() + 1}/${new Date(dateStr + 'T00:00:00').getDate()} ${label} 루틴`}
+          </span>
+          <span style={{ fontSize: 12, color: 'var(--accent-primary)', fontWeight: 600 }}>{done}/{total}</span>
         </div>
         <div style={{ height: 6, borderRadius: 3, background: 'var(--bar-track)', overflow: 'hidden' }}>
           <div style={{
-            height: '100%', borderRadius: 3, width: `${progress.pct}%`,
+            height: '100%', borderRadius: 3, width: `${pct}%`,
             background: 'var(--accent-primary)',
             transition: 'width 0.3s ease',
           }} />
         </div>
       </div>
 
-      {/* Items */}
-      {items.length === 0 ? (
+      {/* Items grouped by time */}
+      {flatItems.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
           <div style={{ fontSize: 14, fontWeight: 600 }}>아직 {label} 루틴이 없어요</div>
-          <div style={{ fontSize: 12, marginTop: 6 }}>+ 버튼으로 루틴을 추가해보세요</div>
-          <button onClick={() => setShowAdd(true)} style={{
-            marginTop: 16, padding: '10px 24px', borderRadius: 'var(--btn-radius)',
-            background: 'var(--accent-primary)', border: 'none',
-            color: '#fff', fontSize: 13, fontWeight: 600,
-            cursor: 'pointer', fontFamily: 'inherit',
-          }}>루틴 추가하기</button>
+          <div style={{ fontSize: 12, marginTop: 6 }}>
+            {isAll ? '각 카테고리 탭에서 루틴을 추가해보세요' : '+ 버튼으로 루틴을 추가해보세요'}
+          </div>
+          {!isAll && (
+            <button onClick={() => setShowAdd(true)} style={{
+              marginTop: 16, padding: '10px 24px', borderRadius: 'var(--btn-radius)',
+              background: 'var(--accent-primary)', border: 'none',
+              color: '#fff', fontSize: 13, fontWeight: 600,
+              cursor: 'pointer', fontFamily: 'inherit',
+            }}>루틴 추가하기</button>
+          )}
         </div>
       ) : (
         <>
           {timeLabels.map(time => {
-            const timeItems = items.filter(i => i.time === time);
+            const timeItems = flatItems.filter(i => i.time === time);
             if (timeItems.length === 0) return null;
             return (
               <div key={time} style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>{time}</div>
+                <div style={{ fontSize: 10, fontWeight: 600, color: '#9ABBC8', marginBottom: 8 }}>{time}</div>
                 {timeItems.map(item => {
-                  const checked = !!checks[item.id];
+                  const checked = !!checksMap[item.category]?.[item.id];
+                  const catLabel = CAT_LABEL[item.category] || item.category;
+                  const catColor = CAT_COLOR[catLabel];
+                  const streak = getStreak(item.category, item.id);
                   return (
-                    <div key={item.id} style={{
+                    <div key={`${item.category}_${item.id}`} style={{
                       display: 'flex', alignItems: 'center', gap: 12,
                       padding: '14px 16px', marginBottom: 6,
-                      background: 'var(--bg-card)', borderRadius: 14, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+                      background: 'var(--bg-card)', borderRadius: 14,
+                      backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+                      border: '1px solid rgba(255,255,255,0.3)',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
                     }}>
                       {/* Check circle */}
-                      <div onClick={() => handleToggle(item.id)} style={{
+                      <div onClick={() => handleToggle(item.category, item.id)} style={{
                         width: 24, height: 24, borderRadius: '50%', flexShrink: 0, cursor: 'pointer',
                         border: checked ? 'none' : '2px solid var(--border-subtle)',
                         background: checked ? 'var(--accent-primary)' : 'transparent',
@@ -1235,15 +1826,22 @@ function RoutineChecklist({ category, label, selectedDate }) {
                       </div>
                       {/* Name */}
                       <div style={{
-                        flex: 1, fontSize: 14, fontWeight: 500,
+                        flex: 1, fontSize: 14, fontWeight: 500, minWidth: 0,
                         color: checked ? 'var(--text-muted)' : 'var(--text-primary)',
                         textDecoration: checked ? 'line-through' : 'none',
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                       }}>{item.name}</div>
-                      {/* Delete */}
-                      <button onClick={() => handleDelete(item.id)} style={{
-                        background: 'none', border: 'none', color: 'var(--text-dim)',
-                        fontSize: 16, cursor: 'pointer', padding: '0 4px', lineHeight: 1,
-                      }}>×</button>
+                      {/* 전체 탭: 카테고리 뱃지 / 카테고리 탭: streak */}
+                      {isAll && catColor ? (
+                        <span style={{
+                          fontSize: 9, fontWeight: 600, padding: '2px 6px', borderRadius: 99, flexShrink: 0,
+                          background: catColor.bg, color: catColor.text,
+                        }}>{catLabel}</span>
+                      ) : !isAll && streak > 0 ? (
+                        <span style={{ fontSize: 11, color: '#FF8C42', fontWeight: 600, flexShrink: 0 }}>
+                          🔥 {streak}일
+                        </span>
+                      ) : null}
                     </div>
                   );
                 })}
@@ -1251,18 +1849,52 @@ function RoutineChecklist({ category, label, selectedDate }) {
             );
           })}
 
-          {/* Add more button */}
-          <button onClick={() => setShowAdd(true)} style={{
-            width: '100%', padding: '12px 0', borderRadius: 14,
-            background: 'transparent', border: '1.5px dashed var(--border-subtle)',
-            color: 'var(--text-muted)', fontSize: 13, fontWeight: 500,
-            cursor: 'pointer', fontFamily: 'inherit', marginBottom: 16,
-          }}>+ 루틴 추가</button>
+          {/* 카테고리 탭: 루틴 추가 버튼 */}
+          {!isAll && (
+            <button onClick={() => setShowAdd(true)} style={{
+              width: '100%', padding: '9px 0', borderRadius: 12,
+              background: 'rgba(100,180,220,.04)',
+              border: '1.5px dashed rgba(100,180,220,.3)',
+              color: '#5AAABB', fontSize: 11, fontWeight: 500,
+              cursor: 'pointer', fontFamily: 'inherit', marginBottom: 16,
+            }}>+ {label} 루틴 추가하기</button>
+          )}
         </>
       )}
 
+      {/* AI 코치 카드 — 카테고리 탭에서만 */}
+      {!isAll && flatItems.length > 0 && (
+        <div style={{
+          borderRadius: 16, padding: '14px 16px', marginBottom: 16,
+          background: 'var(--bg-card)',
+          border: '1px solid rgba(255,255,255,0.3)',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+        }}>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+            <span style={{ fontSize: 18, flexShrink: 0 }}>🤖</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>AI 코치</div>
+              {aiLoading ? (
+                <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>분석 중...</div>
+              ) : aiCoach ? (
+                <div style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--text-secondary)' }}>{aiCoach}</div>
+              ) : (
+                <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                  {(() => {
+                    const maxStreak = flatItems.reduce((max, item) => Math.max(max, getStreak(item.category, item.id)), 0);
+                    if (maxStreak > 7) return `🎯 ${label} 루틴을 ${maxStreak}일 연속 실천 중이에요! 대단해요!`;
+                    if (done === total && total > 0) return `✨ 오늘 ${label} 루틴을 모두 완료했어요! 완벽해요!`;
+                    return `💪 ${label} 루틴을 꾸준히 실천해보세요!`;
+                  })()}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Add routine modal */}
-      {showAdd && (
+      {showAdd && !isAll && (
         <div onClick={() => setShowAdd(false)} style={{
           position: 'fixed', inset: 0, zIndex: 1100,
           background: 'rgba(0,0,0,0.5)',
@@ -1292,7 +1924,7 @@ function RoutineChecklist({ category, label, selectedDate }) {
               value={newName}
               onChange={e => setNewName(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleAdd()}
-              placeholder={category === 'skin' ? '예: 토너 바르기, 선크림' : category === 'food' ? '예: 물 2L 마시기, 채소 먹기' : '예: 스트레칭, 걷기 30분'}
+              placeholder={timePlaceholders[catKey] || '루틴을 입력하세요'}
               style={{
                 width: '100%', padding: '14px', borderRadius: 12, border: 'none',
                 background: 'var(--bg-input, #F2F3F5)', fontSize: 14,

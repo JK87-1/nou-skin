@@ -34,7 +34,7 @@ const DUMMY_WEATHER = {
 
 // ===== Helper functions =====
 function uvColor(val) {
-  if (val <= 2) return '#34d399';
+  if (val <= 2) return '#89cef5';
   if (val <= 5) return '#F0B870';
   if (val <= 7) return '#f97316';
   return '#ef4444';
@@ -43,21 +43,21 @@ function uvColor(val) {
 function humidityInfo(val) {
   if (val < 30) return { color: '#f59e0b', label: '매우 낮음' };
   if (val < 40) return { color: '#F0B870', label: '낮음' };
-  if (val <= 60) return { color: '#34d399', label: '적정' };
+  if (val <= 60) return { color: '#89cef5', label: '적정' };
   if (val <= 70) return { color: '#38bdf8', label: '높음' };
-  return { color: '#ADEBB3', label: '매우 높음' };
+  return { color: '#aed8f7', label: '매우 높음' };
 }
 
 function airInfo(val) {
-  if (val <= 30) return { color: '#34d399', label: '좋음' };
-  if (val <= 50) return { color: '#ADEBB3', label: '보통' };
+  if (val <= 30) return { color: '#89cef5', label: '좋음' };
+  if (val <= 50) return { color: '#aed8f7', label: '보통' };
   if (val <= 80) return { color: '#F0B870', label: '나쁨' };
   return { color: '#ef4444', label: '매우나쁨' };
 }
 
 function weekHumidityTag(h) {
   if (h < 40) return { label: '건조주의', color: '#f59e0b' };
-  if (h <= 70) return { label: '적정', color: '#34d399' };
+  if (h <= 70) return { label: '적정', color: '#89cef5' };
   return { label: '습함', color: '#38bdf8' };
 }
 
@@ -451,7 +451,7 @@ export default function SkinWeather({ skinResult }) {
             width: 32, height: 32, borderRadius: 10, fontSize: 18,
             background: 'transparent',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}><PastelIcon emoji={seasonal.icon} size={18} /></div>
+          }}><span style={{ fontSize: 18 }}>{seasonal.icon}</span></div>
           <div>
             <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{seasonal.title}</div>
             <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{seasonal.season} 시즌 가이드</div>

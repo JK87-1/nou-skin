@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { getWeatherData, saveWeatherData, isStale, getUserLocation, saveUserLocation } from '../storage/WeatherStorage';
 
 function uvColor(val) {
-  if (val <= 2) return '#34d399';
+  if (val <= 2) return '#89cef5';
   if (val <= 5) return '#F0B870';
   if (val <= 7) return '#f97316';
   return '#ef4444';
@@ -11,14 +11,14 @@ function uvColor(val) {
 function humidityColor(val) {
   if (val < 30) return '#f59e0b';
   if (val < 40) return '#F0B870';
-  if (val <= 60) return '#34d399';
+  if (val <= 60) return '#89cef5';
   if (val <= 70) return '#38bdf8';
-  return '#ADEBB3';
+  return '#aed8f7';
 }
 
 function airColor(val) {
-  if (val <= 30) return '#34d399';
-  if (val <= 50) return '#ADEBB3';
+  if (val <= 30) return '#89cef5';
+  if (val <= 50) return '#aed8f7';
   if (val <= 80) return '#F0B870';
   return '#ef4444';
 }
@@ -117,9 +117,9 @@ export default function WeatherChip({ onTap }) {
       <div style={{ width: 1, height: 16, background: 'var(--border-subtle)' }} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         <div style={{ display: 'flex', gap: 5 }}>
-          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#81E4BD' }} title="UV" />
-          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#ADEBB3' }} title="습도" />
-          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#98FBCB' }} title="미세먼지" />
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#89cef5' }} title="UV" />
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#aed8f7' }} title="습도" />
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#d4ecfa' }} title="미세먼지" />
         </div>
         <span style={{ fontSize: 9, color: 'var(--text-dim)', lineHeight: 1 }}>{weather.location}</span>
       </div>

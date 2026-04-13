@@ -237,8 +237,8 @@ export default function ChangePage() {
                   </div>
                   <div style={{
                     padding: '12px 16px', borderRadius: 14,
-                    background: diff >= 0 ? 'rgba(52,211,153,0.08)' : 'rgba(248,113,113,0.08)',
-                    color: diff >= 0 ? '#34d399' : '#f87171',
+                    background: diff >= 0 ? 'rgba(137,206,245,0.08)' : 'rgba(248,113,113,0.08)',
+                    color: diff >= 0 ? '#89cef5' : '#f87171',
                     fontSize: 14, fontWeight: 700,
                   }}>
                     {diff >= 0 ? '▲' : '▼'} {Math.abs(diff)}점 {diff >= 0 ? '향상' : '하락'}
@@ -294,12 +294,12 @@ export default function ChangePage() {
             <svg viewBox={`0 0 ${graphData.w} ${graphData.h}`} style={{ width: '100%', height: 60 }} preserveAspectRatio="none">
               <defs>
                 <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#81E4BD" />
-                  <stop offset="100%" stopColor="#81E4BD" />
+                  <stop offset="0%" stopColor="#89cef5" />
+                  <stop offset="100%" stopColor="#89cef5" />
                 </linearGradient>
               </defs>
               <polyline points={graphData.points} fill="none" stroke="url(#bodyGrad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <circle cx={graphData.lastPt.x} cy={graphData.lastPt.y} r="4" fill="#81E4BD" />
+              <circle cx={graphData.lastPt.x} cy={graphData.lastPt.y} r="4" fill="#89cef5" />
             </svg>
           </div>
         )}

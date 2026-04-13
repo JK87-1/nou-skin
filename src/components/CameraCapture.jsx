@@ -205,8 +205,8 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
 
     const curStatus = statusRef.current;
     // White / Lemon / Mint palette
-    const readyColor = 'rgba(126,252,202,0.9)';   // mint
-    const readyGlow = 'rgba(126,252,202,0.3)';
+    const readyColor = 'rgba(137,206,245,0.9)';   // mint
+    const readyGlow = 'rgba(137,206,245,0.3)';
     const pendingColor = 'rgba(255,255,255,0.7)';
 
     let guideColor = pendingColor;
@@ -277,10 +277,10 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
     // Layer 3: Analysis zone labels — white/lemon/mint palette
     const ZONE_COLORS = {
       '이마': 'rgba(255,251,139,0.85)',     // lemon
-      'T존': 'rgba(126,252,202,0.8)',       // mint
+      'T존': 'rgba(137,206,245,0.8)',       // mint
       '왼볼': 'rgba(255,255,255,0.75)',     // white
       '오른볼': 'rgba(255,255,255,0.75)',   // white
-      '턱선': 'rgba(126,252,202,0.8)',      // mint
+      '턱선': 'rgba(137,206,245,0.8)',      // mint
     };
     for (const zone of ANALYSIS_ZONES) {
       if (zone.anchor >= landmarks.length) continue;
@@ -340,7 +340,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
 
       // '눈밑' label
       const rEyeCenter = underEyeDots[1];
-      drawLabel(mapX(rEyeCenter.x), mapY(rEyeCenter.y + 0.02), '눈밑', 'rgba(126,252,202,0.8)');
+      drawLabel(mapX(rEyeCenter.x), mapY(rEyeCenter.y + 0.02), '눈밑', 'rgba(137,206,245,0.8)');
     }
   };
 
@@ -635,7 +635,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
             position: 'absolute',
             left: '16%', right: '16%',
             height: 2,
-            background: 'linear-gradient(90deg, transparent, rgba(129,228,189,0.6), transparent)',
+            background: 'linear-gradient(90deg, transparent, rgba(137,206,245,0.6), transparent)',
             animation: 'scanLine 2.5s ease-in-out infinite',
             pointerEvents: 'none',
           }} />

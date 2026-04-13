@@ -188,14 +188,14 @@ export default function WeekDateHeader({ selectedDate, onSelectDate, weeklyData,
                       ? 'var(--accent-primary)'
                       : 'var(--text-muted)',
                 background: d.isToday
-                  ? '#81E4BD'
+                  ? '#89cef5'
                   : isSelected
-                    ? 'rgba(129,228,189,0.15)'
+                    ? 'rgba(137,206,245,0.15)'
                     : completed
-                      ? 'rgba(129,228,189,0.08)'
+                      ? 'rgba(137,206,245,0.08)'
                       : 'transparent',
                 border: partial && !d.isToday && !isSelected && !completed
-                  ? '1.5px solid rgba(129,228,189,0.4)' : 'none',
+                  ? '1.5px solid rgba(137,206,245,0.4)' : 'none',
                 transition: 'background 0.2s, color 0.2s',
               }}>{d.date}</div>
             </div>

@@ -425,7 +425,7 @@ export const CherryBlossomIcon = ({ size = s }) => {
 // 🍀 루아 미니 심볼 — 민트색 4개 꽃잎
 export const LuaMiniIcon = ({ size = s }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <defs><radialGradient id="lua-mini-g" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#A8F0D0"/><stop offset="100%" stopColor="#6DD8A8"/></radialGradient></defs>
+    <defs><radialGradient id="lua-mini-g" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#aed8f7"/><stop offset="100%" stopColor="#70c2f0"/></radialGradient></defs>
     <ellipse cx="12" cy="7.5" rx="4" ry="4" fill="url(#lua-mini-g)"/>
     <ellipse cx="12" cy="16.5" rx="4" ry="4" fill="url(#lua-mini-g)"/>
     <ellipse cx="7.5" cy="12" rx="4" ry="4" fill="url(#lua-mini-g)"/>

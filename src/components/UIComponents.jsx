@@ -37,9 +37,9 @@ export function ScoreRing({ score, size = 110, label = '종합점수' }) {
       <svg width={size} height={size} style={{ transform: 'rotate(-90deg)', position: 'absolute' }}>
         <defs>
           <linearGradient id="scoreRingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#81E4BD"/>
-            <stop offset="50%" stopColor="#81E4BD"/>
-            <stop offset="100%" stopColor="#ADEBB3"/>
+            <stop offset="0%" stopColor="#89cef5"/>
+            <stop offset="50%" stopColor="#89cef5"/>
+            <stop offset="100%" stopColor="#aed8f7"/>
           </linearGradient>
         </defs>
         <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="var(--border-light)" strokeWidth={11} />
@@ -236,7 +236,7 @@ export function DetailPage({ metricKey, value, onBack }) {
         <div className="gbs-box">
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
             <span style={{ fontSize: 20 }}>🧬</span>
-            <span style={{ fontSize: 15, fontWeight: 700, color: '#ADEBB3' }}>장-뇌-피부 축 (Gut-Brain-Skin Axis)</span>
+            <span style={{ fontSize: 15, fontWeight: 700, color: '#aed8f7' }}>장-뇌-피부 축 (Gut-Brain-Skin Axis)</span>
           </div>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.75, marginBottom: 10 }}>{data.gutBrainSkin}</p>
           <div style={{ fontSize: 10, color: 'var(--text-dim)', fontStyle: 'italic' }}>{data.gutBrainSkinSource}</div>

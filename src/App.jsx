@@ -625,7 +625,7 @@ export default function App() {
                 }}
                 style={{
                   flex: 1, padding: 13, borderRadius: 14, border: 'none',
-                  background: 'linear-gradient(135deg, #81E4BD, #81E4BD)',
+                  background: 'linear-gradient(135deg, #89cef5, #89cef5)',
                   color: '#fff', fontSize: 14, fontWeight: 700,
                   cursor: 'pointer', fontFamily: 'inherit',
                   boxShadow: 'none',
@@ -1094,7 +1094,7 @@ export default function App() {
                 flex: 1, padding: '12px 0', borderRadius: 'var(--btn-radius)', border: 'none', fontSize: 14, fontWeight: 700,
                 cursor: saved ? 'default' : 'pointer', fontFamily: 'inherit',
                 background: saved ? 'rgba(74,222,128,0.15)' : 'var(--btn-primary-bg)',
-                color: saved ? '#4ade80' : '#fff',
+                color: saved ? '#89cef5' : '#fff',
                 boxShadow: 'none',
               }}>
                 {saved ? <><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><CheckIcon size={18} /></span> 저장 완료</> : <><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><SaveIcon size={18} /></span> 기록 저장</>}
@@ -1187,7 +1187,7 @@ export default function App() {
             {/* ── 오늘의 피부 컨디션 ── */}
             {conditionBriefing && (() => {
               const score = result.conditionScore ?? result.overallScore;
-              const grade = score >= 85 ? { letter: 'S', label: '최상', color: '#81E4BD', bg: 'rgba(125,255,192,0.15)', border: 'rgba(125,255,192,0.3)' }
+              const grade = score >= 85 ? { letter: 'S', label: '최상', color: '#89cef5', bg: 'rgba(125,255,192,0.15)', border: 'rgba(125,255,192,0.3)' }
                 : score >= 70 ? { letter: 'A', label: '우수', color: activeThemeColors.accent, bg: `${activeThemeColors.accent}26`, border: `${activeThemeColors.accent}4d` }
                 : score >= 55 ? { letter: 'B', label: '양호', color: '#f59e0b', bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.3)' }
                 : score >= 40 ? { letter: 'C', label: '보통', color: '#8888a0', bg: 'rgba(136,136,160,0.12)', border: 'rgba(136,136,160,0.2)' }
@@ -1580,7 +1580,7 @@ export default function App() {
               animation: 'fadeUp 0.5s ease-out 1.4s both',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
             }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="url(#refreshGrad)" strokeWidth="3" strokeLinecap="round"><defs><linearGradient id="refreshGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#6DD8A8"/><stop offset="100%" stopColor="#81E4BD"/></linearGradient></defs><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="url(#refreshGrad)" strokeWidth="3" strokeLinecap="round"><defs><linearGradient id="refreshGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#70c2f0"/><stop offset="100%" stopColor="#89cef5"/></linearGradient></defs><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
               다시 측정하기
             </button>
 
@@ -1637,8 +1637,8 @@ export default function App() {
               return (
                 <div style={{
                   margin: '20px 0', padding: 16, borderRadius: 16,
-                  background: 'rgba(52,211,153,0.08)',
-                  border: '1px solid rgba(52,211,153,0.15)',
+                  background: 'rgba(137,206,245,0.08)',
+                  border: '1px solid rgba(137,206,245,0.15)',
                 }}>
                   {g.metrics.map((m) => (
                     <div key={m.key} style={{
@@ -1646,7 +1646,7 @@ export default function App() {
                       padding: '6px 0', fontSize: 13,
                     }}>
                       <span style={{ color: 'var(--text-secondary)' }}>{m.icon} {m.label}</span>
-                      <span style={{ color: '#34d399', fontWeight: 600 }}>
+                      <span style={{ color: '#89cef5', fontWeight: 600 }}>
                         {m.startValue} → {m.currentValue}
                       </span>
                     </div>

@@ -35,15 +35,15 @@
   --glass-inset: inset 0 1px 1px rgba(255,255,255,0.05);
   --glass-accent-inset: inset 0 1px 0 rgba(240,144,112,0.06);
   /* Accents (theme system overrides these dynamically) */
-  --accent-primary: #81E4BD;
-  --accent-secondary: #ADEBB3;
-  --accent-gradient: linear-gradient(135deg, #81E4BD, #E87080, #D05878);
+  --accent-primary: #89cef5;
+  --accent-secondary: #aed8f7;
+  --accent-gradient: linear-gradient(135deg, #89cef5, #E87080, #D05878);
   --text-disabled: rgba(255,255,255,0.15);
   --consult-bg: linear-gradient(180deg, #08080c 0%, #0c0c10 100%);
 
   /* Structural variables (dark defaults) */
   --btn-radius: 50px;
-  --btn-primary-bg: linear-gradient(135deg, #81E4BD, #E87080, #D05878);
+  --btn-primary-bg: linear-gradient(135deg, #89cef5, #E87080, #D05878);
   --btn-primary-shadow: 0 4px 20px rgba(240,144,112,0.35), inset 0 1px 1px rgba(255,255,255,0.05);
   --btn-secondary-bg: var(--bg-card);
   --btn-secondary-border: 1px solid var(--border-subtle);
@@ -66,26 +66,26 @@
   --sheet-handle: rgba(255,255,255,0.15);
   /* Progress */
   --progress-track: rgba(255,255,255,0.06);
-  --progress-fill: linear-gradient(90deg, #E87080, #81E4BD, #81E4BD);
+  --progress-fill: linear-gradient(90deg, #E87080, #89cef5, #89cef5);
   /* Semantic accent */
-  --accent-success: #34d399;
-  --accent-success-bg: rgba(52,211,153,0.12);
+  --accent-success: #89cef5;
+  --accent-success-bg: rgba(137,206,245,0.12);
   --accent-streak: #F0B870;
   --accent-streak-bg: linear-gradient(135deg, rgba(251,191,36,0.12), rgba(251,146,36,0.08));
   /* Category / Tag */
   --tag-bg: rgba(255,255,255,0.06);
   --tag-color: #8888a0;
   /* Routine ingredient highlight */
-  --ingredient-accent: #ADEBB3;
+  --ingredient-accent: #aed8f7;
   /* Interactive states */
   --item-bg: rgba(255,255,255,0.04);
   --item-border: 1px solid rgba(255,255,255,0.08);
   --item-hover-bg: rgba(255,255,255,0.06);
   /* Calendar / Weekly dots */
   --day-today-bg: linear-gradient(135deg, rgba(240,144,112,0.15), rgba(240,144,112,0.1));
-  --day-completed-bg: rgba(52,211,153,0.06);
+  --day-completed-bg: rgba(137,206,245,0.06);
   --day-default-bg: rgba(255,255,255,0.02);
-  --day-today-accent: #81E4BD;
+  --day-today-accent: #89cef5;
   /* Hint / Context box */
   --context-bg: rgba(240,144,112,0.06);
   --context-border: 1px solid rgba(240,144,112,0.1);
@@ -152,7 +152,7 @@
   --sheet-handle: #ddd;
   /* Progress */
   --progress-track: #F2F3F5;
-  --progress-fill: linear-gradient(90deg, #81E4BD, #81E4BD);
+  --progress-fill: linear-gradient(90deg, #89cef5, #89cef5);
   /* Semantic accent */
   --accent-success: #22C55E;
   --accent-success-bg: rgba(34,197,94,0.08);
@@ -162,7 +162,7 @@
   --tag-bg: #F2F3F5;
   --tag-color: #6B7684;
   /* Routine ingredient highlight */
-  --ingredient-accent: #81E4BD;
+  --ingredient-accent: #89cef5;
   /* Interactive states */
   --item-bg: #F7F8FA;
   --item-border: 1px solid #eee;
@@ -171,7 +171,7 @@
   --day-today-bg: #FFFFFF;
   --day-completed-bg: transparent;
   --day-default-bg: transparent;
-  --day-today-accent: #81E4BD;
+  --day-today-accent: #89cef5;
   /* Hint / Context box */
   --context-bg: rgba(240,144,112,0.04);
   --context-border: 1px solid rgba(240,144,112,0.06);
@@ -227,7 +227,7 @@
   line-height: 30px;
   font-size: 20px;
   font-weight: 600;
-  color: #81E4BD;
+  color: #89cef5;
   text-align: center;
   letter-spacing: -0.2px;
   margin: 0;
@@ -495,7 +495,7 @@
 .orb-blob-1 {
   width: 55%;
   height: 55%;
-  background: radial-gradient(circle, #81E4BD, #E87080);
+  background: radial-gradient(circle, #89cef5, #E87080);
   top: 10%;
   left: 15%;
   animation: orbFloat1 4s ease-in-out infinite;
@@ -503,7 +503,7 @@
 .orb-blob-2 {
   width: 50%;
   height: 50%;
-  background: radial-gradient(circle, #81E4BD, #81E4BD);
+  background: radial-gradient(circle, #89cef5, #89cef5);
   bottom: 10%;
   right: 10%;
   animation: orbFloat2 5s ease-in-out infinite;
@@ -511,7 +511,7 @@
 .orb-blob-3 {
   width: 45%;
   height: 45%;
-  background: radial-gradient(circle, #81E4BD, #ADEBB3);
+  background: radial-gradient(circle, #89cef5, #aed8f7);
   top: 35%;
   left: 35%;
   animation: orbFloat3 3.5s ease-in-out infinite;
@@ -519,7 +519,7 @@
 .orb-blob-4 {
   width: 40%;
   height: 40%;
-  background: radial-gradient(circle, #ADEBB3, #81E4BD);
+  background: radial-gradient(circle, #aed8f7, #89cef5);
   top: 5%;
   right: 15%;
   animation: orbFloat4 5.5s ease-in-out infinite;
@@ -1577,7 +1577,7 @@
   border: none;
 }
 [data-theme="light"] .consult-bubble.ai {
-  background: linear-gradient(135deg, #78D4B8, #6DD8A8);
+  background: linear-gradient(135deg, #70c2f0, #70c2f0);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   border: none;

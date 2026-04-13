@@ -77,7 +77,7 @@ export default function SkinScoreCircle({ score, change, onTap }) {
           <div style={{
             marginTop: 12,
             fontSize: 12, fontWeight: 600,
-            color: change > 0 ? '#4ade80' : '#F0B870',
+            color: change > 0 ? '#89cef5' : '#F0B870',
           }}>
             지난주 대비 {change > 0 ? '+' : ''}{change}점
           </div>

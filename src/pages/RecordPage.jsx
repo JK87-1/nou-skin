@@ -287,7 +287,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                 <div key={slot.key} onClick={() => onMeasure && onMeasure()} style={{
                   flex: '1', aspectRatio: '1/1', borderRadius: 5, flexShrink: 0,
                   border: 'none',
-                  background: 'rgba(129,228,189,0.08)',
+                  background: 'rgba(137,206,245,0.08)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   cursor: 'pointer',
                 }}>
@@ -358,7 +358,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                 width: slots.length > 3 ? 'calc((100% - 16px) / 3)' : undefined,
                 aspectRatio: '1/1', borderRadius: 5, flexShrink: 0,
                 border: 'none',
-                background: 'rgba(129,228,189,0.08)',
+                background: 'rgba(137,206,245,0.08)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: 'pointer',
               }}>
@@ -668,7 +668,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                 <div key={slot.key} onClick={() => setShowBodyAdd(true)} style={{
                   flex: '1', aspectRatio: '1/1', borderRadius: 5, flexShrink: 0,
                   border: 'none',
-                  background: 'rgba(129,228,189,0.08)',
+                  background: 'rgba(137,206,245,0.08)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   cursor: 'pointer',
                 }}>
@@ -864,15 +864,15 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
         <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
           <button onClick={() => fileRef.current?.click()} style={{
             flex: 1, padding: '14px 0', borderRadius: 14, border: 'none',
-            background: 'rgba(129,228,189,0.12)',
+            background: 'rgba(137,206,245,0.12)',
             color: 'var(--accent-primary)',
             fontSize: 13, fontWeight: 600, cursor: 'pointer',
             fontFamily: 'inherit',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
           }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="#81E4BD" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              <circle cx="12" cy="13" r="3" stroke="#81E4BD" strokeWidth="1.5" />
+              <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="#89cef5" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              <circle cx="12" cy="13" r="3" stroke="#89cef5" strokeWidth="1.5" />
             </svg>
             사진 촬영
           </button>
@@ -977,7 +977,7 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
         {/* Analyze button */}
         <button onClick={handleAnalyze} disabled={analyzing || !foodItems.some(f => f.name.trim())} style={{
           width: '100%', padding: '13px 0', borderRadius: 14, border: 'none',
-          background: analyzing ? 'var(--bg-input, #F2F3F5)' : 'rgba(129,228,189,0.15)',
+          background: analyzing ? 'var(--bg-input, #F2F3F5)' : 'rgba(137,206,245,0.15)',
           color: analyzing ? 'var(--text-muted)' : 'var(--accent-primary)',
           fontSize: 13, fontWeight: 600, cursor: analyzing ? 'default' : 'pointer',
           fontFamily: 'inherit', marginBottom: 12,
@@ -995,7 +995,7 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
         {aiResult && (
           <div style={{
             padding: '14px 16px', borderRadius: 14, marginBottom: 16,
-            background: 'rgba(129,228,189,0.08)', border: '1px solid rgba(129,228,189,0.2)',
+            background: 'rgba(137,206,245,0.08)', border: '1px solid rgba(137,206,245,0.2)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
               <span style={{ fontSize: 13 }}>✨</span>
@@ -1168,7 +1168,7 @@ function PhotoCropModal({ src, onConfirm, onCancel }) {
               y: Math.min(0, Math.max(cropSize - h, o.y)),
             }));
           }}
-          style={{ width: cropSize, marginTop: 16, accentColor: '#81E4BD' }}
+          style={{ width: cropSize, marginTop: 16, accentColor: '#89cef5' }}
         />
       )}
 
@@ -1180,7 +1180,7 @@ function PhotoCropModal({ src, onConfirm, onCancel }) {
         }}>취소</button>
         <button onClick={handleConfirm} style={{
           padding: '12px 32px', borderRadius: 14, border: 'none',
-          background: '#81E4BD', color: '#fff',
+          background: '#89cef5', color: '#fff',
           fontSize: 14, fontWeight: 700, cursor: 'pointer',
         }}>확인</button>
       </div>
@@ -1415,7 +1415,7 @@ function FoodDetailModal({ food, onClose, onDelete }) {
           {food.photo ? (
             <FoodPhoto photo={food.photo} style={{ width: 56, height: 56, borderRadius: 14, objectFit: 'cover', flexShrink: 0 }} />
           ) : (
-            <div style={{ width: 56, height: 56, borderRadius: 14, background: 'rgba(129,228,189,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🍽️</div>
+            <div style={{ width: 56, height: 56, borderRadius: 14, background: 'rgba(137,206,245,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🍽️</div>
           )}
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{food.name}</div>
@@ -1527,7 +1527,7 @@ function SkinInsightsSection({ onMeasure }) {
     { key: 'skinTone', label: '피부톤', icon: '✨', grad: ['#FFF3C7', '#FFE082'] },
     { key: 'wrinkleScore', label: '주름', icon: '📐', grad: ['#F5E6D8', '#E8C8B0'] },
     { key: 'poreScore', label: '모공', icon: '🔬', grad: ['#E8D8C8', '#D0C0A8'] },
-    { key: 'elasticityScore', label: '탄력', icon: '💎', grad: ['#D1FAE5', '#81E4BD'] },
+    { key: 'elasticityScore', label: '탄력', icon: '💎', grad: ['#e2f2fc', '#89cef5'] },
     { key: 'darkCircleScore', label: '다크서클', icon: '👁️', grad: ['#E8E0F0', '#C8B8E8'] },
   ];
 
@@ -1566,7 +1566,7 @@ function SkinInsightsSection({ onMeasure }) {
         </div>
         <div>
           <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>
-            피부나이 {latest.skinAge}세 {skinAgeDiff !== 0 && <span style={{ fontSize: 11, color: skinAgeDiff < 0 ? '#34d399' : '#f87171' }}>{skinAgeDiff < 0 ? '▼' : '▲'}{Math.abs(skinAgeDiff)}세</span>}
+            피부나이 {latest.skinAge}세 {skinAgeDiff !== 0 && <span style={{ fontSize: 11, color: skinAgeDiff < 0 ? '#89cef5' : '#f87171' }}>{skinAgeDiff < 0 ? '▼' : '▲'}{Math.abs(skinAgeDiff)}세</span>}
           </div>
           <div style={{ fontSize: 10, color: '#888', lineHeight: 1.5, marginTop: 3 }}>
             {overallDiff !== 0 ? `종합 ${overallDiff > 0 ? '+' : ''}${overallDiff}점 ${period > 0 ? `(${period}일간)` : ''}` : '꾸준히 측정하면 변화를 추적할 수 있어요'}
@@ -1871,7 +1871,7 @@ function BodyInsightsSection() {
         )}
 
         {/* 스마트 인사이트 메시지 */}
-        <div style={{ padding: '10px 12px', borderRadius: 12, background: 'rgba(129,228,189,0.12)', border: '1px solid rgba(129,228,189,0.2)' }}>
+        <div style={{ padding: '10px 12px', borderRadius: 12, background: 'rgba(137,206,245,0.12)', border: '1px solid rgba(137,206,245,0.2)' }}>
           <div style={{ fontSize: 12, color: '#4E5968', lineHeight: 1.5 }}>{bodyInsight}</div>
         </div>
 

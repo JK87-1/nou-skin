@@ -42,7 +42,7 @@ export const ALERT_RULES = [
     condition: (weather) => weather.uv >= 3,
     priority: (weather) => weather.uv >= 6 ? 'high' : 'medium',
     icon: '☀️',
-    color: '#81E4BD',
+    color: '#89cef5',
     title: (weather) => `자외선 지수 ${weather.uvLabel}`,
     subtitle: (weather) => `UV ${weather.uv}`,
     description: (weather) =>
@@ -78,7 +78,7 @@ export const ALERT_RULES = [
     condition: (weather) => weather.humidity > 70,
     priority: () => 'medium',
     icon: '💦',
-    color: '#ADEBB3',
+    color: '#aed8f7',
     title: () => '고습도 컨디션 관리',
     subtitle: (weather) => `습도 ${weather.humidity}%`,
     description: (weather) =>

@@ -117,7 +117,7 @@ export default function InstallBanner() {
               background: 'linear-gradient(135deg, rgba(240,144,112,0.2), rgba(240,144,112,0.2))',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <span style={{ fontSize: 13, fontWeight: 800, color: '#81E4BD', fontFamily: "'Outfit', sans-serif", letterSpacing: 2 }}>루아</span>
+              <span style={{ fontSize: 13, fontWeight: 800, color: '#89cef5', fontFamily: "'Outfit', sans-serif", letterSpacing: 2 }}>루아</span>
             </div>
             <div>
               <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 2px' }}>Safari에서 열어주세요</p>
@@ -135,13 +135,13 @@ export default function InstallBanner() {
                 background: 'rgba(240,144,112,0.12)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ADEBB3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#aed8f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
                   <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
                 </svg>
               </div>
               <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.3 }}>
-                주소창 <span style={{ fontWeight: 700, color: '#ADEBB3' }}>URL 복사</span>
+                주소창 <span style={{ fontWeight: 700, color: '#aed8f7' }}>URL 복사</span>
               </p>
             </div>
 
@@ -156,13 +156,13 @@ export default function InstallBanner() {
                 background: 'rgba(240,144,112,0.12)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ADEBB3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#aed8f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="10"/>
                   <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
                 </svg>
               </div>
               <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.3 }}>
-                <span style={{ fontWeight: 700, color: '#ADEBB3' }}>Safari</span>에서 붙여넣기
+                <span style={{ fontWeight: 700, color: '#aed8f7' }}>Safari</span>에서 붙여넣기
               </p>
             </div>
           </div>
@@ -186,7 +186,7 @@ export default function InstallBanner() {
             background: 'linear-gradient(135deg, rgba(240,144,112,0.2), rgba(240,144,112,0.2))',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <span style={{ fontSize: 13, fontWeight: 800, color: '#81E4BD', fontFamily: "'Outfit', sans-serif", letterSpacing: 2 }}>루아</span>
+            <span style={{ fontSize: 13, fontWeight: 800, color: '#89cef5', fontFamily: "'Outfit', sans-serif", letterSpacing: 2 }}>루아</span>
           </div>
           <div style={{ flex: 1 }}>
             <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 2px' }}>홈 화면에 추가</p>
@@ -209,7 +209,7 @@ export default function InstallBanner() {
               background: 'linear-gradient(135deg, rgba(240,144,112,0.2), rgba(240,144,112,0.2))',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <span style={{ fontSize: 13, fontWeight: 800, color: '#81E4BD', fontFamily: "'Outfit', sans-serif", letterSpacing: 2 }}>루아</span>
+              <span style={{ fontSize: 13, fontWeight: 800, color: '#89cef5', fontFamily: "'Outfit', sans-serif", letterSpacing: 2 }}>루아</span>
             </div>
             <div>
               <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 2px' }}>홈 화면에 추가하기</p>
@@ -229,14 +229,14 @@ export default function InstallBanner() {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 {/* Share icon (iOS style) */}
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ADEBB3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#aed8f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
                   <polyline points="16 6 12 2 8 6"/>
                   <line x1="12" y1="2" x2="12" y2="15"/>
                 </svg>
               </div>
               <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.3 }}>
-                하단 <span style={{ fontWeight: 700, color: '#ADEBB3' }}>공유</span> 탭
+                하단 <span style={{ fontWeight: 700, color: '#aed8f7' }}>공유</span> 탭
               </p>
             </div>
 
@@ -253,14 +253,14 @@ export default function InstallBanner() {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 {/* Plus square icon */}
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ADEBB3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#aed8f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                   <line x1="12" y1="8" x2="12" y2="16"/>
                   <line x1="8" y1="12" x2="16" y2="12"/>
                 </svg>
               </div>
               <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.3 }}>
-                <span style={{ fontWeight: 700, color: '#ADEBB3' }}>홈 화면에 추가</span>
+                <span style={{ fontWeight: 700, color: '#aed8f7' }}>홈 화면에 추가</span>
               </p>
             </div>
           </div>
