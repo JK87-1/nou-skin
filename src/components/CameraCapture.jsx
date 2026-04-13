@@ -652,20 +652,18 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
         />
 
         {/* Back button */}
-        <button
+        <div
           onClick={() => { cleanup(); onClose(); }}
           style={{
             position: 'absolute', top: 'calc(16px + env(safe-area-inset-top, 0px))', left: 16,
-            width: 40, height: 40, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.85)', border: 'none',
-            color: '#191F28', fontSize: 20, cursor: 'pointer',
+            width: 36, height: 36,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+            cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
             zIndex: 10,
           }}
         >
-          <span>←</span>
-        </button>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+        </div>
 
         {/* Album fallback button */}
         <button

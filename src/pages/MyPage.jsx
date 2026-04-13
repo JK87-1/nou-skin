@@ -347,7 +347,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
           ? Math.round(records.reduce((s, r) => s + r.overallScore, 0) / records.length) : 0;
         return (
           <div style={{ padding: '20px 10px 0' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
               <div style={{
                 width: 72, height: 72, borderRadius: '50%', flexShrink: 0,
                 background: 'var(--btn-primary-bg)', padding: 2,
@@ -1183,7 +1183,7 @@ function CategorySettingsPage({ onClose, onSave }) {
           width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1,
         }}>
-          <span style={{ fontSize: 16, color: '#5AAABB', fontWeight: 500 }}>‹</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
         </div>
         <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 15, fontWeight: 500, color: '#1A3A4A' }}>카테고리 설정</span>
       </div>
@@ -1734,13 +1734,13 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
         {/* Handle bar + back/delete buttons */}
         <div style={{ display: 'flex', justifyContent: 'center', position: 'relative', marginBottom: 14 }}>
           <div onClick={onClose} style={{
-            position: 'absolute', left: -4, top: 2,
-            width: 32, height: 32, borderRadius: '50%', cursor: 'pointer',
-            background: 'var(--bg-card-hover)',
+            position: 'absolute', left: -4, top: 0,
+            width: 36, height: 36, cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
+            WebkitTapHighlightColor: 'transparent',
           }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <path d="M15 18l-6-6 6-6" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 18l-6-6 6-6" />
             </svg>
           </div>
           <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--bg-input)', marginTop: 10 }} />

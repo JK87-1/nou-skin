@@ -143,7 +143,7 @@ export function DetailPage({ metricKey, value, onBack }) {
       }}>
         <div style={{ position: 'absolute', top: -40, right: -40, width: 150, height: 150, borderRadius: '50%', background: 'var(--bg-input)' }} />
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <button className="btn-back" onClick={onBack} style={{ marginBottom: 20 }}>←</button>
+          <div onClick={onBack} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', WebkitTapHighlightColor: 'transparent', marginBottom: 20 }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg></div>
           <div style={{ fontSize: 40, marginBottom: 10 }}>{data.icon}</div>
           <h1 style={{ fontSize: 26, fontWeight: 800, color: '#fff', fontFamily: 'var(--font-display)', marginBottom: 4 }}>
             {data.title}
@@ -250,7 +250,7 @@ export function DetailPage({ metricKey, value, onBack }) {
           </p>
         </div>
 
-        <button className="btn-primary" onClick={onBack}>← 돌아가기</button>
+        <button className="btn-primary" onClick={onBack} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>돌아가기</button>
       </div>
     </div>
   );

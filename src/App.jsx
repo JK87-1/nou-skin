@@ -711,6 +711,9 @@ export default function App() {
       {/* ===== FOOD TAB ===== */}
       {activeTab === 'food' && <RecordPage onTabChange={switchTab} autoOpenAdd={foodAutoOpen} onMeasure={openCamera} />}
 
+      {/* ===== FOOD2 TAB (v2) ===== */}
+      {activeTab === 'food2' && <RecordPage onTabChange={switchTab} autoOpenAdd={foodAutoOpen} onMeasure={openCamera} />}
+
       {/* ===== BODY TAB ===== */}
       {activeTab === 'body' && <ChangePage />}
 
@@ -751,13 +754,12 @@ export default function App() {
         const isL = colorMode === 'light';
         return (
         <div style={{ background: 'var(--bg-primary)', padding: '24px 24px 0', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <button onClick={reset} style={{
+          <div onClick={reset} style={{
             alignSelf: 'flex-start', marginBottom: 147,
-            width: 38, height: 38, borderRadius: '50%', border: 'none',
-            background: 'var(--bg-input)', cursor: 'pointer',
+            width: 36, height: 36,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 18, color: 'var(--text-muted)',
-          }}>←</button>
+            cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
+          }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg></div>
           <div style={{
             width: 300, height: 300, borderRadius: '50%', overflow: 'hidden',
             border: '3px solid var(--border-subtle)',

@@ -17,12 +17,15 @@ const DEFAULTS = {
   activeTheme: null,
   colorMode: 'light',
   categories: [
-    { key: 'food',     label: '식단',   color: '#FFD070', enabled: true },
-    { key: 'exercise', label: '운동',   color: '#90CCE8', enabled: true },
-    { key: 'sleep',    label: '수면',   color: '#C8A0E0', enabled: true },
-    { key: 'skin',     label: '피부',   color: '#F8A8C0', enabled: true },
-    { key: 'face',     label: '얼굴',   color: '#80D0A8', enabled: true },
-    { key: 'body',     label: '몸무게', color: '#D0D0D0', enabled: false },
+    { key: 'food',     label: '식단',     color: '#FFD070', enabled: true },
+    { key: 'exercise', label: '운동',     color: '#90CCE8', enabled: false },
+    { key: 'walk',     label: '산책',     color: '#A8D8A8', enabled: false },
+    { key: 'sleep',    label: '수면',     color: '#C8A0E0', enabled: false },
+    { key: 'water',    label: '수분',     color: '#7BC8F0', enabled: false },
+    { key: 'energy',   label: '에너지',   color: '#F0C878', enabled: false },
+    { key: 'body',     label: '몸무게',   color: '#D0D0D0', enabled: true },
+    { key: 'skin',     label: '피부',     color: '#F8A8C0', enabled: false },
+    { key: 'face',     label: '얼굴',     color: '#80D0A8', enabled: false },
   ],
 };
 
