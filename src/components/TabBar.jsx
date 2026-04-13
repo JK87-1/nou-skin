@@ -108,6 +108,17 @@ export default function TabBar({ activeTab, onTabChange }) {
       ),
     },
     {
+      key: 'body2',
+      label: '변화2',
+      icon: (active) => (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="13" width="5" height="9" rx="1.5" fill={active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)'} />
+          <rect x="9.5" y="7" width="5" height="15" rx="1.5" fill={active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)'} />
+          <rect x="16" y="2" width="5" height="20" rx="1.5" fill={active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)'} />
+        </svg>
+      ),
+    },
+    {
       key: 'album',
       label: 'MY',
       icon: (active) => (
