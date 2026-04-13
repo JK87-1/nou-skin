@@ -1,6 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { getTodayFoods, getTodayNutrition, getFoodRecords, getNutritionForDate, getTimeAdjustedGoal, getFoodGoal, saveFoodRecord, deleteFoodRecord } from '../storage/FoodStorage';
-import WeekDateHeader from '../components/WeekDateHeader';
 import { getRecords, getChanges, getTotalChanges, getAllThumbnailsAsync } from '../storage/SkinStorage';
 import { getBodyRecords, getLatestWeight, getStartWeight, getBodyGoal, getBodyProfile, calcBMI, saveBodyRecord, deleteBodyRecord } from '../storage/BodyStorage';
 import { getEnabledCategories } from '../storage/ProfileStorage';
@@ -126,15 +125,12 @@ function getDateKey(d) {
 
 export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
   const [enabledCats, setEnabledCats] = useState(() => getEnabledCategories());
-  const [foodTab, setFoodTab] = useState(() => {
-    const cats = getEnabledCategories();
-    return cats.find(c => c.key === 'food') ? 'food' : (cats[0]?.key || 'food');
-  });
+  const [foodTab, setFoodTab] = useState('all');
   useEffect(() => {
     const handler = () => {
       const cats = getEnabledCategories();
       setEnabledCats(cats);
-      if (!cats.find(c => c.key === foodTab)) setFoodTab(cats[0]?.key || 'food');
+      if (foodTab !== 'all' && !cats.find(c => c.key === foodTab)) setFoodTab('all');
     };
     window.addEventListener('lua:categories-changed', handler);
     return () => window.removeEventListener('lua:categories-changed', handler);
@@ -208,53 +204,124 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
   // Score ring
   const r = 24, circ = 2 * Math.PI * r;
   const dashFill = circ * (score / 100);
-  const [headerTitle, setHeaderTitle] = useState('');
+  const [showCal, setShowCal] = useState(false);
+  const [calYear, setCalYear] = useState(() => new Date().getFullYear());
+  const [calMonth, setCalMonth] = useState(() => new Date().getMonth());
+
+  const dateLabel = selectedDate === todayStr ? '오늘' : (() => {
+    const d = new Date(selectedDate + 'T00:00:00');
+    return `${d.getMonth() + 1}월 ${d.getDate()}일`;
+  })();
 
   return (
     <div style={{ minHeight: '100dvh', paddingBottom: 80 }}>
       {/* Header */}
       <div style={{ padding: '16px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>{headerTitle}</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>기록</span>
+          <div onClick={() => setShowCal(!showCal)} style={{
+            background: 'rgba(255,255,255,.6)', border: '0.5px solid rgba(100,180,220,.2)',
+            borderRadius: 99, padding: '3px 10px', display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer',
+          }}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#3A8AAA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+            <span style={{ fontSize: 10, color: '#3A8AAA', fontWeight: 500 }}>{dateLabel}</span>
+            <span style={{ fontSize: 8, color: '#3A8AAA' }}>▾</span>
+          </div>
+        </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <div style={{ width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <div style={{ width: 26, height: 26, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
               <path d="M12 5v14M5 12h14" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </div>
-          <div style={{ width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
-            </svg>
-          </div>
         </div>
       </div>
 
-      {/* Weekly Date Header */}
-      <WeekDateHeader
-        selectedDate={selectedDate}
-        onSelectDate={handleSelectDate}
-        hideTitle
-        onTitleChange={setHeaderTitle}
-      />
+      {/* Inline Calendar */}
+      {showCal && (() => {
+        const firstDay = new Date(calYear, calMonth, 1).getDay();
+        const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+        const todayObj = new Date();
+        const todayDateStr = `${todayObj.getFullYear()}-${String(todayObj.getMonth() + 1).padStart(2, '0')}-${String(todayObj.getDate()).padStart(2, '0')}`;
+        const cells = [];
+        for (let i = 0; i < firstDay; i++) cells.push(null);
+        for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+        return (
+          <div style={{
+            background: 'rgba(255,255,255,.95)', borderRadius: 16, margin: '0 14px 8px',
+            padding: '12px 14px', border: '0.5px solid rgba(100,180,220,.2)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <div onClick={() => { if (calMonth === 0) { setCalYear(calYear - 1); setCalMonth(11); } else setCalMonth(calMonth - 1); }}
+                style={{ cursor: 'pointer', padding: '2px 8px', fontSize: 14, color: '#5A9AAA' }}>‹</div>
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#2A6A8A' }}>{calYear}년 {calMonth + 1}월</span>
+              <div onClick={() => { if (calMonth === 11) { setCalYear(calYear + 1); setCalMonth(0); } else setCalMonth(calMonth + 1); }}
+                style={{ cursor: 'pointer', padding: '2px 8px', fontSize: 14, color: '#5A9AAA' }}>›</div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', textAlign: 'center', marginBottom: 4 }}>
+              {['일','월','화','수','목','금','토'].map(d => (
+                <div key={d} style={{ fontSize: 9, color: '#9ABBC8', padding: '2px 0' }}>{d}</div>
+              ))}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', textAlign: 'center', gap: '2px 0' }}>
+              {cells.map((day, i) => {
+                if (!day) return <div key={`e${i}`} />;
+                const dateStr = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isFuture = dateStr > todayDateStr;
+                const isSelected = dateStr === selectedDate;
+                const isTodayDate = dateStr === todayDateStr;
+                return (
+                  <div key={day} onClick={() => { if (isFuture) return; handleSelectDate(dateStr); setShowCal(false); }}
+                    style={{
+                      width: 22, height: 22, borderRadius: '50%', margin: '0 auto',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 10, cursor: isFuture ? 'default' : 'pointer',
+                      background: isTodayDate ? '#3A8AAA' : isSelected ? 'rgba(100,180,220,.2)' : 'transparent',
+                      color: isFuture ? 'rgba(90,150,170,.3)' : isTodayDate ? '#fff' : isSelected ? '#2A6A8A' : '#5A9AAA',
+                      fontWeight: isSelected ? 500 : 400,
+                    }}>{day}</div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Category Tabs */}
-      <div style={{ padding: '12px 10px 0' }}>
-        <div className="segment-control" data-active={
-          foodTab === enabledCats[0]?.key ? 'first' : foodTab === enabledCats[enabledCats.length - 1]?.key ? 'last' : 'mid'
-        }>
-          {enabledCats.map(cat => (
-            <button key={cat.key} className={`segment-btn${foodTab === cat.key ? ' active' : ''}`}
-              onClick={() => setFoodTab(cat.key)}>{cat.label}</button>
-          ))}
-        </div>
-      </div>
+      {(() => {
+        const allTabs = [{ key: 'all', label: '전체' }, ...enabledCats];
+        const idx = allTabs.findIndex(t => t.key === foodTab);
+        const pos = idx === 0 ? 'first' : idx === allTabs.length - 1 ? 'last' : 'mid';
+        return (
+          <div style={{ padding: '12px 10px 0' }}>
+            <div className="segment-control" data-active={pos}>
+              {allTabs.map(cat => (
+                <button key={cat.key} className={`segment-btn${foodTab === cat.key ? ' active' : ''}`}
+                  onClick={() => setFoodTab(cat.key)}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                    {cat.key !== 'all' && cat.color && (
+                      <span style={{ width: 8, height: 8, borderRadius: 3, background: cat.color, flexShrink: 0 }} />
+                    )}
+                    {cat.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
       <div className="tab-content-panel" data-active={
-        foodTab === enabledCats[0]?.key ? 'first' : foodTab === enabledCats[enabledCats.length - 1]?.key ? 'last' : 'mid'
+        (() => {
+          const allTabs = [{ key: 'all', label: '전체' }, ...enabledCats];
+          const idx = allTabs.findIndex(t => t.key === foodTab);
+          return idx === 0 ? 'first' : idx === allTabs.length - 1 ? 'last' : 'mid';
+        })()
       }>
 
       {/* Skin content */}
-      {foodTab === 'skin' && <>
+      {(foodTab === 'all' || foodTab === 'skin') && <>
         {/* Skin Thumbnail Row — 3칸 그리드 */}
         {(() => {
           const skinRecords = getRecords();
@@ -307,7 +374,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
       </>}
 
       {/* Food content */}
-      {foodTab === 'food' && <>
+      {(foodTab === 'all' || foodTab === 'food') && <>
       {/* Date subtitle */}
       <div style={{ padding: '0 18px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ fontSize: 11, color: '#888' }}>
@@ -636,7 +703,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
       </>}
 
       {/* Body content */}
-      {foodTab === 'body' && <>
+      {(foodTab === 'all' || foodTab === 'body') && <>
         {/* Body Thumbnail Row — 3칸 그리드 */}
         {(() => {
           const bodyRecords = getBodyRecords();
@@ -688,7 +755,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
       </>}
 
       {/* Face content (placeholder) */}
-      {foodTab === 'face' && (
+      {(foodTab === 'all' || foodTab === 'face') && (
         <div style={{ padding: '60px 24px', textAlign: 'center', ...fadeUp(0.05) }}>
           <div style={{ fontSize: 28, marginBottom: 12 }}>🙂</div>
           <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>얼굴 기록</div>
@@ -697,7 +764,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
       )}
 
       {/* Body shape content (placeholder) */}
-      {foodTab === 'shape' && (
+      {(foodTab === 'all' || foodTab === 'shape') && (
         <div style={{ padding: '60px 24px', textAlign: 'center', ...fadeUp(0.05) }}>
           <div style={{ fontSize: 28, marginBottom: 12 }}>💪</div>
           <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>바디 기록</div>

@@ -197,15 +197,12 @@ function ChangeIndicator({ diff, unit = '점', inverse = false, size = 'normal' 
 export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, initialMode, galleryOnly }) {
   const [mode, setMode] = useState(initialMode || 'gallery');
   const [enabledCats, setEnabledCats] = useState(() => getEnabledCategories());
-  const [albumCategory, setAlbumCategory] = useState(() => {
-    const cats = getEnabledCategories();
-    return cats.length > 0 ? cats[0].key : 'skin';
-  });
+  const [albumCategory, setAlbumCategory] = useState('all');
   const refreshCategories = () => {
     const cats = getEnabledCategories();
     setEnabledCats(cats);
-    if (!cats.find(c => c.key === albumCategory)) {
-      setAlbumCategory(cats[0]?.key || 'skin');
+    if (albumCategory !== 'all' && !cats.find(c => c.key === albumCategory)) {
+      setAlbumCategory('all');
     }
   };
   useEffect(() => {
@@ -304,7 +301,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
         <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>마이 페이지</h1>
         <div style={{ display: 'flex', gap: 8 }}>
           <div onClick={() => {
-            if (albumCategory === 'food' && onTabChange) onTabChange('food', { openAdd: true });
+            if ((albumCategory === 'all' || albumCategory === 'food') && onTabChange) onTabChange('food', { openAdd: true });
             else onMeasure();
           }} style={{
             width: 34, height: 34, borderRadius: '50%', cursor: 'pointer',
@@ -349,8 +346,8 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
         const avgScore = records.length > 0
           ? Math.round(records.reduce((s, r) => s + r.overallScore, 0) / records.length) : 0;
         return (
-          <div style={{ padding: '27px 10px 0' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12 }}>
+          <div style={{ padding: '20px 10px 0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 10 }}>
               <div style={{
                 width: 72, height: 72, borderRadius: '50%', flexShrink: 0,
                 background: 'var(--btn-primary-bg)', padding: 2,
@@ -381,24 +378,40 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
                 </div>
               </div>
             </div>
-            <div className="segment-control" data-active={
-              albumCategory === enabledCats[0]?.key ? 'first' : albumCategory === enabledCats[enabledCats.length - 1]?.key ? 'last' : 'mid'
-            }>
-              {enabledCats.map(cat => (
-                <button key={cat.key} className={`segment-btn${albumCategory === cat.key ? ' active' : ''}`}
-                  onClick={() => setAlbumCategory(cat.key)}>{cat.label}</button>
-              ))}
-            </div>
+            {(() => {
+              const allTabs = [{ key: 'all', label: '전체' }, ...enabledCats];
+              const idx = allTabs.findIndex(t => t.key === albumCategory);
+              const pos = idx === 0 ? 'first' : idx === allTabs.length - 1 ? 'last' : 'mid';
+              return (
+                <div className="segment-control" data-active={pos}>
+                  {allTabs.map(cat => (
+                    <button key={cat.key} className={`segment-btn${albumCategory === cat.key ? ' active' : ''}`}
+                      onClick={() => setAlbumCategory(cat.key)}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                        {cat.key !== 'all' && cat.color && (
+                          <span style={{ width: 8, height: 8, borderRadius: 3, background: cat.color, flexShrink: 0 }} />
+                        )}
+                        {cat.label}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
         );
       })()}
 
       <div className="tab-content-panel" data-active={
-        albumCategory === enabledCats[0]?.key ? 'first' : albumCategory === enabledCats[enabledCats.length - 1]?.key ? 'last' : 'mid'
+        (() => {
+          const allTabs = [{ key: 'all', label: '전체' }, ...enabledCats];
+          const idx = allTabs.findIndex(t => t.key === albumCategory);
+          return idx === 0 ? 'first' : idx === allTabs.length - 1 ? 'last' : 'mid';
+        })()
       }>
 
       {/* ===== FOOD ALBUM ===== */}
-      {albumCategory === 'food' && (() => {
+      {(albumCategory === 'all' || albumCategory === 'food') && (() => {
         const _refresh = foodRefreshKey; // trigger re-render on delete
         const allFoods = getFoodRecords();
         const dates = Object.keys(allFoods).sort().reverse();
@@ -453,7 +466,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
       )}
 
       {/* ===== BODY ALBUM ===== */}
-      {albumCategory === 'body' && (() => {
+      {(albumCategory === 'all' || albumCategory === 'body') && (() => {
         const bodyRecords = getBodyRecords();
         const sorted = [...bodyRecords].reverse();
         return (
@@ -497,7 +510,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
       })()}
 
       {/* ===== FACE PLACEHOLDER ===== */}
-      {albumCategory === 'face' && (
+      {(albumCategory === 'all' || albumCategory === 'face') && (
         <div style={{ padding: '80px 24px', textAlign: 'center', animation: 'breatheIn 0.5s ease both' }}>
           <div style={{ fontSize: 32, marginBottom: 12 }}>🙂</div>
           <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>얼굴 앨범</div>
@@ -506,7 +519,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
       )}
 
       {/* ===== BODY SHAPE PLACEHOLDER ===== */}
-      {albumCategory === 'shape' && (
+      {(albumCategory === 'all' || albumCategory === 'shape') && (
         <div style={{ padding: '80px 24px', textAlign: 'center', animation: 'breatheIn 0.5s ease both' }}>
           <div style={{ fontSize: 32, marginBottom: 12 }}>💪</div>
           <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>바디 앨범</div>
@@ -515,7 +528,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
       )}
 
       {/* ===== SKIN GALLERY ===== */}
-      {albumCategory === 'skin' && (() => {
+      {(albumCategory === 'all' || albumCategory === 'skin') && (() => {
         const sorted = [...records].reverse();
         return (
           <div>
@@ -599,7 +612,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
       })()}
 
       {/* ===== INSIGHTS MODE (Redesigned: Timeline + Compare) ===== */}
-      {albumCategory === 'skin' && mode === 'insights' && (() => {
+      {(albumCategory === 'all' || albumCategory === 'skin') && mode === 'insights' && (() => {
         const firstRecord = records.length > 0 ? records[0] : null;
         const lastRecord = records.length > 0 ? records[records.length - 1] : null;
         const overallDiff = totalChanges?.overallScore || 0;

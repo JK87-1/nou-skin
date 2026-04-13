@@ -1,5 +1,4 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import WeekDateHeader from '../components/WeekDateHeader';
 import {
   getBodyRecords, saveBodyRecord, deleteBodyRecord,
   getBodyGoal, saveBodyGoal, getBodyProfile, saveBodyProfile,
@@ -19,17 +18,14 @@ export default function ChangePage() {
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [userProfile, setUserProfile] = useState(getProfile);
-  const [headerTitle, setHeaderTitle] = useState('');
+  const [activePeriod, setActivePeriod] = useState('1주');
   const [enabledCats, setEnabledCats] = useState(() => getEnabledCategories());
-  const [insightTab, setInsightTab] = useState(() => {
-    const cats = getEnabledCategories();
-    return cats.length > 0 ? cats[0].key : 'skin';
-  });
+  const [insightTab, setInsightTab] = useState('all');
   useEffect(() => {
     const handler = () => {
       const cats = getEnabledCategories();
       setEnabledCats(cats);
-      if (!cats.find(c => c.key === insightTab)) setInsightTab(cats[0]?.key || 'skin');
+      if (insightTab !== 'all' && !cats.find(c => c.key === insightTab)) setInsightTab('all');
     };
     window.addEventListener('lua:categories-changed', handler);
     return () => window.removeEventListener('lua:categories-changed', handler);
@@ -100,47 +96,65 @@ export default function ChangePage() {
   return (
     <div style={{ minHeight: '100dvh', paddingBottom: 80 }}>
       {/* Header */}
-      <div style={{ padding: '16px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>변화</h1>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <div style={{ width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <path d="M12 5v14M5 12h14" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" />
+      <div style={{ padding: '16px 18px 0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>변화</span>
+          <div onClick={() => setShowSettings(true)} style={{
+            background: 'rgba(255,255,255,.5)', border: '0.5px solid rgba(100,180,220,.2)',
+            borderRadius: 99, padding: '5px 10px', display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer',
+          }}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#7AAABB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
             </svg>
-          </div>
-          <div onClick={() => setShowSettings(true)} style={{ width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
-            </svg>
+            <span style={{ fontSize: 10, color: '#7AAABB' }}>직접 선택</span>
           </div>
         </div>
-      </div>
-
-      <WeekDateHeader
-        selectedDate={selectedDate}
-        onSelectDate={setSelectedDate}
-        hideTitle
-        onTitleChange={setHeaderTitle}
-      />
-
-      {/* Category Tabs */}
-      <div style={{ padding: '12px 10px 0' }}>
-        <div className="segment-control" data-active={
-          insightTab === enabledCats[0]?.key ? 'first' : insightTab === enabledCats[enabledCats.length - 1]?.key ? 'last' : 'mid'
-        }>
-          {enabledCats.map(cat => (
-            <button key={cat.key} className={`segment-btn${insightTab === cat.key ? ' active' : ''}`}
-              onClick={() => setInsightTab(cat.key)}>{cat.label}</button>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {['1주', '1개월', '3개월', '전체'].map(p => (
+            <button key={p} onClick={() => setActivePeriod(p)} style={{
+              fontSize: 10, padding: '5px 12px', borderRadius: 99, cursor: 'pointer',
+              border: `0.5px solid ${activePeriod === p ? 'rgba(100,180,220,.4)' : 'rgba(100,180,220,.2)'}`,
+              background: activePeriod === p ? 'rgba(100,180,220,.15)' : 'rgba(255,255,255,.5)',
+              color: activePeriod === p ? '#2A6A8A' : '#7AAABB',
+              fontWeight: activePeriod === p ? 500 : 400,
+            }}>{p}</button>
           ))}
         </div>
       </div>
+
+      {/* Category Tabs */}
+      {(() => {
+        const allTabs = [{ key: 'all', label: '전체' }, ...enabledCats];
+        const idx = allTabs.findIndex(t => t.key === insightTab);
+        const pos = idx === 0 ? 'first' : idx === allTabs.length - 1 ? 'last' : 'mid';
+        return (
+          <div style={{ padding: '12px 10px 0' }}>
+            <div className="segment-control" data-active={pos}>
+              {allTabs.map(cat => (
+                <button key={cat.key} className={`segment-btn${insightTab === cat.key ? ' active' : ''}`}
+                  onClick={() => setInsightTab(cat.key)}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                    {cat.key !== 'all' && cat.color && (
+                      <span style={{ width: 8, height: 8, borderRadius: 3, background: cat.color, flexShrink: 0 }} />
+                    )}
+                    {cat.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
       <div className="tab-content-panel" data-active={
-        insightTab === enabledCats[0]?.key ? 'first' : insightTab === enabledCats[enabledCats.length - 1]?.key ? 'last' : 'mid'
+        (() => {
+          const allTabs = [{ key: 'all', label: '전체' }, ...enabledCats];
+          const idx = allTabs.findIndex(t => t.key === insightTab);
+          return idx === 0 ? 'first' : idx === allTabs.length - 1 ? 'last' : 'mid';
+        })()
       }>
 
       {/* Face placeholder */}
-      {insightTab === 'face' && (
+      {(insightTab === 'all' || insightTab === 'face') && (
         <div style={{ padding: '80px 24px', textAlign: 'center', ...fadeUp(0.05) }}>
           <div style={{ fontSize: 32, marginBottom: 12 }}>🙂</div>
           <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>얼굴 분석</div>
@@ -149,7 +163,7 @@ export default function ChangePage() {
       )}
 
       {/* Body shape placeholder */}
-      {insightTab === 'shape' && (
+      {(insightTab === 'all' || insightTab === 'shape') && (
         <div style={{ padding: '80px 24px', textAlign: 'center', ...fadeUp(0.05) }}>
           <div style={{ fontSize: 32, marginBottom: 12 }}>💪</div>
           <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>바디 분석</div>
@@ -158,7 +172,7 @@ export default function ChangePage() {
       )}
 
       {/* Skin Tab */}
-      {insightTab === 'skin' && (
+      {(insightTab === 'all' || insightTab === 'skin') && (
         <div style={{ padding: '0 18px' }}>
           {skinRecords.length >= 2 ? (
             <div style={{ ...fadeUp(0.05) }}>
@@ -262,7 +276,7 @@ export default function ChangePage() {
       })()}
 
       {/* Food Tab */}
-      {insightTab === 'food' && (
+      {(insightTab === 'all' || insightTab === 'food') && (
         <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
           <div style={{ fontSize: 14, fontWeight: 600 }}>식단 분석 준비 중</div>
           <div style={{ fontSize: 12, marginTop: 6 }}>곧 영양 트렌드 분석이 제공됩니다</div>
@@ -270,7 +284,7 @@ export default function ChangePage() {
       )}
 
       {/* Body Tab */}
-      {insightTab === 'body' && <div style={{ padding: '0 18px' }}>
+      {(insightTab === 'all' || insightTab === 'body') && <div style={{ padding: '0 18px' }}>
         {/* Current Weight Hero */}
         <div style={{ textAlign: 'center', padding: '12px 0 8px', ...fadeUp(0.05) }}>
           {latest ? (
