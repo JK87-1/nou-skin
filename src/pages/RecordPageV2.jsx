@@ -138,9 +138,9 @@ export default function RecordPageV2() {
   return (
     <div style={{ minHeight: '100dvh', paddingBottom: 80 }}>
       {/* ===== 1. Header ===== */}
-      <div style={{ padding: '14px 18px 10px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', ...fadeUp(0) }}>
+      <div style={{ padding: '16px 18px 0', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', ...fadeUp(0) }}>
         <div>
-          <div style={{ fontSize: 18, fontWeight: 500, color: '#1A3A4A' }}>기록</div>
+          <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>기록</h1>
           <div style={{ fontSize: 10, color: '#5A9AAA', marginTop: 2 }}>{fullDateStr}</div>
           <div onClick={() => setShowCal(!showCal)} style={{
             marginTop: 6, background: 'rgba(255,255,255,.6)', border: '0.5px solid rgba(100,180,220,.2)',

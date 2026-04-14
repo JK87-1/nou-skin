@@ -7,6 +7,24 @@ import { savePhotoDB, getPhotoDB, resizeImage } from '../storage/PhotoDB';
 
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
 
+const RECORD_V2_KEY = 'lua_record_v2';
+function loadDayRecord(dateKey) {
+  try { return (JSON.parse(localStorage.getItem(RECORD_V2_KEY) || '{}'))[dateKey] || null; } catch { return null; }
+}
+function saveDayRecord(dateKey, data) {
+  try { const all = JSON.parse(localStorage.getItem(RECORD_V2_KEY) || '{}'); all[dateKey] = data; localStorage.setItem(RECORD_V2_KEY, JSON.stringify(all)); } catch {}
+}
+const EXERCISES = [
+  { id: 'walk', icon: '🚶', name: '산책' },
+  { id: 'run', icon: '🏃', name: '달리기' },
+  { id: 'weight', icon: '💪', name: '근력' },
+  { id: 'yoga', icon: '🧘', name: '요가' },
+  { id: 'cycle', icon: '🚴', name: '사이클' },
+  { id: 'custom', icon: '➕', name: '직접 입력' },
+];
+const SLEEP_QUALITIES = ['깊은 수면', '보통', '얕은 수면'];
+const TOTAL_CUPS = 8;
+
 // 식단 사진: IndexedDB photoId면 로드, 기존 base64면 그대로 표시
 function FoodPhoto({ photo, style, alt = '' }) {
   const [src, setSrc] = useState(null);
@@ -151,6 +169,38 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
   const [nutrientOpen, setNutrientOpen] = useState(false);
   const [bodyWeight, setBodyWeight] = useState('');
 
+  // Exercise / Sleep / Water state (shared with RecordPageV2 via localStorage)
+  const [selectedExercise, setSelectedExercise] = useState(null);
+  const [sleepHours, setSleepHours] = useState(7);
+  const [sleepQuality, setSleepQuality] = useState(null);
+  const [waterCount, setWaterCount] = useState(0);
+
+  const loadV2Data = useCallback((dateKey) => {
+    const saved = loadDayRecord(dateKey);
+    if (saved) {
+      setSelectedExercise(saved.exercise?.type || null);
+      setSleepHours(saved.sleep?.hours ?? 7);
+      setSleepQuality(saved.sleep?.quality || null);
+      setWaterCount(saved.water?.cups ?? 0);
+    } else {
+      setSelectedExercise(null); setSleepHours(7); setSleepQuality(null); setWaterCount(0);
+    }
+  }, []);
+
+  useEffect(() => { loadV2Data(selectedDate); }, [selectedDate, loadV2Data]);
+
+  const saveV2 = useCallback(() => {
+    saveDayRecord(selectedDate, {
+      date: selectedDate,
+      exercise: selectedExercise ? { type: selectedExercise } : null,
+      sleep: { hours: sleepHours, quality: sleepQuality },
+      water: { cups: waterCount },
+    });
+  }, [selectedDate, selectedExercise, sleepHours, sleepQuality, waterCount]);
+
+  // Auto-save when exercise/sleep/water changes
+  useEffect(() => { if (isToday) saveV2(); }, [selectedExercise, sleepHours, sleepQuality, waterCount]);
+
   useEffect(() => {
     if (autoOpenAdd) {
       setFoodTab('food');
@@ -218,7 +268,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
       {/* Header */}
       <div style={{ padding: '16px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>기록</span>
+          <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>기록</h1>
           <div onClick={() => setShowCal(!showCal)} style={{
             background: 'rgba(255,255,255,.6)', border: '0.5px solid rgba(100,180,220,.2)',
             borderRadius: 99, padding: '3px 10px', display: 'inline-flex', alignItems: 'center', gap: 4, cursor: 'pointer', alignSelf: 'flex-start',
@@ -320,84 +370,191 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
         })()
       }>
 
-      {/* ===== 전체 탭: 활성 카테고리 간단 요약 ===== */}
-      {foodTab === 'all' && (
-        <div style={{ padding: '8px 16px 4px', display: 'flex', flexDirection: 'column', gap: 10, ...fadeUp(0.05) }}>
-          {enabledCats.map(cat => {
-            const summaryCard = (icon, label, value, sub, color) => (
-              <div key={cat.key} onClick={() => setFoodTab(cat.key)} style={{
-                display: 'flex', alignItems: 'center', gap: 14,
-                background: 'rgba(255,255,255,0.5)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-                borderRadius: 16, padding: '14px 18px',
-                border: '1px solid rgba(255,255,255,0.4)',
-                boxShadow: '0 1px 4px rgba(0,0,0,0.03)',
-                cursor: 'pointer', transition: 'transform 0.15s ease',
-              }}>
-                <div style={{
-                  width: 40, height: 40, borderRadius: 12,
-                  background: color || cat.color || '#eee',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 18, flexShrink: 0,
-                }}>{icon}</div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{label}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{sub}</div>
+      {/* ===== 전체 탭: 기록2 스타일 카드 ===== */}
+      {foodTab === 'all' && (() => {
+        const todayMeals = foods.filter(f => !f.name?.startsWith('물 '));
+        const totalKcal = Math.round(nutrition.kcal || 0);
+        const allCardStyle = { background: 'rgba(255,255,255,.72)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)', marginBottom: 10 };
+        const allCardHeader = (color, title, _icon, status, statusColor = '#5AAABB') => (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 3, height: 18, borderRadius: 2, background: color }} />
+              <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>{title}</span>
+            </div>
+            <span style={{ fontSize: 11, color: statusColor, fontWeight: 500 }}>{status}</span>
+          </div>
+        );
+        return (
+          <div style={{ padding: '8px 14px 0' }}>
+            {/* Summary Bar */}
+            <div style={{
+              background: 'rgba(255,255,255,.65)', borderRadius: 14, padding: '10px 13px',
+              border: '0.5px solid rgba(255,255,255,.9)', marginBottom: 10,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              ...fadeUp(0.03),
+            }}>
+              {[
+                { icon: '🍽', value: todayMeals.length > 0 ? `${todayMeals.length}끼` : '—', label: '식단' },
+                { icon: '🏃', value: selectedExercise || '—', label: '운동' },
+                { icon: '😴', value: `${sleepHours}h`, label: '수면' },
+                { icon: '💧', value: waterCount > 0 ? `${waterCount}잔` : '—', label: '수분' },
+              ].map((item, idx) => (
+                <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+                  {idx > 0 && <div style={{ width: 0.5, height: 28, background: 'rgba(100,180,220,.2)', marginRight: 0 }} />}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: 50 }}>
+                    <span style={{ fontSize: 14 }}>{item.icon}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: '#1A3A4A', marginTop: 1 }}>{item.value}</span>
+                    <span style={{ fontSize: 9, color: '#7AAABB' }}>{item.label}</span>
+                  </div>
                 </div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', flexShrink: 0 }}>{value}</div>
-                <svg width="16" height="16" viewBox="0 0 16 16" style={{ flexShrink: 0, opacity: 0.3 }}>
-                  <path d="M6 4 L10 8 L6 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-            );
+              ))}
+            </div>
 
-            if (cat.key === 'food') {
-              const recorded = foods.filter(f => !f.name?.startsWith('물 '));
-              const kcal = Math.round(nutrition.kcal || 0);
-              return summaryCard('🍽', '식단', recorded.length > 0 ? `${recorded.length}끼` : '—',
-                kcal > 0 ? `${kcal}kcal 섭취` : '기록이 없어요',
-                'linear-gradient(135deg, #FFE8A0, #FFD070)');
-            }
-            if (cat.key === 'skin') {
-              const skinRecords = getRecords();
-              const latest = skinRecords.length > 0 ? skinRecords[skinRecords.length - 1] : null;
-              return summaryCard('✨', '피부', latest ? `${latest.overallScore}점` : '—',
-                latest ? `최근 ${new Date(latest.date).getMonth() + 1}/${new Date(latest.date).getDate()} 측정` : '측정 기록이 없어요',
-                'linear-gradient(135deg, #FFD0E0, #F8A8C0)');
-            }
-            if (cat.key === 'body') {
-              const latestW = getLatestWeight();
-              return summaryCard('⚖️', '몸무게', latestW ? `${latestW}kg` : '—',
-                latestW ? '최근 기록' : '기록이 없어요',
-                'linear-gradient(135deg, #E0E0E0, #C0C0C0)');
-            }
-            if (cat.key === 'face') {
-              return summaryCard('🙂', '얼굴', '—', '곧 출시 예정이에요',
-                'linear-gradient(135deg, #B0E8C8, #80D0A8)');
-            }
-            if (cat.key === 'exercise') {
-              return summaryCard('🏃', '운동', '—', '기록2에서 확인',
-                'linear-gradient(135deg, #C0E8F8, #90CCE8)');
-            }
-            if (cat.key === 'walk') {
-              return summaryCard('🚶', '산책', '—', '기록2에서 확인',
-                'linear-gradient(135deg, #C8ECC8, #A8D8A8)');
-            }
-            if (cat.key === 'sleep') {
-              return summaryCard('😴', '수면', '—', '기록2에서 확인',
-                'linear-gradient(135deg, #E8D0F0, #C8A0E0)');
-            }
-            if (cat.key === 'water') {
-              return summaryCard('💧', '수분', '—', '기록2에서 확인',
-                'linear-gradient(135deg, #B0D8F8, #7BC8F0)');
-            }
-            if (cat.key === 'energy') {
-              return summaryCard('⚡', '에너지', '—', '기록2에서 확인',
-                'linear-gradient(135deg, #F8E0A0, #F0C878)');
-            }
-            return null;
-          })}
-        </div>
-      )}
+            {/* Food Card */}
+            <div style={{ ...allCardStyle, ...fadeUp(0.1) }}>
+              {allCardHeader('#FFD070', '식단', null,
+                todayMeals.length > 0 ? `${todayMeals.length}끼 기록됨` : '미기록',
+                todayMeals.length > 0 ? '#5AAABB' : '#9ABBC8'
+              )}
+              <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4 }}>
+                {todayMeals.slice(0, 5).map((food, i) => (
+                  <div key={food.id || i} onClick={() => setDetailFood(food)} style={{
+                    width: 52, height: 52, borderRadius: 10, flexShrink: 0, overflow: 'hidden',
+                    background: 'linear-gradient(135deg, #FFF3D0, #FFE8A0)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                  }}>
+                    {food.photo ? (
+                      <FoodPhoto photo={food.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <span style={{ fontSize: 20 }}>🍽</span>
+                    )}
+                  </div>
+                ))}
+                {isToday && (
+                  <div onClick={() => setShowMealPicker(true)} style={{
+                    width: 52, height: 52, borderRadius: 10, flexShrink: 0,
+                    border: '1.5px dashed rgba(100,180,220,.4)', background: 'rgba(100,180,220,.06)',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', gap: 2,
+                  }}>
+                    <div style={{ width: 18, height: 18, borderRadius: '50%', background: 'rgba(100,180,220,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <span style={{ fontSize: 11, color: '#5A9AAA', lineHeight: 1 }}>+</span>
+                    </div>
+                    <span style={{ fontSize: 8, color: '#7AAABB' }}>추가</span>
+                  </div>
+                )}
+              </div>
+              {totalKcal > 0 && (
+                <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 11, fontWeight: 500, color: '#1A3A4A' }}>{totalKcal.toLocaleString()} kcal</span>
+                  {nutrition.protein > 0 && (
+                    <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 99, background: 'rgba(100,180,220,.12)', color: '#4A8AAA' }}>단백질 {Math.round(nutrition.protein)}g</span>
+                  )}
+                  {nutrition.carb > 0 && (
+                    <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 99, background: 'rgba(255,190,70,.15)', color: '#B08000' }}>탄수화물 {Math.round(nutrition.carb)}g</span>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Exercise Card */}
+            <div style={{ ...allCardStyle, ...fadeUp(0.15) }}>
+              {allCardHeader('#90CCE8', '운동·산책', null,
+                selectedExercise ? `${selectedExercise} 선택됨` : '오늘 미기록',
+                selectedExercise ? '#5AAABB' : '#9ABBC8'
+              )}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 5 }}>
+                {EXERCISES.map(ex => {
+                  const active = selectedExercise === ex.name;
+                  return (
+                    <div key={ex.id} onClick={() => isToday && setSelectedExercise(active ? null : ex.name)}
+                      style={{
+                        padding: '10px 4px', borderRadius: 10, textAlign: 'center',
+                        border: `1px solid ${active ? 'rgba(100,180,220,.6)' : 'rgba(100,180,220,.15)'}`,
+                        background: active ? 'rgba(100,180,220,.12)' : 'rgba(255,255,255,.5)',
+                        cursor: isToday ? 'pointer' : 'default', transition: 'all 0.15s ease',
+                      }}>
+                      <div style={{ fontSize: 18, marginBottom: 2 }}>{ex.icon}</div>
+                      <div style={{ fontSize: 10, fontWeight: active ? 600 : 400, color: active ? '#3A8AAA' : '#7AAABB' }}>{ex.name}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Sleep Card */}
+            <div style={{ ...allCardStyle, ...fadeUp(0.2) }}>
+              {allCardHeader('#C8A0E0', '수면', null,
+                sleepQuality ? `${sleepHours}시간 · ${sleepQuality}` : `${sleepHours}시간`, '#5AAABB'
+              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 12 }}>
+                <div>
+                  <span style={{ fontSize: 24, fontWeight: 500, color: '#1A3A4A' }}>{sleepHours}</span>
+                  <span style={{ fontSize: 11, color: '#7AAABB', marginLeft: 3 }}>시간</span>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <input type="range" min="2" max="12" step="0.5" value={sleepHours}
+                    onChange={e => isToday && setSleepHours(parseFloat(e.target.value))}
+                    disabled={!isToday}
+                    style={{
+                      width: '100%', height: 4, appearance: 'none', WebkitAppearance: 'none',
+                      background: `linear-gradient(90deg, #C8A0E0 ${((sleepHours - 2) / 10) * 100}%, rgba(200,160,224,.2) ${((sleepHours - 2) / 10) * 100}%)`,
+                      borderRadius: 2, outline: 'none',
+                    }} />
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {SLEEP_QUALITIES.map(q => {
+                  const active = sleepQuality === q;
+                  return (
+                    <button key={q} onClick={() => isToday && setSleepQuality(active ? null : q)}
+                      style={{
+                        flex: 1, padding: '7px 0', borderRadius: 8, fontSize: 10, fontWeight: active ? 600 : 400,
+                        border: `1px solid ${active ? 'rgba(200,160,224,.4)' : 'rgba(100,180,220,.15)'}`,
+                        background: active ? 'rgba(200,160,224,.15)' : 'rgba(255,255,255,.5)',
+                        color: active ? '#9060B0' : '#7AAABB',
+                        cursor: isToday ? 'pointer' : 'default', transition: 'all 0.15s ease',
+                        fontFamily: 'inherit',
+                      }}>{q}</button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Water Card */}
+            <div style={{ ...allCardStyle, ...fadeUp(0.25) }}>
+              {allCardHeader('#7BC8F0', '수분', null,
+                waterCount > 0 ? `${waterCount}잔` : '미기록',
+                waterCount > 0 ? '#5AAABB' : '#9ABBC8'
+              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ display: 'flex', gap: 4, flex: 1 }}>
+                  {Array.from({ length: TOTAL_CUPS }).map((_, i) => {
+                    const filled = i < waterCount;
+                    return (
+                      <div key={i} onClick={() => isToday && setWaterCount(i + 1 === waterCount ? 0 : i + 1)}
+                        style={{
+                          width: 20, height: 26, borderRadius: 5, overflow: 'hidden',
+                          border: `1px solid ${filled ? 'rgba(100,180,220,.4)' : 'rgba(100,180,220,.2)'}`,
+                          background: filled ? 'transparent' : 'rgba(100,180,220,.08)',
+                          cursor: isToday ? 'pointer' : 'default', position: 'relative', transition: 'all 0.15s ease',
+                        }}>
+                        {filled && (
+                          <div style={{
+                            position: 'absolute', bottom: 0, left: 0, right: 0, height: '100%',
+                            background: 'linear-gradient(180deg, #90CCEE, #60AADD)', borderRadius: 4,
+                          }} />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                <span style={{ fontSize: 13, fontWeight: 500, color: '#5AAABB', minWidth: 32, textAlign: 'right' }}>{waterCount}잔</span>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Skin content */}
       {(foodTab === 'skin') && <>

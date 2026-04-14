@@ -158,7 +158,7 @@ export default function ChangePageV2() {
       {/* ===== 1. Header ===== */}
       <div style={{ padding: '16px 18px 0', ...fadeUp(0) }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-          <span style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>변화</span>
+          <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>변화</h1>
           <div style={{
             background: 'rgba(255,255,255,.5)', border: '0.5px solid rgba(100,180,220,.2)',
             borderRadius: 99, padding: '5px 10px', display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer',
