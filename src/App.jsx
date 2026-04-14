@@ -139,11 +139,14 @@ export default function App() {
 
   useEffect(() => {
     if (showSplash) {
+      // theme-color를 dissolve 시작 200ms 전에 전환하여 상태바 깜빡임 방지
+      const tColor = setTimeout(() => {
+        document.querySelector('meta[name="theme-color"]').content = '#ace2fc';
+      }, 1300);
       const t = setTimeout(() => {
         setSplashExiting(true);
-        document.querySelector('meta[name="theme-color"]').content = '#ace2fc';
       }, 1500);
-      return () => clearTimeout(t);
+      return () => { clearTimeout(t); clearTimeout(tColor); };
     }
   }, [showSplash]);
 

@@ -69,22 +69,22 @@ export default function TabBar({ activeTab, onTabChange }) {
       ),
     },
     {
-      key: 'routine',
-      label: '루틴',
-      icon: (active) => (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <defs><mask id="checkMask"><rect width="24" height="24" fill="white" /><path d="M8 12.5l2.5 2.5L16 10" stroke="black" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" /></mask></defs>
-          <circle cx="12" cy="12" r="10" fill={active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)'} mask="url(#checkMask)" />
-        </svg>
-      ),
-    },
-    {
       key: 'food',
       label: '기록',
       icon: (active) => (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
           <rect x="3" y="2" width="18" height="20" rx="2.5" fill={active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)'} />
           <path d="M7.5 8h5.5M7.5 12h6.5M7.5 16h4.5" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" />
+        </svg>
+      ),
+    },
+    {
+      key: 'routine',
+      label: '루틴',
+      icon: (active) => (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <defs><mask id="checkMask"><rect width="24" height="24" fill="white" /><path d="M8 12.5l2.5 2.5L16 10" stroke="black" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" /></mask></defs>
+          <circle cx="12" cy="12" r="10" fill={active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)'} mask="url(#checkMask)" />
         </svg>
       ),
     },

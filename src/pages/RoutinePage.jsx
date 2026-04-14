@@ -1245,11 +1245,52 @@ function RoutineManagement({ enabledCats, initialTab, onBack }) {
     setDragOverIdx(null);
   };
 
-  // 터치 드래그
+  // 터치 드래그 (모바일)
   const touchStartY = useRef(0);
-  const touchItemRef = useRef(null);
+  const touchDragCat = useRef(null);
+  const touchDragIdx = useRef(null);
+  const itemRefs = useRef({});
 
-  // 롱 프레스
+  const handleTouchDragStart = (e, cat, idx) => {
+    e.stopPropagation();
+    touchStartY.current = e.touches[0].clientY;
+    touchDragCat.current = cat;
+    touchDragIdx.current = idx;
+    setDragCat(cat);
+    setDragIdx(idx);
+  };
+
+  const handleTouchDragMove = (e) => {
+    if (touchDragIdx.current === null) return;
+    e.preventDefault();
+    const touchY = e.touches[0].clientY;
+    const cat = touchDragCat.current;
+    const { active } = getCatItems(cat);
+    // Find which item the touch is over
+    for (let i = 0; i < active.length; i++) {
+      const ref = itemRefs.current[`${cat}_${i}`];
+      if (ref) {
+        const rect = ref.getBoundingClientRect();
+        if (touchY >= rect.top && touchY <= rect.bottom && i !== touchDragIdx.current) {
+          setDragOverIdx(i);
+          return;
+        }
+      }
+    }
+  };
+
+  const handleTouchDragEnd = () => {
+    if (touchDragIdx.current !== null && dragOverIdx !== null) {
+      handleDrop(touchDragCat.current, dragOverIdx);
+    }
+    touchDragCat.current = null;
+    touchDragIdx.current = null;
+    setDragIdx(null);
+    setDragOverIdx(null);
+    setDragCat(null);
+  };
+
+  // 롱 프레스 (컨텍스트 메뉴)
   const handleTouchStart = (item) => {
     longPressTimer.current = setTimeout(() => {
       setActionItem(item);
@@ -1273,30 +1314,33 @@ function RoutineManagement({ enabledCats, initialTab, onBack }) {
     return (
       <div
         key={`${cat}_${item.id}`}
+        ref={el => { if (isActive) itemRefs.current[`${cat}_${idx}`] = el; }}
         draggable={isActive}
         onDragStart={() => isActive && handleDragStart(cat, idx)}
         onDragOver={(e) => isActive && handleDragOver(e, idx)}
         onDrop={() => isActive && handleDrop(cat, idx)}
-        onDragEnd={() => { setDragIdx(null); setDragOverIdx(null); }}
-        onTouchStart={() => handleTouchStart({ ...item, category: cat })}
-        onTouchEnd={handleTouchEnd}
+        onDragEnd={() => { setDragIdx(null); setDragOverIdx(null); setDragCat(null); }}
+        onClick={() => setActionItem({ ...item, category: cat })}
         onContextMenu={(e) => { e.preventDefault(); setActionItem({ ...item, category: cat }); }}
         style={{
           display: 'flex', alignItems: 'center', gap: 10,
-          padding: '10px 12px', marginBottom: 5,
-          background: 'rgba(255,255,255,.72)',
+          padding: '7px 12px', marginBottom: 4,
+          background: isDragOver ? 'rgba(100,180,220,.08)' : 'rgba(255,255,255,.72)',
           borderRadius: 13,
           border: isDragOver ? '1.5px solid #60AADD' : '0.5px solid rgba(255,255,255,.95)',
-          opacity: isActive ? 1 : 0.5,
-          transform: isDragging ? 'scale(1.02)' : 'none',
+          opacity: isDragging ? 0.5 : isActive ? 1 : 0.5,
           transition: 'all 0.15s ease',
-          cursor: isActive ? 'default' : 'default',
           boxShadow: isDragging ? '0 4px 16px rgba(0,0,0,0.1)' : '0 1px 4px rgba(0,0,0,0.03)',
         }}
       >
         {/* 드래그 핸들 */}
         {isActive && (
-          <span style={{ fontSize: 14, color: 'rgba(0,0,0,0.25)', cursor: 'grab', flexShrink: 0, userSelect: 'none' }}>≡</span>
+          <span
+            onTouchStart={(e) => handleTouchDragStart(e, cat, idx)}
+            onTouchMove={handleTouchDragMove}
+            onTouchEnd={handleTouchDragEnd}
+            style={{ fontSize: 14, color: 'rgba(0,0,0,0.25)', cursor: 'grab', flexShrink: 0, userSelect: 'none', touchAction: 'none', padding: '4px 2px' }}
+          >≡</span>
         )}
 
         {/* 컬러 세로막대 */}
