@@ -1194,85 +1194,94 @@ function CategorySettingsPage({ onClose, onSave }) {
         <div style={{ fontSize: 9, color: '#9ABBC8', marginTop: 4 }}>최소 1개의 카테고리는 활성화되어야 해요.</div>
       </div>
 
-      {/* Category list */}
+      {/* Category list — grouped */}
       <div style={{ padding: '8px 20px', flex: 1, paddingBottom: 120 }}>
-        {categories.map((cat, idx) => (
-          <div key={cat.key}>
-            <div
-              ref={el => itemRefs.current[idx] = el}
-              onTouchStart={e => onTouchStart(e, idx)}
-              onTouchMove={e => onTouchMove(e, idx)}
-              onTouchEnd={onTouchEnd}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 12,
-                padding: '11px 13px', marginBottom: colorOpen === cat.key ? 0 : 8,
-                background: dragging === idx ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.75)',
-                borderRadius: colorOpen === cat.key ? '14px 14px 0 0' : 14,
-                border: dragOver === idx ? '2px solid #60AADD' : '0.5px solid rgba(255,255,255,0.95)',
-                boxShadow: dragging === idx ? '0 4px 16px rgba(0,0,0,0.1)' : '0 1px 4px rgba(0,0,0,0.03)',
-                transition: 'all 0.2s ease',
-                touchAction: 'none', userSelect: 'none',
-                opacity: cat.enabled ? 1 : 0.55,
-              }}
-            >
-              {/* Drag handle */}
-              <span style={{ fontSize: 14, color: 'rgba(0,0,0,0.25)', cursor: 'grab', flexShrink: 0 }}>≡</span>
-
-              {/* Color chip */}
-              <div
-                onClick={() => setColorOpen(colorOpen === cat.key ? null : cat.key)}
-                style={{
-                  width: 22, height: 22, borderRadius: 6, flexShrink: 0, cursor: 'pointer',
-                  background: cat.color || '#D0D0D0',
-                  border: '2px solid rgba(255,255,255,0.8)',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                }}
-              />
-
-              {/* Label */}
-              <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>{cat.label}</span>
-
-              {/* Toggle */}
-              <div onClick={() => toggle(idx)} style={{
-                width: 36, height: 20, borderRadius: 10, flexShrink: 0,
-                background: cat.enabled ? 'linear-gradient(120deg, #90CCE8, #60AADD)' : 'rgba(180,200,210,.3)',
-                position: 'relative', cursor: 'pointer',
-                transition: 'background 0.2s ease',
-              }}>
-                <div style={{
-                  width: 16, height: 16, borderRadius: '50%', background: '#fff',
-                  position: 'absolute', top: 2,
-                  left: cat.enabled ? 18 : 2,
-                  transition: 'left 0.2s ease',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-                }} />
+        {[
+          { group: 'cause', label: '원인', desc: '내가 하는 것들' },
+          { group: 'result', label: '결과', desc: '몸에 나타나는 변화' },
+        ].map(({ group, label, desc }) => {
+          const groupCats = categories.filter(c => c.group === group);
+          if (groupCats.length === 0) return null;
+          return (
+            <div key={group} style={{ marginBottom: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '0 4px', marginBottom: 10 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#1A3A4A' }}>{label}</span>
+                <span style={{ fontSize: 10, color: '#9ABBC8' }}>{desc}</span>
               </div>
+              {groupCats.map(cat => {
+                const idx = categories.findIndex(c => c.key === cat.key);
+                return (
+                  <div key={cat.key}>
+                    <div
+                      ref={el => itemRefs.current[idx] = el}
+                      onTouchStart={e => onTouchStart(e, idx)}
+                      onTouchMove={e => onTouchMove(e, idx)}
+                      onTouchEnd={onTouchEnd}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 12,
+                        padding: '11px 13px', marginBottom: colorOpen === cat.key ? 0 : 8,
+                        background: dragging === idx ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.75)',
+                        borderRadius: colorOpen === cat.key ? '14px 14px 0 0' : 14,
+                        border: dragOver === idx ? '2px solid #60AADD' : '0.5px solid rgba(255,255,255,0.95)',
+                        boxShadow: dragging === idx ? '0 4px 16px rgba(0,0,0,0.1)' : '0 1px 4px rgba(0,0,0,0.03)',
+                        transition: 'all 0.2s ease',
+                        touchAction: 'none', userSelect: 'none',
+                        opacity: cat.enabled ? 1 : 0.55,
+                      }}
+                    >
+                      <span style={{ fontSize: 14, color: 'rgba(0,0,0,0.25)', cursor: 'grab', flexShrink: 0 }}>≡</span>
+                      <div
+                        onClick={() => setColorOpen(colorOpen === cat.key ? null : cat.key)}
+                        style={{
+                          width: 22, height: 22, borderRadius: 6, flexShrink: 0, cursor: 'pointer',
+                          background: cat.color || '#D0D0D0',
+                          border: '2px solid rgba(255,255,255,0.8)',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                        }}
+                      />
+                      <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>{cat.label}</span>
+                      <div onClick={() => toggle(idx)} style={{
+                        width: 36, height: 20, borderRadius: 10, flexShrink: 0,
+                        background: cat.enabled ? 'linear-gradient(120deg, #90CCE8, #60AADD)' : 'rgba(180,200,210,.3)',
+                        position: 'relative', cursor: 'pointer',
+                        transition: 'background 0.2s ease',
+                      }}>
+                        <div style={{
+                          width: 16, height: 16, borderRadius: '50%', background: '#fff',
+                          position: 'absolute', top: 2,
+                          left: cat.enabled ? 18 : 2,
+                          transition: 'left 0.2s ease',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                        }} />
+                      </div>
+                    </div>
+                    {colorOpen === cat.key && (
+                      <div style={{
+                        background: 'rgba(255,255,255,0.9)',
+                        borderRadius: '0 0 14px 14px',
+                        padding: '12px 14px',
+                        border: '0.5px solid rgba(100,180,220,0.2)',
+                        borderTop: 'none',
+                        marginBottom: 8,
+                        display: 'flex', gap: 8, flexWrap: 'wrap',
+                      }}>
+                        {COLOR_OPTIONS.map(c => (
+                          <div key={c} onClick={() => selectColor(cat.key, c)} style={{
+                            width: 26, height: 26, borderRadius: 7, cursor: 'pointer',
+                            background: c,
+                            border: cat.color === c ? '2px solid #1A3A4A' : '2px solid transparent',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+                            transition: 'border 0.15s ease',
+                          }} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-
-            {/* Inline color picker */}
-            {colorOpen === cat.key && (
-              <div style={{
-                background: 'rgba(255,255,255,0.9)',
-                borderRadius: '0 0 14px 14px',
-                padding: '12px 14px',
-                border: '0.5px solid rgba(100,180,220,0.2)',
-                borderTop: 'none',
-                marginBottom: 8,
-                display: 'flex', gap: 8, flexWrap: 'wrap',
-              }}>
-                {COLOR_OPTIONS.map(c => (
-                  <div key={c} onClick={() => selectColor(cat.key, c)} style={{
-                    width: 26, height: 26, borderRadius: 7, cursor: 'pointer',
-                    background: c,
-                    border: cat.color === c ? '2px solid #1A3A4A' : '2px solid transparent',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-                    transition: 'border 0.15s ease',
-                  }} />
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
+          );
+        })}
 
         {/* + 카테고리 직접 추가 */}
         <button onClick={() => setShowAddSheet(true)} style={{

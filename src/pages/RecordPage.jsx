@@ -320,8 +320,87 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
         })()
       }>
 
+      {/* ===== 전체 탭: 활성 카테고리 간단 요약 ===== */}
+      {foodTab === 'all' && (
+        <div style={{ padding: '8px 16px 4px', display: 'flex', flexDirection: 'column', gap: 10, ...fadeUp(0.05) }}>
+          {enabledCats.map(cat => {
+            const summaryCard = (icon, label, value, sub, color) => (
+              <div key={cat.key} onClick={() => setFoodTab(cat.key)} style={{
+                display: 'flex', alignItems: 'center', gap: 14,
+                background: 'rgba(255,255,255,0.5)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+                borderRadius: 16, padding: '14px 18px',
+                border: '1px solid rgba(255,255,255,0.4)',
+                boxShadow: '0 1px 4px rgba(0,0,0,0.03)',
+                cursor: 'pointer', transition: 'transform 0.15s ease',
+              }}>
+                <div style={{
+                  width: 40, height: 40, borderRadius: 12,
+                  background: color || cat.color || '#eee',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 18, flexShrink: 0,
+                }}>{icon}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{label}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{sub}</div>
+                </div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', flexShrink: 0 }}>{value}</div>
+                <svg width="16" height="16" viewBox="0 0 16 16" style={{ flexShrink: 0, opacity: 0.3 }}>
+                  <path d="M6 4 L10 8 L6 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+            );
+
+            if (cat.key === 'food') {
+              const recorded = foods.filter(f => !f.name?.startsWith('물 '));
+              const kcal = Math.round(nutrition.kcal || 0);
+              return summaryCard('🍽', '식단', recorded.length > 0 ? `${recorded.length}끼` : '—',
+                kcal > 0 ? `${kcal}kcal 섭취` : '기록이 없어요',
+                'linear-gradient(135deg, #FFE8A0, #FFD070)');
+            }
+            if (cat.key === 'skin') {
+              const skinRecords = getRecords();
+              const latest = skinRecords.length > 0 ? skinRecords[skinRecords.length - 1] : null;
+              return summaryCard('✨', '피부', latest ? `${latest.overallScore}점` : '—',
+                latest ? `최근 ${new Date(latest.date).getMonth() + 1}/${new Date(latest.date).getDate()} 측정` : '측정 기록이 없어요',
+                'linear-gradient(135deg, #FFD0E0, #F8A8C0)');
+            }
+            if (cat.key === 'body') {
+              const latestW = getLatestWeight();
+              return summaryCard('⚖️', '몸무게', latestW ? `${latestW}kg` : '—',
+                latestW ? '최근 기록' : '기록이 없어요',
+                'linear-gradient(135deg, #E0E0E0, #C0C0C0)');
+            }
+            if (cat.key === 'face') {
+              return summaryCard('🙂', '얼굴', '—', '곧 출시 예정이에요',
+                'linear-gradient(135deg, #B0E8C8, #80D0A8)');
+            }
+            if (cat.key === 'exercise') {
+              return summaryCard('🏃', '운동', '—', '기록2에서 확인',
+                'linear-gradient(135deg, #C0E8F8, #90CCE8)');
+            }
+            if (cat.key === 'walk') {
+              return summaryCard('🚶', '산책', '—', '기록2에서 확인',
+                'linear-gradient(135deg, #C8ECC8, #A8D8A8)');
+            }
+            if (cat.key === 'sleep') {
+              return summaryCard('😴', '수면', '—', '기록2에서 확인',
+                'linear-gradient(135deg, #E8D0F0, #C8A0E0)');
+            }
+            if (cat.key === 'water') {
+              return summaryCard('💧', '수분', '—', '기록2에서 확인',
+                'linear-gradient(135deg, #B0D8F8, #7BC8F0)');
+            }
+            if (cat.key === 'energy') {
+              return summaryCard('⚡', '에너지', '—', '기록2에서 확인',
+                'linear-gradient(135deg, #F8E0A0, #F0C878)');
+            }
+            return null;
+          })}
+        </div>
+      )}
+
       {/* Skin content */}
-      {(foodTab === 'all' || foodTab === 'skin') && <>
+      {(foodTab === 'skin') && <>
         {/* Skin Thumbnail Row — 3칸 그리드 */}
         {(() => {
           const skinRecords = getRecords();
@@ -374,7 +453,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
       </>}
 
       {/* Food content */}
-      {(foodTab === 'all' || foodTab === 'food') && <>
+      {(foodTab === 'food') && <>
       {/* Date subtitle */}
       <div style={{ padding: '0 18px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ fontSize: 11, color: '#888' }}>
@@ -703,7 +782,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
       </>}
 
       {/* Body content */}
-      {(foodTab === 'all' || foodTab === 'body') && <>
+      {(foodTab === 'body') && <>
         {/* Body Thumbnail Row — 3칸 그리드 */}
         {(() => {
           const bodyRecords = getBodyRecords();
@@ -755,7 +834,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
       </>}
 
       {/* Face content (placeholder) */}
-      {(foodTab === 'all' || foodTab === 'face') && (
+      {(foodTab === 'face') && (
         <div style={{ padding: '60px 24px', textAlign: 'center', ...fadeUp(0.05) }}>
           <div style={{ fontSize: 28, marginBottom: 12 }}>🙂</div>
           <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>얼굴 기록</div>
@@ -764,7 +843,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
       )}
 
       {/* Body shape content (placeholder) */}
-      {(foodTab === 'all' || foodTab === 'shape') && (
+      {(foodTab === 'shape') && (
         <div style={{ padding: '60px 24px', textAlign: 'center', ...fadeUp(0.05) }}>
           <div style={{ fontSize: 28, marginBottom: 12 }}>💪</div>
           <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>바디 기록</div>

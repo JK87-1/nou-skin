@@ -17,15 +17,16 @@ const DEFAULTS = {
   activeTheme: null,
   colorMode: 'light',
   categories: [
-    { key: 'food',     label: '식단',     color: '#FFD070', enabled: true },
-    { key: 'exercise', label: '운동',     color: '#90CCE8', enabled: false },
-    { key: 'walk',     label: '산책',     color: '#A8D8A8', enabled: false },
-    { key: 'sleep',    label: '수면',     color: '#C8A0E0', enabled: false },
-    { key: 'water',    label: '수분',     color: '#7BC8F0', enabled: false },
-    { key: 'energy',   label: '에너지',   color: '#F0C878', enabled: false },
-    { key: 'body',     label: '몸무게',   color: '#D0D0D0', enabled: true },
-    { key: 'skin',     label: '피부',     color: '#F8A8C0', enabled: false },
-    { key: 'face',     label: '얼굴',     color: '#80D0A8', enabled: false },
+    { key: 'food',      label: '식단',     color: '#FFD070', enabled: true,  group: 'cause' },
+    { key: 'water',     label: '수분',     color: '#7BC8F0', enabled: false, group: 'cause' },
+    { key: 'sleep',     label: '수면',     color: '#C8A0E0', enabled: false, group: 'cause' },
+    { key: 'walk',      label: '산책',     color: '#A8D8A8', enabled: false, group: 'cause' },
+    { key: 'exercise',  label: '운동',     color: '#90CCE8', enabled: false, group: 'cause' },
+    { key: 'energy',    label: '에너지',   color: '#F0C878', enabled: false, group: 'result' },
+    { key: 'body',      label: '몸무게',   color: '#D0D0D0', enabled: true,  group: 'result' },
+    { key: 'face',      label: '얼굴',     color: '#80D0A8', enabled: false, group: 'result' },
+    { key: 'skin',      label: '피부',     color: '#F8A8C0', enabled: false, group: 'result' },
+    { key: 'bodyshape', label: '바디',     color: '#F0A8A8', enabled: false, group: 'result' },
   ],
 };
 
@@ -64,6 +65,7 @@ export function getCategories() {
       ...c,
       label: def ? def.label : c.label,
       color: c.color || (def ? def.color : '#D0D0D0'),
+      group: c.group || (def ? def.group : 'cause'),
     };
   });
   // 2) 저장본에 없는 신규 기본 카테고리는 뒤에 추가
