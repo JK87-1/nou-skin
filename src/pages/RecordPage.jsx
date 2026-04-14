@@ -124,11 +124,11 @@ function getDateKey(d) {
 }
 
 export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
-  const [enabledCats, setEnabledCats] = useState(() => getEnabledCategories());
+  const [enabledCats, setEnabledCats] = useState(() => getEnabledCategories('cause'));
   const [foodTab, setFoodTab] = useState('all');
   useEffect(() => {
     const handler = () => {
-      const cats = getEnabledCategories();
+      const cats = getEnabledCategories('cause');
       setEnabledCats(cats);
       if (foodTab !== 'all' && !cats.find(c => c.key === foodTab)) setFoodTab('all');
     };

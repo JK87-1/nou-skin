@@ -196,10 +196,10 @@ function ChangeIndicator({ diff, unit = '점', inverse = false, size = 'normal' 
 // ===== MAIN HISTORY PAGE =====
 export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, initialMode, galleryOnly }) {
   const [mode, setMode] = useState(initialMode || 'gallery');
-  const [enabledCats, setEnabledCats] = useState(() => getEnabledCategories());
+  const [enabledCats, setEnabledCats] = useState(() => getEnabledCategories('result'));
   const [albumCategory, setAlbumCategory] = useState('all');
   const refreshCategories = () => {
-    const cats = getEnabledCategories();
+    const cats = getEnabledCategories('result');
     setEnabledCats(cats);
     if (albumCategory !== 'all' && !cats.find(c => c.key === albumCategory)) {
       setAlbumCategory('all');

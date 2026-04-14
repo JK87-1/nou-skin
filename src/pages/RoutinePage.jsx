@@ -667,11 +667,11 @@ function getTodayStr() {
 }
 
 export default function RoutinePage({ themeColors, onBack, initialMode }) {
-  const [enabledCats, setEnabledCats] = useState(() => getEnabledCategories());
+  const [enabledCats, setEnabledCats] = useState(() => getEnabledCategories('cause'));
   const [routineCat, setRoutineCat] = useState('all');
   useEffect(() => {
     const handler = () => {
-      const cats = getEnabledCategories();
+      const cats = getEnabledCategories('cause');
       setEnabledCats(cats);
       if (routineCat !== 'all' && !cats.find(c => c.key === routineCat)) setRoutineCat('all');
     };

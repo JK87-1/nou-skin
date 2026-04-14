@@ -18,14 +18,14 @@ const DEFAULTS = {
   colorMode: 'light',
   categories: [
     { key: 'food',      label: '식단',     color: '#FFD070', enabled: true,  group: 'cause' },
-    { key: 'water',     label: '수분',     color: '#7BC8F0', enabled: false, group: 'cause' },
-    { key: 'sleep',     label: '수면',     color: '#C8A0E0', enabled: false, group: 'cause' },
-    { key: 'walk',      label: '산책',     color: '#A8D8A8', enabled: false, group: 'cause' },
+    { key: 'water',     label: '수분',     color: '#7BC8F0', enabled: true,  group: 'cause' },
+    { key: 'sleep',     label: '수면',     color: '#C8A0E0', enabled: true,  group: 'cause' },
+    { key: 'walk',      label: '산책',     color: '#A8D8A8', enabled: true,  group: 'cause' },
     { key: 'exercise',  label: '운동',     color: '#90CCE8', enabled: false, group: 'cause' },
-    { key: 'energy',    label: '에너지',   color: '#F0C878', enabled: false, group: 'result' },
+    { key: 'energy',    label: '에너지',   color: '#F0C878', enabled: true,  group: 'result' },
     { key: 'body',      label: '몸무게',   color: '#D0D0D0', enabled: true,  group: 'result' },
-    { key: 'face',      label: '얼굴',     color: '#80D0A8', enabled: false, group: 'result' },
-    { key: 'skin',      label: '피부',     color: '#F8A8C0', enabled: false, group: 'result' },
+    { key: 'face',      label: '얼굴',     color: '#80D0A8', enabled: true,  group: 'result' },
+    { key: 'skin',      label: '피부',     color: '#F8A8C0', enabled: true,  group: 'result' },
     { key: 'bodyshape', label: '바디',     color: '#F0A8A8', enabled: false, group: 'result' },
   ],
 };
@@ -85,8 +85,10 @@ export function getCategoryColor(categoryKey) {
   return cats.find(c => c.key === categoryKey)?.color || '#D0D0D0';
 }
 
-export function getEnabledCategories() {
-  return getCategories().filter(c => c.enabled);
+export function getEnabledCategories(group) {
+  const cats = getCategories().filter(c => c.enabled);
+  if (group) return cats.filter(c => c.group === group);
+  return cats;
 }
 
 export function saveCategories(categories) {

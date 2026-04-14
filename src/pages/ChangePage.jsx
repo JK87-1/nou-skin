@@ -19,11 +19,11 @@ export default function ChangePage() {
   const [showSettings, setShowSettings] = useState(false);
   const [userProfile, setUserProfile] = useState(getProfile);
   const [activePeriod, setActivePeriod] = useState('1주');
-  const [enabledCats, setEnabledCats] = useState(() => getEnabledCategories());
+  const [enabledCats, setEnabledCats] = useState(() => getEnabledCategories('result'));
   const [insightTab, setInsightTab] = useState('all');
   useEffect(() => {
     const handler = () => {
-      const cats = getEnabledCategories();
+      const cats = getEnabledCategories('result');
       setEnabledCats(cats);
       if (insightTab !== 'all' && !cats.find(c => c.key === insightTab)) setInsightTab('all');
     };
@@ -276,7 +276,7 @@ export default function ChangePage() {
       })()}
 
       {/* Food Tab */}
-      {(insightTab === 'all' || insightTab === 'food') && (
+      {(insightTab === 'food') && (
         <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
           <div style={{ fontSize: 14, fontWeight: 600 }}>식단 분석 준비 중</div>
           <div style={{ fontSize: 12, marginTop: 6 }}>곧 영양 트렌드 분석이 제공됩니다</div>
