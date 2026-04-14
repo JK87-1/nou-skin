@@ -39,7 +39,7 @@ export default function SplashScreen({ exiting, onAnimationEnd, cloverTheme }) {
       onAnimationEnd={handleAnimEnd}
       style={{
         position: 'fixed', inset: 0, zIndex: 9999,
-        background: 'var(--bg-primary)',
+        background: '#ffffff',
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
         animation: exiting

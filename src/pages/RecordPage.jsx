@@ -625,6 +625,186 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
         );
       })()}
 
+      {/* Water content */}
+      {foodTab === 'water' && (
+        <div style={{ padding: '8px 14px 0' }}>
+          <div style={{ background: 'rgba(255,255,255,.72)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)', ...fadeUp(0.05) }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('water') }} />
+                <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>수분</span>
+              </div>
+              <span style={{ fontSize: 11, color: waterCount > 0 ? '#5AAABB' : '#9ABBC8', fontWeight: 500 }}>
+                {waterCount > 0 ? `${waterCount}잔(${waterCount * 250}ml)` : '미기록'}
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ display: 'flex', gap: 4, flex: 1 }}>
+                {Array.from({ length: TOTAL_CUPS }).map((_, i) => {
+                  const filled = i < waterCount;
+                  return (
+                    <div key={i} onClick={() => isToday && setWaterCount(i + 1 === waterCount ? 0 : i + 1)}
+                      style={{
+                        width: 20, height: 26, borderRadius: 5, overflow: 'hidden',
+                        border: `1px solid ${filled ? 'rgba(100,180,220,.4)' : 'rgba(100,180,220,.2)'}`,
+                        background: filled ? 'transparent' : 'rgba(100,180,220,.08)',
+                        cursor: isToday ? 'pointer' : 'default', position: 'relative', transition: 'all 0.15s ease',
+                      }}>
+                      {filled && (
+                        <div style={{
+                          position: 'absolute', bottom: 0, left: 0, right: 0, height: '100%',
+                          background: 'linear-gradient(180deg, #90CCEE, #60AADD)', borderRadius: 4,
+                        }} />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <span style={{ fontSize: 13, fontWeight: 500, color: '#5AAABB', minWidth: 32, textAlign: 'right' }}>{waterCount}잔</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+              <span style={{ fontSize: 9, color: '#9ABBC8' }}>1잔 = 250ml</span>
+              <span style={{ fontSize: 9, color: '#9ABBC8' }}>목표 2,000ml</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sleep content */}
+      {foodTab === 'sleep' && (
+        <div style={{ padding: '8px 14px 0' }}>
+          <div style={{ background: 'rgba(255,255,255,.72)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)', ...fadeUp(0.05) }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('sleep') }} />
+                <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>수면</span>
+              </div>
+              <span style={{ fontSize: 11, color: '#5AAABB', fontWeight: 500 }}>
+                {sleepQuality ? `${sleepHours}시간 · ${sleepQuality}` : `${sleepHours}시간`}
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 12 }}>
+              <div>
+                <span style={{ fontSize: 24, fontWeight: 500, color: '#1A3A4A' }}>{sleepHours}</span>
+                <span style={{ fontSize: 11, color: '#7AAABB', marginLeft: 3 }}>시간</span>
+              </div>
+              <div style={{ flex: 1 }}>
+                <input type="range" min="2" max="12" step="0.5" value={sleepHours}
+                  onChange={e => isToday && setSleepHours(parseFloat(e.target.value))}
+                  disabled={!isToday}
+                  style={{
+                    width: '100%', height: 4, appearance: 'none', WebkitAppearance: 'none',
+                    background: `linear-gradient(90deg, #C8A0E0 ${((sleepHours - 2) / 10) * 100}%, rgba(200,160,224,.2) ${((sleepHours - 2) / 10) * 100}%)`,
+                    borderRadius: 2, outline: 'none',
+                  }} />
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {SLEEP_QUALITIES.map(q => {
+                const active = sleepQuality === q;
+                return (
+                  <button key={q} onClick={() => isToday && setSleepQuality(active ? null : q)}
+                    style={{
+                      flex: 1, padding: '7px 0', borderRadius: 8, fontSize: 10, fontWeight: active ? 600 : 400,
+                      border: `1px solid ${active ? 'rgba(200,160,224,.4)' : 'rgba(100,180,220,.15)'}`,
+                      background: active ? 'rgba(200,160,224,.15)' : 'rgba(255,255,255,.5)',
+                      color: active ? '#9060B0' : '#7AAABB',
+                      cursor: isToday ? 'pointer' : 'default', transition: 'all 0.15s ease',
+                      fontFamily: 'inherit',
+                    }}>{q}</button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Exercise content */}
+      {foodTab === 'exercise' && (
+        <div style={{ padding: '8px 14px 0' }}>
+          <div style={{ background: 'rgba(255,255,255,.72)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)', ...fadeUp(0.05) }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('exercise') }} />
+                <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>운동</span>
+              </div>
+              <span style={{ fontSize: 11, color: selectedExercise ? '#5AAABB' : '#9ABBC8', fontWeight: 500 }}>
+                {selectedExercise ? `${selectedExercise} 선택됨` : '오늘 미기록'}
+              </span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 5 }}>
+              {EXERCISES.map(ex => {
+                const active = selectedExercise === ex.name;
+                return (
+                  <div key={ex.id} onClick={() => isToday && setSelectedExercise(active ? null : ex.name)}
+                    style={{
+                      padding: '10px 4px', borderRadius: 10, textAlign: 'center',
+                      border: `1px solid ${active ? 'rgba(100,180,220,.6)' : 'rgba(100,180,220,.15)'}`,
+                      background: active ? 'rgba(100,180,220,.12)' : 'rgba(255,255,255,.5)',
+                      cursor: isToday ? 'pointer' : 'default', transition: 'all 0.15s ease',
+                    }}>
+                    <div style={{ fontSize: 18, marginBottom: 2 }}>{ex.icon}</div>
+                    <div style={{ fontSize: 10, fontWeight: active ? 600 : 400, color: active ? '#3A8AAA' : '#7AAABB' }}>{ex.name}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Walk content */}
+      {foodTab === 'walk' && (
+        <div style={{ padding: '8px 14px 0' }}>
+          <div style={{ background: 'rgba(255,255,255,.72)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)', ...fadeUp(0.05) }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('walk') }} />
+                <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>걷기</span>
+              </div>
+              <span style={{ fontSize: 11, color: stepCount > 0 ? '#5AAABB' : '#9ABBC8', fontWeight: 500 }}>
+                {stepCount > 0 ? `${stepCount.toLocaleString()}걸음` : '미기록'}
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 8 }}>
+              <span style={{ fontSize: 28, fontWeight: 600, color: '#1A3A4A', fontFamily: 'var(--font-display)' }}>
+                {stepCount > 0 ? stepCount.toLocaleString() : '—'}
+              </span>
+              <span style={{ fontSize: 11, color: '#7AAABB' }}>걸음</span>
+            </div>
+            <div style={{ height: 6, borderRadius: 3, background: 'rgba(168,216,168,0.2)', overflow: 'hidden' }}>
+              <div style={{
+                height: '100%', borderRadius: 3,
+                background: 'linear-gradient(90deg, #A8D8A8, #78C878)',
+                width: `${Math.min(100, (stepCount / 10000) * 100)}%`,
+                transition: 'width 0.3s ease',
+              }} />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+              <span style={{ fontSize: 9, color: '#9ABBC8' }}>0</span>
+              <span style={{ fontSize: 9, color: '#9ABBC8' }}>목표 10,000</span>
+            </div>
+            {isToday && (
+              <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
+                {[1000, 3000, 5000, 8000, 10000].map(v => {
+                  const active = stepCount === v;
+                  return (
+                    <button key={v} onClick={() => setStepCount(active ? 0 : v)}
+                      style={{
+                        flex: 1, padding: '6px 0', borderRadius: 8, fontSize: 9, fontWeight: active ? 600 : 400,
+                        border: `1px solid ${active ? 'rgba(168,216,168,.5)' : 'rgba(100,180,220,.15)'}`,
+                        background: active ? 'rgba(168,216,168,.15)' : 'rgba(255,255,255,.5)',
+                        color: active ? '#4A8A5A' : '#7AAABB',
+                        cursor: 'pointer', transition: 'all 0.15s ease', fontFamily: 'inherit',
+                      }}>{v >= 10000 ? '1만' : `${v / 1000}천`}</button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Skin content */}
       {(foodTab === 'skin') && <>
         {/* Skin Thumbnail Row — 3칸 그리드 */}

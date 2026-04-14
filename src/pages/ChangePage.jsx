@@ -4,7 +4,7 @@ import {
   getBodyGoal, saveBodyGoal, getBodyProfile, saveBodyProfile,
   calcBMI, getLatestWeight, getStartWeight,
 } from '../storage/BodyStorage';
-import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, SENSITIVITY_OPTIONS, GENDER_OPTIONS, getEnabledCategories } from '../storage/ProfileStorage';
+import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, SENSITIVITY_OPTIONS, GENDER_OPTIONS, getEnabledCategories, getCategoryColor } from '../storage/ProfileStorage';
 import { getRecords, getAllThumbnailsAsync } from '../storage/SkinStorage';
 import BeforeAfterSlider from '../components/BeforeAfterSlider';
 
@@ -248,8 +248,8 @@ export default function ChangePage() {
             {/* Weight Card */}
             <div style={{ ...v2CardStyle, ...fadeUp(0.1) }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={v2IconBox('linear-gradient(135deg, #C0E8F8, #80CCE8)')}>⚖️</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('body') }} />
                   <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>몸무게</span>
                 </div>
                 {v2WeightDiff !== 0 && (
@@ -277,9 +277,9 @@ export default function ChangePage() {
             {/* Skin Card */}
             <div style={{ ...v2CardStyle, ...fadeUp(0.15) }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={v2IconBox('linear-gradient(135deg, #FFD8E8, #F8A8C0)')}>✨</div>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>피부 상태</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('skin') }} />
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>피부</span>
                 </div>
                 {v2SkinDiff !== 0 && (
                   <span style={{ fontSize: 11, fontWeight: 500, color: changeColor(-v2SkinDiff) }}>
@@ -314,9 +314,9 @@ export default function ChangePage() {
             {/* Energy/Mood Card */}
             <div style={{ ...v2CardStyle, ...fadeUp(0.2) }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={v2IconBox('linear-gradient(135deg, #E8D0F0, #C8A0E0)')}>⚡</div>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>에너지·기분</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('energy') }} />
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>에너지</span>
                 </div>
               </div>
               {recordEntries.length > 0 ? (
