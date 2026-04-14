@@ -15,7 +15,7 @@ function saveDayRecord(dateKey, data) {
   try { const all = JSON.parse(localStorage.getItem(RECORD_V2_KEY) || '{}'); all[dateKey] = data; localStorage.setItem(RECORD_V2_KEY, JSON.stringify(all)); } catch {}
 }
 const EXERCISES = [
-  { id: 'walk', icon: '🚶', name: '걷기' },
+  { id: 'stretch', icon: '🤸', name: '스트레칭' },
   { id: 'run', icon: '🏃', name: '달리기' },
   { id: 'weight', icon: '💪', name: '근력' },
   { id: 'yoga', icon: '🧘', name: '요가' },
@@ -171,8 +171,13 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
   // Exercise / Sleep / Water state (shared with RecordPageV2 via localStorage)
   const [selectedExercise, setSelectedExercise] = useState(null);
+  const [exerciseLog, setExerciseLog] = useState({}); // { name: minutes }
   const [sleepHours, setSleepHours] = useState(7);
   const [sleepQuality, setSleepQuality] = useState(null);
+  const [sleepBedtime, setSleepBedtime] = useState(null);
+  const [sleepWakeTime, setSleepWakeTime] = useState(null);
+  const [sleepMode, setSleepMode] = useState('simple'); // 'simple' | 'time'
+  const [stepsGuideOpen, setStepsGuideOpen] = useState(false);
   const [waterCount, setWaterCount] = useState(0);
   const [stepCount, setStepCount] = useState(0);
 
@@ -180,29 +185,47 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
     const saved = loadDayRecord(dateKey);
     if (saved) {
       setSelectedExercise(saved.exercise?.type || null);
+      setExerciseLog(saved.exercise?.log || {});
       setSleepHours(saved.sleep?.hours ?? 7);
       setSleepQuality(saved.sleep?.quality || null);
+      setSleepBedtime(saved.sleep?.bedtime || null);
+      setSleepWakeTime(saved.sleep?.wakeTime || null);
       setWaterCount(saved.water?.cups ?? 0);
       setStepCount(saved.steps ?? 0);
     } else {
-      setSelectedExercise(null); setSleepHours(7); setSleepQuality(null); setWaterCount(0); setStepCount(0);
+      setSelectedExercise(null); setExerciseLog({});
+      setSleepHours(7); setSleepQuality(null);
+      setSleepBedtime(null); setSleepWakeTime(null);
+      setWaterCount(0); setStepCount(0);
     }
   }, []);
 
   useEffect(() => { loadV2Data(selectedDate); }, [selectedDate, loadV2Data]);
 
+  // Calculate hours from bedtime/wakeTime
+  const calcSleepFromTime = useCallback((bed, wake) => {
+    if (!bed || !wake) return;
+    const [bh, bm] = bed.split(':').map(Number);
+    const [wh, wm] = wake.split(':').map(Number);
+    let bedMin = bh * 60 + bm;
+    let wakeMin = wh * 60 + wm;
+    if (wakeMin <= bedMin) wakeMin += 24 * 60; // crossed midnight
+    const diff = (wakeMin - bedMin) / 60;
+    setSleepHours(Math.round(diff * 2) / 2); // round to 0.5
+  }, []);
+
   const saveV2 = useCallback(() => {
     saveDayRecord(selectedDate, {
       date: selectedDate,
-      exercise: selectedExercise ? { type: selectedExercise } : null,
-      sleep: { hours: sleepHours, quality: sleepQuality },
+      exercise: selectedExercise || Object.keys(exerciseLog).length > 0 ? { type: selectedExercise, log: exerciseLog } : null,
+      sleep: { hours: sleepHours, quality: sleepQuality, bedtime: sleepBedtime, wakeTime: sleepWakeTime },
       water: { cups: waterCount },
       steps: stepCount,
     });
-  }, [selectedDate, selectedExercise, sleepHours, sleepQuality, waterCount, stepCount]);
+  }, [selectedDate, selectedExercise, exerciseLog, sleepHours, sleepQuality, sleepBedtime, sleepWakeTime, waterCount, stepCount]);
 
   // Auto-save when exercise/sleep/water/steps changes
-  useEffect(() => { if (isToday) saveV2(); }, [selectedExercise, sleepHours, sleepQuality, waterCount, stepCount]);
+  useEffect(() => { if (isToday) saveV2(); }, [selectedExercise, exerciseLog, sleepHours, sleepQuality, sleepBedtime, sleepWakeTime, waterCount, stepCount]);
 
   useEffect(() => {
     if (autoOpenAdd) {
@@ -683,22 +706,91 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                 {sleepQuality ? `${sleepHours}시간 · ${sleepQuality}` : `${sleepHours}시간`}
               </span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 12 }}>
-              <div>
-                <span style={{ fontSize: 24, fontWeight: 500, color: '#1A3A4A' }}>{sleepHours}</span>
-                <span style={{ fontSize: 11, color: '#7AAABB', marginLeft: 3 }}>시간</span>
-              </div>
-              <div style={{ flex: 1 }}>
-                <input type="range" min="2" max="12" step="0.5" value={sleepHours}
-                  onChange={e => isToday && setSleepHours(parseFloat(e.target.value))}
-                  disabled={!isToday}
-                  style={{
-                    width: '100%', height: 4, appearance: 'none', WebkitAppearance: 'none',
-                    background: `linear-gradient(90deg, #C8A0E0 ${((sleepHours - 2) / 10) * 100}%, rgba(200,160,224,.2) ${((sleepHours - 2) / 10) * 100}%)`,
-                    borderRadius: 2, outline: 'none',
-                  }} />
-              </div>
+
+            {/* 입력 모드 토글 */}
+            <div style={{ display: 'flex', background: 'rgba(200,160,224,.1)', borderRadius: 8, padding: 2, marginBottom: 14 }}>
+              {[{ key: 'simple', label: '간단 입력' }, { key: 'time', label: '시간 입력' }].map(m => (
+                <button key={m.key} onClick={() => isToday && setSleepMode(m.key)} style={{
+                  flex: 1, padding: '6px 0', borderRadius: 6, fontSize: 10, fontWeight: sleepMode === m.key ? 600 : 400,
+                  border: 'none', cursor: isToday ? 'pointer' : 'default', fontFamily: 'inherit',
+                  background: sleepMode === m.key ? 'rgba(255,255,255,.9)' : 'transparent',
+                  color: sleepMode === m.key ? '#9060B0' : '#7AAABB',
+                  boxShadow: sleepMode === m.key ? '0 1px 3px rgba(200,160,224,.2)' : 'none',
+                  transition: 'all 0.15s ease',
+                }}>{m.label}</button>
+              ))}
             </div>
+
+            {/* 간단 입력 */}
+            {sleepMode === 'simple' && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 12 }}>
+                <div>
+                  <span style={{ fontSize: 24, fontWeight: 500, color: '#1A3A4A' }}>{sleepHours}</span>
+                  <span style={{ fontSize: 11, color: '#7AAABB', marginLeft: 3 }}>시간</span>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <input type="range" min="2" max="12" step="0.5" value={sleepHours}
+                    onChange={e => isToday && setSleepHours(parseFloat(e.target.value))}
+                    disabled={!isToday}
+                    style={{
+                      width: '100%', height: 4, appearance: 'none', WebkitAppearance: 'none',
+                      background: `linear-gradient(90deg, #C8A0E0 ${((sleepHours - 2) / 10) * 100}%, rgba(200,160,224,.2) ${((sleepHours - 2) / 10) * 100}%)`,
+                      borderRadius: 2, outline: 'none',
+                    }} />
+                </div>
+              </div>
+            )}
+
+            {/* 시간 입력 */}
+            {sleepMode === 'time' && (
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 10 }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 10, color: '#9ABBC8', marginBottom: 4 }}>잠든 시간</div>
+                    <input type="time" value={sleepBedtime || ''} disabled={!isToday}
+                      onChange={e => {
+                        const v = e.target.value;
+                        setSleepBedtime(v);
+                        if (v && sleepWakeTime) calcSleepFromTime(v, sleepWakeTime);
+                      }}
+                      style={{
+                        width: '100%', padding: '8px 10px', borderRadius: 10, fontSize: 14, fontWeight: 500,
+                        border: '1px solid rgba(200,160,224,.3)', background: 'rgba(200,160,224,.08)',
+                        color: '#1A3A4A', fontFamily: 'inherit', outline: 'none',
+                      }}
+                    />
+                  </div>
+                  <div style={{ fontSize: 16, color: '#C8A0E0', marginTop: 16 }}>→</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 10, color: '#9ABBC8', marginBottom: 4 }}>일어난 시간</div>
+                    <input type="time" value={sleepWakeTime || ''} disabled={!isToday}
+                      onChange={e => {
+                        const v = e.target.value;
+                        setSleepWakeTime(v);
+                        if (sleepBedtime && v) calcSleepFromTime(sleepBedtime, v);
+                      }}
+                      style={{
+                        width: '100%', padding: '8px 10px', borderRadius: 10, fontSize: 14, fontWeight: 500,
+                        border: '1px solid rgba(200,160,224,.3)', background: 'rgba(200,160,224,.08)',
+                        color: '#1A3A4A', fontFamily: 'inherit', outline: 'none',
+                      }}
+                    />
+                  </div>
+                </div>
+                {sleepBedtime && sleepWakeTime && (
+                  <div style={{
+                    textAlign: 'center', padding: '8px 0', borderRadius: 10,
+                    background: 'rgba(200,160,224,.08)',
+                  }}>
+                    <span style={{ fontSize: 20, fontWeight: 600, color: '#1A3A4A' }}>{sleepHours}</span>
+                    <span style={{ fontSize: 11, color: '#7AAABB', marginLeft: 3 }}>시간 수면</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 수면 질 */}
+            <div style={{ fontSize: 10, color: '#9ABBC8', marginBottom: 6 }}>수면의 질</div>
             <div style={{ display: 'flex', gap: 6 }}>
               {SLEEP_QUALITIES.map(q => {
                 const active = sleepQuality === q;
@@ -728,15 +820,32 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                 <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('exercise') }} />
                 <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>운동</span>
               </div>
-              <span style={{ fontSize: 11, color: selectedExercise ? '#5AAABB' : '#9ABBC8', fontWeight: 500 }}>
-                {selectedExercise ? `${selectedExercise} 선택됨` : '오늘 미기록'}
-              </span>
+              {(() => {
+                const totalMin = Object.values(exerciseLog).reduce((s, m) => s + (m || 0), 0);
+                return (
+                  <span style={{ fontSize: 11, color: totalMin > 0 ? '#5AAABB' : '#9ABBC8', fontWeight: 500 }}>
+                    {totalMin > 0 ? `총 ${totalMin}분` : '오늘 미기록'}
+                  </span>
+                );
+              })()}
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 5 }}>
               {EXERCISES.map(ex => {
-                const active = selectedExercise === ex.name;
+                const hasLog = exerciseLog[ex.name] > 0;
+                const active = hasLog;
                 return (
-                  <div key={ex.id} onClick={() => isToday && setSelectedExercise(active ? null : ex.name)}
+                  <div key={ex.id} onClick={() => {
+                    if (!isToday) return;
+                    if (hasLog) {
+                      const next = { ...exerciseLog };
+                      delete next[ex.name];
+                      setExerciseLog(next);
+                      if (selectedExercise === ex.name) setSelectedExercise(null);
+                    } else {
+                      setExerciseLog({ ...exerciseLog, [ex.name]: 30 });
+                      setSelectedExercise(ex.name);
+                    }
+                  }}
                     style={{
                       padding: '10px 4px', borderRadius: 10, textAlign: 'center',
                       border: `1px solid ${active ? 'rgba(100,180,220,.6)' : 'rgba(100,180,220,.15)'}`,
@@ -745,10 +854,42 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                     }}>
                     <div style={{ fontSize: 18, marginBottom: 2 }}>{ex.icon}</div>
                     <div style={{ fontSize: 10, fontWeight: active ? 600 : 400, color: active ? '#3A8AAA' : '#7AAABB' }}>{ex.name}</div>
+                    {active && <div style={{ fontSize: 9, color: '#5AAABB', marginTop: 2 }}>{exerciseLog[ex.name]}분</div>}
                   </div>
                 );
               })}
             </div>
+
+            {/* 선택된 운동 시간 조절 */}
+            {Object.keys(exerciseLog).length > 0 && isToday && (
+              <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {Object.entries(exerciseLog).map(([name, mins]) => {
+                  const ex = EXERCISES.find(e => e.name === name);
+                  return (
+                    <div key={name} style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '8px 10px', borderRadius: 10,
+                      background: 'rgba(100,180,220,.06)', border: '0.5px solid rgba(100,180,220,.15)',
+                    }}>
+                      <span style={{ fontSize: 14, flexShrink: 0 }}>{ex?.icon || '🏃'}</span>
+                      <span style={{ fontSize: 11, fontWeight: 500, color: '#1A3A4A', minWidth: 50 }}>{name}</span>
+                      <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        {[10, 20, 30, 60, 90].map(v => (
+                          <button key={v} onClick={() => setExerciseLog({ ...exerciseLog, [name]: v })}
+                            style={{
+                              flex: 1, padding: '4px 0', borderRadius: 6, fontSize: 9, fontWeight: mins === v ? 600 : 400,
+                              border: `1px solid ${mins === v ? 'rgba(100,180,220,.5)' : 'rgba(100,180,220,.15)'}`,
+                              background: mins === v ? 'rgba(100,180,220,.15)' : 'transparent',
+                              color: mins === v ? '#2A6A8A' : '#7AAABB',
+                              cursor: 'pointer', fontFamily: 'inherit',
+                            }}>{v}분</button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -785,20 +926,95 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
               <span style={{ fontSize: 9, color: '#9ABBC8' }}>목표 10,000</span>
             </div>
             {isToday && (
-              <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
-                {[1000, 3000, 5000, 8000, 10000].map(v => {
-                  const active = stepCount === v;
-                  return (
-                    <button key={v} onClick={() => setStepCount(active ? 0 : v)}
-                      style={{
-                        flex: 1, padding: '6px 0', borderRadius: 8, fontSize: 9, fontWeight: active ? 600 : 400,
-                        border: `1px solid ${active ? 'rgba(168,216,168,.5)' : 'rgba(100,180,220,.15)'}`,
-                        background: active ? 'rgba(168,216,168,.15)' : 'rgba(255,255,255,.5)',
-                        color: active ? '#4A8A5A' : '#7AAABB',
-                        cursor: 'pointer', transition: 'all 0.15s ease', fontFamily: 'inherit',
-                      }}>{v >= 10000 ? '1만' : `${v / 1000}천`}</button>
-                  );
-                })}
+              <>
+                <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
+                  {[1000, 3000, 5000, 8000, 10000].map(v => {
+                    const active = stepCount === v;
+                    return (
+                      <button key={v} onClick={() => setStepCount(active ? 0 : v)}
+                        style={{
+                          flex: 1, padding: '6px 0', borderRadius: 8, fontSize: 9, fontWeight: active ? 600 : 400,
+                          border: `1px solid ${active ? 'rgba(168,216,168,.5)' : 'rgba(100,180,220,.15)'}`,
+                          background: active ? 'rgba(168,216,168,.15)' : 'rgba(255,255,255,.5)',
+                          color: active ? '#4A8A5A' : '#7AAABB',
+                          cursor: 'pointer', transition: 'all 0.15s ease', fontFamily: 'inherit',
+                        }}>{v >= 10000 ? '1만' : `${v / 1000}천`}</button>
+                    );
+                  })}
+                </div>
+                {/* 직접 입력 */}
+                <div style={{ marginTop: 8, display: 'flex', gap: 6, alignItems: 'center' }}>
+                  <input type="number" inputMode="numeric" placeholder="직접 입력"
+                    value={stepCount > 0 && ![1000,3000,5000,8000,10000].includes(stepCount) ? stepCount : ''}
+                    onChange={e => {
+                      const v = parseInt(e.target.value, 10);
+                      if (!isNaN(v) && v >= 0 && v <= 200000) setStepCount(v);
+                      else if (e.target.value === '') setStepCount(0);
+                    }}
+                    style={{
+                      flex: 1, padding: '7px 10px', borderRadius: 8, fontSize: 12,
+                      border: '1px solid rgba(168,216,168,.3)', background: 'rgba(168,216,168,.06)',
+                      color: '#1A3A4A', fontFamily: 'inherit', outline: 'none',
+                    }}
+                  />
+                  <span style={{ fontSize: 10, color: '#7AAABB', flexShrink: 0 }}>걸음</span>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* iPhone 건강 앱 연동 안내 — 접기/펼치기 */}
+          <div style={{
+            background: 'rgba(255,255,255,.72)', borderRadius: 16, padding: '14px 15px',
+            border: '0.5px solid rgba(255,255,255,.95)', marginTop: 10, ...fadeUp(0.1),
+          }}>
+            <div onClick={() => setStepsGuideOpen(!stepsGuideOpen)} style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer',
+            }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#1A3A4A' }}>iPhone 걸음수 자동 연동</span>
+              <svg width="16" height="16" viewBox="0 0 16 16" style={{
+                transition: 'transform 0.25s ease',
+                transform: stepsGuideOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+              }}>
+                <path d="M4 6 L8 10 L12 6" fill="none" stroke="rgba(0,0,0,0.4)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            {stepsGuideOpen && (
+              <div style={{ marginTop: 12 }}>
+                <div style={{ fontSize: 11, color: '#5A8AAA', lineHeight: 1.6, marginBottom: 12 }}>
+                  Apple 단축어를 설정하면 매일 자동으로 걸음수가 루아에 기록돼요.
+                </div>
+                <div style={{
+                  background: 'rgba(168,216,168,.08)', borderRadius: 12, padding: '12px 14px', marginBottom: 10,
+                }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: '#3A7A5A', marginBottom: 8 }}>설정 방법</div>
+                  <div style={{ fontSize: 10, color: '#5A8AAA', lineHeight: 1.8 }}>
+                    1. iPhone에서 <b>단축어</b> 앱 열기<br/>
+                    2. <b>자동화</b> 탭 → <b>새로운 자동화</b><br/>
+                    3. <b>시간</b> 선택 → 매일 밤 11시 (원하는 시간)<br/>
+                    4. 아래 단축어 추가:<br/>
+                    <span style={{ display: 'block', margin: '4px 0', padding: '6px 8px', borderRadius: 6, background: 'rgba(168,216,168,.12)', fontFamily: 'monospace', fontSize: 9, lineHeight: 1.5 }}>
+                      ① 건강 샘플 가져오기 → 걸음 수 → 오늘<br/>
+                      ② URL 열기 → luaskin.co?steps=<b>[걸음수]</b>
+                    </span>
+                    5. <b>실행 전 묻지 않기</b> 활성화 → 완료
+                  </div>
+                </div>
+                <button onClick={() => {
+                  const text = '단축어 앱 → 자동화 → 시간(매일) → 건강 샘플(걸음 수, 오늘) → URL 열기(luaskin.co?steps=[걸음수])';
+                  navigator.clipboard?.writeText(text).then(() => {
+                    alert('설정 방법이 클립보드에 복사되었어요!');
+                  }).catch(() => {
+                    alert(text);
+                  });
+                }} style={{
+                  width: '100%', padding: '10px 0', borderRadius: 10,
+                  border: '1px solid rgba(168,216,168,.4)', background: 'rgba(168,216,168,.1)',
+                  color: '#3A7A5A', fontSize: 11, fontWeight: 600,
+                  cursor: 'pointer', fontFamily: 'inherit',
+                }}>
+                  설정 방법 복사하기
+                </button>
               </div>
             )}
           </div>

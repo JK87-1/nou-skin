@@ -156,12 +156,26 @@ export default function App() {
     if (isStandalone && getRecords().length === 0 && !localStorage.getItem('nou_migration_dismissed')) {
       setShowMigration(true);
     }
-    // Handle push notification deep link (?scan=1)
+    // Handle push notification deep link (?scan=1) & steps sync (?steps=N)
     const params = new URLSearchParams(window.location.search);
     if (params.get('scan') === '1') {
       setActiveTab('measure');
       setStage('camera');
       window.history.replaceState({}, '', '/');
+    }
+    const stepsParam = params.get('steps');
+    if (stepsParam) {
+      const stepsVal = parseInt(stepsParam, 10);
+      if (stepsVal > 0 && stepsVal <= 200000) {
+        const todayKey = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`;
+        try {
+          const all = JSON.parse(localStorage.getItem('lua_record_v2') || '{}');
+          all[todayKey] = { ...all[todayKey], date: todayKey, steps: stepsVal };
+          localStorage.setItem('lua_record_v2', JSON.stringify(all));
+        } catch {}
+        setActiveTab('food');
+        window.history.replaceState({}, '', '/');
+      }
     }
     // PWA: 데이터 백업 후 안전하게 리로드
     if ('serviceWorker' in navigator) {
