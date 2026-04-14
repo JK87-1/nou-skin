@@ -485,6 +485,9 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                   {nutrition.carb > 0 && (
                     <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 99, background: 'rgba(255,190,70,.15)', color: '#B08000' }}>탄수화물 {Math.round(nutrition.carb)}g</span>
                   )}
+                  {nutrition.fat > 0 && (
+                    <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 99, background: 'rgba(200,160,224,.12)', color: '#7A5A9A' }}>지방 {Math.round(nutrition.fat)}g</span>
+                  )}
                 </div>
               )}
             </div>
