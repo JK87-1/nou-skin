@@ -56,7 +56,7 @@ function MiniChart({ data, color = '#80CCE8', height = 36 }) {
   );
 }
 
-export default function ChangePage() {
+export default function ChangePage({ onTabChange }) {
   const [records, setRecords] = useState(getBodyRecords);
   const [goal, setGoal] = useState(getBodyGoal);
   const [profile, setProfile] = useState(getBodyProfile);
@@ -169,20 +169,24 @@ export default function ChangePage() {
   return (
     <div style={{ minHeight: '100dvh', paddingBottom: 80 }}>
       {/* Header */}
-      <div style={{ padding: '16px 18px 0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-          <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>변화</h1>
-          <div onClick={() => setShowSettings(true)} style={{
-            background: 'rgba(255,255,255,.5)', border: '0.5px solid rgba(100,180,220,.2)',
-            borderRadius: 99, padding: '5px 10px', display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer',
-          }}>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#7AAABB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+      <div style={{ padding: '16px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>변화</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div onClick={() => setShowAdd(true)} style={{ width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M12 5v14M5 12h14" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" />
             </svg>
-            <span style={{ fontSize: 10, color: '#7AAABB' }}>직접 선택</span>
+          </div>
+          <div onClick={() => onTabChange && onTabChange('album')} style={{ width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+            </svg>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 6 }}>
+      </div>
+      <div style={{ padding: '10px 18px 0' }}>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
           {['1주', '1개월', '3개월', '전체'].map(p => (
             <button key={p} onClick={() => setActivePeriod(p)} style={{
               fontSize: 10, padding: '5px 12px', borderRadius: 99, cursor: 'pointer',
@@ -190,8 +194,18 @@ export default function ChangePage() {
               background: activePeriod === p ? 'rgba(100,180,220,.15)' : 'rgba(255,255,255,.5)',
               color: activePeriod === p ? '#2A6A8A' : '#7AAABB',
               fontWeight: activePeriod === p ? 500 : 400,
+              fontFamily: 'inherit',
             }}>{p}</button>
           ))}
+          <div onClick={() => setShowSettings(true)} style={{
+            background: 'rgba(255,255,255,.5)', border: '0.5px solid rgba(100,180,220,.2)',
+            borderRadius: 99, padding: '5px 10px', display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', flexShrink: 0,
+          }}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#7AAABB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+            <span style={{ fontSize: 10, color: '#7AAABB' }}>직접 선택</span>
+          </div>
         </div>
       </div>
 

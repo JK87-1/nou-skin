@@ -726,7 +726,7 @@ export default function App() {
       {activeTab === 'food' && <RecordPage onTabChange={switchTab} autoOpenAdd={foodAutoOpen} onMeasure={openCamera} />}
 
       {/* ===== BODY TAB ===== */}
-      {activeTab === 'body' && <ChangePage />}
+      {activeTab === 'body' && <ChangePage onTabChange={switchTab} />}
 
       {/* ===== ROUTINE TAB ===== */}
       {activeTab === 'routine' && (
