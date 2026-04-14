@@ -15,8 +15,6 @@ import TabBar from './components/TabBar';
 import HomePage from './pages/HomePage';
 import RecordPage from './pages/RecordPage';
 import ChangePage from './pages/ChangePage';
-import RecordPageV2 from './pages/RecordPageV2';
-import ChangePageV2 from './pages/ChangePageV2';
 import RoutinePage from './pages/RoutinePage';
 import SkinScoreCircle from './components/SkinScoreCircle';
 import AiInsightCard from './components/AiInsightCard';
@@ -713,14 +711,8 @@ export default function App() {
       {/* ===== FOOD TAB ===== */}
       {activeTab === 'food' && <RecordPage onTabChange={switchTab} autoOpenAdd={foodAutoOpen} onMeasure={openCamera} />}
 
-      {/* ===== FOOD2 TAB (v2) ===== */}
-      {activeTab === 'food2' && <RecordPageV2 />}
-
       {/* ===== BODY TAB ===== */}
       {activeTab === 'body' && <ChangePage />}
-
-      {/* ===== BODY2 TAB (v2) ===== */}
-      {activeTab === 'body2' && <ChangePageV2 />}
 
       {/* ===== ROUTINE TAB ===== */}
       {activeTab === 'routine' && (

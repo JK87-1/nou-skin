@@ -607,6 +607,20 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                 })}
               </div>
             </div>
+
+            {/* Save Button */}
+            {isToday && (
+              <button onClick={saveV2} style={{
+                width: '100%', padding: 12, borderRadius: 14,
+                background: 'rgba(255,255,255,.65)', border: '1px solid rgba(100,180,220,.25)',
+                color: '#3A8AAA', fontSize: 12, fontWeight: 500,
+                cursor: 'pointer', marginBottom: 10,
+                fontFamily: 'inherit',
+                ...fadeUp(0.35),
+              }}>
+                오늘 기록 저장 →
+              </button>
+            )}
           </div>
         );
       })()}
