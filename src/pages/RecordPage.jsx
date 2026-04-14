@@ -2,7 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { getTodayFoods, getTodayNutrition, getFoodRecords, getNutritionForDate, getTimeAdjustedGoal, getFoodGoal, saveFoodRecord, deleteFoodRecord } from '../storage/FoodStorage';
 import { getRecords, getChanges, getTotalChanges, getAllThumbnailsAsync } from '../storage/SkinStorage';
 import { getBodyRecords, getLatestWeight, getStartWeight, getBodyGoal, getBodyProfile, calcBMI, saveBodyRecord, deleteBodyRecord } from '../storage/BodyStorage';
-import { getEnabledCategories } from '../storage/ProfileStorage';
+import { getEnabledCategories, getCategoryColor } from '../storage/ProfileStorage';
 import { savePhotoDB, getPhotoDB, resizeImage } from '../storage/PhotoDB';
 
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
@@ -381,7 +381,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
         const allCardHeader = (color, title, _icon, status, statusColor = '#5AAABB') => (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 3, height: 18, borderRadius: 2, background: color }} />
+              <div style={{ width: 3, height: 14, borderRadius: 2, background: color }} />
               <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>{title}</span>
             </div>
             <span style={{ fontSize: 11, color: statusColor, fontWeight: 500 }}>{status}</span>
@@ -415,7 +415,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
             {/* Food Card */}
             <div style={{ ...allCardStyle, ...fadeUp(0.1) }}>
-              {allCardHeader('#FFD070', '식단', null,
+              {allCardHeader(getCategoryColor('food'), '식단', null,
                 todayMeals.length > 0 ? `${todayMeals.length}끼 기록됨` : '미기록',
                 todayMeals.length > 0 ? '#5AAABB' : '#9ABBC8'
               )}
@@ -462,8 +462,8 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
             {/* Water Card */}
             <div style={{ ...allCardStyle, ...fadeUp(0.25) }}>
-              {allCardHeader('#7BC8F0', '수분', null,
-                waterCount > 0 ? `${waterCount}잔` : '미기록',
+              {allCardHeader(getCategoryColor('water'), '수분', null,
+                waterCount > 0 ? `${waterCount}잔(${waterCount * 250}ml)` : '미기록',
                 waterCount > 0 ? '#5AAABB' : '#9ABBC8'
               )}
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -490,11 +490,15 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                 </div>
                 <span style={{ fontSize: 13, fontWeight: 500, color: '#5AAABB', minWidth: 32, textAlign: 'right' }}>{waterCount}잔</span>
               </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+                <span style={{ fontSize: 9, color: '#9ABBC8' }}>1잔 = 250ml</span>
+                <span style={{ fontSize: 9, color: '#9ABBC8' }}>목표 2,000ml</span>
+              </div>
             </div>
 
             {/* Sleep Card */}
             <div style={{ ...allCardStyle, ...fadeUp(0.2) }}>
-              {allCardHeader('#C8A0E0', '수면', null,
+              {allCardHeader(getCategoryColor('sleep'), '수면', null,
                 sleepQuality ? `${sleepHours}시간 · ${sleepQuality}` : `${sleepHours}시간`, '#5AAABB'
               )}
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 12 }}>
@@ -533,7 +537,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
             {/* Walk (Steps) Card */}
             <div style={{ ...allCardStyle, ...fadeUp(0.25) }}>
-              {allCardHeader('#A8D8A8', '걷기', null,
+              {allCardHeader(getCategoryColor('walk'), '걷기', null,
                 stepCount > 0 ? `${stepCount.toLocaleString()}걸음` : '미기록',
                 stepCount > 0 ? '#5AAABB' : '#9ABBC8'
               )}
@@ -581,7 +585,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
             {/* Exercise Card */}
             <div style={{ ...allCardStyle, ...fadeUp(0.3) }}>
-              {allCardHeader('#90CCE8', '운동', null,
+              {allCardHeader(getCategoryColor('exercise'), '운동', null,
                 selectedExercise ? `${selectedExercise} 선택됨` : '오늘 미기록',
                 selectedExercise ? '#5AAABB' : '#9ABBC8'
               )}

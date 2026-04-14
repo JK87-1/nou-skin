@@ -1265,7 +1265,7 @@ function CategorySettingsPage({ onClose, onSave }) {
                         border: '0.5px solid rgba(100,180,220,0.2)',
                         borderTop: 'none',
                         marginBottom: 8,
-                        display: 'flex', gap: 8, flexWrap: 'wrap',
+                        display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8,
                       }}>
                         {COLOR_OPTIONS.map(c => (
                           <div key={c} onClick={() => selectColor(cat.key, c)} style={{
@@ -1274,6 +1274,7 @@ function CategorySettingsPage({ onClose, onSave }) {
                             border: cat.color === c ? '2px solid #1A3A4A' : '2px solid transparent',
                             boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
                             transition: 'border 0.15s ease',
+                            margin: '0 auto',
                           }} />
                         ))}
                       </div>
