@@ -24,7 +24,8 @@ import {
   getAllThumbnailsAsync, saveThumbnail, deleteRecord,
 } from '../storage/SkinStorage';
 import { AnimatedNumber, ScoreRing, MetricBar } from '../components/UIComponents';
-import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, GENDER_OPTIONS, getCategories, getEnabledCategories, saveCategories } from '../storage/ProfileStorage';
+import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, GENDER_OPTIONS, getCategories, getEnabledCategories, saveCategories, getCategoryColor } from '../storage/ProfileStorage';
+import { getConditionChecks } from '../storage/ConditionStorage';
 import AiInsightCard from '../components/AiInsightCard';
 import { ChartIcon, CameraIcon, MicroscopeIcon, SparkleIcon, DiamondIcon, DropletIcon, RulerIcon, PaletteIcon, LotionIcon, EyeIcon, BubbleIcon, TargetIcon, ClockIcon, LuaMiniIcon } from '../components/icons/PastelIcons';
 import EternalPearl from '../components/icons/EternalPearl';
@@ -410,8 +411,119 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
         })()
       }>
 
+      {/* ===== 전체: 컨디션 누적 기록 ===== */}
+      {albumCategory === 'all' && (() => {
+        const allChecks = getConditionChecks();
+        // 날짜별 그룹핑
+        const byDate = {};
+        allChecks.forEach(c => {
+          const d = c.timestamp.slice(0, 10);
+          if (!byDate[d]) byDate[d] = [];
+          byDate[d].push(c);
+        });
+        const dates = Object.keys(byDate).sort().reverse().slice(0, 14); // 최근 14일
+        const chartDates = [...dates].reverse(); // 오래된→최신 순서로 차트용
+
+        // 차트: 날짜별 평균
+        const dailyAvg = chartDates.map(d => {
+          const checks = byDate[d];
+          const avgMood = checks.reduce((s, c) => s + (c.mood || 0), 0) / checks.length;
+          const avgEnergy = checks.reduce((s, c) => s + (c.energy || 0), 0) / checks.length;
+          return { date: d, mood: Math.round(avgMood * 10) / 10, energy: Math.round(avgEnergy * 10) / 10 };
+        });
+
+        const makePath = (pts) => {
+          if (pts.length < 2) return '';
+          let d = `M${pts[0].x} ${pts[0].y}`;
+          for (let i = 1; i < pts.length; i++) { const cp = (pts[i].x + pts[i-1].x)/2; d += ` C${cp} ${pts[i-1].y} ${cp} ${pts[i].y} ${pts[i].x} ${pts[i].y}`; }
+          return d;
+        };
+
+        return (
+          <div style={{ padding: '8px 14px 0' }}>
+            {/* 누적 흐름 차트 */}
+            <div style={{ background: 'rgba(255,255,255,.72)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)', marginBottom: 10 }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A', marginBottom: 10 }}>컨디션 흐름</div>
+              <div style={{ display: 'flex', gap: 14, marginBottom: 8 }}>
+                {[{ c: getCategoryColor('mood') || '#F5C2CB', l: '기분' }, { c: getCategoryColor('energy') || '#F0C878', l: '에너지' }].map(x => (
+                  <div key={x.l} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <div style={{ width: 12, height: 2, borderRadius: 1, background: x.c }} />
+                    <span style={{ fontSize: 10, color: '#7AAABB' }}>{x.l}</span>
+                  </div>
+                ))}
+              </div>
+              {dailyAvg.length >= 2 ? (() => {
+                const svgW = Math.max(dailyAvg.length * 40, 220);
+                const H = 60;
+                const pad = 16;
+                const toY = (val) => Math.round(H - (val / 10) * (H - 12) - 6);
+                const moodPts = dailyAvg.map((d, i) => ({ x: (i / (dailyAvg.length - 1)) * (svgW - pad * 2) + pad, y: toY(d.mood) }));
+                const energyPts = dailyAvg.map((d, i) => ({ x: (i / (dailyAvg.length - 1)) * (svgW - pad * 2) + pad, y: toY(d.energy) }));
+                return (
+                  <>
+                    <svg width="100%" height={H} viewBox={`0 0 ${svgW} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: 'block', overflow: 'visible' }}>
+                      <path d={makePath(moodPts)} fill="none" stroke={getCategoryColor('mood') || '#F5C2CB'} strokeWidth="2" strokeLinecap="round" />
+                      <path d={makePath(energyPts)} fill="none" stroke={getCategoryColor('energy') || '#F0C878'} strokeWidth="2" strokeLinecap="round" strokeDasharray="5 3" />
+                      {moodPts.map((p, i) => <circle key={`m${i}`} cx={p.x} cy={p.y} r="3" fill="#fff" stroke={getCategoryColor('mood') || '#F5C2CB'} strokeWidth="1.5" />)}
+                      {energyPts.map((p, i) => <circle key={`e${i}`} cx={p.x} cy={p.y} r="3" fill="#fff" stroke={getCategoryColor('energy') || '#F0C878'} strokeWidth="1.5" />)}
+                    </svg>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 4px', marginTop: 4 }}>
+                      {dailyAvg.filter((_, i) => i === 0 || i === dailyAvg.length - 1 || i === Math.floor(dailyAvg.length / 2)).map((d, i) => (
+                        <span key={i} style={{ fontSize: 9, color: '#9ABBC8' }}>{d.date.slice(5)}</span>
+                      ))}
+                    </div>
+                  </>
+                );
+              })() : (
+                <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 12, color: '#9ABBC8' }}>
+                  메인에서 컨디션을 기록하면 흐름이 나타나요
+                </div>
+              )}
+            </div>
+
+            {/* 날짜별 기록 리스트 */}
+            <div style={{ background: 'rgba(255,255,255,.72)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)' }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A', marginBottom: 10 }}>기록 히스토리</div>
+              {dates.length > 0 ? dates.map(date => {
+                const checks = byDate[date];
+                const latest = checks[checks.length - 1];
+                const d = new Date(date + 'T00:00:00');
+                const dayLabel = `${d.getMonth() + 1}/${d.getDate()}`;
+                return (
+                  <div key={date} style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '10px 0', borderBottom: '0.5px solid rgba(100,180,220,.1)',
+                  }}>
+                    <div style={{ minWidth: 36, fontSize: 12, fontWeight: 600, color: '#5AAABB' }}>{dayLabel}</div>
+                    <div style={{ display: 'flex', gap: 8, flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                        <div style={{ width: 6, height: 6, borderRadius: 3, background: getCategoryColor('mood') || '#F5C2CB' }} />
+                        <span style={{ fontSize: 11, color: '#1A3A4A' }}>{latest.mood || '—'}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                        <div style={{ width: 6, height: 6, borderRadius: 3, background: getCategoryColor('energy') || '#F0C878' }} />
+                        <span style={{ fontSize: 11, color: '#1A3A4A' }}>{latest.energy || '—'}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                        <div style={{ width: 6, height: 6, borderRadius: 3, background: getCategoryColor('water') || '#7BC8F0' }} />
+                        <span style={{ fontSize: 11, color: '#1A3A4A' }}>{latest.water || latest.gut || '—'}</span>
+                      </div>
+                    </div>
+                    <span style={{ fontSize: 9, color: '#9ABBC8' }}>{checks.length}회</span>
+                  </div>
+                );
+              }) : (
+                <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 12, color: '#9ABBC8' }}>
+                  아직 기록이 없어요
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* ===== FOOD ALBUM ===== */}
-      {(albumCategory === 'all' || albumCategory === 'food') && (() => {
+      {(albumCategory === 'food') && (() => {
         const _refresh = foodRefreshKey; // trigger re-render on delete
         const allFoods = getFoodRecords();
         const dates = Object.keys(allFoods).sort().reverse();
@@ -466,7 +578,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
       )}
 
       {/* ===== BODY ALBUM ===== */}
-      {(albumCategory === 'all' || albumCategory === 'body') && (() => {
+      {(albumCategory === 'body') && (() => {
         const bodyRecords = getBodyRecords();
         const sorted = [...bodyRecords].reverse();
         return (
@@ -510,7 +622,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
       })()}
 
       {/* ===== FACE PLACEHOLDER ===== */}
-      {(albumCategory === 'all' || albumCategory === 'face') && (
+      {(albumCategory === 'face') && (
         <div style={{ padding: '80px 24px', textAlign: 'center', animation: 'breatheIn 0.5s ease both' }}>
           <div style={{ fontSize: 32, marginBottom: 12 }}>🙂</div>
           <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>얼굴 앨범</div>
@@ -519,7 +631,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
       )}
 
       {/* ===== BODY SHAPE PLACEHOLDER ===== */}
-      {(albumCategory === 'all' || albumCategory === 'shape') && (
+      {(albumCategory === 'shape') && (
         <div style={{ padding: '80px 24px', textAlign: 'center', animation: 'breatheIn 0.5s ease both' }}>
           <div style={{ fontSize: 32, marginBottom: 12 }}>💪</div>
           <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>바디 앨범</div>
@@ -528,7 +640,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
       )}
 
       {/* ===== SKIN GALLERY ===== */}
-      {(albumCategory === 'all' || albumCategory === 'skin') && (() => {
+      {(albumCategory === 'skin') && (() => {
         const sorted = [...records].reverse();
         return (
           <div>
@@ -612,7 +724,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
       })()}
 
       {/* ===== INSIGHTS MODE (Redesigned: Timeline + Compare) ===== */}
-      {(albumCategory === 'all' || albumCategory === 'skin') && mode === 'insights' && (() => {
+      {(albumCategory === 'skin') && mode === 'insights' && (() => {
         const firstRecord = records.length > 0 ? records[0] : null;
         const lastRecord = records.length > 0 ? records[records.length - 1] : null;
         const overallDiff = totalChanges?.overallScore || 0;
@@ -1199,8 +1311,8 @@ function CategorySettingsPage({ onClose, onSave }) {
       {/* Category list — grouped */}
       <div style={{ padding: '8px 20px', flex: 1, paddingBottom: 120 }}>
         {[
-          { group: 'cause', label: '원인', desc: '내가 하는 것들' },
-          { group: 'result', label: '결과', desc: '몸에 나타나는 변화' },
+          { group: 'cause', label: '행동', desc: '내가 하는 것들' },
+          { group: 'result', label: '변화', desc: '몸에 나타나는 변화' },
         ].map(({ group, label, desc }) => {
           const groupCats = categories.filter(c => c.group === group);
           if (groupCats.length === 0) return null;

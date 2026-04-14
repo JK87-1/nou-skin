@@ -308,10 +308,10 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
           </div>
         </div>
       </div>
-      <div style={{ padding: '6px 18px 0' }}>
+      <div style={{ padding: '10px 18px 0' }}>
         <div onClick={() => setShowCal(!showCal)} style={{
-          background: 'rgba(255,255,255,.6)', border: '0.5px solid rgba(100,180,220,.2)',
-          borderRadius: 99, padding: '3px 10px', display: 'inline-flex', alignItems: 'center', gap: 4, cursor: 'pointer',
+          background: 'rgba(255,255,255,.5)', border: '0.5px solid rgba(100,180,220,.2)',
+          borderRadius: 99, padding: '5px 12px', display: 'inline-flex', alignItems: 'center', gap: 4, cursor: 'pointer',
         }}>
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#3A8AAA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
