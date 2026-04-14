@@ -15,12 +15,12 @@ function saveDayRecord(dateKey, data) {
   try { const all = JSON.parse(localStorage.getItem(RECORD_V2_KEY) || '{}'); all[dateKey] = data; localStorage.setItem(RECORD_V2_KEY, JSON.stringify(all)); } catch {}
 }
 const EXERCISES = [
+  { id: 'home', icon: '💪', name: '홈트' },
   { id: 'stretch', icon: '🤸', name: '스트레칭' },
-  { id: 'run', icon: '🏃', name: '달리기' },
-  { id: 'weight', icon: '💪', name: '근력' },
   { id: 'yoga', icon: '🧘', name: '요가' },
+  { id: 'weight', icon: '🏋️', name: '근력' },
+  { id: 'run', icon: '🏃', name: '달리기' },
   { id: 'cycle', icon: '🚴', name: '사이클' },
-  { id: 'custom', icon: '➕', name: '직접 입력' },
 ];
 const SLEEP_QUALITIES = ['깊은 수면', '보통', '얕은 수면'];
 const TOTAL_CUPS = 8;
