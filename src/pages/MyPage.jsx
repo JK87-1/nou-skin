@@ -1085,8 +1085,10 @@ function SettingsPage({ open, onClose, onCategoriesChanged }) {
 // ===== CATEGORY SETTINGS PAGE =====
 
 const COLOR_OPTIONS = [
-  '#E8C8F8', '#C8E4FC', '#D8FAD8', '#FCDDA8',
-  '#FCEFA8', '#FCCABC', '#F88878', '#FCDCE8',
+  '#F5F0A0', '#F5C870', '#F0A070', '#F09888',
+  '#F07888', '#F078A8', '#D8A0E0',
+  '#C8F0C8', '#A0E8C8', '#B0E8E0', '#80E0E0',
+  '#80D0F0', '#70A8D8', '#8088C8',
 ];
 
 function CategorySettingsPage({ onClose, onSave }) {

@@ -27,7 +27,7 @@ function saveDayRecord(dateKey, data) {
 }
 
 const EXERCISES = [
-  { id: 'walk',   icon: '🚶', name: '산책' },
+  { id: 'walk',   icon: '🚶', name: '걷기' },
   { id: 'run',    icon: '🏃', name: '달리기' },
   { id: 'weight', icon: '💪', name: '근력' },
   { id: 'yoga',   icon: '🧘', name: '요가' },
@@ -127,7 +127,7 @@ export default function RecordPageV2() {
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <div style={{ width: 26, height: 26, borderRadius: 8, background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13 }}>
-          {title === '식단' ? '🍽' : title === '운동·산책' ? '🏃' : title === '수면' ? '😴' : '💧'}
+          {title === '식단' ? '🍽' : title === '운동·걷기' ? '🏃' : title === '수면' ? '😴' : '💧'}
         </div>
         <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>{title}</span>
       </div>
@@ -296,7 +296,7 @@ export default function RecordPageV2() {
 
         {/* ===== 4. Exercise Card ===== */}
         <div style={{ ...cardStyle, ...fadeUp(0.15) }}>
-          {cardHeader('linear-gradient(135deg, #C0E8F8, #80CCE8)', '운동·산책',
+          {cardHeader('linear-gradient(135deg, #C0E8F8, #80CCE8)', '운동·걷기',
             selectedExercise ? `${selectedExercise} 선택됨` : '오늘 미기록',
             selectedExercise ? '#5AAABB' : '#9ABBC8'
           )}

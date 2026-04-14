@@ -15,7 +15,7 @@ function saveDayRecord(dateKey, data) {
   try { const all = JSON.parse(localStorage.getItem(RECORD_V2_KEY) || '{}'); all[dateKey] = data; localStorage.setItem(RECORD_V2_KEY, JSON.stringify(all)); } catch {}
 }
 const EXERCISES = [
-  { id: 'walk', icon: '🚶', name: '산책' },
+  { id: 'walk', icon: '🚶', name: '걷기' },
   { id: 'run', icon: '🏃', name: '달리기' },
   { id: 'weight', icon: '💪', name: '근력' },
   { id: 'yoga', icon: '🧘', name: '요가' },
@@ -174,6 +174,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
   const [sleepHours, setSleepHours] = useState(7);
   const [sleepQuality, setSleepQuality] = useState(null);
   const [waterCount, setWaterCount] = useState(0);
+  const [stepCount, setStepCount] = useState(0);
 
   const loadV2Data = useCallback((dateKey) => {
     const saved = loadDayRecord(dateKey);
@@ -182,8 +183,9 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
       setSleepHours(saved.sleep?.hours ?? 7);
       setSleepQuality(saved.sleep?.quality || null);
       setWaterCount(saved.water?.cups ?? 0);
+      setStepCount(saved.steps ?? 0);
     } else {
-      setSelectedExercise(null); setSleepHours(7); setSleepQuality(null); setWaterCount(0);
+      setSelectedExercise(null); setSleepHours(7); setSleepQuality(null); setWaterCount(0); setStepCount(0);
     }
   }, []);
 
@@ -195,11 +197,12 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
       exercise: selectedExercise ? { type: selectedExercise } : null,
       sleep: { hours: sleepHours, quality: sleepQuality },
       water: { cups: waterCount },
+      steps: stepCount,
     });
-  }, [selectedDate, selectedExercise, sleepHours, sleepQuality, waterCount]);
+  }, [selectedDate, selectedExercise, sleepHours, sleepQuality, waterCount, stepCount]);
 
-  // Auto-save when exercise/sleep/water changes
-  useEffect(() => { if (isToday) saveV2(); }, [selectedExercise, sleepHours, sleepQuality, waterCount]);
+  // Auto-save when exercise/sleep/water/steps changes
+  useEffect(() => { if (isToday) saveV2(); }, [selectedExercise, sleepHours, sleepQuality, waterCount, stepCount]);
 
   useEffect(() => {
     if (autoOpenAdd) {
@@ -457,28 +460,35 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
               )}
             </div>
 
-            {/* Exercise Card */}
-            <div style={{ ...allCardStyle, ...fadeUp(0.15) }}>
-              {allCardHeader('#90CCE8', '운동·산책', null,
-                selectedExercise ? `${selectedExercise} 선택됨` : '오늘 미기록',
-                selectedExercise ? '#5AAABB' : '#9ABBC8'
+            {/* Water Card */}
+            <div style={{ ...allCardStyle, ...fadeUp(0.25) }}>
+              {allCardHeader('#7BC8F0', '수분', null,
+                waterCount > 0 ? `${waterCount}잔` : '미기록',
+                waterCount > 0 ? '#5AAABB' : '#9ABBC8'
               )}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 5 }}>
-                {EXERCISES.map(ex => {
-                  const active = selectedExercise === ex.name;
-                  return (
-                    <div key={ex.id} onClick={() => isToday && setSelectedExercise(active ? null : ex.name)}
-                      style={{
-                        padding: '10px 4px', borderRadius: 10, textAlign: 'center',
-                        border: `1px solid ${active ? 'rgba(100,180,220,.6)' : 'rgba(100,180,220,.15)'}`,
-                        background: active ? 'rgba(100,180,220,.12)' : 'rgba(255,255,255,.5)',
-                        cursor: isToday ? 'pointer' : 'default', transition: 'all 0.15s ease',
-                      }}>
-                      <div style={{ fontSize: 18, marginBottom: 2 }}>{ex.icon}</div>
-                      <div style={{ fontSize: 10, fontWeight: active ? 600 : 400, color: active ? '#3A8AAA' : '#7AAABB' }}>{ex.name}</div>
-                    </div>
-                  );
-                })}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ display: 'flex', gap: 4, flex: 1 }}>
+                  {Array.from({ length: TOTAL_CUPS }).map((_, i) => {
+                    const filled = i < waterCount;
+                    return (
+                      <div key={i} onClick={() => isToday && setWaterCount(i + 1 === waterCount ? 0 : i + 1)}
+                        style={{
+                          width: 20, height: 26, borderRadius: 5, overflow: 'hidden',
+                          border: `1px solid ${filled ? 'rgba(100,180,220,.4)' : 'rgba(100,180,220,.2)'}`,
+                          background: filled ? 'transparent' : 'rgba(100,180,220,.08)',
+                          cursor: isToday ? 'pointer' : 'default', position: 'relative', transition: 'all 0.15s ease',
+                        }}>
+                        {filled && (
+                          <div style={{
+                            position: 'absolute', bottom: 0, left: 0, right: 0, height: '100%',
+                            background: 'linear-gradient(180deg, #90CCEE, #60AADD)', borderRadius: 4,
+                          }} />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                <span style={{ fontSize: 13, fontWeight: 500, color: '#5AAABB', minWidth: 32, textAlign: 'right' }}>{waterCount}잔</span>
               </div>
             </div>
 
@@ -521,35 +531,76 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
               </div>
             </div>
 
-            {/* Water Card */}
+            {/* Walk (Steps) Card */}
             <div style={{ ...allCardStyle, ...fadeUp(0.25) }}>
-              {allCardHeader('#7BC8F0', '수분', null,
-                waterCount > 0 ? `${waterCount}잔` : '미기록',
-                waterCount > 0 ? '#5AAABB' : '#9ABBC8'
+              {allCardHeader('#A8D8A8', '걷기', null,
+                stepCount > 0 ? `${stepCount.toLocaleString()}걸음` : '미기록',
+                stepCount > 0 ? '#5AAABB' : '#9ABBC8'
               )}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ display: 'flex', gap: 4, flex: 1 }}>
-                  {Array.from({ length: TOTAL_CUPS }).map((_, i) => {
-                    const filled = i < waterCount;
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 8 }}>
+                    <span style={{ fontSize: 28, fontWeight: 600, color: '#1A3A4A', fontFamily: 'var(--font-display)' }}>
+                      {stepCount > 0 ? stepCount.toLocaleString() : '—'}
+                    </span>
+                    <span style={{ fontSize: 11, color: '#7AAABB' }}>걸음</span>
+                  </div>
+                  {/* Step progress bar */}
+                  <div style={{ height: 6, borderRadius: 3, background: 'rgba(168,216,168,0.2)', overflow: 'hidden' }}>
+                    <div style={{
+                      height: '100%', borderRadius: 3,
+                      background: 'linear-gradient(90deg, #A8D8A8, #78C878)',
+                      width: `${Math.min(100, (stepCount / 10000) * 100)}%`,
+                      transition: 'width 0.3s ease',
+                    }} />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+                    <span style={{ fontSize: 9, color: '#9ABBC8' }}>0</span>
+                    <span style={{ fontSize: 9, color: '#9ABBC8' }}>목표 10,000</span>
+                  </div>
+                </div>
+              </div>
+              {isToday && (
+                <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
+                  {[1000, 3000, 5000, 8000, 10000].map(v => {
+                    const active = stepCount === v;
                     return (
-                      <div key={i} onClick={() => isToday && setWaterCount(i + 1 === waterCount ? 0 : i + 1)}
+                      <button key={v} onClick={() => setStepCount(active ? 0 : v)}
                         style={{
-                          width: 20, height: 26, borderRadius: 5, overflow: 'hidden',
-                          border: `1px solid ${filled ? 'rgba(100,180,220,.4)' : 'rgba(100,180,220,.2)'}`,
-                          background: filled ? 'transparent' : 'rgba(100,180,220,.08)',
-                          cursor: isToday ? 'pointer' : 'default', position: 'relative', transition: 'all 0.15s ease',
-                        }}>
-                        {filled && (
-                          <div style={{
-                            position: 'absolute', bottom: 0, left: 0, right: 0, height: '100%',
-                            background: 'linear-gradient(180deg, #90CCEE, #60AADD)', borderRadius: 4,
-                          }} />
-                        )}
-                      </div>
+                          flex: 1, padding: '6px 0', borderRadius: 8, fontSize: 9, fontWeight: active ? 600 : 400,
+                          border: `1px solid ${active ? 'rgba(168,216,168,.5)' : 'rgba(100,180,220,.15)'}`,
+                          background: active ? 'rgba(168,216,168,.15)' : 'rgba(255,255,255,.5)',
+                          color: active ? '#4A8A5A' : '#7AAABB',
+                          cursor: 'pointer', transition: 'all 0.15s ease', fontFamily: 'inherit',
+                        }}>{v >= 10000 ? '1만' : `${v / 1000}천`}</button>
                     );
                   })}
                 </div>
-                <span style={{ fontSize: 13, fontWeight: 500, color: '#5AAABB', minWidth: 32, textAlign: 'right' }}>{waterCount}잔</span>
+              )}
+            </div>
+
+            {/* Exercise Card */}
+            <div style={{ ...allCardStyle, ...fadeUp(0.3) }}>
+              {allCardHeader('#90CCE8', '운동', null,
+                selectedExercise ? `${selectedExercise} 선택됨` : '오늘 미기록',
+                selectedExercise ? '#5AAABB' : '#9ABBC8'
+              )}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 5 }}>
+                {EXERCISES.map(ex => {
+                  const active = selectedExercise === ex.name;
+                  return (
+                    <div key={ex.id} onClick={() => isToday && setSelectedExercise(active ? null : ex.name)}
+                      style={{
+                        padding: '10px 4px', borderRadius: 10, textAlign: 'center',
+                        border: `1px solid ${active ? 'rgba(100,180,220,.6)' : 'rgba(100,180,220,.15)'}`,
+                        background: active ? 'rgba(100,180,220,.12)' : 'rgba(255,255,255,.5)',
+                        cursor: isToday ? 'pointer' : 'default', transition: 'all 0.15s ease',
+                      }}>
+                      <div style={{ fontSize: 18, marginBottom: 2 }}>{ex.icon}</div>
+                      <div style={{ fontSize: 10, fontWeight: active ? 600 : 400, color: active ? '#3A8AAA' : '#7AAABB' }}>{ex.name}</div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
