@@ -1294,12 +1294,15 @@ function RoutineManagement({ enabledCats, initialTab, onBack }) {
           boxShadow: isDragging ? '0 4px 16px rgba(0,0,0,0.1)' : '0 1px 4px rgba(0,0,0,0.03)',
         }}
       >
-        {/* 컬러칩 */}
+        {/* 드래그 핸들 */}
+        {isActive && (
+          <span style={{ fontSize: 14, color: 'rgba(0,0,0,0.25)', cursor: 'grab', flexShrink: 0, userSelect: 'none' }}>≡</span>
+        )}
+
+        {/* 컬러 세로막대 */}
         <div style={{
-          width: 22, height: 22, borderRadius: 6, flexShrink: 0,
+          width: 3, height: 13, borderRadius: 2, flexShrink: 0,
           background: catClr,
-          border: '2px solid rgba(255,255,255,0.8)',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
         }} />
 
         {/* 이름 + 알림시간 */}
@@ -1342,13 +1345,6 @@ function RoutineManagement({ enabledCats, initialTab, onBack }) {
           }} />
         </div>
 
-        {/* 드래그 핸들 */}
-        {isActive && (
-          <div style={{
-            fontSize: 12, color: '#AACCD8', cursor: 'grab',
-            marginLeft: 4, flexShrink: 0, userSelect: 'none',
-          }}>⋮⋮</div>
-        )}
       </div>
     );
   };

@@ -52,7 +52,7 @@ export default function SplashScreen({ exiting, onAnimationEnd, cloverTheme }) {
       <div style={{
         animation: exiting ? undefined : 'splashPearlIn 0.8s ease-out both',
       }}>
-        <img src="/luasky.svg" alt="lua" style={{ width: 200, height: 'auto', objectFit: 'contain' }} />
+        <img src="/luasky.svg" alt="lua" style={{ width: 180, height: 'auto', objectFit: 'contain' }} />
       </div>
 
       <div style={{

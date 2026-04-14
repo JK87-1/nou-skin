@@ -139,7 +139,10 @@ export default function App() {
 
   useEffect(() => {
     if (showSplash) {
-      const t = setTimeout(() => setSplashExiting(true), 1500);
+      const t = setTimeout(() => {
+        setSplashExiting(true);
+        document.querySelector('meta[name="theme-color"]').content = '#ace2fc';
+      }, 1500);
       return () => clearTimeout(t);
     }
   }, [showSplash]);
@@ -590,7 +593,7 @@ export default function App() {
     <div className="app-container">
       <GlobalStyles />
       <style>{`@keyframes landingPearlReveal { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }`}</style>
-      {showSplash && <SplashScreen exiting={splashExiting} onAnimationEnd={() => { setShowSplash(false); document.querySelector('meta[name="theme-color"]').content = '#ace2fc'; }} cloverTheme={activeThemeColors?.cloverTheme} />}
+      {showSplash && <SplashScreen exiting={splashExiting} onAnimationEnd={() => setShowSplash(false)} cloverTheme={activeThemeColors?.cloverTheme} />}
       <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} style={{ display: 'none' }} />
       <input ref={nativeCameraRef} type="file" accept="image/*" capture="user" onChange={handleFile} style={{ display: 'none' }} />
 

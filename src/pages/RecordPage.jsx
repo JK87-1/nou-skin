@@ -617,15 +617,34 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
             {/* Exercise Card */}
             <div style={{ ...allCardStyle, ...fadeUp(0.3) }}>
-              {allCardHeader(getCategoryColor('exercise'), '운동', null,
-                selectedExercise ? `${selectedExercise} 선택됨` : '오늘 미기록',
-                selectedExercise ? '#5AAABB' : '#9ABBC8'
-              )}
+              {(() => {
+                const logEntries = Object.entries(exerciseLog).filter(([, m]) => m > 0);
+                const totalMin = logEntries.reduce((s, [, m]) => s + m, 0);
+                const statusText = logEntries.length > 0
+                  ? logEntries.map(([name, mins]) => `${name} ${mins}분`).join(' · ')
+                  : '오늘 미기록';
+                return allCardHeader(getCategoryColor('exercise'), '운동', null,
+                  totalMin > 0 ? statusText : '오늘 미기록',
+                  totalMin > 0 ? '#5AAABB' : '#9ABBC8'
+                );
+              })()}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 5 }}>
                 {EXERCISES.map(ex => {
-                  const active = selectedExercise === ex.name;
+                  const hasLog = exerciseLog[ex.name] > 0;
+                  const active = hasLog || selectedExercise === ex.name;
                   return (
-                    <div key={ex.id} onClick={() => isToday && setSelectedExercise(active ? null : ex.name)}
+                    <div key={ex.id} onClick={() => {
+                      if (!isToday) return;
+                      if (hasLog) {
+                        const next = { ...exerciseLog };
+                        delete next[ex.name];
+                        setExerciseLog(next);
+                        if (selectedExercise === ex.name) setSelectedExercise(null);
+                      } else {
+                        setExerciseLog({ ...exerciseLog, [ex.name]: 30 });
+                        setSelectedExercise(ex.name);
+                      }
+                    }}
                       style={{
                         padding: '10px 4px', borderRadius: 10, textAlign: 'center',
                         border: `1px solid ${active ? 'rgba(100,180,220,.6)' : 'rgba(100,180,220,.15)'}`,
@@ -634,6 +653,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                       }}>
                       <div style={{ fontSize: 18, marginBottom: 2 }}>{ex.icon}</div>
                       <div style={{ fontSize: 10, fontWeight: active ? 600 : 400, color: active ? '#3A8AAA' : '#7AAABB' }}>{ex.name}</div>
+                      {hasLog && <div style={{ fontSize: 9, color: '#5AAABB', marginTop: 2 }}>{exerciseLog[ex.name]}분</div>}
                     </div>
                   );
                 })}
