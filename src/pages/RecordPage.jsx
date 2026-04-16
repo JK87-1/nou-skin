@@ -1684,6 +1684,28 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
           </div>
         ))}
       </div>
+      {/* Ingredients breakdown */}
+      {aiResult.ingredients?.length > 0 && (
+        <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(137,206,245,0.15)' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8 }}>재료 구성</div>
+          {aiResult.ingredients.map((ing, i) => (
+            <div key={i} style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '6px 0', borderBottom: i < aiResult.ingredients.length - 1 ? '1px solid rgba(0,0,0,0.04)' : 'none',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, flex: 1, minWidth: 0 }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{ing.name}</span>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0 }}>{ing.amount}</span>
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexShrink: 0, marginLeft: 10 }}>
+                <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>탄<span style={{ fontWeight: 600, color: 'var(--text-secondary)', marginLeft: 2 }}>{ing.carb}g</span></span>
+                <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>단<span style={{ fontWeight: 600, color: 'var(--text-secondary)', marginLeft: 2 }}>{ing.protein}g</span></span>
+                <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>지<span style={{ fontWeight: 600, color: 'var(--text-secondary)', marginLeft: 2 }}>{ing.fat}g</span></span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 
