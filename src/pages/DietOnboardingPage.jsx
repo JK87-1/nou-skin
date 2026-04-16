@@ -1,30 +1,37 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { getProfile, saveProfile } from '../storage/ProfileStorage';
 
 const SECTIONS = ['기본 정보', '목표', '프로그램'];
 
-const BODY_FAT_OPTIONS = [
-  '10-13%', '14-17%', '18-23%', '24-28%', '29-33%', '34-37%', '38-42%', '43-49%', '50%+',
+const BODY_TYPES = [
+  { key: 'slim', label: '슬림', emoji: '🩰' },
+  { key: 'slim_fit', label: '슬림 탄탄', emoji: '💪' },
+  { key: 'normal', label: '보통', emoji: '🙂' },
+  { key: 'normal_curvy', label: '보통 통통', emoji: '🌸' },
+  { key: 'curvy', label: '통통', emoji: '🧸' },
+  { key: 'full', label: '풍성한 편', emoji: '🌷' },
 ];
 
 const EXERCISE_TYPES = [
-  { key: 'none', icon: '✕', label: '거의 안 해요' },
-  { key: 'strength', icon: '🏋️', label: '근력 운동' },
-  { key: 'cardio', icon: '🚶', label: '유산소 운동' },
-  { key: 'both', icon: '💪', label: '유산소 & 근력 운동' },
+  { key: 'none', icon: '🙅‍♀️', label: '거의 안 해요' },
+  { key: 'walking', icon: '🚶‍♀️', label: '걷기·스트레칭' },
+  { key: 'pilates', icon: '🧘‍♀️', label: '필라테스·요가' },
+  { key: 'gym', icon: '🏋️‍♀️', label: '홈트·헬스' },
+  { key: 'mixed', icon: '✨', label: '운동을 복합적으로 해요' },
 ];
 
 const EXERCISE_FREQ = [
-  { key: '0-2', label: '0-2회/주', dots: 1 },
-  { key: '3-5', label: '3-5회/주', dots: 3 },
-  { key: '6+', label: '6회 이상/주', dots: 5 },
+  { key: 'none', label: '거의 안 해요' },
+  { key: '1-2', label: '1-2회/주' },
+  { key: '3-4', label: '3-4회/주' },
+  { key: '5+', label: '5회 이상/주' },
 ];
 
-const STRENGTH_LEVELS = [
-  { key: 'none', label: '없음', desc: '운동 경험이 없어요', level: 0 },
-  { key: 'beginner', label: '초급', desc: '1년 이하', level: 1 },
-  { key: 'intermediate', label: '중급', desc: '1년 이상 4년 미만', level: 2 },
-  { key: 'advanced', label: '상급', desc: '4년 이상', level: 3 },
+const EXERCISE_EXP = [
+  { key: 'first', label: '처음이에요', desc: '' },
+  { key: 'sometimes', label: '가끔 하는 편이에요', desc: '' },
+  { key: 'steady', label: '꾸준히 하고 있어요', desc: '' },
+  { key: 'routine', label: '루틴이 잘 잡혀 있어요', desc: '' },
 ];
 
 const ACTIVITY_LEVELS = [
@@ -33,24 +40,32 @@ const ACTIVITY_LEVELS = [
   { key: 'active', label: '매우 활동적인 편이에요', desc: '하루 15,000보 이상' },
 ];
 
-const MEAL_COUNTS = [2, 3, 4, 5, 6];
+const MEAL_OPTIONS = [
+  { key: '2', label: '2번' },
+  { key: '3', label: '3번' },
+  { key: '4', label: '4번' },
+  { key: '5', label: '5번' },
+  { key: '6', label: '6번' },
+  { key: 'if', label: '16:8 간헐적 단식 중이에요' },
+];
 
 const DIET_OBJECTIVES = [
-  { key: 'lose', label: '체중 감량', icon: '📉' },
-  { key: 'maintain', label: '체중 유지', icon: '⚖️' },
-  { key: 'gain', label: '체중 증량', icon: '📈' },
+  { key: 'lose', label: '살 빼기', icon: '🍃' },
+  { key: 'maintain', label: '현재 체중 유지', icon: '⚖️' },
+  { key: 'gain', label: '건강하게 찌기', icon: '🌱' },
+  { key: 'tone', label: '체형 관리', icon: '✨', desc: '체중 유지 + 근육' },
 ];
 
 const SPEED_OPTIONS = [
-  { key: 'slow', label: '느림', factor: 0.5 },
-  { key: 'normal', label: '추천', factor: 1.0 },
-  { key: 'fast', label: '빠름', factor: 1.5 },
+  { key: 'slow', label: '천천히 건강하게', factor: 0.5 },
+  { key: 'normal', label: '균형 있게', factor: 1.0 },
+  { key: 'fast', label: '빠르게', factor: 1.5 },
 ];
 
 const PROTEIN_LEVELS = [
   { key: 'low', label: '낮음', desc: '일상 생활 유지', multiplier: 1.2 },
-  { key: 'normal', label: '보통', desc: '적당한 근력 운동', multiplier: 1.6, recommended: true },
-  { key: 'high', label: '높음', desc: '고강도 근력 운동', multiplier: 2.2 },
+  { key: 'normal', label: '보통', desc: '적당한 운동 병행', multiplier: 1.6, recommended: true },
+  { key: 'high', label: '높음', desc: '고강도 운동', multiplier: 2.2 },
   { key: 'very_high', label: '매우 높음', desc: '선수급 훈련', multiplier: 3.0 },
 ];
 
@@ -62,13 +77,12 @@ const CALORIE_DIST = [
 const DAYS = ['월', '화', '수', '목', '금', '토', '일'];
 
 const DIET_TYPES = [
-  { key: 'balance', name: '밸런스', desc: '탄단지 영양소를 골고루 섭취해요', carb: 32, protein: 35, fat: 32 },
-  { key: 'keto', name: '키토', desc: '고지방, 저탄수화물 식단으로 체지방 감소에 집중해요', carb: 6, protein: 35, fat: 58 },
-  { key: 'lowfat', name: '저지방', desc: '지방 섭취를 줄이고 탄수화물과 단백질 위주로 먹어요', carb: 50, protein: 35, fat: 15 },
+  { key: 'balance', name: '밸런스', desc: '탄단지를 골고루 섭취해요', carb: 32, protein: 35, fat: 32 },
   { key: 'lowcarb', name: '저탄수화물', desc: '탄수화물을 줄이고 단백질과 건강한 지방을 늘려요', carb: 30, protein: 35, fat: 35 },
+  { key: 'lowfat', name: '저지방', desc: '지방 섭취를 줄이고 탄수화물과 단백질 위주로 먹어요', carb: 50, protein: 35, fat: 15 },
+  { key: 'keto', name: '키토', desc: '고지방, 저탄수화물 식단이에요', carb: 6, protein: 35, fat: 58, warning: '호르몬에 영향을 줄 수 있어요. 전문가 상담을 권장해요.' },
 ];
 
-// Total steps: section1(6) + section2(3) + section3(5) = 14
 const SECTION_STEPS = [6, 3, 5];
 
 function calcTDEE(weight, height, age, gender, activity) {
@@ -81,32 +95,29 @@ function calcTDEE(weight, height, age, gender, activity) {
 
 export default function DietOnboardingPage({ onClose, onComplete }) {
   const profile = getProfile();
-  const [step, setStep] = useState(0); // 0-13 total
+  const [step, setStep] = useState(0);
 
-  // Section 1 states
-  const [bodyFat, setBodyFat] = useState(profile.dietBodyFat || '');
+  const [bodyType, setBodyType] = useState(profile.dietBodyType || '');
   const [exerciseType, setExerciseType] = useState(profile.dietExerciseType || '');
   const [exerciseFreq, setExerciseFreq] = useState(profile.dietExerciseFreq || '');
-  const [strengthLevel, setStrengthLevel] = useState(profile.dietStrengthLevel || '');
+  const [exerciseExp, setExerciseExp] = useState(profile.dietExerciseExp || '');
   const [activityLevel, setActivityLevel] = useState(profile.dietActivityLevel || '');
-  const [mealCount, setMealCount] = useState(profile.dietMealCount || 3);
+  const [mealOption, setMealOption] = useState(profile.dietMealOption || '');
 
-  // Section 2 states
   const [dietObjective, setDietObjective] = useState(profile.dietObjective || '');
-  const [goalWeight, setGoalWeight] = useState(profile.goalWeight || profile.currentWeight || 65);
+  const [goalWeight, setGoalWeight] = useState(profile.goalWeight || profile.currentWeight || 55);
   const [speed, setSpeed] = useState(profile.dietSpeed || 'normal');
 
-  // Section 3 states
   const [proteinLevel, setProteinLevel] = useState(profile.dietProteinLevel || 'normal');
   const [calorieDist, setCalorieDist] = useState(profile.dietCalorieDist || 'even');
   const [highCalDays, setHighCalDays] = useState(profile.dietHighCalDays || []);
   const [dietType, setDietType] = useState(profile.dietGoal || 'balance');
 
-  const currentWeight = profile.currentWeight || 70;
-  const height = profile.height || 170;
+  const currentWeight = profile.currentWeight || 55;
+  const height = profile.height || 162;
   const birthYear = profile.birthYear || 1995;
   const age = new Date().getFullYear() - birthYear;
-  const gender = profile.gender || '남성';
+  const gender = profile.gender || '여성';
 
   const tdee = calcTDEE(currentWeight, height, age, gender, activityLevel || 'moderate');
   const weightDiff = Math.abs(currentWeight - goalWeight);
@@ -115,8 +126,10 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
   const weeksNeeded = weightDiff > 0 ? Math.ceil(weightDiff / weeklyChange) : 0;
   const targetDate = new Date();
   targetDate.setDate(targetDate.getDate() + weeksNeeded * 7);
-  const dailyCalAdjust = dietObjective === 'lose' ? -500 * speedFactor : dietObjective === 'gain' ? 300 * speedFactor : 0;
+  const objKey = dietObjective === 'tone' ? 'maintain' : dietObjective;
+  const dailyCalAdjust = objKey === 'lose' ? -500 * speedFactor : objKey === 'gain' ? 300 * speedFactor : 0;
   const targetCal = Math.round(tdee + dailyCalAdjust);
+  const refWeight = currentWeight || 55;
 
   const getSectionAndStep = () => {
     let remaining = step;
@@ -132,17 +145,16 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
 
   const canProceed = () => {
     if (section === 0) {
-      if (localStep === 0) return !!bodyFat;
+      if (localStep === 0) return !!bodyType;
       if (localStep === 1) return !!exerciseType;
       if (localStep === 2) return !!exerciseFreq;
-      if (localStep === 3) return !!strengthLevel;
+      if (localStep === 3) return !!exerciseExp;
       if (localStep === 4) return !!activityLevel;
-      if (localStep === 5) return !!mealCount;
+      if (localStep === 5) return !!mealOption;
     }
     if (section === 1) {
       if (localStep === 0) return !!dietObjective;
-      if (localStep === 1) return true;
-      if (localStep === 2) return true;
+      return true;
     }
     if (section === 2) {
       if (localStep === 0) return !!proteinLevel;
@@ -155,19 +167,17 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
   };
 
   const handleNext = () => {
-    // Skip day selection if even distribution
     if (section === 2 && localStep === 1 && calorieDist === 'even') {
-      setStep(step + 3); // skip step 2 and 3 (day select + chart)
+      setStep(step + 3);
       return;
     }
     if (step < totalSteps - 1) {
       setStep(step + 1);
     } else {
-      // Save all and complete
       saveProfile({
-        dietBodyFat: bodyFat, dietExerciseType: exerciseType,
-        dietExerciseFreq: exerciseFreq, dietStrengthLevel: strengthLevel,
-        dietActivityLevel: activityLevel, dietMealCount: mealCount,
+        dietBodyType: bodyType, dietExerciseType: exerciseType,
+        dietExerciseFreq: exerciseFreq, dietExerciseExp: exerciseExp,
+        dietActivityLevel: activityLevel, dietMealOption: mealOption,
         dietObjective, goalWeight, dietSpeed: speed,
         dietProteinLevel: proteinLevel, dietCalorieDist: calorieDist,
         dietHighCalDays: highCalDays, dietGoal: dietType,
@@ -181,7 +191,6 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
 
   const handleBack = () => {
     if (step > 0) {
-      // If we skipped days, go back correctly
       if (section === 2 && localStep === 4 && calorieDist === 'even') {
         setStep(step - 3);
       } else {
@@ -196,8 +205,7 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
     padding: '16px 20px', borderRadius: 16, cursor: 'pointer',
     background: isSelected ? 'rgba(137,206,245,0.1)' : 'var(--bg-card, #fff)',
     border: isSelected ? '2px solid var(--accent-primary)' : '2px solid transparent',
-    transition: 'all 0.15s ease',
-    fontFamily: 'inherit',
+    transition: 'all 0.15s ease', fontFamily: 'inherit',
   });
 
   const renderStep = () => {
@@ -206,15 +214,15 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
       if (localStep === 0) return (
         <div>
           <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8 }}>나와 비슷한 체형을 골라보세요</div>
-          <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>체지방률에 따라 체형을 선택해보세요.</div>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>체형을 선택해주세요.</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
-            {BODY_FAT_OPTIONS.map(bf => (
-              <div key={bf} onClick={() => setBodyFat(bf)} style={{
-                ...selectStyle(bodyFat === bf),
+            {BODY_TYPES.map(bt => (
+              <div key={bt.key} onClick={() => setBodyType(bt.key)} style={{
+                ...selectStyle(bodyType === bt.key),
                 textAlign: 'center', padding: '20px 8px',
               }}>
-                <div style={{ fontSize: 32, marginBottom: 8, opacity: 0.7 }}>🧍</div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{bf}</div>
+                <div style={{ fontSize: 32, marginBottom: 8 }}>{bt.emoji}</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{bt.label}</div>
               </div>
             ))}
           </div>
@@ -246,13 +254,7 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
             {EXERCISE_FREQ.map(f => (
               <div key={f.key} onClick={() => setExerciseFreq(f.key)} style={{
                 ...selectStyle(exerciseFreq === f.key),
-                display: 'flex', alignItems: 'center', gap: 14,
               }}>
-                <div style={{ display: 'flex', gap: 3 }}>
-                  {Array.from({ length: f.dots }).map((_, i) => (
-                    <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: exerciseFreq === f.key ? 'var(--accent-primary)' : '#ccc' }} />
-                  ))}
-                </div>
                 <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{f.label}</span>
               </div>
             ))}
@@ -262,25 +264,13 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
 
       if (localStep === 3) return (
         <div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 24 }}>근력 운동 수준은 어느 정도인가요?</div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 24 }}>운동 경험이 어느 정도인가요?</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {STRENGTH_LEVELS.map(l => (
-              <div key={l.key} onClick={() => setStrengthLevel(l.key)} style={{
-                ...selectStyle(strengthLevel === l.key),
-                display: 'flex', alignItems: 'center', gap: 14,
+            {EXERCISE_EXP.map(e => (
+              <div key={e.key} onClick={() => setExerciseExp(e.key)} style={{
+                ...selectStyle(exerciseExp === e.key),
               }}>
-                <div style={{ display: 'flex', gap: 2, alignItems: 'flex-end' }}>
-                  {[0, 1, 2, 3].map(i => (
-                    <div key={i} style={{
-                      width: 6, height: 8 + i * 5, borderRadius: 2,
-                      background: i <= l.level ? (strengthLevel === l.key ? 'var(--accent-primary)' : '#aaa') : '#ddd',
-                    }} />
-                  ))}
-                </div>
-                <div>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{l.label}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{l.desc}</div>
-                </div>
+                <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{e.label}</span>
               </div>
             ))}
           </div>
@@ -290,12 +280,10 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
       if (localStep === 4) return (
         <div>
           <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8 }}>평소 활동량은 어느 정도인가요?</div>
-          <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>운동 시간을 제외하고 평소 얼마나 활동적인지 알려주세요.</div>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>운동 시간 외에 얼마나 움직이는지 알려주세요. 육아·가사도 활동량에 포함돼요.</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {ACTIVITY_LEVELS.map(a => (
-              <div key={a.key} onClick={() => setActivityLevel(a.key)} style={{
-                ...selectStyle(activityLevel === a.key),
-              }}>
+              <div key={a.key} onClick={() => setActivityLevel(a.key)} style={selectStyle(activityLevel === a.key)}>
                 <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>{a.label}</div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{a.desc}</div>
               </div>
@@ -308,12 +296,9 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
         <div>
           <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 24 }}>하루에 식사를 몇 번 하시나요?</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {MEAL_COUNTS.map(n => (
-              <div key={n} onClick={() => setMealCount(n)} style={{
-                ...selectStyle(mealCount === n),
-                display: 'flex', alignItems: 'center', gap: 14,
-              }}>
-                <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{n}번</span>
+            {MEAL_OPTIONS.map(m => (
+              <div key={m.key} onClick={() => setMealOption(m.key)} style={selectStyle(mealOption === m.key)}>
+                <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{m.label}</span>
               </div>
             ))}
           </div>
@@ -325,7 +310,7 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
     if (section === 1) {
       if (localStep === 0) return (
         <div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 24 }}>식단을 하려는 목표가 무엇인가요?</div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 24 }}>목표가 무엇인가요?</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {DIET_OBJECTIVES.map(o => (
               <div key={o.key} onClick={() => setDietObjective(o.key)} style={{
@@ -333,7 +318,10 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
                 display: 'flex', alignItems: 'center', gap: 14,
               }}>
                 <span style={{ fontSize: 24 }}>{o.icon}</span>
-                <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{o.label}</span>
+                <div>
+                  <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{o.label}</span>
+                  {o.desc && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{o.desc}</div>}
+                </div>
               </div>
             ))}
           </div>
@@ -351,15 +339,11 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>-</button>
             <input type="number" value={goalWeight}
-              onChange={e => {
-                const v = Number(e.target.value);
-                if (v >= 30 && v <= 200) setGoalWeight(v);
-              }}
+              onChange={e => { const v = Number(e.target.value); if (v >= 30 && v <= 200) setGoalWeight(v); }}
               style={{
                 width: 100, textAlign: 'center', fontSize: 42, fontWeight: 800,
                 color: 'var(--accent-primary)', fontFamily: 'var(--font-display)',
                 border: 'none', background: 'transparent', outline: 'none',
-                MozAppearance: 'textfield',
               }}
             />
             <span style={{ fontSize: 20, fontWeight: 600, color: 'var(--text-muted)', marginLeft: -8 }}>kg</span>
@@ -377,15 +361,15 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
           <div style={{ background: 'var(--bg-card, #fff)', borderRadius: 16, padding: '16px 20px', marginBottom: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
               <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>체중 변화</span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: dietObjective === 'gain' ? 'var(--accent-primary)' : '#22C55E' }}>
-                {dietObjective === 'gain' ? '+' : '-'}{weightDiff}kg
+              <span style={{ fontSize: 13, fontWeight: 700, color: objKey === 'gain' ? 'var(--accent-primary)' : '#22C55E' }}>
+                {objKey === 'gain' ? '+' : objKey === 'lose' ? '-' : ''}{weightDiff}kg
               </span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
               <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>평균 목표 칼로리</span>
               <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{targetCal}kcal</span>
             </div>
-            {weightDiff > 0 && (
+            {weightDiff > 0 && objKey !== 'maintain' && (
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>예상 종료일</span>
                 <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{targetDate.getFullYear()}.{targetDate.getMonth() + 1}.{targetDate.getDate()}</span>
@@ -399,17 +383,22 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
                 flex: 1, padding: '10px 0', borderRadius: 12, border: 'none',
                 background: speed === s.key ? 'var(--accent-primary)' : 'var(--bg-input, #F2F3F5)',
                 color: speed === s.key ? '#fff' : 'var(--text-muted)',
-                fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
               }}>{s.label}</button>
             ))}
           </div>
+          {speed === 'fast' && (
+            <div style={{ marginTop: 10, padding: '10px 14px', borderRadius: 10, background: 'rgba(245,158,11,0.1)', fontSize: 11, color: '#D97706', lineHeight: 1.5 }}>
+              빠른 감량은 요요에 주의하세요. 천천히 줄이는 게 더 오래 유지돼요.
+            </div>
+          )}
         </div>
       );
 
       if (localStep === 2) return (
         <div>
           <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8 }}>
-            {weightDiff > 0 ? `${weightDiff}kg ${dietObjective === 'lose' ? '줄이는' : '늘리는'} 건 충분히 가능한 목표예요` : '현재 체중을 유지하는 목표예요'}
+            {weightDiff > 0 && objKey !== 'maintain' ? `${weightDiff}kg ${objKey === 'lose' ? '줄이는' : '늘리는'} 건 충분히 가능한 목표예요` : '현재 체중을 건강하게 유지하는 목표예요'}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, margin: '28px 0' }}>
             <div style={{ textAlign: 'center' }}>
@@ -440,7 +429,7 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                 <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>목표 속도</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{dietObjective === 'lose' ? '-' : dietObjective === 'gain' ? '+' : ''}{weeklyChange.toFixed(1)}kg/주</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{objKey === 'lose' ? '-' : objKey === 'gain' ? '+' : ''}{weeklyChange.toFixed(1)}kg/주</span>
               </div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>건강하게 달성할 수 있는 주간 변화량</div>
             </div>
@@ -453,8 +442,8 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
     if (section === 2) {
       if (localStep === 0) return (
         <div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8 }}>하루에 단백질을 얼마나 섭취할까요?</div>
-          <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>건강한 몸을 위한 단백질 목표를 설정해요.</div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8 }}>하루 단백질 목표를 설정해요</div>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>건강한 몸을 위한 단백질 목표를 정해볼까요?</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {PROTEIN_LEVELS.map(p => (
               <div key={p.key} onClick={() => setProteinLevel(p.key)} style={{
@@ -468,7 +457,10 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
                   </div>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{p.desc}</div>
                 </div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent-primary)', flexShrink: 0 }}>체중 × {p.multiplier}g</div>
+                <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 10 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent-primary)' }}>{Math.round(refWeight * p.multiplier)}g</div>
+                  <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>체중 × {p.multiplier}g</div>
+                </div>
               </div>
             ))}
           </div>
@@ -480,9 +472,7 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
           <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 24 }}>일주일에 먹는 양을 어떻게 나눌까요?</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {CALORIE_DIST.map(d => (
-              <div key={d.key} onClick={() => setCalorieDist(d.key)} style={{
-                ...selectStyle(calorieDist === d.key),
-              }}>
+              <div key={d.key} onClick={() => setCalorieDist(d.key)} style={selectStyle(calorieDist === d.key)}>
                 <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>{d.label}</div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{d.desc}</div>
               </div>
@@ -522,22 +512,18 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
               {DAYS.map(d => {
                 const isHigh = highCalDays.includes(d);
                 const cal = isHigh ? highCal : lowCal;
-                const maxCal = highCal;
-                const h = Math.max(30, (cal / maxCal) * 120);
+                const h = Math.max(30, (cal / highCal) * 120);
                 return (
                   <div key={d} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                     <div style={{ fontSize: 9, fontWeight: 600, color: 'var(--text-muted)' }}>{cal}</div>
-                    <div style={{
-                      width: 32, height: h, borderRadius: 8,
-                      background: isHigh ? 'var(--accent-primary)' : 'rgba(137,206,245,0.3)',
-                    }} />
+                    <div style={{ width: 32, height: h, borderRadius: 8, background: isHigh ? 'var(--accent-primary)' : 'rgba(137,206,245,0.3)' }} />
                     <div style={{ fontSize: 11, fontWeight: 600, color: isHigh ? 'var(--accent-primary)' : 'var(--text-muted)' }}>{d}</div>
                   </div>
                 );
               })}
             </div>
             <div style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.6 }}>
-              선택한 요일엔 칼로리를 넉넉하게,<br />다른 요일엔 조금 더 낮게 설정해드릴게요.
+              선택한 요일엔 여유 있게,<br />나머지 날엔 조금 더 가볍게 드시면 돼요.
             </div>
           </div>
         );
@@ -559,6 +545,9 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
                   <div style={{ flex: goal.protein, padding: '7px 0', borderRadius: 8, textAlign: 'center', background: 'linear-gradient(135deg, #D946EF, #E879F9)', color: '#fff', fontSize: 11, fontWeight: 700 }}>단 {goal.protein}%</div>
                   <div style={{ flex: goal.fat, padding: '7px 0', borderRadius: 8, textAlign: 'center', background: 'linear-gradient(135deg, #06B6D4, #22D3EE)', color: '#fff', fontSize: 11, fontWeight: 700 }}>지 {goal.fat}%</div>
                 </div>
+                {goal.warning && (
+                  <div style={{ marginTop: 10, fontSize: 10, color: '#D97706', lineHeight: 1.4 }}>{goal.warning}</div>
+                )}
               </div>
             ))}
           </div>
@@ -573,7 +562,6 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
       background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
       display: 'flex', flexDirection: 'column',
     }}>
-      {/* Header */}
       <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
         <div onClick={handleBack} style={{
           width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -586,15 +574,10 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
         <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>프로그램</span>
       </div>
 
-      {/* Progress bar */}
       <div style={{ padding: '16px 24px 0' }}>
         <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
           {SECTIONS.map((s, i) => (
-            <div key={s} style={{
-              flex: 1, height: 3, borderRadius: 2,
-              background: i <= section ? 'var(--accent-primary)' : 'rgba(0,0,0,0.08)',
-              transition: 'background 0.3s',
-            }} />
+            <div key={s} style={{ flex: 1, height: 3, borderRadius: 2, background: i <= section ? 'var(--accent-primary)' : 'rgba(0,0,0,0.08)', transition: 'background 0.3s' }} />
           ))}
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -604,12 +587,10 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
         </div>
       </div>
 
-      {/* Content */}
       <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '24px 24px 120px' }}>
         {renderStep()}
       </div>
 
-      {/* Next button */}
       <div style={{
         position: 'fixed', bottom: 0, left: 0, right: 0,
         padding: '16px 24px calc(env(safe-area-inset-bottom, 0px) + 16px)',
