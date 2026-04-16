@@ -35,9 +35,10 @@ const EXERCISE_EXP = [
 ];
 
 const ACTIVITY_LEVELS = [
-  { key: 'sedentary', label: '주로 앉아서 생활해요', desc: '하루 5,000보 미만' },
-  { key: 'moderate', label: '적당히 움직이는 편이에요', desc: '하루 5,000–15,000보' },
-  { key: 'active', label: '매우 활동적인 편이에요', desc: '하루 15,000보 이상' },
+  { key: 'sedentary', label: '하루 대부분 앉아서 보내요', desc: '약 4,000보 이하' },
+  { key: 'light', label: '가끔 걷거나 움직이는 편이에요', desc: '약 4,000~8,000보' },
+  { key: 'moderate', label: '서 있거나 돌아다니는 시간이 꽤 있어요', desc: '약 8,000~13,000보' },
+  { key: 'active', label: '몸을 많이 쓰는 편이에요', desc: '약 13,000보 이상' },
 ];
 
 const MEAL_OPTIONS = [
@@ -89,7 +90,7 @@ function calcTDEE(weight, height, age, gender, activity) {
   let bmr;
   if (gender === '남성') bmr = 10 * weight + 6.25 * height - 5 * age + 5;
   else bmr = 10 * weight + 6.25 * height - 5 * age - 161;
-  const factors = { sedentary: 1.2, moderate: 1.55, active: 1.9 };
+  const factors = { sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.9 };
   return Math.round(bmr * (factors[activity] || 1.4));
 }
 
