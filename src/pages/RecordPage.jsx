@@ -1542,6 +1542,8 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
   const contentRef = useRef(null);
   const nameInputRef = useRef(null);
   const [cropSrc, setCropSrc] = useState(null);
+  const [photoHint, setPhotoHint] = useState(''); // optional food name hint
+  const [photoPortionLabel, setPhotoPortionLabel] = useState('전체'); // how much eaten
 
   // Handle mobile keyboard: adjust modal position when keyboard appears
   useEffect(() => {
@@ -1591,10 +1593,13 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
     setAnalyzing(true);
     setAiResult(null);
     try {
+      const payload = { image: imageData || preview };
+      if (photoHint.trim()) payload.hint = photoHint.trim();
+      if (photoPortionLabel !== '전체') payload.portion = photoPortionLabel;
       const res = await fetch('/api/food-lookup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: imageData }),
+        body: JSON.stringify(payload),
       });
       if (res.ok) {
         const result = await res.json();
@@ -1849,13 +1854,47 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
               <div style={{ marginBottom: 12, borderRadius: 14, overflow: 'hidden', position: 'relative' }}>
                 <img src={preview} alt="" style={{ width: '100%', height: 180, objectFit: 'cover', display: 'block' }} />
                 {!analyzing && !aiResult && (
-                  <div onClick={() => { setPreview(null); }} style={{
+                  <div onClick={() => { setPreview(null); setPhotoHint(''); setPhotoPortionLabel('전체'); }} style={{
                     position: 'absolute', top: 8, right: 8, width: 28, height: 28, borderRadius: '50%',
                     background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
                     cursor: 'pointer', color: '#fff', fontSize: 14,
                   }}>×</div>
                 )}
               </div>
+            )}
+
+            {/* Hint inputs - shown after photo, before analysis */}
+            {preview && !analyzing && !aiResult && (
+              <>
+                <input
+                  value={photoHint}
+                  onChange={e => setPhotoHint(e.target.value)}
+                  placeholder="음식 이름 (선택사항, 예: 오차즈케)"
+                  style={{
+                    width: '100%', padding: '12px 14px', borderRadius: 12, marginBottom: 10,
+                    border: 'none', background: 'var(--bg-input, #F2F3F5)',
+                    fontSize: 13, color: 'var(--text-primary)', fontFamily: 'inherit', outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
+                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>먹은 양</div>
+                <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
+                  {['전체', '3/4', '2/3', '1/2', '1/3', '1/4', '1/5'].map(p => (
+                    <button key={p} onClick={() => setPhotoPortionLabel(p)} style={{
+                      padding: '7px 14px', borderRadius: 10, border: 'none',
+                      background: photoPortionLabel === p ? 'var(--accent-primary)' : 'var(--bg-input, #F2F3F5)',
+                      color: photoPortionLabel === p ? '#fff' : 'var(--text-muted)',
+                      fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                    }}>{p}</button>
+                  ))}
+                </div>
+                <button onClick={() => handlePhotoAnalyze(preview)} style={{
+                  width: '100%', padding: '14px 0', borderRadius: 14, border: 'none',
+                  background: 'var(--accent-primary)', color: '#fff',
+                  fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+                  marginBottom: 12,
+                }}>AI 분석하기</button>
+              </>
             )}
 
             {/* Analyzing indicator */}
@@ -1873,7 +1912,7 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
 
             {/* Re-take photo after result */}
             {aiResult && (
-              <div onClick={() => { setAiResult(null); setPreview(null); }} style={{
+              <div onClick={() => { setAiResult(null); setPreview(null); setPhotoHint(''); setPhotoPortionLabel('전체'); }} style={{
                 textAlign: 'center', fontSize: 12, color: 'var(--accent-primary)', cursor: 'pointer', marginBottom: 12,
               }}>다시 촬영하기</div>
             )}
@@ -2050,7 +2089,6 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
         {cropSrc && <PhotoCropModal src={cropSrc} onConfirm={(cropped) => {
           setPreview(cropped);
           setCropSrc(null);
-          if (mode === 'photo') handlePhotoAnalyze(cropped);
         }} onCancel={() => setCropSrc(null)} />}
       </div>
     </div>
