@@ -1686,10 +1686,10 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
         ))}
       </div>
       {/* Ingredients breakdown */}
-      {aiResult.ingredients?.filter(ing => (ing.kcal || 0) >= 5).length > 0 && (
+      {filterIngredients(aiResult.ingredients).length > 0 && (
         <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(137,206,245,0.15)' }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8 }}>재료 구성</div>
-          {aiResult.ingredients.filter(ing => (ing.kcal || 0) >= 5).map((ing, i, arr) => (
+          {filterIngredients(aiResult.ingredients).map((ing, i, arr) => (
             <div key={i} style={{
               padding: '8px 0', borderBottom: i < arr.length - 1 ? '1px solid rgba(0,0,0,0.04)' : 'none',
             }}>
@@ -2327,6 +2327,20 @@ function CoachStarIcon() {
 }
 
 // ===== Food Detail Modal =====
+const filterIngredients = (list) => {
+  if (!list || list.length === 0) return [];
+  if (list.length < 5) return list;
+  return list.filter(ing => {
+    if ((ing.kcal || 0) >= 5) return true;
+    const amt = ing.amount || '';
+    const gMatch = amt.match(/(\d+)\s*g/);
+    const mlMatch = amt.match(/(\d+)\s*ml/);
+    if (gMatch && parseInt(gMatch[1]) >= 50) return true;
+    if (mlMatch && parseInt(mlMatch[1]) >= 100) return true;
+    return false;
+  });
+};
+
 const IMPACT_STYLE = {
   '낮음': { bg: '#E8F8F0', color: '#0F6E56' },
   '보통': { bg: '#FFF8E1', color: '#F59E0B' },
@@ -2454,8 +2468,8 @@ function FoodDetailModal({ food, onClose, onDelete }) {
         </div>
 
         {/* Ingredients breakdown */}
-        {food.ingredients?.filter(ing => (ing.kcal || 0) >= 5).length > 0 && (() => {
-          const filtered = food.ingredients.filter(ing => (ing.kcal || 0) >= 5);
+        {filterIngredients(food.ingredients).length > 0 && (() => {
+          const filtered = filterIngredients(food.ingredients);
           return (
           <>
             <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>재료 구성</div>
