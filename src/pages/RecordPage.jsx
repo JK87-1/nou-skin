@@ -1591,7 +1591,7 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
     setAnalyzing(true);
     setAiResult(null);
     try {
-      const res = await fetch('/api/food-vision', {
+      const res = await fetch('/api/food-lookup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image: imageData }),

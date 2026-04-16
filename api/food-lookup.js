@@ -1,4 +1,4 @@
-// Vercel Serverless Function: GPT text-based food nutrition lookup
+// Vercel Serverless Function: GPT text-based + vision-based food nutrition lookup
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -8,32 +8,13 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { name, servings = 1 } = req.body;
-    if (!name) return res.status(400).json({ error: 'No food name provided' });
+    const { name, servings = 1, image } = req.body;
+    if (!name && !image) return res.status(400).json({ error: 'No food name or image provided' });
 
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) return res.status(500).json({ error: 'API key not configured' });
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-5.2',
-        max_completion_tokens: 800,
-        temperature: 0.2,
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a Korean nutritionist. Given a food name and servings, return accurate nutritional estimates for Korean portion sizes. Output ONLY valid JSON between ---JSON_START--- and ---JSON_END--- markers.',
-          },
-          {
-            role: 'user',
-            content: `음식: "${name}" ${servings}인분의 영양 정보를 분석해주세요.
-
-vitamin: 1일 권장 비타민 섭취량 대비 이 음식이 제공하는 비율(%)
+    const nutritionFields = `vitamin: 1일 권장 비타민 섭취량 대비 이 음식이 제공하는 비율(%)
 mineral: 1일 권장 미네랄 섭취량 대비 이 음식이 제공하는 비율(%)
 fiber: 식이섬유 (g)
 calcium: 칼슘 (mg)
@@ -49,12 +30,12 @@ tags: 이 음식의 특성을 나타내는 키워드 2~4개 (배열)
   - 식품 특성: "항염 식품", "오메가3 풍부", "발효 식품", "고단백", "저칼로리"
   - 몸 반응 예측: "혈당 안정 예상", "포만감 지속", "소화 부담 적음", "빠른 에너지 공급"
   - 식사 패턴: "가벼운 식사", "든든한 한 끼", "단일 식품 위주", "균형 잡힌 구성"
-  - 컨디션 연결: "피부 수분에 좋음", "뇌 기능 지원", "면역력 도움", "장 건강에 좋음"
+  - 컨디션 연결: "피부 수분에 좋음", "뇌 기능 지원", "면역력 도움", "장 건강에 좋음"`;
 
----JSON_START---
+    const jsonTemplate = `---JSON_START---
 {
   "name": "음식명 (한글)",
-  "servings": ${servings},
+  "servings": 1,
   "kcal": 숫자,
   "carb": 숫자(g),
   "protein": 숫자(g),
@@ -73,9 +54,49 @@ tags: 이 음식의 특성을 나타내는 키워드 2~4개 (배열)
   "skinImpactNote": "한줄 설명",
   "tags": ["키워드1", "키워드2", "키워드3"]
 }
----JSON_END---`,
-          },
-        ],
+---JSON_END---`;
+
+    let messages;
+    if (image) {
+      // Vision mode: analyze food from photo
+      messages = [
+        {
+          role: 'system',
+          content: 'You are a Korean nutritionist. Analyze the food in the photo and estimate nutritional values for Korean portion sizes. Output ONLY valid JSON between ---JSON_START--- and ---JSON_END--- markers.',
+        },
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: `이 음식 사진을 분석해서 영양 정보를 알려주세요.\n\n${nutritionFields}\n\n${jsonTemplate}` },
+            { type: 'image_url', image_url: { url: image, detail: 'low' } },
+          ],
+        },
+      ];
+    } else {
+      // Text mode: analyze food by name
+      messages = [
+        {
+          role: 'system',
+          content: 'You are a Korean nutritionist. Given a food name and servings, return accurate nutritional estimates for Korean portion sizes. Output ONLY valid JSON between ---JSON_START--- and ---JSON_END--- markers.',
+        },
+        {
+          role: 'user',
+          content: `음식: "${name}" ${servings}인분의 영양 정보를 분석해주세요.\n\n${nutritionFields}\n\n${jsonTemplate}`,
+        },
+      ];
+    }
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-5.2',
+        max_completion_tokens: 800,
+        temperature: 0.2,
+        messages,
       }),
     });
 
