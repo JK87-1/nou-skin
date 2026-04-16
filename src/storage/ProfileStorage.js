@@ -16,6 +16,7 @@ const DEFAULTS = {
   selectedTitleLevel: null,
   activeTheme: null,
   colorMode: 'light',
+  dietGoal: 'balance',
   categories: [
     { key: 'food',      label: '식단',     color: '#FFD070', enabled: true,  group: 'cause' },
     { key: 'water',     label: '수분',     color: '#7BC8F0', enabled: true,  group: 'cause' },

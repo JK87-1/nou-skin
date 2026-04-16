@@ -1107,13 +1107,14 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
 function SettingsPage({ open, onClose, onCategoriesChanged }) {
   const [showProfilePage, setShowProfilePage] = useState(false);
   const [showCategoryPage, setShowCategoryPage] = useState(false);
+  const [showGoalPage, setShowGoalPage] = useState(false);
 
   const menuSections = [
     {
       title: '계정',
       items: [
         { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>, label: '프로필 설정', action: () => setShowProfilePage(true) },
-        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="22" x2="4" y2="2"/><path d="M4 3c3-1 6 1 9 0s6-2 8 0v10c-2-2-5 0-8 1s-6-1-9 0V3z"/></svg>, label: '목표 설정' },
+        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="22" x2="4" y2="2"/><path d="M4 3c3-1 6 1 9 0s6-2 8 0v10c-2-2-5 0-8 1s-6-1-9 0V3z"/></svg>, label: '목표 설정', action: () => setShowGoalPage(true) },
       ],
     },
     {
@@ -1190,7 +1191,88 @@ function SettingsPage({ open, onClose, onCategoriesChanged }) {
       </div>
       {showProfilePage && <ProfileSettingsPage onClose={() => setShowProfilePage(false)} />}
       {showCategoryPage && <CategorySettingsPage onClose={() => setShowCategoryPage(false)} onSave={onCategoriesChanged} />}
+      {showGoalPage && <GoalSettingsPage onClose={() => setShowGoalPage(false)} />}
     </>
+  );
+}
+
+// ===== GOAL SETTINGS PAGE =====
+
+const DIET_GOALS = [
+  { key: 'balance', name: '밸런스', desc: '탄단지 영양소를 골고루 섭취해요', carb: 32, protein: 35, fat: 32 },
+  { key: 'keto', name: '키토', desc: '고지방, 저탄수화물 식단으로 체지방 감소에 집중해요', carb: 6, protein: 35, fat: 58 },
+  { key: 'lowfat', name: '저지방', desc: '지방 섭취를 줄이고 탄수화물과 단백질 위주로 먹어요', carb: 50, protein: 35, fat: 15 },
+  { key: 'lowcarb', name: '저탄수화물', desc: '탄수화물을 줄이고 단백질과 건강한 지방을 늘려요', carb: 30, protein: 35, fat: 35 },
+];
+
+function GoalSettingsPage({ onClose }) {
+  const profile = getProfile();
+  const [selected, setSelected] = useState(profile.dietGoal || 'balance');
+
+  const handleSelect = (key) => {
+    setSelected(key);
+    saveProfile({ dietGoal: key });
+  };
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 2002,
+      background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
+      display: 'flex', flexDirection: 'column',
+      overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+    }}>
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+        <div onClick={onClose} style={{
+          width: 36, height: 36,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1,
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </div>
+        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>목표 설정</span>
+      </div>
+
+      <div style={{ padding: '28px 24px' }}>
+        <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 28 }}>선호하는 식단이 무엇인가요?</div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {DIET_GOALS.map(goal => {
+            const isSelected = selected === goal.key;
+            return (
+              <div key={goal.key} onClick={() => handleSelect(goal.key)} style={{
+                padding: '20px 20px 18px', borderRadius: 18, cursor: 'pointer',
+                background: isSelected ? 'var(--bg-card, #fff)' : 'var(--bg-card, #fff)',
+                border: isSelected ? '2px solid var(--accent-primary)' : '2px solid transparent',
+                boxShadow: isSelected ? '0 2px 12px rgba(137,206,245,0.2)' : 'none',
+                transition: 'all 0.2s ease',
+              }}>
+                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>{goal.name}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 14, lineHeight: 1.4 }}>{goal.desc}</div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <div style={{
+                    flex: goal.carb, padding: '7px 0', borderRadius: 8, textAlign: 'center',
+                    background: 'linear-gradient(135deg, #8B5CF6, #A78BFA)', color: '#fff',
+                    fontSize: 11, fontWeight: 700,
+                  }}>탄 {goal.carb}%</div>
+                  <div style={{
+                    flex: goal.protein, padding: '7px 0', borderRadius: 8, textAlign: 'center',
+                    background: 'linear-gradient(135deg, #D946EF, #E879F9)', color: '#fff',
+                    fontSize: 11, fontWeight: 700,
+                  }}>단 {goal.protein}%</div>
+                  <div style={{
+                    flex: goal.fat, padding: '7px 0', borderRadius: 8, textAlign: 'center',
+                    background: 'linear-gradient(135deg, #06B6D4, #22D3EE)', color: '#fff',
+                    fontSize: 11, fontWeight: 700,
+                  }}>지 {goal.fat}%</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
   );
 }
 
