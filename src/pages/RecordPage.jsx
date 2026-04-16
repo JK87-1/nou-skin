@@ -1531,6 +1531,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 }
 
 function AddFoodModal({ onAdd, onClose, initialMeal }) {
+  const [mode, setMode] = useState(null); // null = selection, 'text' = name input, 'photo' = photo analysis
   const [foodItems, setFoodItems] = useState([{ name: '', qty: 1, unit: '인분' }]);
   const [meal, setMeal] = useState(initialMeal || '아침');
   const [analyzing, setAnalyzing] = useState(false);
@@ -1586,6 +1587,23 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
     setAnalyzing(false);
   };
 
+  const handlePhotoAnalyze = async (imageData) => {
+    setAnalyzing(true);
+    setAiResult(null);
+    try {
+      const res = await fetch('/api/food-vision', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: imageData }),
+      });
+      if (res.ok) {
+        const result = await res.json();
+        setAiResult(result);
+      }
+    } catch (err) {}
+    setAnalyzing(false);
+  };
+
   const handleSubmit = async () => {
     if (!aiResult) return;
     const photoId = await saveThumbToDB();
@@ -1628,6 +1646,47 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
     outline: 'none',
   };
 
+  const aiResultBlock = aiResult && (
+    <div style={{
+      padding: '14px 16px', borderRadius: 14, marginBottom: 16,
+      background: 'rgba(137,206,245,0.08)', border: '1px solid rgba(137,206,245,0.2)',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+        <span style={{ fontSize: 13 }}>✨</span>
+        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{aiResult.name}</span>
+        {mode === 'text' && <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 'auto' }}>{foodItems.filter(f => f.name.trim()).map(f => `${f.qty}${f.unit}`).join(' + ')}</span>}
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
+        {[
+          { icon: '🔥', label: '칼로리', value: aiResult.kcal, unit: 'kcal' },
+          { icon: '🥩', label: '단백질', value: aiResult.protein, unit: 'g' },
+          { icon: '🍞', label: '탄수화물', value: aiResult.carb, unit: 'g' },
+          { icon: '🥑', label: '지방', value: aiResult.fat, unit: 'g' },
+        ].map(n => (
+          <div key={n.label} style={{ textAlign: 'center', padding: '8px 4px', borderRadius: 10 }}>
+            <div style={{ fontSize: 14, marginBottom: 3 }}>{n.icon}</div>
+            <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 2 }}>{n.label}</div>
+            <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.value}<span style={{ fontSize: 9, fontWeight: 400, color: 'var(--text-muted)' }}>{n.unit}</span></div>
+          </div>
+        ))}
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8 }}>
+        {[
+          { icon: '🥕', label: '식이섬유', value: aiResult.fiber || 0, unit: 'g' },
+          { icon: '🥦', label: '철분', value: aiResult.iron || 0, unit: 'mg' },
+          { icon: '🐟', label: '칼슘', value: aiResult.calcium || 0, unit: 'mg' },
+          { icon: '🍯', label: '당류', value: aiResult.sugar || 0, unit: 'g' },
+        ].map(n => (
+          <div key={n.label} style={{ textAlign: 'center', padding: '8px 4px', borderRadius: 10 }}>
+            <div style={{ fontSize: 14, marginBottom: 3 }}>{n.icon}</div>
+            <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 2 }}>{n.label}</div>
+            <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.value}<span style={{ fontSize: 9, fontWeight: 400, color: 'var(--text-muted)' }}>{n.unit}</span></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
     <div onClick={onClose} style={{
       position: 'fixed', inset: 0, zIndex: 1100,
@@ -1641,7 +1700,16 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
         transition: 'transform 0.2s ease',
       }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
-        <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20 }}>식사 기록</div>
+
+        {/* Title + back button */}
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20 }}>
+          {mode && (
+            <div onClick={() => { setMode(null); setAiResult(null); setPreview(null); setAnalyzing(false); }} style={{ cursor: 'pointer', marginRight: 10, color: 'var(--text-muted)', fontSize: 18 }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            </div>
+          )}
+          <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)' }}>식사 기록</div>
+        </div>
 
         {/* Meal selector */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
@@ -1655,201 +1723,288 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
           ))}
         </div>
 
-        {/* Photo buttons */}
-        <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={handlePhoto} style={{ display: 'none' }} />
-        <input ref={albumRef} type="file" accept="image/*" onChange={handlePhoto} style={{ display: 'none' }} />
-        <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-          <button onClick={() => fileRef.current?.click()} style={{
-            flex: 1, padding: '14px 0', borderRadius: 14, border: 'none',
-            background: 'rgba(137,206,245,0.12)',
-            color: 'var(--accent-primary)',
-            fontSize: 13, fontWeight: 600, cursor: 'pointer',
-            fontFamily: 'inherit',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-          }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="#89cef5" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              <circle cx="12" cy="13" r="3" stroke="#89cef5" strokeWidth="1.5" />
-            </svg>
-            사진 촬영
-          </button>
-          <button onClick={() => albumRef.current?.click()} style={{
-            flex: 1, padding: '14px 0', borderRadius: 14, border: 'none',
-            background: 'var(--bg-input, #F2F3F5)',
-            color: 'var(--text-secondary)',
-            fontSize: 13, fontWeight: 600, cursor: 'pointer',
-            fontFamily: 'inherit',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-          }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" strokeWidth="1.5" />
-              <circle cx="8.5" cy="8.5" r="1.5" stroke="currentColor" strokeWidth="1.2" />
-              <path d="M3 16l5-4 4 3 3-2 6 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            앨범에서 선택
-          </button>
-        </div>
-
-        {/* Photo preview */}
-        {preview && (
-          <div style={{ marginBottom: 12, borderRadius: 14, overflow: 'hidden' }}>
-            <img src={preview} alt="" style={{ width: '100%', height: 140, objectFit: 'cover', display: 'block' }} />
+        {/* Mode selection */}
+        {!mode && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
+            <button onClick={() => setMode('photo')} style={{
+              width: '100%', padding: '20px 16px', borderRadius: 16, border: '1.5px solid rgba(137,206,245,0.3)',
+              background: 'rgba(137,206,245,0.06)', cursor: 'pointer', fontFamily: 'inherit',
+              display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left',
+            }}>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(137,206,245,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="var(--accent-primary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  <circle cx="12" cy="13" r="3" stroke="var(--accent-primary)" strokeWidth="1.5" />
+                </svg>
+              </div>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 3 }}>사진으로 자동 분석</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>음식 사진을 찍으면 AI가 자동으로 영양소를 분석해요</div>
+              </div>
+            </button>
+            <button onClick={() => setMode('text')} style={{
+              width: '100%', padding: '20px 16px', borderRadius: 16, border: '1.5px solid rgba(0,0,0,0.06)',
+              background: 'var(--bg-input, #F2F3F5)', cursor: 'pointer', fontFamily: 'inherit',
+              display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left',
+            }}>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 3 }}>음식 이름으로 기록</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>음식 이름을 직접 입력하면 AI가 영양소를 분석해요</div>
+              </div>
+            </button>
           </div>
         )}
 
-        {/* Food name input + servings */}
-        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>음식 이름</div>
-        {foodItems.map((item, idx) => (
-          <div key={idx} style={{ display: 'flex', gap: 6, marginBottom: 8, alignItems: 'center' }}>
-            <input
-              ref={idx === 0 ? nameInputRef : null}
-              value={item.name}
-              onChange={e => {
-                const next = [...foodItems];
-                next[idx].name = e.target.value;
-                setFoodItems(next);
-                setAiResult(null);
-              }}
-              onKeyDown={e => e.key === 'Enter' && handleAnalyze()}
-              onFocus={() => setTimeout(() => nameInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
-              placeholder={idx === 0 ? '예: 연어포케' : '추가 음식'}
-              style={{ ...inputStyle, flex: 1 }}
-            />
-            <select
-              value={item.qty}
-              onChange={e => {
-                const next = [...foodItems];
-                next[idx].qty = Number(e.target.value);
-                setFoodItems(next);
-                setAiResult(null);
-              }}
-              style={{
-                width: 52, padding: '10px 2px', borderRadius: 12, border: 'none',
-                background: 'var(--bg-input, #F2F3F5)', fontSize: 13,
-                color: 'var(--text-primary)', fontFamily: 'inherit', textAlign: 'center',
-                outline: 'none',
-              }}
-            >
-              {[0.5, 0.8, 1, 1.5, 2, 3, 4, 5].map(n => (
-                <option key={n} value={n}>{n}</option>
-              ))}
-            </select>
-            <select
-              value={item.unit}
-              onChange={e => {
-                const next = [...foodItems];
-                next[idx].unit = e.target.value;
-                setFoodItems(next);
-                setAiResult(null);
-              }}
-              style={{
-                width: 56, padding: '10px 2px', borderRadius: 12, border: 'none',
-                background: 'var(--bg-input, #F2F3F5)', fontSize: 13,
-                color: 'var(--text-primary)', fontFamily: 'inherit', textAlign: 'center',
-                outline: 'none',
-              }}
-            >
-              {['인분', '개', '줄', '조각', '잔', '그릇', '봉'].map(u => (
-                <option key={u} value={u}>{u}</option>
-              ))}
-            </select>
-            {foodItems.length > 1 && (
-              <div onClick={() => setFoodItems(foodItems.filter((_, i) => i !== idx))} style={{
-                width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', color: '#ccc', fontSize: 16,
-              }}>×</div>
+        {/* Photo mode */}
+        {mode === 'photo' && (
+          <>
+            <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={handlePhoto} style={{ display: 'none' }} />
+            <input ref={albumRef} type="file" accept="image/*" onChange={handlePhoto} style={{ display: 'none' }} />
+
+            {!preview && !analyzing && !aiResult && (
+              <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                <button onClick={() => fileRef.current?.click()} style={{
+                  flex: 1, padding: '18px 0', borderRadius: 14, border: 'none',
+                  background: 'rgba(137,206,245,0.12)', color: 'var(--accent-primary)',
+                  fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="#89cef5" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <circle cx="12" cy="13" r="3" stroke="#89cef5" strokeWidth="1.5" />
+                  </svg>
+                  사진 촬영
+                </button>
+                <button onClick={() => albumRef.current?.click()} style={{
+                  flex: 1, padding: '18px 0', borderRadius: 14, border: 'none',
+                  background: 'var(--bg-input, #F2F3F5)', color: 'var(--text-secondary)',
+                  fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" strokeWidth="1.5" />
+                    <circle cx="8.5" cy="8.5" r="1.5" stroke="currentColor" strokeWidth="1.2" />
+                    <path d="M3 16l5-4 4 3 3-2 6 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  앨범에서 선택
+                </button>
+              </div>
             )}
-          </div>
-        ))}
-        <div onClick={() => setFoodItems([...foodItems, { name: '', qty: 1, unit: '인분' }])} style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
-          padding: '8px 0', marginBottom: 12, cursor: 'pointer',
-          borderRadius: 10, border: '1px dashed rgba(0,0,0,0.12)',
-          fontSize: 12, color: 'var(--text-muted)',
-        }}>
-          <span style={{ fontSize: 16 }}>+</span> 음식 추가
-        </div>
 
-        {/* Analyze button */}
-        <button onClick={handleAnalyze} disabled={analyzing || !foodItems.some(f => f.name.trim())} style={{
-          width: '100%', padding: '13px 0', borderRadius: 14, border: 'none',
-          background: analyzing ? 'var(--bg-input, #F2F3F5)' : 'rgba(137,206,245,0.15)',
-          color: analyzing ? 'var(--text-muted)' : 'var(--accent-primary)',
-          fontSize: 13, fontWeight: 600, cursor: analyzing ? 'default' : 'pointer',
-          fontFamily: 'inherit', marginBottom: 12,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-        }}>
-          {analyzing ? (
-            <>
-              <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite', width: 14, height: 14, border: '2px solid var(--text-muted)', borderTopColor: 'transparent', borderRadius: '50%' }} />
-              AI 영양소 분석 중...
-            </>
-          ) : '✨ AI 영양소 분석'}
-        </button>
+            {/* Photo preview */}
+            {preview && (
+              <div style={{ marginBottom: 12, borderRadius: 14, overflow: 'hidden', position: 'relative' }}>
+                <img src={preview} alt="" style={{ width: '100%', height: 180, objectFit: 'cover', display: 'block' }} />
+                {!analyzing && !aiResult && (
+                  <div onClick={() => { setPreview(null); }} style={{
+                    position: 'absolute', top: 8, right: 8, width: 28, height: 28, borderRadius: '50%',
+                    background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', color: '#fff', fontSize: 14,
+                  }}>×</div>
+                )}
+              </div>
+            )}
 
-        {/* AI Result */}
-        {aiResult && (
-          <div style={{
-            padding: '14px 16px', borderRadius: 14, marginBottom: 16,
-            background: 'rgba(137,206,245,0.08)', border: '1px solid rgba(137,206,245,0.2)',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-              <span style={{ fontSize: 13 }}>✨</span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{aiResult.name}</span>
-              <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 'auto' }}>{foodItems.filter(f => f.name.trim()).map(f => `${f.qty}${f.unit}`).join(' + ')}</span>
+            {/* Analyzing indicator */}
+            {analyzing && (
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                padding: '16px 0', marginBottom: 12, color: 'var(--text-muted)', fontSize: 13,
+              }}>
+                <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite', width: 16, height: 16, border: '2px solid var(--text-muted)', borderTopColor: 'transparent', borderRadius: '50%' }} />
+                AI가 음식을 분석하고 있어요...
+              </div>
+            )}
+
+            {aiResultBlock}
+
+            {/* Re-take photo after result */}
+            {aiResult && (
+              <div onClick={() => { setAiResult(null); setPreview(null); }} style={{
+                textAlign: 'center', fontSize: 12, color: 'var(--accent-primary)', cursor: 'pointer', marginBottom: 12,
+              }}>다시 촬영하기</div>
+            )}
+          </>
+        )}
+
+        {/* Text mode */}
+        {mode === 'text' && (
+          <>
+            {/* Optional photo */}
+            <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={handlePhoto} style={{ display: 'none' }} />
+            <input ref={albumRef} type="file" accept="image/*" onChange={handlePhoto} style={{ display: 'none' }} />
+            <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+              <button onClick={() => fileRef.current?.click()} style={{
+                flex: 1, padding: '14px 0', borderRadius: 14, border: 'none',
+                background: 'rgba(137,206,245,0.12)', color: 'var(--accent-primary)',
+                fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="#89cef5" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  <circle cx="12" cy="13" r="3" stroke="#89cef5" strokeWidth="1.5" />
+                </svg>
+                사진 촬영
+              </button>
+              <button onClick={() => albumRef.current?.click()} style={{
+                flex: 1, padding: '14px 0', borderRadius: 14, border: 'none',
+                background: 'var(--bg-input, #F2F3F5)', color: 'var(--text-secondary)',
+                fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" strokeWidth="1.5" />
+                  <circle cx="8.5" cy="8.5" r="1.5" stroke="currentColor" strokeWidth="1.2" />
+                  <path d="M3 16l5-4 4 3 3-2 6 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                앨범에서 선택
+              </button>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
-              {[
-                { icon: '🔥', label: '칼로리', value: aiResult.kcal, unit: 'kcal' },
-                { icon: '🥩', label: '단백질', value: aiResult.protein, unit: 'g' },
-                { icon: '🍞', label: '탄수화물', value: aiResult.carb, unit: 'g' },
-                { icon: '🥑', label: '지방', value: aiResult.fat, unit: 'g' },
-              ].map(n => (
-                <div key={n.label} style={{ textAlign: 'center', padding: '8px 4px', borderRadius: 10 }}>
-                  <div style={{ fontSize: 14, marginBottom: 3 }}>{n.icon}</div>
-                  <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 2 }}>{n.label}</div>
-                  <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.value}<span style={{ fontSize: 9, fontWeight: 400, color: 'var(--text-muted)' }}>{n.unit}</span></div>
-                </div>
-              ))}
+
+            {/* Photo preview */}
+            {preview && (
+              <div style={{ marginBottom: 12, borderRadius: 14, overflow: 'hidden' }}>
+                <img src={preview} alt="" style={{ width: '100%', height: 140, objectFit: 'cover', display: 'block' }} />
+              </div>
+            )}
+
+            {/* Food name input + servings */}
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>음식 이름</div>
+            {foodItems.map((item, idx) => (
+              <div key={idx} style={{ display: 'flex', gap: 6, marginBottom: 8, alignItems: 'center' }}>
+                <input
+                  ref={idx === 0 ? nameInputRef : null}
+                  value={item.name}
+                  onChange={e => {
+                    const next = [...foodItems];
+                    next[idx].name = e.target.value;
+                    setFoodItems(next);
+                    setAiResult(null);
+                  }}
+                  onKeyDown={e => e.key === 'Enter' && handleAnalyze()}
+                  onFocus={() => setTimeout(() => nameInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
+                  placeholder={idx === 0 ? '예: 연어포케' : '추가 음식'}
+                  style={{ ...inputStyle, flex: 1 }}
+                />
+                <select
+                  value={item.qty}
+                  onChange={e => {
+                    const next = [...foodItems];
+                    next[idx].qty = Number(e.target.value);
+                    setFoodItems(next);
+                    setAiResult(null);
+                  }}
+                  style={{
+                    width: 52, padding: '10px 2px', borderRadius: 12, border: 'none',
+                    background: 'var(--bg-input, #F2F3F5)', fontSize: 13,
+                    color: 'var(--text-primary)', fontFamily: 'inherit', textAlign: 'center',
+                    outline: 'none',
+                  }}
+                >
+                  {[0.5, 0.8, 1, 1.5, 2, 3, 4, 5].map(n => (
+                    <option key={n} value={n}>{n}</option>
+                  ))}
+                </select>
+                <select
+                  value={item.unit}
+                  onChange={e => {
+                    const next = [...foodItems];
+                    next[idx].unit = e.target.value;
+                    setFoodItems(next);
+                    setAiResult(null);
+                  }}
+                  style={{
+                    width: 56, padding: '10px 2px', borderRadius: 12, border: 'none',
+                    background: 'var(--bg-input, #F2F3F5)', fontSize: 13,
+                    color: 'var(--text-primary)', fontFamily: 'inherit', textAlign: 'center',
+                    outline: 'none',
+                  }}
+                >
+                  {['인분', '개', '줄', '조각', '잔', '그릇', '봉'].map(u => (
+                    <option key={u} value={u}>{u}</option>
+                  ))}
+                </select>
+                {foodItems.length > 1 && (
+                  <div onClick={() => setFoodItems(foodItems.filter((_, i) => i !== idx))} style={{
+                    width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', color: '#ccc', fontSize: 16,
+                  }}>×</div>
+                )}
+              </div>
+            ))}
+            <div onClick={() => setFoodItems([...foodItems, { name: '', qty: 1, unit: '인분' }])} style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+              padding: '8px 0', marginBottom: 12, cursor: 'pointer',
+              borderRadius: 10, border: '1px dashed rgba(0,0,0,0.12)',
+              fontSize: 12, color: 'var(--text-muted)',
+            }}>
+              <span style={{ fontSize: 16 }}>+</span> 음식 추가
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8 }}>
-              {[
-                { icon: '🥕', label: '식이섬유', value: aiResult.fiber || 0, unit: 'g' },
-                { icon: '🥦', label: '철분', value: aiResult.iron || 0, unit: 'mg' },
-                { icon: '🐟', label: '칼슘', value: aiResult.calcium || 0, unit: 'mg' },
-                { icon: '🍯', label: '당류', value: aiResult.sugar || 0, unit: 'g' },
-              ].map(n => (
-                <div key={n.label} style={{ textAlign: 'center', padding: '8px 4px', borderRadius: 10 }}>
-                  <div style={{ fontSize: 14, marginBottom: 3 }}>{n.icon}</div>
-                  <div style={{ fontSize: 9, color: 'var(--text-muted)', marginBottom: 2 }}>{n.label}</div>
-                  <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.value}<span style={{ fontSize: 9, fontWeight: 400, color: 'var(--text-muted)' }}>{n.unit}</span></div>
-                </div>
-              ))}
-            </div>
-          </div>
+
+            {/* Analyze button */}
+            <button onClick={handleAnalyze} disabled={analyzing || !foodItems.some(f => f.name.trim())} style={{
+              width: '100%', padding: '13px 0', borderRadius: 14, border: 'none',
+              background: analyzing ? 'var(--bg-input, #F2F3F5)' : 'rgba(137,206,245,0.15)',
+              color: analyzing ? 'var(--text-muted)' : 'var(--accent-primary)',
+              fontSize: 13, fontWeight: 600, cursor: analyzing ? 'default' : 'pointer',
+              fontFamily: 'inherit', marginBottom: 12,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            }}>
+              {analyzing ? (
+                <>
+                  <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite', width: 14, height: 14, border: '2px solid var(--text-muted)', borderTopColor: 'transparent', borderRadius: '50%' }} />
+                  AI 영양소 분석 중...
+                </>
+              ) : '✨ AI 영양소 분석'}
+            </button>
+
+            {aiResultBlock}
+          </>
         )}
 
         {/* Buttons */}
-        <div style={{ display: 'flex', gap: 10 }}>
+        {mode && (
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button onClick={onClose} style={{
+              flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
+              border: 'none', background: 'var(--bg-input, #F2F3F5)',
+              color: 'var(--text-muted)', fontSize: 14, fontWeight: 600,
+              cursor: 'pointer', fontFamily: 'inherit',
+            }}>취소</button>
+            <button onClick={handleSubmit} disabled={!aiResult} style={{
+              flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
+              border: 'none',
+              background: aiResult ? 'var(--accent-primary)' : 'var(--bg-input, #F2F3F5)',
+              color: aiResult ? '#fff' : 'var(--text-dim)',
+              fontSize: 14, fontWeight: 700,
+              cursor: aiResult ? 'pointer' : 'default', fontFamily: 'inherit',
+            }}>추가</button>
+          </div>
+        )}
+
+        {/* Cancel button for mode selection */}
+        {!mode && (
           <button onClick={onClose} style={{
-            flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
+            width: '100%', padding: '14px 0', borderRadius: 'var(--btn-radius)',
             border: 'none', background: 'var(--bg-input, #F2F3F5)',
             color: 'var(--text-muted)', fontSize: 14, fontWeight: 600,
             cursor: 'pointer', fontFamily: 'inherit',
           }}>취소</button>
-          <button onClick={handleSubmit} disabled={!aiResult} style={{
-            flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
-            border: 'none',
-            background: aiResult ? 'var(--accent-primary)' : 'var(--bg-input, #F2F3F5)',
-            color: aiResult ? '#fff' : 'var(--text-dim)',
-            fontSize: 14, fontWeight: 700,
-            cursor: aiResult ? 'pointer' : 'default', fontFamily: 'inherit',
-          }}>추가</button>
-        </div>
+        )}
 
         {/* Crop Modal */}
-        {cropSrc && <PhotoCropModal src={cropSrc} onConfirm={(cropped) => { setPreview(cropped); setCropSrc(null); }} onCancel={() => setCropSrc(null)} />}
+        {cropSrc && <PhotoCropModal src={cropSrc} onConfirm={(cropped) => {
+          setPreview(cropped);
+          setCropSrc(null);
+          if (mode === 'photo') handlePhotoAnalyze(cropped);
+        }} onCancel={() => setCropSrc(null)} />}
       </div>
     </div>
   );
