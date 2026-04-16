@@ -32,6 +32,7 @@ import EternalPearl from '../components/icons/EternalPearl';
 import { getDefaultTheme } from '../data/BadgeData';
 import { getFoodRecords, deleteFoodRecord } from '../storage/FoodStorage';
 import { getBodyRecords } from '../storage/BodyStorage';
+import DietOnboardingPage from './DietOnboardingPage';
 import { getPhotoDB } from '../storage/PhotoDB';
 
 // 식단 사진: IndexedDB photoId면 로드, 기존 base64면 그대로 표시
@@ -1206,15 +1207,13 @@ const DIET_GOALS = [
 ];
 
 function GoalSettingsPage({ onClose }) {
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const profile = getProfile();
-  const [selected, setSelected] = useState(profile.dietGoal || 'balance');
-
-  const handleSelect = (key) => {
-    setSelected(key);
-    saveProfile({ dietGoal: key });
-  };
+  const isDone = profile.dietOnboardingDone;
+  const selected = profile.dietGoal || 'balance';
 
   return (
+    <>
     <div style={{
       position: 'fixed', inset: 0, zIndex: 2002,
       background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
@@ -1235,44 +1234,69 @@ function GoalSettingsPage({ onClose }) {
       </div>
 
       <div style={{ padding: '28px 24px' }}>
-        <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 28 }}>선호하는 식단이 무엇인가요?</div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {DIET_GOALS.map(goal => {
-            const isSelected = selected === goal.key;
-            return (
-              <div key={goal.key} onClick={() => handleSelect(goal.key)} style={{
-                padding: '20px 20px 18px', borderRadius: 18, cursor: 'pointer',
-                background: isSelected ? 'var(--bg-card, #fff)' : 'var(--bg-card, #fff)',
-                border: isSelected ? '2px solid var(--accent-primary)' : '2px solid transparent',
-                boxShadow: isSelected ? '0 2px 12px rgba(137,206,245,0.2)' : 'none',
-                transition: 'all 0.2s ease',
-              }}>
-                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>{goal.name}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 14, lineHeight: 1.4 }}>{goal.desc}</div>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  <div style={{
-                    flex: goal.carb, padding: '7px 0', borderRadius: 8, textAlign: 'center',
-                    background: 'linear-gradient(135deg, #8B5CF6, #A78BFA)', color: '#fff',
-                    fontSize: 11, fontWeight: 700,
-                  }}>탄 {goal.carb}%</div>
-                  <div style={{
-                    flex: goal.protein, padding: '7px 0', borderRadius: 8, textAlign: 'center',
-                    background: 'linear-gradient(135deg, #D946EF, #E879F9)', color: '#fff',
-                    fontSize: 11, fontWeight: 700,
-                  }}>단 {goal.protein}%</div>
-                  <div style={{
-                    flex: goal.fat, padding: '7px 0', borderRadius: 8, textAlign: 'center',
-                    background: 'linear-gradient(135deg, #06B6D4, #22D3EE)', color: '#fff',
-                    fontSize: 11, fontWeight: 700,
-                  }}>지 {goal.fat}%</div>
-                </div>
-              </div>
-            );
-          })}
+        {/* Onboarding CTA */}
+        <div onClick={() => setShowOnboarding(true)} style={{
+          padding: '24px 20px', borderRadius: 20, cursor: 'pointer', marginBottom: 28,
+          background: 'linear-gradient(135deg, rgba(137,206,245,0.15), rgba(137,206,245,0.05))',
+          border: '1.5px solid rgba(137,206,245,0.3)',
+        }}>
+          <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 6 }}>
+            {isDone ? '다이어트 프로그램 수정하기' : '다이어트 프로그램 세팅하기'}
+          </div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 14, lineHeight: 1.5 }}>
+            체형, 운동습관, 목표체중, 식단유형까지 한번에 설정해요
+          </div>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            padding: '10px 20px', borderRadius: 12,
+            background: 'var(--accent-primary)', color: '#fff',
+            fontSize: 13, fontWeight: 700,
+          }}>
+            {isDone ? '수정하기' : '시작하기'}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-4-4l4 4-4 4" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </div>
         </div>
+
+        {/* Current diet goal summary */}
+        {isDone && (
+          <>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 12 }}>현재 설정</div>
+            <div style={{ background: 'var(--bg-card, #fff)', borderRadius: 16, padding: '16px 20px', marginBottom: 12 }}>
+              {[
+                { label: '목표', value: profile.dietObjective === 'lose' ? '체중 감량' : profile.dietObjective === 'gain' ? '체중 증량' : '체중 유지' },
+                { label: '목표 체중', value: `${profile.goalWeight}kg` },
+                { label: '목표 칼로리', value: `${profile.dietTargetCal}kcal` },
+                { label: 'TDEE', value: `${profile.dietTDEE}kcal` },
+              ].map((item, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: i < 3 ? '1px solid rgba(0,0,0,0.04)' : 'none' }}>
+                  <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{item.label}</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{item.value}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ background: 'var(--bg-card, #fff)', borderRadius: 16, padding: '16px 20px' }}>
+              <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 10 }}>식단 유형</div>
+              {(() => {
+                const goal = DIET_GOALS.find(g => g.key === selected);
+                if (!goal) return null;
+                return (
+                  <>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 10 }}>{goal.name}</div>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <div style={{ flex: goal.carb, padding: '7px 0', borderRadius: 8, textAlign: 'center', background: 'linear-gradient(135deg, #8B5CF6, #A78BFA)', color: '#fff', fontSize: 11, fontWeight: 700 }}>탄 {goal.carb}%</div>
+                      <div style={{ flex: goal.protein, padding: '7px 0', borderRadius: 8, textAlign: 'center', background: 'linear-gradient(135deg, #D946EF, #E879F9)', color: '#fff', fontSize: 11, fontWeight: 700 }}>단 {goal.protein}%</div>
+                      <div style={{ flex: goal.fat, padding: '7px 0', borderRadius: 8, textAlign: 'center', background: 'linear-gradient(135deg, #06B6D4, #22D3EE)', color: '#fff', fontSize: 11, fontWeight: 700 }}>지 {goal.fat}%</div>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          </>
+        )}
       </div>
     </div>
+    {showOnboarding && <DietOnboardingPage onClose={() => setShowOnboarding(false)} onComplete={() => setShowOnboarding(false)} />}
+    </>
   );
 }
 
