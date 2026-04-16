@@ -343,16 +343,37 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
       if (localStep === 1) return (
         <div>
           <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 24 }}>목표 체중이 몇 kg인가요?</div>
-          <div style={{ textAlign: 'center', marginBottom: 20 }}>
-            <div style={{ fontSize: 48, fontWeight: 800, color: 'var(--accent-primary)', fontFamily: 'var(--font-display)' }}>{goalWeight}<span style={{ fontSize: 20, fontWeight: 600 }}>kg</span></div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 12 }}>
+            <button onClick={() => setGoalWeight(Math.max(30, goalWeight - 1))} style={{
+              width: 44, height: 44, borderRadius: '50%', border: 'none',
+              background: 'var(--bg-input, #F2F3F5)', fontSize: 20, fontWeight: 600,
+              color: 'var(--text-primary)', cursor: 'pointer', fontFamily: 'inherit',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>-</button>
+            <input type="number" value={goalWeight}
+              onChange={e => {
+                const v = Number(e.target.value);
+                if (v >= 30 && v <= 200) setGoalWeight(v);
+              }}
+              style={{
+                width: 100, textAlign: 'center', fontSize: 42, fontWeight: 800,
+                color: 'var(--accent-primary)', fontFamily: 'var(--font-display)',
+                border: 'none', background: 'transparent', outline: 'none',
+                MozAppearance: 'textfield',
+              }}
+            />
+            <span style={{ fontSize: 20, fontWeight: 600, color: 'var(--text-muted)', marginLeft: -8 }}>kg</span>
+            <button onClick={() => setGoalWeight(Math.min(200, goalWeight + 1))} style={{
+              width: 44, height: 44, borderRadius: '50%', border: 'none',
+              background: 'var(--bg-input, #F2F3F5)', fontSize: 20, fontWeight: 600,
+              color: 'var(--text-primary)', cursor: 'pointer', fontFamily: 'inherit',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>+</button>
           </div>
-          <input type="range" min={40} max={150} step={1} value={goalWeight}
+          <input type="range" min={30} max={200} step={1} value={goalWeight}
             onChange={e => setGoalWeight(Number(e.target.value))}
             style={{ width: '100%', accentColor: 'var(--accent-primary)', marginBottom: 24 }}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-muted)', marginBottom: 24 }}>
-            <span>40kg</span><span>150kg</span>
-          </div>
           <div style={{ background: 'var(--bg-card, #fff)', borderRadius: 16, padding: '16px 20px', marginBottom: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
               <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>체중 변화</span>
