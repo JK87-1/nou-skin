@@ -28,10 +28,18 @@ const EXERCISE_FREQ = [
 ];
 
 const EXERCISE_EXP = [
-  { key: 'first', label: '처음이에요', desc: '' },
-  { key: 'sometimes', label: '가끔 하는 편이에요', desc: '' },
-  { key: 'steady', label: '꾸준히 하고 있어요', desc: '' },
-  { key: 'routine', label: '루틴이 잘 잡혀 있어요', desc: '' },
+  { key: 'first', label: '처음이에요' },
+  { key: 'sometimes', label: '가끔 하는 편이에요' },
+  { key: 'steady', label: '꾸준히 하고 있어요' },
+  { key: 'routine', label: '루틴이 잘 잡혀 있어요' },
+];
+
+const EXERCISE_INTENSITY = [
+  { key: 'none', label: '거의 움직이지 않아요' },
+  { key: 'light', label: '가볍게 몸만 풀어요', desc: '스트레칭 수준' },
+  { key: 'moderate', label: '살짝 땀이 나는 정도예요' },
+  { key: 'hard', label: '운동 후 꽤 힘들어요' },
+  { key: 'extreme', label: '완전히 지칠 때까지 해요' },
 ];
 
 const ACTIVITY_LEVELS = [
@@ -84,7 +92,7 @@ const DIET_TYPES = [
   { key: 'keto', name: '키토', desc: '고지방, 저탄수화물 식단이에요', carb: 6, protein: 35, fat: 58, warning: '호르몬에 영향을 줄 수 있어요. 전문가 상담을 권장해요.' },
 ];
 
-const SECTION_STEPS = [6, 3, 5];
+const SECTION_STEPS = [7, 3, 5];
 
 function calcTDEE(weight, height, age, gender, activity) {
   let bmr;
@@ -102,6 +110,7 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
   const [exerciseType, setExerciseType] = useState(profile.dietExerciseType || '');
   const [exerciseFreq, setExerciseFreq] = useState(profile.dietExerciseFreq || '');
   const [exerciseExp, setExerciseExp] = useState(profile.dietExerciseExp || '');
+  const [exerciseIntensity, setExerciseIntensity] = useState(profile.dietExerciseIntensity || '');
   const [activityLevel, setActivityLevel] = useState(profile.dietActivityLevel || '');
   const [mealOption, setMealOption] = useState(profile.dietMealOption || '');
 
@@ -150,8 +159,9 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
       if (localStep === 1) return !!exerciseType;
       if (localStep === 2) return !!exerciseFreq;
       if (localStep === 3) return !!exerciseExp;
-      if (localStep === 4) return !!activityLevel;
-      if (localStep === 5) return !!mealOption;
+      if (localStep === 4) return !!exerciseIntensity;
+      if (localStep === 5) return !!activityLevel;
+      if (localStep === 6) return !!mealOption;
     }
     if (section === 1) {
       if (localStep === 0) return !!dietObjective;
@@ -178,6 +188,7 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
       saveProfile({
         dietBodyType: bodyType, dietExerciseType: exerciseType,
         dietExerciseFreq: exerciseFreq, dietExerciseExp: exerciseExp,
+        dietExerciseIntensity: exerciseIntensity,
         dietActivityLevel: activityLevel, dietMealOption: mealOption,
         dietObjective, goalWeight, dietSpeed: speed,
         dietProteinLevel: proteinLevel, dietCalorieDist: calorieDist,
@@ -280,6 +291,20 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
 
       if (localStep === 4) return (
         <div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 24 }}>운동할 때 강도는 어느 정도인가요?</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {EXERCISE_INTENSITY.map(e => (
+              <div key={e.key} onClick={() => setExerciseIntensity(e.key)} style={selectStyle(exerciseIntensity === e.key)}>
+                <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{e.label}</span>
+                {e.desc && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{e.desc}</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+      if (localStep === 5) return (
+        <div>
           <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8 }}>평소 활동량은 어느 정도인가요?</div>
           <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>운동 시간 외에 얼마나 움직이는지 알려주세요. 육아·가사도 활동량에 포함돼요.</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -293,7 +318,7 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
         </div>
       );
 
-      if (localStep === 5) return (
+      if (localStep === 6) return (
         <div>
           <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 24 }}>하루에 식사를 몇 번 하시나요?</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
