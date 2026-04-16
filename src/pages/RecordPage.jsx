@@ -2117,11 +2117,11 @@ function PhotoCropModal({ src, onConfirm, onCancel }) {
   const handleConfirm = () => {
     if (!img) return;
     const canvas = document.createElement('canvas');
-    canvas.width = 600; canvas.height = 600;
+    canvas.width = 1024; canvas.height = 1024;
     const ctx = canvas.getContext('2d');
-    const ratio = 600 / cropSize;
+    const ratio = 1024 / cropSize;
     ctx.drawImage(img, offset.x * ratio, offset.y * ratio, img.width * scale * ratio, img.height * scale * ratio);
-    onConfirm(canvas.toDataURL('image/jpeg', 0.85));
+    onConfirm(canvas.toDataURL('image/jpeg', 0.9));
   };
 
   return (
