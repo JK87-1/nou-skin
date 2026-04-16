@@ -2121,7 +2121,7 @@ function PhotoCropModal({ src, onConfirm, onCancel }) {
     const ctx = canvas.getContext('2d');
     const ratio = 1024 / cropSize;
     ctx.drawImage(img, offset.x * ratio, offset.y * ratio, img.width * scale * ratio, img.height * scale * ratio);
-    onConfirm(canvas.toDataURL('image/jpeg', 0.9));
+    onConfirm(canvas.toDataURL('image/jpeg', 1.0));
   };
 
   return (
