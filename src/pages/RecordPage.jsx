@@ -1686,12 +1686,12 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
         ))}
       </div>
       {/* Ingredients breakdown */}
-      {aiResult.ingredients?.length > 0 && (
+      {aiResult.ingredients?.filter(ing => (ing.kcal || 0) >= 5).length > 0 && (
         <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(137,206,245,0.15)' }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8 }}>재료 구성</div>
-          {aiResult.ingredients.map((ing, i) => (
+          {aiResult.ingredients.filter(ing => (ing.kcal || 0) >= 5).map((ing, i, arr) => (
             <div key={i} style={{
-              padding: '8px 0', borderBottom: i < aiResult.ingredients.length - 1 ? '1px solid rgba(0,0,0,0.04)' : 'none',
+              padding: '8px 0', borderBottom: i < arr.length - 1 ? '1px solid rgba(0,0,0,0.04)' : 'none',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
                 <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{ing.name}</span>
@@ -2454,13 +2454,15 @@ function FoodDetailModal({ food, onClose, onDelete }) {
         </div>
 
         {/* Ingredients breakdown */}
-        {food.ingredients?.length > 0 && (
+        {food.ingredients?.filter(ing => (ing.kcal || 0) >= 5).length > 0 && (() => {
+          const filtered = food.ingredients.filter(ing => (ing.kcal || 0) >= 5);
+          return (
           <>
             <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>재료 구성</div>
             <div style={{ padding: '12px 14px', borderRadius: 14, background: 'var(--bg-card)', marginBottom: 20 }}>
-              {food.ingredients.map((ing, i) => (
+              {filtered.map((ing, i) => (
                 <div key={i} style={{
-                  padding: '8px 0', borderBottom: i < food.ingredients.length - 1 ? '1px solid rgba(0,0,0,0.04)' : 'none',
+                  padding: '8px 0', borderBottom: i < filtered.length - 1 ? '1px solid rgba(0,0,0,0.04)' : 'none',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
                     <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{ing.name}</span>
@@ -2478,7 +2480,8 @@ function FoodDetailModal({ food, onClose, onDelete }) {
               ))}
             </div>
           </>
-        )}
+          );
+        })()}
 
         {/* Impact analysis */}
         <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 10 }}>식후 영향 분석</div>
