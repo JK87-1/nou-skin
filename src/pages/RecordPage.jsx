@@ -1626,6 +1626,7 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
       skinImpact: aiResult.skinImpact || '',
       skinImpactNote: aiResult.skinImpactNote || '',
       tags: aiResult.tags || [],
+      ingredients: aiResult.ingredients || [],
       water: 0,
     });
   };
@@ -1704,6 +1705,28 @@ function AddFoodModal({ onAdd, onClose, initialMeal }) {
               </div>
             </div>
           ))}
+        </div>
+      )}
+      {/* Post-meal impact analysis */}
+      {(aiResult.bloodSugar || aiResult.drowsiness || aiResult.skinImpact) && (
+        <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(137,206,245,0.15)' }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8 }}>식후 영향 분석</div>
+          {[
+            { icon: '📈', label: '혈당 상승', value: aiResult.bloodSugar, note: aiResult.bloodSugarNote },
+            { icon: '😴', label: '졸림 확률', value: aiResult.drowsiness, note: aiResult.drowsinessNote },
+            { icon: '✨', label: '피부 영향', value: aiResult.skinImpact, note: aiResult.skinImpactNote },
+          ].filter(i => i.value).map(item => {
+            const s = IMPACT_STYLE[item.value] || IMPACT_STYLE['보통'];
+            return (
+              <div key={item.label} style={{ padding: '10px 12px', borderRadius: 10, background: 'rgba(0,0,0,0.02)', marginBottom: 6 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: item.note ? 4 : 0 }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{item.icon} {item.label}</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 6, background: s.bg, color: s.color }}>{item.value}</span>
+                </div>
+                {item.note && <div style={{ fontSize: 10, color: 'var(--text-secondary)', lineHeight: 1.4 }}>{item.note}</div>}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
@@ -2427,6 +2450,31 @@ function FoodDetailModal({ food, onClose, onDelete }) {
             </div>
           ))}
         </div>
+
+        {/* Ingredients breakdown */}
+        {food.ingredients?.length > 0 && (
+          <>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>재료 구성</div>
+            <div style={{ padding: '12px 14px', borderRadius: 14, background: 'var(--bg-card)', marginBottom: 20 }}>
+              {food.ingredients.map((ing, i) => (
+                <div key={i} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '7px 0', borderBottom: i < food.ingredients.length - 1 ? '1px solid rgba(0,0,0,0.04)' : 'none',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, flex: 1, minWidth: 0 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{ing.name}</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0 }}>{ing.amount}</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, flexShrink: 0, marginLeft: 10 }}>
+                    <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>탄<span style={{ fontWeight: 600, color: 'var(--text-secondary)', marginLeft: 2 }}>{ing.carb}g</span></span>
+                    <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>단<span style={{ fontWeight: 600, color: 'var(--text-secondary)', marginLeft: 2 }}>{ing.protein}g</span></span>
+                    <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>지<span style={{ fontWeight: 600, color: 'var(--text-secondary)', marginLeft: 2 }}>{ing.fat}g</span></span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
 
         {/* Impact analysis */}
         <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 10 }}>식후 영향 분석</div>
