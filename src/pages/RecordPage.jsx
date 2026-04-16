@@ -230,7 +230,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
   useEffect(() => {
     if (autoOpenAdd) {
       setFoodTab('food');
-      setShowMealPicker(true);
+      setAddMeal(null); setShowAdd(true);
     }
   }, [autoOpenAdd]);
 
@@ -295,7 +295,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
       <div style={{ padding: '16px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>기록</h1>
         <div style={{ display: 'flex', gap: 8 }}>
-          <div onClick={() => setShowMealPicker(true)} style={{ width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div onClick={() => { setAddMeal(null); setShowAdd(true); }} style={{ width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
               <path d="M12 5v14M5 12h14" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" />
             </svg>
@@ -463,7 +463,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                   </div>
                 ))}
                 {isToday && (
-                  <div onClick={() => setShowMealPicker(true)} style={{
+                  <div onClick={() => { setAddMeal(null); setShowAdd(true); }} style={{
                     width: 52, height: 52, borderRadius: 10, flexShrink: 0,
                     border: '1.5px dashed rgba(100,180,220,.4)', background: 'rgba(100,180,220,.06)',
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -1150,7 +1150,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                 }}>{slot.food.name?.slice(0, 8)}</div>
               </div>
             ) : (
-              <div key={slot.key} onClick={() => setShowMealPicker(true)} style={{
+              <div key={slot.key} onClick={() => { setAddMeal(null); setShowAdd(true); }} style={{
                 flex: slots.length <= 3 ? '1' : undefined,
                 width: slots.length > 3 ? 'calc((100% - 16px) / 3)' : undefined,
                 aspectRatio: '1/1', borderRadius: 5, flexShrink: 0,
