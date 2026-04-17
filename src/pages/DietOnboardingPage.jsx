@@ -414,7 +414,7 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
             ))}
           </div>
           {speed === 'fast' && (
-            <div style={{ marginTop: 10, padding: '10px 14px', borderRadius: 10, background: 'rgba(245,158,11,0.1)', fontSize: 11, color: '#D97706', lineHeight: 1.5 }}>
+            <div style={{ marginTop: 10, padding: '10px 14px', borderRadius: 10, background: 'rgba(0,0,0,0.05)', fontSize: 11, color: '#999', lineHeight: 1.5 }}>
               빠른 감량은 요요에 주의하세요. 천천히 줄이는 게 더 오래 유지돼요.
             </div>
           )}
