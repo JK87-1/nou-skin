@@ -446,7 +446,16 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                     )}
                     {last7w.length >= 2 && (
                       <svg width="100%" height="30" viewBox={`0 0 ${(last7w.length - 1) * 20} 30`} style={{ marginTop: 8 }}>
-                        <path d={last7w.map((r, i) => `${i === 0 ? 'M' : 'L'}${i * 20},${28 - ((r.weight - wMin) / wRange) * 24}`).join(' ')} fill="none" stroke="var(--text-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d={(() => {
+                          const pts = last7w.map((r, i) => ({ x: i * 20, y: 28 - ((r.weight - wMin) / wRange) * 24 }));
+                          if (pts.length < 2) return `M${pts[0].x},${pts[0].y}`;
+                          let d = `M${pts[0].x},${pts[0].y}`;
+                          for (let i = 0; i < pts.length - 1; i++) {
+                            const cx = (pts[i].x + pts[i + 1].x) / 2;
+                            d += ` C${cx},${pts[i].y} ${cx},${pts[i + 1].y} ${pts[i + 1].x},${pts[i + 1].y}`;
+                          }
+                          return d;
+                        })()} fill="none" stroke="var(--text-primary)" strokeWidth="2" strokeLinecap="round" />
                         <circle cx={(last7w.length - 1) * 20} cy={28 - ((last7w[last7w.length - 1].weight - wMin) / wRange) * 24} r="3" fill="var(--text-primary)" />
                       </svg>
                     )}
@@ -482,12 +491,12 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       {/* ===== 2. 컨디션 체크 카드 ===== */}
       <div style={{
         margin: '0 18px', marginTop: 24, position: 'relative', zIndex: 1,
-        background: 'rgba(255,255,255,0.2)', borderRadius: 16, padding: '20px 22px',
+        background: 'rgba(255,255,255,0.2)', borderRadius: 16, padding: '20px 14px',
         backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
         border: '1px solid rgba(255,255,255,0.3)',
         boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
       }}>
-        <div style={{ fontSize: 18, fontWeight: 600, color: 'rgba(0,0,0,0.8)', marginBottom: 20 }}>지금 느낌은 어때요?</div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 16 }}>컨디션</div>
 
         {[
           { key: 'mood', label: '기분', color: '#F5C2CB', rgb: [245,194,203], textColor: '#E8A0AE', labels: MOOD_LABELS, ends: ['우울', '행복'],
