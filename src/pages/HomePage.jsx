@@ -344,13 +344,19 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         const todayNut = getTodayNutrition();
         const fullGoal = getFoodGoal();
         const eaten = Math.round(todayNut.kcal || 0);
-        const remaining = Math.max(0, fullGoal.kcal - eaten);
-        const pct = fullGoal.kcal > 0 ? Math.min(eaten / fullGoal.kcal, 1) : 0;
-        const circR = 32, circC = 2 * Math.PI * circR, circDash = circC * pct;
+        const curWeight = getLatestWeight()?.weight || 55;
+        const todayKey_ = new Date().toISOString().slice(0, 10);
+        let todaySteps = 0;
+        try { const v2_ = JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); todaySteps = v2_[todayKey_]?.steps || 0; } catch {}
+        const burnedFromSteps = Math.round(todaySteps * 0.0005 * curWeight);
+        const netCal = eaten - burnedFromSteps;
+        const remaining = Math.max(0, fullGoal.kcal - netCal);
+        const pct = fullGoal.kcal > 0 ? Math.min(netCal / fullGoal.kcal, 1) : 0;
+        const circR = 32, circC = 2 * Math.PI * circR, circDash = circC * Math.max(pct, 0);
         const macros = [
-          { label: '탄수화물', cur: Math.round(todayNut.carb || 0), goal: fullGoal.carb, color: '#7BC8F0' },
-          { label: '단백질', cur: Math.round(todayNut.protein || 0), goal: fullGoal.protein, color: '#F0C878' },
-          { label: '지방', cur: Math.round(todayNut.fat || 0), goal: fullGoal.fat, color: '#C8A0E0' },
+          { label: '탄수화물', cur: Math.round(todayNut.carb || 0), goal: fullGoal.carb, color: '#F5C2CB' },
+          { label: '단백질', cur: Math.round(todayNut.protein || 0), goal: fullGoal.protein, color: '#F5E6A3' },
+          { label: '지방', cur: Math.round(todayNut.fat || 0), goal: fullGoal.fat, color: '#F5C4A0' },
         ];
         const latestW = getLatestWeight();
         const bodyRecs = getBodyRecords();
@@ -380,53 +386,9 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
         };
         return (
-          <div style={{ margin: '0 18px', marginTop: 24, position: 'relative', zIndex: 1 }}>
-            {/* 칼로리 카드 */}
-            <div style={{ ...cardStyle, marginBottom: 10 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                    <span style={{ fontSize: 36, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{remaining}</span>
-                    <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>kcal 남음</span>
-                  </div>
-                  <div onClick={() => onTabChange?.('record')} style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span style={{ opacity: 0.5 }}>⊙</span> {fullGoal.kcal} 목표 <span style={{ fontSize: 10 }}>›</span>
-                  </div>
-                </div>
-                {/* 원형 진행률 */}
-                <div style={{ position: 'relative', width: 76, height: 76 }}>
-                  <svg width="76" height="76" viewBox="0 0 76 76">
-                    <circle cx="38" cy="38" r={circR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="6" />
-                    <circle cx="38" cy="38" r={circR} fill="none" stroke={eaten > fullGoal.kcal ? '#E05050' : '#7BC8F0'} strokeWidth="6"
-                      strokeDasharray={`${circDash} ${circC}`} strokeLinecap="round"
-                      transform="rotate(-90 38 38)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
-                  </svg>
-                  <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{eaten}</span>
-                    <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>먹음</span>
-                  </div>
-                </div>
-              </div>
-              {/* 매크로 */}
-              <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
-                {macros.map(m => {
-                  const ratio = m.goal > 0 ? Math.min(m.cur / m.goal, 1) : 0;
-                  return (
-                    <div key={m.label} style={{ flex: 1 }}>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6, textAlign: 'center' }}>{m.label}</div>
-                      <div style={{ height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.06)', position: 'relative' }}>
-                        <div style={{ height: '100%', borderRadius: 2, background: m.color, width: `${ratio * 100}%`, transition: 'width 0.3s ease' }} />
-                      </div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, textAlign: 'center' }}>
-                        <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{m.cur}</span>/{m.goal}g
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+          <div style={{ margin: '0 18px', marginTop: 12, position: 'relative', zIndex: 1 }}>
             {/* 체중 + 활동 */}
-            <div style={{ display: 'flex', gap: 10, marginBottom: 0 }}>
+            <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
               {/* 체중 */}
               <div onClick={() => onTabChange?.('record')} style={{ ...cardStyle, flex: 1, cursor: 'pointer', padding: '16px 14px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
@@ -482,6 +444,63 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                     }} />
                   ))}
                 </div>
+              </div>
+            </div>
+            {/* 칼로리 카드 */}
+            <div style={{ ...cardStyle }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                    <span style={{ fontSize: 36, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{remaining}</span>
+                    <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>kcal 남음</span>
+                  </div>
+                  <div onClick={() => onTabChange?.('record')} style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <span style={{ opacity: 0.5 }}>⊙</span> {fullGoal.kcal} 목표 <span style={{ fontSize: 10 }}>›</span>
+                  </div>
+                </div>
+                {/* 원형 진행률 */}
+                <div style={{ position: 'relative', width: 76, height: 76 }}>
+                  <svg width="76" height="76" viewBox="0 0 76 76">
+                    <circle cx="38" cy="38" r={circR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="6" />
+                    <circle cx="38" cy="38" r={circR} fill="none" stroke={eaten > fullGoal.kcal ? '#E05050' : '#7BC8F0'} strokeWidth="6"
+                      strokeDasharray={`${circDash} ${circC}`} strokeLinecap="round"
+                      transform="rotate(-90 38 38)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
+                  </svg>
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{eaten}</span>
+                    <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>먹음</span>
+                  </div>
+                </div>
+              </div>
+              {/* 섭취·소모 요약 */}
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginTop: 14, padding: '10px 0', borderTop: '1px solid rgba(0,0,0,0.04)' }}>
+                {[
+                  { label: '섭취', value: eaten, color: 'var(--text-primary)' },
+                  { label: '걸음소모', value: burnedFromSteps, color: '#22C55E' },
+                  { label: '순 칼로리', value: netCal, color: netCal > fullGoal.kcal ? '#E05050' : '#5AAABB' },
+                ].map(item => (
+                  <div key={item.label} style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 2 }}>{item.label}</div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: item.color, fontFamily: 'var(--font-display)' }}>{item.value}</div>
+                  </div>
+                ))}
+              </div>
+              {/* 매크로 */}
+              <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+                {macros.map(m => {
+                  const ratio = m.goal > 0 ? Math.min(m.cur / m.goal, 1) : 0;
+                  return (
+                    <div key={m.label} style={{ flex: 1 }}>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6, textAlign: 'center' }}>{m.label}</div>
+                      <div style={{ height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.06)', position: 'relative' }}>
+                        <div style={{ height: '100%', borderRadius: 2, background: m.color, width: `${ratio * 100}%`, transition: 'width 0.3s ease' }} />
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, textAlign: 'center' }}>
+                        <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{m.cur}</span>/{m.goal}g
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>

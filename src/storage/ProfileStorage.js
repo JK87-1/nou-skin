@@ -23,6 +23,7 @@ const DEFAULTS = {
     { key: 'sleep',     label: '수면',     color: '#C8A0E0', enabled: true,  group: 'cause' },
     { key: 'walk',      label: '걷기',     color: '#A8D8A8', enabled: true,  group: 'cause' },
     { key: 'exercise',  label: '운동',     color: '#90CCE8', enabled: true,  group: 'cause' },
+    { key: 'supplement', label: '영양제', color: '#B8D8A0', enabled: true,  group: 'cause' },
     { key: 'energy',    label: '에너지',   color: '#F0C878', enabled: true,  group: 'result' },
     { key: 'body',      label: '몸무게',   color: '#D0D0D0', enabled: true,  group: 'result' },
     { key: 'face',      label: '얼굴',     color: '#80D0A8', enabled: true,  group: 'result' },
