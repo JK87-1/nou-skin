@@ -339,15 +339,155 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         </div>
       </div>
 
+      {/* ===== 1.5 영양·체중·활동 요약 카드 ===== */}
+      {(() => {
+        const todayNut = getTodayNutrition();
+        const fullGoal = getFoodGoal();
+        const eaten = Math.round(todayNut.kcal || 0);
+        const remaining = Math.max(0, fullGoal.kcal - eaten);
+        const pct = fullGoal.kcal > 0 ? Math.min(eaten / fullGoal.kcal, 1) : 0;
+        const circR = 32, circC = 2 * Math.PI * circR, circDash = circC * pct;
+        const macros = [
+          { label: '탄수화물', cur: Math.round(todayNut.carb || 0), goal: fullGoal.carb, color: '#7BC8F0' },
+          { label: '단백질', cur: Math.round(todayNut.protein || 0), goal: fullGoal.protein, color: '#F0C878' },
+          { label: '지방', cur: Math.round(todayNut.fat || 0), goal: fullGoal.fat, color: '#C8A0E0' },
+        ];
+        const latestW = getLatestWeight();
+        const bodyRecs = getBodyRecords();
+        const prevW = bodyRecs.length >= 2 ? bodyRecs[bodyRecs.length - 2] : null;
+        const wDiff = latestW && prevW ? (latestW.weight - prevW.weight).toFixed(1) : null;
+        // 걸음수
+        const todayKey = new Date().toISOString().slice(0, 10);
+        let stepCount = 0;
+        try { const v2 = JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); stepCount = v2[todayKey]?.steps || 0; } catch {}
+        // 최근 7일 걸음 데이터
+        const stepBars = [];
+        for (let i = 6; i >= 0; i--) {
+          const d = new Date(); d.setDate(d.getDate() - i);
+          const dk = d.toISOString().slice(0, 10);
+          try { const v2 = JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); stepBars.push(v2[dk]?.steps || 0); } catch { stepBars.push(0); }
+        }
+        const maxStep = Math.max(...stepBars, 1);
+        // 최근 7일 체중
+        const last7w = bodyRecs.slice(-7);
+        const wMin = last7w.length > 0 ? Math.min(...last7w.map(r => r.weight)) : 0;
+        const wMax = last7w.length > 0 ? Math.max(...last7w.map(r => r.weight)) : 0;
+        const wRange = wMax - wMin || 1;
+        const cardStyle = {
+          background: 'rgba(255,255,255,0.2)', borderRadius: 16, padding: '20px 18px',
+          backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          border: '1px solid rgba(255,255,255,0.3)',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+        };
+        return (
+          <div style={{ margin: '0 18px', marginTop: 24, position: 'relative', zIndex: 1 }}>
+            {/* 칼로리 카드 */}
+            <div style={{ ...cardStyle, marginBottom: 10 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                    <span style={{ fontSize: 36, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{remaining}</span>
+                    <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>kcal 남음</span>
+                  </div>
+                  <div onClick={() => onTabChange?.('record')} style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <span style={{ opacity: 0.5 }}>⊙</span> {fullGoal.kcal} 목표 <span style={{ fontSize: 10 }}>›</span>
+                  </div>
+                </div>
+                {/* 원형 진행률 */}
+                <div style={{ position: 'relative', width: 76, height: 76 }}>
+                  <svg width="76" height="76" viewBox="0 0 76 76">
+                    <circle cx="38" cy="38" r={circR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="6" />
+                    <circle cx="38" cy="38" r={circR} fill="none" stroke={eaten > fullGoal.kcal ? '#E05050' : '#7BC8F0'} strokeWidth="6"
+                      strokeDasharray={`${circDash} ${circC}`} strokeLinecap="round"
+                      transform="rotate(-90 38 38)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
+                  </svg>
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{eaten}</span>
+                    <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>먹음</span>
+                  </div>
+                </div>
+              </div>
+              {/* 매크로 */}
+              <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+                {macros.map(m => {
+                  const ratio = m.goal > 0 ? Math.min(m.cur / m.goal, 1) : 0;
+                  return (
+                    <div key={m.label} style={{ flex: 1 }}>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6, textAlign: 'center' }}>{m.label}</div>
+                      <div style={{ height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.06)', position: 'relative' }}>
+                        <div style={{ height: '100%', borderRadius: 2, background: m.color, width: `${ratio * 100}%`, transition: 'width 0.3s ease' }} />
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, textAlign: 'center' }}>
+                        <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{m.cur}</span>/{m.goal}g
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            {/* 체중 + 활동 */}
+            <div style={{ display: 'flex', gap: 10, marginBottom: 0 }}>
+              {/* 체중 */}
+              <div onClick={() => onTabChange?.('record')} style={{ ...cardStyle, flex: 1, cursor: 'pointer', padding: '16px 14px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>체중</span>
+                  <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-muted)' }}>+</div>
+                </div>
+                {latestW ? (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                      <span style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{latestW.weight}</span>
+                      <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>kg</span>
+                    </div>
+                    {wDiff !== null && (
+                      <div style={{ fontSize: 11, color: Number(wDiff) > 0 ? '#E05050' : '#22C55E', marginTop: 2 }}>
+                        {Number(wDiff) > 0 ? '↑' : '↓'} {Math.abs(Number(wDiff))} kg
+                      </div>
+                    )}
+                    {last7w.length >= 2 && (
+                      <svg width="100%" height="30" viewBox={`0 0 ${(last7w.length - 1) * 20} 30`} style={{ marginTop: 8 }}>
+                        <path d={last7w.map((r, i) => `${i === 0 ? 'M' : 'L'}${i * 20},${28 - ((r.weight - wMin) / wRange) * 24}`).join(' ')} fill="none" stroke="var(--text-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <circle cx={(last7w.length - 1) * 20} cy={28 - ((last7w[last7w.length - 1].weight - wMin) / wRange) * 24} r="3" fill="var(--text-primary)" />
+                      </svg>
+                    )}
+                  </>
+                ) : <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>기록 없음</div>}
+              </div>
+              {/* 활동 */}
+              <div onClick={() => onTabChange?.('record')} style={{ ...cardStyle, flex: 1, cursor: 'pointer', padding: '16px 14px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>활동</span>
+                  <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-muted)' }}>+</div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                  <span style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{stepCount > 0 ? stepCount.toLocaleString() : '—'}</span>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>걸음</span>
+                </div>
+                {/* 7일 바 차트 */}
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 30, marginTop: 8 }}>
+                  {stepBars.map((s, i) => (
+                    <div key={i} style={{
+                      flex: 1, borderRadius: 2,
+                      height: s > 0 ? Math.max(4, (s / maxStep) * 28) : 4,
+                      background: i === 6 ? 'var(--text-primary)' : 'rgba(0,0,0,0.12)',
+                    }} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* ===== 2. 컨디션 체크 카드 ===== */}
       <div style={{
         margin: '0 18px', marginTop: 24, position: 'relative', zIndex: 1,
-        background: 'rgba(255,255,255,0.2)', borderRadius: 16, padding: '30px 22px',
+        background: 'rgba(255,255,255,0.2)', borderRadius: 16, padding: '20px 22px',
         backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
         border: '1px solid rgba(255,255,255,0.3)',
         boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
       }}>
-        <div style={{ fontSize: 18, fontWeight: 600, color: 'rgba(0,0,0,0.8)', marginBottom: 30 }}>지금 느낌은 어때요?</div>
+        <div style={{ fontSize: 18, fontWeight: 600, color: 'rgba(0,0,0,0.8)', marginBottom: 20 }}>지금 느낌은 어때요?</div>
 
         {[
           { key: 'mood', label: '기분', color: '#F5C2CB', rgb: [245,194,203], textColor: '#E8A0AE', labels: MOOD_LABELS, ends: ['우울', '행복'],
@@ -374,7 +514,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             handleSelect(s.key, Math.max(1, Math.min(10, v)));
           };
           return (
-            <div key={s.key} style={{ marginBottom: si < 2 ? 28 : 24 }}>
+            <div key={s.key} style={{ marginBottom: si < 2 ? 18 : 16 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 15, fontWeight: 500, color: 'var(--text-muted)' }}>{s.icon}{s.label}</span>
                 <span style={{ fontSize: 15, fontWeight: 600, color: s.textColor }}>{s.labels[val - 1]}</span>
@@ -408,9 +548,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                   transition: 'none',
                   pointerEvents: 'none',
                 }} />
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
-                {s.ends.map(t => <span key={t} style={{ fontSize: 11, color: '#ccc' }}>{t}</span>)}
               </div>
             </div>
           );
