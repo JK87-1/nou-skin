@@ -15,8 +15,8 @@ const BODY_TYPES = [
 const EXERCISE_TYPES = [
   { key: 'none', icon: '🙅‍♀️', label: '거의 안 해요' },
   { key: 'walking', icon: '🚶‍♀️', label: '걷기·스트레칭' },
-  { key: 'pilates', icon: '🧘‍♀️', label: '필라테스·요가' },
   { key: 'gym', icon: '🏋️‍♀️', label: '홈트·헬스' },
+  { key: 'pilates', icon: '🧘‍♀️', label: '필라테스·요가' },
   { key: 'mixed', icon: '✨', label: '운동을 복합적으로 해요' },
 ];
 
