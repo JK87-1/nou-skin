@@ -380,10 +380,53 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>+</button>
           </div>
-          <input type="range" min={30} max={200} step={1} value={goalWeight}
-            onChange={e => setGoalWeight(Number(e.target.value))}
-            style={{ width: '100%', accentColor: 'var(--accent-primary)', marginBottom: 24 }}
-          />
+          {(() => {
+            const pct = ((goalWeight - 30) / (200 - 30)) * 100;
+            const trackH = 9;
+            const color = '#C2EAFF';
+            const rgb = [194, 234, 255];
+            let cachedRect = null;
+            const handleTouch = (e) => {
+              if (e.type === 'touchstart' || e.type === 'click') {
+                cachedRect = e.currentTarget.getBoundingClientRect();
+              }
+              const rect = cachedRect || e.currentTarget.getBoundingClientRect();
+              const clientX = (e.type === 'touchstart' || e.type === 'touchmove') ? e.touches[0].clientX : e.clientX;
+              const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
+              const v = Math.round((x / rect.width) * (200 - 30)) + 30;
+              setGoalWeight(Math.max(30, Math.min(200, v)));
+            };
+            return (
+              <div
+                onTouchStart={handleTouch}
+                onTouchMove={handleTouch}
+                onClick={handleTouch}
+                style={{
+                  position: 'relative', width: '100%', height: trackH, borderRadius: trackH / 2,
+                  background: 'rgba(0,0,0,0.06)',
+                  cursor: 'pointer', touchAction: 'none', marginBottom: 24,
+                }}
+              >
+                <div style={{
+                  position: 'absolute', top: 0, left: 0, height: '100%',
+                  width: `${Math.max(pct, 5)}%`,
+                  borderRadius: trackH / 2,
+                  background: `linear-gradient(90deg, rgba(255,255,255,0.3), ${color}40)`,
+                  transition: 'none',
+                }} />
+                <div style={{
+                  position: 'absolute', top: '50%', left: `${Math.max(pct, 2)}%`,
+                  transform: 'translate(-50%, -50%)',
+                  width: 20, height: 20, borderRadius: '50%',
+                  background: `rgb(${Math.round(255+(rgb[0]-255)*pct/100)},${Math.round(255+(rgb[1]-255)*pct/100)},${Math.round(255+(rgb[2]-255)*pct/100)})`,
+                  border: '1px solid rgba(255,255,255,0.9)',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
+                  transition: 'none',
+                  pointerEvents: 'none',
+                }} />
+              </div>
+            );
+          })()}
           <div style={{ background: 'var(--bg-card, #fff)', borderRadius: 16, padding: '16px 20px', marginBottom: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
               <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>체중 변화</span>
