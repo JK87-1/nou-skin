@@ -1332,6 +1332,7 @@ function CategorySettingsPage({ onClose, onSave }) {
   const [dragging, setDragging] = useState(null);
   const [dragOver, setDragOver] = useState(null);
   const [dragOffsetY, setDragOffsetY] = useState(0);
+  const [dropping, setDropping] = useState(false);
   const [colorOpen, setColorOpen] = useState(null);
   const [showAddSheet, setShowAddSheet] = useState(false);
   const [toast, setToast] = useState('');
@@ -1412,14 +1413,22 @@ function CategorySettingsPage({ onClose, onSave }) {
   };
 
   const endDrag = () => {
-    if (draggingRef.current !== null && dragOverRef.current !== null && draggingRef.current !== dragOverRef.current) {
-      moveItem(draggingRef.current, dragOverRef.current);
-    }
+    const from = draggingRef.current;
+    const to = dragOverRef.current;
     draggingRef.current = null;
     dragOverRef.current = null;
-    setDragging(null);
+    // dropping 상태로 전환 → transition 활성화 + translateY 0으로 복귀
+    setDropping(true);
     setDragOver(null);
     setDragOffsetY(0);
+    // transition 끝난 뒤 실제 순서 반영
+    setTimeout(() => {
+      setDragging(null);
+      setDropping(false);
+      if (from !== null && to !== null && from !== to) {
+        moveItem(from, to);
+      }
+    }, 200);
   };
 
   const bindDragHandle = (el, idx) => {
@@ -1482,17 +1491,27 @@ function CategorySettingsPage({ onClose, onSave }) {
                 <span style={{ fontSize: 10, color: '#9ABBC8' }}>{desc}</span>
               </div>
               {(() => {
-                // 드래그 중이면 미리보기 순서 계산
-                const reordered = [...groupCats];
+                // 아이템 높이 (padding 11*2 + content ~20 + marginBottom 8)
+                const ITEM_H = 50;
                 const dragFromLocal = dragging !== null ? groupCats.findIndex(c => categories.findIndex(cc => cc.key === c.key) === dragging) : -1;
                 const dragToLocal = dragOver !== null ? groupCats.findIndex(c => categories.findIndex(cc => cc.key === c.key) === dragOver) : -1;
-                if (dragFromLocal >= 0 && dragToLocal >= 0 && dragFromLocal !== dragToLocal) {
-                  const [moved] = reordered.splice(dragFromLocal, 1);
-                  reordered.splice(dragToLocal, 0, moved);
-                }
-                return reordered.map(cat => {
+
+                return groupCats.map((cat, localIdx) => {
                 const idx = categories.findIndex(c => c.key === cat.key);
                 const isDragged = dragging === idx;
+
+                // 다른 아이템들의 translateY 계산
+                let shiftY = 0;
+                if (dragging !== null && !isDragged && dragFromLocal >= 0 && dragToLocal >= 0 && dragFromLocal !== dragToLocal) {
+                  if (dragFromLocal < dragToLocal) {
+                    // 아래로 드래그: from~to 사이 아이템은 위로 이동
+                    if (localIdx > dragFromLocal && localIdx <= dragToLocal) shiftY = -ITEM_H;
+                  } else {
+                    // 위로 드래그: to~from 사이 아이템은 아래로 이동
+                    if (localIdx >= dragToLocal && localIdx < dragFromLocal) shiftY = ITEM_H;
+                  }
+                }
+
                 return (
                   <div key={cat.key}>
                     <div
@@ -1504,12 +1523,12 @@ function CategorySettingsPage({ onClose, onSave }) {
                         borderRadius: colorOpen === cat.key ? '14px 14px 0 0' : 14,
                         border: '0.5px solid rgba(255,255,255,0.95)',
                         boxShadow: isDragged ? '0 8px 24px rgba(0,0,0,0.15)' : '0 1px 4px rgba(0,0,0,0.03)',
-                        transition: isDragged ? 'box-shadow 0.15s ease' : 'all 0.25s ease',
+                        transition: (isDragged && !dropping) ? 'box-shadow 0.1s ease' : 'transform 0.2s cubic-bezier(0.2,0,0,1), box-shadow 0.2s ease',
                         touchAction: 'pan-x', userSelect: 'none',
                         opacity: cat.enabled ? 1 : 0.55,
                         position: 'relative',
                         zIndex: isDragged ? 100 : 1,
-                        transform: isDragged ? `translateY(${dragOffsetY}px) scale(1.03)` : 'none',
+                        transform: isDragged ? `translateY(${dragOffsetY}px) scale(1.02)` : shiftY !== 0 ? `translateY(${shiftY}px)` : 'none',
                       }}
                     >
                       <span
@@ -1566,7 +1585,7 @@ function CategorySettingsPage({ onClose, onSave }) {
                     )}
                   </div>
                 );
-              });
+                });
               })()}
             </div>
           );
