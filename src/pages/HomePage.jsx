@@ -434,6 +434,11 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                   <span style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{stepCount > 0 ? stepCount.toLocaleString() : '—'}</span>
                   <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>걸음</span>
                 </div>
+                {stepCount > 0 && (
+                  <div style={{ fontSize: 11, color: '#22C55E', marginTop: 2 }}>
+                    🔥 {Math.round(stepCount * 0.0005 * curWeight)}kcal 소모
+                  </div>
+                )}
                 {/* 7일 바 차트 */}
                 <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 30, marginTop: 8 }}>
                   {stepBars.map((s, i) => (
