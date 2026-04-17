@@ -43,10 +43,9 @@ const EXERCISE_INTENSITY = [
 ];
 
 const ACTIVITY_LEVELS = [
-  { key: 'sedentary', label: '하루 대부분 앉아서 보내요', desc: '약 4,000보 이하' },
-  { key: 'light', label: '가끔 걷거나 움직이는 편이에요', desc: '약 4,000~8,000보' },
-  { key: 'moderate', label: '서 있거나 돌아다니는 시간이 꽤 있어요', desc: '약 8,000~13,000보' },
-  { key: 'active', label: '몸을 많이 쓰는 편이에요', desc: '약 13,000보 이상' },
+  { key: 'sedentary', label: '하루 대부분 앉아서 보내요', desc: '운동 제외, 일상 활동 기준' },
+  { key: 'light', label: '가끔 걷거나 움직이는 편이에요', desc: '운동 제외, 일상 활동 기준' },
+  { key: 'moderate', label: '서 있거나 돌아다니는 시간이 꽤 있어요', desc: '운동 제외, 일상 활동 기준' },
 ];
 
 const MEAL_OPTIONS = [
@@ -94,12 +93,30 @@ const DIET_TYPES = [
 
 const SECTION_STEPS = [7, 3, 5];
 
-function calcTDEE(weight, height, age, gender, activity) {
-  let bmr;
-  if (gender === '남성') bmr = 10 * weight + 6.25 * height - 5 * age + 5;
-  else bmr = 10 * weight + 6.25 * height - 5 * age - 161;
-  const factors = { sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.9 };
-  return Math.round(bmr * (factors[activity] || 1.4));
+function calcBMR(weight, height, age, gender) {
+  if (gender === '남성') return 10 * weight + 6.25 * height - 5 * age + 5;
+  return 10 * weight + 6.25 * height - 5 * age - 161;
+}
+
+function calcExerciseCal(weight, exerciseType, exerciseFreq, exerciseIntensity) {
+  // MET 기반 운동 소모 칼로리 (주당 → 일당)
+  const metMap = { none: 0, walking: 3.5, pilates: 4, gym: 5, mixed: 5.5 };
+  const intensityMult = { none: 0, light: 0.7, moderate: 1.0, hard: 1.3, extreme: 1.6 };
+  const freqMap = { none: 0, '1-2': 1.5, '3-4': 3.5, '5+': 5.5 };
+  const met = metMap[exerciseType] || 0;
+  const freq = freqMap[exerciseFreq] || 0;
+  const intensity = intensityMult[exerciseIntensity] || 1.0;
+  const durationMin = 45; // 평균 운동 시간
+  const calPerSession = met * intensity * weight * (durationMin / 60);
+  return Math.round((calPerSession * freq) / 7);
+}
+
+function calcTDEE(weight, height, age, gender, activity, exerciseType, exerciseFreq, exerciseIntensity) {
+  const bmr = calcBMR(weight, height, age, gender);
+  const factors = { sedentary: 1.2, light: 1.375, moderate: 1.55 };
+  const dailyBase = Math.round(bmr * (factors[activity] || 1.3));
+  const exerciseCal = calcExerciseCal(weight, exerciseType, exerciseFreq, exerciseIntensity);
+  return dailyBase + exerciseCal;
 }
 
 export default function DietOnboardingPage({ onClose, onComplete }) {
@@ -129,7 +146,7 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
   const age = new Date().getFullYear() - birthYear;
   const gender = profile.gender || '여성';
 
-  const tdee = calcTDEE(currentWeight, height, age, gender, activityLevel || 'moderate');
+  const tdee = calcTDEE(currentWeight, height, age, gender, activityLevel || 'moderate', exerciseType, exerciseFreq, exerciseIntensity);
   const weightDiff = Math.abs(currentWeight - goalWeight);
   const speedFactor = SPEED_OPTIONS.find(s => s.key === speed)?.factor || 1.0;
   const weeklyChange = 0.5 * speedFactor;

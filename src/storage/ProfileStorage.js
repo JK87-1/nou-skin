@@ -21,8 +21,7 @@ const DEFAULTS = {
     { key: 'food',      label: '식단',     color: '#FFD070', enabled: true,  group: 'cause' },
     { key: 'water',     label: '수분',     color: '#7BC8F0', enabled: true,  group: 'cause' },
     { key: 'sleep',     label: '수면',     color: '#C8A0E0', enabled: true,  group: 'cause' },
-    { key: 'walk',      label: '걷기',     color: '#A8D8A8', enabled: true,  group: 'cause' },
-    { key: 'exercise',  label: '운동',     color: '#90CCE8', enabled: true,  group: 'cause' },
+    { key: 'activity',  label: '활동',     color: '#A8D8A8', enabled: true,  group: 'cause' },
     { key: 'supplement', label: '영양제', color: '#B8D8A0', enabled: true,  group: 'cause' },
     { key: 'energy',    label: '에너지',   color: '#F0C878', enabled: true,  group: 'result' },
     { key: 'body',      label: '몸무게',   color: '#D0D0D0', enabled: true,  group: 'result' },
@@ -76,7 +75,7 @@ export function getCategories() {
     if (!savedKeys.has(d.key)) migrated.push({ ...d });
   });
   // 3) 삭제된 카테고리 제거
-  const filtered = migrated.filter(c => !['shape', 'meditation', 'mood'].includes(c.key));
+  const filtered = migrated.filter(c => !['shape', 'meditation', 'mood', 'walk', 'exercise'].includes(c.key));
   // 4) 최소 1개는 활성화
   if (!filtered.some(c => c.enabled)) filtered[0].enabled = true;
   return filtered;

@@ -15,13 +15,15 @@ function saveDayRecord(dateKey, data) {
   try { const all = JSON.parse(localStorage.getItem(RECORD_V2_KEY) || '{}'); all[dateKey] = data; localStorage.setItem(RECORD_V2_KEY, JSON.stringify(all)); } catch {}
 }
 const EXERCISES = [
-  { id: 'home', icon: '💪', name: '홈트' },
-  { id: 'stretch', icon: '🤸', name: '스트레칭' },
-  { id: 'yoga', icon: '🧘', name: '요가' },
-  { id: 'weight', icon: '🏋️', name: '근력' },
-  { id: 'run', icon: '🏃', name: '달리기' },
-  { id: 'cycle', icon: '🚴', name: '사이클' },
+  { id: 'walk', icon: '🚶', name: '걷기', met: 3.5 },
+  { id: 'run', icon: '🏃', name: '달리기', met: 8.0 },
+  { id: 'cycle', icon: '🚴', name: '사이클', met: 6.8 },
+  { id: 'swim', icon: '🏊', name: '수영', met: 7.0 },
+  { id: 'yoga', icon: '🧘', name: '요가', met: 3.0 },
+  { id: 'weight', icon: '🏋️', name: '근력', met: 5.0 },
 ];
+const EX_DURATIONS = [15, 30, 45, 60];
+function calcExMET(met, weight, mins) { return Math.round(met * weight * (mins / 60)); }
 const SLEEP_QUALITIES = ['깊은 수면', '보통', '얕은 수면'];
 const TOTAL_CUPS = 8;
 
@@ -180,6 +182,8 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
   const [stepsGuideOpen, setStepsGuideOpen] = useState(false);
   const [waterCount, setWaterCount] = useState(0);
   const [stepCount, setStepCount] = useState(0);
+  const [exCalOverrides, setExCalOverrides] = useState({}); // { exerciseName: manualCal }
+  const [stepCalOverride, setStepCalOverride] = useState(null);
 
   const loadV2Data = useCallback((dateKey) => {
     const saved = loadDayRecord(dateKey);
@@ -568,9 +572,9 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
               </div>
             </div>
 
-            {/* Walk (Steps) Card */}
+            {/* 활동 Card */}
             <div style={{ ...allCardStyle, ...fadeUp(0.25) }}>
-              {allCardHeader(getCategoryColor('walk'), '걷기', null,
+              {allCardHeader(getCategoryColor('activity'), '활동', null,
                 stepCount > 0 ? `${stepCount.toLocaleString()}걸음` : '미기록',
                 stepCount > 0 ? '#5AAABB' : '#9ABBC8'
               )}
@@ -615,8 +619,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                 </div>
               )}
             </div>
-
-            {/* Exercise Card */}
+            {/* 운동 (활동 카드 내) */}
             <div style={{ ...allCardStyle, ...fadeUp(0.3) }}>
               {(() => {
                 const logEntries = Object.entries(exerciseLog).filter(([, m]) => m > 0);
@@ -624,7 +627,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                 const statusText = logEntries.length > 0
                   ? logEntries.map(([name, mins]) => `${name} ${mins}분`).join(' · ')
                   : '오늘 미기록';
-                return allCardHeader(getCategoryColor('exercise'), '운동', null,
+                return allCardHeader(getCategoryColor('activity'), '운동', null,
                   totalMin > 0 ? statusText : '오늘 미기록',
                   totalMin > 0 ? '#5AAABB' : '#9ABBC8'
                 );
@@ -842,96 +845,26 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
       )}
 
       {/* Exercise content */}
-      {foodTab === 'exercise' && (
+      {foodTab === 'activity' && (() => {
+        const userWeight = getLatestWeight()?.weight || 55;
+        const stepCalAuto = Math.round(stepCount * 0.0005 * userWeight);
+        const stepCalDisplay = stepCalOverride !== null ? stepCalOverride : stepCalAuto;
+        const stepCalEdited = stepCalOverride !== null;
+        const exCalTotal = Object.entries(exerciseLog).reduce((sum, [name, mins]) => {
+          const ex = EXERCISES.find(e => e.name === name);
+          if (!ex || !mins) return sum;
+          const auto = calcExMET(ex.met, userWeight, mins);
+          return sum + (exCalOverrides[name] !== undefined ? exCalOverrides[name] : auto);
+        }, 0);
+        const totalBurned = stepCalDisplay + exCalTotal;
+        return (
         <div style={{ padding: '8px 14px 0' }}>
+          {/* 걸음수 카드 */}
           <div style={{ background: 'rgba(255,255,255,.72)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)', ...fadeUp(0.05) }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('exercise') }} />
-                <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>운동</span>
-              </div>
-              {(() => {
-                const totalMin = Object.values(exerciseLog).reduce((s, m) => s + (m || 0), 0);
-                return (
-                  <span style={{ fontSize: 11, color: totalMin > 0 ? '#5AAABB' : '#9ABBC8', fontWeight: 500 }}>
-                    {totalMin > 0 ? `총 ${totalMin}분` : '오늘 미기록'}
-                  </span>
-                );
-              })()}
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 5 }}>
-              {EXERCISES.map(ex => {
-                const hasLog = exerciseLog[ex.name] > 0;
-                const active = hasLog;
-                return (
-                  <div key={ex.id} onClick={() => {
-                    if (!isToday) return;
-                    if (hasLog) {
-                      const next = { ...exerciseLog };
-                      delete next[ex.name];
-                      setExerciseLog(next);
-                      if (selectedExercise === ex.name) setSelectedExercise(null);
-                    } else {
-                      setExerciseLog({ ...exerciseLog, [ex.name]: 30 });
-                      setSelectedExercise(ex.name);
-                    }
-                  }}
-                    style={{
-                      padding: '10px 4px', borderRadius: 10, textAlign: 'center',
-                      border: `1px solid ${active ? 'rgba(100,180,220,.6)' : 'rgba(100,180,220,.15)'}`,
-                      background: active ? 'rgba(100,180,220,.12)' : 'rgba(255,255,255,.5)',
-                      cursor: isToday ? 'pointer' : 'default', transition: 'all 0.15s ease',
-                    }}>
-                    <div style={{ fontSize: 18, marginBottom: 2 }}>{ex.icon}</div>
-                    <div style={{ fontSize: 10, fontWeight: active ? 600 : 400, color: active ? '#3A8AAA' : '#7AAABB' }}>{ex.name}</div>
-                    {active && <div style={{ fontSize: 9, color: '#5AAABB', marginTop: 2 }}>{exerciseLog[ex.name]}분</div>}
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* 선택된 운동 시간 조절 */}
-            {Object.keys(exerciseLog).length > 0 && isToday && (
-              <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {Object.entries(exerciseLog).map(([name, mins]) => {
-                  const ex = EXERCISES.find(e => e.name === name);
-                  return (
-                    <div key={name} style={{
-                      display: 'flex', alignItems: 'center', gap: 10,
-                      padding: '8px 10px', borderRadius: 10,
-                      background: 'rgba(100,180,220,.06)', border: '0.5px solid rgba(100,180,220,.15)',
-                    }}>
-                      <span style={{ fontSize: 14, flexShrink: 0 }}>{ex?.icon || '🏃'}</span>
-                      <span style={{ fontSize: 11, fontWeight: 500, color: '#1A3A4A', minWidth: 50 }}>{name}</span>
-                      <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
-                        {[10, 20, 30, 60, 90].map(v => (
-                          <button key={v} onClick={() => setExerciseLog({ ...exerciseLog, [name]: v })}
-                            style={{
-                              flex: 1, padding: '4px 0', borderRadius: 6, fontSize: 9, fontWeight: mins === v ? 600 : 400,
-                              border: `1px solid ${mins === v ? 'rgba(100,180,220,.5)' : 'rgba(100,180,220,.15)'}`,
-                              background: mins === v ? 'rgba(100,180,220,.15)' : 'transparent',
-                              color: mins === v ? '#2A6A8A' : '#7AAABB',
-                              cursor: 'pointer', fontFamily: 'inherit',
-                            }}>{v}분</button>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Walk content */}
-      {foodTab === 'walk' && (
-        <div style={{ padding: '8px 14px 0' }}>
-          <div style={{ background: 'rgba(255,255,255,.72)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)', ...fadeUp(0.05) }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('walk') }} />
-                <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>걷기</span>
+                <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('activity') }} />
+                <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>걸음수</span>
               </div>
               <span style={{ fontSize: 11, color: stepCount > 0 ? '#5AAABB' : '#9ABBC8', fontWeight: 500 }}>
                 {stepCount > 0 ? `${stepCount.toLocaleString()}걸음` : '미기록'}
@@ -944,12 +877,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
               <span style={{ fontSize: 11, color: '#7AAABB' }}>걸음</span>
             </div>
             <div style={{ height: 6, borderRadius: 3, background: 'rgba(168,216,168,0.2)', overflow: 'hidden' }}>
-              <div style={{
-                height: '100%', borderRadius: 3,
-                background: 'linear-gradient(90deg, #A8D8A8, #78C878)',
-                width: `${Math.min(100, (stepCount / 10000) * 100)}%`,
-                transition: 'width 0.3s ease',
-              }} />
+              <div style={{ height: '100%', borderRadius: 3, background: 'linear-gradient(90deg, #A8D8A8, #78C878)', width: `${Math.min(100, (stepCount / 10000) * 100)}%`, transition: 'width 0.3s ease' }} />
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
               <span style={{ fontSize: 9, color: '#9ABBC8' }}>0</span>
@@ -961,7 +889,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                   {[1000, 3000, 5000, 8000, 10000].map(v => {
                     const active = stepCount === v;
                     return (
-                      <button key={v} onClick={() => setStepCount(active ? 0 : v)}
+                      <button key={v} onClick={() => { setStepCount(active ? 0 : v); setStepCalOverride(null); }}
                         style={{
                           flex: 1, padding: '6px 0', borderRadius: 8, fontSize: 9, fontWeight: active ? 600 : 400,
                           border: `1px solid ${active ? 'rgba(168,216,168,.5)' : 'rgba(100,180,220,.15)'}`,
@@ -972,7 +900,6 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                     );
                   })}
                 </div>
-                {/* 직접 입력 */}
                 <div style={{ marginTop: 8, display: 'flex', gap: 6, alignItems: 'center' }}>
                   <input type="number" inputMode="numeric" placeholder="직접 입력"
                     value={stepCount > 0 && ![1000,3000,5000,8000,10000].includes(stepCount) ? stepCount : ''}
@@ -980,76 +907,134 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                       const v = parseInt(e.target.value, 10);
                       if (!isNaN(v) && v >= 0 && v <= 200000) setStepCount(v);
                       else if (e.target.value === '') setStepCount(0);
+                      setStepCalOverride(null);
                     }}
-                    style={{
-                      flex: 1, padding: '7px 10px', borderRadius: 8, fontSize: 12,
-                      border: '1px solid rgba(168,216,168,.3)', background: 'rgba(168,216,168,.06)',
-                      color: '#1A3A4A', fontFamily: 'inherit', outline: 'none',
-                    }}
+                    style={{ flex: 1, padding: '7px 10px', borderRadius: 8, fontSize: 12, border: '1px solid rgba(168,216,168,.3)', background: 'rgba(168,216,168,.06)', color: '#1A3A4A', fontFamily: 'inherit', outline: 'none' }}
                   />
                   <span style={{ fontSize: 10, color: '#7AAABB', flexShrink: 0 }}>걸음</span>
                 </div>
               </>
             )}
-          </div>
-
-          {/* iPhone 건강 앱 연동 안내 — 접기/펼치기 */}
-          <div style={{
-            background: 'rgba(255,255,255,.72)', borderRadius: 16, padding: '14px 15px',
-            border: '0.5px solid rgba(255,255,255,.95)', marginTop: 10, ...fadeUp(0.1),
-          }}>
-            <div onClick={() => setStepsGuideOpen(!stepsGuideOpen)} style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer',
-            }}>
-              <span style={{ fontSize: 13, fontWeight: 600, color: '#1A3A4A' }}>iPhone 걸음수 자동 연동</span>
-              <svg width="16" height="16" viewBox="0 0 16 16" style={{
-                transition: 'transform 0.25s ease',
-                transform: stepsGuideOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-              }}>
-                <path d="M4 6 L8 10 L12 6" fill="none" stroke="rgba(0,0,0,0.4)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-            {stepsGuideOpen && (
-              <div style={{ marginTop: 12 }}>
-                <div style={{ fontSize: 11, color: '#5A8AAA', lineHeight: 1.6, marginBottom: 12 }}>
-                  Apple 단축어를 설정하면 매일 자동으로 걸음수가 루아에 기록돼요.
+            {/* 걸음 소모 칼로리 */}
+            {stepCount > 0 && (
+              <div style={{ marginTop: 10, padding: '8px 10px', borderRadius: 10, background: 'rgba(34,197,94,.06)', border: '0.5px solid rgba(34,197,94,.15)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: 11, color: '#22C55E' }}>🔥 소모 칼로리</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <input type="number" inputMode="numeric"
+                    value={stepCalDisplay}
+                    onChange={e => {
+                      const v = parseInt(e.target.value, 10);
+                      if (!isNaN(v) && v >= 0) setStepCalOverride(v);
+                      else if (e.target.value === '') setStepCalOverride(0);
+                    }}
+                    style={{ width: 50, textAlign: 'right', fontSize: 13, fontWeight: 600, color: '#22C55E', border: 'none', background: 'transparent', outline: 'none', fontFamily: 'var(--font-display)' }}
+                  />
+                  <span style={{ fontSize: 11, color: '#22C55E' }}>kcal</span>
+                  {stepCalEdited && <span style={{ fontSize: 8, color: '#9ABBC8', marginLeft: 2 }}>직접 수정됨</span>}
                 </div>
-                <div style={{
-                  background: 'rgba(168,216,168,.08)', borderRadius: 12, padding: '12px 14px', marginBottom: 10,
-                }}>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: '#3A7A5A', marginBottom: 8 }}>설정 방법</div>
-                  <div style={{ fontSize: 10, color: '#5A8AAA', lineHeight: 1.8 }}>
-                    1. iPhone에서 <b>단축어</b> 앱 열기<br/>
-                    2. <b>자동화</b> 탭 → <b>새로운 자동화</b><br/>
-                    3. <b>시간</b> 선택 → 매일 밤 11시 (원하는 시간)<br/>
-                    4. 아래 단축어 추가:<br/>
-                    <span style={{ display: 'block', margin: '4px 0', padding: '6px 8px', borderRadius: 6, background: 'rgba(168,216,168,.12)', fontFamily: 'monospace', fontSize: 9, lineHeight: 1.5 }}>
-                      ① 건강 샘플 가져오기 → 걸음 수 → 오늘<br/>
-                      ② URL 열기 → luaskin.co?steps=<b>[걸음수]</b>
-                    </span>
-                    5. <b>실행 전 묻지 않기</b> 활성화 → 완료
-                  </div>
-                </div>
-                <button onClick={() => {
-                  const text = '단축어 앱 → 자동화 → 시간(매일) → 건강 샘플(걸음 수, 오늘) → URL 열기(luaskin.co?steps=[걸음수])';
-                  navigator.clipboard?.writeText(text).then(() => {
-                    alert('설정 방법이 클립보드에 복사되었어요!');
-                  }).catch(() => {
-                    alert(text);
-                  });
-                }} style={{
-                  width: '100%', padding: '10px 0', borderRadius: 10,
-                  border: '1px solid rgba(168,216,168,.4)', background: 'rgba(168,216,168,.1)',
-                  color: '#3A7A5A', fontSize: 11, fontWeight: 600,
-                  cursor: 'pointer', fontFamily: 'inherit',
-                }}>
-                  설정 방법 복사하기
-                </button>
               </div>
             )}
           </div>
+
+          {/* 운동 카드 */}
+          <div style={{ background: 'rgba(255,255,255,.72)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)', marginTop: 10, ...fadeUp(0.1) }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('activity') }} />
+                <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>운동</span>
+              </div>
+              {(() => {
+                const totalMin = Object.values(exerciseLog).reduce((s, m) => s + (m || 0), 0);
+                return <span style={{ fontSize: 11, color: totalMin > 0 ? '#5AAABB' : '#9ABBC8', fontWeight: 500 }}>{totalMin > 0 ? `총 ${totalMin}분` : '오늘 미기록'}</span>;
+              })()}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 5 }}>
+              {EXERCISES.map(ex => {
+                const hasLog = exerciseLog[ex.name] > 0;
+                return (
+                  <div key={ex.id} onClick={() => {
+                    if (!isToday) return;
+                    if (hasLog) {
+                      const next = { ...exerciseLog }; delete next[ex.name];
+                      setExerciseLog(next);
+                      const nextOv = { ...exCalOverrides }; delete nextOv[ex.name]; setExCalOverrides(nextOv);
+                    } else {
+                      setExerciseLog({ ...exerciseLog, [ex.name]: 30 });
+                    }
+                  }}
+                    style={{
+                      padding: '10px 4px', borderRadius: 10, textAlign: 'center',
+                      border: `1px solid ${hasLog ? 'rgba(100,180,220,.6)' : 'rgba(100,180,220,.15)'}`,
+                      background: hasLog ? 'rgba(100,180,220,.12)' : 'rgba(255,255,255,.5)',
+                      cursor: isToday ? 'pointer' : 'default', transition: 'all 0.15s ease',
+                    }}>
+                    <div style={{ fontSize: 18, marginBottom: 2 }}>{ex.icon}</div>
+                    <div style={{ fontSize: 10, fontWeight: hasLog ? 600 : 400, color: hasLog ? '#3A8AAA' : '#7AAABB' }}>{ex.name}</div>
+                    {hasLog && <div style={{ fontSize: 9, color: '#5AAABB', marginTop: 2 }}>{exerciseLog[ex.name]}분</div>}
+                  </div>
+                );
+              })}
+            </div>
+            {/* 선택된 운동 시간·칼로리 */}
+            {Object.keys(exerciseLog).length > 0 && isToday && (
+              <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {Object.entries(exerciseLog).map(([name, mins]) => {
+                  const ex = EXERCISES.find(e => e.name === name);
+                  const autoCal = ex ? calcExMET(ex.met, userWeight, mins) : 0;
+                  const displayCal = exCalOverrides[name] !== undefined ? exCalOverrides[name] : autoCal;
+                  const isEdited = exCalOverrides[name] !== undefined;
+                  return (
+                    <div key={name} style={{ padding: '8px 10px', borderRadius: 10, background: 'rgba(100,180,220,.06)', border: '0.5px solid rgba(100,180,220,.15)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                        <span style={{ fontSize: 14, flexShrink: 0 }}>{ex?.icon || '🏃'}</span>
+                        <span style={{ fontSize: 11, fontWeight: 500, color: '#1A3A4A', flex: 1 }}>{name}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                        {EX_DURATIONS.map(v => (
+                          <button key={v} onClick={() => {
+                            setExerciseLog({ ...exerciseLog, [name]: v });
+                            const nextOv = { ...exCalOverrides }; delete nextOv[name]; setExCalOverrides(nextOv);
+                          }}
+                            style={{
+                              flex: 1, padding: '4px 0', borderRadius: 6, fontSize: 9, fontWeight: mins === v ? 600 : 400,
+                              border: `1px solid ${mins === v ? 'rgba(100,180,220,.5)' : 'rgba(100,180,220,.15)'}`,
+                              background: mins === v ? 'rgba(100,180,220,.15)' : 'transparent',
+                              color: mins === v ? '#2A6A8A' : '#7AAABB',
+                              cursor: 'pointer', fontFamily: 'inherit',
+                            }}>{v}분</button>
+                        ))}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>
+                        <span style={{ fontSize: 10, color: '#22C55E' }}>🔥</span>
+                        <input type="number" inputMode="numeric" value={displayCal}
+                          onChange={e => {
+                            const v = parseInt(e.target.value, 10);
+                            if (!isNaN(v) && v >= 0) setExCalOverrides({ ...exCalOverrides, [name]: v });
+                            else if (e.target.value === '') setExCalOverrides({ ...exCalOverrides, [name]: 0 });
+                          }}
+                          style={{ width: 45, textAlign: 'right', fontSize: 12, fontWeight: 600, color: '#22C55E', border: 'none', background: 'transparent', outline: 'none', fontFamily: 'var(--font-display)' }}
+                        />
+                        <span style={{ fontSize: 10, color: '#22C55E' }}>kcal</span>
+                        {isEdited && <span style={{ fontSize: 8, color: '#9ABBC8', marginLeft: 2 }}>직접 수정됨</span>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* 오늘 총 소모 합계 */}
+          {(stepCount > 0 || Object.keys(exerciseLog).length > 0) && (
+            <div style={{ background: 'rgba(34,197,94,.08)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(34,197,94,.2)', marginTop: 10, ...fadeUp(0.15), display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#1A3A4A' }}>오늘 총 소모</span>
+              <span style={{ fontSize: 20, fontWeight: 600, color: '#22C55E', fontFamily: 'var(--font-display)' }}>{totalBurned} <span style={{ fontSize: 12 }}>kcal</span></span>
+            </div>
+          )}
+
         </div>
-      )}
+        );
+      })()}
 
       {/* Skin content */}
       {(foodTab === 'skin') && <>
