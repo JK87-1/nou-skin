@@ -802,7 +802,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
                   <div>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>총 변화</div>
                     <div style={{
-                      fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-display)',
+                      fontSize: 22, fontWeight: 600, fontFamily: 'var(--font-display)',
                       color: overallDiff >= 0 ? '#89cef5' : '#f0a050',
                     }}>{overallDiff > 0 ? '+' : ''}{overallDiff}점</div>
                   </div>
@@ -822,7 +822,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
                   <div>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>피부나이</div>
                     <div style={{
-                      fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-display)',
+                      fontSize: 22, fontWeight: 600, fontFamily: 'var(--font-display)',
                       color: skinAgeDiff <= 0 ? '#89cef5' : '#f0a050',
                     }}>{skinAgeDiff > 0 ? '+' : ''}{skinAgeDiff}세</div>
                   </div>
@@ -884,7 +884,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
                       }}>
                         {/* Date */}
                         <div style={{ textAlign: 'center', minWidth: 36 }}>
-                          <div style={{ fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', lineHeight: 1 }}>{dayNum}</div>
+                          <div style={{ fontSize: 22, fontWeight: 600, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', lineHeight: 1 }}>{dayNum}</div>
                           <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{monthLabel}</div>
                         </div>
 
@@ -940,7 +940,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
                           <div style={{
                             position: 'absolute', inset: 0,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-secondary)',
+                            fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-display)', color: 'var(--text-secondary)',
                           }}>{r.overallScore}</div>
                         </div>
                       </div>
@@ -1004,7 +1004,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
                         <div style={{
                           position: 'absolute', inset: 0,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 24, fontWeight: 800, fontFamily: 'var(--font-display)', color: 'var(--text-secondary)',
+                          fontSize: 24, fontWeight: 600, fontFamily: 'var(--font-display)', color: 'var(--text-secondary)',
                         }}>{firstRecord.overallScore}</div>
                       </div>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>시작</div>
@@ -1013,7 +1013,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
                     {/* Diff */}
                     <div style={{ textAlign: 'center' }}>
                       <div style={{
-                        fontSize: 26, fontWeight: 900, fontFamily: 'var(--font-display)',
+                        fontSize: 26, fontWeight: 600, fontFamily: 'var(--font-display)',
                         color: overallDiff >= 0 ? '#89cef5' : '#f0a050',
                       }}>{overallDiff > 0 ? '+' : ''}{overallDiff}</div>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>점 {overallDiff >= 0 ? '상승' : '변화'}</div>
@@ -1032,7 +1032,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
                         <div style={{
                           position: 'absolute', inset: 0,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 24, fontWeight: 800, fontFamily: 'var(--font-display)', color: 'var(--text-primary)',
+                          fontSize: 24, fontWeight: 600, fontFamily: 'var(--font-display)', color: 'var(--text-primary)',
                         }}>{lastRecord.overallScore}</div>
                       </div>
                       <div style={{ fontSize: 11, color: '#aed8f7', fontWeight: 600 }}>현재</div>
@@ -2047,7 +2047,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
             border: '1px solid var(--border-light)', padding: '16px 14px', textAlign: 'center',
           }}>
             <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>피부나이</div>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1 }}>
               <AnimatedNumber target={record.skinAge} duration={1000} />
               <span style={{ fontSize: 16, fontWeight: 600 }}> 세</span>
             </div>
@@ -2057,7 +2057,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
             border: '1px solid var(--border-light)', padding: '16px 14px', textAlign: 'center',
           }}>
             <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>종합 점수</div>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 800, lineHeight: 1 }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 600, lineHeight: 1 }}>
               <span style={{ background: grade.gradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
                 <AnimatedNumber target={record.overallScore} duration={1000} />
               </span>
@@ -2091,7 +2091,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
           {/* Skin type */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0', marginBottom: 4 }}>
             <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>피부 타입</span>
-            <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{record.skinType}</span>
+            <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{record.skinType}</span>
           </div>
           {/* Analysis mode */}
           {record.analysisMode && (
@@ -2116,7 +2116,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
                 <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>측정 신뢰도</span>
               </div>
               <span style={{
-                fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-display)',
+                fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-display)',
                 color: record.confidence >= 70 ? '#4ecb71' : record.confidence >= 50 ? '#d4900a' : '#f06050',
               }}>{record.confidence}%</span>
             </div>
@@ -2162,7 +2162,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
                 <LuaMiniIcon size={14} />
                 <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>컨디션 브리핑</span>
                 <div style={{ marginLeft: 'auto', padding: '4px 10px', borderRadius: 8, background: cGrade.bg, border: `1px solid ${cGrade.border}`, display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{ fontSize: 14, fontWeight: 800, color: cGrade.color, fontFamily: 'var(--font-display)' }}>{cGrade.letter}</span>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: cGrade.color, fontFamily: 'var(--font-display)' }}>{cGrade.letter}</span>
                   <span style={{ fontSize: 11, fontWeight: 600, color: cGrade.color }}>{cScore}점</span>
                 </div>
               </div>
@@ -2277,7 +2277,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
             textTransform: 'uppercase',
           }}>SKIN LEVEL</div>
           <div style={{
-            fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 900,
+            fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 600,
             background: 'var(--btn-primary-bg)',
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
@@ -2290,7 +2290,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
             padding: '3px 10px',
           }}>
             <span style={{
-              fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 800,
+              fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 600,
               color: '#fff',
             }}>{grade.letter}</span>
           </div>
@@ -2390,7 +2390,7 @@ function HistoryFoodDetailModal({ food, onClose, onDelete }) {
             { label: '단백질', value: food.protein, unit: 'g' },
           ].map(n => (
             <div key={n.label} style={{ textAlign: 'center', padding: '10px 4px', borderRadius: 12, background: 'var(--bg-card)' }}>
-              <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.value}<span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>{n.unit}</span></div>
+              <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.value}<span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>{n.unit}</span></div>
               <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{n.label}</div>
             </div>
           ))}
@@ -2402,7 +2402,7 @@ function HistoryFoodDetailModal({ food, onClose, onDelete }) {
             { label: '미네랄', value: food.mineral || 0, unit: '%' },
           ].map(n => (
             <div key={n.label} style={{ textAlign: 'center', padding: '10px 4px', borderRadius: 12, background: 'var(--bg-card)' }}>
-              <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.value}<span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>{n.unit}</span></div>
+              <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.value}<span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>{n.unit}</span></div>
               <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{n.label}</div>
             </div>
           ))}

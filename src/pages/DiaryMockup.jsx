@@ -90,7 +90,7 @@ function QuickSlider({ icon, label, min, max, step, def, unit, color }) {
         onChange={e => setVal(Number(e.target.value))}
         style={{ flex: 1, accentColor: color }}
       />
-      <span style={{ fontSize: 14, fontWeight: 700, color, fontFamily: 'var(--font-display)', width: 36, textAlign: "right" }}>
+      <span style={{ fontSize: 14, fontWeight: 600, color, fontFamily: 'var(--font-display)', width: 36, textAlign: "right" }}>
         {val}{unit}
       </span>
     </div>
@@ -113,7 +113,7 @@ function MockMetricBar({ label, value, unit = '점', icon, color, description })
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{label}</span>
-          <span style={{ fontSize: 15, fontWeight: 700, color, fontFamily: 'var(--font-display)' }}>{value}{unit}</span>
+          <span style={{ fontSize: 15, fontWeight: 600, color, fontFamily: 'var(--font-display)' }}>{value}{unit}</span>
         </div>
         <div style={{ height: 4, borderRadius: 2, background: 'var(--bar-track)', overflow: 'hidden' }}>
           <div style={{ width: `${value}%`, height: '100%', borderRadius: 2, background: color, transition: 'width 1s ease-out' }} />
@@ -274,7 +274,7 @@ export default function DiaryMockup() {
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                   boxShadow: 'none',
                 }}>
-                  <span style={{ fontSize: 24, fontWeight: 650, color: accentColor, lineHeight: 1, fontFamily: 'var(--font-display)' }}>33</span>
+                  <span style={{ fontSize: 24, fontWeight: 600, color: accentColor, lineHeight: 1, fontFamily: 'var(--font-display)' }}>33</span>
                   <span style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 500, marginTop: 2 }}>피부나이</span>
                   <span style={{ fontSize: 8, color: '#89cef5', fontWeight: 600, marginTop: 1 }}>측정값</span>
                 </div>
@@ -299,7 +299,7 @@ export default function DiaryMockup() {
                       strokeDasharray={157} strokeDashoffset={157 - (78 / 100) * 157}
                       strokeLinecap="round" />
                   </svg>
-                  <span style={{ fontSize: 24, fontWeight: 650, color: accentColor, lineHeight: 1, fontFamily: 'var(--font-display)', zIndex: 1 }}>78</span>
+                  <span style={{ fontSize: 24, fontWeight: 600, color: accentColor, lineHeight: 1, fontFamily: 'var(--font-display)', zIndex: 1 }}>78</span>
                   <span style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 500, marginTop: 1, zIndex: 1 }}>종합</span>
                   <span style={{ fontSize: 8, fontWeight: 700, color: '#4ecb71', zIndex: 1 }}>+3</span>
                 </div>
@@ -330,7 +330,7 @@ export default function DiaryMockup() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
                 <span style={{ fontSize: 14, fontWeight: 700, color: accentColor }}>오늘의 피부 컨디션</span>
                 <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 20, background: `${accentColor}26`, border: `1px solid ${accentColor}4d` }}>
-                  <span style={{ fontSize: 15, fontWeight: 800, color: accentColor, fontFamily: 'var(--font-display)' }}>A</span>
+                  <span style={{ fontSize: 15, fontWeight: 600, color: accentColor, fontFamily: 'var(--font-display)' }}>A</span>
                   <span style={{ fontSize: 12, fontWeight: 600, color: accentColor }}>78점</span>
                 </div>
               </div>
@@ -696,7 +696,7 @@ export default function DiaryMockup() {
                           </div>
                         </div>
                         {hasEnoughData ? (
-                          <span style={{ fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display)', color: c.dir === "+" ? '#89cef5' : '#f87171' }}>
+                          <span style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-display)', color: c.dir === "+" ? '#89cef5' : '#f87171' }}>
                             {c.dir}{Math.round(c.corr * 100)}%
                           </span>
                         ) : (

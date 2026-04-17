@@ -367,7 +367,7 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
             <input type="number" value={goalWeight}
               onChange={e => { const v = Number(e.target.value); if (v >= 30 && v <= 200) setGoalWeight(v); }}
               style={{
-                width: 100, textAlign: 'center', fontSize: 42, fontWeight: 800,
+                width: 100, textAlign: 'center', fontSize: 42, fontWeight: 600,
                 color: 'var(--accent-primary)', fontFamily: 'var(--font-display)',
                 border: 'none', background: 'transparent', outline: 'none',
               }}

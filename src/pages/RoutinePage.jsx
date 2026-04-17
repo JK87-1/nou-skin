@@ -559,7 +559,7 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, accent }) {
             <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
               <div style={{ flex: 1, borderRadius: 12, padding: '14px', textAlign: 'center', background: 'var(--item-bg)' }}>
                 <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>사용 기간</div>
-                <div style={{ fontSize: 20, fontWeight: 700, color: accent, fontFamily: 'var(--font-display)' }}>{days}일</div>
+                <div style={{ fontSize: 20, fontWeight: 600, color: accent, fontFamily: 'var(--font-display)' }}>{days}일</div>
               </div>
               <div style={{ flex: 1, borderRadius: 12, padding: '14px', textAlign: 'center', background: 'var(--item-bg)' }}>
                 <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>시작일</div>
@@ -1091,7 +1091,7 @@ export default function RoutinePage({ themeColors, onBack, initialMode }) {
                             border: 'var(--item-border)',
                           }}>
                             <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>{box.label}</div>
-                            <div style={{ fontSize: 22, fontWeight: 700, color: bi === 1 ? accent : ('var(--text-secondary)'), fontFamily: 'var(--font-display)' }}>{box.value}</div>
+                            <div style={{ fontSize: 22, fontWeight: 600, color: bi === 1 ? accent : ('var(--text-secondary)'), fontFamily: 'var(--font-display)' }}>{box.value}</div>
                           </div>
                         ))}
                       </div>

@@ -2642,7 +2642,7 @@ function SkinInsightsSection({ onMeasure }) {
               strokeLinecap="round" strokeDasharray={`${scoreDash} ${scoreCirc - scoreDash}`} transform="rotate(-90 31 31)" />}
           </svg>
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--accent-primary)', fontFamily: 'var(--font-display)', lineHeight: 1 }}>{latest.overallScore}</span>
+            <span style={{ fontSize: 20, fontWeight: 600, color: 'var(--accent-primary)', fontFamily: 'var(--font-display)', lineHeight: 1 }}>{latest.overallScore}</span>
             <span style={{ fontSize: 9, color: '#888' }}>점</span>
           </div>
         </div>
@@ -2673,7 +2673,7 @@ function SkinInsightsSection({ onMeasure }) {
                 background: `linear-gradient(135deg, ${m.grad[0]}, ${m.grad[1]})`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12,
               }}>{m.icon}</div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{val}</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{val}</div>
               <div style={{ fontSize: 8, color: '#888' }}>{m.label}</div>
               {change && Math.abs(change.diff) >= 1 ? (
                 <span style={{ fontSize: 9, fontWeight: 600, padding: '1px 5px', borderRadius: 6, background: change.improved ? '#E8F8F0' : '#FBEAF0', color: change.improved ? '#0F6E56' : '#993556' }}>

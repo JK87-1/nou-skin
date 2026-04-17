@@ -386,7 +386,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                    <span style={{ fontSize: 36, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{remaining}</span>
+                    <span style={{ fontSize: 36, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{remaining}</span>
                     <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>kcal 남음</span>
                   </div>
                   <div onClick={() => onTabChange?.('record')} style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -436,7 +436,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                 {latestW ? (
                   <>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                      <span style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{latestW.weight}</span>
+                      <span style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{latestW.weight}</span>
                       <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>kg</span>
                     </div>
                     {wDiff !== null && (
@@ -469,7 +469,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                   <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-muted)' }}>+</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                  <span style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{stepCount > 0 ? stepCount.toLocaleString() : '—'}</span>
+                  <span style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{stepCount > 0 ? stepCount.toLocaleString() : '—'}</span>
                   <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>걸음</span>
                 </div>
                 {/* 7일 바 차트 */}
@@ -490,7 +490,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
       {/* ===== 2. 컨디션 체크 카드 ===== */}
       <div style={{
-        margin: '0 18px', marginTop: 24, position: 'relative', zIndex: 1,
+        margin: '0 18px', marginTop: 10, position: 'relative', zIndex: 1,
         background: 'rgba(255,255,255,0.2)', borderRadius: 16, padding: '20px 14px',
         backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
         border: '1px solid rgba(255,255,255,0.3)',

@@ -51,7 +51,7 @@ export function ScoreRing({ score, size = 110, label = '종합점수' }) {
         />
       </svg>
       <div style={{ textAlign: 'center', zIndex: 1 }}>
-        <div style={{ fontSize: size * 0.26, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1 }}>
+        <div style={{ fontSize: size * 0.26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1 }}>
           <AnimatedNumber target={score} />
         </div>
         <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{label}</div>
@@ -83,7 +83,7 @@ export function MetricBar({ label, value, unit = '%', color, icon, description, 
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
         <span style={{ fontSize: 14, color: 'var(--text-secondary)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6 }}>{icon} {label}</span>
-        <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
+        <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
           <AnimatedNumber target={value} suffix={unit} />
           {onClick && <span style={{ fontSize: 10, color: 'var(--text-dim)', marginLeft: 5 }}>→</span>}
         </span>
@@ -145,7 +145,7 @@ export function DetailPage({ metricKey, value, onBack }) {
         <div style={{ position: 'relative', zIndex: 1 }}>
           <div onClick={onBack} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', WebkitTapHighlightColor: 'transparent', marginBottom: 20 }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg></div>
           <div style={{ fontSize: 40, marginBottom: 10 }}>{data.icon}</div>
-          <h1 style={{ fontSize: 26, fontWeight: 800, color: '#fff', fontFamily: 'var(--font-display)', marginBottom: 4 }}>
+          <h1 style={{ fontSize: 26, fontWeight: 600, color: '#fff', fontFamily: 'var(--font-display)', marginBottom: 4 }}>
             {data.title}
           </h1>
           <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)', letterSpacing: 1, marginBottom: 12 }}>
@@ -163,7 +163,7 @@ export function DetailPage({ metricKey, value, onBack }) {
               borderRadius: 16,
               padding: '8px 20px',
             }}>
-              <span style={{ fontSize: 32, fontWeight: 900, color: '#fff', fontFamily: 'var(--font-display)' }}>{value}</span>
+              <span style={{ fontSize: 32, fontWeight: 600, color: '#fff', fontFamily: 'var(--font-display)' }}>{value}</span>
               <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>{unitMap[metricKey]}</span>
               <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginLeft: 8 }}>나의 측정값</span>
             </div>
