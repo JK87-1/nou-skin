@@ -1331,11 +1331,15 @@ function CategorySettingsPage({ onClose, onSave }) {
   const [categories, setCategories] = useState(() => getCategories());
   const [dragging, setDragging] = useState(null);
   const [dragOver, setDragOver] = useState(null);
-  const [colorOpen, setColorOpen] = useState(null); // key of category with color picker open
+  const [dragOffsetY, setDragOffsetY] = useState(0);
+  const [colorOpen, setColorOpen] = useState(null);
   const [showAddSheet, setShowAddSheet] = useState(false);
   const [toast, setToast] = useState('');
   const touchStart = useRef(null);
   const itemRefs = useRef([]);
+  const dragStartY = useRef(0);
+  const draggingRef = useRef(null);
+  const dragOverRef = useRef(null);
 
   const enabledCount = categories.filter(c => c.enabled).length;
 
@@ -1377,31 +1381,62 @@ function CategorySettingsPage({ onClose, onSave }) {
     updateAndSave(next);
   };
 
-  // Touch drag handlers
-  const onTouchStart = (e, idx) => {
-    touchStart.current = { idx, y: e.touches[0].clientY };
-    setDragging(idx);
-  };
-  const onTouchMove = (e, idx) => {
-    if (dragging === null) return;
-    const y = e.touches[0].clientY;
+  // Drag handlers — 핸들에서만 발동, 터치 + 마우스 지원
+  const findOverIdx = (y) => {
     for (let i = 0; i < itemRefs.current.length; i++) {
-      const el = itemRefs.current[i];
-      if (!el) continue;
-      const rect = el.getBoundingClientRect();
-      if (y >= rect.top && y <= rect.bottom && i !== dragging) {
-        setDragOver(i);
-        return;
-      }
+      const ref = itemRefs.current[i];
+      if (!ref) continue;
+      const rect = ref.getBoundingClientRect();
+      if (y >= rect.top && y <= rect.bottom && i !== draggingRef.current) return i;
+    }
+    return null;
+  };
+
+  const startDrag = (idx, y) => {
+    dragStartY.current = y;
+    draggingRef.current = idx;
+    dragOverRef.current = null;
+    setDragging(idx);
+    setDragOver(null);
+    setDragOffsetY(0);
+  };
+
+  const moveDrag = (y) => {
+    if (draggingRef.current === null) return;
+    setDragOffsetY(y - dragStartY.current);
+    const over = findOverIdx(y);
+    if (over !== null) {
+      dragOverRef.current = over;
+      setDragOver(over);
     }
   };
-  const onTouchEnd = () => {
-    if (dragging !== null && dragOver !== null && dragging !== dragOver) {
-      moveItem(dragging, dragOver);
+
+  const endDrag = () => {
+    if (draggingRef.current !== null && dragOverRef.current !== null && draggingRef.current !== dragOverRef.current) {
+      moveItem(draggingRef.current, dragOverRef.current);
     }
+    draggingRef.current = null;
+    dragOverRef.current = null;
     setDragging(null);
     setDragOver(null);
-    touchStart.current = null;
+    setDragOffsetY(0);
+  };
+
+  const bindDragHandle = (el, idx) => {
+    if (!el) return;
+    // Touch
+    el.ontouchstart = (e) => { e.stopPropagation(); startDrag(idx, e.touches[0].clientY); };
+    el.ontouchmove = (e) => { e.preventDefault(); e.stopPropagation(); moveDrag(e.touches[0].clientY); };
+    el.ontouchend = (e) => { e.stopPropagation(); endDrag(); };
+    // Mouse
+    el.onmousedown = (e) => {
+      e.stopPropagation(); e.preventDefault();
+      startDrag(idx, e.clientY);
+      const onMove = (ev) => { ev.preventDefault(); moveDrag(ev.clientY); };
+      const onUp = () => { endDrag(); window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
+    };
   };
 
   return (
@@ -1446,28 +1481,42 @@ function CategorySettingsPage({ onClose, onSave }) {
                 <span style={{ fontSize: 13, fontWeight: 700, color: '#1A3A4A' }}>{label}</span>
                 <span style={{ fontSize: 10, color: '#9ABBC8' }}>{desc}</span>
               </div>
-              {groupCats.map(cat => {
+              {(() => {
+                // 드래그 중이면 미리보기 순서 계산
+                const reordered = [...groupCats];
+                const dragFromLocal = dragging !== null ? groupCats.findIndex(c => categories.findIndex(cc => cc.key === c.key) === dragging) : -1;
+                const dragToLocal = dragOver !== null ? groupCats.findIndex(c => categories.findIndex(cc => cc.key === c.key) === dragOver) : -1;
+                if (dragFromLocal >= 0 && dragToLocal >= 0 && dragFromLocal !== dragToLocal) {
+                  const [moved] = reordered.splice(dragFromLocal, 1);
+                  reordered.splice(dragToLocal, 0, moved);
+                }
+                return reordered.map(cat => {
                 const idx = categories.findIndex(c => c.key === cat.key);
+                const isDragged = dragging === idx;
                 return (
                   <div key={cat.key}>
                     <div
                       ref={el => itemRefs.current[idx] = el}
-                      onTouchStart={e => onTouchStart(e, idx)}
-                      onTouchMove={e => onTouchMove(e, idx)}
-                      onTouchEnd={onTouchEnd}
                       style={{
                         display: 'flex', alignItems: 'center', gap: 12,
                         padding: '11px 13px', marginBottom: colorOpen === cat.key ? 0 : 8,
-                        background: dragging === idx ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.75)',
+                        background: isDragged ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.75)',
                         borderRadius: colorOpen === cat.key ? '14px 14px 0 0' : 14,
-                        border: dragOver === idx ? '2px solid #60AADD' : '0.5px solid rgba(255,255,255,0.95)',
-                        boxShadow: dragging === idx ? '0 4px 16px rgba(0,0,0,0.1)' : '0 1px 4px rgba(0,0,0,0.03)',
-                        transition: 'all 0.2s ease',
-                        touchAction: 'none', userSelect: 'none',
+                        border: '0.5px solid rgba(255,255,255,0.95)',
+                        boxShadow: isDragged ? '0 8px 24px rgba(0,0,0,0.15)' : '0 1px 4px rgba(0,0,0,0.03)',
+                        transition: isDragged ? 'box-shadow 0.15s ease' : 'all 0.25s ease',
+                        touchAction: 'pan-x', userSelect: 'none',
                         opacity: cat.enabled ? 1 : 0.55,
+                        position: 'relative',
+                        zIndex: isDragged ? 100 : 1,
+                        transform: isDragged ? `translateY(${dragOffsetY}px) scale(1.03)` : 'none',
                       }}
                     >
-                      <span style={{ fontSize: 14, color: 'rgba(0,0,0,0.25)', cursor: 'grab', flexShrink: 0 }}>≡</span>
+                      <span
+                        ref={el => bindDragHandle(el, idx)}
+                        onClick={e => e.stopPropagation()}
+                        style={{ fontSize: 14, color: 'rgba(0,0,0,0.25)', cursor: 'grab', flexShrink: 0, touchAction: 'none', padding: '6px 4px' }}
+                      >≡</span>
                       <div
                         onClick={() => setColorOpen(colorOpen === cat.key ? null : cat.key)}
                         style={{
@@ -1517,7 +1566,8 @@ function CategorySettingsPage({ onClose, onSave }) {
                     )}
                   </div>
                 );
-              })}
+              });
+              })()}
             </div>
           );
         })}

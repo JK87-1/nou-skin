@@ -1251,24 +1251,27 @@ function RoutineManagement({ enabledCats, initialTab, onBack }) {
   const touchDragIdx = useRef(null);
   const itemRefs = useRef({});
 
+  const touchDragging = useRef(false);
+
   const handleTouchDragStart = (e, cat, idx) => {
     e.stopPropagation();
     touchStartY.current = e.touches[0].clientY;
     touchDragCat.current = cat;
     touchDragIdx.current = idx;
+    touchDragging.current = false;
     setDragCat(cat);
     setDragIdx(idx);
   };
 
-  const handleTouchDragMove = (e) => {
+  const handleTouchDragMove = useCallback((e) => {
     if (touchDragIdx.current === null) return;
-    e.preventDefault();
+    touchDragging.current = true;
     const touchY = e.touches[0].clientY;
     const cat = touchDragCat.current;
-    const { active } = getCatItems(cat);
-    // Find which item the touch is over
-    for (let i = 0; i < active.length; i++) {
-      const ref = itemRefs.current[`${cat}_${i}`];
+    const keys = Object.keys(itemRefs.current).filter(k => k.startsWith(`${cat}_`));
+    for (const key of keys) {
+      const i = parseInt(key.split('_').pop(), 10);
+      const ref = itemRefs.current[key];
       if (ref) {
         const rect = ref.getBoundingClientRect();
         if (touchY >= rect.top && touchY <= rect.bottom && i !== touchDragIdx.current) {
@@ -1277,14 +1280,15 @@ function RoutineManagement({ enabledCats, initialTab, onBack }) {
         }
       }
     }
-  };
+  }, []);
 
   const handleTouchDragEnd = () => {
-    if (touchDragIdx.current !== null && dragOverIdx !== null) {
+    if (touchDragIdx.current !== null && dragOverIdx !== null && touchDragging.current) {
       handleDrop(touchDragCat.current, dragOverIdx);
     }
     touchDragCat.current = null;
     touchDragIdx.current = null;
+    touchDragging.current = false;
     setDragIdx(null);
     setDragOverIdx(null);
     setDragCat(null);
@@ -1336,10 +1340,15 @@ function RoutineManagement({ enabledCats, initialTab, onBack }) {
         {/* 드래그 핸들 */}
         {isActive && (
           <span
-            onTouchStart={(e) => handleTouchDragStart(e, cat, idx)}
-            onTouchMove={handleTouchDragMove}
-            onTouchEnd={handleTouchDragEnd}
-            style={{ fontSize: 14, color: 'rgba(0,0,0,0.25)', cursor: 'grab', flexShrink: 0, userSelect: 'none', touchAction: 'none', padding: '4px 2px' }}
+            ref={el => {
+              if (el) {
+                el.ontouchstart = (e) => { e.stopPropagation(); handleTouchDragStart(e, cat, idx); };
+                el.ontouchmove = (e) => { e.preventDefault(); e.stopPropagation(); handleTouchDragMove(e); };
+                el.ontouchend = (e) => { e.stopPropagation(); handleTouchDragEnd(); };
+              }
+            }}
+            onClick={(e) => e.stopPropagation()}
+            style={{ fontSize: 14, color: 'rgba(0,0,0,0.25)', cursor: 'grab', flexShrink: 0, userSelect: 'none', touchAction: 'none', padding: '8px 6px' }}
           >≡</span>
         )}
 

@@ -347,9 +347,16 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         const curWeight = getLatestWeight()?.weight || 55;
         const todayKey_ = new Date().toISOString().slice(0, 10);
         let todaySteps = 0;
-        try { const v2_ = JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); todaySteps = v2_[todayKey_]?.steps || 0; } catch {}
+        let todayExerciseLog = {};
+        try { const v2_ = JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); todaySteps = v2_[todayKey_]?.steps || 0; todayExerciseLog = v2_[todayKey_]?.exercise?.log || {}; } catch {}
         const burnedFromSteps = Math.round(todaySteps * 0.0005 * curWeight);
-        const netCal = eaten - burnedFromSteps;
+        const EX_MET = { '걷기': 3.5, '달리기': 8.0, '사이클': 6.8, '수영': 7.0, '요가': 3.0, '근력': 5.0 };
+        const burnedFromExercise = Object.entries(todayExerciseLog).reduce((sum, [name, mins]) => {
+          const met = EX_MET[name] || 4.0;
+          return sum + Math.round(met * curWeight * (mins / 60));
+        }, 0);
+        const totalBurned = burnedFromSteps + burnedFromExercise;
+        const netCal = eaten - totalBurned;
         const remaining = Math.max(0, fullGoal.kcal - netCal);
         const pct = fullGoal.kcal > 0 ? Math.min(netCal / fullGoal.kcal, 1) : 0;
         const circR = 32, circC = 2 * Math.PI * circR, circDash = circC * Math.max(pct, 0);
@@ -434,9 +441,10 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                   <span style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{stepCount > 0 ? stepCount.toLocaleString() : '—'}</span>
                   <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>걸음</span>
                 </div>
-                {stepCount > 0 && (
-                  <div style={{ fontSize: 11, color: '#22C55E', marginTop: 2 }}>
-                    🔥 {Math.round(stepCount * 0.0005 * curWeight)}kcal 소모
+                {(burnedFromSteps > 0 || burnedFromExercise > 0) && (
+                  <div style={{ marginTop: 4, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    {burnedFromSteps > 0 && <div style={{ fontSize: 10, color: '#22C55E' }}>🚶 걸음 {burnedFromSteps}kcal</div>}
+                    {burnedFromExercise > 0 && <div style={{ fontSize: 10, color: '#22C55E' }}>💪 운동 {burnedFromExercise}kcal</div>}
                   </div>
                 )}
                 {/* 7일 바 차트 */}
@@ -481,7 +489,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginTop: 14, padding: '10px 0', borderTop: '1px solid rgba(0,0,0,0.04)' }}>
                 {[
                   { label: '섭취', value: eaten, color: 'var(--text-primary)' },
-                  { label: '걸음소모', value: burnedFromSteps, color: '#22C55E' },
+                  { label: '총 소모', value: totalBurned, color: '#22C55E' },
                   { label: '순 칼로리', value: netCal, color: netCal > fullGoal.kcal ? '#E05050' : '#5AAABB' },
                 ].map(item => (
                   <div key={item.label} style={{ textAlign: 'center' }}>
