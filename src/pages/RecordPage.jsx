@@ -159,7 +159,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
   const isToday = selectedDate === todayStr;
   const [foods, setFoods] = useState(() => getFoodRecords(selectedDate));
   const [nutrition, setNutrition] = useState(() => getNutritionForDate(selectedDate));
-  const goal = isToday ? getTimeAdjustedGoal() : { ...getFoodGoal(), _ratio: 1, _mealLabel: '하루' };
+  const goal = isToday ? getTimeAdjustedGoal() : { ...getFoodGoal(selectedDate), _ratio: 1, _mealLabel: '하루' };
   const [showAdd, setShowAdd] = useState(false);
   const [addMeal, setAddMeal] = useState(null);
   const [detailFood, setDetailFood] = useState(null);
@@ -479,6 +479,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
               {totalKcal > 0 && (
                 <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span style={{ fontSize: 11, fontWeight: 500, color: '#1A3A4A' }}>{totalKcal.toLocaleString()} kcal</span>
+                  {goal.kcal > 0 && <span style={{ fontSize: 10, fontWeight: 600, color: totalKcal / goal.kcal > 1 ? '#E05050' : '#5AAABB' }}>{Math.round((totalKcal / goal.kcal) * 100)}%</span>}
                   {nutrition.protein > 0 && (
                     <span style={{ fontSize: 9, padding: '2px 7px', borderRadius: 99, background: 'rgba(100,180,220,.12)', color: '#4A8AAA' }}>단백질 {Math.round(nutrition.protein)}g</span>
                   )}

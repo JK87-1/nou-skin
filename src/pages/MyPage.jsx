@@ -1262,17 +1262,35 @@ function GoalSettingsPage({ onClose }) {
           <>
             <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 12 }}>현재 설정</div>
             <div style={{ background: 'var(--bg-card, #fff)', borderRadius: 16, padding: '16px 20px', marginBottom: 12 }}>
-              {[
-                { label: '목표', value: profile.dietObjective === 'lose' ? '체중 감량' : profile.dietObjective === 'gain' ? '체중 증량' : '체중 유지' },
-                { label: '목표 체중', value: `${profile.goalWeight}kg` },
-                { label: '목표 칼로리', value: `${profile.dietTargetCal}kcal` },
-                { label: 'TDEE', value: `${profile.dietTDEE}kcal` },
-              ].map((item, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: i < 3 ? '1px solid rgba(0,0,0,0.04)' : 'none' }}>
-                  <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{item.label}</span>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{item.value}</span>
-                </div>
-              ))}
+              {(() => {
+                const allDays = ['월', '화', '수', '목', '금', '토', '일'];
+                const highCalDays = profile.dietHighCalDays || [];
+                const highCal = highCalDays.length > 0 ? Math.round(profile.dietTargetCal * 1.15) : null;
+                const lowCal = highCal ? Math.round((profile.dietTargetCal * 7 - highCal * highCalDays.length) / (7 - highCalDays.length)) : null;
+                const lowDays = allDays.filter(d => !highCalDays.includes(d));
+                const formatDays = days => days.join('·');
+                const items = [
+                  { label: '목표', value: profile.dietObjective === 'lose' ? '체중 감량' : profile.dietObjective === 'gain' ? '체중 증량' : '체중 유지' },
+                  { label: '목표 체중', value: `${profile.goalWeight}kg` },
+                  ...(highCal
+                    ? [
+                        { label: <>목표 칼로리 <span style={{ fontSize: 10, color: '#bbb' }}>({formatDays(lowDays)})</span></>, value: `${lowCal}kcal` },
+                        { label: <>목표 칼로리 <span style={{ fontSize: 10, color: '#bbb' }}>({formatDays(highCalDays)})</span></>, value: `${highCal}kcal` },
+                      ]
+                    : [{ label: '목표 칼로리', value: `${profile.dietTargetCal}kcal` }]
+                  ),
+                  { label: 'TDEE', value: `${profile.dietTDEE}kcal`, sub: '운동 포함, 하루에 소모하는 총 칼로리' },
+                ];
+                return items.map((item, i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: item.sub ? 'flex-start' : 'center', padding: '8px 0', borderBottom: i < items.length - 1 ? '1px solid rgba(0,0,0,0.04)' : 'none' }}>
+                    <div>
+                      <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{item.label}</span>
+                      {item.sub && <div style={{ fontSize: 10, color: '#bbb', marginTop: 2 }}>{item.sub}</div>}
+                    </div>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{item.value}</span>
+                  </div>
+                ));
+              })()}
             </div>
             <div style={{ background: 'var(--bg-card, #fff)', borderRadius: 16, padding: '16px 20px' }}>
               <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 10 }}>식단 유형</div>

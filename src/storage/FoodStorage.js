@@ -59,9 +59,30 @@ function calcGoalByWeight(kg) {
   };
 }
 
-export function getFoodGoal() {
+export function getFoodGoal(dateStr) {
   try {
     const profile = JSON.parse(localStorage.getItem('nou_profile') || '{}');
+    // 다이어트 프로그램 설정이 있으면 요일별 목표칼로리 사용
+    if (profile.dietOnboardingDone && profile.dietTargetCal) {
+      const highCalDays = profile.dietHighCalDays || [];
+      const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+      const d = dateStr ? new Date(dateStr) : new Date();
+      const todayDay = dayNames[d.getDay()];
+      let todayCal = profile.dietTargetCal;
+      if (highCalDays.length > 0) {
+        const highCal = Math.round(profile.dietTargetCal * 1.15);
+        const lowCal = Math.round((profile.dietTargetCal * 7 - highCal * highCalDays.length) / (7 - highCalDays.length));
+        todayCal = highCalDays.includes(todayDay) ? highCal : lowCal;
+      }
+      const goalWeight = profile.goalWeight || profile.currentWeight || 55;
+      return {
+        kcal: todayCal,
+        carb: Math.round((todayCal * 0.5) / 4),
+        protein: Math.round(goalWeight * 1.5),
+        fat: Math.round((todayCal * 0.25) / 9),
+        water: 2.0, vitamin: 100, mineral: 100, fiber: 25, calcium: 800, iron: 14, sugar: 25,
+      };
+    }
     const tw = Number(profile.targetWeight);
     if (tw > 0) return calcGoalByWeight(tw);
   } catch {}
