@@ -5,7 +5,7 @@ import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, GENDER_OPTIONS } fr
 import { getTodayNutrition, getTodayFoods, getFoodGoal } from '../storage/FoodStorage';
 import { getWeatherData } from '../storage/WeatherStorage';
 import { getTodayProgress } from '../storage/RoutineCheckStorage';
-import { getLatestWeight, getBodyRecords } from '../storage/BodyStorage';
+import { getLatestWeight, getBodyRecords, saveBodyRecord } from '../storage/BodyStorage';
 import {
   getTodayChecks, getLatestCheck, saveConditionCheck,
   shouldResetCheck, getMinutesSinceLastCheck,
@@ -168,6 +168,8 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [showSettings, setShowSettings] = useState(false);
   const [showAccountPage, setShowAccountPage] = useState(false);
   const [showWeather, setShowWeather] = useState(false);
+  const [showWeightModal, setShowWeightModal] = useState(false);
+  const [weightRefreshKey, setWeightRefreshKey] = useState(0);
   const [userProfile, setUserProfile] = useState(getProfile);
 
   // Condition check state
@@ -400,7 +402,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               <div onClick={() => onTabChange?.('record')} style={{ ...cardStyle, flex: 1, cursor: 'pointer', padding: '16px 14px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                   <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>체중</span>
-                  <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-muted)' }}>+</div>
+                  <div onClick={(e) => { e.stopPropagation(); setShowWeightModal(true); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-muted)' }}>+</div>
                 </div>
                 {latestW ? (
                   <>
@@ -751,6 +753,14 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           onClose={() => setShowAccountPage(false)}
         />
       )}
+
+      {showWeightModal && (
+        <AddWeightModal
+          latest={getLatestWeight()}
+          onSave={(w) => { saveBodyRecord(w); setShowWeightModal(false); setWeightRefreshKey(k => k + 1); }}
+          onClose={() => setShowWeightModal(false)}
+        />
+      )}
     </div>
   );
 
@@ -763,6 +773,50 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   }
 }
 
+function AddWeightModal({ onSave, onClose, latest }) {
+  const [weight, setWeight] = useState(latest ? String(latest.weight) : '');
+  return (
+    <div onClick={onClose} style={{
+      position: 'fixed', inset: 0, zIndex: 1100,
+      background: 'rgba(0,0,0,0.5)',
+      display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
+        padding: '24px 24px 40px', width: '100%', maxWidth: 420,
+      }}>
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
+        <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20, textAlign: 'center' }}>오늘 몸무게</div>
+        <input
+          value={weight} onChange={e => setWeight(e.target.value)}
+          placeholder="0.0" type="number" step="0.1"
+          style={{
+            width: '100%', padding: '14px', borderRadius: 12, border: 'none',
+            background: 'var(--bg-input, #F2F3F5)', fontSize: 20, fontWeight: 600,
+            color: 'var(--text-primary)', fontFamily: 'var(--font-display)',
+            textAlign: 'center', outline: 'none',
+          }}
+          autoFocus
+        />
+        <div style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>kg</div>
+        <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
+          <button onClick={onClose} style={{
+            flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
+            border: 'none', background: 'var(--bg-input, #F2F3F5)',
+            color: 'var(--text-muted)', fontSize: 14, fontWeight: 600,
+            cursor: 'pointer', fontFamily: 'inherit',
+          }}>취소</button>
+          <button onClick={() => { if (weight) onSave(Number(weight)); }} style={{
+            flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
+            border: 'none', background: 'var(--accent-primary)',
+            color: '#fff', fontSize: 14, fontWeight: 700,
+            cursor: 'pointer', fontFamily: 'inherit',
+          }}>저장</button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ===== Account Page =====
 function AccountPage({ profile, onUpdate, onClose }) {
