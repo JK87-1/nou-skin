@@ -7,13 +7,14 @@ const ITEMS_KEY = 'lua_routine_items';
 const CHECKS_KEY = 'lua_routine_checks';
 
 // 카테고리 key → 한글 라벨 매핑
-export const CAT_LABEL = { skin: '피부', food: '식단', body: '몸' };
+export const CAT_LABEL = { skin: '피부', food: '식단', body: '바디', mood: '기분' };
 
 // 카테고리 컬러
 export const CAT_COLOR = {
   식단:   { bg: 'rgba(255,210,80,.2)',   text: '#9A7000',  icon: '🟡' },
-  몸:     { bg: 'rgba(100,200,220,.2)',  text: '#2A7A9A',  icon: '🔵' },
+  바디:   { bg: 'rgba(100,200,220,.2)',  text: '#2A7A9A',  icon: '🔵' },
   피부:   { bg: 'rgba(248,168,192,.2)',  text: '#C05080',  icon: '🩷' },
+  기분:   { bg: 'rgba(168,200,240,.2)',  text: '#4070B0',  icon: '💙' },
 };
 
 export function getRoutineItems(category) {

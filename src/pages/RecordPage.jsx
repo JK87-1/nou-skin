@@ -1473,7 +1473,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
       {(foodTab === 'shape') && (
         <div style={{ padding: '60px 24px', textAlign: 'center', ...fadeUp(0.05) }}>
           <div style={{ fontSize: 28, marginBottom: 12 }}>💪</div>
-          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>몸 기록</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>바디 기록</div>
           <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>곧 출시 예정이에요</div>
         </div>
       )}
@@ -2708,7 +2708,7 @@ function BodyInsightsSection() {
   if (!latest) {
     return (
       <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
-        <div style={{ fontSize: 14, fontWeight: 600 }}>아직 몸 기록이 없어요</div>
+        <div style={{ fontSize: 14, fontWeight: 600 }}>아직 바디 기록이 없어요</div>
         <div style={{ fontSize: 12, marginTop: 6, marginBottom: 16 }}>체중을 기록하면 변화를 추적할 수 있어요</div>
         <button onClick={() => setShowAddWeight(true)} style={{
           padding: '12px 28px', borderRadius: 14, border: 'none',
