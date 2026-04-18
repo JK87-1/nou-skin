@@ -7,6 +7,8 @@ export function isOnboardingDone() {
   return localStorage.getItem(ONBOARDING_KEY) === 'true';
 }
 
+const SECTIONS = ['환영', '기본 정보', '관심사', '완료'];
+
 const INTERESTS = [
   { icon: '⚡', label: '에너지·컨디션' },
   { icon: '✨', label: '피부 관리' },
@@ -27,34 +29,14 @@ function calcBMR(gender, weight, height, age) {
   return Math.round(10 * weight + 6.25 * height - 5 * age + 5);
 }
 
-function StepDots({ current, total }) {
-  return (
-    <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 24 }}>
-      {Array.from({ length: total }, (_, i) => (
-        <div key={i} style={{
-          width: i === current ? 18 : 6, height: 6,
-          borderRadius: i === current ? 4 : 3,
-          background: i === current ? '#1a5c3a' : 'rgba(180,210,180,0.5)',
-          transition: 'all 0.3s ease',
-        }} />
-      ))}
-    </div>
-  );
-}
-
 export default function OnboardingPage({ onComplete, onGoSettings }) {
   const [step, setStep] = useState(0);
 
-  // Step 1
   const [name, setName] = useState('');
-
-  // Step 2
   const [gender, setGender] = useState('');
   const [birth, setBirth] = useState('');
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
-
-  // Step 3
   const [interests, setInterests] = useState([]);
 
   const age = calcAge(birth);
@@ -90,300 +72,285 @@ export default function OnboardingPage({ onComplete, onGoSettings }) {
     setInterests(prev => prev.includes(label) ? prev.filter(x => x !== label) : [...prev, label]);
   };
 
-  const cardStyle = {
-    background: 'transparent',
-    border: 'none',
-    padding: '20px 16px',
-    maxWidth: 360,
-    minHeight: 520,
-    width: '100%',
-    margin: '0 auto',
-    display: 'flex',
-    flexDirection: 'column',
-    position: 'relative',
-  };
-
-  const inputStyle = {
-    width: '100%',
-    background: 'rgba(255,255,255,0.6)',
-    border: '0.5px solid rgba(180,210,180,0.6)',
-    borderRadius: 12,
-    padding: '12px 14px',
-    fontSize: 15,
-    color: '#2a3a2a',
-    outline: 'none',
-    fontFamily: 'inherit',
-    boxSizing: 'border-box',
-  };
-
-  const mainBtnStyle = (enabled) => ({
-    width: '100%',
-    background: enabled ? 'rgba(26,92,58,0.85)' : 'rgba(26,92,58,0.3)',
-    border: 'none',
-    borderRadius: 14,
-    padding: 14,
-    fontSize: 15,
-    fontWeight: 500,
-    color: '#ffffff',
-    cursor: enabled ? 'pointer' : 'default',
-    fontFamily: 'inherit',
-    opacity: enabled ? 1 : 0.5,
-  });
-
   const next = () => { if (canNext[step]) setStep(s => s + 1); };
   const prev = () => { if (step > 0) setStep(s => s - 1); };
 
+  const selectStyle = (isSelected) => ({
+    padding: '16px 20px', borderRadius: 16, cursor: 'pointer',
+    background: isSelected ? 'rgba(137,206,245,0.1)' : 'var(--bg-card, #fff)',
+    border: isSelected ? '2px solid var(--accent-primary)' : '2px solid transparent',
+    transition: 'all 0.15s ease', fontFamily: 'inherit',
+  });
+
+  const inputStyle = {
+    width: '100%',
+    padding: '14px 16px', borderRadius: 14, border: '2px solid transparent',
+    background: 'var(--bg-card, #fff)', fontSize: 15, color: 'var(--text-primary)',
+    outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
+  };
+
+  const renderStep = () => {
+    if (step === 0) return (
+      <div>
+        <div style={{ textAlign: 'center', marginTop: 40, marginBottom: 32 }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>🌿</div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8 }}>안녕하세요!</div>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6 }}>나만의 웰니스 루틴을 함께 만들어가요</div>
+        </div>
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>이름 또는 닉네임</div>
+          <input
+            value={name}
+            onChange={e => setName(e.target.value)}
+            placeholder="이름을 입력해주세요"
+            style={inputStyle}
+            autoFocus
+          />
+        </div>
+        <div style={{
+          padding: '14px 16px', borderRadius: 14,
+          background: 'rgba(137,206,245,0.08)', border: '1px solid rgba(137,206,245,0.15)',
+          fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6, marginTop: 16,
+        }}>
+          이름으로 맞춤 인사이트를 전달해드릴게요 😊
+        </div>
+      </div>
+    );
+
+    if (step === 1) return (
+      <div>
+        <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8 }}>기본 정보</div>
+        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>맞춤 분석에 사용돼요</div>
+
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>신체 기준</div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            {['여성', '남성'].map(g => (
+              <div key={g} onClick={() => setGender(g)} style={{
+                ...selectStyle(gender === g),
+                flex: 1, textAlign: 'center', padding: '14px 0',
+              }}>
+                <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{g}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6, opacity: 0.7 }}>
+            성 정체성과 다른 경우 본인에게 맞는 신체 기준을 선택해주세요
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>생년월일</div>
+          <input
+            value={birth}
+            onChange={e => setBirth(e.target.value)}
+            placeholder="예: 1995.03.12"
+            style={inputStyle}
+          />
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>키</div>
+            <div style={{ position: 'relative' }}>
+              <input
+                value={height}
+                onChange={e => setHeight(e.target.value)}
+                type="number" placeholder="165"
+                style={{ ...inputStyle, paddingRight: 40 }}
+              />
+              <span style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', fontSize: 13, color: 'var(--text-muted)' }}>cm</span>
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>몸무게</div>
+            <div style={{ position: 'relative' }}>
+              <input
+                value={weight}
+                onChange={e => setWeight(e.target.value)}
+                type="number" placeholder="55"
+                style={{ ...inputStyle, paddingRight: 40 }}
+              />
+              <span style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', fontSize: 13, color: 'var(--text-muted)' }}>kg</span>
+            </div>
+          </div>
+        </div>
+
+        <div style={{
+          padding: '14px 16px', borderRadius: 14,
+          background: 'rgba(137,206,245,0.08)', border: '1px solid rgba(137,206,245,0.15)',
+          fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6,
+        }}>
+          개인정보는 기기에만 저장되며 외부로 전송되지 않아요
+        </div>
+
+        {bmr > 0 && (
+          <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+            <div style={{
+              flex: 1, ...selectStyle(true), textAlign: 'center', padding: '12px 0',
+              background: 'rgba(137,206,245,0.1)', border: '2px solid var(--accent-primary)',
+            }}>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>BMR</div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{bmr.toLocaleString()}</div>
+            </div>
+            <div style={{
+              flex: 1, ...selectStyle(true), textAlign: 'center', padding: '12px 0',
+              background: 'rgba(137,206,245,0.1)', border: '2px solid var(--accent-primary)',
+            }}>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>TDEE</div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{tdee.toLocaleString()}</div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+
+    if (step === 2) return (
+      <div>
+        <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8 }}>관심사 선택</div>
+        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>중복 선택 가능해요</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          {INTERESTS.map(item => {
+            const active = interests.includes(item.label);
+            return (
+              <div key={item.label} onClick={() => toggleInterest(item.label)} style={{
+                ...selectStyle(active),
+                textAlign: 'center', padding: '20px 8px',
+              }}>
+                <div style={{ fontSize: 32, marginBottom: 8 }}>{item.icon}</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{item.label}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+
+    if (step === 3) return (
+      <div>
+        <div style={{ textAlign: 'center', marginTop: 20, marginBottom: 24 }}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>🌱</div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8 }}>준비 완료!</div>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.8 }}>
+            {name.trim()}님의 맞춤 웰니스 루틴을 시작할게요
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {interests.map(label => {
+            const item = INTERESTS.find(i => i.label === label);
+            return (
+              <div key={label} style={{
+                ...selectStyle(true), padding: '12px 16px',
+                display: 'flex', alignItems: 'center', gap: 10,
+              }}>
+                <span style={{ fontSize: 18 }}>{item?.icon}</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{label}</span>
+              </div>
+            );
+          })}
+          {tdee > 0 && (
+            <div style={{
+              ...selectStyle(true), padding: '12px 16px',
+              display: 'flex', alignItems: 'center', gap: 10,
+            }}>
+              <span style={{ fontSize: 18 }}>📊</span>
+              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>TDEE {tdee.toLocaleString()} kcal 계산 완료</span>
+            </div>
+          )}
+        </div>
+
+        <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)', margin: '20px 0' }} />
+
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10 }}>나중에 설정에서 추가할 수 있어요</div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {[
+            { icon: '⚖️', text: '다이어트 프로그램 · 목표 몸무게' },
+            { icon: '😴', text: '수면 목표 · 활동 수준 세부 설정' },
+            { icon: '💊', text: '영양제 루틴 · 알림 시간 설정' },
+          ].map(item => (
+            <div key={item.text} style={{
+              padding: '12px 16px', borderRadius: 16,
+              background: 'var(--bg-card, #fff)',
+              display: 'flex', alignItems: 'center', gap: 10,
+            }}>
+              <span style={{ fontSize: 16 }}>{item.icon}</span>
+              <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{item.text}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div style={{
-      minHeight: '100dvh',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: '24px 18px',
-      background: 'transparent',
+      position: 'fixed', inset: 0, zIndex: 2003,
+      background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
+      display: 'flex', flexDirection: 'column',
     }}>
-      <div style={cardStyle}>
-        <StepDots current={step} total={4} />
-
-        {step > 0 && step < 4 && (
-          <div onClick={prev} style={{ position: 'absolute', top: 20, left: 20, fontSize: 13, color: 'rgba(60,80,60,0.55)', cursor: 'pointer' }}>← 이전</div>
-        )}
-
-        {/* Step 1: Welcome */}
-        {step === 0 && (
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <div style={{ textAlign: 'center', marginBottom: 24, marginTop: 32 }}>
-              <div style={{ fontSize: 36, marginBottom: 12 }}>🌿</div>
-              <div style={{ fontSize: 20, fontWeight: 500, color: '#2a3a2a', marginBottom: 8 }}>안녕하세요!</div>
-              <div style={{ fontSize: 13, color: 'rgba(60,80,60,0.6)', lineHeight: 1.6 }}>나만의 웰니스 루틴을 함께 만들어가요</div>
-            </div>
-
-            <div style={{ marginBottom: 8 }}>
-              <div style={{ fontSize: 11, color: 'rgba(60,80,60,0.55)', marginBottom: 6 }}>이름 또는 닉네임</div>
-              <input
-                value={name}
-                onChange={e => setName(e.target.value)}
-                placeholder="이름을 입력해주세요"
-                style={inputStyle}
-                autoFocus
-              />
-            </div>
-
-            <div style={{
-              background: 'rgba(180,230,200,0.25)', borderRadius: 12, padding: 12,
-              fontSize: 12, color: '#1a5c3a', lineHeight: 1.6, marginTop: 12,
-            }}>
-              이름으로 맞춤 인사이트를 전달해드릴게요 😊
-            </div>
-
-            <div style={{ flex: 1 }} />
-            <button onClick={next} style={mainBtnStyle(canNext[0])} disabled={!canNext[0]}>다음 →</button>
+      {/* Header */}
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+        {step > 0 && (
+          <div onClick={prev} style={{
+            width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1,
+          }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
           </div>
         )}
+        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>시작하기</span>
+      </div>
 
-        {/* Step 2: Basic Info */}
-        {step === 1 && (
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 16, fontWeight: 500, color: '#2a3a2a', marginBottom: 4 }}>기본 정보</div>
-              <div style={{ fontSize: 12, color: 'rgba(60,80,60,0.55)' }}>맞춤 분석에 사용돼요</div>
-            </div>
+      {/* Progress bar */}
+      <div style={{ padding: '16px 24px 0' }}>
+        <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
+          {SECTIONS.map((s, i) => (
+            <div key={s} style={{ flex: 1, height: 3, borderRadius: 2, background: i <= step ? 'var(--accent-primary)' : 'rgba(0,0,0,0.08)', transition: 'background 0.3s' }} />
+          ))}
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          {SECTIONS.map((s, i) => (
+            <span key={s} style={{ fontSize: 10, fontWeight: i === step ? 700 : 400, color: i === step ? 'var(--accent-primary)' : 'var(--text-muted)' }}>{s}</span>
+          ))}
+        </div>
+      </div>
 
-            {/* Gender */}
-            <div style={{ marginBottom: 14 }}>
-              <div style={{ fontSize: 11, color: 'rgba(60,80,60,0.55)', marginBottom: 6 }}>신체 기준</div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {['여성', '남성'].map(g => (
-                  <button key={g} onClick={() => setGender(g)} style={{
-                    flex: 1, padding: '10px 0', borderRadius: 12,
-                    background: gender === g ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.5)',
-                    border: gender === g ? '0.5px solid #4db87a' : '0.5px solid rgba(180,210,180,0.4)',
-                    fontSize: 14, fontWeight: gender === g ? 500 : 400,
-                    color: gender === g ? '#1a5c3a' : '#2a3a2a',
-                    cursor: 'pointer', fontFamily: 'inherit',
-                  }}>{g}</button>
-                ))}
-              </div>
-              <div style={{ fontSize: 11, color: 'rgba(60,80,60,0.45)', marginTop: 4 }}>
-                성 정체성과 다른 경우 본인에게 맞는 신체 기준을 선택해주세요
-              </div>
-            </div>
+      {/* Content */}
+      <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '24px 24px 120px' }}>
+        {renderStep()}
+      </div>
 
-            {/* Birth */}
-            <div style={{ marginBottom: 14 }}>
-              <div style={{ fontSize: 11, color: 'rgba(60,80,60,0.55)', marginBottom: 6 }}>생년월일</div>
-              <input
-                value={birth}
-                onChange={e => setBirth(e.target.value)}
-                placeholder="예: 1995.03.12"
-                style={inputStyle}
-              />
-            </div>
-
-            {/* Height & Weight */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
-              <div>
-                <div style={{ fontSize: 11, color: 'rgba(60,80,60,0.55)', marginBottom: 6 }}>키</div>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    value={height}
-                    onChange={e => setHeight(e.target.value)}
-                    type="number" placeholder="165"
-                    style={{ ...inputStyle, paddingRight: 36 }}
-                  />
-                  <span style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 12, color: 'rgba(60,80,60,0.55)' }}>cm</span>
-                </div>
-              </div>
-              <div>
-                <div style={{ fontSize: 11, color: 'rgba(60,80,60,0.55)', marginBottom: 6 }}>몸무게</div>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    value={weight}
-                    onChange={e => setWeight(e.target.value)}
-                    type="number" placeholder="55"
-                    style={{ ...inputStyle, paddingRight: 36 }}
-                  />
-                  <span style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 12, color: 'rgba(60,80,60,0.55)' }}>kg</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Privacy notice */}
-            <div style={{
-              background: 'rgba(255,255,255,0.45)', borderRadius: 12, padding: 12,
-              fontSize: 12, color: '#1a5c3a', lineHeight: 1.6,
-            }}>
-              개인정보는 기기에만 저장되며 외부로 전송되지 않아요
-            </div>
-
-            {/* BMR/TDEE display */}
-            {bmr > 0 && (
-              <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                <div style={{
-                  flex: 1, background: 'rgba(180,230,200,0.25)', borderRadius: 10, padding: '8px 10px', textAlign: 'center',
-                }}>
-                  <div style={{ fontSize: 10, color: 'rgba(60,80,60,0.55)' }}>BMR</div>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: '#1a5c3a' }}>{bmr.toLocaleString()}</div>
-                </div>
-                <div style={{
-                  flex: 1, background: 'rgba(180,230,200,0.25)', borderRadius: 10, padding: '8px 10px', textAlign: 'center',
-                }}>
-                  <div style={{ fontSize: 10, color: 'rgba(60,80,60,0.55)' }}>TDEE</div>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: '#1a5c3a' }}>{tdee.toLocaleString()}</div>
-                </div>
-              </div>
-            )}
-
-            <div style={{ flex: 1 }} />
-            <button onClick={next} style={mainBtnStyle(canNext[1])} disabled={!canNext[1]}>다음 →</button>
+      {/* Bottom button */}
+      <div style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0,
+        padding: '16px 24px calc(env(safe-area-inset-bottom, 0px) + 16px)',
+        background: 'linear-gradient(transparent, #fff 20%)',
+      }}>
+        {step === 3 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <button onClick={() => { handleFinish(); onGoSettings?.(); }} style={{
+              width: '100%', padding: '14px 0', borderRadius: 16, border: '2px solid var(--accent-primary)',
+              background: 'transparent', color: 'var(--accent-primary)',
+              fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+            }}>설정 먼저 채우기 →</button>
+            <button onClick={handleFinish} style={{
+              width: '100%', padding: '16px 0', borderRadius: 16, border: 'none',
+              background: 'var(--accent-primary)', color: '#fff',
+              fontSize: 16, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+            }}>지금 바로 시작하기 🌿</button>
           </div>
-        )}
-
-        {/* Step 3: Interests */}
-        {step === 2 && (
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 16, fontWeight: 500, color: '#2a3a2a', marginBottom: 4 }}>관심사 선택</div>
-              <div style={{ fontSize: 12, color: 'rgba(60,80,60,0.55)' }}>중복 선택 가능해요</div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-              {INTERESTS.map(item => {
-                const active = interests.includes(item.label);
-                return (
-                  <button key={item.label} onClick={() => toggleInterest(item.label)} style={{
-                    padding: '14px 10px', borderRadius: 14, textAlign: 'center',
-                    background: active ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.5)',
-                    border: active ? '0.5px solid #4db87a' : '0.5px solid rgba(180,210,180,0.4)',
-                    cursor: 'pointer', fontFamily: 'inherit',
-                    transition: 'all 0.2s ease',
-                  }}>
-                    <div style={{ fontSize: 22, marginBottom: 4 }}>{item.icon}</div>
-                    <div style={{
-                      fontSize: 12, fontWeight: 500,
-                      color: active ? '#1a5c3a' : '#2a3a2a',
-                    }}>{item.label}</div>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div style={{ flex: 1 }} />
-            <button onClick={next} style={mainBtnStyle(canNext[2])} disabled={!canNext[2]}>다음 →</button>
-          </div>
-        )}
-
-        {/* Step 4: Complete */}
-        {step === 3 && (
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <div style={{ textAlign: 'center', marginTop: 20, marginBottom: 20 }}>
-              <div style={{ fontSize: 48, marginBottom: 12 }}>🌱</div>
-              <div style={{ fontSize: 20, fontWeight: 500, color: '#2a3a2a', marginBottom: 8 }}>준비 완료!</div>
-              <div style={{ fontSize: 13, color: 'rgba(60,80,60,0.6)', lineHeight: 1.8 }}>
-                {name.trim()}님의 맞춤 웰니스 루틴을 시작할게요
-              </div>
-            </div>
-
-            {/* Ready items */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-              {interests.map(label => {
-                const item = INTERESTS.find(i => i.label === label);
-                return (
-                  <div key={label} style={{
-                    background: 'rgba(180,230,200,0.3)', borderRadius: 12, padding: '10px 14px',
-                    display: 'flex', alignItems: 'center', gap: 8,
-                  }}>
-                    <span style={{ fontSize: 14 }}>{item?.icon}</span>
-                    <span style={{ fontSize: 12, color: '#1a5c3a' }}>{label}</span>
-                  </div>
-                );
-              })}
-              {tdee > 0 && (
-                <div style={{
-                  background: 'rgba(180,230,200,0.3)', borderRadius: 12, padding: '10px 14px',
-                  display: 'flex', alignItems: 'center', gap: 8,
-                }}>
-                  <span style={{ fontSize: 14 }}>📊</span>
-                  <span style={{ fontSize: 12, color: '#1a5c3a' }}>TDEE {tdee.toLocaleString()} kcal 계산 완료</span>
-                </div>
-              )}
-            </div>
-
-            {/* Divider */}
-            <div style={{ borderTop: '0.5px solid rgba(180,210,180,0.4)', margin: '14px 0' }} />
-
-            <div style={{ fontSize: 11, color: 'rgba(60,80,60,0.5)', marginBottom: 8 }}>나중에 설정에서 추가할 수 있어요</div>
-
-            {/* Later items */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {[
-                { icon: '⚖️', text: '다이어트 프로그램 · 목표 몸무게' },
-                { icon: '😴', text: '수면 목표 · 활동 수준 세부 설정' },
-                { icon: '💊', text: '영양제 루틴 · 알림 시간 설정' },
-              ].map(item => (
-                <div key={item.text} style={{
-                  background: 'rgba(255,255,255,0.4)', borderRadius: 12, padding: '10px 14px',
-                  display: 'flex', alignItems: 'center', gap: 8,
-                }}>
-                  <span style={{ fontSize: 13 }}>{item.icon}</span>
-                  <span style={{ fontSize: 12, color: 'rgba(60,80,60,0.65)' }}>{item.text}</span>
-                </div>
-              ))}
-            </div>
-
-            <div style={{ flex: 1 }} />
-
-            {/* Buttons */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <button onClick={() => { handleFinish(); onGoSettings?.(); }} style={{
-                width: '100%',
-                background: 'rgba(255,255,255,0.5)',
-                border: '0.5px solid rgba(77,184,122,0.4)',
-                borderRadius: 14, padding: 12,
-                fontSize: 13, fontWeight: 500, color: '#1a5c3a',
-                cursor: 'pointer', fontFamily: 'inherit',
-              }}>설정 먼저 채우기 →</button>
-              <button onClick={handleFinish} style={mainBtnStyle(true)}>지금 바로 시작하기 🌿</button>
-            </div>
-          </div>
+        ) : (
+          <button onClick={next} disabled={!canNext[step]} style={{
+            width: '100%', padding: '16px 0', borderRadius: 16, border: 'none',
+            background: canNext[step] ? 'var(--accent-primary)' : 'var(--bg-input, #E0E0E0)',
+            color: canNext[step] ? '#fff' : 'var(--text-dim)',
+            fontSize: 16, fontWeight: 700, cursor: canNext[step] ? 'pointer' : 'default',
+            fontFamily: 'inherit', transition: 'all 0.2s ease',
+          }}>다음</button>
         )}
       </div>
     </div>
