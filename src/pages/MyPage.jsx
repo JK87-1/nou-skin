@@ -1100,13 +1100,13 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
       </div>{/* end tab-content-panel */}
 
       {/* Settings Drawer */}
-      <SettingsPage open={showSettingsPage} onClose={() => setShowSettingsPage(false)} onCategoriesChanged={refreshCategories} />
+      <SettingsPage open={showSettingsPage} onClose={() => setShowSettingsPage(false)} onCategoriesChanged={refreshCategories} onTabChange={onTabChange} />
     </div>
   );
 }
 
 // ===== SETTINGS PAGE =====
-function SettingsPage({ open, onClose, onCategoriesChanged }) {
+function SettingsPage({ open, onClose, onCategoriesChanged, onTabChange }) {
   const [showProfilePage, setShowProfilePage] = useState(false);
   const [showCategoryPage, setShowCategoryPage] = useState(false);
   const [showGoalPage, setShowGoalPage] = useState(false);
