@@ -30,6 +30,7 @@ import WeatherChip from './components/WeatherChip';
 import { getGoal, updateGoalProgress } from './storage/GoalStorage';
 import { getDefaultTheme, getThemeById } from './data/BadgeData';
 import SplashScreen from './components/SplashScreen';
+import OnboardingPage, { isOnboardingDone } from './pages/OnboardingPage';
 import SkinMeasurePage from './pages/SkinMeasurePage';
 import { DropletIcon, SparkleIcon, LotionIcon, DiamondIcon, PaletteIcon, MicroscopeIcon, RulerIcon, EyeIcon, BubbleIcon, TargetIcon, SunIcon, MoonIcon, CameraIcon, TestTubeIcon, StarIcon, ShieldIcon, WandIcon, PhotoIcon, CheckIcon, SaveIcon, PastelIcon, LuaMiniIcon } from './components/icons/PastelIcons';
 import SoftCloverIcon from './components/icons/SoftCloverIcon';
@@ -68,6 +69,7 @@ export default function App() {
   const [briefingLoading, setBriefingLoading] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const [splashExiting, setSplashExiting] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(() => !isOnboardingDone());
   const [weatherSheet, setWeatherSheet] = useState(false);
   const [showDataRecovery, setShowDataRecovery] = useState(false);
   const [recoveryInfo, setRecoveryInfo] = useState(null);
@@ -597,6 +599,13 @@ export default function App() {
       <GlobalStyles />
       <style>{`@keyframes landingPearlReveal { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }`}</style>
       {showSplash && <SplashScreen exiting={splashExiting} onAnimationEnd={() => setShowSplash(false)} cloverTheme={activeThemeColors?.cloverTheme} />}
+      {!showSplash && showOnboarding && (
+        <OnboardingPage
+          onComplete={() => setShowOnboarding(false)}
+          onGoSettings={() => { setShowOnboarding(false); setActiveTab('album'); }}
+        />
+      )}
+      {!showOnboarding && <>
       <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} style={{ display: 'none' }} />
       <input ref={nativeCameraRef} type="file" accept="image/*" capture="user" onChange={handleFile} style={{ display: 'none' }} />
 
@@ -1697,6 +1706,7 @@ export default function App() {
         </div>
       )}
 
+    </>}
     </div>
   );
 }
