@@ -113,6 +113,7 @@ export default function OnboardingPage({ onComplete, onGoSettings }) {
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
   const [interests, setInterests] = useState([]);
+  const [showBirthPicker, setShowBirthPicker] = useState(false);
 
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 80 }, (_, i) => currentYear - i - 10);
@@ -222,13 +223,11 @@ export default function OnboardingPage({ onComplete, onGoSettings }) {
 
         <div style={{ marginBottom: 16 }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>생년월일</div>
-          <div style={{
-            display: 'flex', gap: 4, alignItems: 'center',
-            background: 'var(--bg-card, #fff)', borderRadius: 16, padding: '4px 8px',
+          <div onClick={() => setShowBirthPicker(true)} style={{
+            ...inputStyle, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           }}>
-            <ScrollPicker items={years} value={birthYear} onChange={setBirthYear} suffix="년" />
-            <ScrollPicker items={months} value={birthMonth} onChange={setBirthMonth} suffix="월" />
-            <ScrollPicker items={days} value={birthDay > daysInMonth ? daysInMonth : birthDay} onChange={setBirthDay} suffix="일" />
+            <span>{birthYear}년 {String(birthMonth).padStart(2, '0')}월 {String(birthDay).padStart(2, '0')}일</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
           </div>
         </div>
 
@@ -436,6 +435,35 @@ export default function OnboardingPage({ onComplete, onGoSettings }) {
           }}>다음</button>
         )}
       </div>
+
+      {/* Birth date picker modal */}
+      {showBirthPicker && (
+        <div onClick={() => setShowBirthPicker(false)} style={{
+          position: 'fixed', inset: 0, zIndex: 3000,
+          background: 'rgba(0,0,0,0.4)',
+          display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: '#fff', borderRadius: '24px 24px 0 0',
+            padding: '20px 20px calc(env(safe-area-inset-bottom, 0px) + 20px)',
+            width: '100%', maxWidth: 420,
+          }}>
+            <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.1)', margin: '0 auto 16px' }} />
+            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 16 }}>생년월일</div>
+            <div style={{ display: 'flex', gap: 4 }}>
+              <ScrollPicker items={years} value={birthYear} onChange={setBirthYear} suffix="년" />
+              <ScrollPicker items={months} value={birthMonth} onChange={setBirthMonth} suffix="월" />
+              <ScrollPicker items={days} value={birthDay > daysInMonth ? daysInMonth : birthDay} onChange={setBirthDay} suffix="일" />
+            </div>
+            <button onClick={() => setShowBirthPicker(false)} style={{
+              width: '100%', padding: '16px 0', borderRadius: 16, border: 'none',
+              background: 'var(--accent-primary)', color: '#fff',
+              fontSize: 16, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+              marginTop: 16,
+            }}>확인</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
