@@ -169,6 +169,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [showAccountPage, setShowAccountPage] = useState(false);
   const [showWeather, setShowWeather] = useState(false);
   const [showWeightModal, setShowWeightModal] = useState(false);
+  const [showActivityModal, setShowActivityModal] = useState(false);
   const [weightRefreshKey, setWeightRefreshKey] = useState(0);
   const [userProfile, setUserProfile] = useState(getProfile);
 
@@ -437,7 +438,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               <div onClick={() => onTabChange?.('record')} style={{ ...cardStyle, flex: 1, cursor: 'pointer', padding: '16px 14px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                   <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>활동</span>
-                  <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-muted)' }}>+</div>
+                  <div onClick={(e) => { e.stopPropagation(); setShowActivityModal(true); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-muted)' }}>+</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
                   <span style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{stepCount > 0 ? stepCount.toLocaleString() : '—'}</span>
@@ -761,6 +762,13 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           onClose={() => setShowWeightModal(false)}
         />
       )}
+
+      {showActivityModal && (
+        <AddActivityModal
+          onSave={() => { setShowActivityModal(false); setWeightRefreshKey(k => k + 1); }}
+          onClose={() => setShowActivityModal(false)}
+        />
+      )}
     </div>
   );
 
@@ -807,6 +815,169 @@ function AddWeightModal({ onSave, onClose, latest }) {
             cursor: 'pointer', fontFamily: 'inherit',
           }}>취소</button>
           <button onClick={() => { if (weight) onSave(Number(weight)); }} style={{
+            flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
+            border: 'none', background: 'var(--accent-primary)',
+            color: '#fff', fontSize: 14, fontWeight: 700,
+            cursor: 'pointer', fontFamily: 'inherit',
+          }}>저장</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const EXERCISES = [
+  { id: 'walk', icon: '🚶', name: '걷기', met: 3.5 },
+  { id: 'run', icon: '🏃', name: '달리기', met: 8.0 },
+  { id: 'cycle', icon: '🚴', name: '사이클', met: 6.8 },
+  { id: 'swim', icon: '🏊', name: '수영', met: 7.0 },
+  { id: 'yoga', icon: '🧘', name: '요가', met: 3.0 },
+  { id: 'weight', icon: '🏋️', name: '근력', met: 5.0 },
+];
+
+function AddActivityModal({ onSave, onClose }) {
+  const [tab, setTab] = useState('walk'); // 'walk' | 'exercise'
+  const [steps, setSteps] = useState('');
+  const [selectedEx, setSelectedEx] = useState(null);
+  const [minutes, setMinutes] = useState('30');
+  const curWeight = getLatestWeight()?.weight || 55;
+
+  const stepsCalorie = steps ? Math.round(Number(steps) * 0.0005 * curWeight) : 0;
+  const exCalorie = selectedEx && minutes
+    ? Math.round(selectedEx.met * curWeight * (Number(minutes) / 60))
+    : 0;
+
+  const handleSave = () => {
+    const todayKey = new Date().toISOString().slice(0, 10);
+    const all = JSON.parse(localStorage.getItem('lua_record_v2') || '{}');
+    const today = all[todayKey] || { date: todayKey };
+
+    if (tab === 'walk' && steps) {
+      today.steps = (today.steps || 0) + Number(steps);
+    } else if (tab === 'exercise' && selectedEx && minutes) {
+      const log = today.exercise?.log || {};
+      log[selectedEx.name] = (log[selectedEx.name] || 0) + Number(minutes);
+      today.exercise = { ...today.exercise, log };
+    } else {
+      return;
+    }
+
+    all[todayKey] = today;
+    localStorage.setItem('lua_record_v2', JSON.stringify(all));
+    onSave();
+  };
+
+  const tabStyle = (active) => ({
+    flex: 1, padding: '10px 0', borderRadius: 10, border: 'none',
+    background: active ? 'var(--accent-primary)' : 'transparent',
+    color: active ? '#fff' : 'var(--text-muted)',
+    fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+  });
+
+  return (
+    <div onClick={onClose} style={{
+      position: 'fixed', inset: 0, zIndex: 1100,
+      background: 'rgba(0,0,0,0.5)',
+      display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
+        padding: '24px 24px 40px', width: '100%', maxWidth: 420,
+      }}>
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
+        <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 16, textAlign: 'center' }}>활동 기록</div>
+
+        {/* Tabs */}
+        <div style={{ display: 'flex', gap: 6, background: 'var(--bg-input, #F2F3F5)', borderRadius: 12, padding: 4, marginBottom: 20 }}>
+          <button onClick={() => setTab('walk')} style={tabStyle(tab === 'walk')}>걷기</button>
+          <button onClick={() => setTab('exercise')} style={tabStyle(tab === 'exercise')}>운동</button>
+        </div>
+
+        {tab === 'walk' ? (
+          <div>
+            <input
+              value={steps} onChange={e => setSteps(e.target.value)}
+              placeholder="걸음 수 입력" type="number"
+              style={{
+                width: '100%', padding: '14px', borderRadius: 12, border: 'none',
+                background: 'var(--bg-input, #F2F3F5)', fontSize: 20, fontWeight: 600,
+                color: 'var(--text-primary)', fontFamily: 'var(--font-display)',
+                textAlign: 'center', outline: 'none',
+              }}
+              autoFocus
+            />
+            <div style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>걸음</div>
+            <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginTop: 12 }}>
+              {[1000, 3000, 5000, 8000, 10000].map(v => (
+                <button key={v} onClick={() => setSteps(String(v))} style={{
+                  padding: '6px 10px', borderRadius: 8, border: 'none',
+                  background: steps === String(v) ? 'var(--accent-primary)' : 'var(--bg-input, #F2F3F5)',
+                  color: steps === String(v) ? '#fff' : 'var(--text-muted)',
+                  fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+                }}>{v >= 10000 ? '1만' : `${v / 1000}천`}</button>
+              ))}
+            </div>
+            {stepsCalorie > 0 && (
+              <div style={{ textAlign: 'center', marginTop: 14, fontSize: 14, color: '#22C55E', fontWeight: 600 }}>
+                🔥 {stepsCalorie} kcal 소모
+              </div>
+            )}
+          </div>
+        ) : (
+          <div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 16 }}>
+              {EXERCISES.filter(e => e.id !== 'walk').map(ex => (
+                <button key={ex.id} onClick={() => setSelectedEx(ex)} style={{
+                  padding: '12px 8px', borderRadius: 12, border: selectedEx?.id === ex.id ? '2px solid var(--accent-primary)' : '2px solid transparent',
+                  background: selectedEx?.id === ex.id ? 'rgba(255,140,66,0.1)' : 'var(--bg-input, #F2F3F5)',
+                  cursor: 'pointer', textAlign: 'center', fontFamily: 'inherit',
+                }}>
+                  <div style={{ fontSize: 22 }}>{ex.icon}</div>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-primary)', marginTop: 4 }}>{ex.name}</div>
+                </button>
+              ))}
+            </div>
+            {selectedEx && (
+              <>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8, textAlign: 'center' }}>운동 시간</div>
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 6 }}>
+                  {[15, 30, 45, 60].map(m => (
+                    <button key={m} onClick={() => setMinutes(String(m))} style={{
+                      padding: '8px 14px', borderRadius: 10, border: 'none',
+                      background: minutes === String(m) ? 'var(--accent-primary)' : 'var(--bg-input, #F2F3F5)',
+                      color: minutes === String(m) ? '#fff' : 'var(--text-muted)',
+                      fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                    }}>{m}분</button>
+                  ))}
+                </div>
+                <input
+                  value={minutes} onChange={e => setMinutes(e.target.value)}
+                  placeholder="직접 입력" type="number" min="1"
+                  style={{
+                    width: '100%', padding: '10px', borderRadius: 10, border: 'none',
+                    background: 'var(--bg-input, #F2F3F5)', fontSize: 14, fontWeight: 500,
+                    color: 'var(--text-primary)', textAlign: 'center', outline: 'none', fontFamily: 'inherit',
+                  }}
+                />
+                <div style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>분</div>
+                {exCalorie > 0 && (
+                  <div style={{ textAlign: 'center', marginTop: 12, fontSize: 14, color: '#22C55E', fontWeight: 600 }}>
+                    🔥 {exCalorie} kcal 소모
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
+          <button onClick={onClose} style={{
+            flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
+            border: 'none', background: 'var(--bg-input, #F2F3F5)',
+            color: 'var(--text-muted)', fontSize: 14, fontWeight: 600,
+            cursor: 'pointer', fontFamily: 'inherit',
+          }}>취소</button>
+          <button onClick={handleSave} style={{
             flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
             border: 'none', background: 'var(--accent-primary)',
             color: '#fff', fontSize: 14, fontWeight: 700,
