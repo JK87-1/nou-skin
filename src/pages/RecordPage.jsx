@@ -27,6 +27,9 @@ const ALL_EXERCISES = [
   { id: 'badminton', icon: '🏸', name: '배드민턴', met: 5.5 },
   { id: 'golf', icon: '⛳', name: '골프', met: 3.5 },
   { id: 'tennis', icon: '🎾', name: '테니스', met: 7.0 },
+  { id: 'stretch', icon: '🙆', name: '스트레칭', met: 2.5 },
+  { id: 'crossfit', icon: '🔥', name: '크로스핏', met: 8.0 },
+  { id: 'aerobic', icon: '💃', name: '에어로빅', met: 6.5 },
 ];
 const DEFAULT_EXERCISE_IDS = ['walk', 'weight', 'run', 'cycle', 'yoga', 'swim'];
 const EX_SETTINGS_KEY = 'lua_exercise_settings';
