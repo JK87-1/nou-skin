@@ -24,8 +24,8 @@ const DEFAULTS = {
     { key: 'sleep',      label: '수면',     color: '#C8A0E0', enabled: true,  group: 'cause' },
     { key: 'energy',     label: '에너지',   color: '#F0C878', enabled: true,  group: 'result' },
     { key: 'mood',       label: '기분',     color: '#A8C8F0', enabled: true,  group: 'result' },
-    { key: 'skin',       label: '피부',     color: '#F8A8C0', enabled: true,  group: 'result' },
     { key: 'body',       label: '바디',     color: '#D0D0D0', enabled: true,  group: 'result' },
+    { key: 'skin',       label: '피부',     color: '#F8A8C0', enabled: true,  group: 'result' },
   ],
 };
 
