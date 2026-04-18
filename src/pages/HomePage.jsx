@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import SkinWeather from '../components/SkinWeather';
 import { getLatestRecord } from '../storage/SkinStorage';
 import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, GENDER_OPTIONS } from '../storage/ProfileStorage';
-import { getTodayNutrition, getTodayFoods, getFoodGoal } from '../storage/FoodStorage';
+import { getTodayNutrition, getTodayFoods, getFoodGoal, saveFoodRecord } from '../storage/FoodStorage';
+import { AddFoodModal } from './RecordPage';
 import { getWeatherData } from '../storage/WeatherStorage';
 import { getTodayProgress } from '../storage/RoutineCheckStorage';
 import { getLatestWeight, getBodyRecords, saveBodyRecord } from '../storage/BodyStorage';
@@ -170,6 +171,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [showWeather, setShowWeather] = useState(false);
   const [showWeightModal, setShowWeightModal] = useState(false);
   const [showActivityModal, setShowActivityModal] = useState(false);
+  const [showFoodModal, setShowFoodModal] = useState(false);
   const [weightRefreshKey, setWeightRefreshKey] = useState(0);
   const [userProfile, setUserProfile] = useState(getProfile);
 
@@ -469,7 +471,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
                     <span style={{ fontSize: 36, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{remaining}</span>
                     <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>kcal 남음</span>
-                    <div onClick={(e) => { e.stopPropagation(); onTabChange?.('food', { openAdd: true }); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-muted)', cursor: 'pointer', marginLeft: 4 }}>+</div>
+                    <div onClick={(e) => { e.stopPropagation(); setShowFoodModal(true); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-muted)', cursor: 'pointer', marginLeft: 4 }}>+</div>
                   </div>
                   <div onClick={() => onTabChange?.('record')} style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
                     <span style={{ opacity: 0.5 }}>⊙</span> {fullGoal.kcal} 목표 <span style={{ fontSize: 10 }}>›</span>
@@ -768,6 +770,18 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         <AddActivityModal
           onSave={() => { setShowActivityModal(false); setWeightRefreshKey(k => k + 1); }}
           onClose={() => setShowActivityModal(false)}
+        />
+      )}
+
+      {showFoodModal && (
+        <AddFoodModal
+          onAdd={(food) => {
+            const today = new Date().toISOString().slice(0, 10);
+            saveFoodRecord(today, food);
+            setShowFoodModal(false);
+            setWeightRefreshKey(k => k + 1);
+          }}
+          onClose={() => setShowFoodModal(false)}
         />
       )}
 

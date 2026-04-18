@@ -1516,7 +1516,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
   );
 }
 
-function AddFoodModal({ onAdd, onClose, initialMeal }) {
+export function AddFoodModal({ onAdd, onClose, initialMeal }) {
   const [mode, setMode] = useState(null); // null = selection, 'text' = name input, 'photo' = photo analysis
   const [foodItems, setFoodItems] = useState([{ name: '', qty: 1, unit: '인분' }]);
   const [meal, setMeal] = useState(initialMeal || '아침');
