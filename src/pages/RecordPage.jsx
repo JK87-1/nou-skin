@@ -25,7 +25,11 @@ const EXERCISES = [
 const EX_DURATIONS = [15, 30, 45, 60];
 function calcExMET(met, weight, mins) { return Math.round(met * weight * (mins / 60)); }
 const SLEEP_QUALITIES = ['깊은 수면', '보통', '얕은 수면'];
-const TOTAL_CUPS = 8;
+const WATER_SETTINGS_KEY = 'lua_water_settings';
+function getWaterSettings() {
+  try { return { cupMl: 250, goalMl: 2000, ...JSON.parse(localStorage.getItem(WATER_SETTINGS_KEY) || '{}') }; } catch { return { cupMl: 250, goalMl: 2000 }; }
+}
+function saveWaterSettings(s) { localStorage.setItem(WATER_SETTINGS_KEY, JSON.stringify(s)); }
 
 // 식단 사진: IndexedDB photoId면 로드, 기존 base64면 그대로 표시
 function FoodPhoto({ photo, style, alt = '' }) {
@@ -181,6 +185,11 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
   const [sleepMode, setSleepMode] = useState('simple'); // 'simple' | 'time'
   const [stepsGuideOpen, setStepsGuideOpen] = useState(false);
   const [waterCount, setWaterCount] = useState(0);
+  const [waterSettings, setWaterSettings] = useState(getWaterSettings);
+  const [showRecordSettings, setShowRecordSettings] = useState(false);
+  const cupMl = waterSettings.cupMl;
+  const goalMl = waterSettings.goalMl;
+  const TOTAL_CUPS = Math.ceil(goalMl / cupMl);
   const [stepCount, setStepCount] = useState(0);
   const [exCalOverrides, setExCalOverrides] = useState({}); // { exerciseName: manualCal }
   const [stepCalOverride, setStepCalOverride] = useState(null);
@@ -304,7 +313,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
               <path d="M12 5v14M5 12h14" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </div>
-          <div onClick={() => onTabChange && onTabChange('album')} style={{ width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div onClick={() => setShowRecordSettings(true)} style={{ width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.8" strokeLinecap="round">
               <line x1="4" y1="7" x2="20" y2="7" />
               <line x1="4" y1="12" x2="20" y2="12" />
@@ -501,7 +510,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
             {/* Water Card */}
             <div style={{ ...allCardStyle, ...fadeUp(0.25) }}>
               {allCardHeader(getCategoryColor('water'), '수분', null,
-                waterCount > 0 ? `${waterCount}잔(${waterCount * 250}ml)` : '미기록',
+                waterCount > 0 ? `${waterCount}잔(${waterCount * cupMl}ml)` : '미기록',
                 waterCount > 0 ? '#5AAABB' : '#9ABBC8'
               )}
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -529,8 +538,8 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                 <span style={{ fontSize: 13, fontWeight: 500, color: '#5AAABB', minWidth: 32, textAlign: 'right' }}>{waterCount}잔</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
-                <span style={{ fontSize: 9, color: '#9ABBC8' }}>1잔 = 250ml</span>
-                <span style={{ fontSize: 9, color: '#9ABBC8' }}>목표 2,000ml</span>
+                <span style={{ fontSize: 9, color: '#9ABBC8' }}>1잔 = {cupMl}ml</span>
+                <span style={{ fontSize: 9, color: '#9ABBC8' }}>목표 {goalMl.toLocaleString()}ml</span>
               </div>
             </div>
 
@@ -1382,7 +1391,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
               <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>수분</span>
             </div>
             <span style={{ fontSize: 11, color: waterCount > 0 ? '#5AAABB' : '#9ABBC8', fontWeight: 500 }}>
-              {waterCount > 0 ? `${waterCount}잔(${waterCount * 250}ml)` : '미기록'}
+              {waterCount > 0 ? `${waterCount}잔(${waterCount * cupMl}ml)` : '미기록'}
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -1410,8 +1419,8 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
             <span style={{ fontSize: 13, fontWeight: 500, color: '#5AAABB', minWidth: 32, textAlign: 'right' }}>{waterCount}잔</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
-            <span style={{ fontSize: 9, color: '#9ABBC8' }}>1잔 = 250ml</span>
-            <span style={{ fontSize: 9, color: '#9ABBC8' }}>목표 2,000ml</span>
+            <span style={{ fontSize: 9, color: '#9ABBC8' }}>1잔 = {cupMl}ml</span>
+            <span style={{ fontSize: 9, color: '#9ABBC8' }}>목표 {goalMl.toLocaleString()}ml</span>
           </div>
         </div>
       </div>
@@ -1496,6 +1505,74 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
           }}
           onClose={() => setShowBodyAdd(false)}
         />
+      )}
+
+      {/* Record Settings Page */}
+      {showRecordSettings && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 2002,
+          background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
+          display: 'flex', flexDirection: 'column',
+        }}>
+          <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+            <div onClick={() => setShowRecordSettings(false)} style={{
+              width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1,
+            }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </div>
+            <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>기록 설정</span>
+          </div>
+
+          <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '28px 24px' }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>💧 수분 설정</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 20 }}>1잔 기준과 하루 목표를 설정해요</div>
+
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 10 }}>1잔 기준</div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                {[250, 500].map(ml => (
+                  <div key={ml} onClick={() => {
+                    const next = { ...waterSettings, cupMl: ml };
+                    setWaterSettings(next);
+                    saveWaterSettings(next);
+                  }} style={{
+                    flex: 1, padding: '16px 0', borderRadius: 16, textAlign: 'center', cursor: 'pointer',
+                    background: cupMl === ml ? 'rgba(137,206,245,0.1)' : 'var(--bg-card, #fff)',
+                    border: cupMl === ml ? '2px solid var(--accent-primary)' : '2px solid transparent',
+                    transition: 'all 0.15s ease',
+                  }}>
+                    <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{ml}ml</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 10 }}>하루 목표</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {[1500, 2000, 2500, 3000, 3500].map(ml => (
+                  <div key={ml} onClick={() => {
+                    const next = { ...waterSettings, goalMl: ml };
+                    setWaterSettings(next);
+                    saveWaterSettings(next);
+                  }} style={{
+                    padding: '14px 20px', borderRadius: 16, cursor: 'pointer',
+                    background: goalMl === ml ? 'rgba(137,206,245,0.1)' : 'var(--bg-card, #fff)',
+                    border: goalMl === ml ? '2px solid var(--accent-primary)' : '2px solid transparent',
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    transition: 'all 0.15s ease',
+                  }}>
+                    <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{ml.toLocaleString()}ml</span>
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{Math.ceil(ml / waterSettings.cupMl)}잔</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Add Food Modal */}
