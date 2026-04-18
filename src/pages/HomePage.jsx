@@ -355,9 +355,8 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         let todayExerciseLog = {};
         try { const v2_ = JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); todaySteps = v2_[todayKey_]?.steps || 0; todayExerciseLog = v2_[todayKey_]?.exercise?.log || {}; } catch {}
         const burnedFromSteps = Math.round(todaySteps * 0.0005 * curWeight);
-        const EX_MET = { '걷기': 3.5, '달리기': 8.0, '사이클': 6.8, '수영': 7.0, '요가': 3.0, '근력': 5.0 };
         const burnedFromExercise = Object.entries(todayExerciseLog).reduce((sum, [name, mins]) => {
-          const met = EX_MET[name] || 4.0;
+          const met = ALL_EXERCISES.find(e => e.name === name)?.met || 4.0;
           return sum + Math.round(met * curWeight * (mins / 60));
         }, 0);
         const totalBurned = burnedFromSteps + burnedFromExercise;
@@ -842,14 +841,26 @@ function AddWeightModal({ onSave, onClose, latest }) {
   );
 }
 
-const EXERCISES = [
+const ALL_EXERCISES = [
   { id: 'walk', icon: '🚶', name: '걷기', met: 3.5 },
-  { id: 'run', icon: '🏃', name: '달리기', met: 8.0 },
-  { id: 'cycle', icon: '🚴', name: '사이클', met: 6.8 },
-  { id: 'swim', icon: '🏊', name: '수영', met: 7.0 },
-  { id: 'yoga', icon: '🧘', name: '요가', met: 3.0 },
   { id: 'weight', icon: '🏋️', name: '근력', met: 5.0 },
+  { id: 'run', icon: '🏃', name: '달리기', met: 8.0 },
+  { id: 'hike', icon: '🥾', name: '등산', met: 6.0 },
+  { id: 'cycle', icon: '🚴', name: '사이클', met: 6.8 },
+  { id: 'yoga', icon: '🧘', name: '요가', met: 3.0 },
+  { id: 'pilates', icon: '🤸', name: '필라테스', met: 3.5 },
+  { id: 'home', icon: '🏠', name: '홈트', met: 4.5 },
+  { id: 'swim', icon: '🏊', name: '수영', met: 7.0 },
+  { id: 'badminton', icon: '🏸', name: '배드민턴', met: 5.5 },
+  { id: 'golf', icon: '⛳', name: '골프', met: 3.5 },
+  { id: 'tennis', icon: '🎾', name: '테니스', met: 7.0 },
 ];
+function getHomeExercises() {
+  try {
+    const ids = JSON.parse(localStorage.getItem('lua_exercise_settings')) || ['walk', 'weight', 'run', 'cycle', 'yoga', 'swim'];
+    return ids.map(id => ALL_EXERCISES.find(e => e.id === id)).filter(Boolean);
+  } catch { return ALL_EXERCISES.slice(0, 6); }
+}
 
 function AddActivityModal({ onSave, onClose }) {
   const [tab, setTab] = useState('walk'); // 'walk' | 'exercise'
@@ -942,7 +953,7 @@ function AddActivityModal({ onSave, onClose }) {
         ) : (
           <div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 16 }}>
-              {EXERCISES.filter(e => e.id !== 'walk').map(ex => (
+              {getHomeExercises().filter(e => e.id !== 'walk').map(ex => (
                 <button key={ex.id} onClick={() => setSelectedEx(ex)} style={{
                   padding: '12px 8px', borderRadius: 12, border: selectedEx?.id === ex.id ? '2px solid var(--accent-primary)' : '2px solid transparent',
                   background: selectedEx?.id === ex.id ? 'rgba(255,140,66,0.1)' : 'var(--bg-input, #F2F3F5)',

@@ -14,14 +14,31 @@ function loadDayRecord(dateKey) {
 function saveDayRecord(dateKey, data) {
   try { const all = JSON.parse(localStorage.getItem(RECORD_V2_KEY) || '{}'); all[dateKey] = data; localStorage.setItem(RECORD_V2_KEY, JSON.stringify(all)); } catch {}
 }
-const EXERCISES = [
+const ALL_EXERCISES = [
   { id: 'walk', icon: '🚶', name: '걷기', met: 3.5 },
-  { id: 'run', icon: '🏃', name: '달리기', met: 8.0 },
-  { id: 'cycle', icon: '🚴', name: '사이클', met: 6.8 },
-  { id: 'swim', icon: '🏊', name: '수영', met: 7.0 },
-  { id: 'yoga', icon: '🧘', name: '요가', met: 3.0 },
   { id: 'weight', icon: '🏋️', name: '근력', met: 5.0 },
+  { id: 'run', icon: '🏃', name: '달리기', met: 8.0 },
+  { id: 'hike', icon: '🥾', name: '등산', met: 6.0 },
+  { id: 'cycle', icon: '🚴', name: '사이클', met: 6.8 },
+  { id: 'yoga', icon: '🧘', name: '요가', met: 3.0 },
+  { id: 'pilates', icon: '🤸', name: '필라테스', met: 3.5 },
+  { id: 'home', icon: '🏠', name: '홈트', met: 4.5 },
+  { id: 'swim', icon: '🏊', name: '수영', met: 7.0 },
+  { id: 'badminton', icon: '🏸', name: '배드민턴', met: 5.5 },
+  { id: 'golf', icon: '⛳', name: '골프', met: 3.5 },
+  { id: 'tennis', icon: '🎾', name: '테니스', met: 7.0 },
 ];
+const DEFAULT_EXERCISE_IDS = ['walk', 'weight', 'run', 'cycle', 'yoga', 'swim'];
+const EX_SETTINGS_KEY = 'lua_exercise_settings';
+function getSelectedExerciseIds() {
+  try { return JSON.parse(localStorage.getItem(EX_SETTINGS_KEY)) || DEFAULT_EXERCISE_IDS; } catch { return DEFAULT_EXERCISE_IDS; }
+}
+function saveSelectedExerciseIds(ids) { localStorage.setItem(EX_SETTINGS_KEY, JSON.stringify(ids)); }
+function getExercises() {
+  const ids = getSelectedExerciseIds();
+  return ids.map(id => ALL_EXERCISES.find(e => e.id === id)).filter(Boolean);
+}
+const EXERCISES = getExercises();
 const EX_DURATIONS = [15, 30, 45, 60];
 function calcExMET(met, weight, mins) { return Math.round(met * weight * (mins / 60)); }
 const SLEEP_QUALITIES = ['깊은 수면', '보통', '얕은 수면'];
@@ -187,6 +204,8 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
   const [waterCount, setWaterCount] = useState(0);
   const [waterSettings, setWaterSettings] = useState(getWaterSettings);
   const [showRecordSettings, setShowRecordSettings] = useState(false);
+  const [exercises, setExercises] = useState(getExercises);
+  const [selectedExIds, setSelectedExIds] = useState(getSelectedExerciseIds);
   const cupMl = waterSettings.cupMl;
   const goalMl = waterSettings.goalMl;
   const TOTAL_CUPS = Math.ceil(goalMl / cupMl);
@@ -643,7 +662,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                 );
               })()}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 5 }}>
-                {EXERCISES.map(ex => {
+                {exercises.map(ex => {
                   const hasLog = exerciseLog[ex.name] > 0;
                   const active = hasLog || selectedExercise === ex.name;
                   return (
@@ -817,7 +836,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
         const stepCalDisplay = stepCalOverride !== null ? stepCalOverride : stepCalAuto;
         const stepCalEdited = stepCalOverride !== null;
         const exCalTotal = Object.entries(exerciseLog).reduce((sum, [name, mins]) => {
-          const ex = EXERCISES.find(e => e.name === name);
+          const ex = ALL_EXERCISES.find(e => e.name === name);
           if (!ex || !mins) return sum;
           const auto = calcExMET(ex.met, userWeight, mins);
           return sum + (exCalOverrides[name] !== undefined ? exCalOverrides[name] : auto);
@@ -915,7 +934,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
               })()}
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 5 }}>
-              {EXERCISES.map(ex => {
+              {exercises.map(ex => {
                 const hasLog = exerciseLog[ex.name] > 0;
                 return (
                   <div key={ex.id} onClick={() => {
@@ -945,7 +964,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
             {Object.keys(exerciseLog).length > 0 && isToday && (
               <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {Object.entries(exerciseLog).map(([name, mins]) => {
-                  const ex = EXERCISES.find(e => e.name === name);
+                  const ex = ALL_EXERCISES.find(e => e.name === name);
                   const autoCal = ex ? calcExMET(ex.met, userWeight, mins) : 0;
                   const displayCal = exCalOverrides[name] !== undefined ? exCalOverrides[name] : autoCal;
                   const isEdited = exCalOverrides[name] !== undefined;
@@ -1570,6 +1589,43 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                   </div>
                 ))}
               </div>
+            </div>
+
+            <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)', margin: '28px 0' }} />
+
+            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>🏃 운동 종류 설정</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 20 }}>6개를 선택해주세요 ({selectedExIds.length}/6)</div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+              {ALL_EXERCISES.map(ex => {
+                const selected = selectedExIds.includes(ex.id);
+                const full = selectedExIds.length >= 6 && !selected;
+                return (
+                  <div key={ex.id} onClick={() => {
+                    if (selected) {
+                      if (selectedExIds.length <= 1) return;
+                      const next = selectedExIds.filter(id => id !== ex.id);
+                      setSelectedExIds(next);
+                      saveSelectedExerciseIds(next);
+                      setExercises(next.map(id => ALL_EXERCISES.find(e => e.id === id)).filter(Boolean));
+                    } else if (!full) {
+                      const next = [...selectedExIds, ex.id];
+                      setSelectedExIds(next);
+                      saveSelectedExerciseIds(next);
+                      setExercises(next.map(id => ALL_EXERCISES.find(e => e.id === id)).filter(Boolean));
+                    }
+                  }} style={{
+                    padding: '16px 8px', borderRadius: 16, textAlign: 'center', cursor: full ? 'default' : 'pointer',
+                    background: selected ? 'rgba(137,206,245,0.1)' : 'var(--bg-card, #fff)',
+                    border: selected ? '2px solid var(--accent-primary)' : '2px solid transparent',
+                    opacity: full ? 0.35 : 1,
+                    transition: 'all 0.15s ease',
+                  }}>
+                    <div style={{ fontSize: 24, marginBottom: 4 }}>{ex.icon}</div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{ex.name}</div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
