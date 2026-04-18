@@ -33,6 +33,7 @@ import { getDefaultTheme } from '../data/BadgeData';
 import { getFoodRecords, deleteFoodRecord } from '../storage/FoodStorage';
 import { getBodyRecords } from '../storage/BodyStorage';
 import DietOnboardingPage from './DietOnboardingPage';
+import SupplementOnboardingPage from './SupplementOnboardingPage';
 import { getPhotoDB } from '../storage/PhotoDB';
 
 // 식단 사진: IndexedDB photoId면 로드, 기존 base64면 그대로 표시
@@ -1208,8 +1209,10 @@ const DIET_GOALS = [
 
 function GoalSettingsPage({ onClose }) {
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showSupplementOnboarding, setShowSupplementOnboarding] = useState(false);
   const profile = getProfile();
   const isDone = profile.dietOnboardingDone;
+  const isSupplementDone = profile.supplementOnboardingDone;
   const selected = profile.dietGoal || 'balance';
 
   return (
@@ -1311,9 +1314,33 @@ function GoalSettingsPage({ onClose }) {
             </div>
           </>
         )}
+
+        {/* Supplement onboarding CTA */}
+        <div onClick={() => setShowSupplementOnboarding(true)} style={{
+          padding: '24px 20px', borderRadius: 20, cursor: 'pointer', marginTop: 28,
+          background: 'linear-gradient(135deg, rgba(184,216,160,0.2), rgba(184,216,160,0.05))',
+          border: '1.5px solid rgba(184,216,160,0.4)',
+        }}>
+          <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 6 }}>
+            {isSupplementDone ? '영양제 루틴 수정하기' : '영양제 루틴 짜기'}
+          </div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 14, lineHeight: 1.5 }}>
+            증상, 생활패턴 기반으로 나만의 영양제 루틴을 만들어요
+          </div>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            padding: '10px 20px', borderRadius: 12,
+            background: '#6BAF6B', color: '#fff',
+            fontSize: 13, fontWeight: 700,
+          }}>
+            {isSupplementDone ? '수정하기' : '시작하기'}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-4-4l4 4-4 4" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </div>
+        </div>
       </div>
     </div>
     {showOnboarding && <DietOnboardingPage onClose={() => setShowOnboarding(false)} onComplete={() => setShowOnboarding(false)} />}
+    {showSupplementOnboarding && <SupplementOnboardingPage onClose={() => setShowSupplementOnboarding(false)} onComplete={() => setShowSupplementOnboarding(false)} />}
     </>
   );
 }
