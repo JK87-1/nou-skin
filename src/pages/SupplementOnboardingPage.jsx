@@ -86,9 +86,19 @@ const SUPPLEMENT_TIMING = {
   '철분': 'morning', '비타민B군': 'morning', '비타민B12': 'morning',
   '코엔자임Q10': 'morning', '단백질': 'morning', '크롬': 'morning',
   '식이섬유': 'morning', '엽산': 'morning', '유산균': 'morning',
+  '베르베린': 'morning', '종합비타민': 'morning',
   '마그네슘': 'evening', '아연': 'evening', 'L-테아닌': 'evening',
   '콜라겐': 'evening', '칼슘': 'evening', '비오틴': 'morning',
 };
+
+const MULTIVITAMIN_INGREDIENTS = [
+  '비타민A', '비타민B군', '비타민C', '비타민D',
+  '비타민E', '아연', '철분', '마그네슘', '셀레늄', '엽산',
+];
+
+const DEFAULT_MULTIVITAMIN = ['비타민A', '비타민B군', '비타민C', '비타민D', '비타민E', '아연', '철분', '엽산'];
+
+const FAT_SOLUBLE = ['비타민A', '비타민D', '비타민E'];
 
 const CONFLICTS = [
   { a: '철분', b: '칼슘', msg: '철분과 칼슘은 동시 복용을 피해요 (흡수 방해)' },
@@ -107,6 +117,9 @@ export default function SupplementOnboardingPage({ onClose, onComplete, onNaviga
 
   // Section 2
   const [hasCurrent, setHasCurrent] = useState(null);
+  const [hasMultivitamin, setHasMultivitamin] = useState(false);
+  const [multiIngredients, setMultiIngredients] = useState([]);
+  const [multiUnknown, setMultiUnknown] = useState(false);
   const [currentSupplements, setCurrentSupplements] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [discomfort, setDiscomfort] = useState('');
@@ -157,12 +170,29 @@ export default function SupplementOnboardingPage({ onClose, onComplete, onNaviga
     currentSupplements.forEach(s => allSupps.add(s));
     // Filter vegan
     if (isVegan) {
-      allSupps.delete('콜라겐'); // animal-derived
+      allSupps.delete('콜라겐');
     }
 
-    // 2. Split into morning/evening
+    // 2. Multivitamin deduplication
+    const coveredByMulti = hasMultivitamin
+      ? (multiUnknown ? DEFAULT_MULTIVITAMIN : multiIngredients)
+      : [];
+    const removedByMulti = [];
+    if (coveredByMulti.length > 0) {
+      // Remove supplements already covered by multivitamin
+      coveredByMulti.forEach(ingredient => {
+        if (allSupps.has(ingredient)) {
+          removedByMulti.push(ingredient);
+          allSupps.delete(ingredient);
+        }
+      });
+    }
+
+    // 3. Split into morning/evening
     const morning = [];
     const evening = [];
+    // Add multivitamin itself to morning if applicable
+    if (hasMultivitamin) morning.push('종합비타민');
     allSupps.forEach(s => {
       if (SUPPLEMENT_TIMING[s] === 'evening') evening.push(s);
       else morning.push(s);
@@ -205,8 +235,17 @@ export default function SupplementOnboardingPage({ onClose, onComplete, onNaviga
         if (allSupps.has(c.a) && allSupps.has(c.b)) warnings.push(c.msg);
       }
     });
+    // Fat-soluble vitamin overlap warning
+    if (hasMultivitamin) {
+      const fatSolubleOverlap = FAT_SOLUBLE.filter(v =>
+        coveredByMulti.includes(v) && (limitedMorning.includes(v) || limitedEvening.includes(v))
+      );
+      if (fatSolubleOverlap.length > 0) {
+        warnings.push(`종합비타민과 ${fatSolubleOverlap.join('·')}이 중복돼요. 지용성 비타민(A·D·E)은 과잉 섭취에 주의하세요`);
+      }
+    }
 
-    return { morning: limitedMorning, evening: limitedEvening, morningAlarm, eveningAlarm, timingDesc, warnings };
+    return { morning: limitedMorning, evening: limitedEvening, morningAlarm, eveningAlarm, timingDesc, warnings, removedByMulti, hasMultivitamin };
   };
 
   const [showResult, setShowResult] = useState(false);
@@ -388,13 +427,46 @@ export default function SupplementOnboardingPage({ onClose, onComplete, onNaviga
         <div>
           <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 24 }}>지금 복용 중인 영양제가 있나요?</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
-            <div onClick={() => { setHasCurrent(false); setCurrentSupplements([]); }} style={selectStyle(hasCurrent === false)}>
+            <div onClick={() => { setHasCurrent(false); setCurrentSupplements([]); setHasMultivitamin(false); }} style={selectStyle(hasCurrent === false)}>
               <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>없어요, 처음 시작해요</span>
             </div>
-            <div onClick={() => setHasCurrent(true)} style={selectStyle(hasCurrent === true)}>
+            <div onClick={() => setHasCurrent(true)} style={selectStyle(hasCurrent === true && !hasMultivitamin)}>
               <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>있어요</span>
             </div>
+            <div onClick={() => { setHasCurrent(true); setHasMultivitamin(!hasMultivitamin); }} style={selectStyle(hasMultivitamin)}>
+              <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>종합비타민을 먹고 있어요</span>
+            </div>
           </div>
+
+          {/* Multivitamin ingredient selection */}
+          {hasMultivitamin && (
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 10 }}>어떤 성분이 들어있나요?</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+                {MULTIVITAMIN_INGREDIENTS.map(ing => (
+                  <div key={ing} onClick={() => {
+                    if (multiUnknown) return;
+                    setMultiIngredients(prev => prev.includes(ing) ? prev.filter(i => i !== ing) : [...prev, ing]);
+                  }} style={{
+                    padding: '10px 16px', borderRadius: 12, cursor: multiUnknown ? 'default' : 'pointer',
+                    background: multiIngredients.includes(ing) && !multiUnknown ? 'rgba(137,206,245,0.1)' : 'var(--bg-card, #fff)',
+                    border: multiIngredients.includes(ing) && !multiUnknown ? '2px solid var(--accent-primary)' : '2px solid transparent',
+                    fontSize: 13, fontWeight: 500, color: 'var(--text-primary)',
+                    opacity: multiUnknown ? 0.4 : 1,
+                    transition: 'all 0.15s ease',
+                  }}>
+                    {ing}
+                  </div>
+                ))}
+              </div>
+              <div onClick={() => { setMultiUnknown(!multiUnknown); if (!multiUnknown) setMultiIngredients([]); }} style={{
+                ...selectStyle(multiUnknown),
+                padding: '12px 16px',
+              }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>잘 모르겠어요</span>
+              </div>
+            </div>
+          )}
 
           {hasCurrent && (
             <>
@@ -582,6 +654,26 @@ export default function SupplementOnboardingPage({ onClose, onComplete, onNaviga
               </div>
               <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
                 취침 1시간 전 / 알림 {routine.eveningAlarm}
+              </div>
+            </div>
+          )}
+
+          {/* Multivitamin integration suggestion */}
+          {routine.hasMultivitamin && routine.removedByMulti.length > 0 && (
+            <div style={{
+              padding: '16px', borderRadius: 16, marginBottom: 12,
+              background: 'rgba(137,206,245,0.08)', border: '1px solid rgba(137,206,245,0.15)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                <span style={{ fontSize: 14, flexShrink: 0 }}>💊</span>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
+                    {routine.removedByMulti.join('·')}은 종합비타민으로 이미 커버돼요.
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                    아래 영양제만 추가로 챙겨보세요.
+                  </div>
+                </div>
               </div>
             </div>
           )}
