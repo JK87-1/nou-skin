@@ -139,7 +139,7 @@ export default function OnboardingPage({ onComplete, onGoSettings }) {
       minHeight: '100dvh',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: '24px 18px',
-      background: 'linear-gradient(180deg, #e8f5e9 0%, #c8e6c9 50%, #a5d6a7 100%)',
+      background: 'transparent',
     }}>
       <div style={cardStyle}>
         <StepDots current={step} total={4} />
