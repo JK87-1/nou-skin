@@ -73,7 +73,7 @@ export function getCategories() {
     if (!savedKeys.has(d.key)) migrated.push({ ...d });
   });
   // 3) 삭제된 카테고리 제거
-  const filtered = migrated.filter(c => !['shape', 'meditation', 'mood', 'walk', 'exercise'].includes(c.key));
+  const filtered = migrated.filter(c => !['shape', 'meditation', 'walk', 'exercise'].includes(c.key));
   // 4) 최소 1개는 활성화
   if (!filtered.some(c => c.enabled)) filtered[0].enabled = true;
   return filtered;
