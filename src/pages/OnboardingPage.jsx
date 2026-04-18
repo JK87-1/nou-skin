@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { saveProfile } from '../storage/ProfileStorage';
 import { saveBodyRecord, saveBodyProfile } from '../storage/BodyStorage';
 
@@ -18,10 +18,83 @@ const INTERESTS = [
   { icon: '💊', label: '영양 관리' },
 ];
 
-function calcAge(birthStr) {
-  const m = birthStr.match(/(\d{4})/);
-  if (!m) return 25;
-  return new Date().getFullYear() - Number(m[1]);
+function calcAgeFromYear(year) {
+  if (!year) return 25;
+  return new Date().getFullYear() - year;
+}
+
+const ITEM_H = 40;
+const VISIBLE = 5;
+const CENTER = Math.floor(VISIBLE / 2);
+
+function ScrollPicker({ items, value, onChange, suffix }) {
+  const ref = useRef(null);
+  const touching = useRef(false);
+  const timer = useRef(null);
+
+  const idx = items.indexOf(value);
+  const startIdx = idx >= 0 ? idx : 0;
+
+  useEffect(() => {
+    if (ref.current && !touching.current) {
+      ref.current.scrollTop = startIdx * ITEM_H;
+    }
+  }, []);
+
+  const snap = useCallback(() => {
+    if (!ref.current) return;
+    const i = Math.round(ref.current.scrollTop / ITEM_H);
+    const clamped = Math.max(0, Math.min(i, items.length - 1));
+    ref.current.scrollTo({ top: clamped * ITEM_H, behavior: 'smooth' });
+    if (items[clamped] !== value) onChange(items[clamped]);
+  }, [items, value, onChange]);
+
+  const handleScroll = () => {
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => {
+      if (!touching.current) snap();
+    }, 80);
+  };
+
+  return (
+    <div style={{ position: 'relative', height: ITEM_H * VISIBLE, overflow: 'hidden', flex: 1 }}>
+      {/* Highlight band */}
+      <div style={{
+        position: 'absolute', top: CENTER * ITEM_H, left: 0, right: 0, height: ITEM_H,
+        background: 'rgba(137,206,245,0.12)', borderRadius: 10, zIndex: 0,
+        pointerEvents: 'none',
+      }} />
+      {/* Fade top/bottom */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: ITEM_H * 1.5, background: 'linear-gradient(to bottom, rgba(255,255,255,0.95), transparent)', zIndex: 1, pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: ITEM_H * 1.5, background: 'linear-gradient(to top, rgba(255,255,255,0.95), transparent)', zIndex: 1, pointerEvents: 'none' }} />
+      <div
+        ref={ref}
+        onScroll={handleScroll}
+        onTouchStart={() => { touching.current = true; }}
+        onTouchEnd={() => { touching.current = false; snap(); }}
+        onMouseDown={() => { touching.current = true; }}
+        onMouseUp={() => { touching.current = false; snap(); }}
+        style={{
+          height: '100%', overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+          scrollbarWidth: 'none', msOverflowStyle: 'none',
+          paddingTop: CENTER * ITEM_H, paddingBottom: CENTER * ITEM_H,
+          position: 'relative', zIndex: 0,
+        }}
+      >
+        <style>{`.scroll-picker::-webkit-scrollbar { display: none; }`}</style>
+        {items.map((item, i) => (
+          <div key={i} className="scroll-picker" style={{
+            height: ITEM_H, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 18, fontWeight: 600, color: 'var(--text-primary)',
+            opacity: item === value ? 1 : 0.3,
+            transition: 'opacity 0.15s',
+          }}>
+            {item}{suffix || ''}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function calcBMR(gender, weight, height, age) {
@@ -34,12 +107,20 @@ export default function OnboardingPage({ onComplete, onGoSettings }) {
 
   const [name, setName] = useState('');
   const [gender, setGender] = useState('');
-  const [birth, setBirth] = useState('');
+  const [birthYear, setBirthYear] = useState(1995);
+  const [birthMonth, setBirthMonth] = useState(1);
+  const [birthDay, setBirthDay] = useState(1);
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
   const [interests, setInterests] = useState([]);
 
-  const age = calcAge(birth);
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 80 }, (_, i) => currentYear - i - 10);
+  const months = Array.from({ length: 12 }, (_, i) => i + 1);
+  const daysInMonth = new Date(birthYear, birthMonth, 0).getDate();
+  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+  const age = calcAgeFromYear(birthYear);
   const w = Number(weight);
   const h = Number(height);
   const bmr = w > 0 && h > 0 && gender ? calcBMR(gender, w, h, age) : 0;
@@ -47,7 +128,7 @@ export default function OnboardingPage({ onComplete, onGoSettings }) {
 
   const canNext = [
     name.trim().length > 0,
-    gender && birth.trim().length >= 6 && h > 0 && w > 0,
+    gender && h > 0 && w > 0,
     interests.length > 0,
     true,
   ];
@@ -56,7 +137,7 @@ export default function OnboardingPage({ onComplete, onGoSettings }) {
     saveProfile({
       nickname: name.trim(),
       gender,
-      birthYear: birth.match(/(\d{4})/)?.[1] || '',
+      birthYear: String(birthYear),
       onboardingInterests: interests,
     });
     saveBodyProfile({ height: h });
@@ -141,12 +222,14 @@ export default function OnboardingPage({ onComplete, onGoSettings }) {
 
         <div style={{ marginBottom: 16 }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>생년월일</div>
-          <input
-            value={birth}
-            onChange={e => setBirth(e.target.value)}
-            placeholder="예: 1995.03.12"
-            style={inputStyle}
-          />
+          <div style={{
+            display: 'flex', gap: 4, alignItems: 'center',
+            background: 'var(--bg-card, #fff)', borderRadius: 16, padding: '4px 8px',
+          }}>
+            <ScrollPicker items={years} value={birthYear} onChange={setBirthYear} suffix="년" />
+            <ScrollPicker items={months} value={birthMonth} onChange={setBirthMonth} suffix="월" />
+            <ScrollPicker items={days} value={birthDay > daysInMonth ? daysInMonth : birthDay} onChange={setBirthDay} suffix="일" />
+          </div>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
