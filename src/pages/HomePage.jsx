@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import SkinWeather from '../components/SkinWeather';
 import { getLatestRecord } from '../storage/SkinStorage';
 import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, GENDER_OPTIONS } from '../storage/ProfileStorage';
-import { getTodayNutrition, getTodayFoods, getFoodGoal } from '../storage/FoodStorage';
+import { getTodayNutrition, getTodayFoods, getFoodGoal, saveFoodRecord } from '../storage/FoodStorage';
 import { getWeatherData } from '../storage/WeatherStorage';
 import { getTodayProgress } from '../storage/RoutineCheckStorage';
 import { getLatestWeight, getBodyRecords, saveBodyRecord } from '../storage/BodyStorage';
@@ -170,6 +170,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [showWeather, setShowWeather] = useState(false);
   const [showWeightModal, setShowWeightModal] = useState(false);
   const [showActivityModal, setShowActivityModal] = useState(false);
+  const [showFoodModal, setShowFoodModal] = useState(false);
   const [weightRefreshKey, setWeightRefreshKey] = useState(0);
   const [userProfile, setUserProfile] = useState(getProfile);
 
@@ -469,6 +470,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
                     <span style={{ fontSize: 36, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{remaining}</span>
                     <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>kcal 남음</span>
+                    <div onClick={(e) => { e.stopPropagation(); setShowFoodModal(true); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-muted)', cursor: 'pointer', marginLeft: 4 }}>+</div>
                   </div>
                   <div onClick={() => onTabChange?.('record')} style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
                     <span style={{ opacity: 0.5 }}>⊙</span> {fullGoal.kcal} 목표 <span style={{ fontSize: 10 }}>›</span>
@@ -769,6 +771,13 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           onClose={() => setShowActivityModal(false)}
         />
       )}
+
+      {showFoodModal && (
+        <AddFoodQuickModal
+          onSave={() => { setShowFoodModal(false); setWeightRefreshKey(k => k + 1); }}
+          onClose={() => setShowFoodModal(false)}
+        />
+      )}
     </div>
   );
 
@@ -982,6 +991,154 @@ function AddActivityModal({ onSave, onClose }) {
             border: 'none', background: 'var(--accent-primary)',
             color: '#fff', fontSize: 14, fontWeight: 700,
             cursor: 'pointer', fontFamily: 'inherit',
+          }}>저장</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AddFoodQuickModal({ onSave, onClose }) {
+  const [meal, setMeal] = useState(() => {
+    const h = new Date().getHours();
+    if (h < 10) return '아침';
+    if (h < 15) return '점심';
+    if (h < 20) return '저녁';
+    return '간식';
+  });
+  const [foodName, setFoodName] = useState('');
+  const [analyzing, setAnalyzing] = useState(false);
+  const [aiResult, setAiResult] = useState(null);
+  const inputRef = useRef(null);
+
+  const handleAnalyze = async () => {
+    if (!foodName.trim()) return;
+    setAnalyzing(true);
+    setAiResult(null);
+    try {
+      const res = await fetch('/api/food-lookup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: foodName.trim(), servings: 1 }),
+      });
+      if (res.ok) setAiResult(await res.json());
+    } catch {}
+    setAnalyzing(false);
+  };
+
+  const handleSubmit = () => {
+    if (!aiResult) return;
+    const today = new Date().toISOString().slice(0, 10);
+    saveFoodRecord(today, {
+      name: aiResult.name, meal,
+      kcal: aiResult.kcal || 0,
+      carb: aiResult.carb || 0,
+      protein: aiResult.protein || 0,
+      fat: aiResult.fat || 0,
+      vitamin: aiResult.vitamin || 0,
+      mineral: aiResult.mineral || 0,
+      fiber: aiResult.fiber || 0,
+      iron: aiResult.iron || 0,
+      calcium: aiResult.calcium || 0,
+      sugar: aiResult.sugar || 0,
+      bloodSugar: aiResult.bloodSugar || '',
+      skinImpact: aiResult.skinImpact || '',
+      tags: aiResult.tags || [],
+      ingredients: aiResult.ingredients || [],
+      water: 0,
+    });
+    onSave();
+  };
+
+  const mealTabStyle = (active) => ({
+    padding: '6px 14px', borderRadius: 8, border: 'none',
+    background: active ? 'var(--accent-primary)' : 'transparent',
+    color: active ? '#fff' : 'var(--text-muted)',
+    fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+  });
+
+  return (
+    <div onClick={onClose} style={{
+      position: 'fixed', inset: 0, zIndex: 1100,
+      background: 'rgba(0,0,0,0.5)',
+      display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
+        padding: '24px 24px 40px', width: '100%', maxWidth: 420,
+      }}>
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
+        <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 16, textAlign: 'center' }}>식사 기록</div>
+
+        {/* Meal selector */}
+        <div style={{ display: 'flex', gap: 4, justifyContent: 'center', marginBottom: 16, background: 'var(--bg-input, #F2F3F5)', borderRadius: 10, padding: 4 }}>
+          {['아침', '점심', '저녁', '간식'].map(m => (
+            <button key={m} onClick={() => setMeal(m)} style={mealTabStyle(meal === m)}>{m}</button>
+          ))}
+        </div>
+
+        {/* Food name input */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+          <input
+            ref={inputRef}
+            value={foodName} onChange={e => setFoodName(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') handleAnalyze(); }}
+            placeholder="음식 이름 (예: 김치찌개 1인분)"
+            style={{
+              flex: 1, padding: '12px 14px', borderRadius: 12, border: 'none',
+              background: 'var(--bg-input, #F2F3F5)', fontSize: 14,
+              color: 'var(--text-primary)', fontFamily: 'inherit', outline: 'none',
+            }}
+            autoFocus
+          />
+          <button onClick={handleAnalyze} disabled={analyzing || !foodName.trim()} style={{
+            padding: '12px 16px', borderRadius: 12, border: 'none',
+            background: analyzing ? 'var(--bg-input, #F2F3F5)' : 'var(--accent-primary)',
+            color: analyzing ? 'var(--text-muted)' : '#fff',
+            fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+            whiteSpace: 'nowrap',
+          }}>{analyzing ? '분석중...' : '분석'}</button>
+        </div>
+
+        {/* AI Result */}
+        {aiResult && (
+          <div style={{
+            padding: '14px 16px', borderRadius: 14, marginBottom: 16,
+            background: 'rgba(137,206,245,0.08)', border: '1px solid rgba(137,206,245,0.2)',
+          }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 10 }}>{aiResult.name}</div>
+            <div style={{ display: 'flex', gap: 16 }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--accent-primary)' }}>{aiResult.kcal}</div>
+                <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>kcal</div>
+              </div>
+              {[
+                { label: '탄', value: aiResult.carb, color: '#F5C2CB' },
+                { label: '단', value: aiResult.protein, color: '#F5E6A3' },
+                { label: '지', value: aiResult.fat, color: '#F5C4A0' },
+              ].map(m => (
+                <div key={m.label} style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>{Math.round(m.value || 0)}g</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{m.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: 10, marginTop: aiResult ? 0 : 12 }}>
+          <button onClick={onClose} style={{
+            flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
+            border: 'none', background: 'var(--bg-input, #F2F3F5)',
+            color: 'var(--text-muted)', fontSize: 14, fontWeight: 600,
+            cursor: 'pointer', fontFamily: 'inherit',
+          }}>취소</button>
+          <button onClick={handleSubmit} disabled={!aiResult} style={{
+            flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
+            border: 'none', background: aiResult ? 'var(--accent-primary)' : 'rgba(0,0,0,0.08)',
+            color: aiResult ? '#fff' : 'var(--text-dim)',
+            fontSize: 14, fontWeight: 700,
+            cursor: aiResult ? 'pointer' : 'default', fontFamily: 'inherit',
           }}>저장</button>
         </div>
       </div>
