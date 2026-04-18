@@ -57,23 +57,23 @@ export function getCategories() {
   const profile = getProfile();
   const saved = profile.categories || [];
   const defaultMap = Object.fromEntries(DEFAULTS.categories.map(c => [c.key, c]));
-  // 1) 저장된 카테고리는 순서·활성·컬러 유지, 라벨은 기본 카테고리만 최신화
-  const migrated = saved.map(c => {
-    const def = defaultMap[c.key];
-    return {
-      ...c,
-      label: def ? def.label : c.label,
-      color: c.color || (def ? def.color : '#D0D0D0'),
-      group: c.group || (def ? def.group : 'cause'),
-    };
-  });
+  // 삭제된 카테고리 목록
+  const REMOVED = ['shape', 'meditation', 'walk', 'exercise', 'water', 'face', 'bodyshape'];
+  // 1) 저장된 카테고리는 순서·활성 유지, 라벨·컬러·그룹은 기본값으로 최신화
+  const migrated = saved
+    .filter(c => !REMOVED.includes(c.key))
+    .map(c => {
+      const def = defaultMap[c.key];
+      return def
+        ? { ...c, label: def.label, color: def.color, group: def.group }
+        : c;
+    });
   // 2) 저장본에 없는 신규 기본 카테고리는 뒤에 추가
   const savedKeys = new Set(migrated.map(c => c.key));
   DEFAULTS.categories.forEach(d => {
     if (!savedKeys.has(d.key)) migrated.push({ ...d });
   });
-  // 3) 삭제된 카테고리 제거
-  const filtered = migrated.filter(c => !['shape', 'meditation', 'walk', 'exercise'].includes(c.key));
+  const filtered = migrated;
   // 4) 최소 1개는 활성화
   if (!filtered.some(c => c.enabled)) filtered[0].enabled = true;
   return filtered;
