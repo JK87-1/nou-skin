@@ -1193,7 +1193,7 @@ function SettingsPage({ open, onClose, onCategoriesChanged }) {
       </div>
       {showProfilePage && <ProfileSettingsPage onClose={() => setShowProfilePage(false)} />}
       {showCategoryPage && <CategorySettingsPage onClose={() => setShowCategoryPage(false)} onSave={onCategoriesChanged} />}
-      {showGoalPage && <GoalSettingsPage onClose={() => setShowGoalPage(false)} />}
+      {showGoalPage && <GoalSettingsPage onClose={() => setShowGoalPage(false)} onTabChange={onTabChange} />}
     </>
   );
 }
@@ -1207,7 +1207,7 @@ const DIET_GOALS = [
   { key: 'lowcarb', name: '저탄수화물', desc: '탄수화물을 줄이고 단백질과 건강한 지방을 늘려요', carb: 30, protein: 35, fat: 35 },
 ];
 
-function GoalSettingsPage({ onClose }) {
+function GoalSettingsPage({ onClose, onTabChange }) {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showSupplementOnboarding, setShowSupplementOnboarding] = useState(false);
   const profile = getProfile();
@@ -1340,7 +1340,11 @@ function GoalSettingsPage({ onClose }) {
       </div>
     </div>
     {showOnboarding && <DietOnboardingPage onClose={() => setShowOnboarding(false)} onComplete={() => setShowOnboarding(false)} />}
-    {showSupplementOnboarding && <SupplementOnboardingPage onClose={() => setShowSupplementOnboarding(false)} onComplete={() => setShowSupplementOnboarding(false)} />}
+    {showSupplementOnboarding && <SupplementOnboardingPage
+      onClose={() => setShowSupplementOnboarding(false)}
+      onComplete={() => setShowSupplementOnboarding(false)}
+      onNavigateRoutine={() => { setShowSupplementOnboarding(false); onClose(); onTabChange?.('routine'); }}
+    />}
     </>
   );
 }

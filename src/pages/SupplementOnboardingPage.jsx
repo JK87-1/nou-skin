@@ -95,7 +95,7 @@ const CONFLICTS = [
   { a: '비오틴', b: null, msg: '비오틴 복용 중 혈액검사 시 의사에게 반드시 알려주세요' },
 ];
 
-export default function SupplementOnboardingPage({ onClose, onComplete }) {
+export default function SupplementOnboardingPage({ onClose, onComplete, onNavigateRoutine }) {
   const [step, setStep] = useState(0);
 
   // Section 1
@@ -253,8 +253,12 @@ export default function SupplementOnboardingPage({ onClose, onComplete }) {
       supplementMorningAlarm: routine.morningAlarm,
       supplementEveningAlarm: routine.eveningAlarm,
     });
-    onComplete?.();
-    onClose();
+    if (onNavigateRoutine) {
+      onNavigateRoutine();
+    } else {
+      onComplete?.();
+      onClose();
+    }
   };
 
   const handleManual = () => {
