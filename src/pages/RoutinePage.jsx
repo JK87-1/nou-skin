@@ -1825,7 +1825,7 @@ function RoutineChecklist({ mode, enabledCats, selectedDate }) {
   }, [catKey]);
 
   const timeLabels = ['아침', '점심', '저녁'];
-  const timePlaceholders = { skin: '예: 토너 바르기, 선크림', food: '예: 물 2L 마시기, 채소 먹기', body: '예: 스트레칭, 걷기 30분', face: '예: 얼굴 마사지, 표정 운동' };
+  const timePlaceholders = { skin: '예: 토너 바르기, 선크림', food: '예: 물 2L 마시기, 채소 먹기', body: '예: 스트레칭, 걷기 30분' };
 
   return (
     <div style={{ padding: '0 18px', animation: 'breatheIn 0.5s ease both' }}>

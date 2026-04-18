@@ -19,13 +19,11 @@ const DEFAULTS = {
   dietGoal: 'balance',
   categories: [
     { key: 'food',      label: '식단',     color: '#FFD070', enabled: true,  group: 'cause' },
-    { key: 'water',     label: '수분',     color: '#7BC8F0', enabled: true,  group: 'cause' },
     { key: 'sleep',     label: '수면',     color: '#C8A0E0', enabled: true,  group: 'cause' },
     { key: 'activity',  label: '활동',     color: '#A8D8A8', enabled: true,  group: 'cause' },
     { key: 'supplement', label: '영양제', color: '#B8D8A0', enabled: true,  group: 'cause' },
     { key: 'energy',    label: '에너지',   color: '#F0C878', enabled: true,  group: 'result' },
     { key: 'body',      label: '몸',       color: '#D0D0D0', enabled: true,  group: 'result' },
-    { key: 'face',      label: '얼굴',     color: '#80D0A8', enabled: true,  group: 'result' },
     { key: 'skin',      label: '피부',     color: '#F8A8C0', enabled: true,  group: 'result' },
   ],
 };

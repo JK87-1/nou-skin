@@ -682,50 +682,6 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
       })()}
 
       {/* Water content */}
-      {foodTab === 'water' && (
-        <div style={{ padding: '8px 14px 0' }}>
-          <div style={{ background: 'rgba(255,255,255,.72)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)', ...fadeUp(0.05) }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('water') }} />
-                <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>수분</span>
-              </div>
-              <span style={{ fontSize: 11, color: waterCount > 0 ? '#5AAABB' : '#9ABBC8', fontWeight: 500 }}>
-                {waterCount > 0 ? `${waterCount}잔(${waterCount * 250}ml)` : '미기록'}
-              </span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ display: 'flex', gap: 4, flex: 1 }}>
-                {Array.from({ length: TOTAL_CUPS }).map((_, i) => {
-                  const filled = i < waterCount;
-                  return (
-                    <div key={i} onClick={() => isToday && setWaterCount(i + 1 === waterCount ? 0 : i + 1)}
-                      style={{
-                        width: 20, height: 26, borderRadius: 5, overflow: 'hidden',
-                        border: `1px solid ${filled ? 'rgba(100,180,220,.4)' : 'rgba(100,180,220,.2)'}`,
-                        background: filled ? 'transparent' : 'rgba(100,180,220,.08)',
-                        cursor: isToday ? 'pointer' : 'default', position: 'relative', transition: 'all 0.15s ease',
-                      }}>
-                      {filled && (
-                        <div style={{
-                          position: 'absolute', bottom: 0, left: 0, right: 0, height: '100%',
-                          background: 'linear-gradient(180deg, #90CCEE, #60AADD)', borderRadius: 4,
-                        }} />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-              <span style={{ fontSize: 13, fontWeight: 500, color: '#5AAABB', minWidth: 32, textAlign: 'right' }}>{waterCount}잔</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
-              <span style={{ fontSize: 9, color: '#9ABBC8' }}>1잔 = 250ml</span>
-              <span style={{ fontSize: 9, color: '#9ABBC8' }}>목표 2,000ml</span>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Sleep content */}
       {foodTab === 'sleep' && (
         <div style={{ padding: '8px 14px 0' }}>
@@ -1416,6 +1372,49 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
       {/* FoodCoachCard 통합됨 — 첫번째 카드에 포함 */}
 
+      {/* Water Card (in food tab) */}
+      <div style={{ padding: '8px 14px 0' }}>
+        <div style={{ background: 'rgba(255,255,255,.72)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)', ...fadeUp(0.3) }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 3, height: 14, borderRadius: 2, background: '#7BC8F0' }} />
+              <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>수분</span>
+            </div>
+            <span style={{ fontSize: 11, color: waterCount > 0 ? '#5AAABB' : '#9ABBC8', fontWeight: 500 }}>
+              {waterCount > 0 ? `${waterCount}잔(${waterCount * 250}ml)` : '미기록'}
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ display: 'flex', gap: 4, flex: 1 }}>
+              {Array.from({ length: TOTAL_CUPS }).map((_, i) => {
+                const filled = i < waterCount;
+                return (
+                  <div key={i} onClick={() => isToday && setWaterCount(i + 1 === waterCount ? 0 : i + 1)}
+                    style={{
+                      width: 20, height: 26, borderRadius: 5, overflow: 'hidden',
+                      border: `1px solid ${filled ? 'rgba(100,180,220,.4)' : 'rgba(100,180,220,.2)'}`,
+                      background: filled ? 'transparent' : 'rgba(100,180,220,.08)',
+                      cursor: isToday ? 'pointer' : 'default', position: 'relative', transition: 'all 0.15s ease',
+                    }}>
+                    {filled && (
+                      <div style={{
+                        position: 'absolute', bottom: 0, left: 0, right: 0, height: '100%',
+                        background: 'linear-gradient(180deg, #90CCEE, #60AADD)', borderRadius: 4,
+                      }} />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <span style={{ fontSize: 13, fontWeight: 500, color: '#5AAABB', minWidth: 32, textAlign: 'right' }}>{waterCount}잔</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+            <span style={{ fontSize: 9, color: '#9ABBC8' }}>1잔 = 250ml</span>
+            <span style={{ fontSize: 9, color: '#9ABBC8' }}>목표 2,000ml</span>
+          </div>
+        </div>
+      </div>
+
       </>}
 
       {/* Body content */}
@@ -1469,15 +1468,6 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
         })()}
         <BodyInsightsSection />
       </>}
-
-      {/* Face content (placeholder) */}
-      {(foodTab === 'face') && (
-        <div style={{ padding: '60px 24px', textAlign: 'center', ...fadeUp(0.05) }}>
-          <div style={{ fontSize: 28, marginBottom: 12 }}>🙂</div>
-          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>얼굴 기록</div>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>곧 출시 예정이에요</div>
-        </div>
-      )}
 
       {/* Body shape content (placeholder) */}
       {(foodTab === 'shape') && (
