@@ -91,9 +91,8 @@ export default function OnboardingPage({ onComplete, onGoSettings }) {
   };
 
   const cardStyle = {
-    background: 'rgba(255,255,255,0.72)',
-    borderRadius: 20,
-    border: '0.5px solid rgba(255,255,255,0.9)',
+    background: 'transparent',
+    border: 'none',
     padding: '20px 16px',
     maxWidth: 360,
     minHeight: 520,
