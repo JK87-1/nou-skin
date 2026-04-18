@@ -588,7 +588,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
             {sorted.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
                 <div style={{ fontSize: 14, fontWeight: 600 }}>몸무게 기록이 없어요</div>
-                <div style={{ fontSize: 12, marginTop: 6 }}>바디 탭에서 기록을 시작해보세요</div>
+                <div style={{ fontSize: 12, marginTop: 6 }}>몸 탭에서 기록을 시작해보세요</div>
               </div>
             ) : (
               <div>
@@ -636,7 +636,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
       {(albumCategory === 'shape') && (
         <div style={{ padding: '80px 24px', textAlign: 'center', animation: 'breatheIn 0.5s ease both' }}>
           <div style={{ fontSize: 32, marginBottom: 12 }}>💪</div>
-          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>바디 앨범</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>몸 앨범</div>
           <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>곧 출시 예정이에요</div>
         </div>
       )}

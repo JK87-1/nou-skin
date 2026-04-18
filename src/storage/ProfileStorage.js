@@ -24,10 +24,9 @@ const DEFAULTS = {
     { key: 'activity',  label: '활동',     color: '#A8D8A8', enabled: true,  group: 'cause' },
     { key: 'supplement', label: '영양제', color: '#B8D8A0', enabled: true,  group: 'cause' },
     { key: 'energy',    label: '에너지',   color: '#F0C878', enabled: true,  group: 'result' },
-    { key: 'body',      label: '몸무게',   color: '#D0D0D0', enabled: true,  group: 'result' },
+    { key: 'body',      label: '몸',       color: '#D0D0D0', enabled: true,  group: 'result' },
     { key: 'face',      label: '얼굴',     color: '#80D0A8', enabled: true,  group: 'result' },
     { key: 'skin',      label: '피부',     color: '#F8A8C0', enabled: true,  group: 'result' },
-    { key: 'bodyshape', label: '바디',     color: '#F0A8A8', enabled: true,  group: 'result' },
   ],
 };
 

@@ -792,7 +792,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
     const names = [];
     if (skinRoutine.done < skinRoutine.total) names.push('피부');
     if (foodRoutine.done < foodRoutine.total) names.push('식단');
-    if (bodyRoutine.done < bodyRoutine.total) names.push('바디');
+    if (bodyRoutine.done < bodyRoutine.total) names.push('몸');
     return names.length > 0 ? `${names.join(' · ')} 루틴이 남았어요` : '';
   }
 }

@@ -7,12 +7,12 @@ const ITEMS_KEY = 'lua_routine_items';
 const CHECKS_KEY = 'lua_routine_checks';
 
 // 카테고리 key → 한글 라벨 매핑
-export const CAT_LABEL = { skin: '피부', food: '식단', body: '몸무게', face: '얼굴' };
+export const CAT_LABEL = { skin: '피부', food: '식단', body: '몸', face: '얼굴' };
 
 // 카테고리 컬러
 export const CAT_COLOR = {
   식단:   { bg: 'rgba(255,210,80,.2)',   text: '#9A7000',  icon: '🟡' },
-  몸무게: { bg: 'rgba(100,200,220,.2)',  text: '#2A7A9A',  icon: '🔵' },
+  몸:     { bg: 'rgba(100,200,220,.2)',  text: '#2A7A9A',  icon: '🔵' },
   피부:   { bg: 'rgba(248,168,192,.2)',  text: '#C05080',  icon: '🩷' },
   얼굴:   { bg: 'rgba(200,160,224,.2)',  text: '#7040A0',  icon: '🟣' },
 };
