@@ -1515,7 +1515,7 @@ function CategorySettingsPage({ onClose, onSave }) {
 
 
       {/* Category list — grouped with sub-categories */}
-      <div style={{ padding: '8px 20px', flex: 1, paddingBottom: 120 }}>
+      <div style={{ padding: '24px 20px', flex: 1, paddingBottom: 120 }}>
         {[
           { group: 'cause', label: '행동', desc: '내가 하는 것들' },
           { group: 'result', label: '변화', desc: '몸에 나타나는 변화' },
@@ -1555,9 +1555,10 @@ function CategorySettingsPage({ onClose, onSave }) {
                     <div onClick={() => { if (didDragRef.current) return; setExpandedCat(expandedCat === cat.key ? null : cat.key); }} style={{
                       display: 'flex', alignItems: 'center', gap: 12,
                       padding: '12px 14px',
-                      background: 'rgba(255,255,255,0.8)',
+                      background: 'rgba(255,255,255,0.6)',
                       borderRadius: (expandedCat === cat.key || colorOpen === cat.key) ? '14px 14px 0 0' : 14,
                       border: '0.5px solid rgba(255,255,255,0.95)',
+                      borderBottom: (expandedCat === cat.key || colorOpen === cat.key) ? 'none' : '0.5px solid rgba(255,255,255,0.95)',
                       boxShadow: isDragged ? 'none' : '0 1px 4px rgba(0,0,0,0.03)',
                       opacity: cat.enabled ? 1 : 0.55,
                       transition: 'opacity 0.2s ease, border-radius 0.2s ease',
@@ -1626,7 +1627,7 @@ function CategorySettingsPage({ onClose, onSave }) {
                     {/* 소분류 */}
                     {hasSubs && (
                       <div style={{
-                        background: 'rgba(255,255,255,0.8)',
+                        background: 'rgba(255,255,255,0.6)',
                         borderRadius: '0 0 14px 14px',
                         padding: expandedCat === cat.key ? '4px 14px 6px 14px' : '0 14px 0 14px',
                         borderTop: 'none',
@@ -1639,8 +1640,9 @@ function CategorySettingsPage({ onClose, onSave }) {
                           <div key={sub.key} style={{
                             display: 'flex', alignItems: 'center', gap: 12,
                             padding: '9px 0',
-                            borderTop: si > 0 ? '0.5px solid rgba(100,180,220,0.08)' : 'none',
                           }}>
+                            {/* 드래그핸들 자리 spacer */}
+                            <div style={{ width: 22, padding: '0 2px', flexShrink: 0 }} />
                             <div style={{ width: 26, display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
                               <div style={{
                                 width: 3, height: 12, borderRadius: 2,
