@@ -1544,7 +1544,7 @@ function CategorySettingsPage({ onClose, onSave }) {
                             <div style={{ width: 36, display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
                             <div onClick={() => toggleSub(idx, si)} style={{
                               width: 30, height: 14, borderRadius: 7,
-                              background: sub.enabled ? 'linear-gradient(120deg, rgba(144,204,232,0.5), rgba(96,170,221,0.5))' : 'rgba(180,200,210,.15)',
+                              background: sub.enabled ? 'linear-gradient(120deg, rgba(144,204,232,0.7), rgba(96,170,221,0.7))' : 'rgba(180,200,210,.15)',
                               position: 'relative', cursor: 'pointer',
                               transition: 'background 0.2s ease',
                             }}>
