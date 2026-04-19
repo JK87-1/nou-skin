@@ -479,7 +479,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
             </div>
 
             {/* Food + Water Card */}
-            <div style={{ ...allCardStyle, ...fadeUp(0.1) }}>
+            <div style={{ ...allCardStyle, padding: '18px 15px', ...fadeUp(0.1) }}>
               {allCardHeader(getCategoryColor('food'), '식단', null,
                 todayMeals.length > 0 ? `${todayMeals.length}끼 기록됨` : '미기록',
                 todayMeals.length > 0 ? '#5AAABB' : '#9ABBC8'
@@ -530,7 +530,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
               {/* 수분 섹션 */}
               <div style={{ marginTop: 14 }}>
-                {allCardHeader(getCategoryColor('water'), '수분', null,
+                {allCardHeader(getCategoryColor('food'), '수분', null,
                   waterCount > 0 ? `${waterCount}잔(${waterCount * cupMl}ml)` : '미기록',
                   waterCount > 0 ? '#5AAABB' : '#9ABBC8'
                 )}
