@@ -529,7 +529,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
               )}
 
               {/* 수분 섹션 */}
-              <div style={{ marginTop: 14 }}>
+              <div style={{ marginTop: 22 }}>
                 {allCardHeader(getCategoryColor('food'), '수분', null,
                   waterCount > 0 ? `${waterCount}잔(${waterCount * cupMl}ml)` : '미기록',
                   waterCount > 0 ? '#5AAABB' : '#9ABBC8'
