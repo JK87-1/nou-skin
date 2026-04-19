@@ -1542,7 +1542,7 @@ function CategorySettingsPage({ onClose, onSave }) {
                               transition: 'color 0.2s ease',
                             }}>{sub.label}</span>
                             <div onClick={() => toggleSub(idx, si)} style={{
-                              width: 28, height: 14, borderRadius: 7, flexShrink: 0,
+                              width: 36, height: 14, borderRadius: 7, flexShrink: 0,
                               background: sub.enabled ? 'linear-gradient(120deg, #90CCE8, #60AADD)' : 'rgba(180,200,210,.3)',
                               position: 'relative', cursor: 'pointer',
                               transition: 'background 0.2s ease',
@@ -1550,7 +1550,7 @@ function CategorySettingsPage({ onClose, onSave }) {
                               <div style={{
                                 width: 10, height: 10, borderRadius: '50%', background: '#fff',
                                 position: 'absolute', top: 2,
-                                left: sub.enabled ? 16 : 2,
+                                left: sub.enabled ? 24 : 2,
                                 transition: 'left 0.2s ease',
                                 boxShadow: '0 1px 2px rgba(0,0,0,0.15)',
                               }} />
