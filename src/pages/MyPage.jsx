@@ -1518,9 +1518,8 @@ function CategorySettingsPage({ onClose, onSave }) {
       {/* Category list — grouped with sub-categories */}
       <div style={{ padding: '24px 20px', flex: 1, paddingBottom: 120 }}>
         {/* 보기 옵션 토글 */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: 12, padding: '0 4px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 11, color: '#9ABBC8' }}>{expandAll ? '전체 보기' : ''}</span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: 12, padding: '0 14px' }}>
+          <div style={{ width: 40, display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
             <div onClick={() => { setExpandAll(!expandAll); if (!expandAll) setExpandedCat(null); }} style={{
               width: 36, height: 18, borderRadius: 4, position: 'relative', cursor: 'pointer',
               background: expandAll ? 'linear-gradient(120deg, #90CCE8, #60AADD)' : 'rgba(180,200,210,.3)',
@@ -1544,7 +1543,7 @@ function CategorySettingsPage({ onClose, onSave }) {
           if (groupCats.length === 0) return null;
           return (
             <div key={group} style={{ marginBottom: 24 }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '0 4px', marginBottom: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '0 14px', marginBottom: 10 }}>
                 <span style={{ fontSize: 13, fontWeight: 600, color: '#1A3A4A' }}>{label}</span>
                 <span style={{ fontSize: 10, color: '#9ABBC8' }}>{desc}</span>
               </div>
@@ -1607,15 +1606,15 @@ function CategorySettingsPage({ onClose, onSave }) {
                       <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>{cat.label}</span>
                       <div style={{ width: 40, display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
                         <div onClick={(e) => { e.stopPropagation(); toggle(idx); }} style={{
-                          width: 40, height: 20, borderRadius: 10,
+                          width: 36, height: 18, borderRadius: 10,
                           background: cat.enabled ? 'linear-gradient(120deg, #90CCE8, #60AADD)' : 'rgba(180,200,210,.3)',
                           position: 'relative', cursor: 'pointer',
                           transition: 'background 0.2s ease',
                         }}>
                           <div style={{
-                            width: 16, height: 16, borderRadius: '50%', background: '#fff',
+                            width: 14, height: 14, borderRadius: '50%', background: '#fff',
                             position: 'absolute', top: 2,
-                            left: cat.enabled ? 22 : 2,
+                            left: cat.enabled ? 20 : 2,
                             transition: 'left 0.2s ease',
                             boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
                           }} />
