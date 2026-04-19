@@ -213,6 +213,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
   const goalMl = waterSettings.goalMl;
   const TOTAL_CUPS = Math.ceil(goalMl / cupMl);
   const [stepCount, setStepCount] = useState(0);
+  const [meditationMin, setMeditationMin] = useState(0);
   const [exCalOverrides, setExCalOverrides] = useState({}); // { exerciseName: manualCal }
   const [stepCalOverride, setStepCalOverride] = useState(null);
 
@@ -227,11 +228,12 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
       setSleepWakeTime(saved.sleep?.wakeTime || null);
       setWaterCount(saved.water?.cups ?? 0);
       setStepCount(saved.steps ?? 0);
+      setMeditationMin(saved.meditation ?? 0);
     } else {
       setSelectedExercise(null); setExerciseLog({});
       setSleepHours(7); setSleepQuality(null);
       setSleepBedtime(null); setSleepWakeTime(null);
-      setWaterCount(0); setStepCount(0);
+      setWaterCount(0); setStepCount(0); setMeditationMin(0);
     }
   }, []);
 
@@ -256,11 +258,12 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
       sleep: { hours: sleepHours, quality: sleepQuality, bedtime: sleepBedtime, wakeTime: sleepWakeTime },
       water: { cups: waterCount },
       steps: stepCount,
+      meditation: meditationMin,
     });
-  }, [selectedDate, selectedExercise, exerciseLog, sleepHours, sleepQuality, sleepBedtime, sleepWakeTime, waterCount, stepCount]);
+  }, [selectedDate, selectedExercise, exerciseLog, sleepHours, sleepQuality, sleepBedtime, sleepWakeTime, waterCount, stepCount, meditationMin]);
 
-  // Auto-save when exercise/sleep/water/steps changes
-  useEffect(() => { if (isToday) saveV2(); }, [selectedExercise, exerciseLog, sleepHours, sleepQuality, sleepBedtime, sleepWakeTime, waterCount, stepCount]);
+  // Auto-save when exercise/sleep/water/steps/meditation changes
+  useEffect(() => { if (isToday) saveV2(); }, [selectedExercise, exerciseLog, sleepHours, sleepQuality, sleepBedtime, sleepWakeTime, waterCount, stepCount, meditationMin]);
 
   useEffect(() => {
     if (autoOpenAdd) {
@@ -658,8 +661,8 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
               </div>
             </div>
 
-            {/* Sleep Card */}
-            <div style={{ ...allCardStyle, ...fadeUp(0.3) }}>
+            {/* 휴식 Card (수면 + 명상) */}
+            <div style={{ ...allCardStyle, padding: '18px 15px', ...fadeUp(0.3) }}>
               {allCardHeader(getCategoryColor('sleep'), '수면', null,
                 sleepQuality ? `${sleepHours}시간 · ${sleepQuality}` : `${sleepHours}시간`, '#5AAABB'
               )}
@@ -694,6 +697,30 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                       }}>{q}</button>
                   );
                 })}
+              </div>
+
+              {/* 명상 섹션 */}
+              <div style={{ marginTop: 22 }}>
+                {allCardHeader(getCategoryColor('sleep'), '명상', null,
+                  meditationMin > 0 ? `${meditationMin}분` : '미기록',
+                  meditationMin > 0 ? '#5AAABB' : '#9ABBC8'
+                )}
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {[5, 10, 15, 20, 30].map(v => {
+                    const active = meditationMin === v;
+                    return (
+                      <button key={v} onClick={() => isToday && setMeditationMin(active ? 0 : v)}
+                        style={{
+                          flex: 1, padding: '7px 0', borderRadius: 8, fontSize: 10, fontWeight: active ? 600 : 400,
+                          border: `1px solid ${active ? 'rgba(200,160,224,.4)' : 'rgba(100,180,220,.15)'}`,
+                          background: active ? 'rgba(200,160,224,.15)' : 'rgba(255,255,255,.5)',
+                          color: active ? '#9060B0' : '#7AAABB',
+                          cursor: isToday ? 'pointer' : 'default', transition: 'all 0.15s ease',
+                          fontFamily: 'inherit',
+                        }}>{v}분</button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 

@@ -21,7 +21,7 @@ const DEFAULTS = {
     { key: 'food',       label: '식단',     color: '#F5A623', enabled: true,  group: 'cause' },
     { key: 'activity',   label: '활동',     color: '#4DC87A', enabled: true,  group: 'cause' },
     { key: 'supplement', label: '영양제',   color: '#7BC8F0', enabled: true,  group: 'cause' },
-    { key: 'sleep',      label: '수면',     color: '#9B7DD4', enabled: true,  group: 'cause' },
+    { key: 'sleep',      label: '휴식',     color: '#9B7DD4', enabled: true,  group: 'cause' },
     { key: 'energy',     label: '에너지',   color: '#FF6B6B', enabled: true,  group: 'result' },
     { key: 'mood',       label: '기분',     color: '#FFD93D', enabled: true,  group: 'result' },
     { key: 'body',       label: '바디',     color: '#45B7D1', enabled: true,  group: 'result' },
