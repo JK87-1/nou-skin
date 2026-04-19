@@ -331,7 +331,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
     <div style={{ minHeight: '100dvh', paddingBottom: 80 }}>
       {/* Header */}
       <div style={{ padding: '16px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>기록</h1>
+        <h1 style={{ fontSize: 18, fontWeight: 600, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>기록</h1>
         <div style={{ display: 'flex', gap: 8 }}>
           <div onClick={() => { setAddMeal(null); setShowAdd(true); }} style={{ width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -474,7 +474,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                   {idx > 0 && <div style={{ width: 0.5, height: 28, background: 'rgba(100,180,220,.2)', marginRight: 0 }} />}
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: 50 }}>
                     <span style={{ fontSize: 14 }}>{item.icon}</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: '#1A3A4A', marginTop: 1 }}>{item.value}</span>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: '#1A3A4A', marginTop: 1 }}>{item.value}</span>
                     <span style={{ fontSize: 9, color: '#7AAABB' }}>{item.label}</span>
                   </div>
                 </div>
@@ -1077,7 +1077,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                   position: 'relative',
                 }}>
-                  <div style={{ fontSize: 22, fontWeight: 700, color: '#fff' }}>{slot.record.overallScore}</div>
+                  <div style={{ fontSize: 22, fontWeight: 600, color: '#fff' }}>{slot.record.overallScore}</div>
                   <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.8)', fontWeight: 600 }}>
                     {new Date(slot.record.date).getMonth() + 1}/{new Date(slot.record.date).getDate()}
                   </div>
@@ -1186,7 +1186,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
             padding: '24px 24px 36px', width: '100%', maxWidth: 420,
           }}>
             <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 16px', opacity: 0.3 }} />
-            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 16 }}>언제 먹었나요?</div>
+            <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 16 }}>언제 먹었나요?</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               {MEAL_LABELS.map(m => (
                 <button key={m} onClick={() => { setShowMealPicker(false); setAddMeal(m); setShowAdd(true); }} style={{
@@ -1501,7 +1501,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                   position: 'relative',
                 }}>
-                  <div style={{ fontSize: 22, fontWeight: 700, color: '#fff' }}>{slot.record.weight}<span style={{ fontSize: 11 }}>kg</span></div>
+                  <div style={{ fontSize: 22, fontWeight: 600, color: '#fff' }}>{slot.record.weight}<span style={{ fontSize: 11 }}>kg</span></div>
                   <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.8)', fontWeight: 600 }}>
                     {new Date(slot.record.date).getMonth() + 1}/{new Date(slot.record.date).getDate()}
                   </div>
@@ -1573,11 +1573,11 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                 <path d="M15 18l-6-6 6-6" />
               </svg>
             </div>
-            <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>기록 설정</span>
+            <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>기록 설정</span>
           </div>
 
           <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '28px 24px' }}>
-            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>💧 수분 설정</div>
+            <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>💧 수분 설정</div>
             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 20 }}>1잔 기준과 하루 목표를 설정해요</div>
 
             <div style={{ marginBottom: 24 }}>
@@ -1594,7 +1594,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                     border: cupMl === ml ? '2px solid var(--accent-primary)' : '2px solid transparent',
                     transition: 'all 0.15s ease',
                   }}>
-                    <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{ml}ml</div>
+                    <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)' }}>{ml}ml</div>
                   </div>
                 ))}
               </div>
@@ -1624,7 +1624,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
             <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)', margin: '28px 0' }} />
 
-            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>🏃 운동 종류 설정</div>
+            <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>🏃 운동 종류 설정</div>
             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 20 }}>6개를 선택해주세요 ({selectedExIds.length}/6)</div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
@@ -1800,7 +1800,7 @@ export function AddFoodModal({ onAdd, onClose, initialMeal }) {
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
         <span style={{ fontSize: 13 }}>✨</span>
-        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{aiResult.name}</span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{aiResult.name}</span>
         {mode === 'text' && <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 'auto' }}>{foodItems.filter(f => f.name.trim()).map(f => `${f.qty}${f.unit}`).join(' + ')}</span>}
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
@@ -1834,7 +1834,7 @@ export function AddFoodModal({ onAdd, onClose, initialMeal }) {
       {/* Ingredients breakdown */}
       {filterIngredients(aiResult.ingredients).length > 0 && (
         <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(137,206,245,0.15)' }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8 }}>재료 구성</div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>재료 구성</div>
           {filterIngredients(aiResult.ingredients).map((ing, i, arr) => (
             <div key={i} style={{
               padding: '8px 0', borderBottom: i < arr.length - 1 ? '1px solid rgba(0,0,0,0.04)' : 'none',
@@ -1858,7 +1858,7 @@ export function AddFoodModal({ onAdd, onClose, initialMeal }) {
       {/* Post-meal impact analysis */}
       {(aiResult.bloodSugar || aiResult.drowsiness || aiResult.skinImpact) && (
         <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(137,206,245,0.15)' }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 8 }}>식후 영향 분석</div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>식후 영향 분석</div>
           {[
             { icon: '📈', label: '혈당 상승', value: aiResult.bloodSugar, note: aiResult.bloodSugarNote },
             { icon: '😴', label: '졸림 확률', value: aiResult.drowsiness, note: aiResult.drowsinessNote },
@@ -1869,7 +1869,7 @@ export function AddFoodModal({ onAdd, onClose, initialMeal }) {
               <div key={item.label} style={{ padding: '10px 12px', borderRadius: 10, background: 'rgba(0,0,0,0.02)', marginBottom: 6 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: item.note ? 4 : 0 }}>
                   <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{item.icon} {item.label}</span>
-                  <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 6, background: s.bg, color: s.color }}>{item.value}</span>
+                  <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 6, background: s.bg, color: s.color }}>{item.value}</span>
                 </div>
                 {item.note && <div style={{ fontSize: 10, color: 'var(--text-secondary)', lineHeight: 1.4 }}>{item.note}</div>}
               </div>
@@ -1901,7 +1901,7 @@ export function AddFoodModal({ onAdd, onClose, initialMeal }) {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </div>
           )}
-          <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)' }}>식사 기록</div>
+          <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>식사 기록</div>
         </div>
 
         {/* Meal selector */}
@@ -1931,7 +1931,7 @@ export function AddFoodModal({ onAdd, onClose, initialMeal }) {
                 </svg>
               </div>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 3 }}>사진으로 자동 분석</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 3 }}>사진으로 자동 분석</div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>음식 사진을 찍으면 AI가 자동으로 영양소를 분석해요</div>
               </div>
             </button>
@@ -1947,7 +1947,7 @@ export function AddFoodModal({ onAdd, onClose, initialMeal }) {
                 </svg>
               </div>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 3 }}>음식 이름으로 기록</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 3 }}>음식 이름으로 기록</div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>음식 이름을 직접 입력하면 AI가 영양소를 분석해요</div>
               </div>
             </button>
@@ -2032,7 +2032,7 @@ export function AddFoodModal({ onAdd, onClose, initialMeal }) {
                 <button onClick={() => handlePhotoAnalyze(preview)} style={{
                   width: '100%', padding: '14px 0', borderRadius: 14, border: 'none',
                   background: 'var(--accent-primary)', color: '#fff',
-                  fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+                  fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
                   marginBottom: 12,
                 }}>AI 분석하기</button>
               </>
@@ -2210,7 +2210,7 @@ export function AddFoodModal({ onAdd, onClose, initialMeal }) {
               border: 'none',
               background: aiResult ? 'var(--accent-primary)' : 'var(--bg-input, #F2F3F5)',
               color: aiResult ? '#fff' : 'var(--text-dim)',
-              fontSize: 14, fontWeight: 700,
+              fontSize: 14, fontWeight: 600,
               cursor: aiResult ? 'pointer' : 'default', fontFamily: 'inherit',
             }}>추가</button>
           </div>
@@ -2359,7 +2359,7 @@ function PhotoCropModal({ src, onConfirm, onCancel }) {
         <button onClick={handleConfirm} style={{
           padding: '12px 32px', borderRadius: 14, border: 'none',
           background: '#89cef5', color: '#fff',
-          fontSize: 14, fontWeight: 700, cursor: 'pointer',
+          fontSize: 14, fontWeight: 600, cursor: 'pointer',
         }}>확인</button>
       </div>
     </div>
@@ -2610,7 +2610,7 @@ function FoodDetailModal({ food, onClose, onDelete }) {
             <div style={{ width: 56, height: 56, borderRadius: 14, background: 'rgba(137,206,245,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🍽️</div>
           )}
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{food.name}</div>
+            <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)' }}>{food.name}</div>
             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{food.meal}</div>
           </div>
         </div>
@@ -2690,7 +2690,7 @@ function FoodDetailModal({ food, onClose, onDelete }) {
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                     <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{item.icon} {item.label}</span>
                     <span style={{
-                      fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 8,
+                      fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 8,
                       background: s.bg, color: s.color,
                     }}>{item.value}</span>
                   </div>
@@ -3121,7 +3121,7 @@ function WeightInputModal({ value, onChange, onConfirm, onClose }) {
         padding: '24px 24px 36px', width: '100%', maxWidth: 420,
       }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
-        <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 16 }}>오늘 체중</div>
+        <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 16 }}>오늘 체중</div>
         <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
           <input type="number" value={value} onChange={e => onChange(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && onConfirm()}
@@ -3144,7 +3144,7 @@ function WeightInputModal({ value, onChange, onConfirm, onClose }) {
           <button onClick={onConfirm} style={{
             flex: 1, padding: '14px 0', borderRadius: 14, border: 'none',
             background: 'var(--accent-primary)', color: '#fff',
-            fontSize: 14, fontWeight: 700, cursor: 'pointer',
+            fontSize: 14, fontWeight: 600, cursor: 'pointer',
           }}>저장</button>
         </div>
       </div>

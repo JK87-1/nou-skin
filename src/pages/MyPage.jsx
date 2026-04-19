@@ -190,7 +190,7 @@ function ChangeIndicator({ diff, unit = '점', inverse = false, size = 'normal' 
   const arrow = improved ? '↑' : '↓';
   const fs = size === 'small' ? 10 : 12;
   return (
-    <span style={{ fontSize: fs, fontWeight: 700, color }}>
+    <span style={{ fontSize: fs, fontWeight: 600, color }}>
       {arrow}{Math.abs(diff)}{unit}
     </span>
   );
@@ -301,7 +301,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
 
       {/* Header */}
       <div style={{ padding: '16px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>마이 페이지</h1>
+        <h1 style={{ fontSize: 18, fontWeight: 600, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>마이 페이지</h1>
         <div style={{ display: 'flex', gap: 8 }}>
           <div onClick={() => {
             if ((albumCategory === 'all' || albumCategory === 'food') && onTabChange) onTabChange('food', { openAdd: true });
@@ -372,11 +372,11 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
               </div>
               <div style={{ display: 'flex', flex: 1, justifyContent: 'space-around', textAlign: 'center' }}>
                 <div>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{records.length}</div>
+                  <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>{records.length}</div>
                   <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>기록</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{avgScore}</div>
+                  <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>{avgScore}</div>
                   <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>평균점수</div>
                 </div>
               </div>
@@ -749,7 +749,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
             {/* === HEADER === */}
             <div style={{ paddingTop: 20, marginBottom: 20, animation: 'breatheIn 0.6s ease both' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.5, color: 'var(--text-muted)' }}>SKIN TIMELINE</span>
+                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1.5, color: 'var(--text-muted)' }}>SKIN TIMELINE</span>
                 {period > 0 && (
                   <span style={{
                     fontSize: 11, fontWeight: 600, color: '#fff',
@@ -759,7 +759,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
                 )}
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>나의 피부 여정</h2>
+                <h2 style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>나의 피부 여정</h2>
                 <div style={{
                   display: 'flex', background: 'var(--bg-card)',
                   borderRadius: 10, padding: 3, gap: 2,
@@ -898,10 +898,10 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
                         {/* Score info */}
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>종합 {r.overallScore}점</span>
+                            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>종합 {r.overallScore}점</span>
                             {diff !== 0 && (
                               <span style={{
-                                fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 8,
+                                fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 8,
                                 background: diff > 0 ? 'rgba(74,222,128,0.15)' : 'rgba(240,160,80,0.15)',
                                 color: diff > 0 ? '#89cef5' : '#f0a050',
                               }}>{diff > 0 ? '+' : ''}{diff}</span>
@@ -1050,10 +1050,10 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
                             <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', flex: 1 }}>{m.label}</span>
                             <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{firstVal}</span>
                             <span style={{ fontSize: 12, color: 'var(--text-dim)', margin: '0 4px' }}>→</span>
-                            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{lastVal}</span>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{lastVal}</span>
                             {diff !== 0 && (
                               <span style={{
-                                fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 8, marginLeft: 6,
+                                fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 8, marginLeft: 6,
                                 background: improved ? 'rgba(74,222,128,0.15)' : 'rgba(240,160,80,0.15)',
                                 color: improved ? '#89cef5' : '#f0a050',
                               }}>{improved ? '↑' : '↓'}{diff > 0 ? '+' : ''}{diff}</span>
@@ -1150,7 +1150,7 @@ function SettingsPage({ open, onClose, onCategoriesChanged, onTabChange }) {
               <path d="M15 18l-6-6 6-6" />
             </svg>
           </div>
-          <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>설정</span>
+          <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>설정</span>
         </div>
         <div style={{ flex: 1, padding: '8px 0' }}>
           {menuSections.map((section) => (
@@ -1224,7 +1224,7 @@ function GoalSettingsPage({ onClose, onTabChange }) {
             <path d="M15 18l-6-6 6-6" />
           </svg>
         </div>
-        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>목표 설정</span>
+        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>목표 설정</span>
       </div>
 
       <div style={{ padding: '28px 24px' }}>
@@ -1234,7 +1234,7 @@ function GoalSettingsPage({ onClose, onTabChange }) {
           background: 'linear-gradient(135deg, rgba(137,206,245,0.15), rgba(137,206,245,0.05))',
           border: '1.5px solid rgba(137,206,245,0.3)',
         }}>
-          <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 6 }}>
+          <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>
             {isDone ? '다이어트 프로그램 수정하기' : '다이어트 프로그램 세팅하기'}
           </div>
           <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 14, lineHeight: 1.5 }}>
@@ -1244,7 +1244,7 @@ function GoalSettingsPage({ onClose, onTabChange }) {
             display: 'inline-flex', alignItems: 'center', gap: 6,
             padding: '10px 20px', borderRadius: 12,
             background: 'var(--accent-primary)', color: '#fff',
-            fontSize: 13, fontWeight: 700,
+            fontSize: 13, fontWeight: 600,
           }}>
             {isDone ? '수정하기' : '시작하기'}
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-4-4l4 4-4 4" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -1254,7 +1254,7 @@ function GoalSettingsPage({ onClose, onTabChange }) {
         {/* Current diet goal summary */}
         {isDone && (
           <>
-            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 12 }}>현재 설정</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12 }}>현재 설정</div>
             <div style={{ background: 'var(--bg-card, #fff)', borderRadius: 16, padding: '16px 20px', marginBottom: 12 }}>
               {(() => {
                 const allDays = ['월', '화', '수', '목', '금', '토', '일'];
@@ -1293,11 +1293,11 @@ function GoalSettingsPage({ onClose, onTabChange }) {
                 if (!goal) return null;
                 return (
                   <>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 10 }}>{goal.name}</div>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10 }}>{goal.name}</div>
                     <div style={{ display: 'flex', gap: 6 }}>
-                      <div style={{ flex: goal.carb, padding: '7px 0', borderRadius: 8, textAlign: 'center', background: 'linear-gradient(135deg, #8B5CF6, #A78BFA)', color: '#fff', fontSize: 11, fontWeight: 700 }}>탄 {goal.carb}%</div>
-                      <div style={{ flex: goal.protein, padding: '7px 0', borderRadius: 8, textAlign: 'center', background: 'linear-gradient(135deg, #D946EF, #E879F9)', color: '#fff', fontSize: 11, fontWeight: 700 }}>단 {goal.protein}%</div>
-                      <div style={{ flex: goal.fat, padding: '7px 0', borderRadius: 8, textAlign: 'center', background: 'linear-gradient(135deg, #06B6D4, #22D3EE)', color: '#fff', fontSize: 11, fontWeight: 700 }}>지 {goal.fat}%</div>
+                      <div style={{ flex: goal.carb, padding: '7px 0', borderRadius: 8, textAlign: 'center', background: 'linear-gradient(135deg, #8B5CF6, #A78BFA)', color: '#fff', fontSize: 11, fontWeight: 600 }}>탄 {goal.carb}%</div>
+                      <div style={{ flex: goal.protein, padding: '7px 0', borderRadius: 8, textAlign: 'center', background: 'linear-gradient(135deg, #D946EF, #E879F9)', color: '#fff', fontSize: 11, fontWeight: 600 }}>단 {goal.protein}%</div>
+                      <div style={{ flex: goal.fat, padding: '7px 0', borderRadius: 8, textAlign: 'center', background: 'linear-gradient(135deg, #06B6D4, #22D3EE)', color: '#fff', fontSize: 11, fontWeight: 600 }}>지 {goal.fat}%</div>
                     </div>
                   </>
                 );
@@ -1312,7 +1312,7 @@ function GoalSettingsPage({ onClose, onTabChange }) {
           background: 'linear-gradient(135deg, rgba(184,216,160,0.2), rgba(184,216,160,0.05))',
           border: '1.5px solid rgba(184,216,160,0.4)',
         }}>
-          <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 6 }}>
+          <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>
             {isSupplementDone ? '영양제 루틴 수정하기' : '영양제 루틴 짜기'}
           </div>
           <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 14, lineHeight: 1.5 }}>
@@ -1322,7 +1322,7 @@ function GoalSettingsPage({ onClose, onTabChange }) {
             display: 'inline-flex', alignItems: 'center', gap: 6,
             padding: '10px 20px', borderRadius: 12,
             background: '#6BAF6B', color: '#fff',
-            fontSize: 13, fontWeight: 700,
+            fontSize: 13, fontWeight: 600,
           }}>
             {isSupplementDone ? '수정하기' : '시작하기'}
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-4-4l4 4-4 4" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -1353,6 +1353,7 @@ function CategorySettingsPage({ onClose, onSave }) {
   const [categories, setCategories] = useState(() => getCategories());
   const [colorOpen, setColorOpen] = useState(null);
   const [expandedCat, setExpandedCat] = useState(null);
+  const [expandAll, setExpandAll] = useState(false);
   const [toast, setToast] = useState('');
   const [dragGroup, setDragGroup] = useState(null);
   const [dragFrom, setDragFrom] = useState(null);
@@ -1516,6 +1517,25 @@ function CategorySettingsPage({ onClose, onSave }) {
 
       {/* Category list — grouped with sub-categories */}
       <div style={{ padding: '24px 20px', flex: 1, paddingBottom: 120 }}>
+        {/* 보기 옵션 토글 */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: 12, padding: '0 4px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 11, color: '#9ABBC8' }}>{expandAll ? '전체 보기' : ''}</span>
+            <div onClick={() => { setExpandAll(!expandAll); if (!expandAll) setExpandedCat(null); }} style={{
+              width: 36, height: 18, borderRadius: 4, position: 'relative', cursor: 'pointer',
+              background: expandAll ? 'linear-gradient(120deg, #90CCE8, #60AADD)' : 'rgba(180,200,210,.3)',
+              transition: 'background 0.2s ease',
+            }}>
+              <div style={{
+                width: 14, height: 14, borderRadius: 3, background: '#fff',
+                position: 'absolute', top: 2,
+                left: expandAll ? 20 : 2,
+                transition: 'left 0.2s ease',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+              }} />
+            </div>
+          </div>
+        </div>
         {[
           { group: 'cause', label: '행동', desc: '내가 하는 것들' },
           { group: 'result', label: '변화', desc: '몸에 나타나는 변화' },
@@ -1525,7 +1545,7 @@ function CategorySettingsPage({ onClose, onSave }) {
           return (
             <div key={group} style={{ marginBottom: 24 }}>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '0 4px', marginBottom: 10 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#1A3A4A' }}>{label}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#1A3A4A' }}>{label}</span>
                 <span style={{ fontSize: 10, color: '#9ABBC8' }}>{desc}</span>
               </div>
               {groupCats.map((cat, localIdx) => {
@@ -1556,9 +1576,9 @@ function CategorySettingsPage({ onClose, onSave }) {
                       display: 'flex', alignItems: 'center', gap: 12,
                       padding: '12px 14px',
                       background: 'rgba(255,255,255,0.6)',
-                      borderRadius: (expandedCat === cat.key || colorOpen === cat.key) ? '14px 14px 0 0' : 14,
+                      borderRadius: (expandAll || expandedCat === cat.key || colorOpen === cat.key) ? '14px 14px 0 0' : 14,
                       border: '0.5px solid rgba(255,255,255,0.95)',
-                      borderBottom: (expandedCat === cat.key || colorOpen === cat.key) ? 'none' : '0.5px solid rgba(255,255,255,0.95)',
+                      borderBottom: (expandAll || expandedCat === cat.key || colorOpen === cat.key) ? 'none' : '0.5px solid rgba(255,255,255,0.95)',
                       boxShadow: isDragged ? 'none' : '0 1px 4px rgba(0,0,0,0.03)',
                       opacity: cat.enabled ? 1 : 0.55,
                       transition: 'opacity 0.2s ease, border-radius 0.2s ease',
@@ -1629,10 +1649,10 @@ function CategorySettingsPage({ onClose, onSave }) {
                       <div style={{
                         background: 'rgba(255,255,255,0.6)',
                         borderRadius: '0 0 14px 14px',
-                        padding: expandedCat === cat.key ? '4px 14px 6px 14px' : '0 14px 0 14px',
+                        padding: (expandAll || expandedCat === cat.key) ? '4px 14px 6px 14px' : '0 14px 0 14px',
                         borderTop: 'none',
-                        maxHeight: expandedCat === cat.key ? 300 : 0,
-                        opacity: expandedCat === cat.key ? 1 : 0,
+                        maxHeight: (expandAll || expandedCat === cat.key) ? 300 : 0,
+                        opacity: (expandAll || expandedCat === cat.key) ? 1 : 0,
                         overflow: 'hidden',
                         transition: 'max-height 0.3s ease, opacity 0.2s ease, padding 0.3s ease',
                       }}>
@@ -1712,7 +1732,7 @@ function AddCategorySheet({ onSave, onClose }) {
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: '#ccc', margin: '0 auto 20px', opacity: 0.5 }} />
-        <div style={{ fontSize: 17, fontWeight: 700, color: '#1A3A4A', marginBottom: 20 }}>카테고리 추가</div>
+        <div style={{ fontSize: 17, fontWeight: 600, color: '#1A3A4A', marginBottom: 20 }}>카테고리 추가</div>
 
         <input
           value={name}
@@ -1748,7 +1768,7 @@ function AddCategorySheet({ onSave, onClose }) {
           <button onClick={() => name.trim() && onSave(name.trim(), color)} style={{
             flex: 1, padding: '14px 0', borderRadius: 14, border: 'none',
             background: 'linear-gradient(120deg, #90CCE8, #60AADD)',
-            color: '#fff', fontSize: 14, fontWeight: 700,
+            color: '#fff', fontSize: 14, fontWeight: 600,
             cursor: 'pointer', fontFamily: 'inherit',
             opacity: name.trim() ? 1 : 0.4,
           }}>추가</button>
@@ -1793,7 +1813,7 @@ function ProfileSettingsPage({ onClose }) {
             <path d="M15 18l-6-6 6-6" />
           </svg>
         </div>
-        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>프로필 설정</span>
+        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>프로필 설정</span>
       </div>
 
       <div style={{ padding: '20px 24px 40px' }}>
@@ -1850,7 +1870,7 @@ function ProfileSettingsPage({ onClose }) {
         </div>
 
         {/* 기본 정보 */}
-        <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', margin: '24px 0 12px' }}>기본 정보</div>
+        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: '24px 0 12px' }}>기본 정보</div>
 
         <div style={{ marginBottom: 12 }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>생년월일</div>
@@ -1909,7 +1929,7 @@ function ProfileSettingsPage({ onClose }) {
         </div>
 
         {/* 피부 정보 */}
-        <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', margin: '24px 0 12px' }}>피부 정보</div>
+        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: '24px 0 12px' }}>피부 정보</div>
 
         <div style={{ marginBottom: 12 }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>피부 타입</div>
@@ -2230,7 +2250,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
             <LuaMiniIcon size={14} />
-            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>피부 타입 정보</span>
+            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>피부 타입 정보</span>
           </div>
           {/* Skin type */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0', marginBottom: 4 }}>
@@ -2304,7 +2324,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
                 <LuaMiniIcon size={14} />
-                <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>컨디션 브리핑</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>컨디션 브리핑</span>
                 <div style={{ marginLeft: 'auto', padding: '4px 10px', borderRadius: 8, background: cGrade.bg, border: `1px solid ${cGrade.border}`, display: 'flex', alignItems: 'center', gap: 4 }}>
                   <span style={{ fontSize: 14, fontWeight: 600, color: cGrade.color, fontFamily: 'var(--font-display)' }}>{cGrade.letter}</span>
                   <span style={{ fontSize: 11, fontWeight: 600, color: cGrade.color }}>{cScore}점</span>
@@ -2331,7 +2351,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
               <LuaMiniIcon size={14} />
-              <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>전체 피부 분석</span>
+              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>전체 피부 분석</span>
             </div>
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.75, margin: 0 }}>{record.advice}</p>
             {/* AI 정밀 판독 */}
@@ -2366,7 +2386,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingLeft: 14, marginBottom: 4 }}>
             <LuaMiniIcon size={14} />
-            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>컨디션 지표</span>
+            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>컨디션 지표</span>
           </div>
           {conditionMetrics.map((m, i) => (
             <MetricBar
@@ -2393,7 +2413,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingLeft: 14, marginBottom: 4 }}>
             <LuaMiniIcon size={14} />
-            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>노화 지표</span>
+            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>노화 지표</span>
           </div>
           {agingMetrics.map((m, i) => (
             <MetricBar
@@ -2417,7 +2437,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
           border: '1px solid rgba(240,144,112,0.1)',
         }}>
           <div style={{
-            fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: 2,
+            fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: 2,
             textTransform: 'uppercase',
           }}>SKIN LEVEL</div>
           <div style={{
@@ -2521,7 +2541,7 @@ function HistoryFoodDetailModal({ food, onClose, onDelete }) {
             <div style={{ width: 56, height: 56, borderRadius: 14, background: 'rgba(137,206,245,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🍽️</div>
           )}
           <div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{food.name}</div>
+            <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)' }}>{food.name}</div>
             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{food.meal}</div>
           </div>
         </div>

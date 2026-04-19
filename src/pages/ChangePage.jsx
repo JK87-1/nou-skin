@@ -170,7 +170,7 @@ export default function ChangePage({ onTabChange }) {
     <div style={{ minHeight: '100dvh', paddingBottom: 80 }}>
       {/* Header */}
       <div style={{ padding: '16px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>변화</h1>
+        <h1 style={{ fontSize: 18, fontWeight: 600, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>변화</h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div onClick={() => setShowAdd(true)} style={{ width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -492,7 +492,7 @@ export default function ChangePage({ onTabChange }) {
                         {bThumb ? <img src={bThumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-dim)', fontSize: 11 }}>사진 없음</div>}
                       </div>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{new Date(oldest.date).getMonth() + 1}/{new Date(oldest.date).getDate()}</div>
-                      <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{oldest.overallScore}점</div>
+                      <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)' }}>{oldest.overallScore}점</div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', fontSize: 22, color: 'var(--text-dim)' }}>→</div>
                     <div style={{ flex: 1 }}>
@@ -500,14 +500,14 @@ export default function ChangePage({ onTabChange }) {
                         {aThumb ? <img src={aThumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-dim)', fontSize: 11 }}>사진 없음</div>}
                       </div>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{new Date(newest.date).getMonth() + 1}/{new Date(newest.date).getDate()}</div>
-                      <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{newest.overallScore}점</div>
+                      <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)' }}>{newest.overallScore}점</div>
                     </div>
                   </div>
                   <div style={{
                     padding: '12px 16px', borderRadius: 14,
                     background: diff >= 0 ? 'rgba(137,206,245,0.08)' : 'rgba(248,113,113,0.08)',
                     color: diff >= 0 ? '#89cef5' : '#f87171',
-                    fontSize: 14, fontWeight: 700,
+                    fontSize: 14, fontWeight: 600,
                   }}>
                     {diff >= 0 ? '▲' : '▼'} {Math.abs(diff)}점 {diff >= 0 ? '향상' : '하락'}
                   </div>
@@ -689,7 +689,7 @@ function AddWeightModal({ onSave, onClose, latest }) {
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
-        <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20, textAlign: 'center' }}>오늘 몸무게</div>
+        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 20, textAlign: 'center' }}>오늘 몸무게</div>
 
         <input
           value={weight} onChange={e => setWeight(e.target.value)}
@@ -709,7 +709,7 @@ function AddWeightModal({ onSave, onClose, latest }) {
           <button onClick={() => { if (weight) onSave(Number(weight)); }} style={{
             flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
             border: 'none', background: 'var(--accent-primary)',
-            color: '#fff', fontSize: 14, fontWeight: 700,
+            color: '#fff', fontSize: 14, fontWeight: 600,
             cursor: 'pointer', fontFamily: 'inherit',
           }}>저장</button>
         </div>
@@ -739,7 +739,7 @@ function GoalModal({ onSave, onClose, current }) {
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
-        <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20, textAlign: 'center' }}>목표 몸무게</div>
+        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 20, textAlign: 'center' }}>목표 몸무게</div>
 
         <input
           value={target} onChange={e => setTarget(e.target.value)}
@@ -759,7 +759,7 @@ function GoalModal({ onSave, onClose, current }) {
           <button onClick={() => { if (target) onSave(Number(target)); }} style={{
             flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
             border: 'none', background: 'var(--accent-primary)',
-            color: '#fff', fontSize: 14, fontWeight: 700,
+            color: '#fff', fontSize: 14, fontWeight: 600,
             cursor: 'pointer', fontFamily: 'inherit',
           }}>저장</button>
         </div>
@@ -791,7 +791,7 @@ function ProfileSettingsModal({ profile, onUpdate, onClose }) {
         maxHeight: '85vh', overflowY: 'auto',
       }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
-        <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20 }}>프로필 설정</div>
+        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 20 }}>프로필 설정</div>
 
         {/* Profile photo */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
@@ -847,7 +847,7 @@ function ProfileSettingsModal({ profile, onUpdate, onClose }) {
         </div>
 
         {/* ── 기본 정보 ── */}
-        <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', margin: '24px 0 12px' }}>기본 정보</div>
+        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: '24px 0 12px' }}>기본 정보</div>
 
         <div style={{ marginBottom: 12 }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>생년월일</div>
@@ -906,7 +906,7 @@ function ProfileSettingsModal({ profile, onUpdate, onClose }) {
         </div>
 
         {/* ── 피부 정보 ── */}
-        <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', margin: '24px 0 12px' }}>피부 정보</div>
+        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: '24px 0 12px' }}>피부 정보</div>
 
         <div style={{ marginBottom: 12 }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>피부 타입</div>
@@ -945,7 +945,7 @@ function ProfileSettingsModal({ profile, onUpdate, onClose }) {
         <button onClick={onClose} style={{
           width: '100%', padding: '14px 0', borderRadius: 'var(--btn-radius)',
           border: 'none', background: 'var(--accent-primary)',
-          color: '#fff', fontSize: 14, fontWeight: 700,
+          color: '#fff', fontSize: 14, fontWeight: 600,
           cursor: 'pointer', fontFamily: 'inherit',
         }}>완료</button>
       </div>

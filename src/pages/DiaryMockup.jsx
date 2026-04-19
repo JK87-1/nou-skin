@@ -301,7 +301,7 @@ export default function DiaryMockup() {
                   </svg>
                   <span style={{ fontSize: 24, fontWeight: 600, color: accentColor, lineHeight: 1, fontFamily: 'var(--font-display)', zIndex: 1 }}>78</span>
                   <span style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 500, marginTop: 1, zIndex: 1 }}>종합</span>
-                  <span style={{ fontSize: 8, fontWeight: 700, color: '#4ecb71', zIndex: 1 }}>+3</span>
+                  <span style={{ fontSize: 8, fontWeight: 600, color: '#4ecb71', zIndex: 1 }}>+3</span>
                 </div>
               </div>
             </div>
@@ -310,7 +310,7 @@ export default function DiaryMockup() {
             <div style={{ display: 'flex', gap: 10, marginBottom: 16, animation: 'fadeUp 0.5s ease-out 0.7s both' }}>
               <button style={{
                 flex: 1, padding: '12px 0', borderRadius: 'var(--btn-radius)', border: 'none',
-                fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+                fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
                 background: 'rgba(74,222,128,0.15)', color: '#89cef5',
               }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><CheckIcon size={14} /></span> 저장 완료</button>
               <button style={{
@@ -328,7 +328,7 @@ export default function DiaryMockup() {
               background: `linear-gradient(135deg, ${accentColor}0f, ${accentColor}0a)`,
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                <span style={{ fontSize: 14, fontWeight: 700, color: accentColor }}>오늘의 피부 컨디션</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: accentColor }}>오늘의 피부 컨디션</span>
                 <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 20, background: `${accentColor}26`, border: `1px solid ${accentColor}4d` }}>
                   <span style={{ fontSize: 15, fontWeight: 600, color: accentColor, fontFamily: 'var(--font-display)' }}>A</span>
                   <span style={{ fontSize: 12, fontWeight: 600, color: accentColor }}>78점</span>
@@ -479,7 +479,7 @@ export default function DiaryMockup() {
             <div className="glass-card" style={{ animation: 'fadeUp 0.5s ease-out 0.9s both', boxShadow: 'none' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
                 <span style={{ fontSize: 14 }}>🧠</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: accentColor }}>전체 피부 분석</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: accentColor }}>전체 피부 분석</span>
               </div>
               <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.75, margin: 0 }}>
                 수분 지표가 지속적으로 상승하고 있어요. 코스알엑스 에센스 사용 이후 수분 흡수력이 좋아진 것으로 보여요. 모공 점수가 소폭 하락했지만 계절 영향일 수 있어요.
@@ -508,7 +508,7 @@ export default function DiaryMockup() {
 
             {/* ── GROUP 1: 컨디션 지표 (App.jsx MetricBar 패턴) ── */}
             <div className="glass-card" style={{ padding: '18px 10px', animation: 'fadeUp 0.5s ease-out 1.0s both' }}>
-              <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4, paddingLeft: 8, color: 'var(--text-primary)' }}>
+              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4, paddingLeft: 8, color: 'var(--text-primary)' }}>
                 컨디션 지표 <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 400 }}>일상 관리 포인트</span>
               </div>
               <div style={{ fontSize: 10, color: 'var(--text-muted)', paddingLeft: 8, marginBottom: 14 }}>탭하면 과학적 근거</div>
@@ -521,7 +521,7 @@ export default function DiaryMockup() {
 
             {/* ── GROUP 2: 노화 지표 ── */}
             <div className="glass-card" style={{ padding: '18px 10px', animation: 'fadeUp 0.5s ease-out 1.1s both' }}>
-              <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 14, paddingLeft: 8, color: 'var(--text-primary)' }}>
+              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 14, paddingLeft: 8, color: 'var(--text-primary)' }}>
                 노화 지표 <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 400 }}>피부 나이에 큰 영향</span>
               </div>
               <MockMetricBar label="피부결" value={80} icon="🧴" color="#FFB0C8" description="매끈한 피부" />
@@ -536,7 +536,7 @@ export default function DiaryMockup() {
               width: '100%', padding: '14px 0', borderRadius: 'var(--btn-radius)', border: 'none',
               background: 'linear-gradient(135deg, rgba(240,144,112,0.12), rgba(240,144,112,0.12))',
               backdropFilter: 'var(--card-backdrop)',
-              color: '#aed8f7', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+              color: '#aed8f7', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
               marginBottom: 14, boxShadow: 'none',
               animation: 'fadeUp 0.5s ease-out 1.25s both',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,

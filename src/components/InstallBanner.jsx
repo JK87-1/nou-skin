@@ -141,7 +141,7 @@ export default function InstallBanner() {
                 </svg>
               </div>
               <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.3 }}>
-                주소창 <span style={{ fontWeight: 700, color: '#aed8f7' }}>URL 복사</span>
+                주소창 <span style={{ fontWeight: 600, color: '#aed8f7' }}>URL 복사</span>
               </p>
             </div>
 
@@ -162,7 +162,7 @@ export default function InstallBanner() {
                 </svg>
               </div>
               <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.3 }}>
-                <span style={{ fontWeight: 700, color: '#aed8f7' }}>Safari</span>에서 붙여넣기
+                <span style={{ fontWeight: 600, color: '#aed8f7' }}>Safari</span>에서 붙여넣기
               </p>
             </div>
           </div>
@@ -195,7 +195,7 @@ export default function InstallBanner() {
           <button onClick={handleInstall} style={{
             padding: '8px 18px', borderRadius: 'var(--btn-radius)', border: 'none',
             background: 'var(--btn-primary-bg)',
-            color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer',
+            color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer',
             fontFamily: 'inherit', whiteSpace: 'nowrap',
             boxShadow: 'none',
           }}>설치</button>
@@ -236,7 +236,7 @@ export default function InstallBanner() {
                 </svg>
               </div>
               <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.3 }}>
-                하단 <span style={{ fontWeight: 700, color: '#aed8f7' }}>공유</span> 탭
+                하단 <span style={{ fontWeight: 600, color: '#aed8f7' }}>공유</span> 탭
               </p>
             </div>
 
@@ -260,7 +260,7 @@ export default function InstallBanner() {
                 </svg>
               </div>
               <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.3 }}>
-                <span style={{ fontWeight: 700, color: '#aed8f7' }}>홈 화면에 추가</span>
+                <span style={{ fontWeight: 600, color: '#aed8f7' }}>홈 화면에 추가</span>
               </p>
             </div>
           </div>

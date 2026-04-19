@@ -176,7 +176,7 @@ export default function OnboardingPage({ onComplete, onGoSettings }) {
       <div>
         <div style={{ textAlign: 'center', marginTop: 40, marginBottom: 32 }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>🌿</div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8 }}>안녕하세요!</div>
+          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>안녕하세요!</div>
           <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6 }}>나만의 웰니스 루틴을 함께 만들어가요</div>
         </div>
         <div style={{ marginBottom: 12 }}>
@@ -201,7 +201,7 @@ export default function OnboardingPage({ onComplete, onGoSettings }) {
 
     if (step === 1) return (
       <div>
-        <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8 }}>기본 정보</div>
+        <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>기본 정보</div>
         <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>맞춤 분석에 사용돼요</div>
 
         <div style={{ marginBottom: 16 }}>
@@ -273,14 +273,14 @@ export default function OnboardingPage({ onComplete, onGoSettings }) {
               background: 'rgba(137,206,245,0.1)', border: '2px solid var(--accent-primary)',
             }}>
               <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>BMR</div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{bmr.toLocaleString()}</div>
+              <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)' }}>{bmr.toLocaleString()}</div>
             </div>
             <div style={{
               flex: 1, ...selectStyle(true), textAlign: 'center', padding: '12px 0',
               background: 'rgba(137,206,245,0.1)', border: '2px solid var(--accent-primary)',
             }}>
               <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>TDEE</div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{tdee.toLocaleString()}</div>
+              <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)' }}>{tdee.toLocaleString()}</div>
             </div>
           </div>
         )}
@@ -289,7 +289,7 @@ export default function OnboardingPage({ onComplete, onGoSettings }) {
 
     if (step === 2) return (
       <div>
-        <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8 }}>관심사 선택</div>
+        <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>관심사 선택</div>
         <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>중복 선택 가능해요</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
           {INTERESTS.map(item => {
@@ -312,7 +312,7 @@ export default function OnboardingPage({ onComplete, onGoSettings }) {
       <div>
         <div style={{ textAlign: 'center', marginTop: 20, marginBottom: 24 }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🌱</div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8 }}>준비 완료!</div>
+          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>준비 완료!</div>
           <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.8 }}>
             {name.trim()}님의 맞춤 웰니스 루틴을 시작할게요
           </div>
@@ -384,7 +384,7 @@ export default function OnboardingPage({ onComplete, onGoSettings }) {
             </svg>
           </div>
         )}
-        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>시작하기</span>
+        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>시작하기</span>
       </div>
 
       {/* Progress bar */}
@@ -417,12 +417,12 @@ export default function OnboardingPage({ onComplete, onGoSettings }) {
             <button onClick={() => { handleFinish(); onGoSettings?.(); }} style={{
               width: '100%', padding: '14px 0', borderRadius: 16, border: '2px solid var(--accent-primary)',
               background: 'transparent', color: 'var(--accent-primary)',
-              fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+              fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
             }}>설정 먼저 채우기 →</button>
             <button onClick={handleFinish} style={{
               width: '100%', padding: '16px 0', borderRadius: 16, border: 'none',
               background: 'var(--accent-primary)', color: '#fff',
-              fontSize: 16, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+              fontSize: 16, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
             }}>지금 바로 시작하기 🌿</button>
           </div>
         ) : (
@@ -430,7 +430,7 @@ export default function OnboardingPage({ onComplete, onGoSettings }) {
             width: '100%', padding: '16px 0', borderRadius: 16, border: 'none',
             background: canNext[step] ? 'var(--accent-primary)' : 'var(--bg-input, #E0E0E0)',
             color: canNext[step] ? '#fff' : 'var(--text-dim)',
-            fontSize: 16, fontWeight: 700, cursor: canNext[step] ? 'pointer' : 'default',
+            fontSize: 16, fontWeight: 600, cursor: canNext[step] ? 'pointer' : 'default',
             fontFamily: 'inherit', transition: 'all 0.2s ease',
           }}>다음</button>
         )}
@@ -449,7 +449,7 @@ export default function OnboardingPage({ onComplete, onGoSettings }) {
             width: '100%', maxWidth: 420,
           }}>
             <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.1)', margin: '0 auto 16px' }} />
-            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 16 }}>생년월일</div>
+            <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 16 }}>생년월일</div>
             <div style={{ display: 'flex', gap: 4 }}>
               <ScrollPicker items={years} value={birthYear} onChange={setBirthYear} suffix="년" />
               <ScrollPicker items={months} value={birthMonth} onChange={setBirthMonth} suffix="월" />
@@ -458,7 +458,7 @@ export default function OnboardingPage({ onComplete, onGoSettings }) {
             <button onClick={() => setShowBirthPicker(false)} style={{
               width: '100%', padding: '16px 0', borderRadius: 16, border: 'none',
               background: 'var(--accent-primary)', color: '#fff',
-              fontSize: 16, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+              fontSize: 16, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
               marginTop: 16,
             }}>확인</button>
           </div>

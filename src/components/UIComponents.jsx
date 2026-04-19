@@ -175,22 +175,22 @@ export function DetailPage({ metricKey, value, onBack }) {
       <div style={{ padding: '20px 16px' }}>
         {/* Methodology */}
         <div className="card">
-          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 10, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><RulerIcon size={15} /></span> 측정 원리</div>
+          <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 10, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><RulerIcon size={15} /></span> 측정 원리</div>
           <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.85, whiteSpace: 'pre-line' }}>{data.methodology}</p>
         </div>
 
         {/* Analysis Steps */}
         <div className="card">
-          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><GearIcon size={15} /></span> 분석 과정</div>
+          <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 16, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><GearIcon size={15} /></span> 분석 과정</div>
           {data.steps.map((step, i) => (
             <div key={i} style={{ display: 'flex', gap: 14, marginBottom: i < data.steps.length - 1 ? 18 : 0 }}>
               <div style={{
                 width: 32, height: 32, borderRadius: '50%', background: data.gradient,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#fff', fontSize: 13, fontWeight: 800, flexShrink: 0,
+                color: '#fff', fontSize: 13, fontWeight: 600, flexShrink: 0,
               }}>{i + 1}</div>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 3 }}>{step.title}</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 3 }}>{step.title}</div>
                 <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.65 }}>{step.desc}</div>
               </div>
             </div>
@@ -199,7 +199,7 @@ export function DetailPage({ metricKey, value, onBack }) {
 
         {/* Score Ranges */}
         <div className="card">
-          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 14, color: 'var(--text-primary)' }}>📊 결과 해석</div>
+          <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 14, color: 'var(--text-primary)' }}>📊 결과 해석</div>
           {data.ranges.map((r, i) => (
             <div key={i} style={{
               display: 'flex', alignItems: 'center', gap: 10,
@@ -207,7 +207,7 @@ export function DetailPage({ metricKey, value, onBack }) {
               background: `${r.color}08`,
             }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: r.color, flexShrink: 0 }} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: r.color, minWidth: 80 }}>{r.range}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: r.color, minWidth: 80 }}>{r.range}</span>
               <span style={{ fontSize: 11, color: r.color, background: `${r.color}15`, padding: '2px 10px', borderRadius: 8 }}>{r.label}</span>
               <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 'auto' }}>{r.description}</span>
             </div>
@@ -216,13 +216,13 @@ export function DetailPage({ metricKey, value, onBack }) {
 
         {/* Scientific References */}
         <div className="card">
-          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 14, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><BooksIcon size={15} /></span> 과학적 근거</div>
+          <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 14, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><BooksIcon size={15} /></span> 과학적 근거</div>
           {data.references.map((ref, i) => (
             <div key={i} style={{
               marginBottom: i < data.references.length - 1 ? 14 : 0,
               padding: 14, background: 'var(--bg-card)', borderRadius: 14,
             }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: data.color, marginBottom: 5 }}>{ref.name}</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: data.color, marginBottom: 5 }}>{ref.name}</div>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.65, marginBottom: 8 }}>{ref.description}</p>
               <div style={{
                 fontSize: 10, color: 'var(--text-dim)', fontStyle: 'italic',
@@ -236,7 +236,7 @@ export function DetailPage({ metricKey, value, onBack }) {
         <div className="gbs-box">
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
             <span style={{ fontSize: 20 }}>🧬</span>
-            <span style={{ fontSize: 15, fontWeight: 700, color: '#aed8f7' }}>장-뇌-피부 축 (Gut-Brain-Skin Axis)</span>
+            <span style={{ fontSize: 15, fontWeight: 600, color: '#aed8f7' }}>장-뇌-피부 축 (Gut-Brain-Skin Axis)</span>
           </div>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.75, marginBottom: 10 }}>{data.gutBrainSkin}</p>
           <div style={{ fontSize: 10, color: 'var(--text-dim)', fontStyle: 'italic' }}>{data.gutBrainSkinSource}</div>

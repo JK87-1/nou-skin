@@ -34,11 +34,11 @@ export default function GoalProgressCard({ onTap }) {
         <div style={{ width: 40, height: 40, borderRadius: 12, background: 'var(--context-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}><TargetIcon size={18} /></div>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>이번 주 목표</div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>
+          <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>
             {metrics?.[0]?.label || '수분'} {metrics?.[0]?.currentValue || '?'} → {metrics?.[0]?.targetValue || '?'}
           </div>
         </div>
-        <div style={{ fontSize: 22, fontWeight: 700, color: isCompleted ? 'var(--accent-success)' : 'var(--accent-primary)', flexShrink: 0 }}>
+        <div style={{ fontSize: 22, fontWeight: 600, color: isCompleted ? 'var(--accent-success)' : 'var(--accent-primary)', flexShrink: 0 }}>
           {overall}%
         </div>
       </div>

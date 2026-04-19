@@ -183,7 +183,7 @@ export default function SkinMeasurePage({ onClose, onCapture, colorMode }) {
                 transition: 'all 0.3s',
               }}>
                 {ok && (
-                  <span style={{ color: '#fff', fontSize: 12, fontWeight: 700 }}>&#10003;</span>
+                  <span style={{ color: '#fff', fontSize: 12, fontWeight: 600 }}>&#10003;</span>
                 )}
               </div>
               <span style={{

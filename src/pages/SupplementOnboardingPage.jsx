@@ -332,7 +332,7 @@ export default function SupplementOnboardingPage({ onClose, onComplete, onNaviga
     if (section === 0) {
       if (localStep === 0) return (
         <div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8 }}>요즘 가장 신경 쓰이는 게 뭔가요?</div>
+          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>요즘 가장 신경 쓰이는 게 뭔가요?</div>
           <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>해당하는 것을 모두 선택해주세요</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {CONCERNS.map(c => (
@@ -350,10 +350,10 @@ export default function SupplementOnboardingPage({ onClose, onComplete, onNaviga
 
       if (localStep === 1) return (
         <div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8 }}>현재 몸 상태를 체크해요</div>
+          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>현재 몸 상태를 체크해요</div>
           <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>해당하는 항목을 선택해주세요</div>
 
-          <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 10 }}>나이대</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10 }}>나이대</div>
           <div style={{ display: 'flex', gap: 10, marginBottom: 24 }}>
             {AGE_GROUPS.map(g => (
               <div key={g} onClick={() => setAgeGroup(g)} style={{
@@ -408,7 +408,7 @@ export default function SupplementOnboardingPage({ onClose, onComplete, onNaviga
 
       if (localStep === 2) return (
         <div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8 }}>평소 식사가 어때요?</div>
+          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>평소 식사가 어때요?</div>
           <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>가장 가까운 것을 선택해주세요</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {MEAL_HABITS.map(h => (
@@ -425,7 +425,7 @@ export default function SupplementOnboardingPage({ onClose, onComplete, onNaviga
     if (section === 1) {
       if (localStep === 0) return (
         <div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 24 }}>지금 복용 중인 영양제가 있나요?</div>
+          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24 }}>지금 복용 중인 영양제가 있나요?</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
             <div onClick={() => { setHasCurrent(false); setCurrentSupplements([]); setHasMultivitamin(false); }} style={selectStyle(hasCurrent === false)}>
               <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>없어요, 처음 시작해요</span>
@@ -441,7 +441,7 @@ export default function SupplementOnboardingPage({ onClose, onComplete, onNaviga
           {/* Multivitamin ingredient selection */}
           {hasMultivitamin && (
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 10 }}>어떤 성분이 들어있나요?</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10 }}>어떤 성분이 들어있나요?</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
                 {MULTIVITAMIN_INGREDIENTS.map(ing => (
                   <div key={ing} onClick={() => {
@@ -515,7 +515,7 @@ export default function SupplementOnboardingPage({ onClose, onComplete, onNaviga
 
       if (localStep === 1) return (
         <div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 24 }}>복용할 때 불편한 점이 있었나요?</div>
+          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24 }}>복용할 때 불편한 점이 있었나요?</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {DISCOMFORTS.map(d => (
               <div key={d.key} onClick={() => setDiscomfort(d.key)} style={selectStyle(discomfort === d.key)}>
@@ -531,9 +531,9 @@ export default function SupplementOnboardingPage({ onClose, onComplete, onNaviga
     if (section === 2) {
       if (localStep === 0) return (
         <div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 24 }}>하루 생활 패턴이 어때요?</div>
+          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24 }}>하루 생활 패턴이 어때요?</div>
 
-          <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 10 }}>기상 시간</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10 }}>기상 시간</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
             {WAKE_TIMES.map(w => (
               <div key={w.key} onClick={() => setWakeTime(w.key)} style={selectStyle(wakeTime === w.key)}>
@@ -542,7 +542,7 @@ export default function SupplementOnboardingPage({ onClose, onComplete, onNaviga
             ))}
           </div>
 
-          <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 10 }}>취침 시간</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10 }}>취침 시간</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {SLEEP_TIMES.map(s => (
               <div key={s.key} onClick={() => setSleepTime(s.key)} style={selectStyle(sleepTime === s.key)}>
@@ -555,7 +555,7 @@ export default function SupplementOnboardingPage({ onClose, onComplete, onNaviga
 
       if (localStep === 1) return (
         <div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 24 }}>영양제, 몇 가지까지 괜찮아요?</div>
+          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24 }}>영양제, 몇 가지까지 괜찮아요?</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {SUPPLEMENT_COUNTS.map(c => (
               <div key={c.key} onClick={() => setCountPref(c.key)} style={selectStyle(countPref === c.key)}>
@@ -568,7 +568,7 @@ export default function SupplementOnboardingPage({ onClose, onComplete, onNaviga
 
       if (localStep === 2) return (
         <div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 24 }}>식사와 함께 먹는 게 편해요, 따로가 편해요?</div>
+          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24 }}>식사와 함께 먹는 게 편해요, 따로가 편해요?</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {TIMING_PREFS.map(t => (
               <div key={t.key} onClick={() => setTimingPref(t.key)} style={selectStyle(timingPref === t.key)}>
@@ -598,13 +598,13 @@ export default function SupplementOnboardingPage({ onClose, onComplete, onNaviga
               <path d="M15 18l-6-6 6-6" />
             </svg>
           </div>
-          <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>영양제 루틴</span>
+          <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>영양제 루틴</span>
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '24px 24px 120px' }}>
           <div style={{ textAlign: 'center', marginBottom: 28 }}>
             <div style={{ fontSize: 48, marginBottom: 12 }}>💊</div>
-            <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8 }}>나만의 영양제 루틴이 완성됐어요</div>
+            <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>나만의 영양제 루틴이 완성됐어요</div>
             <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6 }}>답변을 바탕으로 루틴을 만들었어요. 확인해보세요.</div>
           </div>
 
@@ -616,7 +616,7 @@ export default function SupplementOnboardingPage({ onClose, onComplete, onNaviga
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                 <span style={{ fontSize: 20 }}>☀️</span>
-                <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>아침</span>
+                <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>아침</span>
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
                 {routine.morning.map(s => (
@@ -641,7 +641,7 @@ export default function SupplementOnboardingPage({ onClose, onComplete, onNaviga
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                 <span style={{ fontSize: 20 }}>🌙</span>
-                <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>저녁</span>
+                <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>저녁</span>
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
                 {routine.evening.map(s => (
@@ -705,13 +705,13 @@ export default function SupplementOnboardingPage({ onClose, onComplete, onNaviga
           <button onClick={handleManual} style={{
             width: '100%', padding: '14px 0', borderRadius: 16,
             border: '2px solid var(--accent-primary)', background: 'transparent',
-            color: 'var(--accent-primary)', fontSize: 14, fontWeight: 700,
+            color: 'var(--accent-primary)', fontSize: 14, fontWeight: 600,
             cursor: 'pointer', fontFamily: 'inherit', marginBottom: 8,
           }}>나중에 직접 설정할게요</button>
           <button onClick={handleAutoGenerate} style={{
             width: '100%', padding: '16px 0', borderRadius: 16, border: 'none',
             background: 'var(--accent-primary)', color: '#fff',
-            fontSize: 16, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+            fontSize: 16, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
           }}>루틴 자동으로 만들어줘요</button>
         </div>
       </div>
@@ -734,7 +734,7 @@ export default function SupplementOnboardingPage({ onClose, onComplete, onNaviga
             <path d="M15 18l-6-6 6-6" />
           </svg>
         </div>
-        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>영양제 루틴</span>
+        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>영양제 루틴</span>
       </div>
 
       <div style={{ padding: '16px 24px 0' }}>
@@ -763,7 +763,7 @@ export default function SupplementOnboardingPage({ onClose, onComplete, onNaviga
           width: '100%', padding: '16px 0', borderRadius: 16, border: 'none',
           background: canProceed() ? 'var(--accent-primary)' : 'var(--bg-input, #E0E0E0)',
           color: canProceed() ? '#fff' : 'var(--text-dim)',
-          fontSize: 16, fontWeight: 700, cursor: canProceed() ? 'pointer' : 'default',
+          fontSize: 16, fontWeight: 600, cursor: canProceed() ? 'pointer' : 'default',
           fontFamily: 'inherit', transition: 'all 0.2s ease',
         }}>다음</button>
       </div>

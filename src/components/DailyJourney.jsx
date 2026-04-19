@@ -76,7 +76,7 @@ export default function DailyJourney({ onTodayTap, onPastTap }) {
               <div className={`journey-thumb${day.isToday ? ' today-border' : ''}`} style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 background: 'linear-gradient(135deg, rgba(240,144,112,0.1), rgba(240,144,112,0.05))',
-                fontSize: 16, fontWeight: 700, color: '#aed8f7',
+                fontSize: 16, fontWeight: 600, color: '#aed8f7',
                 fontFamily: "'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif",
               }}>
                 {day.record.overallScore}

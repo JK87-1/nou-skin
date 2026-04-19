@@ -242,7 +242,7 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
     if (section === 0) {
       if (localStep === 0) return (
         <div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8 }}>나와 비슷한 체형을 골라보세요</div>
+          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>나와 비슷한 체형을 골라보세요</div>
           <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>체형을 선택해주세요.</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
             {BODY_TYPES.map(bt => (
@@ -260,7 +260,7 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
 
       if (localStep === 1) return (
         <div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 24 }}>평소에 어떤 운동을 하시나요?</div>
+          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24 }}>평소에 어떤 운동을 하시나요?</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {EXERCISE_TYPES.map(t => (
               <div key={t.key} onClick={() => setExerciseType(t.key)} style={{
@@ -277,7 +277,7 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
 
       if (localStep === 2) return (
         <div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8 }}>평소 일주일에 몇 번 운동하시나요?</div>
+          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>평소 일주일에 몇 번 운동하시나요?</div>
           <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>주로 하는 운동 횟수를 알려주세요.</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {EXERCISE_FREQ.map(f => (
@@ -293,7 +293,7 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
 
       if (localStep === 3) return (
         <div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 24 }}>운동 경험이 어느 정도인가요?</div>
+          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24 }}>운동 경험이 어느 정도인가요?</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {EXERCISE_EXP.map(e => (
               <div key={e.key} onClick={() => setExerciseExp(e.key)} style={{
@@ -308,7 +308,7 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
 
       if (localStep === 4) return (
         <div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 24 }}>운동할 때 강도는 어느 정도인가요?</div>
+          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24 }}>운동할 때 강도는 어느 정도인가요?</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {EXERCISE_INTENSITY.map(e => (
               <div key={e.key} onClick={() => setExerciseIntensity(e.key)} style={selectStyle(exerciseIntensity === e.key)}>
@@ -322,7 +322,7 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
 
       if (localStep === 5) return (
         <div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8 }}>평소 활동량은 어느 정도인가요?</div>
+          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>평소 활동량은 어느 정도인가요?</div>
           <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>운동 시간 외에 얼마나 움직이는지 알려주세요. 육아·가사도 활동량에 포함돼요.</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {ACTIVITY_LEVELS.map(a => (
@@ -337,7 +337,7 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
 
       if (localStep === 6) return (
         <div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 24 }}>하루에 식사를 몇 번 하시나요?</div>
+          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24 }}>하루에 식사를 몇 번 하시나요?</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {MEAL_OPTIONS.map(m => (
               <div key={m.key} onClick={() => setMealOption(m.key)} style={selectStyle(mealOption === m.key)}>
@@ -353,7 +353,7 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
     if (section === 1) {
       if (localStep === 0) return (
         <div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 24 }}>목표가 무엇인가요?</div>
+          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24 }}>목표가 무엇인가요?</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {DIET_OBJECTIVES.map(o => (
               <div key={o.key} onClick={() => setDietObjective(o.key)} style={{
@@ -373,7 +373,7 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
 
       if (localStep === 1) return (
         <div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 24 }}>목표 체중이 몇 kg인가요?</div>
+          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24 }}>목표 체중이 몇 kg인가요?</div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 12 }}>
             <button onClick={() => setGoalWeight(Math.max(30, goalWeight - 1))} style={{
               width: 44, height: 44, borderRadius: '50%', border: 'none',
@@ -447,18 +447,18 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
           <div style={{ background: 'var(--bg-card, #fff)', borderRadius: 16, padding: '16px 20px', marginBottom: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
               <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>체중 변화</span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: objKey === 'gain' ? 'var(--accent-primary)' : '#22C55E' }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: objKey === 'gain' ? 'var(--accent-primary)' : '#22C55E' }}>
                 {objKey === 'gain' ? '+' : objKey === 'lose' ? '-' : ''}{weightDiff}kg
               </span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
               <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>평균 목표 칼로리</span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{targetCal}kcal</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{targetCal}kcal</span>
             </div>
             {weightDiff > 0 && objKey !== 'maintain' && (
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>예상 종료일</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{targetDate.getFullYear()}.{targetDate.getMonth() + 1}.{targetDate.getDate()}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{targetDate.getFullYear()}.{targetDate.getMonth() + 1}.{targetDate.getDate()}</span>
               </div>
             )}
           </div>
@@ -483,39 +483,39 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
 
       if (localStep === 2) return (
         <div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8 }}>
+          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>
             {weightDiff > 0 && objKey !== 'maintain' ? `${weightDiff}kg ${objKey === 'lose' ? '줄이는' : '늘리는'} 건 충분히 가능한 목표예요` : '현재 체중을 건강하게 유지하는 목표예요'}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, margin: '28px 0' }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>현재</div>
-              <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--text-primary)' }}>{currentWeight}kg</div>
+              <div style={{ fontSize: 28, fontWeight: 600, color: 'var(--text-primary)' }}>{currentWeight}kg</div>
             </div>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-4-4l4 4-4 4" stroke="var(--accent-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>목표</div>
-              <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--accent-primary)' }}>{goalWeight}kg</div>
+              <div style={{ fontSize: 28, fontWeight: 600, color: 'var(--accent-primary)' }}>{goalWeight}kg</div>
             </div>
           </div>
           <div style={{ background: 'var(--bg-card, #fff)', borderRadius: 16, padding: '20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                 <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>하루 소비 칼로리 (TDEE)</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{tdee}kcal</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{tdee}kcal</span>
               </div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>기초대사량 + 활동량으로 계산된 하루 총 소비 칼로리</div>
             </div>
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                 <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>평균 목표 칼로리</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--accent-primary)' }}>{targetCal}kcal</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--accent-primary)' }}>{targetCal}kcal</span>
               </div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>목표 달성을 위해 하루 평균 섭취해야 할 칼로리</div>
             </div>
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                 <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>목표 속도</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{objKey === 'lose' ? '-' : objKey === 'gain' ? '+' : ''}{weeklyChange.toFixed(1)}kg/주</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{objKey === 'lose' ? '-' : objKey === 'gain' ? '+' : ''}{weeklyChange.toFixed(1)}kg/주</span>
               </div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>건강하게 달성할 수 있는 주간 변화량</div>
             </div>
@@ -528,7 +528,7 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
     if (section === 2) {
       if (localStep === 0) return (
         <div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8 }}>하루 단백질 목표를 설정해요</div>
+          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>하루 단백질 목표를 설정해요</div>
           <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>건강한 몸을 위한 단백질 목표를 정해볼까요?</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {PROTEIN_LEVELS.map(p => (
@@ -539,12 +539,12 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{p.label}</span>
-                    {p.recommended && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 6, background: 'var(--accent-primary)', color: '#fff' }}>추천</span>}
+                    {p.recommended && <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 6, background: 'var(--accent-primary)', color: '#fff' }}>추천</span>}
                   </div>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{p.desc}</div>
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 10 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent-primary)' }}>{Math.round(refWeight * p.multiplier)}g</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent-primary)' }}>{Math.round(refWeight * p.multiplier)}g</div>
                   <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>체중 × {p.multiplier}g</div>
                 </div>
               </div>
@@ -555,7 +555,7 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
 
       if (localStep === 1) return (
         <div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 24 }}>일주일에 먹는 양을 어떻게 나눌까요?</div>
+          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24 }}>일주일에 먹는 양을 어떻게 나눌까요?</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {CALORIE_DIST.map(d => (
               <div key={d.key} onClick={() => setCalorieDist(d.key)} style={selectStyle(calorieDist === d.key)}>
@@ -569,7 +569,7 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
 
       if (localStep === 2) return (
         <div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8 }}>어느 요일에 더 많이 먹고 싶으세요?</div>
+          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>어느 요일에 더 많이 먹고 싶으세요?</div>
           <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>복수 선택 가능해요.</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8 }}>
             {DAYS.map(d => {
@@ -579,7 +579,7 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
                   padding: '18px 0', borderRadius: 14, textAlign: 'center', cursor: 'pointer',
                   background: sel ? 'var(--accent-primary)' : 'var(--bg-card, #fff)',
                   color: sel ? '#fff' : 'var(--text-primary)',
-                  fontSize: 14, fontWeight: 700, border: sel ? '2px solid var(--accent-primary)' : '2px solid transparent',
+                  fontSize: 14, fontWeight: 600, border: sel ? '2px solid var(--accent-primary)' : '2px solid transparent',
                   transition: 'all 0.15s ease',
                 }}>{d}</div>
               );
@@ -593,7 +593,7 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
         const lowCal = Math.round((targetCal * 7 - highCal * highCalDays.length) / (7 - highCalDays.length));
         return (
           <div>
-            <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 24 }}>칼로리를 조정했어요!</div>
+            <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24 }}>칼로리를 조정했어요!</div>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 8, marginBottom: 20, height: 140 }}>
               {DAYS.map(d => {
                 const isHigh = highCalDays.includes(d);
@@ -617,19 +617,19 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
 
       if (localStep === 4) return (
         <div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 24 }}>선호하는 식단이 무엇인가요?</div>
+          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24 }}>선호하는 식단이 무엇인가요?</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {DIET_TYPES.map(goal => (
               <div key={goal.key} onClick={() => setDietType(goal.key)} style={{
                 ...selectStyle(dietType === goal.key),
                 padding: '20px 20px 18px',
               }}>
-                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>{goal.name}</div>
+                <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>{goal.name}</div>
                 <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 14, lineHeight: 1.4 }}>{goal.desc}</div>
                 <div style={{ display: 'flex', gap: 6 }}>
-                  <div style={{ flex: goal.carb, padding: '7px 0', borderRadius: 8, textAlign: 'center', background: 'linear-gradient(135deg, #8B5CF6, #A78BFA)', color: '#fff', fontSize: 11, fontWeight: 700 }}>탄 {goal.carb}%</div>
-                  <div style={{ flex: goal.protein, padding: '7px 0', borderRadius: 8, textAlign: 'center', background: 'linear-gradient(135deg, #D946EF, #E879F9)', color: '#fff', fontSize: 11, fontWeight: 700 }}>단 {goal.protein}%</div>
-                  <div style={{ flex: goal.fat, padding: '7px 0', borderRadius: 8, textAlign: 'center', background: 'linear-gradient(135deg, #06B6D4, #22D3EE)', color: '#fff', fontSize: 11, fontWeight: 700 }}>지 {goal.fat}%</div>
+                  <div style={{ flex: goal.carb, padding: '7px 0', borderRadius: 8, textAlign: 'center', background: 'linear-gradient(135deg, #8B5CF6, #A78BFA)', color: '#fff', fontSize: 11, fontWeight: 600 }}>탄 {goal.carb}%</div>
+                  <div style={{ flex: goal.protein, padding: '7px 0', borderRadius: 8, textAlign: 'center', background: 'linear-gradient(135deg, #D946EF, #E879F9)', color: '#fff', fontSize: 11, fontWeight: 600 }}>단 {goal.protein}%</div>
+                  <div style={{ flex: goal.fat, padding: '7px 0', borderRadius: 8, textAlign: 'center', background: 'linear-gradient(135deg, #06B6D4, #22D3EE)', color: '#fff', fontSize: 11, fontWeight: 600 }}>지 {goal.fat}%</div>
                 </div>
                 {goal.warning && (
                   <div style={{ marginTop: 10, fontSize: 10, color: '#D97706', lineHeight: 1.4 }}>{goal.warning}</div>
@@ -657,7 +657,7 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
             <path d="M15 18l-6-6 6-6" />
           </svg>
         </div>
-        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>프로그램</span>
+        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>프로그램</span>
       </div>
 
       <div style={{ padding: '16px 24px 0' }}>
@@ -686,7 +686,7 @@ export default function DietOnboardingPage({ onClose, onComplete }) {
           width: '100%', padding: '16px 0', borderRadius: 16, border: 'none',
           background: canProceed() ? 'var(--accent-primary)' : 'var(--bg-input, #E0E0E0)',
           color: canProceed() ? '#fff' : 'var(--text-dim)',
-          fontSize: 16, fontWeight: 700, cursor: canProceed() ? 'pointer' : 'default',
+          fontSize: 16, fontWeight: 600, cursor: canProceed() ? 'pointer' : 'default',
           fontFamily: 'inherit', transition: 'all 0.2s ease',
         }}>
           {step === totalSteps - 1 ? '완료' : '다음'}

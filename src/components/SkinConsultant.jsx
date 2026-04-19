@@ -45,7 +45,7 @@ function MatchScoreRing({ score }) {
       </svg>
       <div style={{
         position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 11, fontWeight: 700, color: '#a5b4fc',
+        fontSize: 11, fontWeight: 600, color: '#a5b4fc',
       }}>{score}</div>
     </div>
   );
@@ -126,7 +126,7 @@ function ProductRecommendSection({ category, result, delay = 0 }) {
       }}>
         <span style={{ fontSize: 18 }}>{meta.icon}</span>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)' }}>{meta.label}</div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>{meta.label}</div>
           <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{meta.ingredient}</div>
         </div>
       </div>
@@ -551,7 +551,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
             </svg>
           </div>
           <div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: -0.3 }}>
+            <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.3 }}>
               나만의 피부 상담사
             </div>
             <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 400 }}>

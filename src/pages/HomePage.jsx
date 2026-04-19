@@ -485,7 +485,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                       transform="rotate(-90 38 38)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
                   </svg>
                   <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{eaten}</span>
+                    <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>{eaten}</span>
                     <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>먹음</span>
                   </div>
                 </div>
@@ -742,7 +742,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                 <path d="M15 18l-6-6 6-6" />
               </svg>
             </div>
-            <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>날씨</span>
+            <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>날씨</span>
           </div>
           <SkinWeather />
         </div>
@@ -809,7 +809,7 @@ function AddWeightModal({ onSave, onClose, latest }) {
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
-        <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20, textAlign: 'center' }}>오늘 몸무게</div>
+        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 20, textAlign: 'center' }}>오늘 몸무게</div>
         <input
           value={weight} onChange={e => setWeight(e.target.value)}
           placeholder="0.0" type="number" step="0.1"
@@ -832,7 +832,7 @@ function AddWeightModal({ onSave, onClose, latest }) {
           <button onClick={() => { if (weight) onSave(Number(weight)); }} style={{
             flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
             border: 'none', background: 'var(--accent-primary)',
-            color: '#fff', fontSize: 14, fontWeight: 700,
+            color: '#fff', fontSize: 14, fontWeight: 600,
             cursor: 'pointer', fontFamily: 'inherit',
           }}>저장</button>
         </div>
@@ -915,7 +915,7 @@ function AddActivityModal({ onSave, onClose }) {
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
-        <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 16, textAlign: 'center' }}>활동 기록</div>
+        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 16, textAlign: 'center' }}>활동 기록</div>
 
         {/* Tabs */}
         <div style={{ display: 'flex', gap: 6, background: 'var(--bg-input, #F2F3F5)', borderRadius: 12, padding: 4, marginBottom: 20 }}>
@@ -1010,7 +1010,7 @@ function AddActivityModal({ onSave, onClose }) {
           <button onClick={handleSave} style={{
             flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
             border: 'none', background: 'var(--accent-primary)',
-            color: '#fff', fontSize: 14, fontWeight: 700,
+            color: '#fff', fontSize: 14, fontWeight: 600,
             cursor: 'pointer', fontFamily: 'inherit',
           }}>저장</button>
         </div>
@@ -1050,7 +1050,7 @@ function AccountPage({ profile, onUpdate, onClose }) {
             <path d="M15 18l-6-6 6-6" />
           </svg>
         </div>
-        <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)' }}>계정</div>
+        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>계정</div>
       </div>
 
       <div style={{ padding: '0 24px 40px' }}>
@@ -1105,7 +1105,7 @@ function AccountPage({ profile, onUpdate, onClose }) {
             placeholder="닉네임" maxLength={20} style={inputStyle} />
         </div>
 
-        <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', margin: '24px 0 12px' }}>기본 정보</div>
+        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: '24px 0 12px' }}>기본 정보</div>
 
         <div style={{ marginBottom: 12 }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>생년월일</div>
@@ -1163,7 +1163,7 @@ function AccountPage({ profile, onUpdate, onClose }) {
           </div>
         </div>
 
-        <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', margin: '24px 0 12px' }}>피부 정보</div>
+        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: '24px 0 12px' }}>피부 정보</div>
 
         <div style={{ marginBottom: 12 }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>피부 타입</div>

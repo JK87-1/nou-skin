@@ -194,7 +194,7 @@ function AddProductSheet({ onClose, onPhoto, onManual, accent }) {
     <SheetOverlay onClose={onClose}>
       <div style={{ background: 'var(--sheet-bg)', padding: '24px 20px 40px' }}>
         <SheetHandle />
-        <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20 }}>제품 등록</div>
+        <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 20 }}>제품 등록</div>
         {[
           { emoji: '📷', label: '사진으로 등록', desc: 'AI가 제품명과 성분을 자동 인식해요', action: onPhoto },
           { emoji: '✏️', label: '직접 입력', desc: '제품 정보를 수동으로 입력해요', action: onManual },
@@ -323,7 +323,7 @@ function PhotoRegistrationFlow({ onClose, onSave, saving, accent }) {
         {/* 촬영 단계 */}
         {step === 'capture' && (
           <>
-            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>제품 사진 촬영</div>
+            <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>제품 사진 촬영</div>
             <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>
               제품 라벨이 잘 보이도록 촬영해주세요
             </p>
@@ -371,7 +371,7 @@ function PhotoRegistrationFlow({ onClose, onSave, saving, accent }) {
         {/* 확인/수정 */}
         {step === 'confirm' && (
           <>
-            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 16 }}>제품 정보 확인</div>
+            <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 16 }}>제품 정보 확인</div>
 
             {error && (
               <div style={{ fontSize: 12, color: '#F0B870', background: 'rgba(251,191,36,0.1)', borderRadius: 10, padding: '10px 14px', marginBottom: 16 }}>
@@ -439,7 +439,7 @@ function PhotoRegistrationFlow({ onClose, onSave, saving, accent }) {
               cursor: (form.brand.trim() && form.name.trim() && !saving) ? 'pointer' : 'default',
               background: (!form.brand.trim() || !form.name.trim() || saving) ? ('var(--text-disabled)') : accent,
               color: (!form.brand.trim() || !form.name.trim() || saving) ? ('var(--text-dim)') : '#fff',
-              fontSize: 15, fontWeight: 700, position: 'relative', zIndex: 1,
+              fontSize: 15, fontWeight: 600, position: 'relative', zIndex: 1,
             }}>{saving ? '제품 이미지 검색 중...' : '등록하기'}</button>
           </>
         )}
@@ -464,7 +464,7 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
     <SheetOverlay onClose={onClose}>
       <div style={{ background: 'var(--sheet-bg)', padding: '24px 20px calc(40px + env(safe-area-inset-bottom, 0px))' }}>
         <SheetHandle />
-        <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20 }}>제품 직접 입력</div>
+        <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 20 }}>제품 직접 입력</div>
 
         {[
           { label: '브랜드', key: 'brand', placeholder: '예: 코스알엑스' },
@@ -504,7 +504,7 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
           cursor: canSave ? 'pointer' : 'default',
           background: canSave ? accent : ('var(--text-disabled)'),
           color: canSave ? '#fff' : ('var(--text-dim)'),
-          fontSize: 15, fontWeight: 700, position: 'relative', zIndex: 1,
+          fontSize: 15, fontWeight: 600, position: 'relative', zIndex: 1,
         }}>{saving ? '제품 이미지 검색 중...' : '등록하기'}</button>
       </div>
     </SheetOverlay>
@@ -546,7 +546,7 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, accent }) {
               )}
               <div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{product.brand}</div>
-                <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)' }}>{product.name}</div>
+                <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>{product.name}</div>
                 <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
                   <span style={{ fontSize: 10, fontWeight: 600, color: cat.color, background: `${cat.color}15`, borderRadius: 6, padding: '2px 7px' }}>{product.category}</span>
                   <span style={{ fontSize: 10, color: 'var(--text-dim)' }}>
@@ -606,7 +606,7 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, accent }) {
           </>
         ) : (
           <>
-            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20 }}>제품 정보 수정</div>
+            <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 20 }}>제품 정보 수정</div>
 
             {[
               { label: '브랜드', key: 'brand' },
@@ -649,7 +649,7 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, accent }) {
                 flex: 1, padding: '14px 0', borderRadius: 14, border: 'none',
                 background: (form.brand.trim() && form.name.trim()) ? accent : ('var(--text-disabled)'),
                 color: (form.brand.trim() && form.name.trim()) ? '#fff' : ('var(--text-dim)'),
-                fontSize: 15, fontWeight: 700, cursor: 'pointer',
+                fontSize: 15, fontWeight: 600, cursor: 'pointer',
               }}>저장</button>
             </div>
           </>
@@ -778,7 +778,7 @@ export default function RoutinePage({ themeColors, onBack, initialMode }) {
     <div style={{ minHeight: '100vh', paddingBottom: 100, animation: 'breatheIn 0.5s ease both' }}>
       {/* Header */}
       <div style={{ padding: '16px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>{headerTitle}</h1>
+        <h1 style={{ fontSize: 18, fontWeight: 600, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>{headerTitle}</h1>
         <div style={{ display: 'flex', gap: 8 }}>
           <div onClick={() => setShowAddSheet(true)} style={{ width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -860,7 +860,7 @@ export default function RoutinePage({ themeColors, onBack, initialMode }) {
         <div style={{ padding: '20px 20px 0', animation: 'fadeUp 0.3s ease-out' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <div>
-              <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>등록된 제품</span>
+              <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>등록된 제품</span>
               <span style={{ fontSize: 11, fontWeight: 600, color: accent, background: `${accent}15`, borderRadius: 10, padding: '2px 8px', marginLeft: 8 }}>
                 {products.length}개
               </span>
@@ -943,7 +943,7 @@ export default function RoutinePage({ themeColors, onBack, initialMode }) {
               <div style={{ marginBottom: 20 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                   <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>{isToday ? '오늘' : `${new Date(selectedDate + 'T00:00:00').getMonth() + 1}/${new Date(selectedDate + 'T00:00:00').getDate()}`} 진행률</span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: accent }}>{progress.done}/{progress.total} 완료</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: accent }}>{progress.done}/{progress.total} 완료</span>
                 </div>
                 <div style={{ height: 8, borderRadius: 4, overflow: 'hidden', background: 'var(--progress-track)' }}>
                   <div style={{
@@ -993,7 +993,7 @@ export default function RoutinePage({ themeColors, onBack, initialMode }) {
 
           {/* Weekly Calendar */}
           <div className="card" style={{ padding: '16px 18px' }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 14 }}>주간 루틴 현황</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 14 }}>주간 루틴 현황</div>
             <div style={{ display: 'flex', justifyContent: 'space-around' }}>
               {weekly.map((day) => (
                 <div key={day.dayLabel} style={{ textAlign: 'center' }}>
@@ -1019,7 +1019,7 @@ export default function RoutinePage({ themeColors, onBack, initialMode }) {
         <div style={{ padding: '20px 20px 0', animation: 'fadeUp 0.3s ease-out' }}>
           <div style={{ marginBottom: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>제품별 효과 분석</span>
+              <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>제품별 효과 분석</span>
               <span style={{ fontSize: 10, fontWeight: 600, color: accent, background: `${accent}15`, borderRadius: 8, padding: '3px 8px' }}>데이터 기반</span>
             </div>
             <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '4px 0 0' }}>
@@ -1046,7 +1046,7 @@ export default function RoutinePage({ themeColors, onBack, initialMode }) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
                     <div style={{ width: 40, height: 40, borderRadius: 12, background: `${cat.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>{cat.emoji}</div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{a.productName}</div>
+                      <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{a.productName}</div>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{a.brand}</div>
                     </div>
                     <span style={{ fontSize: 11, fontWeight: 600, color: accent, background: `${accent}15`, borderRadius: 10, padding: '4px 10px' }}>{a.days}일</span>
@@ -1068,7 +1068,7 @@ export default function RoutinePage({ themeColors, onBack, initialMode }) {
                             border: `1px solid ${m.improved ? 'rgba(137,206,245,0.2)' : 'rgba(239,68,68,0.2)'}`,
                           }}>
                             <span style={{ fontSize: 12, color: 'var(--tag-color)' }}>{m.label}</span>
-                            <span style={{ fontSize: 14, fontWeight: 700, color: m.improved ? '#89cef5' : '#ef4444' }}>
+                            <span style={{ fontSize: 14, fontWeight: 600, color: m.improved ? '#89cef5' : '#ef4444' }}>
                               {m.improved ? '↑' : '↓'}{m.diff}
                             </span>
                           </div>
@@ -1452,7 +1452,7 @@ function RoutineManagement({ enabledCats, initialTab, onBack }) {
             <path d="M15 18l-6-6 6-6" />
           </svg>
         </div>
-        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>루틴 관리</span>
+        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>루틴 관리</span>
         <div style={{ flex: 1 }} />
         <div
           onClick={() => setShowAddSheet(true)}
@@ -1463,7 +1463,7 @@ function RoutineManagement({ enabledCats, initialTab, onBack }) {
             zIndex: 1,
           }}
         >
-          <span style={{ color: '#fff', fontSize: 11, fontWeight: 700, lineHeight: 1 }}>+</span>
+          <span style={{ color: '#fff', fontSize: 11, fontWeight: 600, lineHeight: 1 }}>+</span>
         </div>
       </div>
 
@@ -1610,7 +1610,7 @@ function RoutineAddEditSheet({ enabledCats, defaultCategory, editData, onSave, o
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: '#ccc', margin: '0 auto 20px', opacity: 0.5 }} />
-        <div style={{ fontSize: 17, fontWeight: 700, color: '#1A3A4A', marginBottom: 20 }}>
+        <div style={{ fontSize: 17, fontWeight: 600, color: '#1A3A4A', marginBottom: 20 }}>
           {isEdit ? '루틴 수정' : '루틴 추가'}
         </div>
 
@@ -1713,7 +1713,7 @@ function RoutineAddEditSheet({ enabledCats, defaultCategory, editData, onSave, o
           <button onClick={handleSave} style={{
             flex: 1, padding: '14px 0', borderRadius: 14,
             border: 'none', background: 'linear-gradient(120deg, #90CCE8, #60AADD)',
-            color: '#fff', fontSize: 14, fontWeight: 700,
+            color: '#fff', fontSize: 14, fontWeight: 600,
             cursor: 'pointer', fontFamily: 'inherit',
             opacity: (!name.trim() || !category) ? 0.4 : 1,
           }}>저장</button>
@@ -1985,7 +1985,7 @@ function RoutineChecklist({ mode, enabledCats, selectedDate }) {
             padding: '24px 24px 40px', width: '100%', maxWidth: 420,
           }}>
             <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
-            <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20 }}>{label} 루틴 추가</div>
+            <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 20 }}>{label} 루틴 추가</div>
 
             {/* Time selector */}
             <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
@@ -2025,7 +2025,7 @@ function RoutineChecklist({ mode, enabledCats, selectedDate }) {
               <button onClick={handleAdd} style={{
                 flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
                 border: 'none', background: 'var(--accent-primary)',
-                color: '#fff', fontSize: 14, fontWeight: 700,
+                color: '#fff', fontSize: 14, fontWeight: 600,
                 cursor: 'pointer', fontFamily: 'inherit',
               }}>추가</button>
             </div>

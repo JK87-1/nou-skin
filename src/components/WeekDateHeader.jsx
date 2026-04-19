@@ -129,7 +129,7 @@ export default function WeekDateHeader({ selectedDate, onSelectDate, weeklyData,
       {/* Month / Year */}
       {!hideTitle && (
         <div style={{
-          fontSize: 18, fontWeight: 700, color: 'var(--text-primary)',
+          fontSize: 18, fontWeight: 600, color: 'var(--text-primary)',
           fontFamily: 'Pretendard, sans-serif', marginBottom: 16,
           transform: slideDir ? slideTransform : 'none',
           opacity: slideDir ? 0.5 : 1,

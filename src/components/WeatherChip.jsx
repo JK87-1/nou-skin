@@ -113,7 +113,7 @@ export default function WeatherChip({ onTap }) {
         {/* 하이라이트 */}
         <ellipse cx="15.5" cy="15.5" rx="3.5" ry="2.5" fill="white" opacity="0.35" />
       </svg>
-      <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-secondary)', lineHeight: 1 }}>{weather.temp}°</span>
+      <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-secondary)', lineHeight: 1 }}>{weather.temp}°</span>
       <div style={{ width: 1, height: 16, background: 'var(--border-subtle)' }} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         <div style={{ display: 'flex', gap: 5 }}>

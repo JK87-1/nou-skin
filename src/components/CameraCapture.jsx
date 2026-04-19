@@ -83,7 +83,7 @@ function CameraErrorScreen({ reason, onFallback, onClose, onRetry, colorMode }) 
         {isInsecure ? <LockIcon size={36} /> : isDenied ? '🚫' : <CameraIcon size={36} />}
       </div>
 
-      <h2 style={{ color: 'var(--text-primary)', fontSize: 20, fontWeight: 700, marginBottom: 8 }}>
+      <h2 style={{ color: 'var(--text-primary)', fontSize: 20, fontWeight: 600, marginBottom: 8 }}>
         {isInsecure ? '보안 연결이 필요합니다' :
          isDenied ? '카메라 권한이 거부되었습니다' :
          '카메라를 사용할 수 없습니다'}
@@ -100,7 +100,7 @@ function CameraErrorScreen({ reason, onFallback, onClose, onRetry, colorMode }) 
       <button onClick={onFallback} style={{
         width: '100%', maxWidth: 300, padding: 16, borderRadius: 12, border: 'none',
         background: 'var(--accent-primary)',
-        color: '#fff', fontSize: 16, fontWeight: 700, cursor: 'pointer', marginBottom: 12,
+        color: '#fff', fontSize: 16, fontWeight: 600, cursor: 'pointer', marginBottom: 12,
       }}>
         앨범에서 사진 선택
       </button>
@@ -717,7 +717,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
                 transition: 'all 0.3s',
               }}>
                 {conditions[key] && (
-                  <span style={{ color: '#fff', fontSize: 12, fontWeight: 700 }}>&#10003;</span>
+                  <span style={{ color: '#fff', fontSize: 12, fontWeight: 600 }}>&#10003;</span>
                 )}
               </div>
               <span style={{ color: conditions[key] ? accentOk : 'var(--text-dim)', fontSize: 10, fontWeight: 600 }}>
