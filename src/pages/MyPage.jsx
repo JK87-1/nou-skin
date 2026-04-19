@@ -1520,7 +1520,7 @@ function CategorySettingsPage({ onClose, onSave }) {
                     {/* 소분류 */}
                     {hasSubs && (
                       <div style={{
-                        background: 'rgba(200,210,220,0.15)',
+                        background: 'rgba(255,255,255,0.08)',
                         borderRadius: '0 0 14px 14px',
                         padding: cat.enabled ? '4px 14px 6px 14px' : '0 14px 0 14px',
                         borderTop: 'none',
@@ -1550,7 +1550,7 @@ function CategorySettingsPage({ onClose, onSave }) {
                             <div style={{ width: 40, display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
                             <div onClick={() => toggleSub(idx, si)} style={{
                               width: 30, height: 14, borderRadius: 7,
-                              background: sub.enabled ? 'linear-gradient(120deg, rgba(144,204,232,0.6), rgba(96,170,221,0.6))' : 'rgba(180,200,210,.15)',
+                              background: sub.enabled ? 'linear-gradient(120deg, rgba(144,204,232,0.6), rgba(96,170,221,0.6))' : 'rgba(180,190,200,.3)',
                               position: 'relative', cursor: 'pointer',
                               transition: 'background 0.2s ease',
                             }}>
