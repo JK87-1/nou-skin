@@ -1476,19 +1476,21 @@ function CategorySettingsPage({ onClose, onSave }) {
                         }}
                       />
                       <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>{cat.label}</span>
-                      <div onClick={() => toggle(idx)} style={{
-                        width: 40, height: 20, borderRadius: 10, flexShrink: 0,
-                        background: cat.enabled ? 'linear-gradient(120deg, #90CCE8, #60AADD)' : 'rgba(180,200,210,.3)',
-                        position: 'relative', cursor: 'pointer',
-                        transition: 'background 0.2s ease',
-                      }}>
-                        <div style={{
-                          width: 16, height: 16, borderRadius: '50%', background: '#fff',
-                          position: 'absolute', top: 2,
-                          left: cat.enabled ? 22 : 2,
-                          transition: 'left 0.2s ease',
-                          boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-                        }} />
+                      <div style={{ width: 40, display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
+                        <div onClick={() => toggle(idx)} style={{
+                          width: 40, height: 20, borderRadius: 10,
+                          background: cat.enabled ? 'linear-gradient(120deg, #90CCE8, #60AADD)' : 'rgba(180,200,210,.3)',
+                          position: 'relative', cursor: 'pointer',
+                          transition: 'background 0.2s ease',
+                        }}>
+                          <div style={{
+                            width: 16, height: 16, borderRadius: '50%', background: '#fff',
+                            position: 'absolute', top: 2,
+                            left: cat.enabled ? 22 : 2,
+                            transition: 'left 0.2s ease',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                          }} />
+                        </div>
                       </div>
                     </div>
                     {/* 색상 선택 */}
