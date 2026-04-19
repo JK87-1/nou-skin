@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { saveProfile, getProfile } from '../storage/ProfileStorage';
-import { saveRoutineItem, getRoutineItems } from '../storage/RoutineCheckStorage';
+import { saveRoutineItem, getRoutineItems, deleteRoutineItem } from '../storage/RoutineCheckStorage';
 
 const SECTIONS = ['내 몸 상태', '지금 먹는 영양제', '루틴 설계'];
 const SECTION_STEPS = [3, 2, 3];
@@ -271,12 +271,13 @@ export default function SupplementOnboardingPage({ onClose, onComplete, onNaviga
     if (!routine) return;
     // Clear existing supplement items
     const existing = getRoutineItems('supplement');
-    // Save new routine items
-    routine.morning.forEach(name => {
-      saveRoutineItem('supplement', { name, time: '아침' });
+    existing.forEach(item => deleteRoutineItem('supplement', item.id));
+    // Save new routine items with unique IDs
+    routine.morning.forEach((name, i) => {
+      saveRoutineItem('supplement', { name, time: '아침', _offset: i });
     });
-    routine.evening.forEach(name => {
-      saveRoutineItem('supplement', { name, time: '저녁' });
+    routine.evening.forEach((name, i) => {
+      saveRoutineItem('supplement', { name, time: '저녁', _offset: 100 + i });
     });
     // Save profile
     saveProfile({

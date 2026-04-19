@@ -441,15 +441,13 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                   <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>활동</span>
                   <div onClick={(e) => { e.stopPropagation(); setShowActivityModal(true); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-muted)' }}>+</div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                  <span style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{stepCount > 0 ? stepCount.toLocaleString() : '—'}</span>
-                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>걸음</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <img src="/icons/fire.svg" alt="" style={{ width: 20, height: 20, opacity: 0.5, filter: 'invert(60%) sepia(90%) saturate(500%) hue-rotate(350deg)' }} />
+                  <span style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{(burnedFromSteps + burnedFromExercise) > 0 ? (burnedFromSteps + burnedFromExercise).toLocaleString() : '—'}</span>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>kcal</span>
                 </div>
-                {(burnedFromSteps > 0 || burnedFromExercise > 0) && (
-                  <div style={{ marginTop: 4, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    {burnedFromSteps > 0 && <div style={{ fontSize: 10, color: '#22C55E' }}>🚶 걸음 {burnedFromSteps}kcal</div>}
-                    {burnedFromExercise > 0 && <div style={{ fontSize: 10, color: '#22C55E' }}>💪 운동 {burnedFromExercise}kcal</div>}
-                  </div>
+                {stepCount > 0 && (
+                  <div style={{ marginTop: 4, fontSize: 10, color: '#22C55E' }}>🚶 {stepCount.toLocaleString()}걸음</div>
                 )}
                 {/* 7일 바 차트 */}
                 <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 30, marginTop: 8 }}>
@@ -465,12 +463,15 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             </div>
             {/* 칼로리 카드 */}
             <div style={{ ...cardStyle }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>칼로리</span>
+                <div onClick={(e) => { e.stopPropagation(); setShowFoodModal(true); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-muted)', cursor: 'pointer' }}>+</div>
+              </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
                     <span style={{ fontSize: 36, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{remaining}</span>
                     <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>kcal 남음</span>
-                    <div onClick={(e) => { e.stopPropagation(); setShowFoodModal(true); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-muted)', cursor: 'pointer', marginLeft: 4 }}>+</div>
                   </div>
                   <div onClick={() => onTabChange?.('record')} style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
                     <span style={{ opacity: 0.5 }}>⊙</span> {fullGoal.kcal} 목표 <span style={{ fontSize: 10 }}>›</span>
