@@ -478,11 +478,16 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
               ))}
             </div>
 
-            {/* Food Card */}
+            {/* Food + Water Card */}
             <div style={{ ...allCardStyle, ...fadeUp(0.1) }}>
-              {allCardHeader(getCategoryColor('food'), '식단', null,
-                todayMeals.length > 0 ? `${todayMeals.length}끼 기록됨` : '미기록',
-                todayMeals.length > 0 ? '#5AAABB' : '#9ABBC8'
+              {allCardHeader(getCategoryColor('food'), '식단 · 수분', null,
+                (() => {
+                  const parts = [];
+                  if (todayMeals.length > 0) parts.push(`${todayMeals.length}끼`);
+                  if (waterCount > 0) parts.push(`${waterCount}잔`);
+                  return parts.length > 0 ? parts.join(' · ') : '미기록';
+                })(),
+                (todayMeals.length > 0 || waterCount > 0) ? '#5AAABB' : '#9ABBC8'
               )}
               <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4 }}>
                 {todayMeals.slice(0, 5).map((food, i) => (
@@ -527,41 +532,43 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                   )}
                 </div>
               )}
-            </div>
 
-            {/* Water Card */}
-            <div style={{ ...allCardStyle, ...fadeUp(0.25) }}>
-              {allCardHeader(getCategoryColor('water'), '수분', null,
-                waterCount > 0 ? `${waterCount}잔(${waterCount * cupMl}ml)` : '미기록',
-                waterCount > 0 ? '#5AAABB' : '#9ABBC8'
-              )}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ display: 'flex', gap: 4, flex: 1 }}>
-                  {Array.from({ length: TOTAL_CUPS }).map((_, i) => {
-                    const filled = i < waterCount;
-                    return (
-                      <div key={i} onClick={() => isToday && setWaterCount(i + 1 === waterCount ? 0 : i + 1)}
-                        style={{
-                          width: 20, height: 26, borderRadius: 5, overflow: 'hidden',
-                          border: `1px solid ${filled ? 'rgba(100,180,220,.4)' : 'rgba(100,180,220,.2)'}`,
-                          background: filled ? 'transparent' : 'rgba(100,180,220,.08)',
-                          cursor: isToday ? 'pointer' : 'default', position: 'relative', transition: 'all 0.15s ease',
-                        }}>
-                        {filled && (
-                          <div style={{
-                            position: 'absolute', bottom: 0, left: 0, right: 0, height: '100%',
-                            background: 'linear-gradient(180deg, #90CCEE, #60AADD)', borderRadius: 4,
-                          }} />
-                        )}
-                      </div>
-                    );
-                  })}
+              {/* 수분 섹션 */}
+              <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(100,180,220,.12)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: '#1A3A4A' }}>💧 수분</span>
+                  <span style={{ fontSize: 10, color: waterCount > 0 ? '#5AAABB' : '#9ABBC8' }}>
+                    {waterCount > 0 ? `${waterCount}잔(${waterCount * cupMl}ml)` : '미기록'}
+                  </span>
                 </div>
-                <span style={{ fontSize: 13, fontWeight: 500, color: '#5AAABB', minWidth: 32, textAlign: 'right' }}>{waterCount}잔</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
-                <span style={{ fontSize: 9, color: '#9ABBC8' }}>1잔 = {cupMl}ml</span>
-                <span style={{ fontSize: 9, color: '#9ABBC8' }}>목표 {goalMl.toLocaleString()}ml</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ display: 'flex', gap: 4, flex: 1 }}>
+                    {Array.from({ length: TOTAL_CUPS }).map((_, i) => {
+                      const filled = i < waterCount;
+                      return (
+                        <div key={i} onClick={() => isToday && setWaterCount(i + 1 === waterCount ? 0 : i + 1)}
+                          style={{
+                            width: 20, height: 26, borderRadius: 5, overflow: 'hidden',
+                            border: `1px solid ${filled ? 'rgba(100,180,220,.4)' : 'rgba(100,180,220,.2)'}`,
+                            background: filled ? 'transparent' : 'rgba(100,180,220,.08)',
+                            cursor: isToday ? 'pointer' : 'default', position: 'relative', transition: 'all 0.15s ease',
+                          }}>
+                          {filled && (
+                            <div style={{
+                              position: 'absolute', bottom: 0, left: 0, right: 0, height: '100%',
+                              background: 'linear-gradient(180deg, #90CCEE, #60AADD)', borderRadius: 4,
+                            }} />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: '#5AAABB', minWidth: 32, textAlign: 'right' }}>{waterCount}잔</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+                  <span style={{ fontSize: 9, color: '#9ABBC8' }}>1잔 = {cupMl}ml</span>
+                  <span style={{ fontSize: 9, color: '#9ABBC8' }}>목표 {goalMl.toLocaleString()}ml</span>
+                </div>
               </div>
             </div>
 
