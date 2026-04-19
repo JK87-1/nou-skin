@@ -1626,9 +1626,9 @@ function CategorySettingsPage({ onClose, onSave }) {
                       <div style={{
                         background: 'rgba(255,255,255,0.6)',
                         borderRadius: '0 0 14px 14px',
-                        padding: '12px 14px',
+                        padding: '12px 20px',
                         borderTop: 'none',
-                        display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8,
+                        display: 'grid', gridTemplateColumns: 'repeat(7, auto)', gap: '8px 5px', justifyContent: 'center',
                       }}>
                         {COLOR_OPTIONS.map(c => (
                           <div key={c} onClick={() => selectColor(cat.key, c)} style={{
@@ -1637,7 +1637,6 @@ function CategorySettingsPage({ onClose, onSave }) {
                             border: cat.color === c ? '2px solid #1A3A4A' : '2px solid transparent',
                             boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
                             transition: 'border 0.15s ease',
-                            margin: '0 auto',
                           }} />
                         ))}
                       </div>
