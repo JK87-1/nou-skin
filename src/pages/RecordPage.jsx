@@ -565,45 +565,6 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
               </div>
             </div>
 
-            {/* Sleep Card */}
-            <div style={{ ...allCardStyle, ...fadeUp(0.2) }}>
-              {allCardHeader(getCategoryColor('sleep'), '수면', null,
-                sleepQuality ? `${sleepHours}시간 · ${sleepQuality}` : `${sleepHours}시간`, '#5AAABB'
-              )}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 12 }}>
-                <div>
-                  <span style={{ fontSize: 24, fontWeight: 500, color: '#1A3A4A' }}>{sleepHours}</span>
-                  <span style={{ fontSize: 11, color: '#7AAABB', marginLeft: 3 }}>시간</span>
-                </div>
-                <div style={{ flex: 1 }}>
-                  <input type="range" min="2" max="12" step="0.5" value={sleepHours}
-                    onChange={e => isToday && setSleepHours(parseFloat(e.target.value))}
-                    disabled={!isToday}
-                    style={{
-                      width: '100%', height: 4, appearance: 'none', WebkitAppearance: 'none',
-                      background: `linear-gradient(90deg, #C8A0E0 ${((sleepHours - 2) / 10) * 100}%, rgba(200,160,224,.2) ${((sleepHours - 2) / 10) * 100}%)`,
-                      borderRadius: 2, outline: 'none',
-                    }} />
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: 6 }}>
-                {SLEEP_QUALITIES.map(q => {
-                  const active = sleepQuality === q;
-                  return (
-                    <button key={q} onClick={() => isToday && setSleepQuality(active ? null : q)}
-                      style={{
-                        flex: 1, padding: '7px 0', borderRadius: 8, fontSize: 10, fontWeight: active ? 600 : 400,
-                        border: `1px solid ${active ? 'rgba(200,160,224,.4)' : 'rgba(100,180,220,.15)'}`,
-                        background: active ? 'rgba(200,160,224,.15)' : 'rgba(255,255,255,.5)',
-                        color: active ? '#9060B0' : '#7AAABB',
-                        cursor: isToday ? 'pointer' : 'default', transition: 'all 0.15s ease',
-                        fontFamily: 'inherit',
-                      }}>{q}</button>
-                  );
-                })}
-              </div>
-            </div>
-
             {/* 활동 + 운동 Card */}
             <div style={{ ...allCardStyle, padding: '18px 15px', ...fadeUp(0.25) }}>
               {allCardHeader(getCategoryColor('activity'), '걸음수', null,
@@ -694,6 +655,45 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                     );
                   })}
                 </div>
+              </div>
+            </div>
+
+            {/* Sleep Card */}
+            <div style={{ ...allCardStyle, ...fadeUp(0.3) }}>
+              {allCardHeader(getCategoryColor('sleep'), '수면', null,
+                sleepQuality ? `${sleepHours}시간 · ${sleepQuality}` : `${sleepHours}시간`, '#5AAABB'
+              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 12 }}>
+                <div>
+                  <span style={{ fontSize: 24, fontWeight: 500, color: '#1A3A4A' }}>{sleepHours}</span>
+                  <span style={{ fontSize: 11, color: '#7AAABB', marginLeft: 3 }}>시간</span>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <input type="range" min="2" max="12" step="0.5" value={sleepHours}
+                    onChange={e => isToday && setSleepHours(parseFloat(e.target.value))}
+                    disabled={!isToday}
+                    style={{
+                      width: '100%', height: 4, appearance: 'none', WebkitAppearance: 'none',
+                      background: `linear-gradient(90deg, #C8A0E0 ${((sleepHours - 2) / 10) * 100}%, rgba(200,160,224,.2) ${((sleepHours - 2) / 10) * 100}%)`,
+                      borderRadius: 2, outline: 'none',
+                    }} />
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {SLEEP_QUALITIES.map(q => {
+                  const active = sleepQuality === q;
+                  return (
+                    <button key={q} onClick={() => isToday && setSleepQuality(active ? null : q)}
+                      style={{
+                        flex: 1, padding: '7px 0', borderRadius: 8, fontSize: 10, fontWeight: active ? 600 : 400,
+                        border: `1px solid ${active ? 'rgba(200,160,224,.4)' : 'rgba(100,180,220,.15)'}`,
+                        background: active ? 'rgba(200,160,224,.15)' : 'rgba(255,255,255,.5)',
+                        color: active ? '#9060B0' : '#7AAABB',
+                        cursor: isToday ? 'pointer' : 'default', transition: 'all 0.15s ease',
+                        fontFamily: 'inherit',
+                      }}>{q}</button>
+                  );
+                })}
               </div>
             </div>
 
