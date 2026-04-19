@@ -1522,7 +1522,7 @@ function CategorySettingsPage({ onClose, onSave }) {
                     {/* 소분류 */}
                     {hasSubs && (
                       <div style={{
-                        background: 'rgba(255,255,255,0.08)',
+                        background: 'rgba(255,255,255,0.8)',
                         borderRadius: '0 0 14px 14px',
                         padding: expandedCat === cat.key ? '4px 14px 6px 14px' : '0 14px 0 14px',
                         borderTop: 'none',
