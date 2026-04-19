@@ -1460,7 +1460,7 @@ function CategorySettingsPage({ onClose, onSave }) {
                       display: 'flex', alignItems: 'center', gap: 12,
                       padding: '12px 14px',
                       background: 'rgba(255,255,255,0.8)',
-                      borderRadius: hasSubs && cat.enabled && colorOpen !== cat.key ? '8px 8px 8px 8px' : colorOpen === cat.key ? '8px 8px 0 0' : 8,
+                      borderRadius: hasSubs && cat.enabled && colorOpen !== cat.key ? '10px 10px 10px 10px' : colorOpen === cat.key ? '10px 10px 0 0' : 10,
                       border: '0.5px solid rgba(255,255,255,0.95)',
                       boxShadow: '0 1px 4px rgba(0,0,0,0.03)',
                       opacity: cat.enabled ? 1 : 0.55,
