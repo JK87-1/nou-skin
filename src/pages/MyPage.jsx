@@ -1362,6 +1362,7 @@ function CategorySettingsPage({ onClose, onSave }) {
   const dragFromRef = useRef(null);
   const dragToRef = useRef(null);
   const dragGroupRef = useRef(null);
+  const didDragRef = useRef(false);
   const itemRefs = useRef({});
 
   const enabledCount = categories.filter(c => c.enabled).length;
@@ -1391,14 +1392,17 @@ function CategorySettingsPage({ onClose, onSave }) {
     dragFromRef.current = localIdx;
     dragToRef.current = null;
     dragGroupRef.current = group;
+    didDragRef.current = false;
     setDragGroup(group);
     setDragFrom(localIdx);
     setDragTo(null);
     setDragOffsetY(0);
+    setExpandedCat(null);
   };
 
   const moveDrag = (y) => {
     if (dragFromRef.current === null) return;
+    if (Math.abs(y - dragStartY.current) > 3) didDragRef.current = true;
     setDragOffsetY(y - dragStartY.current);
     const over = findOverIdx(dragGroupRef.current, y);
     if (over !== null) { dragToRef.current = over; setDragTo(over); }
@@ -1509,11 +1513,6 @@ function CategorySettingsPage({ onClose, onSave }) {
         <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 15, fontWeight: 500, color: '#1A3A4A' }}>카테고리 설정</span>
       </div>
 
-      {/* Description */}
-      <div style={{ padding: '20px 28px 8px' }}>
-        <div style={{ fontSize: 10, color: '#7AAABB' }}>대분류를 켜거나 끄면 소분류도 함께 변경돼요.</div>
-        <div style={{ fontSize: 9, color: '#9ABBC8', marginTop: 4 }}>최소 1개의 카테고리는 활성화되어야 해요.</div>
-      </div>
 
       {/* Category list — grouped with sub-categories */}
       <div style={{ padding: '8px 20px', flex: 1, paddingBottom: 120 }}>
@@ -1553,7 +1552,7 @@ function CategorySettingsPage({ onClose, onSave }) {
                     borderRadius: 14,
                   }}>
                     {/* 대분류 */}
-                    <div onClick={() => setExpandedCat(expandedCat === cat.key ? null : cat.key)} style={{
+                    <div onClick={() => { if (didDragRef.current) return; setExpandedCat(expandedCat === cat.key ? null : cat.key); }} style={{
                       display: 'flex', alignItems: 'center', gap: 12,
                       padding: '12px 14px',
                       background: 'rgba(255,255,255,0.8)',
@@ -1567,7 +1566,7 @@ function CategorySettingsPage({ onClose, onSave }) {
                       <svg
                         ref={el => bindDragHandle(el, group, localIdx)}
                         onClick={e => e.stopPropagation()}
-                        width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        width="22" height="22" viewBox="0 0 24 24" fill="none"
                         style={{ cursor: 'grab', flexShrink: 0, touchAction: 'none', userSelect: 'none', padding: '4px 2px' }}
                       >
                         <line x1="5" y1="9" x2="19" y2="9" stroke="rgba(0,0,0,0.2)" strokeWidth="2" strokeLinecap="round" />
