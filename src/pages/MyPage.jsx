@@ -1354,6 +1354,15 @@ function CategorySettingsPage({ onClose, onSave }) {
   const [colorOpen, setColorOpen] = useState(null);
   const [expandedCat, setExpandedCat] = useState(null);
   const [toast, setToast] = useState('');
+  const [dragGroup, setDragGroup] = useState(null);
+  const [dragFrom, setDragFrom] = useState(null);
+  const [dragTo, setDragTo] = useState(null);
+  const [dragOffsetY, setDragOffsetY] = useState(0);
+  const dragStartY = useRef(0);
+  const dragFromRef = useRef(null);
+  const dragToRef = useRef(null);
+  const dragGroupRef = useRef(null);
+  const itemRefs = useRef({});
 
   const enabledCount = categories.filter(c => c.enabled).length;
 
@@ -1363,6 +1372,76 @@ function CategorySettingsPage({ onClose, onSave }) {
     setCategories(next);
     saveCategories(next);
     onSave?.();
+  };
+
+  // 드래그 핸들러
+  const findOverIdx = (group, y) => {
+    const groupCats = categories.filter(c => c.group === group);
+    for (let i = 0; i < groupCats.length; i++) {
+      const ref = itemRefs.current[groupCats[i].key];
+      if (!ref || i === dragFromRef.current) continue;
+      const rect = ref.getBoundingClientRect();
+      if (y >= rect.top && y <= rect.bottom) return i;
+    }
+    return null;
+  };
+
+  const startDrag = (group, localIdx, y) => {
+    dragStartY.current = y;
+    dragFromRef.current = localIdx;
+    dragToRef.current = null;
+    dragGroupRef.current = group;
+    setDragGroup(group);
+    setDragFrom(localIdx);
+    setDragTo(null);
+    setDragOffsetY(0);
+  };
+
+  const moveDrag = (y) => {
+    if (dragFromRef.current === null) return;
+    setDragOffsetY(y - dragStartY.current);
+    const over = findOverIdx(dragGroupRef.current, y);
+    if (over !== null) { dragToRef.current = over; setDragTo(over); }
+  };
+
+  const endDrag = () => {
+    const from = dragFromRef.current;
+    const to = dragToRef.current;
+    const group = dragGroupRef.current;
+    dragFromRef.current = null;
+    dragToRef.current = null;
+    dragGroupRef.current = null;
+    setDragGroup(null); setDragFrom(null); setDragTo(null); setDragOffsetY(0);
+    if (from !== null && to !== null && from !== to && group) {
+      const next = [...categories];
+      const groupCats = next.filter(c => c.group === group);
+      const others = next.filter(c => c.group !== group);
+      const [item] = groupCats.splice(from, 1);
+      groupCats.splice(to, 0, item);
+      // 그룹 순서 유지하며 재조합
+      const result = [];
+      let gi = 0;
+      for (const c of next) {
+        if (c.group === group) { result.push(groupCats[gi++]); }
+        else { result.push(c); }
+      }
+      updateAndSave(result);
+    }
+  };
+
+  const bindDragHandle = (el, group, localIdx) => {
+    if (!el) return;
+    el.ontouchstart = (e) => { e.stopPropagation(); startDrag(group, localIdx, e.touches[0].clientY); };
+    el.ontouchmove = (e) => { e.preventDefault(); e.stopPropagation(); moveDrag(e.touches[0].clientY); };
+    el.ontouchend = (e) => { e.stopPropagation(); endDrag(); };
+    el.onmousedown = (e) => {
+      e.stopPropagation(); e.preventDefault();
+      startDrag(group, localIdx, e.clientY);
+      const onMove = (ev) => { ev.preventDefault(); moveDrag(ev.clientY); };
+      const onUp = () => { endDrag(); window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
+    };
   };
 
   // 대분류 토글
@@ -1450,12 +1529,29 @@ function CategorySettingsPage({ onClose, onSave }) {
                 <span style={{ fontSize: 13, fontWeight: 700, color: '#1A3A4A' }}>{label}</span>
                 <span style={{ fontSize: 10, color: '#9ABBC8' }}>{desc}</span>
               </div>
-              {groupCats.map((cat) => {
+              {groupCats.map((cat, localIdx) => {
                 const idx = categories.findIndex(c => c.key === cat.key);
                 const subs = cat.subs || [];
                 const hasSubs = subs.length > 0;
+                const isDragged = dragGroup === group && dragFrom === localIdx;
+                const ITEM_H = 58;
+                let shiftY = 0;
+                if (dragGroup === group && dragFrom !== null && dragTo !== null && !isDragged && dragFrom !== dragTo) {
+                  if (dragFrom < dragTo) {
+                    if (localIdx > dragFrom && localIdx <= dragTo) shiftY = -ITEM_H;
+                  } else {
+                    if (localIdx >= dragTo && localIdx < dragFrom) shiftY = ITEM_H;
+                  }
+                }
                 return (
-                  <div key={cat.key} style={{ marginBottom: 10 }}>
+                  <div key={cat.key} ref={el => itemRefs.current[cat.key] = el} style={{
+                    marginBottom: 10,
+                    position: 'relative', zIndex: isDragged ? 100 : 1,
+                    transform: isDragged ? `translateY(${dragOffsetY}px) scale(1.02)` : shiftY ? `translateY(${shiftY}px)` : 'none',
+                    transition: isDragged ? 'box-shadow 0.1s ease' : 'transform 0.2s cubic-bezier(0.2,0,0,1)',
+                    boxShadow: isDragged ? '0 8px 24px rgba(0,0,0,0.12)' : 'none',
+                    borderRadius: 14,
+                  }}>
                     {/* 대분류 */}
                     <div onClick={() => setExpandedCat(expandedCat === cat.key ? null : cat.key)} style={{
                       display: 'flex', alignItems: 'center', gap: 12,
@@ -1463,11 +1559,16 @@ function CategorySettingsPage({ onClose, onSave }) {
                       background: 'rgba(255,255,255,0.8)',
                       borderRadius: (expandedCat === cat.key || colorOpen === cat.key) ? '14px 14px 0 0' : 14,
                       border: '0.5px solid rgba(255,255,255,0.95)',
-                      boxShadow: '0 1px 4px rgba(0,0,0,0.03)',
+                      boxShadow: isDragged ? 'none' : '0 1px 4px rgba(0,0,0,0.03)',
                       opacity: cat.enabled ? 1 : 0.55,
                       transition: 'opacity 0.2s ease, border-radius 0.2s ease',
                       cursor: 'pointer',
                     }}>
+                      <span
+                        ref={el => bindDragHandle(el, group, localIdx)}
+                        onClick={e => e.stopPropagation()}
+                        style={{ fontSize: 14, color: 'rgba(0,0,0,0.2)', cursor: 'grab', flexShrink: 0, touchAction: 'none', padding: '4px 2px', userSelect: 'none' }}
+                      >≡</span>
                       <div style={{ width: 26, display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
                         <div
                           onClick={(e) => { e.stopPropagation(); setColorOpen(colorOpen === cat.key ? null : cat.key); }}
