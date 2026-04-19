@@ -606,7 +606,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
             {/* 활동 + 운동 Card */}
             <div style={{ ...allCardStyle, padding: '18px 15px', ...fadeUp(0.25) }}>
-              {allCardHeader(getCategoryColor('activity'), '활동', null,
+              {allCardHeader(getCategoryColor('activity'), '걸음수', null,
                 stepCount > 0 ? `${stepCount.toLocaleString()}걸음` : '미기록',
                 stepCount > 0 ? '#5AAABB' : '#9ABBC8'
               )}
