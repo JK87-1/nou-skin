@@ -604,8 +604,8 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
               </div>
             </div>
 
-            {/* 활동 Card */}
-            <div style={{ ...allCardStyle, ...fadeUp(0.25) }}>
+            {/* 활동 + 운동 Card */}
+            <div style={{ ...allCardStyle, padding: '18px 15px', ...fadeUp(0.25) }}>
               {allCardHeader(getCategoryColor('activity'), '활동', null,
                 stepCount > 0 ? `${stepCount.toLocaleString()}걸음` : '미기록',
                 stepCount > 0 ? '#5AAABB' : '#9ABBC8'
@@ -650,49 +650,50 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                   })}
                 </div>
               )}
-            </div>
-            {/* 운동 (활동 카드 내) */}
-            <div style={{ ...allCardStyle, ...fadeUp(0.3) }}>
-              {(() => {
-                const logEntries = Object.entries(exerciseLog).filter(([, m]) => m > 0);
-                const totalMin = logEntries.reduce((s, [, m]) => s + m, 0);
-                const statusText = logEntries.length > 0
-                  ? logEntries.map(([name, mins]) => `${name} ${mins}분`).join(' · ')
-                  : '오늘 미기록';
-                return allCardHeader(getCategoryColor('activity'), '운동', null,
-                  totalMin > 0 ? statusText : '오늘 미기록',
-                  totalMin > 0 ? '#5AAABB' : '#9ABBC8'
-                );
-              })()}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 5 }}>
-                {exercises.map(ex => {
-                  const hasLog = exerciseLog[ex.name] > 0;
-                  const active = hasLog || selectedExercise === ex.name;
-                  return (
-                    <div key={ex.id} onClick={() => {
-                      if (!isToday) return;
-                      if (hasLog) {
-                        const next = { ...exerciseLog };
-                        delete next[ex.name];
-                        setExerciseLog(next);
-                        if (selectedExercise === ex.name) setSelectedExercise(null);
-                      } else {
-                        setExerciseLog({ ...exerciseLog, [ex.name]: 30 });
-                        setSelectedExercise(ex.name);
-                      }
-                    }}
-                      style={{
-                        padding: '10px 4px', borderRadius: 10, textAlign: 'center',
-                        border: `1px solid ${active ? 'rgba(100,180,220,.6)' : 'rgba(100,180,220,.15)'}`,
-                        background: active ? 'rgba(100,180,220,.12)' : 'rgba(255,255,255,.5)',
-                        cursor: isToday ? 'pointer' : 'default', transition: 'all 0.15s ease',
-                      }}>
-                      <div style={{ fontSize: 18, marginBottom: 2 }}>{ex.icon}</div>
-                      <div style={{ fontSize: 10, fontWeight: active ? 600 : 400, color: active ? '#3A8AAA' : '#7AAABB' }}>{ex.name}</div>
-                      {hasLog && <div style={{ fontSize: 9, color: '#5AAABB', marginTop: 2 }}>{exerciseLog[ex.name]}분</div>}
-                    </div>
+
+              {/* 운동 섹션 */}
+              <div style={{ marginTop: 22 }}>
+                {(() => {
+                  const logEntries = Object.entries(exerciseLog).filter(([, m]) => m > 0);
+                  const totalMin = logEntries.reduce((s, [, m]) => s + m, 0);
+                  const statusText = logEntries.length > 0
+                    ? logEntries.map(([name, mins]) => `${name} ${mins}분`).join(' · ')
+                    : '오늘 미기록';
+                  return allCardHeader(getCategoryColor('activity'), '운동', null,
+                    totalMin > 0 ? statusText : '오늘 미기록',
+                    totalMin > 0 ? '#5AAABB' : '#9ABBC8'
                   );
-                })}
+                })()}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 5 }}>
+                  {exercises.map(ex => {
+                    const hasLog = exerciseLog[ex.name] > 0;
+                    const active = hasLog || selectedExercise === ex.name;
+                    return (
+                      <div key={ex.id} onClick={() => {
+                        if (!isToday) return;
+                        if (hasLog) {
+                          const next = { ...exerciseLog };
+                          delete next[ex.name];
+                          setExerciseLog(next);
+                          if (selectedExercise === ex.name) setSelectedExercise(null);
+                        } else {
+                          setExerciseLog({ ...exerciseLog, [ex.name]: 30 });
+                          setSelectedExercise(ex.name);
+                        }
+                      }}
+                        style={{
+                          padding: '10px 4px', borderRadius: 10, textAlign: 'center',
+                          border: `1px solid ${active ? 'rgba(100,180,220,.6)' : 'rgba(100,180,220,.15)'}`,
+                          background: active ? 'rgba(100,180,220,.12)' : 'rgba(255,255,255,.5)',
+                          cursor: isToday ? 'pointer' : 'default', transition: 'all 0.15s ease',
+                        }}>
+                        <div style={{ fontSize: 18, marginBottom: 2 }}>{ex.icon}</div>
+                        <div style={{ fontSize: 10, fontWeight: active ? 600 : 400, color: active ? '#3A8AAA' : '#7AAABB' }}>{ex.name}</div>
+                        {hasLog && <div style={{ fontSize: 9, color: '#5AAABB', marginTop: 2 }}>{exerciseLog[ex.name]}분</div>}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
