@@ -18,14 +18,22 @@ const DEFAULTS = {
   colorMode: 'light',
   dietGoal: 'balance',
   categories: [
-    { key: 'food',       label: '식단',     color: '#F5A623', enabled: true,  group: 'cause' },
-    { key: 'activity',   label: '활동',     color: '#4DC87A', enabled: true,  group: 'cause' },
-    { key: 'supplement', label: '영양제',   color: '#7BC8F0', enabled: true,  group: 'cause' },
-    { key: 'sleep',      label: '휴식',     color: '#9B7DD4', enabled: true,  group: 'cause' },
-    { key: 'energy',     label: '에너지',   color: '#FF6B6B', enabled: true,  group: 'result' },
-    { key: 'mood',       label: '기분',     color: '#FFD93D', enabled: true,  group: 'result' },
-    { key: 'body',       label: '바디',     color: '#45B7D1', enabled: true,  group: 'result' },
-    { key: 'skin',       label: '피부',     color: '#F48FB1', enabled: true,  group: 'result' },
+    { key: 'food',       label: '식단',     color: '#F5A623', enabled: true,  group: 'cause',
+      subs: [{ key: 'meal', label: '식사', enabled: true }, { key: 'water', label: '수분', enabled: true }] },
+    { key: 'activity',   label: '활동',     color: '#4DC87A', enabled: true,  group: 'cause',
+      subs: [{ key: 'steps', label: '걸음수', enabled: true }, { key: 'exercise', label: '운동', enabled: true }] },
+    { key: 'supplement', label: '관리',     color: '#7BC8F0', enabled: true,  group: 'cause',
+      subs: [{ key: 'supplement_pill', label: '영양제', enabled: true }, { key: 'skincare', label: '스킨케어', enabled: true }] },
+    { key: 'sleep',      label: '휴식',     color: '#9B7DD4', enabled: true,  group: 'cause',
+      subs: [{ key: 'meditation', label: '명상', enabled: true }, { key: 'sleep_log', label: '수면', enabled: true }] },
+    { key: 'energy',     label: '에너지',   color: '#FF6B6B', enabled: true,  group: 'result',
+      subs: [{ key: 'vitality', label: '활력', enabled: true }, { key: 'focus', label: '집중력', enabled: true }] },
+    { key: 'mood',       label: '기분',     color: '#FFD93D', enabled: true,  group: 'result',
+      subs: [{ key: 'emotion', label: '감정', enabled: true }, { key: 'stress', label: '스트레스', enabled: true }] },
+    { key: 'body',       label: '바디',     color: '#45B7D1', enabled: true,  group: 'result',
+      subs: [{ key: 'weight', label: '몸무게', enabled: true }, { key: 'inbody', label: '인바디·눈바디', enabled: true }, { key: 'blood_sugar', label: '혈당', enabled: true }] },
+    { key: 'skin',       label: '피부',     color: '#F48FB1', enabled: true,  group: 'result',
+      subs: [{ key: 'face', label: '얼굴', enabled: true }, { key: 'skin_condition', label: '피부상태', enabled: true }] },
   ],
 };
 
@@ -59,14 +67,19 @@ export function getCategories() {
   const defaultMap = Object.fromEntries(DEFAULTS.categories.map(c => [c.key, c]));
   // 삭제된 카테고리 목록
   const REMOVED = ['shape', 'meditation', 'walk', 'exercise', 'water', 'face', 'bodyshape'];
-  // 1) 저장된 카테고리는 순서·활성 유지, 라벨·컬러·그룹은 기본값으로 최신화
+  // 1) 저장된 카테고리는 순서·활성 유지, 라벨·컬러·그룹·subs는 기본값으로 최신화
   const migrated = saved
     .filter(c => !REMOVED.includes(c.key))
     .map(c => {
       const def = defaultMap[c.key];
-      return def
-        ? { ...c, label: def.label, color: def.color, group: def.group }
-        : c;
+      if (!def) return c;
+      // subs 마이그레이션: 저장된 subs의 enabled 상태 유지, 새 sub 추가
+      const savedSubMap = Object.fromEntries((c.subs || []).map(s => [s.key, s]));
+      const subs = (def.subs || []).map(ds => ({
+        ...ds,
+        enabled: savedSubMap[ds.key]?.enabled ?? ds.enabled,
+      }));
+      return { ...c, label: def.label, color: def.color, group: def.group, subs };
     });
   // 2) 저장본에 없는 신규 기본 카테고리는 뒤에 추가
   const savedKeys = new Set(migrated.map(c => c.key));

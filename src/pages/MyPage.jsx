@@ -1351,18 +1351,8 @@ const COLOR_OPTIONS = [
 
 function CategorySettingsPage({ onClose, onSave }) {
   const [categories, setCategories] = useState(() => getCategories());
-  const [dragging, setDragging] = useState(null);
-  const [dragOver, setDragOver] = useState(null);
-  const [dragOffsetY, setDragOffsetY] = useState(0);
-  const [dropping, setDropping] = useState(false);
   const [colorOpen, setColorOpen] = useState(null);
-  const [showAddSheet, setShowAddSheet] = useState(false);
   const [toast, setToast] = useState('');
-  const touchStart = useRef(null);
-  const itemRefs = useRef([]);
-  const dragStartY = useRef(0);
-  const draggingRef = useRef(null);
-  const dragOverRef = useRef(null);
 
   const enabledCount = categories.filter(c => c.enabled).length;
 
@@ -1374,13 +1364,40 @@ function CategorySettingsPage({ onClose, onSave }) {
     onSave?.();
   };
 
+  // 대분류 토글
   const toggle = (idx) => {
     const next = [...categories];
-    if (next[idx].enabled && enabledCount <= 1) {
+    const cat = next[idx];
+    const turning = !cat.enabled;
+    if (!turning && enabledCount <= 1) {
       showToast('최소 1개의 카테고리는 활성화되어야 해요');
       return;
     }
-    next[idx].enabled = !next[idx].enabled;
+    cat.enabled = turning;
+    // 대분류 끄면 소분류 전체 비활성, 켜면 전체 활성
+    if (cat.subs) {
+      cat.subs = cat.subs.map(s => ({ ...s, enabled: turning }));
+    }
+    updateAndSave(next);
+  };
+
+  // 소분류 토글
+  const toggleSub = (catIdx, subIdx) => {
+    const next = [...categories];
+    const cat = { ...next[catIdx], subs: [...(next[catIdx].subs || [])] };
+    cat.subs[subIdx] = { ...cat.subs[subIdx], enabled: !cat.subs[subIdx].enabled };
+    // 소분류 전부 꺼지면 대분류도 비활성
+    const anySubOn = cat.subs.some(s => s.enabled);
+    if (!anySubOn) {
+      if (enabledCount <= 1) {
+        showToast('최소 1개의 카테고리는 활성화되어야 해요');
+        return;
+      }
+      cat.enabled = false;
+    } else {
+      cat.enabled = true;
+    }
+    next[catIdx] = cat;
     updateAndSave(next);
   };
 
@@ -1389,86 +1406,6 @@ function CategorySettingsPage({ onClose, onSave }) {
     updateAndSave(next);
   };
 
-  const addCustomCategory = (name, color) => {
-    const key = 'custom_' + Date.now();
-    const next = [...categories, { key, label: name, color, enabled: true }];
-    updateAndSave(next);
-    setShowAddSheet(false);
-  };
-
-  const moveItem = (from, to) => {
-    if (from === to) return;
-    const next = [...categories];
-    const [item] = next.splice(from, 1);
-    next.splice(to, 0, item);
-    updateAndSave(next);
-  };
-
-  // Drag handlers — 핸들에서만 발동, 터치 + 마우스 지원
-  const findOverIdx = (y) => {
-    for (let i = 0; i < itemRefs.current.length; i++) {
-      const ref = itemRefs.current[i];
-      if (!ref) continue;
-      const rect = ref.getBoundingClientRect();
-      if (y >= rect.top && y <= rect.bottom && i !== draggingRef.current) return i;
-    }
-    return null;
-  };
-
-  const startDrag = (idx, y) => {
-    dragStartY.current = y;
-    draggingRef.current = idx;
-    dragOverRef.current = null;
-    setDragging(idx);
-    setDragOver(null);
-    setDragOffsetY(0);
-  };
-
-  const moveDrag = (y) => {
-    if (draggingRef.current === null) return;
-    setDragOffsetY(y - dragStartY.current);
-    const over = findOverIdx(y);
-    if (over !== null) {
-      dragOverRef.current = over;
-      setDragOver(over);
-    }
-  };
-
-  const endDrag = () => {
-    const from = draggingRef.current;
-    const to = dragOverRef.current;
-    draggingRef.current = null;
-    dragOverRef.current = null;
-    // dropping 상태로 전환 → transition 활성화 + translateY 0으로 복귀
-    setDropping(true);
-    setDragOver(null);
-    setDragOffsetY(0);
-    // transition 끝난 뒤 실제 순서 반영
-    setTimeout(() => {
-      setDragging(null);
-      setDropping(false);
-      if (from !== null && to !== null && from !== to) {
-        moveItem(from, to);
-      }
-    }, 200);
-  };
-
-  const bindDragHandle = (el, idx) => {
-    if (!el) return;
-    // Touch
-    el.ontouchstart = (e) => { e.stopPropagation(); startDrag(idx, e.touches[0].clientY); };
-    el.ontouchmove = (e) => { e.preventDefault(); e.stopPropagation(); moveDrag(e.touches[0].clientY); };
-    el.ontouchend = (e) => { e.stopPropagation(); endDrag(); };
-    // Mouse
-    el.onmousedown = (e) => {
-      e.stopPropagation(); e.preventDefault();
-      startDrag(idx, e.clientY);
-      const onMove = (ev) => { ev.preventDefault(); moveDrag(ev.clientY); };
-      const onUp = () => { endDrag(); window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
-      window.addEventListener('mousemove', onMove);
-      window.addEventListener('mouseup', onUp);
-    };
-  };
 
   return (
     <div style={{
@@ -1494,11 +1431,11 @@ function CategorySettingsPage({ onClose, onSave }) {
 
       {/* Description */}
       <div style={{ padding: '20px 28px 8px' }}>
-        <div style={{ fontSize: 10, color: '#7AAABB' }}>카테고리를 켜거나 끄고, 드래그하여 순서를 변경할 수 있어요.</div>
+        <div style={{ fontSize: 10, color: '#7AAABB' }}>대분류를 켜거나 끄면 소분류도 함께 변경돼요.</div>
         <div style={{ fontSize: 9, color: '#9ABBC8', marginTop: 4 }}>최소 1개의 카테고리는 활성화되어야 해요.</div>
       </div>
 
-      {/* Category list — grouped */}
+      {/* Category list — grouped with sub-categories */}
       <div style={{ padding: '8px 20px', flex: 1, paddingBottom: 120 }}>
         {[
           { group: 'cause', label: '행동', desc: '내가 하는 것들' },
@@ -1507,57 +1444,28 @@ function CategorySettingsPage({ onClose, onSave }) {
           const groupCats = categories.filter(c => c.group === group);
           if (groupCats.length === 0) return null;
           return (
-            <div key={group} style={{ marginBottom: 20 }}>
+            <div key={group} style={{ marginBottom: 24 }}>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '0 4px', marginBottom: 10 }}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: '#1A3A4A' }}>{label}</span>
                 <span style={{ fontSize: 10, color: '#9ABBC8' }}>{desc}</span>
               </div>
-              {(() => {
-                // 아이템 높이 (padding 11*2 + content ~20 + marginBottom 8)
-                const ITEM_H = 50;
-                const dragFromLocal = dragging !== null ? groupCats.findIndex(c => categories.findIndex(cc => cc.key === c.key) === dragging) : -1;
-                const dragToLocal = dragOver !== null ? groupCats.findIndex(c => categories.findIndex(cc => cc.key === c.key) === dragOver) : -1;
-
-                return groupCats.map((cat, localIdx) => {
+              {groupCats.map((cat) => {
                 const idx = categories.findIndex(c => c.key === cat.key);
-                const isDragged = dragging === idx;
-
-                // 다른 아이템들의 translateY 계산
-                let shiftY = 0;
-                if (dragging !== null && !isDragged && dragFromLocal >= 0 && dragToLocal >= 0 && dragFromLocal !== dragToLocal) {
-                  if (dragFromLocal < dragToLocal) {
-                    // 아래로 드래그: from~to 사이 아이템은 위로 이동
-                    if (localIdx > dragFromLocal && localIdx <= dragToLocal) shiftY = -ITEM_H;
-                  } else {
-                    // 위로 드래그: to~from 사이 아이템은 아래로 이동
-                    if (localIdx >= dragToLocal && localIdx < dragFromLocal) shiftY = ITEM_H;
-                  }
-                }
-
+                const subs = cat.subs || [];
+                const hasSubs = subs.length > 0;
                 return (
-                  <div key={cat.key}>
-                    <div
-                      ref={el => itemRefs.current[idx] = el}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 12,
-                        padding: '11px 13px', marginBottom: colorOpen === cat.key ? 0 : 8,
-                        background: isDragged ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.75)',
-                        borderRadius: colorOpen === cat.key ? '14px 14px 0 0' : 14,
-                        border: '0.5px solid rgba(255,255,255,0.95)',
-                        boxShadow: isDragged ? '0 8px 24px rgba(0,0,0,0.15)' : '0 1px 4px rgba(0,0,0,0.03)',
-                        transition: (isDragged && !dropping) ? 'box-shadow 0.1s ease' : 'transform 0.2s cubic-bezier(0.2,0,0,1), box-shadow 0.2s ease',
-                        touchAction: 'pan-x', userSelect: 'none',
-                        opacity: cat.enabled ? 1 : 0.55,
-                        position: 'relative',
-                        zIndex: isDragged ? 100 : 1,
-                        transform: isDragged ? `translateY(${dragOffsetY}px) scale(1.02)` : shiftY !== 0 ? `translateY(${shiftY}px)` : 'none',
-                      }}
-                    >
-                      <span
-                        ref={el => bindDragHandle(el, idx)}
-                        onClick={e => e.stopPropagation()}
-                        style={{ fontSize: 14, color: 'rgba(0,0,0,0.25)', cursor: 'grab', flexShrink: 0, touchAction: 'none', padding: '6px 4px' }}
-                      >≡</span>
+                  <div key={cat.key} style={{ marginBottom: 10 }}>
+                    {/* 대분류 */}
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      padding: '12px 14px',
+                      background: 'rgba(255,255,255,0.8)',
+                      borderRadius: hasSubs && colorOpen !== cat.key ? '14px 14px 8px 8px' : colorOpen === cat.key ? '14px 14px 0 0' : 14,
+                      border: '0.5px solid rgba(255,255,255,0.95)',
+                      boxShadow: '0 1px 4px rgba(0,0,0,0.03)',
+                      opacity: cat.enabled ? 1 : 0.55,
+                      transition: 'opacity 0.2s ease',
+                    }}>
                       <div
                         onClick={() => setColorOpen(colorOpen === cat.key ? null : cat.key)}
                         style={{
@@ -1583,14 +1491,14 @@ function CategorySettingsPage({ onClose, onSave }) {
                         }} />
                       </div>
                     </div>
+                    {/* 색상 선택 */}
                     {colorOpen === cat.key && (
                       <div style={{
                         background: 'rgba(255,255,255,0.9)',
-                        borderRadius: '0 0 14px 14px',
+                        borderRadius: hasSubs ? 0 : '0 0 14px 14px',
                         padding: '12px 14px',
                         border: '0.5px solid rgba(100,180,220,0.2)',
                         borderTop: 'none',
-                        marginBottom: 8,
                         display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8,
                       }}>
                         {COLOR_OPTIONS.map(c => (
@@ -1605,22 +1513,57 @@ function CategorySettingsPage({ onClose, onSave }) {
                         ))}
                       </div>
                     )}
+                    {/* 소분류 */}
+                    {hasSubs && (
+                      <div style={{
+                        background: 'rgba(255,255,255,0.5)',
+                        borderRadius: '0 0 14px 14px',
+                        padding: '4px 14px 6px 20px',
+                        borderTop: 'none',
+                        opacity: cat.enabled ? 1 : 0.4,
+                        transition: 'opacity 0.2s ease',
+                        pointerEvents: cat.enabled ? 'auto' : 'none',
+                      }}>
+                        {subs.map((sub, si) => (
+                          <div key={sub.key} style={{
+                            display: 'flex', alignItems: 'center', gap: 10,
+                            padding: '9px 0',
+                            borderTop: si > 0 ? '0.5px solid rgba(100,180,220,0.08)' : 'none',
+                          }}>
+                            <div style={{
+                              width: 3, height: 12, borderRadius: 2,
+                              background: sub.enabled ? (cat.color || '#D0D0D0') : 'rgba(180,200,210,.3)',
+                              transition: 'background 0.2s ease',
+                            }} />
+                            <span style={{
+                              flex: 1, fontSize: 13, fontWeight: 500,
+                              color: sub.enabled ? '#1A3A4A' : '#9ABBC8',
+                              transition: 'color 0.2s ease',
+                            }}>{sub.label}</span>
+                            <div onClick={() => toggleSub(idx, si)} style={{
+                              width: 32, height: 18, borderRadius: 9, flexShrink: 0,
+                              background: sub.enabled ? 'linear-gradient(120deg, #90CCE8, #60AADD)' : 'rgba(180,200,210,.3)',
+                              position: 'relative', cursor: 'pointer',
+                              transition: 'background 0.2s ease',
+                            }}>
+                              <div style={{
+                                width: 14, height: 14, borderRadius: '50%', background: '#fff',
+                                position: 'absolute', top: 2,
+                                left: sub.enabled ? 16 : 2,
+                                transition: 'left 0.2s ease',
+                                boxShadow: '0 1px 2px rgba(0,0,0,0.15)',
+                              }} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 );
-                });
-              })()}
+              })}
             </div>
           );
         })}
-
-        {/* + 카테고리 직접 추가 */}
-        <button onClick={() => setShowAddSheet(true)} style={{
-          width: '100%', padding: '10px 0', borderRadius: 12,
-          background: 'rgba(100,180,220,.04)',
-          border: '1.5px dashed rgba(100,180,220,.3)',
-          color: '#5AAABB', fontSize: 11, fontWeight: 500,
-          cursor: 'pointer', fontFamily: 'inherit', marginTop: 4,
-        }}>+ 카테고리 직접 추가</button>
       </div>
 
       {/* Toast */}
@@ -1633,13 +1576,6 @@ function CategorySettingsPage({ onClose, onSave }) {
         }}>{toast}</div>
       )}
 
-      {/* Add custom category sheet */}
-      {showAddSheet && (
-        <AddCategorySheet
-          onSave={addCustomCategory}
-          onClose={() => setShowAddSheet(false)}
-        />
-      )}
     </div>
   );
 }
