@@ -338,11 +338,11 @@ export default function ChangePage({ onTabChange }) {
                 <>
                   <div style={{ display: 'flex', gap: 12, marginBottom: 6 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#F8A8C0' }} />
+                      <div style={{ width: 7, height: 7, borderRadius: '50%', background: getCategoryColor('sleep') }} />
                       <span style={{ fontSize: 9, color: '#7AAABB' }}>수면</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#FFD070' }} />
+                      <div style={{ width: 7, height: 7, borderRadius: '50%', background: getCategoryColor('water') }} />
                       <span style={{ fontSize: 9, color: '#7AAABB' }}>수분</span>
                     </div>
                   </div>
@@ -353,7 +353,7 @@ export default function ChangePage({ onTabChange }) {
                       <div style={{ padding: '12px 0', textAlign: 'center', fontSize: 11, color: '#9ABBC8' }}>기록을 더 쌓으면 그래프가 나타나요</div>
                     );
                     const data = sleepData.length >= 2 ? sleepData : waterData;
-                    const color = sleepData.length >= 2 ? '#F8A8C0' : '#FFD070';
+                    const color = sleepData.length >= 2 ? getCategoryColor('sleep') : getCategoryColor('water');
                     return <MiniChart data={data} color={color} height={44} />;
                   })()}
                 </>

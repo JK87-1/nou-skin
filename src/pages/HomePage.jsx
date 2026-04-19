@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import SkinWeather from '../components/SkinWeather';
 import { getLatestRecord } from '../storage/SkinStorage';
-import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, GENDER_OPTIONS } from '../storage/ProfileStorage';
+import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, GENDER_OPTIONS, getCategoryColor } from '../storage/ProfileStorage';
 import { getTodayNutrition, getTodayFoods, getFoodGoal, saveFoodRecord } from '../storage/FoodStorage';
 import { AddFoodModal } from './RecordPage';
 import { getWeatherData } from '../storage/WeatherStorage';
@@ -536,11 +536,11 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 16 }}>컨디션</div>
 
         {[
-          { key: 'mood', label: '기분', color: '#F5C2CB', rgb: [245,194,203], textColor: '#E8A0AE', labels: MOOD_LABELS, ends: ['우울', '행복'],
+          { key: 'mood', label: '기분', get color() { return getCategoryColor('mood'); }, rgb: [245,194,203], get textColor() { return getCategoryColor('mood'); }, labels: MOOD_LABELS, ends: ['우울', '행복'],
             icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(212,112,126,0.3))' }}><defs><linearGradient id="heartG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F0B8C0"/><stop offset="100%" stopColor="#D4707E"/></linearGradient></defs><path d="M12 4.5C10 2 6.5 1.5 4.5 4c-2 2.5-1.5 6 1 8.5L12 20l6.5-7.5c2.5-2.5 3-6 1-8.5C17.5 1.5 14 2 12 4.5z" fill="url(#heartG)" opacity="0.6"/></svg> },
-          { key: 'energy', label: '에너지', color: '#F5E6A3', rgb: [245,230,163], textColor: '#E8B860', labels: ENERGY_LABELS, ends: ['매우 낮음', '활기참'],
+          { key: 'energy', label: '에너지', get color() { return getCategoryColor('energy'); }, rgb: [245,230,163], get textColor() { return getCategoryColor('energy'); }, labels: ENERGY_LABELS, ends: ['매우 낮음', '활기참'],
             icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(232,161,53,0.3))' }}><defs><linearGradient id="boltG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F5DFA0"/><stop offset="100%" stopColor="#E8A135"/></linearGradient></defs><path d="M14 1L3 14h8l-3 9 12-13h-8l2-9z" fill="url(#boltG)" opacity="0.6"/></svg> },
-          { key: 'water', label: '수분', color: '#C2EAFF', rgb: [194,234,255], textColor: '#7DBDE0', labels: WATER_LABELS, ends: ['갈증', '충분'],
+          { key: 'water', label: '수분', get color() { return getCategoryColor('water'); }, rgb: [194,234,255], get textColor() { return getCategoryColor('water'); }, labels: WATER_LABELS, ends: ['갈증', '충분'],
             icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(91,163,212,0.3))' }}><defs><linearGradient id="dropG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#B8E0F5"/><stop offset="100%" stopColor="#5BA3D4"/></linearGradient></defs><path d="M12 2.5c0 0-7.5 8-7.5 13a7.5 7.5 0 0015 0c0-5-7.5-13-7.5-13z" fill="url(#dropG)" opacity="0.6"/></svg> },
         ].map((s, si) => {
           const val = selections[s.key];
@@ -671,7 +671,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               <span onClick={() => { setJustUpdated(false); onTabChange('body'); }} style={{ fontSize: 12, color: 'var(--text-muted)', cursor: 'pointer' }}>분석 탭 →</span>
             </div>
             <div style={{ display: 'flex', gap: 14, marginBottom: 10 }}>
-              {[{ c: '#D4707E', l: '기분' }, { c: '#E8A135', l: '에너지' }, { c: '#5BA3D4', l: '수분' }].map(x => (
+              {[{ c: getCategoryColor('mood'), l: '기분' }, { c: getCategoryColor('energy'), l: '에너지' }, { c: getCategoryColor('water'), l: '수분' }].map(x => (
                 <div key={x.l} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                   <div style={{ width: 12, height: 2, borderRadius: 1, background: x.c }} />
                   <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{x.l}</span>
