@@ -456,8 +456,8 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
           <div style={{ padding: '8px 14px 0' }}>
             {/* Summary Bar */}
             <div style={{
-              background: 'rgba(255,255,255,.65)', borderRadius: 14, padding: '10px 13px',
-              border: '0.5px solid rgba(255,255,255,.9)', marginBottom: 10,
+              background: 'transparent', borderRadius: 14, padding: '10px 13px',
+              border: 'none', marginBottom: 10,
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               ...fadeUp(0.03),
             }}>
