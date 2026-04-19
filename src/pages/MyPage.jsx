@@ -1564,11 +1564,15 @@ function CategorySettingsPage({ onClose, onSave }) {
                       transition: 'opacity 0.2s ease, border-radius 0.2s ease',
                       cursor: 'pointer',
                     }}>
-                      <span
+                      <svg
                         ref={el => bindDragHandle(el, group, localIdx)}
                         onClick={e => e.stopPropagation()}
-                        style={{ fontSize: 14, color: 'rgba(0,0,0,0.2)', cursor: 'grab', flexShrink: 0, touchAction: 'none', padding: '4px 2px', userSelect: 'none' }}
-                      >≡</span>
+                        width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        style={{ cursor: 'grab', flexShrink: 0, touchAction: 'none', userSelect: 'none', padding: '4px 2px' }}
+                      >
+                        <line x1="5" y1="9" x2="19" y2="9" stroke="rgba(0,0,0,0.2)" strokeWidth="2" strokeLinecap="round" />
+                        <line x1="5" y1="15" x2="19" y2="15" stroke="rgba(0,0,0,0.2)" strokeWidth="2" strokeLinecap="round" />
+                      </svg>
                       <div style={{ width: 26, display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
                         <div
                           onClick={(e) => { e.stopPropagation(); setColorOpen(colorOpen === cat.key ? null : cat.key); }}
