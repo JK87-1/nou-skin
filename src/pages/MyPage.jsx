@@ -1352,6 +1352,7 @@ const COLOR_OPTIONS = [
 function CategorySettingsPage({ onClose, onSave }) {
   const [categories, setCategories] = useState(() => getCategories());
   const [colorOpen, setColorOpen] = useState(null);
+  const [expandedCat, setExpandedCat] = useState(null);
   const [toast, setToast] = useState('');
 
   const enabledCount = categories.filter(c => c.enabled).length;
@@ -1456,19 +1457,20 @@ function CategorySettingsPage({ onClose, onSave }) {
                 return (
                   <div key={cat.key} style={{ marginBottom: 10 }}>
                     {/* 대분류 */}
-                    <div style={{
+                    <div onClick={() => setExpandedCat(expandedCat === cat.key ? null : cat.key)} style={{
                       display: 'flex', alignItems: 'center', gap: 12,
                       padding: '12px 14px',
                       background: 'rgba(255,255,255,0.8)',
-                      borderRadius: colorOpen === cat.key ? '14px 14px 0 0' : 14,
+                      borderRadius: (expandedCat === cat.key || colorOpen === cat.key) ? '14px 14px 0 0' : 14,
                       border: '0.5px solid rgba(255,255,255,0.95)',
                       boxShadow: '0 1px 4px rgba(0,0,0,0.03)',
                       opacity: cat.enabled ? 1 : 0.55,
-                      transition: 'opacity 0.2s ease',
+                      transition: 'opacity 0.2s ease, border-radius 0.2s ease',
+                      cursor: 'pointer',
                     }}>
                       <div style={{ width: 26, display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
                         <div
-                          onClick={() => setColorOpen(colorOpen === cat.key ? null : cat.key)}
+                          onClick={(e) => { e.stopPropagation(); setColorOpen(colorOpen === cat.key ? null : cat.key); }}
                           style={{
                             width: 22, height: 22, borderRadius: 6, cursor: 'pointer',
                             background: cat.color || '#D0D0D0',
@@ -1479,7 +1481,7 @@ function CategorySettingsPage({ onClose, onSave }) {
                       </div>
                       <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>{cat.label}</span>
                       <div style={{ width: 40, display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
-                        <div onClick={() => toggle(idx)} style={{
+                        <div onClick={(e) => { e.stopPropagation(); toggle(idx); }} style={{
                           width: 40, height: 20, borderRadius: 10,
                           background: cat.enabled ? 'linear-gradient(120deg, #90CCE8, #60AADD)' : 'rgba(180,200,210,.3)',
                           position: 'relative', cursor: 'pointer',
@@ -1522,10 +1524,10 @@ function CategorySettingsPage({ onClose, onSave }) {
                       <div style={{
                         background: 'rgba(255,255,255,0.08)',
                         borderRadius: '0 0 14px 14px',
-                        padding: cat.enabled ? '4px 14px 6px 14px' : '0 14px 0 14px',
+                        padding: expandedCat === cat.key ? '4px 14px 6px 14px' : '0 14px 0 14px',
                         borderTop: 'none',
-                        maxHeight: cat.enabled ? 300 : 0,
-                        opacity: cat.enabled ? 1 : 0,
+                        maxHeight: expandedCat === cat.key ? 300 : 0,
+                        opacity: expandedCat === cat.key ? 1 : 0,
                         overflow: 'hidden',
                         transition: 'max-height 0.3s ease, opacity 0.2s ease, padding 0.3s ease',
                       }}>
