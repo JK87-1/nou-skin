@@ -1460,7 +1460,7 @@ function CategorySettingsPage({ onClose, onSave }) {
                       display: 'flex', alignItems: 'center', gap: 12,
                       padding: '12px 14px',
                       background: 'rgba(255,255,255,0.8)',
-                      borderRadius: hasSubs && colorOpen !== cat.key ? '14px 14px 8px 8px' : colorOpen === cat.key ? '14px 14px 0 0' : 14,
+                      borderRadius: hasSubs && cat.enabled && colorOpen !== cat.key ? '14px 14px 8px 8px' : colorOpen === cat.key ? '14px 14px 0 0' : 14,
                       border: '0.5px solid rgba(255,255,255,0.95)',
                       boxShadow: '0 1px 4px rgba(0,0,0,0.03)',
                       opacity: cat.enabled ? 1 : 0.55,
@@ -1518,11 +1518,12 @@ function CategorySettingsPage({ onClose, onSave }) {
                       <div style={{
                         background: 'rgba(255,255,255,0.5)',
                         borderRadius: '0 0 14px 14px',
-                        padding: '4px 14px 6px 20px',
+                        padding: cat.enabled ? '4px 14px 6px 20px' : '0 14px 0 20px',
                         borderTop: 'none',
-                        opacity: cat.enabled ? 1 : 0.4,
-                        transition: 'opacity 0.2s ease',
-                        pointerEvents: cat.enabled ? 'auto' : 'none',
+                        maxHeight: cat.enabled ? 300 : 0,
+                        opacity: cat.enabled ? 1 : 0,
+                        overflow: 'hidden',
+                        transition: 'max-height 0.3s ease, opacity 0.2s ease, padding 0.3s ease',
                       }}>
                         {subs.map((sub, si) => (
                           <div key={sub.key} style={{
