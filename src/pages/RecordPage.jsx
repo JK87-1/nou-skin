@@ -480,7 +480,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
             {/* Food + Water Card */}
             <div style={{ ...allCardStyle, padding: '18px 15px', ...fadeUp(0.1) }}>
-              {allCardHeader(getCategoryColor('food'), '식단', null,
+              {allCardHeader(getCategoryColor('food'), '식사', null,
                 todayMeals.length > 0 ? `${todayMeals.length}끼 기록됨` : '미기록',
                 todayMeals.length > 0 ? '#5AAABB' : '#9ABBC8'
               )}
