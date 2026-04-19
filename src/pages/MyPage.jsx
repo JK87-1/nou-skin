@@ -1543,7 +1543,7 @@ function CategorySettingsPage({ onClose, onSave }) {
           if (groupCats.length === 0) return null;
           return (
             <div key={group} style={{ marginBottom: 24 }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '0 14px', marginBottom: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '0 14px', marginBottom: 16 }}>
                 <span style={{ fontSize: 15, fontWeight: 600, color: '#1A3A4A' }}>{label}</span>
                 <span style={{ fontSize: 10, color: '#9ABBC8' }}>{desc}</span>
               </div>
@@ -1587,7 +1587,7 @@ function CategorySettingsPage({ onClose, onSave }) {
                         ref={el => bindDragHandle(el, group, localIdx)}
                         onClick={e => e.stopPropagation()}
                         width="22" height="22" viewBox="0 0 24 24" fill="none"
-                        style={{ cursor: 'grab', flexShrink: 0, touchAction: 'none', userSelect: 'none', padding: '4px 2px' }}
+                        style={{ cursor: 'grab', flexShrink: 0, touchAction: 'none', userSelect: 'none', padding: '4px 2px', WebkitTapHighlightColor: 'transparent', outline: 'none' }}
                       >
                         <line x1="5" y1="9" x2="19" y2="9" stroke="rgba(0,0,0,0.2)" strokeWidth="2" strokeLinecap="round" />
                         <line x1="5" y1="15" x2="19" y2="15" stroke="rgba(0,0,0,0.2)" strokeWidth="2" strokeLinecap="round" />
@@ -1626,9 +1626,9 @@ function CategorySettingsPage({ onClose, onSave }) {
                       <div style={{
                         background: 'rgba(255,255,255,0.6)',
                         borderRadius: '0 0 14px 14px',
-                        padding: '12px 20px',
+                        padding: '12px 32px',
                         borderTop: 'none',
-                        display: 'grid', gridTemplateColumns: 'repeat(7, auto)', gap: '8px 5px', justifyContent: 'center',
+                        display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px 0', justifyItems: 'center',
                       }}>
                         {COLOR_OPTIONS.map(c => (
                           <div key={c} onClick={() => selectColor(cat.key, c)} style={{
