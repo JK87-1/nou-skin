@@ -1466,15 +1466,17 @@ function CategorySettingsPage({ onClose, onSave }) {
                       opacity: cat.enabled ? 1 : 0.55,
                       transition: 'opacity 0.2s ease',
                     }}>
-                      <div
-                        onClick={() => setColorOpen(colorOpen === cat.key ? null : cat.key)}
-                        style={{
-                          width: 22, height: 22, borderRadius: 6, flexShrink: 0, cursor: 'pointer',
-                          background: cat.color || '#D0D0D0',
-                          border: '2px solid rgba(255,255,255,0.8)',
-                          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                        }}
-                      />
+                      <div style={{ width: 26, display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
+                        <div
+                          onClick={() => setColorOpen(colorOpen === cat.key ? null : cat.key)}
+                          style={{
+                            width: 22, height: 22, borderRadius: 6, cursor: 'pointer',
+                            background: cat.color || '#D0D0D0',
+                            border: '2px solid rgba(255,255,255,0.8)',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                          }}
+                        />
+                      </div>
                       <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>{cat.label}</span>
                       <div style={{ width: 40, display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
                         <div onClick={() => toggle(idx)} style={{
@@ -1520,7 +1522,7 @@ function CategorySettingsPage({ onClose, onSave }) {
                       <div style={{
                         background: 'rgba(255,255,255,0.08)',
                         borderRadius: '0 0 14px 14px',
-                        padding: cat.enabled ? '4px 14px 6px 20px' : '0 14px 0 20px',
+                        padding: cat.enabled ? '4px 14px 6px 14px' : '0 14px 0 14px',
                         borderTop: 'none',
                         maxHeight: cat.enabled ? 300 : 0,
                         opacity: cat.enabled ? 1 : 0,
@@ -1529,15 +1531,17 @@ function CategorySettingsPage({ onClose, onSave }) {
                       }}>
                         {subs.map((sub, si) => (
                           <div key={sub.key} style={{
-                            display: 'flex', alignItems: 'center', gap: 10,
+                            display: 'flex', alignItems: 'center', gap: 12,
                             padding: '9px 0',
                             borderTop: si > 0 ? '0.5px solid rgba(100,180,220,0.08)' : 'none',
                           }}>
-                            <div style={{
-                              width: 3, height: 12, borderRadius: 2,
-                              background: sub.enabled ? (cat.color || '#D0D0D0') : 'rgba(180,200,210,.3)',
-                              transition: 'background 0.2s ease',
-                            }} />
+                            <div style={{ width: 26, display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
+                              <div style={{
+                                width: 3, height: 12, borderRadius: 2,
+                                background: sub.enabled ? (cat.color || '#D0D0D0') : 'rgba(180,200,210,.3)',
+                                transition: 'background 0.2s ease',
+                              }} />
+                            </div>
                             <span style={{
                               flex: 1, fontSize: 13, fontWeight: 500,
                               color: sub.enabled ? '#1A3A4A' : '#9ABBC8',
