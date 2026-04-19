@@ -1521,12 +1521,12 @@ function CategorySettingsPage({ onClose, onSave }) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: 12, padding: '0 14px' }}>
           <div style={{ width: 40, display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
             <div onClick={() => { setExpandAll(!expandAll); if (!expandAll) setExpandedCat(null); }} style={{
-              width: 36, height: 18, borderRadius: 4, position: 'relative', cursor: 'pointer',
+              width: 36, height: 18, borderRadius: 7, position: 'relative', cursor: 'pointer',
               background: expandAll ? 'linear-gradient(120deg, #90CCE8, #60AADD)' : 'rgba(180,200,210,.3)',
               transition: 'background 0.2s ease',
             }}>
               <div style={{
-                width: 14, height: 14, borderRadius: 3, background: '#fff',
+                width: 14, height: 14, borderRadius: 5, background: '#fff',
                 position: 'absolute', top: 2,
                 left: expandAll ? 20 : 2,
                 transition: 'left 0.2s ease',
@@ -1544,7 +1544,7 @@ function CategorySettingsPage({ onClose, onSave }) {
           return (
             <div key={group} style={{ marginBottom: 24 }}>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '0 14px', marginBottom: 10 }}>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#1A3A4A' }}>{label}</span>
+                <span style={{ fontSize: 15, fontWeight: 600, color: '#1A3A4A' }}>{label}</span>
                 <span style={{ fontSize: 10, color: '#9ABBC8' }}>{desc}</span>
               </div>
               {groupCats.map((cat, localIdx) => {
@@ -1624,10 +1624,9 @@ function CategorySettingsPage({ onClose, onSave }) {
                     {/* 색상 선택 */}
                     {colorOpen === cat.key && (
                       <div style={{
-                        background: 'rgba(255,255,255,0.9)',
-                        borderRadius: hasSubs ? 0 : '0 0 14px 14px',
+                        background: 'rgba(255,255,255,0.6)',
+                        borderRadius: '0 0 14px 14px',
                         padding: '12px 14px',
-                        border: '0.5px solid rgba(100,180,220,0.2)',
                         borderTop: 'none',
                         display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8,
                       }}>

@@ -31,7 +31,7 @@ const DEFAULTS = {
     { key: 'mood',       label: '기분',     color: '#F0A070', enabled: true,  group: 'result',
       subs: [{ key: 'emotion', label: '감정', enabled: true }, { key: 'stress', label: '스트레스', enabled: true }] },
     { key: 'body',       label: '바디',     color: '#F09888', enabled: true,  group: 'result',
-      subs: [{ key: 'weight', label: '몸무게', enabled: true }, { key: 'inbody', label: '인바디·눈바디', enabled: true }, { key: 'blood_sugar', label: '혈당', enabled: true }] },
+      subs: [{ key: 'weight', label: '몸무게', enabled: true }, { key: 'inbody', label: '인바디', enabled: true }, { key: 'blood_sugar', label: '혈당', enabled: true }] },
     { key: 'skin',       label: '피부',     color: '#D8A0E0', enabled: true,  group: 'result',
       subs: [{ key: 'face', label: '얼굴', enabled: true }, { key: 'skin_condition', label: '피부상태', enabled: true }] },
   ],
