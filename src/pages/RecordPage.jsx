@@ -331,7 +331,6 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
     const prefix = selectedDate === todayStr ? '오늘' : selectedDate === yestStr ? '어제' : `${d.getMonth()+1}월 ${d.getDate()}일`;
     return `${prefix} / ${d.getMonth()+1}월 ${d.getDate()}일 ${DAY_NAMES_R[d.getDay()]}`;
   })();
-  const isToday = selectedDate === todayStr;
   const goPrevDate = () => {
     const d = new Date(selectedDate + 'T00:00:00'); d.setDate(d.getDate() - 1);
     const s = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
