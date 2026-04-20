@@ -359,10 +359,11 @@ export default function ChangePage({ onTabChange }) {
                 });
               });
               // 날짜 라벨: 날짜별 균등 간격
+              const DAY_NAMES = ['일','월','화','수','목','금','토'];
               const dayLabels = dayKeys.map(dk => {
                 const d = new Date(dk + 'T00:00:00');
                 const day = d.getDay();
-                return { text: `${d.getDate()}`, bold: day === 0 || day === 6 };
+                return { text: DAY_NAMES[day], bold: day === 0 || day === 6 };
               });
               return (
                 <div style={{ ...v2CardStyle, padding: '14px 10px', ...fadeUp(0.15) }}>
@@ -389,7 +390,8 @@ export default function ChangePage({ onTabChange }) {
             {/* Weight Card */}
             {(() => {
               const last7w = filteredBody.slice(-7);
-              const labels7w = last7w.map(r => { const d = new Date(r.date); const day = d.getDay(); return { text: `${d.getDate()}`, bold: day === 0 || day === 6 }; });
+              const DAY_NAMES_W = ['일','월','화','수','목','금','토'];
+              const labels7w = last7w.map(r => { const d = new Date(r.date); const day = d.getDay(); return { text: DAY_NAMES_W[day], bold: day === 0 || day === 6 }; });
               return (
                 <div style={{ ...v2CardStyle, padding: '14px 10px', ...fadeUp(0.2) }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, padding: '0 5px' }}>
