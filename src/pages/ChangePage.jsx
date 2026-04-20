@@ -285,8 +285,44 @@ export default function ChangePage({ onTabChange }) {
 
           {/* 결과 */}
           {v2Segment === '결과' && <>
-            {/* Weight Card */}
+            {/* Energy/Mood Card */}
             <div style={{ ...v2CardStyle, ...fadeUp(0.1) }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('energy') }} />
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>에너지</span>
+                </div>
+              </div>
+              {recordEntries.length > 0 ? (
+                <>
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 6 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <div style={{ width: 7, height: 7, borderRadius: '50%', background: getCategoryColor('sleep') }} />
+                      <span style={{ fontSize: 9, color: '#7AAABB' }}>수면</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <div style={{ width: 7, height: 7, borderRadius: '50%', background: getCategoryColor('water') }} />
+                      <span style={{ fontSize: 9, color: '#7AAABB' }}>수분</span>
+                    </div>
+                  </div>
+                  {(() => {
+                    const sleepData = recordEntries.filter(e => e.sleep?.hours).map(e => e.sleep.hours);
+                    const waterData = recordEntries.filter(e => e.water?.cups).map(e => e.water.cups);
+                    if (sleepData.length < 2 && waterData.length < 2) return (
+                      <div style={{ padding: '12px 0', textAlign: 'center', fontSize: 11, color: '#9ABBC8' }}>기록을 더 쌓으면 그래프가 나타나요</div>
+                    );
+                    const data = sleepData.length >= 2 ? sleepData : waterData;
+                    const color = sleepData.length >= 2 ? getCategoryColor('sleep') : getCategoryColor('water');
+                    return <MiniChart data={data} color={color} height={44} />;
+                  })()}
+                </>
+              ) : (
+                <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 12, color: '#9ABBC8' }}>기록 탭에서 수면·수분을 기록해보세요</div>
+              )}
+            </div>
+
+            {/* Weight Card */}
+            <div style={{ ...v2CardStyle, ...fadeUp(0.15) }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('body') }} />
@@ -315,7 +351,7 @@ export default function ChangePage({ onTabChange }) {
             </div>
 
             {/* Skin Card */}
-            <div style={{ ...v2CardStyle, ...fadeUp(0.15) }}>
+            <div style={{ ...v2CardStyle, ...fadeUp(0.2) }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('skin') }} />
@@ -348,42 +384,6 @@ export default function ChangePage({ onTabChange }) {
                 </>
               ) : (
                 <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 12, color: '#9ABBC8' }}>아직 측정 기록이 없어요</div>
-              )}
-            </div>
-
-            {/* Energy/Mood Card */}
-            <div style={{ ...v2CardStyle, ...fadeUp(0.2) }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('energy') }} />
-                  <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>에너지</span>
-                </div>
-              </div>
-              {recordEntries.length > 0 ? (
-                <>
-                  <div style={{ display: 'flex', gap: 12, marginBottom: 6 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <div style={{ width: 7, height: 7, borderRadius: '50%', background: getCategoryColor('sleep') }} />
-                      <span style={{ fontSize: 9, color: '#7AAABB' }}>수면</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <div style={{ width: 7, height: 7, borderRadius: '50%', background: getCategoryColor('water') }} />
-                      <span style={{ fontSize: 9, color: '#7AAABB' }}>수분</span>
-                    </div>
-                  </div>
-                  {(() => {
-                    const sleepData = recordEntries.filter(e => e.sleep?.hours).map(e => e.sleep.hours);
-                    const waterData = recordEntries.filter(e => e.water?.cups).map(e => e.water.cups);
-                    if (sleepData.length < 2 && waterData.length < 2) return (
-                      <div style={{ padding: '12px 0', textAlign: 'center', fontSize: 11, color: '#9ABBC8' }}>기록을 더 쌓으면 그래프가 나타나요</div>
-                    );
-                    const data = sleepData.length >= 2 ? sleepData : waterData;
-                    const color = sleepData.length >= 2 ? getCategoryColor('sleep') : getCategoryColor('water');
-                    return <MiniChart data={data} color={color} height={44} />;
-                  })()}
-                </>
-              ) : (
-                <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 12, color: '#9ABBC8' }}>기록 탭에서 수면·수분을 기록해보세요</div>
               )}
             </div>
           </>}
