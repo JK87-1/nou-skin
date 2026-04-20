@@ -6,7 +6,7 @@ import {
 } from '../storage/BodyStorage';
 import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, SENSITIVITY_OPTIONS, GENDER_OPTIONS, getEnabledCategories, getCategoryColor } from '../storage/ProfileStorage';
 import { getRecords, getAllThumbnailsAsync } from '../storage/SkinStorage';
-import { getLatestCheck } from '../storage/ConditionStorage';
+import { getLatestCheck, getConditionChecks } from '../storage/ConditionStorage';
 import BeforeAfterSlider from '../components/BeforeAfterSlider';
 
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
@@ -46,7 +46,11 @@ function MiniChart({ data, color = '#80CCE8', height = 36 }) {
   const min = Math.min(...data) * 0.995, max = Math.max(...data) * 1.005;
   const range = max - min || 1;
   const points = data.map((v, i) => ({ x: (i / (data.length - 1)) * w, y: h - ((v - min) / range) * (h - 8) - 4 }));
-  const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
+  let pathD = `M${points[0].x},${points[0].y}`;
+  for (let i = 0; i < points.length - 1; i++) {
+    const cx = (points[i].x + points[i + 1].x) / 2;
+    pathD += ` C${cx},${points[i].y} ${cx},${points[i + 1].y} ${points[i + 1].x},${points[i + 1].y}`;
+  }
   const last = points[points.length - 1];
   return (
     <svg viewBox={`0 0 ${w} ${h}`} style={{ width: '100%', height }}>
@@ -89,6 +93,16 @@ export default function ChangePage({ onTabChange }) {
   const [v2Segment, setV2Segment] = useState('결과');
   const [recordV2] = useState(() => loadRecordV2());
   const { from: v2From, to: v2To } = useMemo(() => getDateRange(activePeriod), [activePeriod]);
+  const conditionChecks = useMemo(() => {
+    const checks = getConditionChecks().filter(c => c.energy != null);
+    if (!v2From) return checks;
+    const fromStr = getDateKey(v2From);
+    const toStr = getDateKey(v2To);
+    return checks.filter(c => {
+      const d = c.timestamp.slice(0, 10);
+      return d >= fromStr && d <= toStr;
+    });
+  }, [v2From, v2To]);
   const filteredBody = useMemo(() => filterByRange(records, v2From, v2To), [records, v2From, v2To]);
   const filteredSkin = useMemo(() => filterByRange(skinRecords, v2From, v2To), [skinRecords, v2From, v2To]);
   const v2LatestWeight = filteredBody.length > 0 ? filteredBody[filteredBody.length - 1].weight : null;
@@ -269,60 +283,53 @@ export default function ChangePage({ onTabChange }) {
             ))}
           </div>
 
-          {/* Segment Tabs */}
-          <div style={{ background: 'rgba(255,255,255,.5)', borderRadius: 10, padding: 3, display: 'flex', marginBottom: 10, ...fadeUp(0.05) }}>
-            {V2_SEGMENTS.map(s => (
-              <button key={s} onClick={() => setV2Segment(s)} style={{
-                flex: 1, padding: '7px 0', borderRadius: 8, fontSize: 12, fontWeight: 500,
-                border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-                background: v2Segment === s ? 'rgba(255,255,255,.9)' : 'transparent',
-                color: v2Segment === s ? '#1A3A4A' : '#7AAABB',
-                boxShadow: v2Segment === s ? '0 1px 3px rgba(100,180,220,.15)' : 'none',
-                transition: 'all 0.15s ease',
-              }}>{s}</button>
-            ))}
-          </div>
-
-          {/* 결과 */}
-          {v2Segment === '결과' && <>
-            {/* Energy/Mood Card */}
+          {/* Patterns Card */}
             <div style={{ ...v2CardStyle, ...fadeUp(0.1) }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>발견한 패턴</span>
+                <span style={{ fontSize: 9, color: '#80C0E8', fontWeight: 500 }}>● LIVE</span>
+              </div>
+              {DEMO_PATTERNS.map((pattern, idx) => (
+                <div key={idx} style={{
+                  padding: '8px 0', borderTop: idx > 0 ? '0.5px solid rgba(100,180,220,.12)' : 'none',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 4, flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 99, background: 'rgba(255,210,80,.15)', color: '#8A6000' }}>{pattern.cause}</span>
+                    <span style={{ fontSize: 10, color: '#AAC8D8' }}>→</span>
+                    <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 99, background: 'rgba(100,180,220,.12)', color: '#2A6A8A' }}>{pattern.effect}</span>
+                    <span style={{ fontSize: 10, color: '#AAC8D8' }}>→</span>
+                    <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 99, background: 'rgba(100,180,220,.12)', color: '#2A6A8A' }}>{pattern.result}</span>
+                  </div>
+                  <div style={{ fontSize: 10, color: '#5A8AAA', lineHeight: 1.5 }}>{pattern.desc}</div>
+                </div>
+              ))}
+              <div style={{ paddingTop: 8, textAlign: 'center', fontSize: 11, color: '#9ABBC8' }}>
+                기록이 쌓이면 AI가 더 정확한 패턴을 발견해줘요
+              </div>
+            </div>
+
+          {/* Energy Card */}
+            <div style={{ ...v2CardStyle, ...fadeUp(0.15) }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('energy') }} />
-                  <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>에너지</span>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>에너지 흐름</span>
                 </div>
+                {conditionChecks.length > 0 && (
+                  <span style={{ fontSize: 11, fontWeight: 500, color: '#7AAABB' }}>최근 {conditionChecks.length}회</span>
+                )}
               </div>
-              {recordEntries.length > 0 ? (
-                <>
-                  <div style={{ display: 'flex', gap: 12, marginBottom: 6 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <div style={{ width: 7, height: 7, borderRadius: '50%', background: getCategoryColor('sleep') }} />
-                      <span style={{ fontSize: 9, color: '#7AAABB' }}>수면</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <div style={{ width: 7, height: 7, borderRadius: '50%', background: getCategoryColor('water') }} />
-                      <span style={{ fontSize: 9, color: '#7AAABB' }}>수분</span>
-                    </div>
-                  </div>
-                  {(() => {
-                    const sleepData = recordEntries.filter(e => e.sleep?.hours).map(e => e.sleep.hours);
-                    const waterData = recordEntries.filter(e => e.water?.cups).map(e => e.water.cups);
-                    if (sleepData.length < 2 && waterData.length < 2) return (
-                      <div style={{ padding: '12px 0', textAlign: 'center', fontSize: 11, color: '#9ABBC8' }}>기록을 더 쌓으면 그래프가 나타나요</div>
-                    );
-                    const data = sleepData.length >= 2 ? sleepData : waterData;
-                    const color = sleepData.length >= 2 ? getCategoryColor('sleep') : getCategoryColor('water');
-                    return <MiniChart data={data} color={color} height={44} />;
-                  })()}
-                </>
+              {conditionChecks.length >= 2 ? (
+                <MiniChart data={conditionChecks.map(c => c.energy)} color={getCategoryColor('energy')} height={44} />
               ) : (
-                <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 12, color: '#9ABBC8' }}>기록 탭에서 수면·수분을 기록해보세요</div>
+                <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 12, color: '#9ABBC8' }}>
+                  {conditionChecks.length === 1 ? '한 번 더 체크하면 그래프가 나타나요' : '홈에서 컨디션을 체크해보세요'}
+                </div>
               )}
             </div>
 
             {/* Weight Card */}
-            <div style={{ ...v2CardStyle, ...fadeUp(0.15) }}>
+            <div style={{ ...v2CardStyle, ...fadeUp(0.2) }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('body') }} />
@@ -343,7 +350,7 @@ export default function ChangePage({ onTabChange }) {
                   <div style={{ textAlign: 'center', fontSize: 10, color: '#7AAABB', marginBottom: 10 }}>
                     시작 {v2StartWeight}kg{goal?.target ? ` · 목표 ${goal.target}kg` : ''}
                   </div>
-                  <MiniChart data={filteredBody.map(r => r.weight)} color="#80CCE8" />
+                  <MiniChart data={filteredBody.map(r => r.weight)} color={getCategoryColor('body')} />
                 </>
               ) : (
                 <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 12, color: '#9ABBC8' }}>아직 기록이 없어요</div>
@@ -351,7 +358,7 @@ export default function ChangePage({ onTabChange }) {
             </div>
 
             {/* Skin Card */}
-            <div style={{ ...v2CardStyle, ...fadeUp(0.2) }}>
+            <div style={{ ...v2CardStyle, ...fadeUp(0.25) }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('skin') }} />
@@ -386,49 +393,7 @@ export default function ChangePage({ onTabChange }) {
                 <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 12, color: '#9ABBC8' }}>아직 측정 기록이 없어요</div>
               )}
             </div>
-          </>}
 
-          {/* 원인→결과 */}
-          {v2Segment === '원인→결과' && <>
-            <div style={{
-              background: 'linear-gradient(120deg, rgba(100,180,220,.12), rgba(140,200,230,.08))',
-              border: '1px solid rgba(100,180,220,.25)',
-              borderRadius: 16, padding: '12px 14px', marginBottom: 10, ...fadeUp(0.1),
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                <span style={{ fontSize: 11, fontWeight: 600, color: '#2A6A8A' }}>이번 주 발견한 패턴</span>
-                <span style={{ fontSize: 9, color: '#80C0E8', fontWeight: 500 }}>● LIVE</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                <span style={{ fontSize: 10, padding: '3px 8px', borderRadius: 99, background: 'rgba(255,210,80,.15)', color: '#8A6000' }}>물 6잔+</span>
-                <span style={{ fontSize: 10, color: '#AAC8D8' }}>→</span>
-                <span style={{ fontSize: 10, padding: '3px 8px', borderRadius: 99, background: 'rgba(100,180,220,.12)', color: '#2A6A8A' }}>수분 충분</span>
-                <span style={{ fontSize: 10, color: '#AAC8D8' }}>→</span>
-                <span style={{ fontSize: 10, padding: '3px 8px', borderRadius: 99, background: 'rgba(100,180,220,.12)', color: '#2A6A8A' }}>피부 +3점</span>
-              </div>
-              <div style={{ fontSize: 10, color: '#5A8AAA', lineHeight: 1.5, marginTop: 8 }}>
-                수분을 충분히 섭취한 날 다음날 피부 점수가 높아지는 패턴이 보여요.
-              </div>
-            </div>
-            {DEMO_PATTERNS.map((pattern, idx) => (
-              <div key={idx} style={{
-                background: 'rgba(255,255,255,.65)', borderRadius: 12, padding: '10px 12px',
-                border: '0.5px solid rgba(255,255,255,.9)', marginBottom: 8, ...fadeUp(0.15 + idx * 0.05),
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6, flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 99, background: 'rgba(255,210,80,.15)', color: '#8A6000' }}>{pattern.cause}</span>
-                  <span style={{ fontSize: 10, color: '#AAC8D8' }}>→</span>
-                  <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 99, background: 'rgba(100,180,220,.12)', color: '#2A6A8A' }}>{pattern.effect}</span>
-                  <span style={{ fontSize: 10, color: '#AAC8D8' }}>→</span>
-                  <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 99, background: 'rgba(100,180,220,.12)', color: '#2A6A8A' }}>{pattern.result}</span>
-                </div>
-                <div style={{ fontSize: 10, color: '#5A8AAA', lineHeight: 1.5 }}>{pattern.desc}</div>
-              </div>
-            ))}
-            <div style={{ padding: '16px 0', textAlign: 'center', fontSize: 11, color: '#9ABBC8', ...fadeUp(0.3) }}>
-              기록이 쌓이면 AI가 더 정확한 패턴을 발견해줘요
-            </div>
-          </>}
         </div>
       )}
 
