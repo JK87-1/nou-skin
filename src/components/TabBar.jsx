@@ -90,12 +90,15 @@ export default function TabBar({ activeTab, onTabChange }) {
     {
       key: 'routine',
       label: '루틴',
-      icon: (active) => (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <defs><mask id="checkMask"><rect width="24" height="24" fill="white" /><path d="M8 12.5l2.5 2.5L16 10" stroke="black" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" /></mask></defs>
-          <circle cx="12" cy="12" r="10" fill={active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)'} mask="url(#checkMask)" />
-        </svg>
-      ),
+      icon: (active) => {
+        const c = active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)';
+        return (
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2c.5 3.5 2.5 6 5 7.5-2.5 1.5-4.5 4-5 7.5-.5-3.5-2.5-6-5-7.5C9.5 8 11.5 5.5 12 2z" fill={c} />
+            <path d="M18 14c.3 2 1.5 3.5 3 4.5-1.5 1-2.7 2.5-3 4.5-.3-2-1.5-3.5-3-4.5 1.5-1 2.7-2.5 3-4.5z" fill={c} />
+          </svg>
+        );
+      },
     },
     {
       key: 'body',
