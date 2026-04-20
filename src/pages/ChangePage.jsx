@@ -105,6 +105,29 @@ export default function ChangePage({ onTabChange }) {
   }, [insightTab]);
   const todayKey = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`;
   const [selectedDate, setSelectedDate] = useState(todayKey);
+  const [showCal, setShowCal] = useState(false);
+  const [calYear, setCalYear] = useState(() => new Date().getFullYear());
+  const [calMonth, setCalMonth] = useState(() => new Date().getMonth());
+  const [changeViewMode, setChangeViewMode] = useState('기록');
+  const DAY_NAMES_C = ['일요일','월요일','화요일','수요일','목요일','금요일','토요일'];
+  const changeDateLabel = (() => {
+    const d = new Date(selectedDate + 'T00:00:00');
+    const yest = new Date(); yest.setDate(yest.getDate() - 1);
+    const yestStr = `${yest.getFullYear()}-${String(yest.getMonth()+1).padStart(2,'0')}-${String(yest.getDate()).padStart(2,'0')}`;
+    const prefix = selectedDate === todayKey ? '오늘' : selectedDate === yestStr ? '어제' : `${d.getMonth()+1}월 ${d.getDate()}일`;
+    return `${prefix} / ${d.getMonth()+1}월 ${d.getDate()}일 ${DAY_NAMES_C[d.getDay()]}`;
+  })();
+  const isChangeToday = selectedDate === todayKey;
+  const goChangePrev = () => {
+    const d = new Date(selectedDate + 'T00:00:00'); d.setDate(d.getDate() - 1);
+    setSelectedDate(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
+  };
+  const goChangeNext = () => {
+    if (isChangeToday) return;
+    const d = new Date(selectedDate + 'T00:00:00'); d.setDate(d.getDate() + 1);
+    const s = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    if (s <= todayKey) setSelectedDate(s);
+  };
   const [skinRecords, setSkinRecords] = useState([]);
   const [skinThumbs, setSkinThumbs] = useState({});
   const [compareTab, setCompareTab] = useState('monthly');
@@ -269,29 +292,69 @@ export default function ChangePage({ onTabChange }) {
           </div>
         </div>
       </div>
-      <div style={{ padding: '10px 18px 0' }}>
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          {['1주', '1개월', '3개월', '전체'].map(p => (
-            <button key={p} onClick={() => setActivePeriod(p)} style={{
-              fontSize: 10, padding: '5px 12px', borderRadius: 99, cursor: 'pointer',
-              border: `0.5px solid ${activePeriod === p ? 'rgba(100,180,220,.4)' : 'rgba(100,180,220,.2)'}`,
-              background: activePeriod === p ? 'rgba(100,180,220,.15)' : 'rgba(255,255,255,.5)',
-              color: activePeriod === p ? '#2A6A8A' : '#7AAABB',
-              fontWeight: activePeriod === p ? 500 : 400,
-              fontFamily: 'inherit',
-            }}>{p}</button>
+      <div style={{ padding: '10px 18px 0', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div onClick={goChangePrev} style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'rgba(255,255,255,.5)', border: '0.5px solid rgba(100,180,220,.2)' }}>
+          <span style={{ fontSize: 13, color: '#3A8AAA', fontWeight: 600 }}>‹</span>
+        </div>
+        <div onClick={() => setShowCal(!showCal)} style={{
+          flex: 1, background: 'rgba(255,255,255,.5)', border: '0.5px solid rgba(100,180,220,.2)',
+          borderRadius: 99, padding: '6px 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, cursor: 'pointer',
+        }}>
+          <span style={{ fontSize: 11, color: '#2A6A8A', fontWeight: 500 }}>{changeDateLabel}</span>
+        </div>
+        <div onClick={goChangeNext} style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isChangeToday ? 'default' : 'pointer', background: 'rgba(255,255,255,.5)', border: '0.5px solid rgba(100,180,220,.2)', opacity: isChangeToday ? 0.3 : 1 }}>
+          <span style={{ fontSize: 13, color: '#3A8AAA', fontWeight: 600 }}>›</span>
+        </div>
+        <div style={{ display: 'flex', background: 'rgba(255,255,255,.5)', borderRadius: 99, border: '0.5px solid rgba(100,180,220,.2)', overflow: 'hidden', flexShrink: 0 }}>
+          {['기록', '흐름'].map(m => (
+            <div key={m} onClick={() => setChangeViewMode(m)} style={{
+              padding: '6px 10px', fontSize: 10, fontWeight: changeViewMode === m ? 600 : 400, cursor: 'pointer',
+              background: changeViewMode === m ? 'rgba(100,180,220,.15)' : 'transparent',
+              color: changeViewMode === m ? '#2A6A8A' : '#7AAABB',
+            }}>{m}</div>
           ))}
-          <div onClick={() => setShowSettings(true)} style={{
-            background: 'rgba(255,255,255,.5)', border: '0.5px solid rgba(100,180,220,.2)',
-            borderRadius: 99, padding: '5px 10px', display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', flexShrink: 0,
-          }}>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#7AAABB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
-            </svg>
-            <span style={{ fontSize: 10, color: '#7AAABB' }}>직접 선택</span>
-          </div>
         </div>
       </div>
+      {/* Inline Calendar */}
+      {showCal && (() => {
+        const firstDay = new Date(calYear, calMonth, 1).getDay();
+        const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+        const cells = [];
+        for (let i = 0; i < firstDay; i++) cells.push(null);
+        for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+        return (
+          <div style={{ background: 'rgba(255,255,255,.95)', borderRadius: 16, margin: '8px 14px', padding: '12px 14px', border: '0.5px solid rgba(100,180,220,.2)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <div onClick={() => { if (calMonth === 0) { setCalYear(calYear - 1); setCalMonth(11); } else setCalMonth(calMonth - 1); }} style={{ cursor: 'pointer', padding: '2px 8px', fontSize: 14, color: '#5A9AAA' }}>‹</div>
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#2A6A8A' }}>{calYear}년 {calMonth + 1}월</span>
+              <div onClick={() => { if (calMonth === 11) { setCalYear(calYear + 1); setCalMonth(0); } else setCalMonth(calMonth + 1); }} style={{ cursor: 'pointer', padding: '2px 8px', fontSize: 14, color: '#5A9AAA' }}>›</div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', textAlign: 'center', marginBottom: 4 }}>
+              {['일','월','화','수','목','금','토'].map(d => <div key={d} style={{ fontSize: 9, color: '#9ABBC8', padding: '2px 0' }}>{d}</div>)}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', textAlign: 'center', gap: '2px 0' }}>
+              {cells.map((day, i) => {
+                if (!day) return <div key={`e${i}`} />;
+                const dateStr = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isFuture = dateStr > todayKey;
+                const isSelected = dateStr === selectedDate;
+                const isTodayDate = dateStr === todayKey;
+                return (
+                  <div key={day} onClick={() => { if (isFuture) return; setSelectedDate(dateStr); setShowCal(false); }}
+                    style={{
+                      width: 22, height: 22, borderRadius: '50%', margin: '0 auto',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 10, cursor: isFuture ? 'default' : 'pointer',
+                      background: isTodayDate ? '#3A8AAA' : isSelected ? 'rgba(100,180,220,.2)' : 'transparent',
+                      color: isFuture ? 'rgba(90,150,170,.3)' : isTodayDate ? '#fff' : isSelected ? '#2A6A8A' : '#5A9AAA',
+                      fontWeight: isSelected ? 500 : 400,
+                    }}>{day}</div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Category Tabs */}
       {(() => {

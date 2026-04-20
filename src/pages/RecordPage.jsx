@@ -319,13 +319,30 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
   const r = 24, circ = 2 * Math.PI * r;
   const dashFill = circ * (score / 100);
   const [showCal, setShowCal] = useState(false);
+  const [recordViewMode, setRecordViewMode] = useState('기록');
   const [calYear, setCalYear] = useState(() => new Date().getFullYear());
   const [calMonth, setCalMonth] = useState(() => new Date().getMonth());
 
-  const dateLabel = selectedDate === todayStr ? '오늘' : (() => {
+  const DAY_NAMES_R = ['일요일','월요일','화요일','수요일','목요일','금요일','토요일'];
+  const dateLabelFull = (() => {
     const d = new Date(selectedDate + 'T00:00:00');
-    return `${d.getMonth() + 1}월 ${d.getDate()}일`;
+    const yest = new Date(); yest.setDate(yest.getDate() - 1);
+    const yestStr = `${yest.getFullYear()}-${String(yest.getMonth()+1).padStart(2,'0')}-${String(yest.getDate()).padStart(2,'0')}`;
+    const prefix = selectedDate === todayStr ? '오늘' : selectedDate === yestStr ? '어제' : `${d.getMonth()+1}월 ${d.getDate()}일`;
+    return `${prefix} / ${d.getMonth()+1}월 ${d.getDate()}일 ${DAY_NAMES_R[d.getDay()]}`;
   })();
+  const isToday = selectedDate === todayStr;
+  const goPrevDate = () => {
+    const d = new Date(selectedDate + 'T00:00:00'); d.setDate(d.getDate() - 1);
+    const s = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    handleSelectDate(s);
+  };
+  const goNextDate = () => {
+    if (isToday) return;
+    const d = new Date(selectedDate + 'T00:00:00'); d.setDate(d.getDate() + 1);
+    const s = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    if (s <= todayStr) handleSelectDate(s);
+  };
 
   return (
     <div style={{ minHeight: '100dvh', paddingBottom: 80 }}>
@@ -347,16 +364,27 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
           </div>
         </div>
       </div>
-      <div style={{ padding: '10px 18px 0' }}>
+      <div style={{ padding: '10px 18px 0', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div onClick={goPrevDate} style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'rgba(255,255,255,.5)', border: '0.5px solid rgba(100,180,220,.2)' }}>
+          <span style={{ fontSize: 13, color: '#3A8AAA', fontWeight: 600 }}>‹</span>
+        </div>
         <div onClick={() => setShowCal(!showCal)} style={{
-          background: 'rgba(255,255,255,.5)', border: '0.5px solid rgba(100,180,220,.2)',
-          borderRadius: 99, padding: '5px 12px', display: 'inline-flex', alignItems: 'center', gap: 4, cursor: 'pointer',
+          flex: 1, background: 'rgba(255,255,255,.5)', border: '0.5px solid rgba(100,180,220,.2)',
+          borderRadius: 99, padding: '6px 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, cursor: 'pointer',
         }}>
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#3A8AAA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
-          </svg>
-          <span style={{ fontSize: 10, color: '#3A8AAA', fontWeight: 500 }}>{dateLabel}</span>
-          <span style={{ fontSize: 8, color: '#3A8AAA' }}>▾</span>
+          <span style={{ fontSize: 11, color: '#2A6A8A', fontWeight: 500 }}>{dateLabelFull}</span>
+        </div>
+        <div onClick={goNextDate} style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isToday ? 'default' : 'pointer', background: 'rgba(255,255,255,.5)', border: '0.5px solid rgba(100,180,220,.2)', opacity: isToday ? 0.3 : 1 }}>
+          <span style={{ fontSize: 13, color: '#3A8AAA', fontWeight: 600 }}>›</span>
+        </div>
+        <div style={{ display: 'flex', background: 'rgba(255,255,255,.5)', borderRadius: 99, border: '0.5px solid rgba(100,180,220,.2)', overflow: 'hidden', flexShrink: 0 }}>
+          {['기록', '흐름'].map(m => (
+            <div key={m} onClick={() => setRecordViewMode(m)} style={{
+              padding: '6px 10px', fontSize: 10, fontWeight: recordViewMode === m ? 600 : 400, cursor: 'pointer',
+              background: recordViewMode === m ? 'rgba(100,180,220,.15)' : 'transparent',
+              color: recordViewMode === m ? '#2A6A8A' : '#7AAABB',
+            }}>{m}</div>
+          ))}
         </div>
       </div>
 
