@@ -62,11 +62,17 @@ export default function TabBar({ activeTab, onTabChange }) {
     {
       key: 'home',
       label: '홈',
-      icon: (active) => (
-        <svg width="22" height="22" viewBox="-18 -18 262.77 259.59" fill="none">
-          <path d="M96.92,137.66c-9.73-.02-17.92,8.25-17.96,17.85l-.18,45.9c-.04,11.59-9.64,21.73-21.36,22.08l-35.13.1c-11.97.03-22.25-10.45-22.26-22.48l-.03-74.76v-48.47c0-8.21,4.09-15.9,11.22-20.18L101.52,3.54c7.51-4.9,17.23-4.71,24.53.51l88.63,53.07c7.54,4.52,12.11,12.17,12.1,21.06l-.12,123.44c-.01,11.39-9.74,21.49-21.08,21.82l-35.9.04c-12.2.01-21.74-10.75-21.75-22.69l-.04-44.59c0-9.55-7.68-18.2-17.38-18.49l-33.58-.05Z" fill={active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)'} />
-        </svg>
-      ),
+      icon: (active) => {
+        const c = active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)';
+        return (
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M3 20c4-2 8-6 18-4" stroke={c} strokeWidth="1.8" strokeLinecap="round" />
+            <path d="M10 20v-5h4v5" fill={c} />
+            <path d="M7 15l5-5 5 5" fill={c} />
+            <rect x="7" y="15" width="10" height="5" rx="0.5" fill={c} />
+          </svg>
+        );
+      },
     },
     {
       key: 'food',
