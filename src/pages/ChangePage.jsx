@@ -541,7 +541,7 @@ export default function ChangePage({ onTabChange }) {
             </div>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between' }}>
               {[
-                { value: 1, icon: '🥴', label: '매우낮음' },
+                { value: 1, icon: '😴', label: '매우낮음' },
                 { value: 2, icon: '🙁', label: '낮음' },
                 { value: 3, icon: '😐', label: '보통' },
                 { value: 4, icon: '🙂', label: '높음' },
@@ -573,11 +573,11 @@ export default function ChangePage({ onTabChange }) {
             </div>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between' }}>
               {[
-                { value: 1, icon: '🤯', label: '매우낮음' },
+                { value: 1, icon: '😪', label: '매우낮음' },
                 { value: 2, icon: '😑', label: '낮음' },
                 { value: 3, icon: '🤔', label: '보통' },
-                { value: 4, icon: '💡', label: '높음' },
-                { value: 5, icon: '🎯', label: '최고' },
+                { value: 4, icon: '🤩', label: '높음' },
+                { value: 5, icon: '💡', label: '최고' },
               ].map(item => {
                 const selected = energySub?.focus === item.value;
                 return (
