@@ -72,19 +72,6 @@ export default function TabBar({ activeTab, onTabChange }) {
       },
     },
     {
-      key: 'routine',
-      label: '루틴',
-      icon: (active) => {
-        const c = active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)';
-        return (
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" fill={c} />
-            <path d="M8 12.5l2.5 2.5L16 9.5" stroke={active ? '#fff' : '#e8e8e8'} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        );
-      },
-    },
-    {
       key: 'food',
       label: '오늘',
       icon: (active) => {
@@ -95,6 +82,19 @@ export default function TabBar({ activeTab, onTabChange }) {
             <rect x="13" y="3" width="8" height="8" rx="1.5" fill={c} />
             <rect x="3" y="13" width="8" height="8" rx="1.5" fill={c} />
             <rect x="13" y="13" width="8" height="8" rx="1.5" fill={c} />
+          </svg>
+        );
+      },
+    },
+    {
+      key: 'routine',
+      label: '루틴',
+      icon: (active) => {
+        const c = active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)';
+        return (
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" fill={c} />
+            <path d="M8 12.5l2.5 2.5L16 9.5" stroke={active ? '#fff' : '#e8e8e8'} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         );
       },
