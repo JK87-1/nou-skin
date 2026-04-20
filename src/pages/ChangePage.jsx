@@ -42,7 +42,7 @@ const V2_SEGMENTS = ['결과', '원인→결과'];
 
 function MiniChart({ data, color = '#80CCE8', height = 36, labels }) {
   if (!data || data.length < 2) return null;
-  const pad = 4;
+  const pad = 8;
   const w = 300, h = height;
   const min = Math.min(...data) * 0.995, max = Math.max(...data) * 1.005;
   const range = max - min || 1;
@@ -57,7 +57,7 @@ function MiniChart({ data, color = '#80CCE8', height = 36, labels }) {
   const cid = color.replace('#', '');
   return (
     <div>
-      <svg viewBox={`0 0 ${w} ${h}`} style={{ width: '100%', height }} preserveAspectRatio="none">
+      <svg viewBox={`0 0 ${w} ${h}`} style={{ width: '100%', height }}>
         <defs>
           <linearGradient id={`lc-${cid}`} x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor={color} stopOpacity="0.3" /><stop offset="100%" stopColor={color} /></linearGradient>
           <linearGradient id={`fill-${cid}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity="0.25" /><stop offset="100%" stopColor={color} stopOpacity="0" /></linearGradient>
