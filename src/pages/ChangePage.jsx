@@ -53,11 +53,17 @@ function MiniChart({ data, color = '#80CCE8', height = 36, labels }) {
     pathD += ` C${cx},${points[i].y} ${cx},${points[i + 1].y} ${points[i + 1].x},${points[i + 1].y}`;
   }
   const last = points[points.length - 1];
+  const areaD = pathD + ` L${points[points.length - 1].x},${h} L${points[0].x},${h} Z`;
+  const cid = color.replace('#', '');
   return (
     <div>
       <svg viewBox={`0 0 ${w} ${h}`} style={{ width: '100%', height }} preserveAspectRatio="none">
-        <defs><linearGradient id={`lc-${color.replace('#', '')}`} x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor={color} stopOpacity="0.3" /><stop offset="100%" stopColor={color} /></linearGradient></defs>
-        <path d={pathD} fill="none" stroke={`url(#lc-${color.replace('#', '')})`} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <defs>
+          <linearGradient id={`lc-${cid}`} x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor={color} stopOpacity="0.3" /><stop offset="100%" stopColor={color} /></linearGradient>
+          <linearGradient id={`fill-${cid}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity="0.25" /><stop offset="100%" stopColor={color} stopOpacity="0" /></linearGradient>
+        </defs>
+        <path d={areaD} fill={`url(#fill-${cid})`} />
+        <path d={pathD} fill="none" stroke={`url(#lc-${cid})`} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         <circle cx={last.x} cy={last.y} r="3" fill={color} stroke="#fff" strokeWidth="1.5" />
       </svg>
       {labels && labels.length > 0 && (
