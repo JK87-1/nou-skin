@@ -25,11 +25,37 @@ export function saveConditionCheck(check) {
     skin: check.skin,
     mood: check.mood,
     gut: check.gut,
+    vitality: check.vitality,
+    focus: check.focus,
   });
   // 최근 100개만 유지
   const trimmed = checks.slice(-100);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
   return trimmed[trimmed.length - 1];
+}
+
+const ENERGY_SUB_KEY = 'nou_energy_sub_checks';
+
+export function getEnergySubChecks() {
+  try { return JSON.parse(localStorage.getItem(ENERGY_SUB_KEY) || '[]'); } catch { return []; }
+}
+
+export function getTodayEnergySubCheck() {
+  const today = new Date().toISOString().slice(0, 10);
+  const checks = getEnergySubChecks();
+  return checks.find(c => c.date === today) || null;
+}
+
+export function saveEnergySubCheck(vitality, focus) {
+  const checks = getEnergySubChecks();
+  const today = new Date().toISOString().slice(0, 10);
+  const idx = checks.findIndex(c => c.date === today);
+  const entry = { date: today, vitality, focus, timestamp: new Date().toISOString() };
+  if (idx >= 0) checks[idx] = entry;
+  else checks.push(entry);
+  const trimmed = checks.slice(-100);
+  localStorage.setItem(ENERGY_SUB_KEY, JSON.stringify(trimmed));
+  return entry;
 }
 
 export function shouldResetCheck() {

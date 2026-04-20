@@ -6,7 +6,7 @@ import {
 } from '../storage/BodyStorage';
 import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, SENSITIVITY_OPTIONS, GENDER_OPTIONS, getEnabledCategories, getCategoryColor } from '../storage/ProfileStorage';
 import { getRecords, getAllThumbnailsAsync } from '../storage/SkinStorage';
-import { getLatestCheck, getConditionChecks } from '../storage/ConditionStorage';
+import { getLatestCheck, getConditionChecks, getTodayEnergySubCheck, saveEnergySubCheck } from '../storage/ConditionStorage';
 import BeforeAfterSlider from '../components/BeforeAfterSlider';
 
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
@@ -110,6 +110,15 @@ export default function ChangePage({ onTabChange }) {
   const [compareTab, setCompareTab] = useState('monthly');
   const [showCompareModal, setShowCompareModal] = useState(false);
   const [latestCondition] = useState(() => getLatestCheck());
+  const [energySub, setEnergySub] = useState(() => getTodayEnergySubCheck());
+  const handleEnergySub = useCallback((key, value) => {
+    const cur = energySub || {};
+    const v = cur[key] === value ? null : value;
+    const newVitality = key === 'vitality' ? v : (cur.vitality ?? null);
+    const newFocus = key === 'focus' ? v : (cur.focus ?? null);
+    const saved = saveEnergySubCheck(newVitality, newFocus);
+    setEnergySub(saved);
+  }, [energySub]);
 
   // V2 state
   const [v2Segment, setV2Segment] = useState('결과');
@@ -482,6 +491,90 @@ export default function ChangePage({ onTabChange }) {
               )}
             </div>
 
+        </div>
+      )}
+
+      {/* Energy Sub Tab */}
+      {(insightTab === 'energy') && (
+        <div style={{ padding: '0 14px' }}>
+          {/* 활력 카드 */}
+          <div style={{ ...v2CardStyle, ...fadeUp(0.05) }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+              <span style={{ fontSize: 16 }}>⚡</span>
+              <span style={{ fontSize: 15, fontWeight: 600, color: '#1A3A4A' }}>활력</span>
+            </div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between' }}>
+              {[
+                { value: 1, icon: '🥴', label: '매우낮음' },
+                { value: 2, icon: '🙁', label: '낮음' },
+                { value: 3, icon: '😐', label: '보통' },
+                { value: 4, icon: '🙂', label: '높음' },
+                { value: 5, icon: '⚡', label: '최고' },
+              ].map(item => {
+                const selected = energySub?.vitality === item.value;
+                return (
+                  <div key={item.value} onClick={() => handleEnergySub('vitality', item.value)}
+                    style={{
+                      flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                      padding: '10px 4px', borderRadius: 14, cursor: 'pointer',
+                      background: selected ? 'rgba(200,230,210,.4)' : 'rgba(255,255,255,.5)',
+                      border: selected ? '1.5px solid rgba(100,180,130,.5)' : '1.5px solid transparent',
+                      transition: 'all 0.15s ease',
+                    }}>
+                    <span style={{ fontSize: 22 }}>{item.icon}</span>
+                    <span style={{ fontSize: 10, color: selected ? '#2A6A4A' : '#7AAABB', fontWeight: selected ? 600 : 400 }}>{item.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 집중력 카드 */}
+          <div style={{ ...v2CardStyle, ...fadeUp(0.1) }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+              <span style={{ fontSize: 16 }}>🧠</span>
+              <span style={{ fontSize: 15, fontWeight: 600, color: '#1A3A4A' }}>집중력</span>
+            </div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between' }}>
+              {[
+                { value: 1, icon: '🤯', label: '매우낮음' },
+                { value: 2, icon: '😑', label: '낮음' },
+                { value: 3, icon: '🤔', label: '보통' },
+                { value: 4, icon: '💡', label: '높음' },
+                { value: 5, icon: '🎯', label: '최고' },
+              ].map(item => {
+                const selected = energySub?.focus === item.value;
+                return (
+                  <div key={item.value} onClick={() => handleEnergySub('focus', item.value)}
+                    style={{
+                      flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                      padding: '10px 4px', borderRadius: 14, cursor: 'pointer',
+                      background: selected ? 'rgba(200,230,210,.4)' : 'rgba(255,255,255,.5)',
+                      border: selected ? '1.5px solid rgba(100,180,130,.5)' : '1.5px solid transparent',
+                      transition: 'all 0.15s ease',
+                    }}>
+                    <span style={{ fontSize: 22 }}>{item.icon}</span>
+                    <span style={{ fontSize: 10, color: selected ? '#2A6A4A' : '#7AAABB', fontWeight: selected ? 600 : 400 }}>{item.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 오늘 에너지 요약 */}
+          {(energySub?.vitality || energySub?.focus) && (
+            <div style={{
+              background: 'rgba(200,230,210,.2)', borderRadius: 16, padding: '14px 16px',
+              border: '0.5px solid rgba(100,180,130,.2)', ...fadeUp(0.15),
+            }}>
+              <div style={{ fontSize: 11, color: '#7AAABB', marginBottom: 6 }}>오늘 에너지 요약</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A', lineHeight: 1.6 }}>
+                {energySub.vitality && `활력 ${['','매우낮음','낮음','보통','높음','최고'][energySub.vitality]}`}
+                {energySub.vitality && energySub.focus && ' · '}
+                {energySub.focus && `집중력 ${['','매우낮음','낮음','보통','높음','최고'][energySub.focus]}`}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
