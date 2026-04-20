@@ -71,12 +71,15 @@ export default function TabBar({ activeTab, onTabChange }) {
     {
       key: 'food',
       label: '오늘',
-      icon: (active) => (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <path d="M12 21v-7" stroke={active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)'} strokeWidth="2.5" strokeLinecap="round" />
-          <path d="M12 14c-1.5-1.5-5-4-8-2.5C4 11.5 5.5 6 12 6c6.5 0 8 5.5 8 5.5C17 10 13.5 12.5 12 14z" fill={active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)'} />
-        </svg>
-      ),
+      icon: (active) => {
+        const c = active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)';
+        return (
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M20 4C14.5 4 10 8.5 10 14c0 1 .15 2 .4 2.9C7.3 15.2 5 11.8 5 8c0-1 .15-2 .4-2.9C7.3 2.8 10.2 1 14 1c3.2 0 5.2 1.8 6 3z" fill={c} />
+            <path d="M5 20c0-5.5 4.5-10 10-10" stroke={c} strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+        );
+      },
     },
     {
       key: 'routine',
@@ -91,13 +94,16 @@ export default function TabBar({ activeTab, onTabChange }) {
     {
       key: 'body',
       label: '돌아보기',
-      icon: (active) => (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <rect x="3" y="13" width="5" height="9" rx="1.5" fill={active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)'} />
-          <rect x="9.5" y="7" width="5" height="15" rx="1.5" fill={active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)'} />
-          <rect x="16" y="2" width="5" height="20" rx="1.5" fill={active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)'} />
-        </svg>
-      ),
+      icon: (active) => {
+        const c = active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)';
+        return (
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill={c} />
+            <circle cx="19" cy="5" r="1" fill={c} />
+            <circle cx="16" cy="2.5" r="0.6" fill={c} />
+          </svg>
+        );
+      },
     },
     {
       key: 'album',
