@@ -75,8 +75,8 @@ export default function TabBar({ activeTab, onTabChange }) {
         const c = active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)';
         return (
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <path d="M20 4C14.5 4 10 8.5 10 14c0 1 .15 2 .4 2.9C7.3 15.2 5 11.8 5 8c0-1 .15-2 .4-2.9C7.3 2.8 10.2 1 14 1c3.2 0 5.2 1.8 6 3z" fill={c} />
-            <path d="M5 20c0-5.5 4.5-10 10-10" stroke={c} strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M3 21l2.5-2.5M14.5 5.5l4 4M5.5 18.5L16.5 7.5c.8-.8 2.2-.8 3 0s.8 2.2 0 3L8.5 21.5H5.5v-3z" fill={c} />
+            <path d="M2 22h20" stroke={c} strokeWidth="1.5" strokeLinecap="round" />
           </svg>
         );
       },
@@ -98,9 +98,7 @@ export default function TabBar({ activeTab, onTabChange }) {
         const c = active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)';
         return (
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill={c} />
-            <circle cx="19" cy="5" r="1" fill={c} />
-            <circle cx="16" cy="2.5" r="0.6" fill={c} />
+            <path d="M1 12h3l3-7 4 14 4-10 3 5h5" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         );
       },
