@@ -68,9 +68,12 @@ function MiniChart({ data, color = '#80CCE8', height = 36, labels }) {
       </svg>
       {labels && labels.length > 0 && (
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, padding: `0 ${(pad / w * 100).toFixed(1)}%` }}>
-          {labels.map((l, i) => (
-            <span key={i} style={{ fontSize: 9, color: '#9ABBC8', flex: 1, textAlign: 'center' }}>{l}</span>
-          ))}
+          {labels.map((l, i) => {
+            const isObj = typeof l === 'object';
+            const text = isObj ? l.text : l;
+            const bold = isObj && l.bold;
+            return <span key={i} style={{ fontSize: 9, color: '#9ABBC8', flex: 1, textAlign: 'center', fontWeight: bold ? 700 : 400 }}>{text}</span>;
+          })}
         </div>
       )}
     </div>
@@ -327,7 +330,7 @@ export default function ChangePage({ onTabChange }) {
           {/* Energy Card */}
             {(() => {
               const last7 = conditionChecks.slice(-7);
-              const labels7 = last7.map(c => { const d = new Date(c.timestamp); return `${d.getMonth()+1}/${d.getDate()}`; });
+              const labels7 = last7.map(c => { const d = new Date(c.timestamp); const day = d.getDay(); return { text: `${d.getDate()}`, bold: day === 0 || day === 6 }; });
               return (
                 <div style={{ ...v2CardStyle, padding: '14px 10px', ...fadeUp(0.15) }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, padding: '0 5px' }}>
@@ -353,7 +356,7 @@ export default function ChangePage({ onTabChange }) {
             {/* Weight Card */}
             {(() => {
               const last7w = filteredBody.slice(-7);
-              const labels7w = last7w.map(r => { const d = new Date(r.date); return `${d.getMonth()+1}/${d.getDate()}`; });
+              const labels7w = last7w.map(r => { const d = new Date(r.date); const day = d.getDay(); return { text: `${d.getDate()}`, bold: day === 0 || day === 6 }; });
               return (
                 <div style={{ ...v2CardStyle, padding: '14px 10px', ...fadeUp(0.2) }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, padding: '0 5px' }}>
