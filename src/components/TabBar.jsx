@@ -75,8 +75,7 @@ export default function TabBar({ activeTab, onTabChange }) {
         const c = active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)';
         return (
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <path d="M3 21l2.5-2.5M14.5 5.5l4 4M5.5 18.5L16.5 7.5c.8-.8 2.2-.8 3 0s.8 2.2 0 3L8.5 21.5H5.5v-3z" fill={c} />
-            <path d="M2 22h20" stroke={c} strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M4 20l1.5-4L17 4.5c.8-.8 2.2-.8 3 0l.5.5c.8.8.8 2.2 0 3L9 19.5 4 20z" fill={c} />
           </svg>
         );
       },
