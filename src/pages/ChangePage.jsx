@@ -40,12 +40,13 @@ const DEMO_PATTERNS = [
 ];
 const V2_SEGMENTS = ['결과', '원인→결과'];
 
-function MiniChart({ data, color = '#80CCE8', height = 36 }) {
+function MiniChart({ data, color = '#80CCE8', height = 36, labels }) {
   if (!data || data.length < 2) return null;
-  const w = 200, h = height;
+  const pad = 4;
+  const w = 300, h = height;
   const min = Math.min(...data) * 0.995, max = Math.max(...data) * 1.005;
   const range = max - min || 1;
-  const points = data.map((v, i) => ({ x: (i / (data.length - 1)) * w, y: h - ((v - min) / range) * (h - 8) - 4 }));
+  const points = data.map((v, i) => ({ x: pad + (i / (data.length - 1)) * (w - pad * 2), y: h - ((v - min) / range) * (h - 8) - 4 }));
   let pathD = `M${points[0].x},${points[0].y}`;
   for (let i = 0; i < points.length - 1; i++) {
     const cx = (points[i].x + points[i + 1].x) / 2;
@@ -53,11 +54,20 @@ function MiniChart({ data, color = '#80CCE8', height = 36 }) {
   }
   const last = points[points.length - 1];
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} style={{ width: '100%', height }}>
-      <defs><linearGradient id={`lc-${color.replace('#', '')}`} x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor={color} stopOpacity="0.3" /><stop offset="100%" stopColor={color} /></linearGradient></defs>
-      <path d={pathD} fill="none" stroke={`url(#lc-${color.replace('#', '')})`} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx={last.x} cy={last.y} r="3" fill={color} stroke="#fff" strokeWidth="1.5" />
-    </svg>
+    <div>
+      <svg viewBox={`0 0 ${w} ${h}`} style={{ width: '100%', height }} preserveAspectRatio="none">
+        <defs><linearGradient id={`lc-${color.replace('#', '')}`} x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor={color} stopOpacity="0.3" /><stop offset="100%" stopColor={color} /></linearGradient></defs>
+        <path d={pathD} fill="none" stroke={`url(#lc-${color.replace('#', '')})`} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx={last.x} cy={last.y} r="3" fill={color} stroke="#fff" strokeWidth="1.5" />
+      </svg>
+      {labels && labels.length > 0 && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+          {labels.map((l, i) => (
+            <span key={i} style={{ fontSize: 9, color: '#9ABBC8', flex: 1, textAlign: 'center' }}>{l}</span>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -309,53 +319,65 @@ export default function ChangePage({ onTabChange }) {
             </div>
 
           {/* Energy Card */}
-            <div style={{ ...v2CardStyle, ...fadeUp(0.15) }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('energy') }} />
-                  <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>에너지 흐름</span>
+            {(() => {
+              const last7 = conditionChecks.slice(-7);
+              const labels7 = last7.map(c => { const d = new Date(c.timestamp); return `${d.getMonth()+1}/${d.getDate()}`; });
+              return (
+                <div style={{ ...v2CardStyle, padding: '14px 10px', ...fadeUp(0.15) }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, padding: '0 5px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('energy') }} />
+                      <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>에너지 흐름</span>
+                    </div>
+                    {last7.length > 0 && (
+                      <span style={{ fontSize: 11, fontWeight: 500, color: '#7AAABB' }}>최근 {last7.length}일</span>
+                    )}
+                  </div>
+                  {last7.length >= 2 ? (
+                    <MiniChart data={last7.map(c => c.energy)} color={getCategoryColor('energy')} height={44} labels={labels7} />
+                  ) : (
+                    <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 12, color: '#9ABBC8' }}>
+                      {last7.length === 1 ? '한 번 더 체크하면 그래프가 나타나요' : '홈에서 컨디션을 체크해보세요'}
+                    </div>
+                  )}
                 </div>
-                {conditionChecks.length > 0 && (
-                  <span style={{ fontSize: 11, fontWeight: 500, color: '#7AAABB' }}>최근 {conditionChecks.length}회</span>
-                )}
-              </div>
-              {conditionChecks.length >= 2 ? (
-                <MiniChart data={conditionChecks.map(c => c.energy)} color={getCategoryColor('energy')} height={44} />
-              ) : (
-                <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 12, color: '#9ABBC8' }}>
-                  {conditionChecks.length === 1 ? '한 번 더 체크하면 그래프가 나타나요' : '홈에서 컨디션을 체크해보세요'}
-                </div>
-              )}
-            </div>
+              );
+            })()}
 
             {/* Weight Card */}
-            <div style={{ ...v2CardStyle, ...fadeUp(0.2) }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('body') }} />
-                  <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>몸무게</span>
+            {(() => {
+              const last7w = filteredBody.slice(-7);
+              const labels7w = last7w.map(r => { const d = new Date(r.date); return `${d.getMonth()+1}/${d.getDate()}`; });
+              return (
+                <div style={{ ...v2CardStyle, padding: '14px 10px', ...fadeUp(0.2) }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, padding: '0 5px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('body') }} />
+                      <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>몸무게</span>
+                    </div>
+                    {v2WeightDiff !== 0 && (
+                      <span style={{ fontSize: 11, fontWeight: 500, color: changeColor(v2WeightDiff) }}>
+                        {v2WeightDiff > 0 ? '▲' : '▼'} {Math.abs(v2WeightDiff)}kg
+                      </span>
+                    )}
+                  </div>
+                  {v2LatestWeight ? (
+                    <>
+                      <div style={{ textAlign: 'center', marginBottom: 8 }}>
+                        <span style={{ fontSize: 28, fontWeight: 500, color: '#1A3A4A' }}>{v2LatestWeight}</span>
+                        <span style={{ fontSize: 13, color: '#7AAABB', marginLeft: 3 }}>kg</span>
+                      </div>
+                      <div style={{ textAlign: 'center', fontSize: 10, color: '#7AAABB', marginBottom: 10 }}>
+                        시작 {v2StartWeight}kg{goal?.target ? ` · 목표 ${goal.target}kg` : ''}
+                      </div>
+                      <MiniChart data={last7w.map(r => r.weight)} color={getCategoryColor('body')} labels={labels7w} />
+                    </>
+                  ) : (
+                    <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 12, color: '#9ABBC8' }}>아직 기록이 없어요</div>
+                  )}
                 </div>
-                {v2WeightDiff !== 0 && (
-                  <span style={{ fontSize: 11, fontWeight: 500, color: changeColor(v2WeightDiff) }}>
-                    {v2WeightDiff > 0 ? '▲' : '▼'} {Math.abs(v2WeightDiff)}kg
-                  </span>
-                )}
-              </div>
-              {v2LatestWeight ? (
-                <>
-                  <div style={{ textAlign: 'center', marginBottom: 8 }}>
-                    <span style={{ fontSize: 28, fontWeight: 500, color: '#1A3A4A' }}>{v2LatestWeight}</span>
-                    <span style={{ fontSize: 13, color: '#7AAABB', marginLeft: 3 }}>kg</span>
-                  </div>
-                  <div style={{ textAlign: 'center', fontSize: 10, color: '#7AAABB', marginBottom: 10 }}>
-                    시작 {v2StartWeight}kg{goal?.target ? ` · 목표 ${goal.target}kg` : ''}
-                  </div>
-                  <MiniChart data={filteredBody.map(r => r.weight)} color={getCategoryColor('body')} />
-                </>
-              ) : (
-                <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 12, color: '#9ABBC8' }}>아직 기록이 없어요</div>
-              )}
-            </div>
+              );
+            })()}
 
             {/* Skin Card */}
             <div style={{ ...v2CardStyle, ...fadeUp(0.25) }}>
