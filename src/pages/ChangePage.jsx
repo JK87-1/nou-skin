@@ -40,13 +40,16 @@ const DEMO_PATTERNS = [
 ];
 const V2_SEGMENTS = ['결과', '원인→결과'];
 
-function MiniChart({ data, color = '#80CCE8', height = 36, labels }) {
+function MiniChart({ data, color = '#80CCE8', height = 36, labels, xPositions }) {
   if (!data || data.length < 2) return null;
   const pad = 8;
   const w = 300, h = height;
   const min = Math.min(...data) * 0.995, max = Math.max(...data) * 1.005;
   const range = max - min || 1;
-  const points = data.map((v, i) => ({ x: pad + (i / (data.length - 1)) * (w - pad * 2), y: h - ((v - min) / range) * (h - 8) - 4 }));
+  const points = data.map((v, i) => ({
+    x: xPositions ? pad + xPositions[i] * (w - pad * 2) : pad + (i / (data.length - 1)) * (w - pad * 2),
+    y: h - ((v - min) / range) * (h - 8) - 4,
+  }));
   let pathD = `M${points[0].x},${points[0].y}`;
   for (let i = 0; i < points.length - 1; i++) {
     const cx = (points[i].x + points[i + 1].x) / 2;
@@ -329,7 +332,7 @@ export default function ChangePage({ onTabChange }) {
 
           {/* Energy Card */}
             {(() => {
-              // 날짜별 그룹핑 (같은 날 여러 체크 → 여러 포인트, 라벨은 하루 1개)
+              // 날짜별 그룹핑
               const grouped = {};
               conditionChecks.forEach(c => {
                 const dateKey = c.timestamp.slice(0, 10);
@@ -337,20 +340,29 @@ export default function ChangePage({ onTabChange }) {
                 grouped[dateKey].push(c.energy);
               });
               const dayKeys = Object.keys(grouped).sort().slice(-7);
+              const numDays = dayKeys.length;
+              // 각 포인트의 x 위치: 날짜 간격은 균등, 같은 날 여러 체크는 그 날짜 슬롯 안에서 분배
               const allPoints = [];
-              const labels7 = [];
-              dayKeys.forEach((dk, i) => {
-                const d = new Date(dk + 'T00:00:00');
-                const day = d.getDay();
-                grouped[dk].forEach((val, j) => {
+              const xPos = [];
+              dayKeys.forEach((dk, dayIdx) => {
+                const vals = grouped[dk];
+                vals.forEach((val, j) => {
                   allPoints.push(val);
-                  if (j === 0) labels7.push({ text: `${d.getDate()}`, bold: day === 0 || day === 6, idx: allPoints.length - 1 });
+                  if (numDays === 1) {
+                    xPos.push(vals.length === 1 ? 0.5 : j / (vals.length - 1));
+                  } else {
+                    const dayCenter = dayIdx / (numDays - 1);
+                    const slotWidth = 1 / (numDays - 1) * 0.4;
+                    const offset = vals.length === 1 ? 0 : (j / (vals.length - 1) - 0.5) * slotWidth;
+                    xPos.push(Math.max(0, Math.min(1, dayCenter + offset)));
+                  }
                 });
               });
-              // 날짜 라벨은 각 날의 첫 포인트 위치에만
-              const sparseLabels = allPoints.map((_, i) => {
-                const found = labels7.find(l => l.idx === i);
-                return found ? { text: found.text, bold: found.bold } : { text: '', bold: false };
+              // 날짜 라벨: 날짜별 균등 간격
+              const dayLabels = dayKeys.map(dk => {
+                const d = new Date(dk + 'T00:00:00');
+                const day = d.getDay();
+                return { text: `${d.getDate()}`, bold: day === 0 || day === 6 };
               });
               return (
                 <div style={{ ...v2CardStyle, padding: '14px 10px', ...fadeUp(0.15) }}>
@@ -359,12 +371,12 @@ export default function ChangePage({ onTabChange }) {
                       <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('energy') }} />
                       <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>에너지 흐름</span>
                     </div>
-                    {dayKeys.length > 0 && (
-                      <span style={{ fontSize: 11, fontWeight: 500, color: '#7AAABB' }}>최근 {dayKeys.length}일</span>
+                    {numDays > 0 && (
+                      <span style={{ fontSize: 11, fontWeight: 500, color: '#7AAABB' }}>최근 {numDays}일</span>
                     )}
                   </div>
                   {allPoints.length >= 2 ? (
-                    <MiniChart data={allPoints} color={getCategoryColor('energy')} height={44} labels={sparseLabels} />
+                    <MiniChart data={allPoints} color={getCategoryColor('energy')} height={44} labels={dayLabels} xPositions={xPos} />
                   ) : (
                     <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 12, color: '#9ABBC8' }}>
                       {allPoints.length === 1 ? '한 번 더 체크하면 그래프가 나타나요' : '홈에서 컨디션을 체크해보세요'}
