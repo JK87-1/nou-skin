@@ -6,7 +6,7 @@ import {
 } from '../storage/BodyStorage';
 import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, SENSITIVITY_OPTIONS, GENDER_OPTIONS, getEnabledCategories, getCategoryColor } from '../storage/ProfileStorage';
 import { getRecords, getAllThumbnailsAsync } from '../storage/SkinStorage';
-import { getLatestCheck, getConditionChecks, getTodayEnergySubCheck, saveEnergySubCheck, getTodayMoodSubCheck, saveMoodSubCheck, getTodayBloodSugar, saveBloodSugar, getTodayEyeBody, saveEyeBody } from '../storage/ConditionStorage';
+import { getLatestCheck, getConditionChecks, getTodayEnergySubCheck, saveEnergySubCheck, getTodayMoodSubCheck, saveMoodSubCheck, getTodayBloodSugar, saveBloodSugar, getTodayEyeBody, saveEyeBody, getTodaySkinSubCheck, saveSkinSubCheck } from '../storage/ConditionStorage';
 import BeforeAfterSlider from '../components/BeforeAfterSlider';
 
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
@@ -124,6 +124,25 @@ export default function ChangePage({ onTabChange }) {
   const [bsInput, setBsInput] = useState(bloodSugar?.value ?? '');
   const [bsTiming, setBsTiming] = useState(bloodSugar?.timing ?? '공복');
   const [eyeBody, setEyeBody] = useState(() => getTodayEyeBody());
+  const [skinSub, setSkinSub] = useState(() => getTodaySkinSubCheck());
+  const handleSkinTag = useCallback((tag) => {
+    const cur = skinSub || {};
+    const tags = cur.tags || [];
+    const next = tags.includes(tag) ? tags.filter(t => t !== tag) : [...tags, tag];
+    const saved = saveSkinSubCheck({ ...cur, tags: next });
+    setSkinSub(saved);
+  }, [skinSub]);
+  const handleSkinScore = useCallback((score) => {
+    const cur = skinSub || {};
+    const saved = saveSkinSubCheck({ ...cur, score });
+    setSkinSub(saved);
+  }, [skinSub]);
+  const handleSkinPhoto = useCallback((key, dataUrl) => {
+    const cur = skinSub || {};
+    const photos = { ...(cur.photos || {}), [key]: dataUrl };
+    const saved = saveSkinSubCheck({ ...cur, photos });
+    setSkinSub(saved);
+  }, [skinSub]);
   const handleMoodEmotion = useCallback((emoji) => {
     const cur = moodSub || {};
     const emotions = cur.emotions || [];
@@ -681,35 +700,133 @@ export default function ChangePage({ onTabChange }) {
       )}
 
       {/* Skin Tab */}
-      {(insightTab === 'skin') && (
-        <div style={{ padding: '0 18px' }}>
-          {skinRecords.length >= 2 ? (
-            <div style={{ ...fadeUp(0.05) }}>
-              <div
-                onClick={() => setShowCompareModal(true)}
-                style={{
-                  background: 'var(--bg-card)', borderRadius: 'var(--card-border-radius)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
-                  padding: '14px 18px', cursor: 'pointer',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>비교 보기</div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>1개월 변화 · Before & After</div>
-                  </div>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                    <path d="M9 18l6-6-6-6" stroke="var(--text-dim)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+      {(insightTab === 'skin') && (() => {
+        const SKIN_TAGS = [
+          { key: '촉촉', icon: '💧' }, { key: '건조', icon: '🏜' }, { key: '맑음', icon: '✨' }, { key: '트러블', icon: '🔴' },
+          { key: '칙칙', icon: '🟡' }, { key: '탄력', icon: '🌊' }, { key: '번들', icon: '🌊' }, { key: '예민', icon: '😤' },
+        ];
+        const selectedTags = skinSub?.tags || [];
+        const skinScore = skinSub?.score ?? null;
+        const skinPhotos = skinSub?.photos || {};
+        const prevSkin = skinRecords.length >= 2 ? skinRecords[skinRecords.length - 2]?.overallScore : null;
+        const scoreDiff = skinScore && prevSkin ? skinScore - prevSkin : null;
+
+        const PhotoSlot = ({ slotKey, label, height = 130, flex = 1 }) => (
+          <label style={{
+            flex, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            height, borderRadius: 14, cursor: 'pointer', overflow: 'hidden',
+            background: skinPhotos[slotKey] ? 'none' : 'rgba(230,240,235,.4)',
+            border: '1.5px dashed rgba(180,210,200,.5)',
+          }}>
+            {skinPhotos[slotKey] ? (
+              <img src={skinPhotos[slotKey]} alt={label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <>
+                <span style={{ fontSize: 20, color: '#B0C8C0' }}>+</span>
+                <span style={{ fontSize: 11, color: '#9ABBC8', marginTop: 4 }}>{label}</span>
+              </>
+            )}
+            <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              const reader = new FileReader();
+              reader.onload = ev => {
+                const img = new Image();
+                img.onload = () => {
+                  const canvas = document.createElement('canvas');
+                  canvas.width = 300; canvas.height = 300;
+                  const ctx = canvas.getContext('2d');
+                  const size = Math.min(img.width, img.height);
+                  const sx = (img.width - size) / 2, sy = (img.height - size) / 2;
+                  ctx.drawImage(img, sx, sy, size, size, 0, 0, 300, 300);
+                  handleSkinPhoto(slotKey, canvas.toDataURL('image/jpeg', 0.7));
+                };
+                img.src = ev.target.result;
+              };
+              reader.readAsDataURL(file);
+            }} />
+          </label>
+        );
+
+        return (
+          <div style={{ padding: '0 14px' }}>
+            {/* 얼굴 사진 카드 */}
+            <div style={{ ...v2CardStyle, ...fadeUp(0.05) }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+                <span style={{ fontSize: 16 }}>🤳</span>
+                <span style={{ fontSize: 15, fontWeight: 600, color: '#1A3A4A' }}>얼굴 사진</span>
+              </div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <PhotoSlot slotKey="face" label="오늘 얼굴 사진" height={130} flex={2} />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <PhotoSlot slotKey="forehead" label="이마" height={60} />
+                  <PhotoSlot slotKey="cheek" label="볼" height={60} />
                 </div>
               </div>
             </div>
-          ) : (
-            <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--text-muted)' }}>
-              <div style={{ fontSize: 14, fontWeight: 600 }}>2회 이상 측정하면 비교 분석을 볼 수 있어요</div>
+
+            {/* 오늘 피부 상태 카드 */}
+            <div style={{ ...v2CardStyle, ...fadeUp(0.1) }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+                <span style={{ fontSize: 16 }}>✨</span>
+                <span style={{ fontSize: 15, fontWeight: 600, color: '#1A3A4A' }}>오늘 피부 상태</span>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+                {SKIN_TAGS.map(tag => {
+                  const sel = selectedTags.includes(tag.key);
+                  return (
+                    <div key={tag.key} onClick={() => handleSkinTag(tag.key)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 5,
+                        padding: '8px 14px', borderRadius: 99, cursor: 'pointer',
+                        background: sel ? 'rgba(200,230,210,.4)' : 'rgba(255,255,255,.5)',
+                        border: sel ? '1.5px solid rgba(100,180,130,.5)' : '1.5px solid rgba(200,220,230,.3)',
+                        transition: 'all 0.15s ease',
+                      }}>
+                      <span style={{ fontSize: 14 }}>{tag.icon}</span>
+                      <span style={{ fontSize: 12, color: sel ? '#2A6A4A' : '#7AAABB', fontWeight: sel ? 600 : 400 }}>{tag.key}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              {/* 피부 점수 */}
+              <div style={{ fontSize: 11, color: '#9ABBC8', marginBottom: 6 }}>오늘 피부 점수</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <input value={skinScore ?? ''} onChange={e => { const v = Number(e.target.value); if (v >= 0 && v <= 100) handleSkinScore(v); }}
+                  placeholder="0" type="number" min="0" max="100" style={{
+                    width: 70, padding: '8px 0', border: 'none', background: 'transparent',
+                    fontSize: 36, fontWeight: 700, color: '#1A3A4A', fontFamily: 'inherit', outline: 'none',
+                  }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ height: 8, borderRadius: 4, background: 'rgba(200,220,230,.3)', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', borderRadius: 4, background: 'linear-gradient(90deg, #A8E0C0, #4A9A7A)', width: `${skinScore || 0}%`, transition: 'width 0.3s' }} />
+                  </div>
+                  {scoreDiff != null && (
+                    <div style={{ fontSize: 11, color: '#9ABBC8', marginTop: 4 }}>
+                      어제보다 <span style={{ color: scoreDiff >= 0 ? '#4A9A7A' : '#C4580A', fontWeight: 600 }}>{scoreDiff > 0 ? '+' : ''}{scoreDiff}점</span>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-          )}
-        </div>
-      )}
+
+            {/* 오늘 피부 요약 */}
+            {(selectedTags.length > 0 || skinScore) && (
+              <div style={{
+                background: 'rgba(200,230,210,.2)', borderRadius: 16, padding: '14px 16px',
+                border: '0.5px solid rgba(100,180,130,.2)', ...fadeUp(0.15),
+              }}>
+                <div style={{ fontSize: 11, color: '#7AAABB', marginBottom: 6 }}>오늘 피부 요약</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A', lineHeight: 1.6 }}>
+                  {selectedTags.length > 0 && selectedTags.join(' · ')}
+                  {selectedTags.length > 0 && skinScore && ' · '}
+                  {skinScore && `점수 ${skinScore}점`}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Compare Modal */}
       {showCompareModal && skinRecords.length >= 2 && (() => {

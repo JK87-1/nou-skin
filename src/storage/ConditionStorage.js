@@ -58,6 +58,30 @@ export function saveMoodSubCheck(emotions, stress) {
   return entry;
 }
 
+// ===== Skin Sub Checks =====
+const SKIN_SUB_KEY = 'nou_skin_sub_checks';
+
+export function getSkinSubChecks() {
+  try { return JSON.parse(localStorage.getItem(SKIN_SUB_KEY) || '[]'); } catch { return []; }
+}
+
+export function getTodaySkinSubCheck() {
+  const today = new Date().toISOString().slice(0, 10);
+  return getSkinSubChecks().find(c => c.date === today) || null;
+}
+
+export function saveSkinSubCheck(data) {
+  const checks = getSkinSubChecks();
+  const today = new Date().toISOString().slice(0, 10);
+  const idx = checks.findIndex(c => c.date === today);
+  const entry = { date: today, ...data, timestamp: new Date().toISOString() };
+  if (idx >= 0) checks[idx] = { ...checks[idx], ...entry };
+  else checks.push(entry);
+  const trimmed = checks.slice(-100);
+  localStorage.setItem(SKIN_SUB_KEY, JSON.stringify(trimmed));
+  return trimmed.find(c => c.date === today);
+}
+
 // ===== Blood Sugar Checks =====
 const BLOOD_SUGAR_KEY = 'nou_blood_sugar_checks';
 
