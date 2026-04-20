@@ -246,6 +246,29 @@ export default function ChangePage({ onTabChange }) {
       {/* ===== 전체 탭: 결과 / 원인→결과 ===== */}
       {insightTab === 'all' && (
         <div style={{ padding: '0 14px' }}>
+          {/* Summary Bar */}
+          <div style={{
+            background: 'transparent', borderRadius: 14, padding: '10px 13px',
+            border: 'none', marginBottom: 10,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            ...fadeUp(0.03),
+          }}>
+            {[
+              { icon: '⚡', value: latestCondition?.energy ? `${latestCondition.energy}단계` : '—', label: '에너지' },
+              { icon: '😊', value: latestCondition?.mood ? `${latestCondition.mood}단계` : '—', label: '기분' },
+              { icon: '⚖️', value: v2LatestWeight ? `${v2LatestWeight}kg` : '—', label: '몸무게' },
+            ].map((item, idx) => (
+              <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+                {idx > 0 && <div style={{ width: 0.5, height: 28, background: 'rgba(100,180,220,.2)', marginRight: 0 }} />}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: 60 }}>
+                  <span style={{ fontSize: 14 }}>{item.icon}</span>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: '#1A3A4A', marginTop: 1 }}>{item.value}</span>
+                  <span style={{ fontSize: 9, color: '#7AAABB' }}>{item.label}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
           {/* Segment Tabs */}
           <div style={{ background: 'rgba(255,255,255,.5)', borderRadius: 10, padding: 3, display: 'flex', marginBottom: 10, ...fadeUp(0.05) }}>
             {V2_SEGMENTS.map(s => (
@@ -262,29 +285,6 @@ export default function ChangePage({ onTabChange }) {
 
           {/* 결과 */}
           {v2Segment === '결과' && <>
-            {/* Summary Bar */}
-            <div style={{
-              background: 'transparent', borderRadius: 14, padding: '10px 13px',
-              border: 'none', marginBottom: 10,
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              ...fadeUp(0.07),
-            }}>
-              {[
-                { icon: '⚡', value: latestCondition?.energy ? `${latestCondition.energy}단계` : '—', label: '에너지' },
-                { icon: '😊', value: latestCondition?.mood ? `${latestCondition.mood}단계` : '—', label: '기분' },
-                { icon: '⚖️', value: v2LatestWeight ? `${v2LatestWeight}kg` : '—', label: '몸무게' },
-              ].map((item, idx) => (
-                <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
-                  {idx > 0 && <div style={{ width: 0.5, height: 28, background: 'rgba(100,180,220,.2)', marginRight: 0 }} />}
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: 60 }}>
-                    <span style={{ fontSize: 14 }}>{item.icon}</span>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: '#1A3A4A', marginTop: 1 }}>{item.value}</span>
-                    <span style={{ fontSize: 9, color: '#7AAABB' }}>{item.label}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
             {/* Weight Card */}
             <div style={{ ...v2CardStyle, ...fadeUp(0.1) }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
