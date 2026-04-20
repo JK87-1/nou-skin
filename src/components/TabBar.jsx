@@ -70,7 +70,7 @@ export default function TabBar({ activeTab, onTabChange }) {
     },
     {
       key: 'food',
-      label: '기록',
+      label: '오늘',
       icon: (active) => (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
           <rect x="3" y="2" width="18" height="20" rx="2.5" fill={active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)'} />
@@ -90,7 +90,7 @@ export default function TabBar({ activeTab, onTabChange }) {
     },
     {
       key: 'body',
-      label: '변화',
+      label: '돌아보기',
       icon: (active) => (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
           <rect x="3" y="13" width="5" height="9" rx="1.5" fill={active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)'} />

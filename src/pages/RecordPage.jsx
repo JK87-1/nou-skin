@@ -331,7 +331,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
     <div style={{ minHeight: '100dvh', paddingBottom: 80 }}>
       {/* Header */}
       <div style={{ padding: '16px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <h1 style={{ fontSize: 18, fontWeight: 600, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>기록</h1>
+        <h1 style={{ fontSize: 18, fontWeight: 600, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>오늘</h1>
         <div style={{ display: 'flex', gap: 8 }}>
           <div onClick={() => { setAddMeal(null); setShowAdd(true); }} style={{ width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
