@@ -387,7 +387,7 @@ export default function ChangePage({ onTabChange }) {
         })()
       }>
 
-      {/* ===== 전체 탭: 결과 / 원인→결과 ===== */}
+      {/* ===== 전체 탭 ===== */}
       {insightTab === 'all' && (
         <div style={{ padding: '0 14px' }}>
           {/* Summary Bar */}
@@ -413,6 +413,71 @@ export default function ChangePage({ onTabChange }) {
             ))}
           </div>
 
+          {/* ===== 기록 모드: 미니 체크 카드 ===== */}
+          {changeViewMode === '기록' && <>
+            {/* 에너지 미니 */}
+            <div onClick={() => setInsightTab('energy')} style={{ ...v2CardStyle, cursor: 'pointer', ...fadeUp(0.05) }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 16 }}>⚡</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#1A3A4A' }}>에너지</span>
+                </div>
+                <span style={{ fontSize: 12, color: energySub?.vitality ? '#2A6A4A' : '#9ABBC8', fontWeight: 500 }}>
+                  {energySub?.vitality ? `활력 ${['','매우낮음','낮음','보통','높음','최고'][energySub.vitality]}` : '체크하기'}
+                  {energySub?.focus ? ` · 집중 ${['','매우낮음','낮음','보통','높음','최고'][energySub.focus]}` : ''}
+                  {!energySub?.vitality && ' ›'}
+                </span>
+              </div>
+            </div>
+
+            {/* 기분 미니 */}
+            <div onClick={() => setInsightTab('mood')} style={{ ...v2CardStyle, cursor: 'pointer', ...fadeUp(0.08) }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 16 }}>😊</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#1A3A4A' }}>기분</span>
+                </div>
+                <span style={{ fontSize: 12, color: (moodSub?.emotions?.length > 0) ? '#2A6A4A' : '#9ABBC8', fontWeight: 500 }}>
+                  {moodSub?.emotions?.length > 0 ? moodSub.emotions.slice(0, 3).join(' · ') : '체크하기'}
+                  {moodSub?.stress != null ? ` · 스트레스 ${moodSub.stress}` : ''}
+                  {!(moodSub?.emotions?.length > 0) && ' ›'}
+                </span>
+              </div>
+            </div>
+
+            {/* 바디 미니 */}
+            <div onClick={() => setInsightTab('body')} style={{ ...v2CardStyle, cursor: 'pointer', ...fadeUp(0.11) }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 16 }}>⚖️</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#1A3A4A' }}>바디</span>
+                </div>
+                <span style={{ fontSize: 12, color: v2LatestWeight ? '#2A6A4A' : '#9ABBC8', fontWeight: 500 }}>
+                  {v2LatestWeight ? `${v2LatestWeight}kg` : '기록하기'}
+                  {bloodSugar?.value ? ` · 혈당 ${bloodSugar.value}` : ''}
+                  {!v2LatestWeight && ' ›'}
+                </span>
+              </div>
+            </div>
+
+            {/* 피부 미니 */}
+            <div onClick={() => setInsightTab('skin')} style={{ ...v2CardStyle, cursor: 'pointer', ...fadeUp(0.14) }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 16 }}>✨</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#1A3A4A' }}>피부</span>
+                </div>
+                <span style={{ fontSize: 12, color: (skinSub?.tags?.length > 0) ? '#2A6A4A' : '#9ABBC8', fontWeight: 500 }}>
+                  {skinSub?.tags?.length > 0 ? skinSub.tags.slice(0, 3).join(' · ') : '체크하기'}
+                  {skinSub?.score ? ` · ${skinSub.score}점` : ''}
+                  {!(skinSub?.tags?.length > 0) && ' ›'}
+                </span>
+              </div>
+            </div>
+          </>}
+
+          {/* ===== 흐름 모드: 그래프 카드 ===== */}
+          {changeViewMode === '흐름' && <>
           {/* Patterns Card */}
             <div style={{ ...v2CardStyle, ...fadeUp(0.1) }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -589,6 +654,7 @@ export default function ChangePage({ onTabChange }) {
                 <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 12, color: '#9ABBC8' }}>아직 측정 기록이 없어요</div>
               )}
             </div>
+          </>}
 
         </div>
       )}
