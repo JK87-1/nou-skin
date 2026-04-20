@@ -62,7 +62,7 @@ function MiniChart({ data, color = '#80CCE8', height = 36, labels, xPositions })
     <div>
       <svg viewBox={`0 0 ${w} ${h}`} style={{ width: '100%', height }}>
         <defs>
-          <linearGradient id={`lc-${cid}`} x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor={color} stopOpacity="0.3" /><stop offset="100%" stopColor={color} /></linearGradient>
+          <linearGradient id={`lc-${cid}`} x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor={color} stopOpacity="0.1" /><stop offset="100%" stopColor={color} /></linearGradient>
           <linearGradient id={`fill-${cid}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity="0.25" /><stop offset="100%" stopColor={color} stopOpacity="0" /></linearGradient>
         </defs>
         <path d={areaD} fill={`url(#fill-${cid})`} />
