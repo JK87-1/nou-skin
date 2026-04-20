@@ -78,10 +78,10 @@ export default function TabBar({ activeTab, onTabChange }) {
         const c = active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)';
         return (
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <rect x="3" y="3" width="8" height="8" rx="1.5" fill={c} />
-            <rect x="13" y="3" width="8" height="8" rx="1.5" fill={c} />
-            <rect x="3" y="13" width="8" height="8" rx="1.5" fill={c} />
-            <rect x="13" y="13" width="8" height="8" rx="1.5" fill={c} />
+            <rect x="3" y="3" width="8" height="8" rx="3" fill={c} />
+            <rect x="13" y="3" width="8" height="8" rx="3" fill={c} />
+            <rect x="3" y="13" width="8" height="8" rx="3" fill={c} />
+            <rect x="13" y="13" width="8" height="8" rx="3" fill={c} />
           </svg>
         );
       },
