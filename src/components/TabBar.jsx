@@ -106,10 +106,8 @@ export default function TabBar({ activeTab, onTabChange }) {
         const c = active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)';
         return (
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="13" r="9" fill={c} />
-            <path d="M12 8v5l3 3" stroke={active ? '#fff' : '#e8e8e8'} strokeWidth="1.8" strokeLinecap="round" />
-            <path d="M4.5 4.5l2 2M19.5 4.5l-2 2" stroke={c} strokeWidth="2" strokeLinecap="round" />
-            <path d="M2 8l3-1M22 8l-3-1" stroke={c} strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M12 4a8 8 0 1 0 5.65 2.35" stroke={c} strokeWidth="3" strokeLinecap="round" />
+            <path d="M14 2l4 4.5-4.5 4" fill={c} stroke={c} strokeWidth="0.5" strokeLinejoin="round" />
           </svg>
         );
       },
