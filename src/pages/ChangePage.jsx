@@ -67,7 +67,7 @@ function MiniChart({ data, color = '#80CCE8', height = 36, labels }) {
         <circle cx={last.x} cy={last.y} r="3" fill={color} stroke="#fff" strokeWidth="1.5" />
       </svg>
       {labels && labels.length > 0 && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4, padding: `0 ${(pad / w * 100).toFixed(1)}%` }}>
           {labels.map((l, i) => (
             <span key={i} style={{ fontSize: 9, color: '#9ABBC8', flex: 1, textAlign: 'center' }}>{l}</span>
           ))}
