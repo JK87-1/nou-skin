@@ -58,6 +58,54 @@ export function saveMoodSubCheck(emotions, stress) {
   return entry;
 }
 
+// ===== Blood Sugar Checks =====
+const BLOOD_SUGAR_KEY = 'nou_blood_sugar_checks';
+
+export function getBloodSugarChecks() {
+  try { return JSON.parse(localStorage.getItem(BLOOD_SUGAR_KEY) || '[]'); } catch { return []; }
+}
+
+export function getTodayBloodSugar() {
+  const today = new Date().toISOString().slice(0, 10);
+  return getBloodSugarChecks().find(c => c.date === today) || null;
+}
+
+export function saveBloodSugar(value, timing) {
+  const checks = getBloodSugarChecks();
+  const today = new Date().toISOString().slice(0, 10);
+  const idx = checks.findIndex(c => c.date === today);
+  const entry = { date: today, value, timing, timestamp: new Date().toISOString() };
+  if (idx >= 0) checks[idx] = entry;
+  else checks.push(entry);
+  const trimmed = checks.slice(-100);
+  localStorage.setItem(BLOOD_SUGAR_KEY, JSON.stringify(trimmed));
+  return entry;
+}
+
+// ===== Eye Body Checks =====
+const EYE_BODY_KEY = 'nou_eye_body_checks';
+
+export function getEyeBodyChecks() {
+  try { return JSON.parse(localStorage.getItem(EYE_BODY_KEY) || '[]'); } catch { return []; }
+}
+
+export function getTodayEyeBody() {
+  const today = new Date().toISOString().slice(0, 10);
+  return getEyeBodyChecks().find(c => c.date === today) || null;
+}
+
+export function saveEyeBody(photos) {
+  const checks = getEyeBodyChecks();
+  const today = new Date().toISOString().slice(0, 10);
+  const idx = checks.findIndex(c => c.date === today);
+  const entry = { date: today, photos, timestamp: new Date().toISOString() };
+  if (idx >= 0) checks[idx] = entry;
+  else checks.push(entry);
+  const trimmed = checks.slice(-50);
+  localStorage.setItem(EYE_BODY_KEY, JSON.stringify(trimmed));
+  return entry;
+}
+
 // ===== Energy Sub Checks =====
 const ENERGY_SUB_KEY = 'nou_energy_sub_checks';
 

@@ -6,7 +6,7 @@ import {
 } from '../storage/BodyStorage';
 import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, SENSITIVITY_OPTIONS, GENDER_OPTIONS, getEnabledCategories, getCategoryColor } from '../storage/ProfileStorage';
 import { getRecords, getAllThumbnailsAsync } from '../storage/SkinStorage';
-import { getLatestCheck, getConditionChecks, getTodayEnergySubCheck, saveEnergySubCheck, getTodayMoodSubCheck, saveMoodSubCheck } from '../storage/ConditionStorage';
+import { getLatestCheck, getConditionChecks, getTodayEnergySubCheck, saveEnergySubCheck, getTodayMoodSubCheck, saveMoodSubCheck, getTodayBloodSugar, saveBloodSugar, getTodayEyeBody, saveEyeBody } from '../storage/ConditionStorage';
 import BeforeAfterSlider from '../components/BeforeAfterSlider';
 
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
@@ -120,6 +120,10 @@ export default function ChangePage({ onTabChange }) {
     setEnergySub(saved);
   }, [energySub]);
   const [moodSub, setMoodSub] = useState(() => getTodayMoodSubCheck());
+  const [bloodSugar, setBloodSugar] = useState(() => getTodayBloodSugar());
+  const [bsInput, setBsInput] = useState(bloodSugar?.value ?? '');
+  const [bsTiming, setBsTiming] = useState(bloodSugar?.timing ?? '공복');
+  const [eyeBody, setEyeBody] = useState(() => getTodayEyeBody());
   const handleMoodEmotion = useCallback((emoji) => {
     const cur = moodSub || {};
     const emotions = cur.emotions || [];
@@ -789,106 +793,156 @@ export default function ChangePage({ onTabChange }) {
       )}
 
       {/* Body Tab */}
-      {(insightTab === 'body') && <div style={{ padding: '0 18px' }}>
-        {/* Current Weight Hero */}
-        <div style={{ textAlign: 'center', padding: '12px 0 8px', ...fadeUp(0.05) }}>
-          {latest ? (
-            <>
-              <div style={{
-                fontSize: 42, fontWeight: 600, fontFamily: 'var(--font-display)',
-                color: 'var(--accent-primary)',
-              }}>{latest.weight}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>kg · 오늘</div>
-            </>
-          ) : (
-            <div style={{ fontSize: 14, color: 'var(--text-dim)', padding: '20px 0' }}>
-              첫 기록을 시작해보세요
-            </div>
-          )}
-        </div>
-
-        {/* Weight Graph */}
-        {graphData && (
-          <div style={{ margin: '8px 0 16px', ...fadeUp(0.1) }}>
-            <svg viewBox={`0 0 ${graphData.w} ${graphData.h}`} style={{ width: '100%', height: 60 }} preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#89cef5" />
-                  <stop offset="100%" stopColor="#89cef5" />
-                </linearGradient>
-              </defs>
-              <polyline points={graphData.points} fill="none" stroke="url(#bodyGrad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <circle cx={graphData.lastPt.x} cy={graphData.lastPt.y} r="4" fill="#89cef5" />
-            </svg>
-          </div>
-        )}
-
-        {/* Stats Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, ...fadeUp(0.15) }}>
-          <StatBox label="시작 몸무게" value={start ? start.weight : ''} unit="kg" />
-          <StatBox
-            label="변화"
-            value={diff != null ? `${Number(diff) > 0 ? '+' : ''}${diff}` : ''}
-            unit="kg"
-            color={diff && Number(diff) < 0 ? 'var(--accent-primary)' : 'var(--text-primary)'}
-          />
-          <StatBox
-            label="목표"
-            value={goal ? goal.target : ''}
-            unit="kg"
-            onTap={() => setShowGoalModal(true)}
-          />
-          <StatBox label="BMI" value={bmi || ''} />
-        </div>
-
-        {/* Recent Records */}
-        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', margin: '24px 0 10px', ...fadeUp(0.2) }}>
-          최근 기록
-        </div>
-
-        {recentRecords.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-dim)', fontSize: 13, ...fadeUp(0.25) }}>
-            아직 기록이 없어요
-          </div>
-        ) : (
-          <div style={fadeUp(0.25)}>
-            {recentRecords.map((r, i) => {
-              const d = new Date(r.date);
-              const isToday = r.date === today.toISOString().slice(0, 10);
-              return (
-                <div key={r.date} style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  background: 'var(--bg-card)', borderRadius: 'var(--card-border-radius)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
-                  padding: '14px 18px', marginBottom: 8,
+      {(insightTab === 'body') && <div style={{ padding: '0 14px' }}>
+        {/* 몸무게 카드 */}
+        {(() => {
+          const prevWeight = records.length >= 2 ? records[records.length - 2].weight : null;
+          const todayWeight = latest?.weight ?? null;
+          const wDiff = todayWeight && prevWeight ? Math.round((todayWeight - prevWeight) * 10) / 10 : null;
+          const startW = start?.weight ?? null;
+          const goalW = goal?.target ?? null;
+          const progress = startW && goalW && todayWeight ? Math.min(1, Math.max(0, (startW - todayWeight) / (startW - goalW))) : 0;
+          return (
+            <div style={{ ...v2CardStyle, ...fadeUp(0.05) }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+                <span style={{ fontSize: 16 }}>⚖️</span>
+                <span style={{ fontSize: 15, fontWeight: 600, color: '#1A3A4A' }}>몸무게</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                <div onClick={() => setShowAdd(true)} style={{
+                  flex: 1, background: 'rgba(255,255,255,.7)', borderRadius: 12, padding: '14px',
+                  textAlign: 'center', cursor: 'pointer', border: '1px solid rgba(200,220,230,.3)',
                 }}>
-                  <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>
-                    {d.getMonth() + 1}월 {d.getDate()}일{isToday ? ' (오늘)' : ''}
+                  <span style={{ fontSize: 24, fontWeight: 600, color: '#1A3A4A' }}>{todayWeight ?? '—'}</span>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <span style={{ fontSize: 13, color: '#7AAABB' }}>kg</span>
+                  {wDiff != null && (
+                    <div style={{ marginTop: 2 }}>
+                      <div style={{ fontSize: 9, color: '#9ABBC8' }}>어제보다</div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: wDiff < 0 ? '#4A9A7A' : wDiff > 0 ? '#C4580A' : '#7AAABB' }}>
+                        {wDiff > 0 ? '+' : ''}{wDiff}kg
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              {startW && goalW && (
+                <>
+                  <div style={{ height: 6, borderRadius: 3, background: 'rgba(200,220,230,.3)', overflow: 'hidden', marginBottom: 6 }}>
+                    <div style={{ height: '100%', borderRadius: 3, background: 'linear-gradient(90deg, #A8E0C0, #4A9A7A)', width: `${progress * 100}%`, transition: 'width 0.3s' }} />
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{
-                      fontSize: 15, fontWeight: 600,
-                      color: isToday ? 'var(--accent-primary)' : 'var(--text-muted)',
-                    }}>{r.weight} kg</span>
-                    <button onClick={() => handleDelete(r.date)} style={{
-                      background: 'none', border: 'none', color: 'var(--text-dim)',
-                      fontSize: 16, cursor: 'pointer', padding: '0 2px', lineHeight: 1,
-                    }}>×</button>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#9ABBC8' }}>
+                    <span>시작 {startW}kg</span>
+                    <span>목표 {goalW}kg</span>
                   </div>
+                </>
+              )}
+            </div>
+          );
+        })()}
+
+        {/* 눈바디 카드 */}
+        <div style={{ ...v2CardStyle, ...fadeUp(0.1) }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+            <span style={{ fontSize: 16 }}>👁️</span>
+            <span style={{ fontSize: 15, fontWeight: 600, color: '#1A3A4A' }}>눈바디</span>
+          </div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            {['정면', '측면', '후면'].map((label, idx) => {
+              const photos = eyeBody?.photos || {};
+              const hasPhoto = !!photos[label];
+              return (
+                <div key={label} style={{ flex: 1, position: 'relative' }}>
+                  <label style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    height: 100, borderRadius: 14, cursor: 'pointer',
+                    background: hasPhoto ? 'none' : 'rgba(230,240,235,.4)',
+                    border: '1.5px dashed rgba(180,210,200,.5)',
+                    overflow: 'hidden',
+                  }}>
+                    {hasPhoto ? (
+                      <img src={photos[label]} alt={label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <>
+                        <span style={{ fontSize: 20, color: '#B0C8C0' }}>+</span>
+                        <span style={{ fontSize: 11, color: '#9ABBC8', marginTop: 4 }}>{label}</span>
+                      </>
+                    )}
+                    <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = ev => {
+                        const img = new Image();
+                        img.onload = () => {
+                          const canvas = document.createElement('canvas');
+                          canvas.width = 300; canvas.height = 300;
+                          const ctx = canvas.getContext('2d');
+                          const size = Math.min(img.width, img.height);
+                          const sx = (img.width - size) / 2, sy = (img.height - size) / 2;
+                          ctx.drawImage(img, sx, sy, size, size, 0, 0, 300, 300);
+                          const newPhotos = { ...(eyeBody?.photos || {}), [label]: canvas.toDataURL('image/jpeg', 0.7) };
+                          const saved = saveEyeBody(newPhotos);
+                          setEyeBody(saved);
+                        };
+                        img.src = ev.target.result;
+                      };
+                      reader.readAsDataURL(file);
+                    }} />
+                  </label>
                 </div>
               );
             })}
           </div>
-        )}
+        </div>
 
-        {/* Add Button */}
-        <div style={{ marginTop: 16, ...fadeUp(0.3) }}>
-          <button onClick={() => setShowAdd(true)} style={{
-            width: '100%', padding: '14px 0',
-            background: 'var(--accent-primary)',
-            border: 'none', borderRadius: 'var(--btn-radius)',
-            fontSize: 14, fontWeight: 600,
+        {/* 혈당 카드 */}
+        <div style={{ ...v2CardStyle, ...fadeUp(0.15) }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+            <span style={{ fontSize: 16 }}>🩸</span>
+            <span style={{ fontSize: 15, fontWeight: 600, color: '#1A3A4A' }}>혈당</span>
+            <div style={{ display: 'flex', gap: 4, marginLeft: 8 }}>
+              {['공복', '식후'].map(t => (
+                <span key={t} onClick={() => setBsTiming(t)} style={{
+                  fontSize: 10, padding: '3px 8px', borderRadius: 99, cursor: 'pointer',
+                  background: bsTiming === t ? 'rgba(200,230,210,.4)' : 'rgba(255,255,255,.5)',
+                  border: bsTiming === t ? '1px solid rgba(100,180,130,.4)' : '1px solid rgba(200,220,230,.3)',
+                  color: bsTiming === t ? '#2A6A4A' : '#9ABBC8', fontWeight: bsTiming === t ? 600 : 400,
+                }}>{t}</span>
+              ))}
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10 }}>
+            <input value={bsInput} onChange={e => setBsInput(e.target.value)}
+              placeholder="0" type="number" style={{
+                width: 90, padding: '12px 14px', borderRadius: 12, border: '1px solid rgba(200,220,230,.3)',
+                background: 'rgba(255,255,255,.7)', fontSize: 22, fontWeight: 600, color: '#1A3A4A',
+                fontFamily: 'inherit', outline: 'none', textAlign: 'center',
+              }} />
+            <span style={{ fontSize: 13, color: '#7AAABB' }}>mg/dL</span>
+            <div style={{ flex: 1 }} />
+            {bsInput && (() => {
+              const v = Number(bsInput);
+              const isPost = bsTiming === '식후';
+              const status = isPost
+                ? (v < 140 ? '정상' : v < 200 ? '주의' : '높음')
+                : (v < 100 ? '정상' : v < 126 ? '주의' : '높음');
+              const color = status === '정상' ? '#4A9A7A' : status === '주의' ? '#D4A030' : '#C4580A';
+              return <span style={{ fontSize: 12, fontWeight: 600, padding: '4px 10px', borderRadius: 8, background: `${color}18`, color }}>{status}</span>;
+            })()}
+          </div>
+        </div>
+
+        {/* 저장 버튼 */}
+        <div style={{ marginTop: 10, ...fadeUp(0.2) }}>
+          <button onClick={() => {
+            if (bsInput) { const saved = saveBloodSugar(Number(bsInput), bsTiming); setBloodSugar(saved); }
+          }} style={{
+            width: '100%', padding: '14px 0', background: '#1A3A4A',
+            border: 'none', borderRadius: 14, fontSize: 14, fontWeight: 600,
             color: '#fff', cursor: 'pointer', fontFamily: 'inherit',
-          }}>오늘 기록하기</button>
+          }}>저장</button>
         </div>
       </div>}
 
