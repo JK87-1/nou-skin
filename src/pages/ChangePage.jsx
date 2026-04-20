@@ -339,32 +339,54 @@ export default function ChangePage({ onTabChange }) {
                 if (!grouped[dateKey]) grouped[dateKey] = [];
                 grouped[dateKey].push(c.energy);
               });
-              const dayKeys = Object.keys(grouped).sort().slice(-7);
-              const numDays = dayKeys.length;
-              // 각 포인트의 x 위치: 날짜 간격은 균등, 같은 날 여러 체크는 그 날짜 슬롯 안에서 분배
+              // 최근 7일 연속 날짜 생성 (빈 날 포함)
+              const DAY_NAMES = ['일','월','화','수','목','금','토'];
+              const days7 = [];
+              for (let i = 6; i >= 0; i--) {
+                const d = new Date(); d.setDate(d.getDate() - i);
+                days7.push(getDateKey(d));
+              }
+              // 각 날짜의 평균값 계산 (기록 있는 날)
+              const dayAvg = {};
+              days7.forEach(dk => {
+                if (grouped[dk] && grouped[dk].length > 0) {
+                  dayAvg[dk] = grouped[dk].reduce((a, b) => a + b, 0) / grouped[dk].length;
+                }
+              });
+              // 빈 날은 전후 평균으로 보간
+              days7.forEach((dk, i) => {
+                if (dayAvg[dk] != null) return;
+                let prev = null, next = null;
+                for (let j = i - 1; j >= 0; j--) { if (dayAvg[days7[j]] != null) { prev = dayAvg[days7[j]]; break; } }
+                for (let j = i + 1; j < 7; j++) { if (dayAvg[days7[j]] != null) { next = dayAvg[days7[j]]; break; } }
+                if (prev != null && next != null) dayAvg[dk] = (prev + next) / 2;
+                else if (prev != null) dayAvg[dk] = prev;
+                else if (next != null) dayAvg[dk] = next;
+              });
+              // 포인트 및 x 위치 구성
               const allPoints = [];
               const xPos = [];
-              dayKeys.forEach((dk, dayIdx) => {
-                const vals = grouped[dk];
-                vals.forEach((val, j) => {
-                  allPoints.push(val);
-                  if (numDays === 1) {
-                    xPos.push(vals.length === 1 ? 0.5 : j / (vals.length - 1));
-                  } else {
-                    const dayCenter = dayIdx / (numDays - 1);
-                    const slotWidth = 1 / (numDays - 1) * 0.4;
+              days7.forEach((dk, dayIdx) => {
+                const vals = grouped[dk] || [];
+                if (vals.length === 0) {
+                  // 보간된 값 1포인트
+                  if (dayAvg[dk] != null) { allPoints.push(dayAvg[dk]); xPos.push(dayIdx / 6); }
+                } else {
+                  vals.forEach((val, j) => {
+                    allPoints.push(val);
+                    const dayCenter = dayIdx / 6;
+                    const slotWidth = (1 / 6) * 0.4;
                     const offset = vals.length === 1 ? 0 : (j / (vals.length - 1) - 0.5) * slotWidth;
                     xPos.push(Math.max(0, Math.min(1, dayCenter + offset)));
-                  }
-                });
+                  });
+                }
               });
-              // 날짜 라벨: 날짜별 균등 간격
-              const DAY_NAMES = ['일','월','화','수','목','금','토'];
-              const dayLabels = dayKeys.map(dk => {
+              const dayLabels = days7.map(dk => {
                 const d = new Date(dk + 'T00:00:00');
                 const day = d.getDay();
                 return { text: DAY_NAMES[day], bold: day === 0 || day === 6 };
               });
+              const recordedDays = days7.filter(dk => grouped[dk]?.length > 0).length;
               return (
                 <div style={{ ...v2CardStyle, padding: '14px 10px', ...fadeUp(0.15) }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, padding: '0 5px' }}>
@@ -372,8 +394,8 @@ export default function ChangePage({ onTabChange }) {
                       <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('energy') }} />
                       <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>에너지 흐름</span>
                     </div>
-                    {numDays > 0 && (
-                      <span style={{ fontSize: 11, fontWeight: 500, color: '#7AAABB' }}>최근 {numDays}일</span>
+                    {recordedDays > 0 && (
+                      <span style={{ fontSize: 11, fontWeight: 500, color: '#7AAABB' }}>최근 7일</span>
                     )}
                   </div>
                   {allPoints.length >= 2 ? (
