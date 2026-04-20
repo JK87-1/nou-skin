@@ -34,6 +34,31 @@ export function saveConditionCheck(check) {
   return trimmed[trimmed.length - 1];
 }
 
+// ===== Mood Sub Checks =====
+const MOOD_SUB_KEY = 'nou_mood_sub_checks';
+
+export function getMoodSubChecks() {
+  try { return JSON.parse(localStorage.getItem(MOOD_SUB_KEY) || '[]'); } catch { return []; }
+}
+
+export function getTodayMoodSubCheck() {
+  const today = new Date().toISOString().slice(0, 10);
+  return getMoodSubChecks().find(c => c.date === today) || null;
+}
+
+export function saveMoodSubCheck(emotions, stress) {
+  const checks = getMoodSubChecks();
+  const today = new Date().toISOString().slice(0, 10);
+  const idx = checks.findIndex(c => c.date === today);
+  const entry = { date: today, emotions, stress, timestamp: new Date().toISOString() };
+  if (idx >= 0) checks[idx] = entry;
+  else checks.push(entry);
+  const trimmed = checks.slice(-100);
+  localStorage.setItem(MOOD_SUB_KEY, JSON.stringify(trimmed));
+  return entry;
+}
+
+// ===== Energy Sub Checks =====
 const ENERGY_SUB_KEY = 'nou_energy_sub_checks';
 
 export function getEnergySubChecks() {

@@ -6,7 +6,7 @@ import {
 } from '../storage/BodyStorage';
 import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, SENSITIVITY_OPTIONS, GENDER_OPTIONS, getEnabledCategories, getCategoryColor } from '../storage/ProfileStorage';
 import { getRecords, getAllThumbnailsAsync } from '../storage/SkinStorage';
-import { getLatestCheck, getConditionChecks, getTodayEnergySubCheck, saveEnergySubCheck } from '../storage/ConditionStorage';
+import { getLatestCheck, getConditionChecks, getTodayEnergySubCheck, saveEnergySubCheck, getTodayMoodSubCheck, saveMoodSubCheck } from '../storage/ConditionStorage';
 import BeforeAfterSlider from '../components/BeforeAfterSlider';
 
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
@@ -119,6 +119,19 @@ export default function ChangePage({ onTabChange }) {
     const saved = saveEnergySubCheck(newVitality, newFocus);
     setEnergySub(saved);
   }, [energySub]);
+  const [moodSub, setMoodSub] = useState(() => getTodayMoodSubCheck());
+  const handleMoodEmotion = useCallback((emoji) => {
+    const cur = moodSub || {};
+    const emotions = cur.emotions || [];
+    const next = emotions.includes(emoji) ? emotions.filter(e => e !== emoji) : [...emotions, emoji];
+    const saved = saveMoodSubCheck(next, cur.stress ?? null);
+    setMoodSub(saved);
+  }, [moodSub]);
+  const handleMoodStress = useCallback((value) => {
+    const cur = moodSub || {};
+    const saved = saveMoodSubCheck(cur.emotions || [], value);
+    setMoodSub(saved);
+  }, [moodSub]);
 
   // V2 state
   const [v2Segment, setV2Segment] = useState('결과');
@@ -578,14 +591,81 @@ export default function ChangePage({ onTabChange }) {
         </div>
       )}
 
-      {/* Mood placeholder */}
-      {(insightTab === 'mood') && (
-        <div style={{ padding: '80px 24px', textAlign: 'center', ...fadeUp(0.05) }}>
-          <div style={{ fontSize: 32, marginBottom: 12 }}>😊</div>
-          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>기분 분석</div>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>곧 출시 예정이에요</div>
-        </div>
-      )}
+      {/* Mood Tab */}
+      {(insightTab === 'mood') && (() => {
+        const EMOTIONS = [
+          { key: '평온', icon: '😌' }, { key: '행복', icon: '😊' }, { key: '우울', icon: '😔' }, { key: '짜증', icon: '😤' },
+          { key: '불안', icon: '😰' }, { key: '피곤', icon: '🥱' }, { key: '설렘', icon: '🥰' }, { key: '무감각', icon: '😶' },
+        ];
+        const STRESS_ICONS = ['😌', '😐', '😤', '😣', '😫', '🤯'];
+        const selectedEmotions = moodSub?.emotions || [];
+        const stressVal = moodSub?.stress ?? null;
+        return (
+          <div style={{ padding: '0 14px' }}>
+            {/* 감정 카드 */}
+            <div style={{ ...v2CardStyle, ...fadeUp(0.05) }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+                <span style={{ fontSize: 16 }}>😊</span>
+                <span style={{ fontSize: 15, fontWeight: 600, color: '#1A3A4A' }}>감정</span>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {EMOTIONS.map(em => {
+                  const sel = selectedEmotions.includes(em.key);
+                  return (
+                    <div key={em.key} onClick={() => handleMoodEmotion(em.key)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 5,
+                        padding: '8px 14px', borderRadius: 99, cursor: 'pointer',
+                        background: sel ? 'rgba(200,230,210,.4)' : 'rgba(255,255,255,.5)',
+                        border: sel ? '1.5px solid rgba(100,180,130,.5)' : '1.5px solid rgba(200,220,230,.3)',
+                        transition: 'all 0.15s ease',
+                      }}>
+                      <span style={{ fontSize: 15 }}>{em.icon}</span>
+                      <span style={{ fontSize: 12, color: sel ? '#2A6A4A' : '#7AAABB', fontWeight: sel ? 600 : 400 }}>{em.key}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 스트레스 카드 */}
+            <div style={{ ...v2CardStyle, ...fadeUp(0.1) }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+                <span style={{ fontSize: 16 }}>🧘</span>
+                <span style={{ fontSize: 15, fontWeight: 600, color: '#1A3A4A' }}>스트레스</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                <span style={{ fontSize: 11, color: '#7AAABB' }}>낮음</span>
+                <span style={{ fontSize: 18, fontWeight: 600, color: '#1A3A4A' }}>{stressVal ?? '—'}</span>
+                <span style={{ fontSize: 11, color: '#7AAABB' }}>높음</span>
+              </div>
+              <input type="range" min="0" max="5" step="1" value={stressVal ?? 3}
+                onChange={e => handleMoodStress(Number(e.target.value))}
+                style={{ width: '100%', accentColor: '#9ABBC8', marginBottom: 8 }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                {STRESS_ICONS.map((icon, i) => (
+                  <span key={i} style={{ fontSize: 22, opacity: stressVal === i ? 1 : 0.4, transition: 'opacity 0.15s' }}>{icon}</span>
+                ))}
+              </div>
+            </div>
+
+            {/* 오늘 기분 요약 */}
+            {(selectedEmotions.length > 0 || stressVal != null) && (
+              <div style={{
+                background: 'rgba(200,230,210,.2)', borderRadius: 16, padding: '14px 16px',
+                border: '0.5px solid rgba(100,180,130,.2)', ...fadeUp(0.15),
+              }}>
+                <div style={{ fontSize: 11, color: '#7AAABB', marginBottom: 6 }}>오늘 기분 요약</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A', lineHeight: 1.6 }}>
+                  {selectedEmotions.length > 0 && selectedEmotions.join(' · ')}
+                  {selectedEmotions.length > 0 && stressVal != null && ' · '}
+                  {stressVal != null && `스트레스 ${['매우낮음','낮음','보통','약간높음','높음','매우높음'][stressVal]}`}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Body shape placeholder */}
       {(insightTab === 'shape') && (
