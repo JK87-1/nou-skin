@@ -329,8 +329,29 @@ export default function ChangePage({ onTabChange }) {
 
           {/* Energy Card */}
             {(() => {
-              const last7 = conditionChecks.slice(-7);
-              const labels7 = last7.map(c => { const d = new Date(c.timestamp); const day = d.getDay(); return { text: `${d.getDate()}`, bold: day === 0 || day === 6 }; });
+              // 날짜별 그룹핑 (같은 날 여러 체크 → 여러 포인트, 라벨은 하루 1개)
+              const grouped = {};
+              conditionChecks.forEach(c => {
+                const dateKey = c.timestamp.slice(0, 10);
+                if (!grouped[dateKey]) grouped[dateKey] = [];
+                grouped[dateKey].push(c.energy);
+              });
+              const dayKeys = Object.keys(grouped).sort().slice(-7);
+              const allPoints = [];
+              const labels7 = [];
+              dayKeys.forEach((dk, i) => {
+                const d = new Date(dk + 'T00:00:00');
+                const day = d.getDay();
+                grouped[dk].forEach((val, j) => {
+                  allPoints.push(val);
+                  if (j === 0) labels7.push({ text: `${d.getDate()}`, bold: day === 0 || day === 6, idx: allPoints.length - 1 });
+                });
+              });
+              // 날짜 라벨은 각 날의 첫 포인트 위치에만
+              const sparseLabels = allPoints.map((_, i) => {
+                const found = labels7.find(l => l.idx === i);
+                return found ? { text: found.text, bold: found.bold } : { text: '', bold: false };
+              });
               return (
                 <div style={{ ...v2CardStyle, padding: '14px 10px', ...fadeUp(0.15) }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, padding: '0 5px' }}>
@@ -338,15 +359,15 @@ export default function ChangePage({ onTabChange }) {
                       <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('energy') }} />
                       <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>에너지 흐름</span>
                     </div>
-                    {last7.length > 0 && (
-                      <span style={{ fontSize: 11, fontWeight: 500, color: '#7AAABB' }}>최근 {last7.length}일</span>
+                    {dayKeys.length > 0 && (
+                      <span style={{ fontSize: 11, fontWeight: 500, color: '#7AAABB' }}>최근 {dayKeys.length}일</span>
                     )}
                   </div>
-                  {last7.length >= 2 ? (
-                    <MiniChart data={last7.map(c => c.energy)} color={getCategoryColor('energy')} height={44} labels={labels7} />
+                  {allPoints.length >= 2 ? (
+                    <MiniChart data={allPoints} color={getCategoryColor('energy')} height={44} labels={sparseLabels} />
                   ) : (
                     <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 12, color: '#9ABBC8' }}>
-                      {last7.length === 1 ? '한 번 더 체크하면 그래프가 나타나요' : '홈에서 컨디션을 체크해보세요'}
+                      {allPoints.length === 1 ? '한 번 더 체크하면 그래프가 나타나요' : '홈에서 컨디션을 체크해보세요'}
                     </div>
                   )}
                 </div>
