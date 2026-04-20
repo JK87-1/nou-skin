@@ -73,8 +73,8 @@ export default function TabBar({ activeTab, onTabChange }) {
       label: '오늘',
       icon: (active) => (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <rect x="3" y="2" width="18" height="20" rx="2.5" fill={active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)'} />
-          <path d="M7.5 8h5.5M7.5 12h6.5M7.5 16h4.5" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" />
+          <path d="M12 21v-7" stroke={active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)'} strokeWidth="2.5" strokeLinecap="round" />
+          <path d="M12 14c-1.5-1.5-5-4-8-2.5C4 11.5 5.5 6 12 6c6.5 0 8 5.5 8 5.5C17 10 13.5 12.5 12 14z" fill={active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)'} />
         </svg>
       ),
     },
