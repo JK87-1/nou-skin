@@ -25,7 +25,7 @@ export function getRoutineItems(category) {
 export function saveRoutineItem(category, item) {
   const all = JSON.parse(localStorage.getItem(ITEMS_KEY) || '{}');
   if (!all[category]) all[category] = [];
-  item.id = Date.now() + (item._offset || Math.floor(Math.random() * 1000));
+  item.id = Date.now() + (item._offset ?? Math.floor(Math.random() * 1000));
   delete item._offset;
   all[category].push(item);
   localStorage.setItem(ITEMS_KEY, JSON.stringify(all));
