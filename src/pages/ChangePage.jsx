@@ -146,6 +146,11 @@ export default function ChangePage({ onTabChange }) {
   const [bloodSugar, setBloodSugar] = useState(() => getTodayBloodSugar());
   const [bsInput, setBsInput] = useState(bloodSugar?.value ?? '');
   const [bsTiming, setBsTiming] = useState(bloodSugar?.timing ?? '공복');
+  const [bsGraphData, setBsGraphData] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('nou_bs_graph') || 'null'); } catch { return null; }
+  });
+  const [bsGraphLoading, setBsGraphLoading] = useState(false);
+  const [bsGraphError, setBsGraphError] = useState(null);
   const [eyeBody, setEyeBody] = useState(() => getTodayEyeBody());
   const [skinSub, setSkinSub] = useState(() => getTodaySkinSubCheck());
   const handleSkinTag = useCallback((tag) => {
@@ -1199,8 +1204,207 @@ export default function ChangePage({ onTabChange }) {
           </div>
         </div>
 
+        {/* 혈당 그래프 분석 카드 */}
+        <div style={{ ...v2CardStyle, ...fadeUp(0.2) }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('body') }} />
+              <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>혈당 그래프</span>
+            </div>
+            <label style={{ fontSize: 11, color: '#5AAABB', fontWeight: 500, cursor: 'pointer' }}>
+              {bsGraphLoading ? '분석중...' : '사진 업로드'}
+              <input type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                setBsGraphLoading(true);
+                setBsGraphError(null);
+                try {
+                  const dataUrl = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                      const img = new Image();
+                      img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const maxW = 1024;
+                        const scale = Math.min(1, maxW / img.width);
+                        canvas.width = img.width * scale;
+                        canvas.height = img.height * scale;
+                        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.8));
+                      };
+                      img.src = ev.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                  });
+                  const resp = await fetch('/api/blood-sugar-graph', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: dataUrl }),
+                  });
+                  const result = await resp.json();
+                  if (result.error) throw new Error(result.error);
+                  if (!result.readings?.length) throw new Error('그래프에서 수치를 읽지 못했어요');
+                  const graphData = { ...result, uploadedAt: new Date().toISOString() };
+                  localStorage.setItem('nou_bs_graph', JSON.stringify(graphData));
+                  setBsGraphData(graphData);
+                } catch (err) {
+                  setBsGraphError(err.message);
+                } finally {
+                  setBsGraphLoading(false);
+                  e.target.value = '';
+                }
+              }} />
+            </label>
+          </div>
+
+          {bsGraphError && (
+            <div style={{ padding: '10px 12px', borderRadius: 10, background: 'rgba(200,100,80,.1)', marginBottom: 10, fontSize: 12, color: '#C4580A' }}>
+              {bsGraphError}
+            </div>
+          )}
+
+          {bsGraphLoading && (
+            <div style={{ padding: '30px 0', textAlign: 'center' }}>
+              <div style={{ fontSize: 12, color: '#7AAABB' }}>AI가 그래프를 분석하고 있어요...</div>
+            </div>
+          )}
+
+          {!bsGraphLoading && bsGraphData?.readings?.length > 0 && (() => {
+            const readings = bsGraphData.readings;
+            const values = readings.map(r => r.value);
+            const minVal = Math.min(...values, 70);
+            const maxVal = Math.max(...values, 140);
+            const padTop = 20, padBottom = 30, padLeft = 36, padRight = 10;
+            const chartW = 300, chartH = 140;
+            const innerW = chartW - padLeft - padRight;
+            const innerH = chartH - padTop - padBottom;
+            const range = maxVal - minVal || 1;
+
+            // Normal range Y positions
+            const y70 = padTop + innerH - ((70 - minVal) / range) * innerH;
+            const y140 = padTop + innerH - ((140 - minVal) / range) * innerH;
+
+            const points = readings.map((r, i) => ({
+              x: padLeft + (i / Math.max(readings.length - 1, 1)) * innerW,
+              y: padTop + innerH - ((r.value - minVal) / range) * innerH,
+              value: r.value,
+              time: r.time,
+              normal: r.value >= 70 && r.value <= 140,
+            }));
+
+            return (
+              <div>
+                <svg viewBox={`0 0 ${chartW} ${chartH}`} style={{ width: '100%', height: 'auto' }}>
+                  {/* Normal range band */}
+                  <rect x={padLeft} y={y140} width={innerW} height={y70 - y140}
+                    fill="rgba(100,180,130,.08)" />
+                  {/* 140 line */}
+                  <line x1={padLeft} y1={y140} x2={chartW - padRight} y2={y140}
+                    stroke="rgba(100,180,130,.3)" strokeWidth="0.8" strokeDasharray="4 2" />
+                  <text x={padLeft - 4} y={y140 + 3} textAnchor="end" fontSize="8" fill="#7AAABB">140</text>
+                  {/* 70 line */}
+                  <line x1={padLeft} y1={y70} x2={chartW - padRight} y2={y70}
+                    stroke="rgba(100,180,130,.3)" strokeWidth="0.8" strokeDasharray="4 2" />
+                  <text x={padLeft - 4} y={y70 + 3} textAnchor="end" fontSize="8" fill="#7AAABB">70</text>
+
+                  {/* Line segments with color coding */}
+                  {points.map((p, i) => {
+                    if (i === 0) return null;
+                    const prev = points[i - 1];
+                    const segNormal = prev.normal && p.normal;
+                    return (
+                      <line key={`seg-${i}`}
+                        x1={prev.x} y1={prev.y} x2={p.x} y2={p.y}
+                        stroke={segNormal ? '#4A9A7A' : '#E8944A'}
+                        strokeWidth="2.5" strokeLinecap="round" />
+                    );
+                  })}
+
+                  {/* Dots */}
+                  {points.map((p, i) => (
+                    <circle key={`dot-${i}`} cx={p.x} cy={p.y} r="3"
+                      fill={p.normal ? '#4A9A7A' : '#E8944A'}
+                      stroke="#fff" strokeWidth="1" />
+                  ))}
+
+                  {/* Value labels for key points (min, max, first, last) */}
+                  {points.map((p, i) => {
+                    const isFirst = i === 0;
+                    const isLast = i === points.length - 1;
+                    const isMax = p.value === Math.max(...values);
+                    const isMin = p.value === Math.min(...values);
+                    if (!isFirst && !isLast && !isMax && !isMin) return null;
+                    return (
+                      <text key={`val-${i}`} x={p.x} y={p.y - 6}
+                        textAnchor="middle" fontSize="8" fontWeight="600"
+                        fill={p.normal ? '#3A7A5A' : '#C4700A'}>
+                        {p.value}
+                      </text>
+                    );
+                  })}
+
+                  {/* Time labels */}
+                  {points.map((p, i) => {
+                    // Show every few labels to avoid overlap
+                    const showEvery = points.length > 10 ? 3 : points.length > 6 ? 2 : 1;
+                    if (i % showEvery !== 0 && i !== points.length - 1) return null;
+                    return (
+                      <text key={`time-${i}`} x={p.x} y={chartH - 6}
+                        textAnchor="middle" fontSize="7.5" fill="#9ABBC8">
+                        {p.time}
+                      </text>
+                    );
+                  })}
+                </svg>
+
+                {/* Legend */}
+                <div style={{ display: 'flex', gap: 14, justifyContent: 'center', marginTop: 6 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <div style={{ width: 10, height: 3, borderRadius: 2, background: '#4A9A7A' }} />
+                    <span style={{ fontSize: 10, color: '#7AAABB' }}>정상 (70-140)</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <div style={{ width: 10, height: 3, borderRadius: 2, background: '#E8944A' }} />
+                    <span style={{ fontSize: 10, color: '#7AAABB' }}>초과</span>
+                  </div>
+                </div>
+
+                {/* Stats */}
+                <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: 10, padding: '10px 0', borderTop: '0.5px solid rgba(200,220,230,.3)' }}>
+                  {[
+                    { label: '최저', value: Math.min(...values), unit: '' },
+                    { label: '평균', value: Math.round(values.reduce((a, b) => a + b, 0) / values.length), unit: '' },
+                    { label: '최고', value: Math.max(...values), unit: '' },
+                  ].map(s => (
+                    <div key={s.label} style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: 10, color: '#9ABBC8', marginBottom: 2 }}>{s.label}</div>
+                      <div style={{ fontSize: 16, fontWeight: 600, color: s.value > 140 ? '#E8944A' : '#1A3A4A' }}>
+                        {s.value}<span style={{ fontSize: 10, color: '#9ABBC8', marginLeft: 2 }}>mg/dL</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {bsGraphData.source && (
+                  <div style={{ fontSize: 10, color: '#9ABBC8', textAlign: 'center', marginTop: 4 }}>
+                    출처: {bsGraphData.source}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {!bsGraphLoading && !bsGraphData && (
+            <div style={{ padding: '20px 0', textAlign: 'center' }}>
+              <div style={{ fontSize: 24, marginBottom: 6 }}>📊</div>
+              <div style={{ fontSize: 12, color: '#9ABBC8' }}>혈당 그래프 사진을 올리면</div>
+              <div style={{ fontSize: 12, color: '#9ABBC8' }}>AI가 수치를 읽어 그래프로 보여줘요</div>
+            </div>
+          )}
+        </div>
+
         {/* 저장 버튼 */}
-        <div style={{ marginTop: 10, ...fadeUp(0.2) }}>
+        <div style={{ marginTop: 10, ...fadeUp(0.25) }}>
           <button onClick={() => {
             if (bsInput) { const saved = saveBloodSugar(Number(bsInput), bsTiming); setBloodSugar(saved); }
           }} style={{
