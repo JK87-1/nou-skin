@@ -664,9 +664,11 @@ export default function ChangePage({ onTabChange }) {
         <div style={{ padding: '0 14px' }}>
           {/* 활력 카드 */}
           <div style={{ ...v2CardStyle, ...fadeUp(0.05) }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
-              <span style={{ fontSize: 16 }}>⚡</span>
-              <span style={{ fontSize: 15, fontWeight: 600, color: '#1A3A4A' }}>활력</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('energy') }} />
+                <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>활력</span>
+              </div>
             </div>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between' }}>
               {[
@@ -696,9 +698,11 @@ export default function ChangePage({ onTabChange }) {
 
           {/* 집중력 카드 */}
           <div style={{ ...v2CardStyle, ...fadeUp(0.1) }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
-              <span style={{ fontSize: 16 }}>🧠</span>
-              <span style={{ fontSize: 15, fontWeight: 600, color: '#1A3A4A' }}>집중력</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('energy') }} />
+                <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>집중력</span>
+              </div>
             </div>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between' }}>
               {[
@@ -756,9 +760,11 @@ export default function ChangePage({ onTabChange }) {
           <div style={{ padding: '0 14px' }}>
             {/* 감정 카드 */}
             <div style={{ ...v2CardStyle, ...fadeUp(0.05) }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
-                <span style={{ fontSize: 16 }}>😊</span>
-                <span style={{ fontSize: 15, fontWeight: 600, color: '#1A3A4A' }}>감정</span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('mood') }} />
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>감정</span>
+                </div>
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {EMOTIONS.map(em => {
@@ -782,9 +788,11 @@ export default function ChangePage({ onTabChange }) {
 
             {/* 스트레스 카드 */}
             <div style={{ ...v2CardStyle, ...fadeUp(0.1) }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
-                <span style={{ fontSize: 16 }}>🧘</span>
-                <span style={{ fontSize: 15, fontWeight: 600, color: '#1A3A4A' }}>스트레스</span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('mood') }} />
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>스트레스</span>
+                </div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                 <span style={{ fontSize: 11, color: '#7AAABB' }}>낮음</span>
@@ -881,9 +889,11 @@ export default function ChangePage({ onTabChange }) {
           <div style={{ padding: '0 14px' }}>
             {/* 얼굴 사진 카드 */}
             <div style={{ ...v2CardStyle, ...fadeUp(0.05) }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
-                <span style={{ fontSize: 16 }}>🤳</span>
-                <span style={{ fontSize: 15, fontWeight: 600, color: '#1A3A4A' }}>얼굴 사진</span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('skin') }} />
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>얼굴 사진</span>
+                </div>
               </div>
               <div style={{ display: 'flex', gap: 10 }}>
                 <PhotoSlot slotKey="face" label="오늘 얼굴 사진" height={130} flex={2} />
@@ -896,9 +906,11 @@ export default function ChangePage({ onTabChange }) {
 
             {/* 오늘 피부 상태 카드 */}
             <div style={{ ...v2CardStyle, ...fadeUp(0.1) }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
-                <span style={{ fontSize: 16 }}>✨</span>
-                <span style={{ fontSize: 15, fontWeight: 600, color: '#1A3A4A' }}>오늘 피부 상태</span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('skin') }} />
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>오늘 피부 상태</span>
+                </div>
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
                 {SKIN_TAGS.map(tag => {
@@ -1050,9 +1062,11 @@ export default function ChangePage({ onTabChange }) {
           const progress = startW && goalW && todayWeight ? Math.min(1, Math.max(0, (startW - todayWeight) / (startW - goalW))) : 0;
           return (
             <div style={{ ...v2CardStyle, ...fadeUp(0.05) }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
-                <span style={{ fontSize: 16 }}>⚖️</span>
-                <span style={{ fontSize: 15, fontWeight: 600, color: '#1A3A4A' }}>몸무게</span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('body') }} />
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>몸무게</span>
+                </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                 <div onClick={() => setShowAdd(true)} style={{
@@ -1090,9 +1104,11 @@ export default function ChangePage({ onTabChange }) {
 
         {/* 눈바디 카드 */}
         <div style={{ ...v2CardStyle, ...fadeUp(0.1) }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
-            <span style={{ fontSize: 16 }}>👁️</span>
-            <span style={{ fontSize: 15, fontWeight: 600, color: '#1A3A4A' }}>눈바디</span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('body') }} />
+              <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>눈바디</span>
+            </div>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
             {['정면', '측면', '후면'].map((label, idx) => {
@@ -1146,8 +1162,8 @@ export default function ChangePage({ onTabChange }) {
         {/* 혈당 카드 */}
         <div style={{ ...v2CardStyle, ...fadeUp(0.15) }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-            <span style={{ fontSize: 16 }}>🩸</span>
-            <span style={{ fontSize: 15, fontWeight: 600, color: '#1A3A4A' }}>혈당</span>
+            <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('body') }} />
+            <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>혈당</span>
             <div style={{ display: 'flex', gap: 4, marginLeft: 8 }}>
               {['공복', '식후'].map(t => (
                 <span key={t} onClick={() => setBsTiming(t)} style={{
