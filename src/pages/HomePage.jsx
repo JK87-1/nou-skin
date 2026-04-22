@@ -10,7 +10,9 @@ import { getLatestWeight, getBodyRecords, saveBodyRecord } from '../storage/Body
 import {
   getTodayChecks, getLatestCheck, saveConditionCheck,
   shouldResetCheck, getMinutesSinceLastCheck,
+  getTodayBloodSugar,
 } from '../storage/ConditionStorage';
+import { getSupplementItems, getSupplementChecks } from '../storage/SupplementStorage';
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -226,16 +228,37 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
     setJustUpdated(true);
     setMinutesAgo(0);
 
-    // Body briefing API 호출
+    // Body briefing API 호출 — 최근 5시간 내 기록 수집
     setBriefingLoading(true);
-    const sliderTo100 = v => Math.round(((v - 1) / 9) * 100); // 1~10 → 0~100
-    const foods = getTodayFoods();
-    const dietSummary = foods.length > 0
-      ? foods.map(f => f.name).filter(Boolean).join(', ')
-      : '';
+    const sliderTo100 = v => Math.round(((v - 1) / 9) * 100);
+    const now = new Date();
+    const fiveHoursAgo = new Date(now.getTime() - 5 * 60 * 60 * 1000);
+
+    // 식단
+    const foods = getTodayFoods().filter(f => !f.name?.startsWith('물 '));
+    const todayNut = getTodayNutrition();
+    // 수분/걸음수/운동/수면 from day record
+    const todayKey = now.toISOString().slice(0, 10);
+    const dayRec = (() => { try { return (JSON.parse(localStorage.getItem('lua_record_v2') || '{}'))[todayKey] || {}; } catch { return {}; } })();
+    // 영양제
+    const suppItems = getSupplementItems();
+    const suppChecks = getSupplementChecks();
+    const suppDone = suppItems.filter(s => suppChecks[s.id]);
+    const suppUndone = suppItems.filter(s => !suppChecks[s.id]);
+    // 몸무게
     const latestW = getLatestWeight();
-    const bodyRecords = getBodyRecords();
-    const prevWeight = bodyRecords.length >= 2 ? bodyRecords[bodyRecords.length - 2].weight : null;
+    // 혈당
+    const todayBS = getTodayBloodSugar();
+
+    const recentData = {};
+    if (foods.length > 0) recentData.diet = `${foods.map(f => f.name).filter(Boolean).join(', ')} (${Math.round(todayNut.kcal)}kcal, 탄${Math.round(todayNut.carb)}g 단${Math.round(todayNut.protein)}g 지${Math.round(todayNut.fat)}g)`;
+    if (dayRec.water?.cups > 0) recentData.water = `${dayRec.water.cups}잔`;
+    if (dayRec.steps > 0) recentData.steps = `${dayRec.steps.toLocaleString()}보`;
+    if (dayRec.exercise?.log && Object.keys(dayRec.exercise.log).length > 0) recentData.exercise = Object.entries(dayRec.exercise.log).map(([n, m]) => `${n} ${m}분`).join(', ');
+    if (suppItems.length > 0) recentData.supplements = `완료: ${suppDone.map(s => s.name).join(', ') || '없음'} / 미완료: ${suppUndone.map(s => s.name).join(', ') || '없음'}`;
+    if (latestW?.weight) recentData.weight = `${latestW.weight}kg`;
+    if (todayBS?.value) recentData.bloodSugar = `${todayBS.value}mg/dL (${todayBS.timing})`;
+    if (dayRec.sleep?.hours) recentData.sleep = `${dayRec.sleep.hours}시간${dayRec.sleep.quality ? ' (' + dayRec.sleep.quality + ')' : ''}`;
 
     fetch('/api/condition-briefing', {
       method: 'POST',
@@ -245,15 +268,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         energy: sliderTo100(selections.energy),
         mood: sliderTo100(selections.mood),
         hydration: sliderTo100(selections.water),
-        dietSummary,
-        supplements: [],
-        weight: latestW?.weight ?? null,
-        previousWeight: prevWeight,
-        routine: {
-          skin: { done: skinRoutine.done, total: skinRoutine.total },
-          food: { done: foodRoutine.done, total: foodRoutine.total },
-          body: { done: bodyRoutine.done, total: bodyRoutine.total },
-        },
+        recentData,
       }),
     })
       .then(r => r.ok ? r.json() : null)

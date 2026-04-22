@@ -26,45 +26,30 @@ function getTimeOfDay(hour) {
 }
 
 function buildBodyPrompt(data) {
-  const { energy, mood, hydration, dietSummary, supplements, weight, previousWeight, timeOfDay, routine } = data;
+  const { energy, mood, hydration, recentData, timeOfDay } = data;
 
-  let weightChange = '';
-  if (previousWeight != null && weight != null) {
-    const diff = weight - previousWeight;
-    if (Math.abs(diff) >= 0.1) {
-      weightChange = `\n이전 대비 몸무게 변화: ${diff > 0 ? '+' : ''}${diff.toFixed(1)}kg`;
-    } else {
-      weightChange = '\n몸무게 변화 없음';
-    }
-  }
+  const dataLines = [];
+  dataLines.push(`슬라이더 — 에너지: ${energy ?? '미입력'} | 기분: ${mood ?? '미입력'} | 수분감: ${hydration ?? '미입력'} (각 0~100)`);
+  if (recentData?.diet) dataLines.push(`식단: ${recentData.diet}`);
+  if (recentData?.water) dataLines.push(`수분: ${recentData.water}`);
+  if (recentData?.steps) dataLines.push(`걸음수: ${recentData.steps}`);
+  if (recentData?.exercise) dataLines.push(`운동: ${recentData.exercise}`);
+  if (recentData?.supplements) dataLines.push(`영양제: ${recentData.supplements}`);
+  if (recentData?.weight) dataLines.push(`몸무게: ${recentData.weight}`);
+  if (recentData?.bloodSugar) dataLines.push(`혈당: ${recentData.bloodSugar}`);
+  if (recentData?.sleep) dataLines.push(`수면: ${recentData.sleep}`);
 
-  const supplementText = supplements && supplements.length > 0
-    ? supplements.map(s => `${s.name}: ${s.taken ? '✅' : '❌'}`).join(', ')
-    : '기록 없음';
+  return `아래는 이 사람이 최근 5시간 내에 기록한 웰니스 데이터야.
+현재 상태를 1문장으로 진단하고, 지금부터 3시간 이내에 할 수 있는 웰니스 행동 2가지를 제안해줘.
+따뜻하고 구체적인 톤, 전체 3문장 이내.
+시간대: ${timeOfDay}
+"~해요" 체, 친구처럼 다정한 톤.
+매번 다른 표현과 문장 구조를 사용해.
 
-  return `당신은 사용자의 건강을 매일 함께 챙기는 따뜻한 웰니스 파트너입니다. 친한 친구처럼 다정하고 개인적인 톤으로 브리핑하세요.
+[기록된 데이터]
+${dataLines.join('\n')}
 
-[규칙]
-- 정확히 2문장으로 작성
-- 첫 문장: 오늘 입력된 데이터를 기반으로 컨디션 상태를 따뜻하게 요약
-- 두 번째 문장: 데이터에 기반한 실천 가능한 팁 또는 응원 한마디
-- "~해요" 체, 친구처럼 다정하고 개인적인 톤
-- 시간대(${timeOfDay}) 맥락 자연스럽게 반영
-- 매번 다른 표현과 문장 구조를 사용하세요
-
-[슬라이더 해석 기준 — 각 값은 0~100]
-에너지 70+: 활력 넘치는 상태 / 에너지 40~69: 보통 / 에너지 ~39: 피곤하거나 지친 상태
-기분 70+: 기분 좋은 상태 / 기분 40~69: 무난한 하루 / 기분 ~39: 기분이 다운된 상태
-수분 70+: 수분 섭취 충분 / 수분 40~69: 보통 / 수분 ~39: 수분 섭취 부족
-
-[데이터]
-에너지: ${energy ?? '미입력'} | 기분: ${mood ?? '미입력'} | 수분 섭취: ${hydration ?? '미입력'}
-오늘 식단: ${dietSummary || '기록 없음'}
-영양제: ${supplementText}
-몸무게: ${weight != null ? weight + 'kg' : '미입력'}${weightChange}
-루틴 체크: 스킨케어 ${routine?.skin ? `${routine.skin.done}/${routine.skin.total}` : '미설정'} | 식단 ${routine?.food ? `${routine.food.done}/${routine.food.total}` : '미설정'} | 바디케어 ${routine?.body ? `${routine.body.done}/${routine.body.total}` : '미설정'}
-
-브리핑을 작성하세요:`;
+브리핑:`;
 }
 
 function buildSkinPrompt(data) {
@@ -167,9 +152,9 @@ export default async function handler(req, res) {
     let prompt, maxTokens;
 
     if (type === 'body') {
-      const { energy, mood, hydration, dietSummary, supplements, weight, previousWeight, routine } = req.body;
-      prompt = buildBodyPrompt({ energy, mood, hydration, dietSummary, supplements, weight, previousWeight, timeOfDay, routine });
-      maxTokens = 150;
+      const { energy, mood, hydration, recentData } = req.body;
+      prompt = buildBodyPrompt({ energy, mood, hydration, recentData, timeOfDay });
+      maxTokens = 200;
     } else {
       const { current, previous, skinType, todayCount, stableSkinAge } = req.body;
       if (!current || !current.overallScore) {
