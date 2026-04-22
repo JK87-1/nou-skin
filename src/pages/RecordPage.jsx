@@ -4,6 +4,7 @@ import { getRecords, getChanges, getTotalChanges, getAllThumbnailsAsync } from '
 import { getBodyRecords, getLatestWeight, getStartWeight, getBodyGoal, getBodyProfile, calcBMI, saveBodyRecord, deleteBodyRecord } from '../storage/BodyStorage';
 import { getEnabledCategories, getCategoryColor } from '../storage/ProfileStorage';
 import { savePhotoDB, getPhotoDB, resizeImage } from '../storage/PhotoDB';
+import { getRoutineItems, getChecks } from '../storage/RoutineCheckStorage';
 
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
 
@@ -320,6 +321,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
   const dashFill = circ * (score / 100);
   const [showCal, setShowCal] = useState(false);
   const [recordViewMode, setRecordViewMode] = useState('기록');
+  const [flowPeriod, setFlowPeriod] = useState('1주');
   const [calYear, setCalYear] = useState(() => new Date().getFullYear());
   const [calMonth, setCalMonth] = useState(() => new Date().getMonth());
 
@@ -437,8 +439,342 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
         );
       })()}
 
+      {/* ===== 흐름 모드 ===== */}
+      {recordViewMode === '흐름' && (() => {
+        const DAY_NAMES = ['일','월','화','수','목','금','토'];
+        const periodDays = flowPeriod === '1주' ? 7 : flowPeriod === '1개월' ? 30 : flowPeriod === '3개월' ? 90 : 365;
+
+        // Generate date keys for the period
+        const dateKeys = [];
+        for (let i = periodDays - 1; i >= 0; i--) {
+          const d = new Date(); d.setDate(d.getDate() - i);
+          dateKeys.push(getDateKey(d));
+        }
+        // For bar charts, show last 7 labels
+        const last7 = dateKeys.slice(-7);
+        const dayLabels = last7.map((dk, i) => {
+          if (i === last7.length - 1) return '오늘';
+          const d = new Date(dk + 'T00:00:00');
+          return DAY_NAMES[d.getDay()];
+        });
+
+        // Load weekly data
+        const allV2 = (() => { try { return JSON.parse(localStorage.getItem(RECORD_V2_KEY) || '{}'); } catch { return {}; } })();
+        const weeklyNutrition = last7.map(dk => getNutritionForDate(dk));
+        const weeklyWater = last7.map(dk => allV2[dk]?.water?.cups ?? null);
+        const weeklySteps = last7.map(dk => allV2[dk]?.steps ?? null);
+        const weeklySleep = last7.map(dk => allV2[dk]?.sleep?.hours ?? null);
+
+        // Averages
+        const validKcal = weeklyNutrition.filter(n => n.kcal > 0);
+        const avgKcal = validKcal.length > 0 ? Math.round(validKcal.reduce((s, n) => s + n.kcal, 0) / validKcal.length) : 0;
+        const validWater = weeklyWater.filter(w => w != null && w > 0);
+        const avgWater = validWater.length > 0 ? (validWater.reduce((s, w) => s + w, 0) / validWater.length).toFixed(1) : 0;
+        const validSteps = weeklySteps.filter(s => s != null && s > 0);
+        const avgSteps = validSteps.length > 0 ? Math.round(validSteps.reduce((s, v) => s + v, 0) / validSteps.length) : 0;
+        const validSleep = weeklySleep.filter(s => s != null && s > 0);
+        const avgSleep = validSleep.length > 0 ? (validSleep.reduce((s, v) => s + v, 0) / validSleep.length).toFixed(1) : 0;
+
+        // Goals
+        const fullGoal = getFoodGoal();
+        const stepGoal = 10000;
+
+        // Exercise data for the week
+        const weekExercises = [];
+        last7.forEach((dk, i) => {
+          const rec = allV2[dk];
+          if (rec?.exercise?.log) {
+            const exWeight = 60;
+            Object.entries(rec.exercise.log).forEach(([name, mins]) => {
+              const ex = ALL_EXERCISES.find(e => e.name === name);
+              const cal = ex ? calcExMET(ex.met, exWeight, mins) : Math.round(mins * 5);
+              weekExercises.push({ name, mins, cal, icon: ex?.icon || '🏋️', day: dayLabels[i] });
+            });
+          }
+        });
+
+        // Meal photos for the week
+        const weekFoods = [];
+        last7.forEach(dk => {
+          const records = getFoodRecords(dk);
+          records.forEach(f => {
+            if (f.photo && !f.name?.startsWith('물 ')) {
+              weekFoods.push({ ...f, date: dk });
+            }
+          });
+        });
+
+        // Supplement routine for the week
+        const suppItems = [...getRoutineItems('food'), ...getRoutineItems('skin'), ...getRoutineItems('body'), ...getRoutineItems('mood')];
+        const totalSupp = suppItems.length;
+
+        const flowCardStyle = { background: 'rgba(255,255,255,.65)', borderRadius: 16, padding: '18px 16px', border: '0.5px solid rgba(255,255,255,.9)', marginBottom: 10 };
+
+        // Bar chart component
+        const BarChart = ({ data, maxVal, color, labels, unit, todayVal, todayLabel, goalVal, goalLabel, avgVal, avgLabel, nullLabel = '미기록' }) => {
+          const max = maxVal || Math.max(...data.map(v => v ?? 0), goalVal || 0, 1);
+          return (
+            <div>
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 90, marginBottom: 6 }}>
+                {data.map((val, i) => {
+                  const isToday = i === data.length - 1;
+                  const h = val != null && val > 0 ? Math.max(8, (val / max) * 80) : 0;
+                  return (
+                    <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', height: '100%' }}>
+                      {val != null && val > 0 ? (
+                        <div style={{
+                          width: '100%', maxWidth: 40, height: h, borderRadius: 6,
+                          background: isToday ? color : `${color}88`,
+                          transition: 'height 0.3s',
+                        }} />
+                      ) : (
+                        <div style={{ width: '100%', maxWidth: 40, height: 8, borderRadius: 6, background: 'rgba(200,210,200,.3)' }} />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
+                {labels.map((l, i) => (
+                  <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: 11, color: '#7AAABB' }}>{l}</div>
+                ))}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                {goalVal != null && <span style={{ fontSize: 11, color: '#9ABBC8' }}>{goalLabel}</span>}
+                <span style={{ fontSize: 13, fontWeight: 600, color: todayVal != null && todayVal > 0 ? '#1A3A4A' : '#9ABBC8', marginLeft: 'auto' }}>
+                  {todayVal != null && todayVal > 0 ? todayLabel : nullLabel}
+                </span>
+              </div>
+            </div>
+          );
+        };
+
+        // Line chart component for sleep
+        const LineChart = ({ data, labels, goalVal, color }) => {
+          const validData = data.filter(v => v != null && v > 0);
+          const minV = validData.length > 0 ? Math.min(...validData) * 0.8 : 0;
+          const maxV = Math.max(...(validData.length > 0 ? validData : [8]), goalVal || 8) * 1.1;
+          const range = maxV - minV || 1;
+          const chartH = 80;
+          const points = data.map((v, i) => {
+            if (v == null || v <= 0) return null;
+            const x = data.length > 1 ? (i / (data.length - 1)) * 100 : 50;
+            const y = chartH - ((v - minV) / range) * chartH;
+            return { x, y, val: v };
+          }).filter(Boolean);
+          const goalY = goalVal ? chartH - ((goalVal - minV) / range) * chartH : null;
+
+          return (
+            <div style={{ position: 'relative', height: chartH + 30, marginBottom: 6 }}>
+              {goalY != null && (
+                <>
+                  <div style={{ position: 'absolute', top: goalY, left: 0, right: 0, height: 1, borderTop: '1.5px dashed rgba(150,180,170,.4)' }} />
+                  <span style={{ position: 'absolute', top: goalY - 14, right: 0, fontSize: 10, color: '#9ABBC8' }}>{goalVal}h</span>
+                </>
+              )}
+              <svg width="100%" height={chartH} viewBox={`0 0 100 ${chartH}`} preserveAspectRatio="none" style={{ overflow: 'visible' }}>
+                {points.length >= 2 && (
+                  <polyline
+                    points={points.map(p => `${p.x},${p.y}`).join(' ')}
+                    fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round"
+                  />
+                )}
+                {points.map((p, i) => (
+                  <circle key={i} cx={p.x} cy={p.y} r={i === points.length - 1 ? 4 : 2.5}
+                    fill={i === points.length - 1 ? color : '#fff'} stroke={color} strokeWidth="1.5" />
+                ))}
+              </svg>
+              <div style={{ display: 'flex', gap: 4, marginTop: 8 }}>
+                {labels.map((l, i) => (
+                  <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: 11, color: '#7AAABB' }}>{l}</div>
+                ))}
+              </div>
+            </div>
+          );
+        };
+
+        const todayNut = weeklyNutrition[weeklyNutrition.length - 1];
+        const todayWater = weeklyWater[weeklyWater.length - 1];
+        const todaySteps = weeklySteps[weeklySteps.length - 1];
+        const todaySleep = weeklySleep[weeklySleep.length - 1];
+
+        return (
+          <div style={{ padding: '0 14px' }}>
+            {/* Period filter */}
+            <div style={{ display: 'flex', gap: 8, padding: '12px 0 8px', ...fadeUp(0.02) }}>
+              {['1주', '1개월', '3개월', '전체'].map(p => (
+                <div key={p} onClick={() => setFlowPeriod(p)} style={{
+                  padding: '6px 14px', borderRadius: 99, cursor: 'pointer', fontSize: 12, fontWeight: flowPeriod === p ? 600 : 400,
+                  background: flowPeriod === p ? '#fff' : 'transparent',
+                  color: flowPeriod === p ? '#1A3A4A' : '#9ABBC8',
+                  border: flowPeriod === p ? '1px solid rgba(200,220,230,.5)' : '1px solid transparent',
+                }}>
+                  {p}
+                </div>
+              ))}
+            </div>
+
+            {/* 식사 칼로리 */}
+            <div style={{ ...flowCardStyle, ...fadeUp(0.05) }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                <span style={{ fontSize: 16, fontWeight: 700, color: '#1A3A4A' }}>식사 칼로리</span>
+                <span style={{ fontSize: 13, color: '#7AAABB' }}>평균 {avgKcal.toLocaleString()} kcal</span>
+              </div>
+              <BarChart
+                data={weeklyNutrition.map(n => n.kcal || null)}
+                color={getCategoryColor('food')}
+                labels={dayLabels}
+                goalVal={fullGoal.kcal}
+                goalLabel={`목표 ${fullGoal.kcal?.toLocaleString()} kcal`}
+                todayVal={todayNut.kcal}
+                todayLabel={`오늘 ${Math.round(todayNut.kcal).toLocaleString()} kcal`}
+                nullLabel="오늘 미기록"
+              />
+            </div>
+
+            {/* 수분 */}
+            <div style={{ ...flowCardStyle, ...fadeUp(0.08) }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                <span style={{ fontSize: 16, fontWeight: 700, color: '#1A3A4A' }}>수분</span>
+                <span style={{ fontSize: 13, color: '#7AAABB' }}>평균 {avgWater}잔</span>
+              </div>
+              <BarChart
+                data={weeklyWater}
+                color="#8BB8D0"
+                labels={dayLabels}
+                goalVal={TOTAL_CUPS}
+                goalLabel={`목표 ${TOTAL_CUPS}잔`}
+                todayVal={todayWater}
+                todayLabel={`오늘 ${todayWater || 0}잔`}
+                nullLabel="오늘 0잔"
+              />
+            </div>
+
+            {/* 걸음수 */}
+            <div style={{ ...flowCardStyle, ...fadeUp(0.11) }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                <span style={{ fontSize: 16, fontWeight: 700, color: '#1A3A4A' }}>걸음수</span>
+                <span style={{ fontSize: 13, color: '#7AAABB' }}>평균 {avgSteps.toLocaleString()}보</span>
+              </div>
+              <BarChart
+                data={weeklySteps}
+                color={getCategoryColor('activity')}
+                labels={dayLabels}
+                goalVal={stepGoal}
+                goalLabel={`목표 ${stepGoal.toLocaleString()}보`}
+                todayVal={todaySteps}
+                todayLabel={`오늘 ${(todaySteps || 0).toLocaleString()}보`}
+                nullLabel="오늘 미기록"
+              />
+            </div>
+
+            {/* 운동 */}
+            <div style={{ ...flowCardStyle, ...fadeUp(0.14) }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                <span style={{ fontSize: 16, fontWeight: 700, color: '#1A3A4A' }}>운동</span>
+                <span style={{ fontSize: 13, color: '#7AAABB' }}>이번주 {weekExercises.length}회</span>
+              </div>
+              {weekExercises.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {weekExercises.map((ex, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span style={{ fontSize: 20, width: 28, textAlign: 'center' }}>{ex.icon}</span>
+                      <span style={{ fontSize: 14, fontWeight: 500, color: '#1A3A4A', flex: 1 }}>{ex.name} {ex.mins}분</span>
+                      <span style={{ fontSize: 12, color: '#7AAABB', marginRight: 4 }}>{ex.day}</span>
+                      <span style={{ fontSize: 12, fontWeight: 500, color: '#4A9A7A', background: 'rgba(100,180,130,.1)', padding: '3px 10px', borderRadius: 99 }}>-{ex.cal} kcal</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ padding: '16px 0', textAlign: 'center', fontSize: 12, color: '#9ABBC8' }}>이번주 운동 기록이 없어요</div>
+              )}
+            </div>
+
+            {/* 수면 */}
+            <div style={{ ...flowCardStyle, ...fadeUp(0.17) }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                <span style={{ fontSize: 16, fontWeight: 700, color: '#1A3A4A' }}>수면</span>
+                <span style={{ fontSize: 13, color: '#7AAABB' }}>평균 {avgSleep}시간</span>
+              </div>
+              <LineChart
+                data={weeklySleep}
+                labels={dayLabels}
+                goalVal={8}
+                color={getCategoryColor('sleep')}
+              />
+            </div>
+
+            {/* 식단 앨범 */}
+            <div style={{ ...flowCardStyle, ...fadeUp(0.2) }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                <span style={{ fontSize: 16, fontWeight: 700, color: '#1A3A4A' }}>식단 앨범</span>
+                {weekFoods.length > 0 && (
+                  <span style={{ fontSize: 13, color: '#7AAABB', cursor: 'pointer' }}>전체보기</span>
+                )}
+              </div>
+              {weekFoods.length > 0 ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+                  {weekFoods.slice(0, 7).map((f, i) => (
+                    <div key={i} style={{ aspectRatio: '1', borderRadius: 12, overflow: 'hidden', background: 'rgba(230,240,235,.4)' }}>
+                      <FoodPhoto photo={f.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                  ))}
+                  {weekFoods.length > 7 && (
+                    <div style={{ aspectRatio: '1', borderRadius: 12, background: 'rgba(230,240,235,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: '#7AAABB', cursor: 'pointer' }}>
+                      +더보기
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div style={{ padding: '16px 0', textAlign: 'center', fontSize: 12, color: '#9ABBC8' }}>이번주 식단 사진이 없어요</div>
+              )}
+            </div>
+
+            {/* 영양제 루틴 달성률 */}
+            {totalSupp > 0 && (
+              <div style={{ ...flowCardStyle, ...fadeUp(0.23) }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                  <span style={{ fontSize: 16, fontWeight: 700, color: '#1A3A4A' }}>영양제 루틴 달성률</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {last7.map((dk, i) => {
+                    let totalAll = 0, doneAll = 0;
+                    for (const cat of ['food', 'skin', 'body', 'mood']) {
+                      const items = getRoutineItems(cat);
+                      const chk = getChecks(cat, dk);
+                      totalAll += items.length;
+                      doneAll += items.filter(it => chk[it.id]).length;
+                    }
+                    const pct = totalAll > 0 ? (doneAll / totalAll) * 100 : 0;
+                    const isGood = totalAll > 0 && doneAll === totalAll;
+                    return (
+                      <div key={dk} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span style={{ fontSize: 12, color: '#7AAABB', width: 28, textAlign: 'center' }}>{dayLabels[i]}</span>
+                        <div style={{ flex: 1, position: 'relative', height: 22, borderRadius: 6, background: 'rgba(200,220,230,.2)', overflow: 'hidden' }}>
+                          <div style={{
+                            height: '100%', borderRadius: 6, width: `${pct}%`, transition: 'width 0.3s',
+                            background: isGood ? getCategoryColor('activity') : pct >= 50 ? getCategoryColor('activity') : '#E8B84A',
+                          }} />
+                          {totalAll > 0 && (
+                            <span style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', fontSize: 11, fontWeight: 600, color: '#fff' }}>
+                              {doneAll}/{totalAll}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <div style={{ height: 20 }} />
+          </div>
+        );
+      })()}
+
       {/* Category Tabs */}
-      {(() => {
+      {recordViewMode === '기록' && (() => {
         const allTabs = [{ key: 'all', label: '전체' }, ...enabledCats];
         const idx = allTabs.findIndex(t => t.key === foodTab);
         const pos = idx === 0 ? 'first' : idx === allTabs.length - 1 ? 'last' : 'mid';
@@ -460,7 +796,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
           </div>
         );
       })()}
-      <div className="tab-content-panel" data-active={
+      {recordViewMode === '기록' && <div className="tab-content-panel" data-active={
         (() => {
           const allTabs = [{ key: 'all', label: '전체' }, ...enabledCats];
           const idx = allTabs.findIndex(t => t.key === foodTab);
@@ -1565,7 +1901,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
         </div>
       )}
 
-      </div>{/* end tab-content-panel */}
+      </div>}{/* end tab-content-panel */}
 
       {/* Body Weight Quick Add — 그리드 + 아이콘 클릭 시 */}
       {showBodyAdd && (
