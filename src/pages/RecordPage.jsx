@@ -533,30 +533,57 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
           const minV = validData.length > 0 ? Math.min(...validData) * 0.8 : 0;
           const maxV = Math.max(...(validData.length > 0 ? validData : [8]), goalVal || 8) * 1.1;
           const range = maxV - minV || 1;
-          const chartH = 80;
+          const chartH = 90;
+          const pad = 6; // padding for dots
           const points = data.map((v, i) => {
             if (v == null || v <= 0) return null;
-            const x = data.length > 1 ? (i / (data.length - 1)) * 100 : 50;
-            const y = chartH - ((v - minV) / range) * chartH;
-            return { x, y, val: v };
-          }).filter(Boolean);
-          const goalY = goalVal ? chartH - ((goalVal - minV) / range) * chartH : null;
+            const xPct = data.length > 1 ? (i / (data.length - 1)) * 100 : 50;
+            const yPx = pad + (1 - (v - minV) / range) * (chartH - pad * 2);
+            return { xPct, yPx, val: v, idx: i };
+          });
+          const validPoints = points.filter(Boolean);
+          const goalYPx = goalVal ? pad + (1 - (goalVal - minV) / range) * (chartH - pad * 2) : null;
+          // Build SVG path using percentage x converted at render
           return (
-            <div style={{ position: 'relative', height: chartH + 30, marginBottom: 6 }}>
-              {goalY != null && (
-                <>
-                  <div style={{ position: 'absolute', top: goalY, left: 0, right: 0, height: 1, borderTop: '1.5px dashed rgba(150,180,170,.4)' }} />
-                  <span style={{ position: 'absolute', top: goalY - 14, right: 0, fontSize: 10, color: '#9ABBC8' }}>{goalVal}h</span>
-                </>
-              )}
-              <svg width="100%" height={chartH} viewBox={`0 0 100 ${chartH}`} preserveAspectRatio="none" style={{ overflow: 'visible' }}>
-                {points.length >= 2 && (
-                  <polyline points={points.map(p => `${p.x},${p.y}`).join(' ')} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+            <div style={{ position: 'relative', marginBottom: 6 }}>
+              <div style={{ position: 'relative', height: chartH }}>
+                {/* Goal line */}
+                {goalYPx != null && (
+                  <>
+                    <div style={{ position: 'absolute', top: goalYPx, left: 0, right: 0, borderTop: '1.5px dashed rgba(150,180,170,.4)' }} />
+                    <span style={{ position: 'absolute', top: goalYPx - 16, right: 0, fontSize: 10, color: '#9ABBC8' }}>{goalVal}h</span>
+                  </>
                 )}
-                {points.map((p, i) => (
-                  <circle key={i} cx={p.x} cy={p.y} r={i === points.length - 1 ? 4 : 2.5} fill={i === points.length - 1 ? color : '#fff'} stroke={color} strokeWidth="1.5" />
-                ))}
-              </svg>
+                {/* Line segments using CSS */}
+                {validPoints.map((p, i) => {
+                  if (i === 0) return null;
+                  const prev = validPoints[i - 1];
+                  return (
+                    <svg key={`line-${i}`} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }}>
+                      <line
+                        x1={`${prev.xPct}%`} y1={prev.yPx}
+                        x2={`${p.xPct}%`} y2={p.yPx}
+                        stroke={color} strokeWidth="2" strokeLinecap="round"
+                      />
+                    </svg>
+                  );
+                })}
+                {/* Dots */}
+                {validPoints.map((p, i) => {
+                  const isLast = i === validPoints.length - 1;
+                  const r = isLast ? 5 : 3.5;
+                  return (
+                    <div key={`dot-${i}`} style={{
+                      position: 'absolute', left: `${p.xPct}%`, top: p.yPx,
+                      width: r * 2, height: r * 2, borderRadius: '50%',
+                      background: isLast ? color : '#fff',
+                      border: `2px solid ${color}`,
+                      transform: 'translate(-50%, -50%)',
+                      zIndex: 2,
+                    }} />
+                  );
+                })}
+              </div>
               <div style={{ display: 'flex', gap: 4, marginTop: 8 }}>
                 {labels.map((l, i) => (<div key={i} style={{ flex: 1, textAlign: 'center', fontSize: 11, color: '#7AAABB' }}>{l}</div>))}
               </div>
