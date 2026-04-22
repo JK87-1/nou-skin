@@ -6,7 +6,7 @@ import {
 } from '../storage/BodyStorage';
 import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, SENSITIVITY_OPTIONS, GENDER_OPTIONS, getEnabledCategories, getCategoryColor } from '../storage/ProfileStorage';
 import { getRecords, getAllThumbnailsAsync } from '../storage/SkinStorage';
-import { getLatestCheck, getConditionChecks, getTodayEnergySubCheck, saveEnergySubCheck, getTodayMoodSubCheck, saveMoodSubCheck, getTodayBloodSugar, saveBloodSugar, getTodayEyeBody, saveEyeBody, getTodaySkinSubCheck, saveSkinSubCheck } from '../storage/ConditionStorage';
+import { getLatestCheck, getConditionChecks, getTodayEnergySubCheck, saveEnergySubCheck, getTodayMoodSubCheck, saveMoodSubCheck, getTodayBloodSugar, saveBloodSugar, getTodayEyeBody, saveEyeBody, getTodaySkinSubCheck, saveSkinSubCheck, getEnergySubChecks, getMoodSubChecks, getSkinSubChecks, getBloodSugarChecks, getEyeBodyChecks } from '../storage/ConditionStorage';
 import BeforeAfterSlider from '../components/BeforeAfterSlider';
 
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
@@ -481,188 +481,381 @@ export default function ChangePage({ onTabChange }) {
             </div>
           </>}
 
-          {/* ===== 흐름 모드: 그래프 카드 ===== */}
-          {changeViewMode === '흐름' && <>
-          {/* Patterns Card */}
-            <div style={{ ...v2CardStyle, ...fadeUp(0.1) }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 3, height: 14, borderRadius: 2, background: '#80C0E8' }} />
-                  <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>발견한 패턴</span>
+          {/* ===== 흐름 모드 ===== */}
+          {changeViewMode === '흐름' && (() => {
+            const DAY_NAMES = ['일','월','화','수','목','금','토'];
+            const days7 = [];
+            for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); days7.push(getDateKey(d)); }
+            const dayLabels = days7.map((dk, i) => i === 6 ? '오늘' : DAY_NAMES[new Date(dk + 'T00:00:00').getDay()]);
+
+            // Energy sub data per day
+            const energySubAll = getEnergySubChecks();
+            const vitalityByDay = days7.map(dk => { const e = energySubAll.find(c => c.date === dk); return e?.vitality ?? null; });
+            const focusByDay = days7.map(dk => { const e = energySubAll.find(c => c.date === dk); return e?.focus ?? null; });
+            const validVit = vitalityByDay.filter(v => v != null);
+            const avgVit = validVit.length > 0 ? (validVit.reduce((a, b) => a + b, 0) / validVit.length).toFixed(1) : '—';
+
+            // Mood sub data per day
+            const moodSubAll = getMoodSubChecks();
+            const moodByDay = days7.map(dk => { const m = moodSubAll.find(c => c.date === dk); return m?.emotions?.length > 0 ? conditionChecks.filter(c => c.timestamp.slice(0, 10) === dk && c.mood != null).map(c => c.mood).pop() ?? 3 : null; });
+            const stressByDay = days7.map(dk => { const m = moodSubAll.find(c => c.date === dk); return m?.stress ?? null; });
+            const validMood = conditionChecks.filter(c => c.mood != null && days7.includes(c.timestamp.slice(0, 10)));
+            const avgMood = validMood.length > 0 ? (validMood.reduce((a, b) => a + b.mood, 0) / validMood.length).toFixed(1) : '—';
+
+            // Emotion frequency
+            const emotionFreq = {};
+            const EMOTION_ICONS = { '평온': '😌', '행복': '😊', '우울': '😔', '짜증': '😤', '불안': '😰', '피곤': '🥱', '설렘': '🥰', '무감각': '😶' };
+            moodSubAll.filter(m => days7.includes(m.date)).forEach(m => {
+              (m.emotions || []).forEach(e => { emotionFreq[e] = (emotionFreq[e] || 0) + 1; });
+            });
+            const topEmotions = Object.entries(emotionFreq).sort((a, b) => b[1] - a[1]).slice(0, 4);
+
+            // Skin sub data
+            const skinSubAll = getSkinSubChecks();
+            const skinScoreByDay = days7.map(dk => { const s = skinSubAll.find(c => c.date === dk); return s?.score ?? null; });
+            const validSkinScore = skinScoreByDay.filter(v => v != null);
+            const avgSkinScore = validSkinScore.length > 0 ? Math.round(validSkinScore.reduce((a, b) => a + b, 0) / validSkinScore.length) : null;
+            const latestSkinScore = validSkinScore.length > 0 ? validSkinScore[validSkinScore.length - 1] : null;
+            const skinScoreDiff = validSkinScore.length >= 2 ? validSkinScore[validSkinScore.length - 1] - Math.round(validSkinScore.slice(0, -1).reduce((a, b) => a + b, 0) / (validSkinScore.length - 1)) : null;
+            const skinTagFreq = {};
+            const SKIN_TAG_ICONS = { '촉촉': '💧', '건조': '🏜', '맑음': '✨', '트러블': '🔴', '칙칙': '🟡', '탄력': '🌊', '번들': '🌊', '예민': '😤' };
+            skinSubAll.filter(s => days7.includes(s.date)).forEach(s => {
+              (s.tags || []).forEach(t => { skinTagFreq[t] = (skinTagFreq[t] || 0) + 1; });
+            });
+            const topSkinTags = Object.entries(skinTagFreq).sort((a, b) => b[1] - a[1]).slice(0, 4);
+
+            // Blood sugar graph data
+            const bsGraph = (() => { try { return JSON.parse(localStorage.getItem('nou_bs_graph') || 'null'); } catch { return null; } })();
+
+            // Eye body history
+            const eyeBodyAll = getEyeBodyChecks().slice(-4);
+
+            // Dual line chart helper
+            const DualLineChart = ({ data1, data2, color1, color2, label1, label2, dashed2 = true, yMin = 1, yMax = 5 }) => {
+              const chartH = 100, padL = 20, padR = 8, padT = 10, padB = 4;
+              const innerW = 300 - padL - padR, innerH = chartH - padT - padB;
+              const range = yMax - yMin || 1;
+              const mkPts = (data) => data.map((v, i) => v != null ? { x: padL + (i / 6) * innerW, y: padT + innerH - ((v - yMin) / range) * innerH } : null);
+              const pts1 = mkPts(data1), pts2 = mkPts(data2);
+              const validPts = (pts) => pts.filter(Boolean);
+              return (
+                <div>
+                  <svg viewBox={`0 0 300 ${chartH + 24}`} style={{ width: '100%' }}>
+                    {[1, 2, 3, 4, 5].filter(v => v >= yMin && v <= yMax).map(v => {
+                      const y = padT + innerH - ((v - yMin) / range) * innerH;
+                      return <g key={v}><line x1={padL} y1={y} x2={300 - padR} y2={y} stroke="rgba(200,220,230,.2)" strokeWidth="0.5" /><text x={padL - 4} y={y + 3} textAnchor="end" fontSize="8" fill="#B0C8C0">{v}</text></g>;
+                    })}
+                    {validPts(pts1).length >= 2 && <polyline points={validPts(pts1).map(p => `${p.x},${p.y}`).join(' ')} fill="none" stroke={color1} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />}
+                    {validPts(pts2).length >= 2 && <polyline points={validPts(pts2).map(p => `${p.x},${p.y}`).join(' ')} fill="none" stroke={color2} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" strokeDasharray={dashed2 ? '5 3' : 'none'} />}
+                    {validPts(pts1).map((p, i) => <circle key={`a${i}`} cx={p.x} cy={p.y} r={i === validPts(pts1).length - 1 ? 4 : 2} fill={i === validPts(pts1).length - 1 ? color1 : '#fff'} stroke={color1} strokeWidth="1.5" />)}
+                    {validPts(pts2).map((p, i) => <circle key={`b${i}`} cx={p.x} cy={p.y} r={i === validPts(pts2).length - 1 ? 3.5 : 2} fill={i === validPts(pts2).length - 1 ? color2 : '#fff'} stroke={color2} strokeWidth="1.5" />)}
+                    {dayLabels.map((l, i) => <text key={i} x={padL + (i / 6) * innerW} y={chartH + 14} textAnchor="middle" fontSize="9" fill="#7AAABB">{l}</text>)}
+                  </svg>
+                  <div style={{ display: 'flex', gap: 14, paddingLeft: padL, marginTop: 2 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 14, height: 2, background: color1, borderRadius: 1 }} /><span style={{ fontSize: 10, color: '#7AAABB' }}>{label1}</span></div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 14, height: 2, background: color2, borderRadius: 1, borderTop: dashed2 ? 'none' : undefined }} /><span style={{ fontSize: 10, color: '#7AAABB' }}>{label2}</span></div>
+                  </div>
                 </div>
+              );
+            };
+
+            const CorrelationBar = ({ label, level, color }) => {
+              const pct = level === '높음' ? 85 : level === '중간' ? 55 : 25;
+              const levelColor = level === '높음' ? '#3A7A5A' : level === '중간' ? '#8A7A00' : '#9ABBC8';
+              return (
+                <div style={{ marginBottom: 8 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: '#1A3A4A' }}>{label}</span>
+                    <span style={{ fontSize: 12, fontWeight: 500, color: levelColor }}>상관도 {level}</span>
+                  </div>
+                  <div style={{ height: 6, borderRadius: 3, background: 'rgba(200,220,230,.2)', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', borderRadius: 3, background: color, width: `${pct}%`, transition: 'width 0.3s' }} />
+                  </div>
+                </div>
+              );
+            };
+
+            const showAll = insightTab === 'all';
+            const showEnergy = showAll || insightTab === 'energy';
+            const showMood = showAll || insightTab === 'mood';
+            const showBody = showAll || insightTab === 'body' || insightTab === 'shape';
+            const showSkin = showAll || insightTab === 'skin';
+
+            return <>
+            {/* 이번 주 요약 */}
+            {showAll && <div style={{ ...v2CardStyle, ...fadeUp(0.05) }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A', marginBottom: 10 }}>이번 주 요약</div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <div style={{ flex: 1, textAlign: 'center', padding: '10px 0', background: 'rgba(255,255,255,.5)', borderRadius: 12 }}>
+                  <div style={{ fontSize: 18, fontWeight: 600, color: '#1A3A4A' }}>⚡ {avgVit}</div>
+                  <div style={{ fontSize: 10, color: '#7AAABB', marginTop: 2 }}>평균 활력</div>
+                </div>
+                <div style={{ flex: 1, textAlign: 'center', padding: '10px 0', background: 'rgba(255,255,255,.5)', borderRadius: 12 }}>
+                  <div style={{ fontSize: 18, fontWeight: 600, color: '#1A3A4A' }}>😊 {avgMood}</div>
+                  <div style={{ fontSize: 10, color: '#7AAABB', marginTop: 2 }}>평균 기분</div>
+                </div>
+                <div style={{ flex: 1, textAlign: 'center', padding: '10px 0', background: 'rgba(255,255,255,.5)', borderRadius: 12 }}>
+                  <div style={{ fontSize: 18, fontWeight: 600, color: v2WeightDiff < 0 ? '#4A9A7A' : v2WeightDiff > 0 ? '#C4580A' : '#1A3A4A' }}>{v2WeightDiff !== 0 ? `${v2WeightDiff > 0 ? '+' : ''}${v2WeightDiff}kg` : '—'}</div>
+                  <div style={{ fontSize: 10, color: '#7AAABB', marginTop: 2 }}>체중 변화</div>
+                </div>
+              </div>
+            </div>}
+
+            {/* 발견한 패턴 */}
+            {showAll && <div style={{ ...v2CardStyle, ...fadeUp(0.08) }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>발견한 패턴</span>
                 <span style={{ fontSize: 9, color: '#80C0E8', fontWeight: 500 }}>● LIVE</span>
               </div>
-              {DEMO_PATTERNS.map((pattern, idx) => (
-                <div key={idx} style={{
-                  padding: '8px 0', borderTop: idx > 0 ? '0.5px solid rgba(100,180,220,.12)' : 'none',
-                }}>
+              {DEMO_PATTERNS.map((p, idx) => (
+                <div key={idx} style={{ padding: '8px 0', borderTop: idx > 0 ? '0.5px solid rgba(100,180,220,.12)' : 'none' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 4, flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 99, background: 'rgba(255,210,80,.15)', color: '#8A6000' }}>{pattern.cause}</span>
+                    <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 99, background: 'rgba(255,210,80,.15)', color: '#8A6000' }}>{p.cause}</span>
                     <span style={{ fontSize: 10, color: '#AAC8D8' }}>→</span>
-                    <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 99, background: 'rgba(100,180,220,.12)', color: '#2A6A8A' }}>{pattern.effect}</span>
-                    <span style={{ fontSize: 10, color: '#AAC8D8' }}>→</span>
-                    <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 99, background: 'rgba(100,180,220,.12)', color: '#2A6A8A' }}>{pattern.result}</span>
+                    <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 99, background: 'rgba(100,180,220,.12)', color: '#2A6A8A' }}>{p.effect}</span>
                   </div>
-                  <div style={{ fontSize: 10, color: '#5A8AAA', lineHeight: 1.5 }}>{pattern.desc}</div>
+                  <div style={{ fontSize: 10, color: '#5A8AAA', lineHeight: 1.5 }}>{p.desc}</div>
                 </div>
               ))}
-              <div style={{ paddingTop: 8, textAlign: 'center', fontSize: 11, color: '#9ABBC8' }}>
-                기록이 쌓이면 AI가 더 정확한 패턴을 발견해줘요
+            </div>}
+
+            {/* 에너지 카드 */}
+            {showEnergy && <div style={{ ...v2CardStyle, ...fadeUp(0.12) }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: 3, background: getCategoryColor('energy') }} />
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>에너지</span>
+                </div>
+                <span style={{ fontSize: 11, color: '#7AAABB' }}>평균 {avgVit} / 5</span>
               </div>
-            </div>
+              <DualLineChart data1={vitalityByDay} data2={focusByDay} color1={getCategoryColor('energy')} color2="#6AA8D0" label1="활력" label2="집중력" />
+              <div style={{ marginTop: 12, fontSize: 12, color: '#7AAABB', marginBottom: 6 }}>에너지에 영향 준 요소</div>
+              <CorrelationBar label="수면 시간" level="높음" color={getCategoryColor('energy')} />
+              <CorrelationBar label="영양제 복용" level="중간" color={getCategoryColor('energy')} />
+              <CorrelationBar label="수분 섭취" level="낮음" color={getCategoryColor('energy')} />
+            </div>}
 
-          {/* Energy Card */}
-            {(() => {
-              // 날짜별 그룹핑
-              const grouped = {};
-              conditionChecks.forEach(c => {
-                const dateKey = c.timestamp.slice(0, 10);
-                if (!grouped[dateKey]) grouped[dateKey] = [];
-                grouped[dateKey].push(c.energy);
-              });
-              // 최근 7일 연속 날짜 생성 (빈 날 포함)
-              const DAY_NAMES = ['일','월','화','수','목','금','토'];
-              const days7 = [];
-              for (let i = 6; i >= 0; i--) {
-                const d = new Date(); d.setDate(d.getDate() - i);
-                days7.push(getDateKey(d));
-              }
-              // 각 날짜의 평균값 계산 (기록 있는 날)
-              const dayAvg = {};
-              days7.forEach(dk => {
-                if (grouped[dk] && grouped[dk].length > 0) {
-                  dayAvg[dk] = grouped[dk].reduce((a, b) => a + b, 0) / grouped[dk].length;
-                }
-              });
-              // 빈 날은 전후 평균으로 보간
-              days7.forEach((dk, i) => {
-                if (dayAvg[dk] != null) return;
-                let prev = null, next = null;
-                for (let j = i - 1; j >= 0; j--) { if (dayAvg[days7[j]] != null) { prev = dayAvg[days7[j]]; break; } }
-                for (let j = i + 1; j < 7; j++) { if (dayAvg[days7[j]] != null) { next = dayAvg[days7[j]]; break; } }
-                if (prev != null && next != null) dayAvg[dk] = (prev + next) / 2;
-                else if (prev != null) dayAvg[dk] = prev;
-                else if (next != null) dayAvg[dk] = next;
-              });
-              // 포인트 및 x 위치 구성
-              const allPoints = [];
-              const xPos = [];
-              days7.forEach((dk, dayIdx) => {
-                const vals = grouped[dk] || [];
-                if (vals.length === 0) {
-                  // 보간된 값 1포인트
-                  if (dayAvg[dk] != null) { allPoints.push(dayAvg[dk]); xPos.push(dayIdx / 6); }
-                } else {
-                  vals.forEach((val, j) => {
-                    allPoints.push(val);
-                    const dayCenter = dayIdx / 6;
-                    const slotWidth = (1 / 6) * 0.4;
-                    const offset = vals.length === 1 ? 0 : (j / (vals.length - 1) - 0.5) * slotWidth;
-                    xPos.push(Math.max(0, Math.min(1, dayCenter + offset)));
-                  });
-                }
-              });
-              const dayLabels = days7.map(dk => {
-                const d = new Date(dk + 'T00:00:00');
-                const day = d.getDay();
-                return { text: DAY_NAMES[day], bold: day === 0 || day === 6 };
-              });
-              const recordedDays = days7.filter(dk => grouped[dk]?.length > 0).length;
-              return (
-                <div style={{ ...v2CardStyle, padding: '14px 10px', ...fadeUp(0.15) }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, padding: '0 5px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('energy') }} />
-                      <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>에너지 흐름</span>
-                    </div>
-                    {recordedDays > 0 && (
-                      <span style={{ fontSize: 11, fontWeight: 500, color: '#7AAABB' }}>최근 7일</span>
-                    )}
-                  </div>
-                  {allPoints.length >= 2 ? (
-                    <MiniChart data={allPoints} color={getCategoryColor('energy')} height={44} labels={dayLabels} xPositions={xPos} />
-                  ) : (
-                    <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 12, color: '#9ABBC8' }}>
-                      {allPoints.length === 1 ? '한 번 더 체크하면 그래프가 나타나요' : '홈에서 컨디션을 체크해보세요'}
-                    </div>
-                  )}
+            {/* 기분 카드 */}
+            {showMood && <div style={{ ...v2CardStyle, ...fadeUp(0.16) }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: 3, background: getCategoryColor('mood') }} />
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>기분</span>
                 </div>
-              );
-            })()}
-
-            {/* Weight Card */}
-            {(() => {
-              const last7w = filteredBody.slice(-7);
-              const DAY_NAMES_W = ['일','월','화','수','목','금','토'];
-              const labels7w = last7w.map(r => { const d = new Date(r.date); const day = d.getDay(); return { text: DAY_NAMES_W[day], bold: day === 0 || day === 6 }; });
-              return (
-                <div style={{ ...v2CardStyle, padding: '14px 10px', ...fadeUp(0.2) }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, padding: '0 5px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('body') }} />
-                      <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>몸무게</span>
-                    </div>
-                    {v2WeightDiff !== 0 && (
-                      <span style={{ fontSize: 11, fontWeight: 500, color: changeColor(v2WeightDiff) }}>
-                        {v2WeightDiff > 0 ? '▲' : '▼'} {Math.abs(v2WeightDiff)}kg
-                      </span>
-                    )}
-                  </div>
-                  {v2LatestWeight ? (
-                    <>
-                      <div style={{ textAlign: 'center', marginBottom: 8 }}>
-                        <span style={{ fontSize: 28, fontWeight: 500, color: '#1A3A4A' }}>{v2LatestWeight}</span>
-                        <span style={{ fontSize: 13, color: '#7AAABB', marginLeft: 3 }}>kg</span>
-                      </div>
-                      <div style={{ textAlign: 'center', fontSize: 10, color: '#7AAABB', marginBottom: 10 }}>
-                        시작 {v2StartWeight}kg{goal?.target ? ` · 목표 ${goal.target}kg` : ''}
-                      </div>
-                      <MiniChart data={last7w.map(r => r.weight)} color={getCategoryColor('body')} labels={labels7w} />
-                    </>
-                  ) : (
-                    <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 12, color: '#9ABBC8' }}>아직 기록이 없어요</div>
-                  )}
-                </div>
-              );
-            })()}
-
-            {/* Skin Card */}
-            <div style={{ ...v2CardStyle, ...fadeUp(0.25) }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('skin') }} />
-                  <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>피부</span>
-                </div>
-                {v2SkinDiff !== 0 && (
-                  <span style={{ fontSize: 11, fontWeight: 500, color: changeColor(-v2SkinDiff) }}>
-                    {v2SkinDiff > 0 ? '▲' : '▼'} {Math.abs(v2SkinDiff)}점
-                  </span>
-                )}
+                <span style={{ fontSize: 11, color: '#7AAABB' }}>평균 {avgMood} / 5</span>
               </div>
-              {filteredSkin.length > 0 ? (
-                <>
-                  <div style={{ display: 'flex', gap: 4, marginBottom: 8, overflowX: 'auto' }}>
-                    {filteredSkin.slice(-4).map(r => {
-                      const thumb = skinThumbs[String(r.id)] || skinThumbs[r.date];
+              <DualLineChart data1={days7.map((dk, i) => { const c = conditionChecks.filter(c => c.timestamp.slice(0, 10) === dk && c.mood != null); return c.length > 0 ? c[c.length - 1].mood : null; })} data2={stressByDay} color1="#E8A88A" color2="#D4A030" label1="기분" label2="스트레스" />
+              {topEmotions.length > 0 && <>
+                <div style={{ fontSize: 12, color: '#7AAABB', marginTop: 10, marginBottom: 6 }}>이번 주 자주 느낀 감정</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {topEmotions.map(([emotion, count]) => (
+                    <span key={emotion} style={{ fontSize: 12, padding: '5px 12px', borderRadius: 99, background: 'rgba(240,200,180,.2)', border: '1px solid rgba(240,180,150,.3)', color: '#8A5A3A', fontWeight: 500 }}>
+                      {EMOTION_ICONS[emotion] || ''} {emotion} {count}회
+                    </span>
+                  ))}
+                </div>
+              </>}
+            </div>}
+
+            {/* 바디 카드 */}
+            {showBody && <div style={{ ...v2CardStyle, ...fadeUp(0.2) }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                <div style={{ width: 8, height: 8, borderRadius: 3, background: getCategoryColor('body') }} />
+                <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>바디</span>
+              </div>
+              {/* 몸무게 */}
+              <div style={{ fontSize: 12, color: '#7AAABB', marginBottom: 4 }}>몸무게</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 10 }}>
+                <div><span style={{ fontSize: 32, fontWeight: 600, color: '#1A3A4A' }}>{v2LatestWeight ?? '—'}</span><span style={{ fontSize: 14, color: '#7AAABB', marginLeft: 2 }}>kg</span></div>
+                {v2WeightDiff !== 0 && <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: 10, color: '#9ABBC8' }}>이번주</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: v2WeightDiff < 0 ? '#4A9A7A' : '#C4580A' }}>{v2WeightDiff > 0 ? '+' : ''}{v2WeightDiff}kg {v2WeightDiff < 0 ? '↓' : '↑'}</div>
+                </div>}
+              </div>
+              {filteredBody.length >= 2 && <>
+                <div style={{ position: 'relative', height: 60, marginBottom: 6 }}>
+                  {goal?.target && (() => {
+                    const vals = filteredBody.map(r => r.weight);
+                    const allVals = [...vals, goal.target];
+                    const mn = Math.min(...allVals), mx = Math.max(...allVals);
+                    const rng = mx - mn || 1;
+                    const goalY = ((mx - goal.target) / rng) * 50 + 5;
+                    return <><div style={{ position: 'absolute', top: goalY, left: 0, right: 0, borderTop: '1.5px dashed rgba(150,180,170,.4)' }} /><span style={{ position: 'absolute', top: goalY - 14, right: 0, fontSize: 9, color: '#9ABBC8' }}>목표</span></>;
+                  })()}
+                  <svg viewBox="0 0 300 60" style={{ width: '100%', height: '100%' }} preserveAspectRatio="none">
+                    {(() => {
+                      const vals = filteredBody.map(r => r.weight);
+                      const mn = Math.min(...vals, goal?.target || Infinity), mx = Math.max(...vals, goal?.target || 0);
+                      const rng = mx - mn || 1;
+                      const pts = vals.map((v, i) => `${(i / (vals.length - 1)) * 290 + 5},${((mx - v) / rng) * 50 + 5}`);
+                      return <polyline points={pts.join(' ')} fill="none" stroke={getCategoryColor('body')} strokeWidth="2.5" strokeLinejoin="round" />;
+                    })()}
+                  </svg>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#9ABBC8', marginBottom: 10 }}>
+                  <span>시작 {v2StartWeight}kg</span>
+                  {goal?.target && <span>목표 {goal.target}kg</span>}
+                </div>
+              </>}
+
+              {/* 눈바디 히스토리 */}
+              {eyeBodyAll.length > 0 && <>
+                <div style={{ borderTop: '0.5px solid rgba(200,220,230,.3)', paddingTop: 10, marginTop: 6 }}>
+                  <div style={{ fontSize: 12, color: '#7AAABB', marginBottom: 8 }}>눈바디 히스토리</div>
+                  <div style={{ display: 'flex', gap: 8, overflowX: 'auto' }}>
+                    {eyeBodyAll.map(eb => {
+                      const d = new Date(eb.date);
+                      const label = `${d.getMonth() + 1}월 ${d.getDate()}일`;
+                      const photo = eb.photos?.['정면'] || Object.values(eb.photos || {})[0];
                       return (
-                        <div key={r.id || r.date} style={{
-                          flex: '1 0 0', height: 44, borderRadius: 6, overflow: 'hidden',
-                          background: thumb ? 'none' : 'linear-gradient(135deg, #FFD8E8, #F8A8C0)',
-                          position: 'relative', minWidth: 50,
-                        }}>
-                          {thumb && <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
-                          <span style={{ position: 'absolute', left: 3, bottom: 2, fontSize: 8, fontWeight: 600, color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,.4)' }}>{r.overallScore}</span>
+                        <div key={eb.date} style={{ flex: '0 0 90', textAlign: 'center' }}>
+                          <div style={{ width: 90, height: 100, borderRadius: 10, overflow: 'hidden', background: 'rgba(230,240,235,.4)', marginBottom: 4 }}>
+                            {photo ? <img src={photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#B0C8C0', fontSize: 11 }}>사진 없음</div>}
+                          </div>
+                          <div style={{ fontSize: 10, color: '#7AAABB' }}>{label}</div>
                         </div>
                       );
                     })}
                   </div>
-                  <MiniChart data={filteredSkin.map(r => r.overallScore)} color="#F8A8C0" />
-                </>
-              ) : (
-                <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 12, color: '#9ABBC8' }}>아직 측정 기록이 없어요</div>
-              )}
-            </div>
-          </>}
+                </div>
+              </>}
+
+              {/* 혈당 그래프 */}
+              {bsGraph?.readings?.length > 0 && (() => {
+                const readings = bsGraph.readings;
+                const vals = readings.map(r => r.value);
+                const spike = readings.reduce((a, b) => b.value > a.value ? b : a, readings[0]);
+                const mn = Math.min(...vals, 70), mx = Math.max(...vals, 140);
+                const rng = mx - mn || 1;
+                const padL = 5, padR = 5, chartW = 300, chartH = 70;
+                const innerW = chartW - padL - padR;
+                return (
+                  <div style={{ borderTop: '0.5px solid rgba(200,220,230,.3)', paddingTop: 10, marginTop: 10 }}>
+                    <div style={{ fontSize: 12, color: '#7AAABB', marginBottom: 8 }}>혈당 사진 업로드로 자동 분석</div>
+                    <svg viewBox={`0 0 ${chartW} ${chartH + 20}`} style={{ width: '100%' }}>
+                      <rect x={padL} y={chartH - ((140 - mn) / rng) * chartH} width={innerW} height={((140 - 70) / rng) * chartH} fill="rgba(100,180,130,.06)" />
+                      <line x1={padL} y1={chartH - ((140 - mn) / rng) * chartH} x2={chartW - padR} y2={chartH - ((140 - mn) / rng) * chartH} stroke="rgba(150,180,170,.3)" strokeWidth="0.8" strokeDasharray="4 2" />
+                      <text x={chartW - padR + 2} y={chartH - ((140 - mn) / rng) * chartH + 3} fontSize="8" fill="#9ABBC8">140</text>
+                      <line x1={padL} y1={chartH - ((70 - mn) / rng) * chartH} x2={chartW - padR} y2={chartH - ((70 - mn) / rng) * chartH} stroke="rgba(150,180,170,.3)" strokeWidth="0.8" strokeDasharray="4 2" />
+                      <text x={chartW - padR + 2} y={chartH - ((70 - mn) / rng) * chartH + 3} fontSize="8" fill="#9ABBC8">70</text>
+                      {readings.map((r, i) => {
+                        if (i === 0) return null;
+                        const prev = readings[i - 1];
+                        const x1 = padL + ((i - 1) / (readings.length - 1)) * innerW;
+                        const y1 = chartH - ((prev.value - mn) / rng) * chartH;
+                        const x2 = padL + (i / (readings.length - 1)) * innerW;
+                        const y2 = chartH - ((r.value - mn) / rng) * chartH;
+                        const normal = prev.value <= 140 && r.value <= 140;
+                        return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke={normal ? '#4A9A7A' : '#E8944A'} strokeWidth="2" strokeLinecap="round" />;
+                      })}
+                      {readings.map((r, i) => {
+                        const x = padL + (i / (readings.length - 1)) * innerW;
+                        const y = chartH - ((r.value - mn) / rng) * chartH;
+                        const isSpike = r.value > 140;
+                        return <circle key={i} cx={x} cy={y} r={isSpike ? 4 : 2} fill={isSpike ? '#E8944A' : '#4A9A7A'} stroke="#fff" strokeWidth="1" />;
+                      })}
+                      {spike.value > 140 && (() => {
+                        const idx = readings.indexOf(spike);
+                        const x = padL + (idx / (readings.length - 1)) * innerW;
+                        const y = chartH - ((spike.value - mn) / rng) * chartH;
+                        return <text x={x} y={y - 8} textAnchor="middle" fontSize="9" fontWeight="600" fill="#C4700A">{spike.value}</text>;
+                      })()}
+                      {readings.filter((_, i) => i === 0 || i === Math.floor(readings.length / 3) || i === Math.floor(readings.length * 2 / 3) || i === readings.length - 1).map((r, i) => {
+                        const idx = readings.indexOf(r);
+                        return <text key={i} x={padL + (idx / (readings.length - 1)) * innerW} y={chartH + 14} textAnchor="middle" fontSize="8" fill="#9ABBC8">{r.time}</text>;
+                      })}
+                    </svg>
+                    {spike.value > 140 && (
+                      <div style={{ background: 'rgba(232,148,74,.08)', borderRadius: 10, padding: '10px 12px', marginTop: 4 }}>
+                        <div style={{ fontSize: 12, color: '#8A5A2A', lineHeight: 1.6 }}>
+                          {spike.time}경 혈당이 {spike.value}로 급상승했어요.
+                        </div>
+                        <div style={{ fontSize: 12, color: '#8A5A2A', lineHeight: 1.6 }}>이 시간대 식단을 확인해보세요.</div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+            </div>}
+
+            {/* 피부 카드 */}
+            {showSkin && <div style={{ ...v2CardStyle, ...fadeUp(0.24) }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: 3, background: getCategoryColor('skin') }} />
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>피부</span>
+                </div>
+                <span style={{ fontSize: 11, color: '#7AAABB' }}>평균 {avgSkinScore ?? '—'}점</span>
+              </div>
+              {latestSkinScore != null && <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 10 }}>
+                  <div><span style={{ fontSize: 32, fontWeight: 600, color: '#1A3A4A' }}>{latestSkinScore}</span><span style={{ fontSize: 14, color: '#7AAABB' }}>점</span></div>
+                  {skinScoreDiff != null && <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: 10, color: '#9ABBC8' }}>이번주 평균 대비</div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: skinScoreDiff >= 0 ? '#4A9A7A' : '#C4580A' }}>{skinScoreDiff > 0 ? '+' : ''}{skinScoreDiff}점 {skinScoreDiff >= 0 ? '↑' : '↓'}</div>
+                  </div>}
+                </div>
+              </>}
+              {/* 피부 점수 추이 */}
+              {validSkinScore.length >= 2 && (() => {
+                const mn = Math.min(...validSkinScore) * 0.9, mx = Math.max(...validSkinScore) * 1.05;
+                const rng = mx - mn || 1;
+                const pts = skinScoreByDay.map((v, i) => v != null ? { x: 10 + (i / 6) * 280, y: 10 + (1 - (v - mn) / rng) * 60 } : null).filter(Boolean);
+                return (
+                  <div style={{ marginBottom: 8 }}>
+                    <svg viewBox="0 0 300 90" style={{ width: '100%' }}>
+                      {pts.length >= 2 && <polyline points={pts.map(p => `${p.x},${p.y}`).join(' ')} fill="none" stroke={getCategoryColor('skin')} strokeWidth="2" strokeLinejoin="round" />}
+                      {pts.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r={i === pts.length - 1 ? 4 : 2} fill={i === pts.length - 1 ? getCategoryColor('skin') : '#fff'} stroke={getCategoryColor('skin')} strokeWidth="1.5" />)}
+                      {dayLabels.map((l, i) => <text key={i} x={10 + (i / 6) * 280} y={85} textAnchor="middle" fontSize="9" fill="#7AAABB">{l}</text>)}
+                    </svg>
+                  </div>
+                );
+              })()}
+              {/* 자주 나타난 피부 상태 */}
+              {topSkinTags.length > 0 && <>
+                <div style={{ fontSize: 12, color: '#7AAABB', marginTop: 6, marginBottom: 6 }}>이번 주 자주 나타난 피부 상태</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+                  {topSkinTags.map(([tag, count]) => (
+                    <span key={tag} style={{ fontSize: 12, padding: '5px 12px', borderRadius: 99, background: 'rgba(216,160,224,.15)', border: '1px solid rgba(216,160,224,.3)', color: '#7A4A8A', fontWeight: 500 }}>
+                      {SKIN_TAG_ICONS[tag] || ''} {tag} {count}회
+                    </span>
+                  ))}
+                </div>
+              </>}
+              {/* 피부 영향 요소 */}
+              <div style={{ fontSize: 12, color: '#7AAABB', marginBottom: 6 }}>피부에 영향 준 요소</div>
+              <CorrelationBar label="수분 섭취" level="높음" color={getCategoryColor('skin')} />
+              <CorrelationBar label="수면 시간" level="중간" color={getCategoryColor('skin')} />
+              <CorrelationBar label="스킨케어 루틴" level="중간" color={getCategoryColor('skin')} />
+
+              {/* 얼굴 사진 히스토리 */}
+              {filteredSkin.length > 0 && <>
+                <div style={{ borderTop: '0.5px solid rgba(200,220,230,.3)', paddingTop: 10, marginTop: 10 }}>
+                  <div style={{ fontSize: 12, color: '#7AAABB', marginBottom: 8 }}>얼굴 사진 히스토리</div>
+                  <div style={{ display: 'flex', gap: 8, overflowX: 'auto' }}>
+                    {filteredSkin.slice(-3).map(r => {
+                      const thumb = skinThumbs[String(r.id)] || skinThumbs[r.date];
+                      const d = new Date(r.date);
+                      return (
+                        <div key={r.id || r.date} style={{ flex: '0 0 90', textAlign: 'center' }}>
+                          <div style={{ width: 90, height: 100, borderRadius: 10, overflow: 'hidden', background: 'rgba(230,240,235,.4)', marginBottom: 4 }}>
+                            {thumb ? <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#B0C8C0', fontSize: 11 }}>사진</div>}
+                          </div>
+                          <div style={{ fontSize: 10, color: '#7AAABB' }}>{d.getMonth() + 1}월 {d.getDate()}일</div>
+                          <div style={{ fontSize: 11, fontWeight: 600, color: '#1A3A4A' }}>{r.overallScore}점</div>
+                        </div>
+                      );
+                    })}
+                    <div style={{ flex: '0 0 70', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                      <span style={{ fontSize: 20, color: '#B0C8C0' }}>+</span>
+                      <span style={{ fontSize: 10, color: '#9ABBC8' }}>추가</span>
+                    </div>
+                  </div>
+                </div>
+              </>}
+            </div>}
+            </>;
+          })()}
 
         </div>
       )}
