@@ -485,7 +485,16 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
         const suppItems = [...getRoutineItems('food'), ...getRoutineItems('skin'), ...getRoutineItems('body'), ...getRoutineItems('mood')];
         const totalSupp = suppItems.length;
 
-        const flowCardStyle = { background: 'rgba(255,255,255,.65)', borderRadius: 16, padding: '18px 16px', border: '0.5px solid rgba(255,255,255,.9)', marginBottom: 10 };
+        const flowCardStyle = { background: 'rgba(255,255,255,.72)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)', marginBottom: 10 };
+        const flowCardHeader = (color, title, status) => (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 3, height: 14, borderRadius: 2, background: color }} />
+              <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>{title}</span>
+            </div>
+            {status && <span style={{ fontSize: 11, color: '#5AAABB', fontWeight: 500 }}>{status}</span>}
+          </div>
+        );
 
         const BarChart = ({ data, color, labels, todayVal, todayLabel, goalVal, goalLabel, nullLabel = '미기록' }) => {
           const max = Math.max(...data.map(v => v ?? 0), goalVal || 0, 1);
@@ -605,10 +614,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
               {/* 식사 칼로리 */}
               {showFood && <div style={{ ...flowCardStyle, ...fadeUp(0.05) }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                  <span style={{ fontSize: 16, fontWeight: 700, color: '#1A3A4A' }}>식사 칼로리</span>
-                  <span style={{ fontSize: 13, color: '#7AAABB' }}>평균 {avgKcal.toLocaleString()} kcal</span>
-                </div>
+                {flowCardHeader(getCategoryColor('food'), '식사 칼로리', `평균 ${avgKcal.toLocaleString()} kcal`)}
                 <BarChart data={weeklyNutrition.map(n => n.kcal || null)} color={getCategoryColor('food')} labels={dayLabels}
                   goalVal={fullGoal.kcal} goalLabel={`목표 ${fullGoal.kcal?.toLocaleString()} kcal`}
                   todayVal={todayNut.kcal} todayLabel={`오늘 ${Math.round(todayNut.kcal).toLocaleString()} kcal`} nullLabel="오늘 미기록" />
@@ -616,10 +622,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
               {/* 수분 */}
               {showFood && <div style={{ ...flowCardStyle, ...fadeUp(0.08) }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                  <span style={{ fontSize: 16, fontWeight: 700, color: '#1A3A4A' }}>수분</span>
-                  <span style={{ fontSize: 13, color: '#7AAABB' }}>평균 {avgWater}잔</span>
-                </div>
+                {flowCardHeader(getCategoryColor('food'), '수분', `평균 ${avgWater}잔`)}
                 <BarChart data={weeklyWater} color="#8BB8D0" labels={dayLabels}
                   goalVal={TOTAL_CUPS} goalLabel={`목표 ${TOTAL_CUPS}잔`}
                   todayVal={todayWater} todayLabel={`오늘 ${todayWater || 0}잔`} nullLabel="오늘 0잔" />
@@ -627,10 +630,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
               {/* 걸음수 */}
               {showActivity && <div style={{ ...flowCardStyle, ...fadeUp(0.11) }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                  <span style={{ fontSize: 16, fontWeight: 700, color: '#1A3A4A' }}>걸음수</span>
-                  <span style={{ fontSize: 13, color: '#7AAABB' }}>평균 {avgSteps.toLocaleString()}보</span>
-                </div>
+                {flowCardHeader(getCategoryColor('activity'), '걸음수', `평균 ${avgSteps.toLocaleString()}보`)}
                 <BarChart data={weeklySteps} color={getCategoryColor('activity')} labels={dayLabels}
                   goalVal={stepGoal} goalLabel={`목표 ${stepGoal.toLocaleString()}보`}
                   todayVal={todaySteps} todayLabel={`오늘 ${(todaySteps || 0).toLocaleString()}보`} nullLabel="오늘 미기록" />
@@ -638,10 +638,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
               {/* 운동 */}
               {showActivity && <div style={{ ...flowCardStyle, ...fadeUp(0.14) }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                  <span style={{ fontSize: 16, fontWeight: 700, color: '#1A3A4A' }}>운동</span>
-                  <span style={{ fontSize: 13, color: '#7AAABB' }}>이번주 {weekExercises.length}회</span>
-                </div>
+                {flowCardHeader(getCategoryColor('activity'), '운동', `이번주 ${weekExercises.length}회`)}
                 {weekExercises.length > 0 ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {weekExercises.map((ex, i) => (
@@ -660,19 +657,13 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
               {/* 수면 */}
               {showSleep && <div style={{ ...flowCardStyle, ...fadeUp(0.17) }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                  <span style={{ fontSize: 16, fontWeight: 700, color: '#1A3A4A' }}>수면</span>
-                  <span style={{ fontSize: 13, color: '#7AAABB' }}>평균 {avgSleep}시간</span>
-                </div>
+                {flowCardHeader(getCategoryColor('sleep'), '수면', `평균 ${avgSleep}시간`)}
                 <LineChart data={weeklySleep} labels={dayLabels} goalVal={8} color={getCategoryColor('sleep')} />
               </div>}
 
               {/* 식단 앨범 */}
               {showFood && <div style={{ ...flowCardStyle, ...fadeUp(0.2) }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                  <span style={{ fontSize: 16, fontWeight: 700, color: '#1A3A4A' }}>식단 앨범</span>
-                  {weekFoods.length > 0 && <span style={{ fontSize: 13, color: '#7AAABB', cursor: 'pointer' }}>전체보기</span>}
-                </div>
+                {flowCardHeader(getCategoryColor('food'), '식단 앨범', weekFoods.length > 0 ? '전체보기' : null)}
                 {weekFoods.length > 0 ? (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
                     {weekFoods.slice(0, 7).map((f, i) => (
@@ -692,9 +683,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
               {/* 영양제 루틴 달성률 */}
               {showSupplement && totalSupp > 0 && (
                 <div style={{ ...flowCardStyle, ...fadeUp(0.23) }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                    <span style={{ fontSize: 16, fontWeight: 700, color: '#1A3A4A' }}>영양제 루틴 달성률</span>
-                  </div>
+                  {flowCardHeader(getCategoryColor('supplement'), '영양제 루틴 달성률')}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {last7.map((dk, i) => {
                       let totalAll = 0, doneAll = 0;
