@@ -25,7 +25,7 @@ import {
 } from '../storage/SkinStorage';
 import { AnimatedNumber, ScoreRing, MetricBar } from '../components/UIComponents';
 import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, GENDER_OPTIONS, getCategories, getEnabledCategories, saveCategories, getCategoryColor } from '../storage/ProfileStorage';
-import { getConditionChecks } from '../storage/ConditionStorage';
+import { getConditionChecks, getEyeBodyChecks, getSkinSubChecks } from '../storage/ConditionStorage';
 import AiInsightCard from '../components/AiInsightCard';
 import { ChartIcon, CameraIcon, MicroscopeIcon, SparkleIcon, DiamondIcon, DropletIcon, RulerIcon, PaletteIcon, LotionIcon, EyeIcon, BubbleIcon, TargetIcon, ClockIcon, LuaMiniIcon } from '../components/icons/PastelIcons';
 import EternalPearl from '../components/icons/EternalPearl';
@@ -199,14 +199,18 @@ function ChangeIndicator({ diff, unit = '점', inverse = false, size = 'normal' 
 // ===== MAIN HISTORY PAGE =====
 export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, initialMode, galleryOnly }) {
   const [mode, setMode] = useState(initialMode || 'gallery');
+  const PHOTO_CATS = [
+    { key: 'all', label: '전체' },
+    { key: 'food', label: '식단', color: getCategoryColor('food') },
+    { key: 'skin_scan', label: '피부스캔', color: getCategoryColor('skin') },
+    { key: 'face', label: '얼굴', color: '#D8A0E0' },
+    { key: 'eye_body', label: '눈바디', color: getCategoryColor('body') },
+  ];
   const [enabledCats, setEnabledCats] = useState(() => getEnabledCategories('result'));
   const [albumCategory, setAlbumCategory] = useState('all');
   const refreshCategories = () => {
     const cats = getEnabledCategories('result');
     setEnabledCats(cats);
-    if (albumCategory !== 'all' && !cats.find(c => c.key === albumCategory)) {
-      setAlbumCategory('all');
-    }
   };
   useEffect(() => {
     window.addEventListener('lua:categories-changed', refreshCategories);
@@ -301,7 +305,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
 
       {/* Header */}
       <div style={{ padding: '16px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <h1 style={{ fontSize: 18, fontWeight: 600, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>마이 페이지</h1>
+        <h1 style={{ fontSize: 18, fontWeight: 600, margin: 0, color: 'var(--text-primary)', fontFamily: 'Pretendard, sans-serif' }}>사진 앨범</h1>
         <div style={{ display: 'flex', gap: 8 }}>
           <div onClick={() => {
             if ((albumCategory === 'all' || albumCategory === 'food') && onTabChange) onTabChange('food', { openAdd: true });
@@ -341,185 +345,82 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
         />
       )}
 
-      {/* ===== Profile + Category Tabs ===== */}
-      {(() => {
-        const latestRecord = records.length > 0 ? records[records.length - 1] : null;
-        const profileImg = getProfile().profileImage;
-        const avatarSrc = profileImg || (latestRecord ? (thumbs[String(latestRecord.id)] || thumbs[latestRecord.date]) : null);
-        const avgScore = records.length > 0
-          ? Math.round(records.reduce((s, r) => s + r.overallScore, 0) / records.length) : 0;
-        return (
-          <div style={{ padding: '20px 10px 0' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
-              <div style={{
-                width: 72, height: 72, borderRadius: '50%', flexShrink: 0,
-                background: 'var(--btn-primary-bg)', padding: 2,
-              }}>
-                <div style={{
-                  width: '100%', height: '100%', borderRadius: '50%',
-                  overflow: 'hidden', background: 'var(--bg-secondary)',
-                }}>
-                  {avatarSrc ? (
-                    <img src={avatarSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  ) : (
-                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
-                        <circle cx="12" cy="10" r="4" /><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" strokeLinecap="round" />
-                      </svg>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div style={{ display: 'flex', flex: 1, justifyContent: 'space-around', textAlign: 'center' }}>
-                <div>
-                  <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>{records.length}</div>
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>기록</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>{avgScore}</div>
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>평균점수</div>
-                </div>
-              </div>
+      {/* ===== Photo Album Tabs ===== */}
+      <div style={{ padding: '16px 10px 0' }}>
+        {(() => {
+          const idx = PHOTO_CATS.findIndex(t => t.key === albumCategory);
+          const pos = idx === 0 ? 'first' : idx === PHOTO_CATS.length - 1 ? 'last' : 'mid';
+          return (
+            <div className="segment-control" data-active={pos}>
+              {PHOTO_CATS.map(cat => (
+                <button key={cat.key} className={`segment-btn${albumCategory === cat.key ? ' active' : ''}`}
+                  onClick={() => setAlbumCategory(cat.key)}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                    {cat.key !== 'all' && cat.color && (
+                      <span style={{ width: 8, height: 8, borderRadius: 3, background: cat.color, flexShrink: 0 }} />
+                    )}
+                    {cat.label}
+                  </span>
+                </button>
+              ))}
             </div>
-            {(() => {
-              const allTabs = [{ key: 'all', label: '전체' }, ...enabledCats];
-              const idx = allTabs.findIndex(t => t.key === albumCategory);
-              const pos = idx === 0 ? 'first' : idx === allTabs.length - 1 ? 'last' : 'mid';
-              return (
-                <div className="segment-control" data-active={pos}>
-                  {allTabs.map(cat => (
-                    <button key={cat.key} className={`segment-btn${albumCategory === cat.key ? ' active' : ''}`}
-                      onClick={() => setAlbumCategory(cat.key)}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                        {cat.key !== 'all' && cat.color && (
-                          <span style={{ width: 8, height: 8, borderRadius: 3, background: cat.color, flexShrink: 0 }} />
-                        )}
-                        {cat.label}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              );
-            })()}
-          </div>
-        );
-      })()}
+          );
+        })()}
+      </div>
 
       <div className="tab-content-panel" data-active={
         (() => {
-          const allTabs = [{ key: 'all', label: '전체' }, ...enabledCats];
-          const idx = allTabs.findIndex(t => t.key === albumCategory);
-          return idx === 0 ? 'first' : idx === allTabs.length - 1 ? 'last' : 'mid';
+          const idx = PHOTO_CATS.findIndex(t => t.key === albumCategory);
+          return idx === 0 ? 'first' : idx === PHOTO_CATS.length - 1 ? 'last' : 'mid';
         })()
       }>
 
-      {/* ===== 전체: 컨디션 누적 기록 ===== */}
+      {/* ===== 전체: 모든 사진 통합 앨범 ===== */}
       {albumCategory === 'all' && (() => {
-        const allChecks = getConditionChecks();
-        // 날짜별 그룹핑
-        const byDate = {};
-        allChecks.forEach(c => {
-          const d = c.timestamp.slice(0, 10);
-          if (!byDate[d]) byDate[d] = [];
-          byDate[d].push(c);
+        const allPhotos = [];
+        // 식단 사진
+        const allFoods = getFoodRecords();
+        Object.entries(allFoods).forEach(([date, foods]) => {
+          foods.filter(f => f.photo && !f.name?.startsWith('물 ')).forEach(f => {
+            allPhotos.push({ type: 'food', date, photo: f.photo, label: f.name, sub: f.meal, id: f.id });
+          });
         });
-        const dates = Object.keys(byDate).sort().reverse().slice(0, 14); // 최근 14일
-        const chartDates = [...dates].reverse(); // 오래된→최신 순서로 차트용
-
-        // 차트: 날짜별 평균
-        const dailyAvg = chartDates.map(d => {
-          const checks = byDate[d];
-          const avgMood = checks.reduce((s, c) => s + (c.mood || 0), 0) / checks.length;
-          const avgEnergy = checks.reduce((s, c) => s + (c.energy || 0), 0) / checks.length;
-          return { date: d, mood: Math.round(avgMood * 10) / 10, energy: Math.round(avgEnergy * 10) / 10 };
+        // 피부 스캔
+        records.forEach(r => {
+          const thumb = thumbs[String(r.id)] || thumbs[r.date];
+          if (thumb) allPhotos.push({ type: 'skin_scan', date: r.date, photo: thumb, label: `${r.overallScore}점`, sub: '피부스캔', id: r.id });
         });
-
-        const makePath = (pts) => {
-          if (pts.length < 2) return '';
-          let d = `M${pts[0].x} ${pts[0].y}`;
-          for (let i = 1; i < pts.length; i++) { const cp = (pts[i].x + pts[i-1].x)/2; d += ` C${cp} ${pts[i-1].y} ${cp} ${pts[i].y} ${pts[i].x} ${pts[i].y}`; }
-          return d;
-        };
-
+        // 얼굴 사진
+        const skinSubAll = getSkinSubChecks();
+        skinSubAll.forEach(s => {
+          if (s.photos?.face) allPhotos.push({ type: 'face', date: s.date, photo: s.photos.face, label: '얼굴', sub: s.score ? `${s.score}점` : '', id: `face_${s.date}` });
+        });
+        // 눈바디
+        const eyeBodyAll = getEyeBodyChecks();
+        eyeBodyAll.forEach(eb => {
+          const photo = eb.photos?.['정면'] || Object.values(eb.photos || {})[0];
+          if (photo) allPhotos.push({ type: 'eye_body', date: eb.date, photo, label: '눈바디', sub: '정면', id: `eb_${eb.date}` });
+        });
+        allPhotos.sort((a, b) => b.date.localeCompare(a.date));
         return (
-          <div style={{ padding: '8px 14px 0' }}>
-            {/* 누적 흐름 차트 */}
-            <div style={{ background: 'rgba(255,255,255,.72)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)', marginBottom: 10 }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A', marginBottom: 10 }}>컨디션 흐름</div>
-              <div style={{ display: 'flex', gap: 14, marginBottom: 8 }}>
-                {[{ c: getCategoryColor('mood') || '#F5C2CB', l: '기분' }, { c: getCategoryColor('energy') || '#F0C878', l: '에너지' }].map(x => (
-                  <div key={x.l} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <div style={{ width: 12, height: 2, borderRadius: 1, background: x.c }} />
-                    <span style={{ fontSize: 10, color: '#7AAABB' }}>{x.l}</span>
+          <div style={{ padding: '8px 18px 0' }}>
+            {allPhotos.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
+                <div style={{ fontSize: 24, marginBottom: 8 }}>📷</div>
+                <div style={{ fontSize: 14, fontWeight: 600 }}>사진 기록이 없어요</div>
+                <div style={{ fontSize: 12, marginTop: 6 }}>식단, 피부, 눈바디 사진을 기록해보세요</div>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}>
+                {allPhotos.map((p, i) => (
+                  <div key={p.id || i} onClick={() => { if (p.type === 'food') setSelectedFood({ ...p, _date: p.date }); else if (p.type === 'skin_scan') { const rec = records.find(r => r.id === p.id || r.date === p.date); if (rec) handleSelectRecord(rec); } }} style={{ aspectRatio: '1', borderRadius: 4, overflow: 'hidden', position: 'relative', cursor: 'pointer', background: 'var(--bg-card-hover)' }}>
+                    {p.type === 'food' ? <FoodPhoto photo={p.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <img src={p.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                    <span style={{ position: 'absolute', bottom: 3, left: 5, fontSize: 9, color: '#fff', fontWeight: 600, textShadow: '0 1px 3px rgba(0,0,0,.6)' }}>{p.label}</span>
+                    <span style={{ position: 'absolute', top: 3, right: 5, fontSize: 8, color: '#fff', background: 'rgba(0,0,0,.3)', padding: '1px 5px', borderRadius: 99 }}>{p.sub}</span>
                   </div>
                 ))}
               </div>
-              {dailyAvg.length >= 2 ? (() => {
-                const svgW = Math.max(dailyAvg.length * 40, 220);
-                const H = 60;
-                const pad = 16;
-                const toY = (val) => Math.round(H - (val / 10) * (H - 12) - 6);
-                const moodPts = dailyAvg.map((d, i) => ({ x: (i / (dailyAvg.length - 1)) * (svgW - pad * 2) + pad, y: toY(d.mood) }));
-                const energyPts = dailyAvg.map((d, i) => ({ x: (i / (dailyAvg.length - 1)) * (svgW - pad * 2) + pad, y: toY(d.energy) }));
-                return (
-                  <>
-                    <svg width="100%" height={H} viewBox={`0 0 ${svgW} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: 'block', overflow: 'visible' }}>
-                      <path d={makePath(moodPts)} fill="none" stroke={getCategoryColor('mood') || '#F5C2CB'} strokeWidth="2" strokeLinecap="round" />
-                      <path d={makePath(energyPts)} fill="none" stroke={getCategoryColor('energy') || '#F0C878'} strokeWidth="2" strokeLinecap="round" strokeDasharray="5 3" />
-                      {moodPts.map((p, i) => <circle key={`m${i}`} cx={p.x} cy={p.y} r="3" fill="#fff" stroke={getCategoryColor('mood') || '#F5C2CB'} strokeWidth="1.5" />)}
-                      {energyPts.map((p, i) => <circle key={`e${i}`} cx={p.x} cy={p.y} r="3" fill="#fff" stroke={getCategoryColor('energy') || '#F0C878'} strokeWidth="1.5" />)}
-                    </svg>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 4px', marginTop: 4 }}>
-                      {dailyAvg.filter((_, i) => i === 0 || i === dailyAvg.length - 1 || i === Math.floor(dailyAvg.length / 2)).map((d, i) => (
-                        <span key={i} style={{ fontSize: 9, color: '#9ABBC8' }}>{d.date.slice(5)}</span>
-                      ))}
-                    </div>
-                  </>
-                );
-              })() : (
-                <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 12, color: '#9ABBC8' }}>
-                  메인에서 컨디션을 기록하면 흐름이 나타나요
-                </div>
-              )}
-            </div>
-
-            {/* 날짜별 기록 리스트 */}
-            <div style={{ background: 'rgba(255,255,255,.72)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)' }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A', marginBottom: 10 }}>기록 히스토리</div>
-              {dates.length > 0 ? dates.map(date => {
-                const checks = byDate[date];
-                const latest = checks[checks.length - 1];
-                const d = new Date(date + 'T00:00:00');
-                const dayLabel = `${d.getMonth() + 1}/${d.getDate()}`;
-                return (
-                  <div key={date} style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '10px 0', borderBottom: '0.5px solid rgba(100,180,220,.1)',
-                  }}>
-                    <div style={{ minWidth: 36, fontSize: 12, fontWeight: 600, color: '#5AAABB' }}>{dayLabel}</div>
-                    <div style={{ display: 'flex', gap: 8, flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                        <div style={{ width: 6, height: 6, borderRadius: 3, background: getCategoryColor('mood') || '#F5C2CB' }} />
-                        <span style={{ fontSize: 11, color: '#1A3A4A' }}>{latest.mood || '—'}</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                        <div style={{ width: 6, height: 6, borderRadius: 3, background: getCategoryColor('energy') || '#F0C878' }} />
-                        <span style={{ fontSize: 11, color: '#1A3A4A' }}>{latest.energy || '—'}</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                        <div style={{ width: 6, height: 6, borderRadius: 3, background: getCategoryColor('water') || '#7BC8F0' }} />
-                        <span style={{ fontSize: 11, color: '#1A3A4A' }}>{latest.water || latest.gut || '—'}</span>
-                      </div>
-                    </div>
-                    <span style={{ fontSize: 9, color: '#9ABBC8' }}>{checks.length}회</span>
-                  </div>
-                );
-              }) : (
-                <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 12, color: '#9ABBC8' }}>
-                  아직 기록이 없어요
-                </div>
-              )}
-            </div>
+            )}
           </div>
         );
       })()}
@@ -579,61 +480,8 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
         }} />
       )}
 
-      {/* ===== BODY ALBUM ===== */}
-      {(albumCategory === 'body') && (() => {
-        const bodyRecords = getBodyRecords();
-        const sorted = [...bodyRecords].reverse();
-        return (
-          <div style={{ padding: '16px 18px 0', animation: 'breatheIn 0.5s ease both' }}>
-            {sorted.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
-                <div style={{ fontSize: 14, fontWeight: 600 }}>몸무게 기록이 없어요</div>
-                <div style={{ fontSize: 12, marginTop: 6 }}>바디 탭에서 기록을 시작해보세요</div>
-              </div>
-            ) : (
-              <div>
-                {sorted.length >= 2 && (() => {
-                  const data = [...bodyRecords].slice(-14);
-                  const weights = data.map(r => r.weight);
-                  const min = Math.min(...weights) - 1, max = Math.max(...weights) + 1;
-                  const range = max - min || 1;
-                  const w = 280, h = 60;
-                  const points = data.map((r, i) => `${(i / (data.length - 1)) * w},${h - ((r.weight - min) / range) * h}`).join(' ');
-                  return (
-                    <div style={{ marginBottom: 16 }}>
-                      <svg viewBox={`0 0 ${w} ${h}`} style={{ width: '100%', height: 60 }} preserveAspectRatio="none">
-                        <defs><linearGradient id="bgAlbum" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#89cef5" /><stop offset="100%" stopColor="#89cef5" /></linearGradient></defs>
-                        <polyline points={points} fill="none" stroke="url(#bgAlbum)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </div>
-                  );
-                })()}
-                {sorted.map(r => {
-                  const d = new Date(r.date);
-                  return (
-                    <div key={r.date} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-card)', borderRadius: 16, padding: '14px 18px', marginBottom: 8, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)' }}>
-                      <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{d.getMonth() + 1}월 {d.getDate()}일</span>
-                      <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--accent-primary)' }}>{r.weight} kg</span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        );
-      })()}
-
-      {/* ===== BODY SHAPE PLACEHOLDER ===== */}
-      {(albumCategory === 'shape') && (
-        <div style={{ padding: '80px 24px', textAlign: 'center', animation: 'breatheIn 0.5s ease both' }}>
-          <div style={{ fontSize: 32, marginBottom: 12 }}>💪</div>
-          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>바디 앨범</div>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>곧 출시 예정이에요</div>
-        </div>
-      )}
-
-      {/* ===== SKIN GALLERY ===== */}
-      {(albumCategory === 'skin') && (() => {
+      {/* ===== 피부스캔 앨범 ===== */}
+      {(albumCategory === 'skin_scan') && (() => {
         const sorted = [...records].reverse();
         return (
           <div>
@@ -717,7 +565,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
       })()}
 
       {/* ===== INSIGHTS MODE (Redesigned: Timeline + Compare) ===== */}
-      {(albumCategory === 'skin') && mode === 'insights' && (() => {
+      {(albumCategory === 'skin_scan') && mode === 'insights' && (() => {
         const firstRecord = records.length > 0 ? records[0] : null;
         const lastRecord = records.length > 0 ? records[records.length - 1] : null;
         const overallDiff = totalChanges?.overallScore || 0;
@@ -1083,6 +931,71 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
               <p style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-dim)', marginTop: 16, marginBottom: 8 }}>
                 매주 같은 조건(시간, 조명, 맨얼굴)에서 측정하면 정확도가 높아져요
               </p>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* ===== 얼굴 앨범 ===== */}
+      {albumCategory === 'face' && (() => {
+        const skinSubAll = getSkinSubChecks().filter(s => s.photos?.face).reverse();
+        return (
+          <div style={{ padding: '8px 18px 0' }}>
+            {skinSubAll.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
+                <div style={{ fontSize: 24, marginBottom: 8 }}>🤳</div>
+                <div style={{ fontSize: 14, fontWeight: 600 }}>얼굴 사진이 없어요</div>
+                <div style={{ fontSize: 12, marginTop: 6 }}>돌아보기-피부에서 얼굴 사진을 기록해보세요</div>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}>
+                {skinSubAll.map((s, i) => {
+                  const d = new Date(s.date);
+                  return (
+                    <div key={i} style={{ aspectRatio: '1', borderRadius: 4, overflow: 'hidden', position: 'relative', background: 'var(--bg-card-hover)' }}>
+                      <img src={s.photos.face} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <span style={{ position: 'absolute', bottom: 3, left: 5, fontSize: 9, color: '#fff', fontWeight: 600, textShadow: '0 1px 3px rgba(0,0,0,.6)' }}>{d.getMonth() + 1}/{d.getDate()}</span>
+                      {s.score && <span style={{ position: 'absolute', bottom: 3, right: 5, fontSize: 10, color: '#fff', fontWeight: 600, textShadow: '0 1px 3px rgba(0,0,0,.6)' }}>{s.score}점</span>}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* ===== 눈바디 앨범 ===== */}
+      {albumCategory === 'eye_body' && (() => {
+        const eyeBodyAll = getEyeBodyChecks().reverse();
+        return (
+          <div style={{ padding: '8px 18px 0' }}>
+            {eyeBodyAll.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
+                <div style={{ fontSize: 24, marginBottom: 8 }}>👁️</div>
+                <div style={{ fontSize: 14, fontWeight: 600 }}>눈바디 사진이 없어요</div>
+                <div style={{ fontSize: 12, marginTop: 6 }}>돌아보기-바디에서 눈바디 사진을 기록해보세요</div>
+              </div>
+            ) : (
+              eyeBodyAll.map((eb, i) => {
+                const d = new Date(eb.date);
+                const photos = eb.photos || {};
+                const angles = ['정면', '측면', '후면'].filter(a => photos[a]);
+                if (angles.length === 0) return null;
+                return (
+                  <div key={i} style={{ marginBottom: 16 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>{d.getMonth() + 1}월 {d.getDate()}일</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(angles.length, 3)}, 1fr)`, gap: 4 }}>
+                      {angles.map(angle => (
+                        <div key={angle} style={{ aspectRatio: '3/4', borderRadius: 8, overflow: 'hidden', position: 'relative', background: 'var(--bg-card-hover)' }}>
+                          <img src={photos[angle]} alt={angle} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <span style={{ position: 'absolute', bottom: 4, left: 6, fontSize: 10, color: '#fff', fontWeight: 600, textShadow: '0 1px 3px rgba(0,0,0,.6)' }}>{angle}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })
             )}
           </div>
         );

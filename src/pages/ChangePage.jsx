@@ -109,6 +109,7 @@ export default function ChangePage({ onTabChange }) {
   const [calYear, setCalYear] = useState(() => new Date().getFullYear());
   const [calMonth, setCalMonth] = useState(() => new Date().getMonth());
   const [changeViewMode, setChangeViewMode] = useState('기록');
+  const [showConditionHistory, setShowConditionHistory] = useState(false);
   const DAY_NAMES_C = ['일요일','월요일','화요일','수요일','목요일','금요일','토요일'];
   const changeDateLabel = (() => {
     const d = new Date(selectedDate + 'T00:00:00');
@@ -618,6 +619,91 @@ export default function ChangePage({ onTabChange }) {
                 </div>
               ))}
             </div>}
+
+            {/* 컨디션 흐름 카드 */}
+            {showAll && (() => {
+              const allChecks = getConditionChecks();
+              const byDate = {};
+              allChecks.forEach(c => { const d = c.timestamp.slice(0, 10); if (!byDate[d]) byDate[d] = []; byDate[d].push(c); });
+              const dates = Object.keys(byDate).sort().reverse().slice(0, 14);
+              const chartDates = [...dates].reverse();
+              const dailyAvg = chartDates.map(d => {
+                const checks = byDate[d];
+                return { date: d, mood: Math.round(checks.reduce((s, c) => s + (c.mood || 0), 0) / checks.length * 10) / 10, energy: Math.round(checks.reduce((s, c) => s + (c.energy || 0), 0) / checks.length * 10) / 10 };
+              });
+              const makePath = (pts) => { if (pts.length < 2) return ''; let d = `M${pts[0].x} ${pts[0].y}`; for (let i = 1; i < pts.length; i++) { const cp = (pts[i].x + pts[i-1].x)/2; d += ` C${cp} ${pts[i-1].y} ${cp} ${pts[i].y} ${pts[i].x} ${pts[i].y}`; } return d; };
+              return (
+                <div onClick={() => setShowConditionHistory(true)} style={{ ...v2CardStyle, cursor: 'pointer', ...fadeUp(0.1) }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>컨디션 흐름</span>
+                    <span style={{ fontSize: 11, color: '#7AAABB' }}>탭하여 상세보기 ›</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: 14, marginBottom: 8 }}>
+                    {[{ c: getCategoryColor('mood'), l: '기분' }, { c: getCategoryColor('energy'), l: '에너지' }].map(x => (
+                      <div key={x.l} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <div style={{ width: 12, height: 2, borderRadius: 1, background: x.c }} /><span style={{ fontSize: 10, color: '#7AAABB' }}>{x.l}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {dailyAvg.length >= 2 ? (() => {
+                    const svgW = Math.max(dailyAvg.length * 40, 220), H = 60, pad = 16;
+                    const toY = (val) => Math.round(H - (val / 10) * (H - 12) - 6);
+                    const moodPts = dailyAvg.map((d, i) => ({ x: (i / (dailyAvg.length - 1)) * (svgW - pad * 2) + pad, y: toY(d.mood) }));
+                    const energyPts = dailyAvg.map((d, i) => ({ x: (i / (dailyAvg.length - 1)) * (svgW - pad * 2) + pad, y: toY(d.energy) }));
+                    return <>
+                      <svg width="100%" height={H} viewBox={`0 0 ${svgW} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: 'block', overflow: 'visible' }}>
+                        <path d={makePath(moodPts)} fill="none" stroke={getCategoryColor('mood')} strokeWidth="2" strokeLinecap="round" />
+                        <path d={makePath(energyPts)} fill="none" stroke={getCategoryColor('energy')} strokeWidth="2" strokeLinecap="round" strokeDasharray="5 3" />
+                        {moodPts.map((p, i) => <circle key={`m${i}`} cx={p.x} cy={p.y} r="3" fill="#fff" stroke={getCategoryColor('mood')} strokeWidth="1.5" />)}
+                        {energyPts.map((p, i) => <circle key={`e${i}`} cx={p.x} cy={p.y} r="3" fill="#fff" stroke={getCategoryColor('energy')} strokeWidth="1.5" />)}
+                      </svg>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 4px', marginTop: 4 }}>
+                        {dailyAvg.filter((_, i) => i === 0 || i === dailyAvg.length - 1 || i === Math.floor(dailyAvg.length / 2)).map((d, i) => (
+                          <span key={i} style={{ fontSize: 9, color: '#9ABBC8' }}>{d.date.slice(5)}</span>
+                        ))}
+                      </div>
+                    </>;
+                  })() : <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 12, color: '#9ABBC8' }}>메인에서 컨디션을 기록하면 흐름이 나타나요</div>}
+                </div>
+              );
+            })()}
+
+            {/* 컨디션 기록 히스토리 모달 */}
+            {showConditionHistory && (() => {
+              const allChecks = getConditionChecks();
+              const byDate = {};
+              allChecks.forEach(c => { const d = c.timestamp.slice(0, 10); if (!byDate[d]) byDate[d] = []; byDate[d].push(c); });
+              const dates = Object.keys(byDate).sort().reverse().slice(0, 30);
+              return (
+                <div onClick={() => setShowConditionHistory(false)} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+                  <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '20px 20px 40px', width: '100%', maxWidth: 420, maxHeight: '75vh', overflowY: 'auto' }}>
+                    <div style={{ width: 40, height: 4, borderRadius: 2, background: '#D0D0D0', margin: '0 auto 16px' }} />
+                    <div style={{ fontSize: 16, fontWeight: 600, color: '#1A3A4A', marginBottom: 16 }}>기록 히스토리</div>
+                    {dates.length > 0 ? dates.map(date => {
+                      const checks = byDate[date];
+                      const latest = checks[checks.length - 1];
+                      const d = new Date(date + 'T00:00:00');
+                      return (
+                        <div key={date} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '0.5px solid rgba(200,220,230,.3)' }}>
+                          <div style={{ minWidth: 40, fontSize: 12, fontWeight: 600, color: '#5AAABB' }}>{d.getMonth() + 1}/{d.getDate()}</div>
+                          <div style={{ display: 'flex', gap: 10, flex: 1 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                              <div style={{ width: 6, height: 6, borderRadius: 3, background: getCategoryColor('mood') }} />
+                              <span style={{ fontSize: 12, color: '#1A3A4A' }}>{latest.mood || '—'}</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                              <div style={{ width: 6, height: 6, borderRadius: 3, background: getCategoryColor('energy') }} />
+                              <span style={{ fontSize: 12, color: '#1A3A4A' }}>{latest.energy || '—'}</span>
+                            </div>
+                          </div>
+                          <span style={{ fontSize: 10, color: '#9ABBC8' }}>{checks.length}회</span>
+                        </div>
+                      );
+                    }) : <div style={{ padding: '20px 0', textAlign: 'center', fontSize: 12, color: '#9ABBC8' }}>기록이 없어요</div>}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* 에너지 카드 */}
             {showEnergy && <div style={{ ...v2CardStyle, ...fadeUp(0.12) }}>
