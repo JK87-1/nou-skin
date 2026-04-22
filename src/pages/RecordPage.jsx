@@ -5,6 +5,8 @@ import { getBodyRecords, getLatestWeight, getStartWeight, getBodyGoal, getBodyPr
 import { getEnabledCategories, getCategoryColor } from '../storage/ProfileStorage';
 import { savePhotoDB, getPhotoDB, resizeImage } from '../storage/PhotoDB';
 import { getRoutineItems, getChecks } from '../storage/RoutineCheckStorage';
+import { getSupplementItems, addSupplementItem, deleteSupplementItem, getSupplementChecks, toggleSupplementCheck } from '../storage/SupplementStorage';
+import { getProducts, saveProduct, deleteProduct, getTrackerChecks, toggleTrackerCheck, getProductsForMode, TRACKER_CATEGORIES } from '../storage/TrackerStorage';
 
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
 
@@ -322,6 +324,18 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
   const [showCal, setShowCal] = useState(false);
   const [recordViewMode, setRecordViewMode] = useState('기록');
   const [flowPeriod, setFlowPeriod] = useState('1주');
+  // Supplement & Skincare state
+  const [suppItems, setSuppItems] = useState(() => getSupplementItems());
+  const [suppChecks, setSuppChecks] = useState(() => getSupplementChecks());
+  const [suppAddTiming, setSuppAddTiming] = useState(null); // null | 'morning' | 'lunch' | 'evening'
+  const [suppAddName, setSuppAddName] = useState('');
+  const [skincareProducts, setSkincareProducts] = useState(() => getProducts());
+  const [skincareChecks, setSkincareChecks] = useState(() => getTrackerChecks());
+  const [skincareMode, setSkincareMode] = useState('morning'); // 'morning' | 'night'
+  const [showSkincareAdd, setShowSkincareAdd] = useState(false);
+  const [scAddStep, setScAddStep] = useState('');
+  const [scAddName, setScAddName] = useState('');
+  const [scAddBrand, setScAddBrand] = useState('');
   const [calYear, setCalYear] = useState(() => new Date().getFullYear());
   const [calMonth, setCalMonth] = useState(() => new Date().getMonth());
 
@@ -1389,6 +1403,263 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
           )}
 
         </div>
+        );
+      })()}
+
+      {/* ===== 영양 탭 ===== */}
+      {foodTab === 'supplement' && (() => {
+        const timings = [
+          { key: 'morning', label: '아침' },
+          { key: 'lunch', label: '점심' },
+          { key: 'evening', label: '저녁' },
+        ];
+        const totalPills = suppItems.length;
+        const donePills = suppItems.filter(it => suppChecks[it.id]).length;
+        const pillPct = totalPills > 0 ? Math.round((donePills / totalPills) * 100) : 0;
+        const undone = suppItems.filter(it => !suppChecks[it.id]);
+        const cardStyle = { background: 'rgba(255,255,255,.72)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)', marginBottom: 10 };
+
+        // Skincare
+        const mornProds = skincareProducts.filter(p => p.timeSlot === 'morning' || p.timeSlot === 'both');
+        const nightProds = skincareProducts.filter(p => p.timeSlot === 'night' || p.timeSlot === 'both');
+        const currentProds = skincareMode === 'morning' ? mornProds : nightProds;
+        const allSkincareProds = [...mornProds, ...nightProds];
+        const scDone = allSkincareProds.filter(p => skincareChecks[p.timeSlot === 'both' ? skincareMode : (p.timeSlot === 'morning' ? 'morning' : 'night')]?.[p.id]).length;
+        // Simpler: count done across both modes
+        const scTotalDone = skincareProducts.filter(p => {
+          if (p.timeSlot === 'morning' || p.timeSlot === 'both') {
+            if (skincareChecks.morning?.[p.id]) return true;
+          }
+          if (p.timeSlot === 'night' || p.timeSlot === 'both') {
+            if (skincareChecks.night?.[p.id]) return true;
+          }
+          return false;
+        }).length;
+        const scTotal = skincareProducts.length;
+        const scPct = scTotal > 0 ? Math.round((scTotalDone / scTotal) * 100) : 0;
+        const scUndone = currentProds.filter(p => !skincareChecks[skincareMode]?.[p.id]);
+
+        const STEP_LABELS = ['클렌저','토너','세럼','에센스','크림','선크림','마스크팩','기타'];
+
+        return (
+          <div style={{ padding: '8px 14px 0' }}>
+            {/* 영양제 카드 */}
+            <div style={{ ...cardStyle, ...fadeUp(0.05) }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('supplement') }} />
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>영양제</span>
+                </div>
+                <span style={{ fontSize: 11, color: '#5AAABB', fontWeight: 500 }}>{donePills} / {totalPills} 완료</span>
+              </div>
+              {/* Progress bar */}
+              {totalPills > 0 && (
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ height: 6, borderRadius: 3, background: 'rgba(200,220,230,.3)', overflow: 'hidden', marginBottom: 4 }}>
+                    <div style={{ height: '100%', borderRadius: 3, background: getCategoryColor('supplement'), width: `${pillPct}%`, transition: 'width 0.3s' }} />
+                  </div>
+                  <div style={{ textAlign: 'right', fontSize: 11, color: '#7AAABB' }}>{pillPct}%</div>
+                </div>
+              )}
+              {/* Time slots */}
+              {timings.map(t => {
+                const items = suppItems.filter(it => it.timing === t.key);
+                return (
+                  <div key={t.key} style={{ marginBottom: 10 }}>
+                    <div style={{ fontSize: 12, color: '#7AAABB', marginBottom: 6 }}>{t.label}</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                      {items.map(it => {
+                        const checked = !!suppChecks[it.id];
+                        return (
+                          <div key={it.id} onClick={() => {
+                            const next = toggleSupplementCheck(it.id);
+                            setSuppChecks(next);
+                          }} style={{
+                            display: 'flex', alignItems: 'center', gap: 6,
+                            padding: '7px 14px', borderRadius: 99, cursor: 'pointer',
+                            background: checked ? 'rgba(200,230,210,.4)' : 'rgba(255,255,255,.5)',
+                            border: checked ? '1.5px solid rgba(100,180,130,.5)' : '1.5px solid rgba(200,220,230,.3)',
+                          }}>
+                            <div style={{
+                              width: 14, height: 14, borderRadius: '50%',
+                              background: checked ? '#4A9A7A' : 'transparent',
+                              border: checked ? 'none' : '1.5px solid #B0C8C0',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            }}>
+                              {checked && <span style={{ color: '#fff', fontSize: 9, fontWeight: 700 }}>✓</span>}
+                            </div>
+                            <span style={{ fontSize: 13, color: checked ? '#2A6A4A' : '#5A8A9A', fontWeight: checked ? 600 : 400 }}>{it.name}</span>
+                          </div>
+                        );
+                      })}
+                      {/* + 추가 버튼 */}
+                      {suppAddTiming === t.key ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <input value={suppAddName} onChange={e => setSuppAddName(e.target.value)}
+                            placeholder="영양제 이름" autoFocus
+                            onKeyDown={e => {
+                              if (e.key === 'Enter' && suppAddName.trim()) {
+                                setSuppItems(addSupplementItem(suppAddName.trim(), t.key));
+                                setSuppAddName(''); setSuppAddTiming(null);
+                              }
+                            }}
+                            style={{
+                              width: 100, padding: '7px 10px', borderRadius: 99, border: '1.5px solid rgba(100,180,220,.3)',
+                              background: 'rgba(255,255,255,.7)', fontSize: 12, color: '#1A3A4A', outline: 'none', fontFamily: 'inherit',
+                            }} />
+                          <div onClick={() => {
+                            if (suppAddName.trim()) {
+                              setSuppItems(addSupplementItem(suppAddName.trim(), t.key));
+                              setSuppAddName(''); setSuppAddTiming(null);
+                            }
+                          }} style={{ padding: '7px 10px', borderRadius: 99, background: 'rgba(100,180,130,.2)', cursor: 'pointer', fontSize: 11, color: '#2A6A4A', fontWeight: 600 }}>확인</div>
+                          <div onClick={() => { setSuppAddTiming(null); setSuppAddName(''); }}
+                            style={{ padding: '7px 8px', cursor: 'pointer', fontSize: 11, color: '#9ABBC8' }}>취소</div>
+                        </div>
+                      ) : (
+                        <div onClick={() => setSuppAddTiming(t.key)} style={{
+                          display: 'flex', alignItems: 'center', gap: 4,
+                          padding: '7px 14px', borderRadius: 99, cursor: 'pointer',
+                          background: 'transparent', border: '1.5px dashed rgba(180,210,200,.5)',
+                          color: '#9ABBC8', fontSize: 12,
+                        }}>+ 추가</div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+              {/* Undone guidance */}
+              {undone.length > 0 && totalPills > 0 && (
+                <div style={{
+                  background: 'rgba(200,230,210,.15)', borderRadius: 12, padding: '12px 14px', marginTop: 6,
+                }}>
+                  <div style={{ fontSize: 13, color: '#3A7A5A', lineHeight: 1.6 }}>
+                    {undone.map(u => u.name).join('·')}를 아직 못 드셨어요.
+                  </div>
+                  <div style={{ fontSize: 13, color: '#3A7A5A', lineHeight: 1.6 }}>
+                    {undone.some(u => u.timing === 'evening') ? '저녁' : undone.some(u => u.timing === 'lunch') ? '점심' : '아침'} 식후에 챙겨보세요 💊
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 스킨케어 카드 */}
+            <div style={{ ...cardStyle, ...fadeUp(0.1) }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('supplement') }} />
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>스킨케어</span>
+                </div>
+                <span style={{ fontSize: 11, color: '#5AAABB', fontWeight: 500 }}>{scTotalDone} / {scTotal} 완료</span>
+              </div>
+              {/* Progress bar */}
+              {scTotal > 0 && (
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ height: 6, borderRadius: 3, background: 'rgba(200,220,230,.3)', overflow: 'hidden', marginBottom: 4 }}>
+                    <div style={{ height: '100%', borderRadius: 3, background: getCategoryColor('supplement'), width: `${scPct}%`, transition: 'width 0.3s' }} />
+                  </div>
+                  <div style={{ textAlign: 'right', fontSize: 11, color: '#7AAABB' }}>{scPct}%</div>
+                </div>
+              )}
+              {/* Morning/Night tabs */}
+              <div style={{ display: 'flex', gap: 0, marginBottom: 14 }}>
+                {[{ key: 'morning', label: '아침 루틴' }, { key: 'night', label: '저녁 루틴' }].map(tab => (
+                  <div key={tab.key} onClick={() => setSkincareMode(tab.key)} style={{
+                    flex: 1, textAlign: 'center', padding: '8px 0', cursor: 'pointer',
+                    fontSize: 12, fontWeight: skincareMode === tab.key ? 600 : 400,
+                    color: skincareMode === tab.key ? '#1A3A4A' : '#9ABBC8',
+                    borderBottom: skincareMode === tab.key ? '2px solid #1A3A4A' : '1px solid rgba(200,220,230,.3)',
+                  }}>{tab.label}</div>
+                ))}
+              </div>
+              {/* Product cards grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 10 }}>
+                {currentProds.map((prod, idx) => {
+                  const checked = !!skincareChecks[skincareMode]?.[prod.id];
+                  const catInfo = TRACKER_CATEGORIES[prod.category] || TRACKER_CATEGORIES['기타'];
+                  return (
+                    <div key={prod.id} onClick={() => {
+                      const next = toggleTrackerCheck(skincareMode, prod.id);
+                      setSkincareChecks(next);
+                    }} style={{
+                      position: 'relative', padding: '12px 14px', borderRadius: 14, cursor: 'pointer',
+                      background: checked ? 'rgba(200,230,210,.25)' : 'rgba(255,255,255,.5)',
+                      border: checked ? '1.5px solid rgba(100,180,130,.4)' : '1.5px solid rgba(200,220,230,.3)',
+                      transition: 'all 0.15s',
+                    }}>
+                      {/* Check circle */}
+                      <div style={{
+                        position: 'absolute', top: -6, right: -2,
+                        width: 22, height: 22, borderRadius: '50%',
+                        background: checked ? '#4A9A7A' : 'rgba(200,220,230,.4)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        border: checked ? 'none' : '1.5px solid rgba(180,210,200,.5)',
+                      }}>
+                        {checked && <span style={{ color: '#fff', fontSize: 11, fontWeight: 700 }}>✓</span>}
+                      </div>
+                      <div style={{ fontSize: 10, color: '#9ABBC8', marginBottom: 2 }}>{idx + 1}단계</div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A', marginBottom: 2 }}>{prod.category}</div>
+                      <div style={{ fontSize: 11, color: '#7AAABB' }}>{prod.brand || prod.name}</div>
+                    </div>
+                  );
+                })}
+                {/* 단계 추가 */}
+                {showSkincareAdd ? (
+                  <div style={{
+                    padding: '10px 12px', borderRadius: 14,
+                    background: 'rgba(255,255,255,.5)', border: '1.5px dashed rgba(180,210,200,.5)',
+                    display: 'flex', flexDirection: 'column', gap: 6,
+                  }}>
+                    <select value={scAddStep} onChange={e => setScAddStep(e.target.value)} style={{
+                      padding: '6px 8px', borderRadius: 8, border: '1px solid rgba(200,220,230,.3)',
+                      background: '#fff', fontSize: 11, color: '#1A3A4A', fontFamily: 'inherit', outline: 'none',
+                    }}>
+                      <option value="">카테고리</option>
+                      {STEP_LABELS.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                    <input value={scAddBrand} onChange={e => setScAddBrand(e.target.value)}
+                      placeholder="브랜드" style={{
+                        padding: '6px 8px', borderRadius: 8, border: '1px solid rgba(200,220,230,.3)',
+                        background: '#fff', fontSize: 11, color: '#1A3A4A', fontFamily: 'inherit', outline: 'none',
+                      }} />
+                    <div style={{ display: 'flex', gap: 4 }}>
+                      <div onClick={() => {
+                        if (scAddStep) {
+                          saveProduct({ category: scAddStep, name: scAddStep, brand: scAddBrand, timeSlot: skincareMode });
+                          setSkincareProducts(getProducts());
+                          setScAddStep(''); setScAddBrand(''); setShowSkincareAdd(false);
+                        }
+                      }} style={{ flex: 1, textAlign: 'center', padding: '6px 0', borderRadius: 8, background: 'rgba(100,180,130,.2)', fontSize: 11, color: '#2A6A4A', fontWeight: 600, cursor: 'pointer' }}>추가</div>
+                      <div onClick={() => { setShowSkincareAdd(false); setScAddStep(''); setScAddBrand(''); }}
+                        style={{ padding: '6px 8px', fontSize: 11, color: '#9ABBC8', cursor: 'pointer' }}>취소</div>
+                    </div>
+                  </div>
+                ) : (
+                  <div onClick={() => setShowSkincareAdd(true)} style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    padding: '12px 14px', borderRadius: 14, cursor: 'pointer', minHeight: 70,
+                    background: 'transparent', border: '1.5px dashed rgba(180,210,200,.5)',
+                  }}>
+                    <span style={{ fontSize: 18, color: '#B0C8C0' }}>+</span>
+                    <span style={{ fontSize: 11, color: '#9ABBC8', marginTop: 2 }}>단계 추가</span>
+                  </div>
+                )}
+              </div>
+              {/* Undone guidance */}
+              {scUndone.length > 0 && scTotal > 0 && (
+                <div style={{
+                  background: 'rgba(200,230,210,.15)', borderRadius: 12, padding: '12px 14px',
+                }}>
+                  <div style={{ fontSize: 13, color: '#3A7A5A', lineHeight: 1.6 }}>
+                    {scUndone.map(p => p.category).join('·')}이 남았어요.
+                  </div>
+                  <div style={{ fontSize: 13, color: '#3A7A5A', lineHeight: 1.6 }}>
+                    {skincareMode === 'morning' ? '선크림은 외출 전에 꼭 챙겨요' : '클렌징부터 시작해보세요'} ✨
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         );
       })()}
 
