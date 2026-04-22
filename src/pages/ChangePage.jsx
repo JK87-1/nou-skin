@@ -481,7 +481,10 @@ export default function ChangePage({ onTabChange }) {
           {/* Patterns Card */}
             <div style={{ ...v2CardStyle, ...fadeUp(0.1) }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>발견한 패턴</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 3, height: 14, borderRadius: 2, background: '#80C0E8' }} />
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>발견한 패턴</span>
+                </div>
                 <span style={{ fontSize: 9, color: '#80C0E8', fontWeight: 500 }}>● LIVE</span>
               </div>
               {DEMO_PATTERNS.map((pattern, idx) => (
