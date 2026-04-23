@@ -220,6 +220,28 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
     return () => clearInterval(timer);
   }, []);
 
+  // localStorage 변경 감지 → 기록 추가 시 브리핑 갱신 (1초 디바운스)
+  useEffect(() => {
+    const WATCH_KEYS = ['lua_food_records', 'lua_record_v2', 'lua_body_records', 'lua_blood_sugar', 'nou_energy_sub_checks'];
+    let debounceTimer = null;
+    const triggerRefresh = () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => setBriefingRefreshKey(k => k + 1), 1000);
+    };
+    const onStorage = (e) => { if (WATCH_KEYS.includes(e.key)) triggerRefresh(); };
+    const origSetItem = localStorage.setItem.bind(localStorage);
+    localStorage.setItem = function(key, value) {
+      origSetItem(key, value);
+      if (WATCH_KEYS.includes(key)) triggerRefresh();
+    };
+    window.addEventListener('storage', onStorage);
+    return () => {
+      clearTimeout(debounceTimer);
+      window.removeEventListener('storage', onStorage);
+      localStorage.setItem = origSetItem;
+    };
+  }, []);
+
   // 기록 데이터 변경 시 상단 브리핑 자동 호출
   useEffect(() => {
     const now = new Date();
@@ -331,7 +353,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         }
       })
       .catch(() => { setBriefingFailed(true); })
-      .finally(() => { setBriefingLoading(false); setBriefingRefreshKey(k => k + 1); });
+      .finally(() => setBriefingLoading(false));
   };
 
   const handleSelect = (id, val) => {
@@ -851,14 +873,14 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       {showWeightModal && (
         <AddWeightModal
           latest={getLatestWeight()}
-          onSave={(w) => { saveBodyRecord(w); setShowWeightModal(false); setWeightRefreshKey(k => k + 1); setBriefingRefreshKey(k => k + 1); }}
+          onSave={(w) => { saveBodyRecord(w); setShowWeightModal(false); setWeightRefreshKey(k => k + 1); }}
           onClose={() => setShowWeightModal(false)}
         />
       )}
 
       {showActivityModal && (
         <AddActivityModal
-          onSave={() => { setShowActivityModal(false); setWeightRefreshKey(k => k + 1); setBriefingRefreshKey(k => k + 1); }}
+          onSave={() => { setShowActivityModal(false); setWeightRefreshKey(k => k + 1); }}
           onClose={() => setShowActivityModal(false)}
         />
       )}
@@ -870,7 +892,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             saveFoodRecord(today, food);
             setShowFoodModal(false);
             setWeightRefreshKey(k => k + 1);
-            setBriefingRefreshKey(k => k + 1);
           }}
           onClose={() => setShowFoodModal(false)}
         />
