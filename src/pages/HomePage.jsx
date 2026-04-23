@@ -219,60 +219,48 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
     return () => clearInterval(timer);
   }, []);
 
-  // 앱 로드 시 최근 3시간 내 체크 있으면 상단 브리핑 자동 호출
+  // 앱 로드 시 최근 3시간 내 기록 데이터 기반 상단 브리핑 자동 호출
   useEffect(() => {
-    const latest = getLatestCheck();
-    if (!latest?.timestamp) return;
-    const elapsed = Date.now() - new Date(latest.timestamp).getTime();
-    if (elapsed > 3 * 60 * 60 * 1000) return; // 3시간 초과 → 스킵
     // 이미 캐시된 브리핑이 있으면 스킵
     try {
       const saved = JSON.parse(localStorage.getItem('lua_body_briefing') || '{}');
       if (saved.date === new Date().toISOString().slice(0, 10) && saved.text && saved.fromAuto) return;
     } catch {}
 
-    setBriefingLoading(true);
-    const sliderTo100 = v => Math.round(((v - 1) / 9) * 100);
     const now = new Date();
     const todayKey = now.toISOString().slice(0, 10);
     const dayRec = (() => { try { return (JSON.parse(localStorage.getItem('lua_record_v2') || '{}'))[todayKey] || {}; } catch { return {}; } })();
     const foods = getTodayFoods().filter(f => !f.name?.startsWith('물 '));
     const todayNut = getTodayNutrition();
-    const suppItems = getSupplementItems();
-    const suppChecks = getSupplementChecks();
-    const suppDone = suppItems.filter(s => suppChecks[s.id]);
-    const suppUndone = suppItems.filter(s => !suppChecks[s.id]);
-    const latestW = getLatestWeight();
     const todayBS = getTodayBloodSugar();
+    // 활력 기록
+    const energySub = (() => { try { const checks = JSON.parse(localStorage.getItem('nou_energy_sub_checks') || '[]'); return checks.find(c => c.date === todayKey); } catch { return null; } })();
 
     const recentData = {};
     if (foods.length > 0) recentData.diet = `${foods.map(f => f.name).filter(Boolean).join(', ')} (${Math.round(todayNut.kcal)}kcal, 탄${Math.round(todayNut.carb)}g 단${Math.round(todayNut.protein)}g 지${Math.round(todayNut.fat)}g)`;
     if (dayRec.water?.cups > 0) recentData.water = `${dayRec.water.cups}잔`;
     if (dayRec.steps > 0) recentData.steps = `${dayRec.steps.toLocaleString()}보`;
     if (dayRec.exercise?.log && Object.keys(dayRec.exercise.log).length > 0) recentData.exercise = Object.entries(dayRec.exercise.log).map(([n, m]) => `${n} ${m}분`).join(', ');
-    if (suppItems.length > 0) recentData.supplements = `완료: ${suppDone.map(s => s.name).join(', ') || '없음'} / 미완료: ${suppUndone.map(s => s.name).join(', ') || '없음'}`;
-    if (latestW?.weight) recentData.weight = `${latestW.weight}kg`;
-    if (todayBS?.value) recentData.bloodSugar = `${todayBS.value}mg/dL (${todayBS.timing})`;
     if (dayRec.sleep?.hours) recentData.sleep = `${dayRec.sleep.hours}시간${dayRec.sleep.quality ? ' (' + dayRec.sleep.quality + ')' : ''}`;
+    if (todayBS?.value) recentData.bloodSugar = `${todayBS.value}mg/dL (${todayBS.timing})`;
+    if (energySub?.vitality) recentData.vitality = `${energySub.vitality}/10`;
 
+    // 기록된 데이터가 하나도 없으면 스킵
+    if (Object.keys(recentData).length === 0) return;
+
+    setBriefingLoading(true);
     fetch('/api/condition-briefing', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type: 'body',
-        energy: sliderTo100(latest.energy || 5),
-        mood: sliderTo100(latest.mood || 5),
-        hydration: sliderTo100(latest.gut || 5),
-        recentData,
-      }),
+      body: JSON.stringify({ type: 'body', recentData }),
     })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (data?.briefing) {
-          const time = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: true });
+          const time = now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: true });
           setBodyBriefing(data.briefing);
           setBriefingTime(time);
-          localStorage.setItem('lua_body_briefing', JSON.stringify({ date: new Date().toISOString().slice(0, 10), text: data.briefing, time, fromAuto: true }));
+          localStorage.setItem('lua_body_briefing', JSON.stringify({ date: todayKey, text: data.briefing, time, fromAuto: true }));
         }
       })
       .catch(() => {})

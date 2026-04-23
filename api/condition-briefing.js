@@ -26,18 +26,16 @@ function getTimeOfDay(hour) {
 }
 
 function buildBodyPrompt(data) {
-  const { energy, mood, hydration, recentData, timeOfDay } = data;
+  const { recentData, timeOfDay } = data;
 
   const dataLines = [];
-  dataLines.push(`슬라이더 — 에너지: ${energy ?? '미입력'} | 기분: ${mood ?? '미입력'} | 수분감: ${hydration ?? '미입력'} (각 0~100)`);
   if (recentData?.diet) dataLines.push(`식단: ${recentData.diet}`);
   if (recentData?.water) dataLines.push(`수분: ${recentData.water}`);
   if (recentData?.steps) dataLines.push(`걸음수: ${recentData.steps}`);
   if (recentData?.exercise) dataLines.push(`운동: ${recentData.exercise}`);
-  if (recentData?.supplements) dataLines.push(`영양제: ${recentData.supplements}`);
-  if (recentData?.weight) dataLines.push(`몸무게: ${recentData.weight}`);
-  if (recentData?.bloodSugar) dataLines.push(`혈당: ${recentData.bloodSugar}`);
   if (recentData?.sleep) dataLines.push(`수면: ${recentData.sleep}`);
+  if (recentData?.bloodSugar) dataLines.push(`혈당: ${recentData.bloodSugar}`);
+  if (recentData?.vitality) dataLines.push(`활력: ${recentData.vitality}`);
 
   return `아래는 이 사람이 최근 3시간 내에 기록한 웰니스 데이터야.
 현재 상태를 짧게 진단하고, 지금 할 수 있는 웰니스 행동 1개를 제안해줘.
@@ -152,8 +150,8 @@ export default async function handler(req, res) {
     let prompt, maxTokens;
 
     if (type === 'body') {
-      const { energy, mood, hydration, recentData } = req.body;
-      prompt = buildBodyPrompt({ energy, mood, hydration, recentData, timeOfDay });
+      const { recentData } = req.body;
+      prompt = buildBodyPrompt({ recentData, timeOfDay });
       maxTokens = 200;
     } else {
       const { current, previous, skinType, todayCount, stableSkinAge } = req.body;
