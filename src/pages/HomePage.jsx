@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import SkinWeather from '../components/SkinWeather';
 import { getLatestRecord } from '../storage/SkinStorage';
 import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, GENDER_OPTIONS, getCategoryColor } from '../storage/ProfileStorage';
@@ -194,9 +194,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
     } catch { return DEFAULT_CARD_ORDER; }
   });
   const [editMode, setEditMode] = useState(false);
-  const [dragIdx, setDragIdx] = useState(null);
-  const dragOverIdx = useRef(null);
-  const cardRefs = useRef({});
   const [userProfile, setUserProfile] = useState(getProfile);
 
   const saveCardOrder = useCallback((order) => {
@@ -505,45 +502,49 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       )}
       {cardOrder.map((cardId, cardIdx) => {
         const isEditing = editMode;
+        const isFirst = cardIdx === 0;
+        const isLast = cardIdx === cardOrder.length - 1;
+        const arrowBtn = (dir) => {
+          const isUp = dir === 'up';
+          return (
+            <div
+              onClick={(e) => { e.stopPropagation(); moveCard(cardIdx, isUp ? cardIdx - 1 : cardIdx + 1); }}
+              style={{
+                width: 28, height: 28, borderRadius: '50%',
+                background: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                {isUp ? <path d="M18 15l-6-6-6 6"/> : <path d="M6 9l6 6 6-6"/>}
+              </svg>
+            </div>
+          );
+        };
         const editWrap = (label, content) => (
           <div
             key={cardId}
-            draggable={isEditing}
-            onDragStart={(e) => { setDragIdx(cardIdx); e.dataTransfer.effectAllowed = 'move'; }}
-            onDragOver={(e) => { e.preventDefault(); dragOverIdx.current = cardIdx; }}
-            onDragEnd={() => { if (dragIdx !== null && dragOverIdx.current !== null && dragIdx !== dragOverIdx.current) moveCard(dragIdx, dragOverIdx.current); setDragIdx(null); dragOverIdx.current = null; }}
-            onTouchStart={(e) => { if (!isEditing) return; setDragIdx(cardIdx); }}
-            onTouchMove={(e) => {
-              if (!isEditing || dragIdx === null) return;
-              const touch = e.touches[0];
-              const els = document.querySelectorAll('[data-card-idx]');
-              els.forEach(el => {
-                const rect = el.getBoundingClientRect();
-                if (touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
-                  dragOverIdx.current = Number(el.dataset.cardIdx);
-                }
-              });
-            }}
-            onTouchEnd={() => { if (dragIdx !== null && dragOverIdx.current !== null && dragIdx !== dragOverIdx.current) moveCard(dragIdx, dragOverIdx.current); setDragIdx(null); dragOverIdx.current = null; }}
-            data-card-idx={cardIdx}
             style={{
               animation: isEditing ? 'cardWiggle 0.3s ease-in-out infinite' : 'none',
-              opacity: dragIdx === cardIdx ? 0.5 : 1,
-              transition: 'opacity 0.2s',
               position: 'relative',
-              cursor: isEditing ? 'grab' : 'default',
             }}
           >
             {isEditing && (
               <div style={{
-                position: 'absolute', top: 4, left: '50%', transform: 'translateX(-50%)', zIndex: 10,
-                display: 'flex', alignItems: 'center', gap: 6,
-                background: 'rgba(0,0,0,0.6)', borderRadius: 12, padding: '4px 12px',
+                position: 'absolute', top: 6, left: 0, right: 0, zIndex: 10,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
               }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round">
-                  <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-                </svg>
-                <span style={{ fontSize: 11, color: '#fff', fontWeight: 500 }}>{label}</span>
+                {!isFirst && arrowBtn('up')}
+                <div style={{
+                  background: 'rgba(0,0,0,0.6)', borderRadius: 12, padding: '4px 14px',
+                  display: 'flex', alignItems: 'center', gap: 6,
+                }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round">
+                    <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+                  </svg>
+                  <span style={{ fontSize: 11, color: '#fff', fontWeight: 500 }}>{label}</span>
+                </div>
+                {!isLast && arrowBtn('down')}
               </div>
             )}
             {content}
