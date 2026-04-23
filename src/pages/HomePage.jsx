@@ -212,6 +212,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   });
   const [briefingLoading, setBriefingLoading] = useState(false);
   const [briefingFailed, setBriefingFailed] = useState(false);
+  const [briefingRefreshKey, setBriefingRefreshKey] = useState(0);
 
   // Update minutes ago every 60s
   useEffect(() => {
@@ -219,14 +220,8 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
     return () => clearInterval(timer);
   }, []);
 
-  // 앱 로드 시 최근 3시간 내 기록 데이터 기반 상단 브리핑 자동 호출
+  // 기록 데이터 변경 시 상단 브리핑 자동 호출
   useEffect(() => {
-    // 이미 캐시된 브리핑이 있으면 스킵
-    try {
-      const saved = JSON.parse(localStorage.getItem('lua_body_briefing') || '{}');
-      if (saved.date === new Date().toISOString().slice(0, 10) && saved.text && saved.fromAuto) return;
-    } catch {}
-
     const now = new Date();
     const todayKey = now.toISOString().slice(0, 10);
     const dayRec = (() => { try { return (JSON.parse(localStorage.getItem('lua_record_v2') || '{}'))[todayKey] || {}; } catch { return {}; } })();
@@ -265,7 +260,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       })
       .catch(() => {})
       .finally(() => setBriefingLoading(false));
-  }, []);
+  }, [briefingRefreshKey]);
 
   const activeCheck = justUpdated ? todayChecks[todayChecks.length - 1] : (resetNeeded ? null : latestCheck);
   const tier = activeCheck ? getTier(activeCheck.energy || 3, activeCheck.mood || 3) : getTier(selections.energy, selections.mood);
@@ -336,7 +331,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         }
       })
       .catch(() => { setBriefingFailed(true); })
-      .finally(() => setBriefingLoading(false));
+      .finally(() => { setBriefingLoading(false); setBriefingRefreshKey(k => k + 1); });
   };
 
   const handleSelect = (id, val) => {
@@ -856,14 +851,14 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       {showWeightModal && (
         <AddWeightModal
           latest={getLatestWeight()}
-          onSave={(w) => { saveBodyRecord(w); setShowWeightModal(false); setWeightRefreshKey(k => k + 1); }}
+          onSave={(w) => { saveBodyRecord(w); setShowWeightModal(false); setWeightRefreshKey(k => k + 1); setBriefingRefreshKey(k => k + 1); }}
           onClose={() => setShowWeightModal(false)}
         />
       )}
 
       {showActivityModal && (
         <AddActivityModal
-          onSave={() => { setShowActivityModal(false); setWeightRefreshKey(k => k + 1); }}
+          onSave={() => { setShowActivityModal(false); setWeightRefreshKey(k => k + 1); setBriefingRefreshKey(k => k + 1); }}
           onClose={() => setShowActivityModal(false)}
         />
       )}
@@ -875,6 +870,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             saveFoodRecord(today, food);
             setShowFoodModal(false);
             setWeightRefreshKey(k => k + 1);
+            setBriefingRefreshKey(k => k + 1);
           }}
           onClose={() => setShowFoodModal(false)}
         />
