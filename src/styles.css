@@ -250,10 +250,6 @@
 
 @keyframes waterFill {
   0% { height: 0%; }
-  40% { height: 105%; }
-  55% { height: 92%; }
-  70% { height: 102%; }
-  85% { height: 97%; }
   100% { height: 100%; }
 }
 
