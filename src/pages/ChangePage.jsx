@@ -425,7 +425,7 @@ export default function ChangePage({ onTabChange }) {
             <div style={{ ...v2CardStyle, ...fadeUp(0.05) }}>
               {[
                 { subKey: 'vitality', label: '활력', labels: ['매우낮음','낮음','보통','높음','최고'], min: 1, max: 5, rgb: [245,200,112], value: energySub?.vitality ?? null },
-                { subKey: 'focus', label: '집중력', labels: ['매우낮음','낮음','보통','높음','최고'], min: 1, max: 5, rgb: [106,168,208], value: energySub?.focus ?? null },
+                { subKey: 'focus', label: '집중력', labels: ['매우낮음','낮음','보통','높음','최고'], min: 1, max: 5, rgb: [245,200,112], value: energySub?.focus ?? null },
               ].map((s, si) => {
                 const val = s.value ?? Math.ceil((s.max - s.min + 1) / 2) + s.min - 1;
                 const pct = ((val - s.min) / (s.max - s.min)) * 100;
