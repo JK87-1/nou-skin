@@ -2051,7 +2051,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
         <div style={{ background: 'rgba(255,255,255,.72)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)', ...fadeUp(0.3) }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 3, height: 14, borderRadius: 2, background: '#7BC8F0' }} />
+              <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('food') }} />
               <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>수분</span>
             </div>
             <span style={{ fontSize: 11, color: waterCount > 0 ? '#5AAABB' : '#9ABBC8', fontWeight: 500 }}>
