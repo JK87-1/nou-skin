@@ -421,79 +421,69 @@ export default function ChangePage({ onTabChange }) {
 
           {/* ===== 기록 모드: 전체 체크 카드 인라인 ===== */}
           {changeViewMode === '기록' && <>
-            {/* 에너지 — 활력 + 집중력 */}
+            {/* 에너지 — 활력 + 집중력 (슬라이더) */}
             <div style={{ ...v2CardStyle, ...fadeUp(0.05) }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('energy') }} />
-                <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>활력</span>
-              </div>
-              <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between' }}>
-                {[
-                  { value: 1, icon: '😴', label: '매우낮음' },
-                  { value: 2, icon: '🙁', label: '낮음' },
-                  { value: 3, icon: '😐', label: '보통' },
-                  { value: 4, icon: '🙂', label: '높음' },
-                  { value: 5, icon: '⚡', label: '최고' },
-                ].map(item => {
-                  const selected = energySub?.vitality === item.value;
-                  return (
-                    <div key={item.value} onClick={() => handleEnergySub('vitality', item.value)}
-                      style={{
-                        flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-                        padding: '10px 4px', borderRadius: 14, cursor: 'pointer',
-                        background: selected ? 'rgba(200,230,210,.4)' : 'rgba(255,255,255,.5)',
-                        border: selected ? '1.5px solid rgba(100,180,130,.5)' : '1.5px solid transparent',
-                        transition: 'all 0.15s ease',
-                      }}>
-                      <span style={{ fontSize: 22 }}>{item.icon}</span>
-                      <span style={{ fontSize: 10, color: selected ? '#2A6A4A' : '#7AAABB', fontWeight: selected ? 600 : 400 }}>{item.label}</span>
+              {[
+                { subKey: 'vitality', label: '활력', labels: ['매우낮음','낮음','보통','높음','최고'], min: 1, max: 5, rgb: [245,200,112], value: energySub?.vitality ?? null },
+                { subKey: 'focus', label: '집중력', labels: ['매우낮음','낮음','보통','높음','최고'], min: 1, max: 5, rgb: [106,168,208], value: energySub?.focus ?? null },
+              ].map((s, si) => {
+                const val = s.value ?? Math.ceil((s.max - s.min + 1) / 2) + s.min - 1;
+                const pct = ((val - s.min) / (s.max - s.min)) * 100;
+                const trackH = 9;
+                const color = getCategoryColor('energy');
+                const handleTouch = (e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const clientX = (e.touches ? e.touches[0].clientX : e.clientX);
+                  const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
+                  const v = Math.round((x / rect.width) * (s.max - s.min)) + s.min;
+                  handleEnergySub(s.subKey, Math.max(s.min, Math.min(s.max, v)));
+                };
+                return (
+                  <div key={s.subKey} style={{ marginBottom: si === 0 ? 18 : 0 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ width: 3, height: 14, borderRadius: 2, background: color }} />
+                        <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>{s.label}</span>
+                      </div>
+                      <span style={{ fontSize: 14, fontWeight: 600, color }}>{s.value ? s.labels[s.value - s.min] : '—'}</span>
                     </div>
-                  );
-                })}
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 18, marginBottom: 12 }}>
-                <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('energy') }} />
-                <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>집중력</span>
-              </div>
-              <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between' }}>
-                {[
-                  { value: 1, icon: '😪', label: '매우낮음' },
-                  { value: 2, icon: '😑', label: '낮음' },
-                  { value: 3, icon: '🤔', label: '보통' },
-                  { value: 4, icon: '🤩', label: '높음' },
-                  { value: 5, icon: '💡', label: '최고' },
-                ].map(item => {
-                  const selected = energySub?.focus === item.value;
-                  return (
-                    <div key={item.value} onClick={() => handleEnergySub('focus', item.value)}
-                      style={{
-                        flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-                        padding: '10px 4px', borderRadius: 14, cursor: 'pointer',
-                        background: selected ? 'rgba(200,230,210,.4)' : 'rgba(255,255,255,.5)',
-                        border: selected ? '1.5px solid rgba(100,180,130,.5)' : '1.5px solid transparent',
-                        transition: 'all 0.15s ease',
-                      }}>
-                      <span style={{ fontSize: 22 }}>{item.icon}</span>
-                      <span style={{ fontSize: 10, color: selected ? '#2A6A4A' : '#7AAABB', fontWeight: selected ? 600 : 400 }}>{item.label}</span>
+                    <div
+                      onTouchStart={handleTouch} onTouchMove={handleTouch} onClick={handleTouch}
+                      style={{ position: 'relative', width: '100%', height: trackH, borderRadius: trackH / 2, background: 'rgba(0,0,0,0.06)', cursor: 'pointer', touchAction: 'none' }}
+                    >
+                      <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: `${Math.max(pct, 5)}%`, borderRadius: trackH / 2, background: `linear-gradient(90deg, rgba(255,255,255,0.3), ${color}40)`, transition: 'none' }} />
+                      <div style={{ position: 'absolute', top: '50%', left: `${Math.max(pct, 2)}%`, transform: 'translate(-50%, -50%)', width: 20, height: 20, borderRadius: '50%', background: `rgb(${Math.round(255+(s.rgb[0]-255)*pct/100)},${Math.round(255+(s.rgb[1]-255)*pct/100)},${Math.round(255+(s.rgb[2]-255)*pct/100)})`, border: '1px solid rgba(255,255,255,0.9)', boxShadow: '0 1px 4px rgba(0,0,0,0.15)', transition: 'none', pointerEvents: 'none' }} />
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })}
             </div>
 
-            {/* 기분 — 감정 + 스트레스 */}
+            {/* 기분 — 감정 + 스트레스 (슬라이더) */}
             {(() => {
               const EMOTIONS = [
                 { key: '평온', icon: '😌' }, { key: '행복', icon: '😊' }, { key: '우울', icon: '😔' }, { key: '짜증', icon: '😤' },
                 { key: '불안', icon: '😰' }, { key: '피곤', icon: '🥱' }, { key: '설렘', icon: '🥰' }, { key: '무감각', icon: '😶' },
               ];
-              const STRESS_ICONS = ['😌', '😐', '😤', '😣', '😫', '🤯'];
               const selectedEmotions = moodSub?.emotions || [];
               const stressVal = moodSub?.stress ?? null;
+              const stressLabels = ['매우낮음','낮음','보통','약간높음','높음','매우높음'];
+              const sVal = stressVal ?? 3;
+              const sPct = (sVal / 5) * 100;
+              const sColor = getCategoryColor('mood');
+              const sRgb = [240,160,112];
+              const trackH = 9;
+              const handleStressTouch = (e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const clientX = (e.touches ? e.touches[0].clientX : e.clientX);
+                const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
+                const v = Math.round((x / rect.width) * 5);
+                handleMoodStress(Math.max(0, Math.min(5, v)));
+              };
               return (
                 <div style={{ ...v2CardStyle, ...fadeUp(0.08) }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                    <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('mood') }} />
+                    <div style={{ width: 3, height: 14, borderRadius: 2, background: sColor }} />
                     <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>감정</span>
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -514,22 +504,21 @@ export default function ChangePage({ onTabChange }) {
                       );
                     })}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 18, marginBottom: 12 }}>
-                    <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('mood') }} />
-                    <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>스트레스</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                    <span style={{ fontSize: 11, color: '#7AAABB' }}>낮음</span>
-                    <span style={{ fontSize: 18, fontWeight: 600, color: '#1A3A4A' }}>{stressVal ?? '—'}</span>
-                    <span style={{ fontSize: 11, color: '#7AAABB' }}>높음</span>
-                  </div>
-                  <input type="range" min="0" max="5" step="1" value={stressVal ?? 3}
-                    onChange={e => handleMoodStress(Number(e.target.value))}
-                    style={{ width: '100%', accentColor: '#9ABBC8', marginBottom: 8 }} />
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    {STRESS_ICONS.map((icon, i) => (
-                      <span key={i} style={{ fontSize: 22, opacity: stressVal === i ? 1 : 0.4, transition: 'opacity 0.15s' }}>{icon}</span>
-                    ))}
+                  <div style={{ marginTop: 18 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ width: 3, height: 14, borderRadius: 2, background: sColor }} />
+                        <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>스트레스</span>
+                      </div>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: sColor }}>{stressVal != null ? stressLabels[stressVal] : '—'}</span>
+                    </div>
+                    <div
+                      onTouchStart={handleStressTouch} onTouchMove={handleStressTouch} onClick={handleStressTouch}
+                      style={{ position: 'relative', width: '100%', height: trackH, borderRadius: trackH / 2, background: 'rgba(0,0,0,0.06)', cursor: 'pointer', touchAction: 'none' }}
+                    >
+                      <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: `${Math.max(sPct, 5)}%`, borderRadius: trackH / 2, background: `linear-gradient(90deg, rgba(255,255,255,0.3), ${sColor}40)`, transition: 'none' }} />
+                      <div style={{ position: 'absolute', top: '50%', left: `${Math.max(sPct, 2)}%`, transform: 'translate(-50%, -50%)', width: 20, height: 20, borderRadius: '50%', background: `rgb(${Math.round(255+(sRgb[0]-255)*sPct/100)},${Math.round(255+(sRgb[1]-255)*sPct/100)},${Math.round(255+(sRgb[2]-255)*sPct/100)})`, border: '1px solid rgba(255,255,255,0.9)', boxShadow: '0 1px 4px rgba(0,0,0,0.15)', transition: 'none', pointerEvents: 'none' }} />
+                    </div>
                   </div>
                 </div>
               );
