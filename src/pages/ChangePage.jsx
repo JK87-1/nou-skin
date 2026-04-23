@@ -419,40 +419,167 @@ export default function ChangePage({ onTabChange }) {
             ))}
           </div>
 
-          {/* ===== 기록 모드: 미니 체크 카드 ===== */}
+          {/* ===== 기록 모드: 전체 체크 카드 인라인 ===== */}
           {changeViewMode === '기록' && <>
-            {/* 에너지 미니 */}
-            <div onClick={() => setInsightTab('energy')} style={{ ...v2CardStyle, cursor: 'pointer', ...fadeUp(0.05) }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('energy') }} />
-                  <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>에너지</span>
-                </div>
-                <span style={{ fontSize: 12, color: energySub?.vitality ? '#2A6A4A' : '#9ABBC8', fontWeight: 500 }}>
-                  {energySub?.vitality ? `활력 ${['','매우낮음','낮음','보통','높음','최고'][energySub.vitality]}` : '체크하기'}
-                  {energySub?.focus ? ` · 집중 ${['','매우낮음','낮음','보통','높음','최고'][energySub.focus]}` : ''}
-                  {!energySub?.vitality && ' ›'}
-                </span>
+            {/* 에너지 — 활력 */}
+            <div style={{ ...v2CardStyle, ...fadeUp(0.05) }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('energy') }} />
+                <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>활력</span>
+              </div>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between' }}>
+                {[
+                  { value: 1, icon: '😴', label: '매우낮음' },
+                  { value: 2, icon: '🙁', label: '낮음' },
+                  { value: 3, icon: '😐', label: '보통' },
+                  { value: 4, icon: '🙂', label: '높음' },
+                  { value: 5, icon: '⚡', label: '최고' },
+                ].map(item => {
+                  const selected = energySub?.vitality === item.value;
+                  return (
+                    <div key={item.value} onClick={() => handleEnergySub('vitality', item.value)}
+                      style={{
+                        flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                        padding: '10px 4px', borderRadius: 14, cursor: 'pointer',
+                        background: selected ? 'rgba(200,230,210,.4)' : 'rgba(255,255,255,.5)',
+                        border: selected ? '1.5px solid rgba(100,180,130,.5)' : '1.5px solid transparent',
+                        transition: 'all 0.15s ease',
+                      }}>
+                      <span style={{ fontSize: 22 }}>{item.icon}</span>
+                      <span style={{ fontSize: 10, color: selected ? '#2A6A4A' : '#7AAABB', fontWeight: selected ? 600 : 400 }}>{item.label}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
-            {/* 기분 미니 */}
-            <div onClick={() => setInsightTab('mood')} style={{ ...v2CardStyle, cursor: 'pointer', ...fadeUp(0.08) }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('mood') }} />
-                  <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>기분</span>
-                </div>
-                <span style={{ fontSize: 12, color: (moodSub?.emotions?.length > 0) ? '#2A6A4A' : '#9ABBC8', fontWeight: 500 }}>
-                  {moodSub?.emotions?.length > 0 ? moodSub.emotions.slice(0, 3).join(' · ') : '체크하기'}
-                  {moodSub?.stress != null ? ` · 스트레스 ${moodSub.stress}` : ''}
-                  {!(moodSub?.emotions?.length > 0) && ' ›'}
-                </span>
+            {/* 에너지 — 집중력 */}
+            <div style={{ ...v2CardStyle, ...fadeUp(0.08) }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('energy') }} />
+                <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>집중력</span>
+              </div>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between' }}>
+                {[
+                  { value: 1, icon: '😪', label: '매우낮음' },
+                  { value: 2, icon: '😑', label: '낮음' },
+                  { value: 3, icon: '🤔', label: '보통' },
+                  { value: 4, icon: '🤩', label: '높음' },
+                  { value: 5, icon: '💡', label: '최고' },
+                ].map(item => {
+                  const selected = energySub?.focus === item.value;
+                  return (
+                    <div key={item.value} onClick={() => handleEnergySub('focus', item.value)}
+                      style={{
+                        flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                        padding: '10px 4px', borderRadius: 14, cursor: 'pointer',
+                        background: selected ? 'rgba(200,230,210,.4)' : 'rgba(255,255,255,.5)',
+                        border: selected ? '1.5px solid rgba(100,180,130,.5)' : '1.5px solid transparent',
+                        transition: 'all 0.15s ease',
+                      }}>
+                      <span style={{ fontSize: 22 }}>{item.icon}</span>
+                      <span style={{ fontSize: 10, color: selected ? '#2A6A4A' : '#7AAABB', fontWeight: selected ? 600 : 400 }}>{item.label}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
-            {/* 바디 미니 */}
-            <div onClick={() => setInsightTab('body')} style={{ ...v2CardStyle, cursor: 'pointer', ...fadeUp(0.11) }}>
+            {/* 기분 — 감정 */}
+            {(() => {
+              const EMOTIONS = [
+                { key: '평온', icon: '😌' }, { key: '행복', icon: '😊' }, { key: '우울', icon: '😔' }, { key: '짜증', icon: '😤' },
+                { key: '불안', icon: '😰' }, { key: '피곤', icon: '🥱' }, { key: '설렘', icon: '🥰' }, { key: '무감각', icon: '😶' },
+              ];
+              const STRESS_ICONS = ['😌', '😐', '😤', '😣', '😫', '🤯'];
+              const selectedEmotions = moodSub?.emotions || [];
+              const stressVal = moodSub?.stress ?? null;
+              return <>
+                <div style={{ ...v2CardStyle, ...fadeUp(0.11) }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                    <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('mood') }} />
+                    <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>감정</span>
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {EMOTIONS.map(em => {
+                      const sel = selectedEmotions.includes(em.key);
+                      return (
+                        <div key={em.key} onClick={() => handleMoodEmotion(em.key)}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: 5,
+                            padding: '8px 14px', borderRadius: 99, cursor: 'pointer',
+                            background: sel ? 'rgba(200,230,210,.4)' : 'rgba(255,255,255,.5)',
+                            border: sel ? '1.5px solid rgba(100,180,130,.5)' : '1.5px solid rgba(200,220,230,.3)',
+                            transition: 'all 0.15s ease',
+                          }}>
+                          <span style={{ fontSize: 15 }}>{em.icon}</span>
+                          <span style={{ fontSize: 12, color: sel ? '#2A6A4A' : '#7AAABB', fontWeight: sel ? 600 : 400 }}>{em.key}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 기분 — 스트레스 */}
+                <div style={{ ...v2CardStyle, ...fadeUp(0.14) }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                    <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('mood') }} />
+                    <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>스트레스</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                    <span style={{ fontSize: 11, color: '#7AAABB' }}>낮음</span>
+                    <span style={{ fontSize: 18, fontWeight: 600, color: '#1A3A4A' }}>{stressVal ?? '—'}</span>
+                    <span style={{ fontSize: 11, color: '#7AAABB' }}>높음</span>
+                  </div>
+                  <input type="range" min="0" max="5" step="1" value={stressVal ?? 3}
+                    onChange={e => handleMoodStress(Number(e.target.value))}
+                    style={{ width: '100%', accentColor: '#9ABBC8', marginBottom: 8 }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    {STRESS_ICONS.map((icon, i) => (
+                      <span key={i} style={{ fontSize: 22, opacity: stressVal === i ? 1 : 0.4, transition: 'opacity 0.15s' }}>{icon}</span>
+                    ))}
+                  </div>
+                </div>
+              </>;
+            })()}
+
+            {/* 피부 — 오늘 상태 */}
+            {(() => {
+              const SKIN_TAGS = [
+                { key: '촉촉', icon: '💧' }, { key: '건조', icon: '🏜' }, { key: '맑음', icon: '✨' }, { key: '트러블', icon: '🔴' },
+                { key: '칙칙', icon: '🟡' }, { key: '탄력', icon: '🌊' }, { key: '번들', icon: '🌊' }, { key: '예민', icon: '😤' },
+              ];
+              const selectedTags = skinSub?.tags || [];
+              return (
+                <div style={{ ...v2CardStyle, ...fadeUp(0.17) }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                    <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('skin') }} />
+                    <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>피부 상태</span>
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {SKIN_TAGS.map(tag => {
+                      const sel = selectedTags.includes(tag.key);
+                      return (
+                        <div key={tag.key} onClick={() => handleSkinTag(tag.key)}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: 5,
+                            padding: '8px 14px', borderRadius: 99, cursor: 'pointer',
+                            background: sel ? 'rgba(200,230,210,.4)' : 'rgba(255,255,255,.5)',
+                            border: sel ? '1.5px solid rgba(100,180,130,.5)' : '1.5px solid rgba(200,220,230,.3)',
+                            transition: 'all 0.15s ease',
+                          }}>
+                          <span style={{ fontSize: 14 }}>{tag.icon}</span>
+                          <span style={{ fontSize: 12, color: sel ? '#2A6A4A' : '#7AAABB', fontWeight: sel ? 600 : 400 }}>{tag.key}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* 바디 — 몸무게 미니 */}
+            <div onClick={() => setInsightTab('body')} style={{ ...v2CardStyle, cursor: 'pointer', ...fadeUp(0.2) }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('body') }} />
@@ -462,21 +589,6 @@ export default function ChangePage({ onTabChange }) {
                   {v2LatestWeight ? `${v2LatestWeight}kg` : '기록하기'}
                   {bloodSugar?.value ? ` · 혈당 ${bloodSugar.value}` : ''}
                   {!v2LatestWeight && ' ›'}
-                </span>
-              </div>
-            </div>
-
-            {/* 피부 미니 */}
-            <div onClick={() => setInsightTab('skin')} style={{ ...v2CardStyle, cursor: 'pointer', ...fadeUp(0.14) }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('skin') }} />
-                  <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>피부</span>
-                </div>
-                <span style={{ fontSize: 12, color: (skinSub?.tags?.length > 0) ? '#2A6A4A' : '#9ABBC8', fontWeight: 500 }}>
-                  {skinSub?.tags?.length > 0 ? skinSub.tags.slice(0, 3).join(' · ') : '체크하기'}
-                  {skinSub?.score ? ` · ${skinSub.score}점` : ''}
-                  {!(skinSub?.tags?.length > 0) && ' ›'}
                 </span>
               </div>
             </div>
