@@ -211,6 +211,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
     return '';
   });
   const [briefingLoading, setBriefingLoading] = useState(false);
+  const [briefingFailed, setBriefingFailed] = useState(false);
 
   // Update minutes ago every 60s
   useEffect(() => {
@@ -230,6 +231,9 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
     // Body briefing API 호출 — 최근 5시간 내 기록 수집
     setBriefingLoading(true);
+    setBriefingFailed(false);
+    setBodyBriefing('');
+    setBriefingTime('');
     const sliderTo100 = v => Math.round(((v - 1) / 9) * 100);
     const now = new Date();
     const fiveHoursAgo = new Date(now.getTime() - 5 * 60 * 60 * 1000);
@@ -279,9 +283,11 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           setBodyBriefing(data.briefing);
           setBriefingTime(time);
           localStorage.setItem('lua_body_briefing', JSON.stringify({ date: now.toISOString().slice(0, 10), text: data.briefing, time }));
+        } else {
+          setBriefingFailed(true);
         }
       })
-      .catch(() => {})
+      .catch(() => { setBriefingFailed(true); })
       .finally(() => setBriefingLoading(false));
   };
 
@@ -651,14 +657,18 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
               <span style={{ fontSize: 15, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>인사이트</span>
               <span style={{ fontSize: 11, color: '#4DB8A0', fontWeight: 500 }}>
-                {briefingLoading ? '● AI 분석 중...' : bodyBriefing && briefingTime ? `${briefingTime} 기준` : '● 분석 중'}
+                {briefingLoading ? '● AI 분석 중...' : bodyBriefing && briefingTime ? `${briefingTime} 기준` : briefingFailed ? '' : '● 분석 중'}
               </span>
             </div>
-            {bodyBriefing ? (
+            {briefingLoading ? (
+              <div style={{ fontSize: 13, color: '#999', lineHeight: 1.6 }}>
+                분석 중...
+              </div>
+            ) : bodyBriefing ? (
               <div style={{ fontSize: 13, color: '#0D3028', lineHeight: 1.6 }}>
                 {bodyBriefing}
               </div>
-            ) : (
+            ) : briefingFailed ? (
               <>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', marginBottom: 6 }}>
                   {(TIER_INSIGHT[activeCheck ? tier : liveTier].flow).map((step, i) => (
@@ -676,7 +686,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                   {TIER_INSIGHT[activeCheck ? tier : liveTier].desc}
                 </div>
               </>
-            )}
+            ) : null}
 
             {/* 구분선 */}
             <div style={{ height: 1, background: 'rgba(0,0,0,0.06)', margin: '18px 0' }} />
