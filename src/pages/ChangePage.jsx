@@ -421,7 +421,7 @@ export default function ChangePage({ onTabChange }) {
 
           {/* ===== 기록 모드: 전체 체크 카드 인라인 ===== */}
           {changeViewMode === '기록' && <>
-            {/* 에너지 — 활력 */}
+            {/* 에너지 — 활력 + 집중력 */}
             <div style={{ ...v2CardStyle, ...fadeUp(0.05) }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
                 <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('energy') }} />
@@ -451,11 +451,7 @@ export default function ChangePage({ onTabChange }) {
                   );
                 })}
               </div>
-            </div>
-
-            {/* 에너지 — 집중력 */}
-            <div style={{ ...v2CardStyle, ...fadeUp(0.08) }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 18, marginBottom: 12 }}>
                 <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('energy') }} />
                 <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>집중력</span>
               </div>
@@ -485,7 +481,7 @@ export default function ChangePage({ onTabChange }) {
               </div>
             </div>
 
-            {/* 기분 — 감정 */}
+            {/* 기분 — 감정 + 스트레스 */}
             {(() => {
               const EMOTIONS = [
                 { key: '평온', icon: '😌' }, { key: '행복', icon: '😊' }, { key: '우울', icon: '😔' }, { key: '짜증', icon: '😤' },
@@ -494,8 +490,8 @@ export default function ChangePage({ onTabChange }) {
               const STRESS_ICONS = ['😌', '😐', '😤', '😣', '😫', '🤯'];
               const selectedEmotions = moodSub?.emotions || [];
               const stressVal = moodSub?.stress ?? null;
-              return <>
-                <div style={{ ...v2CardStyle, ...fadeUp(0.11) }}>
+              return (
+                <div style={{ ...v2CardStyle, ...fadeUp(0.08) }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
                     <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('mood') }} />
                     <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>감정</span>
@@ -518,11 +514,7 @@ export default function ChangePage({ onTabChange }) {
                       );
                     })}
                   </div>
-                </div>
-
-                {/* 기분 — 스트레스 */}
-                <div style={{ ...v2CardStyle, ...fadeUp(0.14) }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 18, marginBottom: 12 }}>
                     <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('mood') }} />
                     <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>스트레스</span>
                   </div>
@@ -540,7 +532,7 @@ export default function ChangePage({ onTabChange }) {
                     ))}
                   </div>
                 </div>
-              </>;
+              );
             })()}
 
             {/* 피부 — 오늘 상태 */}
