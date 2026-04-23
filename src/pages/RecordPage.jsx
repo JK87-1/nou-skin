@@ -907,8 +907,16 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                             <div style={{
                               position: 'absolute', bottom: 0, left: 0, right: 0,
                               background: 'linear-gradient(180deg, #90CCEE, #60AADD)', borderRadius: 4,
-                              animation: 'waterFill 0.2s ease-out forwards',
-                            }} />
+                              animation: 'waterFill 0.4s ease-out forwards',
+                              overflow: 'hidden',
+                            }}>
+                              <div style={{
+                                position: 'absolute', top: -4, left: '50%', width: 40, height: 8,
+                                background: 'radial-gradient(ellipse, rgba(255,255,255,0.4) 0%, transparent 70%)',
+                                borderRadius: '50%',
+                                animation: 'waterWave 0.6s ease-in-out 3',
+                              }} />
+                            </div>
                           )}
                         </div>
                       );
