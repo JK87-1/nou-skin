@@ -266,7 +266,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
   }, [selectedDate, selectedExercise, exerciseLog, sleepHours, sleepQuality, sleepBedtime, sleepWakeTime, waterCount, stepCount, meditationMin]);
 
   // Auto-save when exercise/sleep/water/steps/meditation changes
-  useEffect(() => { if (isToday) saveV2(); }, [selectedExercise, exerciseLog, sleepHours, sleepQuality, sleepBedtime, sleepWakeTime, waterCount, stepCount, meditationMin]);
+  useEffect(() => { saveV2(); }, [selectedExercise, exerciseLog, sleepHours, sleepQuality, sleepBedtime, sleepWakeTime, waterCount, stepCount, meditationMin]);
 
   useEffect(() => {
     if (autoOpenAdd) {
@@ -855,7 +855,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                     )}
                   </div>
                 ))}
-                {isToday && (
+                {(
                   <div onClick={() => { setAddMeal(null); setShowAdd(true); }} style={{
                     width: 52, height: 52, borderRadius: 10, flexShrink: 0,
                     border: '1.5px dashed rgba(100,180,220,.4)', background: 'rgba(100,180,220,.06)',
@@ -896,12 +896,12 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                     {Array.from({ length: TOTAL_CUPS }).map((_, i) => {
                       const filled = i < waterCount;
                       return (
-                        <div key={i} onClick={() => isToday && setWaterCount(i + 1 === waterCount ? 0 : i + 1)}
+                        <div key={i} onClick={() => setWaterCount(i + 1 === waterCount ? 0 : i + 1)}
                           style={{
                             width: 20, height: 26, borderRadius: 5, overflow: 'hidden',
                             border: `1px solid ${filled ? 'rgba(100,180,220,.4)' : 'rgba(100,180,220,.2)'}`,
                             background: filled ? 'transparent' : 'rgba(100,180,220,.08)',
-                            cursor: isToday ? 'pointer' : 'default', position: 'relative', transition: 'all 0.15s ease',
+                            cursor: 'pointer', position: 'relative', transition: 'all 0.15s ease',
                           }}>
                           {filled && (
                             <div style={{
@@ -951,7 +951,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                   </div>
                 </div>
               </div>
-              {isToday && (
+              {(
                 <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
                   {[1000, 3000, 5000, 8000, 10000].map(v => {
                     const active = stepCount === v;
@@ -988,7 +988,6 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                     const active = hasLog || selectedExercise === ex.name;
                     return (
                       <div key={ex.id} onClick={() => {
-                        if (!isToday) return;
                         if (hasLog) {
                           const next = { ...exerciseLog };
                           delete next[ex.name];
@@ -1003,7 +1002,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                           padding: '10px 4px', borderRadius: 10, textAlign: 'center',
                           border: `1px solid ${active ? 'rgba(100,180,220,.6)' : 'rgba(100,180,220,.15)'}`,
                           background: active ? 'rgba(100,180,220,.12)' : 'rgba(255,255,255,.5)',
-                          cursor: isToday ? 'pointer' : 'default', transition: 'all 0.15s ease',
+                          cursor: 'pointer', transition: 'all 0.15s ease',
                         }}>
                         <div style={{ fontSize: 18, marginBottom: 2 }}>{ex.icon}</div>
                         <div style={{ fontSize: 10, fontWeight: active ? 600 : 400, color: active ? '#3A8AAA' : '#7AAABB' }}>{ex.name}</div>
@@ -1027,8 +1026,8 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                 </div>
                 <div style={{ flex: 1 }}>
                   <input type="range" min="2" max="12" step="0.5" value={sleepHours}
-                    onChange={e => isToday && setSleepHours(parseFloat(e.target.value))}
-                    disabled={!isToday}
+                    onChange={e => setSleepHours(parseFloat(e.target.value))}
+                    disabled={false}
                     style={{
                       width: '100%', height: 4, appearance: 'none', WebkitAppearance: 'none',
                       background: `linear-gradient(90deg, #C8A0E0 ${((sleepHours - 2) / 10) * 100}%, rgba(200,160,224,.2) ${((sleepHours - 2) / 10) * 100}%)`,
@@ -1040,13 +1039,13 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                 {SLEEP_QUALITIES.map(q => {
                   const active = sleepQuality === q;
                   return (
-                    <button key={q} onClick={() => isToday && setSleepQuality(active ? null : q)}
+                    <button key={q} onClick={() => setSleepQuality(active ? null : q)}
                       style={{
                         flex: 1, padding: '7px 0', borderRadius: 8, fontSize: 10, fontWeight: active ? 600 : 400,
                         border: `1px solid ${active ? 'rgba(200,160,224,.4)' : 'rgba(100,180,220,.15)'}`,
                         background: active ? 'rgba(200,160,224,.15)' : 'rgba(255,255,255,.5)',
                         color: active ? '#9060B0' : '#7AAABB',
-                        cursor: isToday ? 'pointer' : 'default', transition: 'all 0.15s ease',
+                        cursor: 'pointer', transition: 'all 0.15s ease',
                         fontFamily: 'inherit',
                       }}>{q}</button>
                   );
@@ -1063,13 +1062,13 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                   {[5, 10, 15, 20, 30].map(v => {
                     const active = meditationMin === v;
                     return (
-                      <button key={v} onClick={() => isToday && setMeditationMin(active ? 0 : v)}
+                      <button key={v} onClick={() => setMeditationMin(active ? 0 : v)}
                         style={{
                           flex: 1, padding: '7px 0', borderRadius: 8, fontSize: 10, fontWeight: active ? 600 : 400,
                           border: `1px solid ${active ? 'rgba(200,160,224,.4)' : 'rgba(100,180,220,.15)'}`,
                           background: active ? 'rgba(200,160,224,.15)' : 'rgba(255,255,255,.5)',
                           color: active ? '#9060B0' : '#7AAABB',
-                          cursor: isToday ? 'pointer' : 'default', transition: 'all 0.15s ease',
+                          cursor: 'pointer', transition: 'all 0.15s ease',
                           fontFamily: 'inherit',
                         }}>{v}분</button>
                     );
@@ -1079,7 +1078,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
             </div>
 
             {/* Save Button */}
-            {isToday && (
+            {(
               <button onClick={saveV2} style={{
                 width: '100%', padding: 12, borderRadius: 14,
                 background: 'rgba(255,255,255,.65)', border: '1px solid rgba(100,180,220,.25)',
@@ -1113,9 +1112,9 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
             {/* 입력 모드 토글 */}
             <div style={{ display: 'flex', background: 'rgba(200,160,224,.1)', borderRadius: 8, padding: 2, marginBottom: 14 }}>
               {[{ key: 'simple', label: '간단 입력' }, { key: 'time', label: '시간 입력' }].map(m => (
-                <button key={m.key} onClick={() => isToday && setSleepMode(m.key)} style={{
+                <button key={m.key} onClick={() => setSleepMode(m.key)} style={{
                   flex: 1, padding: '6px 0', borderRadius: 6, fontSize: 10, fontWeight: sleepMode === m.key ? 600 : 400,
-                  border: 'none', cursor: isToday ? 'pointer' : 'default', fontFamily: 'inherit',
+                  border: 'none', cursor: 'pointer', fontFamily: 'inherit',
                   background: sleepMode === m.key ? 'rgba(255,255,255,.9)' : 'transparent',
                   color: sleepMode === m.key ? '#9060B0' : '#7AAABB',
                   boxShadow: sleepMode === m.key ? '0 1px 3px rgba(200,160,224,.2)' : 'none',
@@ -1133,8 +1132,8 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                 </div>
                 <div style={{ flex: 1 }}>
                   <input type="range" min="2" max="12" step="0.5" value={sleepHours}
-                    onChange={e => isToday && setSleepHours(parseFloat(e.target.value))}
-                    disabled={!isToday}
+                    onChange={e => setSleepHours(parseFloat(e.target.value))}
+                    disabled={false}
                     style={{
                       width: '100%', height: 4, appearance: 'none', WebkitAppearance: 'none',
                       background: `linear-gradient(90deg, #C8A0E0 ${((sleepHours - 2) / 10) * 100}%, rgba(200,160,224,.2) ${((sleepHours - 2) / 10) * 100}%)`,
@@ -1150,7 +1149,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                 <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 10 }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 10, color: '#9ABBC8', marginBottom: 4 }}>잠든 시간</div>
-                    <input type="time" value={sleepBedtime || ''} disabled={!isToday}
+                    <input type="time" value={sleepBedtime || ''} disabled={false}
                       onChange={e => {
                         const v = e.target.value;
                         setSleepBedtime(v);
@@ -1166,7 +1165,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                   <div style={{ fontSize: 16, color: '#C8A0E0', marginTop: 16 }}>→</div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 10, color: '#9ABBC8', marginBottom: 4 }}>일어난 시간</div>
-                    <input type="time" value={sleepWakeTime || ''} disabled={!isToday}
+                    <input type="time" value={sleepWakeTime || ''} disabled={false}
                       onChange={e => {
                         const v = e.target.value;
                         setSleepWakeTime(v);
@@ -1198,13 +1197,13 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
               {SLEEP_QUALITIES.map(q => {
                 const active = sleepQuality === q;
                 return (
-                  <button key={q} onClick={() => isToday && setSleepQuality(active ? null : q)}
+                  <button key={q} onClick={() => setSleepQuality(active ? null : q)}
                     style={{
                       flex: 1, padding: '7px 0', borderRadius: 8, fontSize: 10, fontWeight: active ? 600 : 400,
                       border: `1px solid ${active ? 'rgba(200,160,224,.4)' : 'rgba(100,180,220,.15)'}`,
                       background: active ? 'rgba(200,160,224,.15)' : 'rgba(255,255,255,.5)',
                       color: active ? '#9060B0' : '#7AAABB',
-                      cursor: isToday ? 'pointer' : 'default', transition: 'all 0.15s ease',
+                      cursor: 'pointer', transition: 'all 0.15s ease',
                       fontFamily: 'inherit',
                     }}>{q}</button>
                 );
@@ -1253,7 +1252,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
               <span style={{ fontSize: 9, color: '#9ABBC8' }}>0</span>
               <span style={{ fontSize: 9, color: '#9ABBC8' }}>목표 10,000</span>
             </div>
-            {isToday && (
+            {(
               <>
                 <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
                   {[1000, 3000, 5000, 8000, 10000].map(v => {
@@ -1323,7 +1322,6 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                 const hasLog = exerciseLog[ex.name] > 0;
                 return (
                   <div key={ex.id} onClick={() => {
-                    if (!isToday) return;
                     if (hasLog) {
                       const next = { ...exerciseLog }; delete next[ex.name];
                       setExerciseLog(next);
@@ -1336,7 +1334,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                       padding: '10px 4px', borderRadius: 10, textAlign: 'center',
                       border: `1px solid ${hasLog ? 'rgba(100,180,220,.6)' : 'rgba(100,180,220,.15)'}`,
                       background: hasLog ? 'rgba(100,180,220,.12)' : 'rgba(255,255,255,.5)',
-                      cursor: isToday ? 'pointer' : 'default', transition: 'all 0.15s ease',
+                      cursor: 'pointer', transition: 'all 0.15s ease',
                     }}>
                     <div style={{ fontSize: 18, marginBottom: 2 }}>{ex.icon}</div>
                     <div style={{ fontSize: 10, fontWeight: hasLog ? 600 : 400, color: hasLog ? '#3A8AAA' : '#7AAABB' }}>{ex.name}</div>
@@ -1346,7 +1344,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
               })}
             </div>
             {/* 선택된 운동 시간·칼로리 */}
-            {Object.keys(exerciseLog).length > 0 && isToday && (
+            {Object.keys(exerciseLog).length > 0 && (
               <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {Object.entries(exerciseLog).map(([name, mins]) => {
                   const ex = ALL_EXERCISES.find(e => e.name === name);
@@ -2060,12 +2058,12 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
               {Array.from({ length: TOTAL_CUPS }).map((_, i) => {
                 const filled = i < waterCount;
                 return (
-                  <div key={i} onClick={() => isToday && setWaterCount(i + 1 === waterCount ? 0 : i + 1)}
+                  <div key={i} onClick={() => setWaterCount(i + 1 === waterCount ? 0 : i + 1)}
                     style={{
                       width: 20, height: 26, borderRadius: 5, overflow: 'hidden',
                       border: `1px solid ${filled ? 'rgba(100,180,220,.4)' : 'rgba(100,180,220,.2)'}`,
                       background: filled ? 'transparent' : 'rgba(100,180,220,.08)',
-                      cursor: isToday ? 'pointer' : 'default', position: 'relative', transition: 'all 0.15s ease',
+                      cursor: 'pointer', position: 'relative', transition: 'all 0.15s ease',
                     }}>
                     {filled && (
                       <div style={{
