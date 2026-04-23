@@ -294,7 +294,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
     if (dayRec.exercise?.log && Object.keys(dayRec.exercise.log).length > 0) recentData.exercise = Object.entries(dayRec.exercise.log).map(([n, m]) => `${n} ${m}분`).join(', ');
     if (dayRec.sleep?.hours) recentData.sleep = `${dayRec.sleep.hours}시간${dayRec.sleep.quality ? ' (' + dayRec.sleep.quality + ')' : ''}`;
     if (todayBS?.value) recentData.bloodSugar = `${todayBS.value}mg/dL (${todayBS.timing})`;
-    if (energySub?.vitality) recentData.vitality = ['','매우 낮음','낮음','보통','높음','최고'][energySub.vitality] || `${energySub.vitality}`;
+    if (energySub?.vitality) recentData.vitality = ['','매우 낮음','낮음','약간 낮음','조금 부족','보통','괜찮음','좋음','활발','높음','최고'][energySub.vitality] || `${energySub.vitality}`;
 
     // 기록된 데이터가 하나도 없으면 스킵
     if (Object.keys(recentData).length === 0) return;
