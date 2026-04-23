@@ -907,7 +907,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
                             <div style={{
                               position: 'absolute', bottom: 0, left: 0, right: 0,
                               background: 'linear-gradient(180deg, #90CCEE, #60AADD)', borderRadius: 4,
-                              animation: 'waterFill 0.5s ease-out forwards',
+                              animation: 'waterFill 0.2s ease-out forwards',
                             }} />
                           )}
                         </div>
