@@ -135,6 +135,15 @@ export default function ChangePage({ onTabChange }) {
   const [showCompareModal, setShowCompareModal] = useState(false);
   const [latestCondition] = useState(() => getLatestCheck());
   const [energySub, setEnergySub] = useState(() => getTodayEnergySubCheck());
+  const [subSliderPcts, setSubSliderPcts] = useState(() => {
+    const es = getTodayEnergySubCheck();
+    const ms = getTodayMoodSubCheck();
+    return {
+      vitality: es?.vitality ? ((es.vitality - 1) / 9) * 100 : ((7 - 1) / 9) * 100,
+      focus: es?.focus ? ((es.focus - 1) / 9) * 100 : ((7 - 1) / 9) * 100,
+      stress: ms?.stress ? ((ms.stress - 1) / 9) * 100 : ((7 - 1) / 9) * 100,
+    };
+  });
   const handleEnergySub = useCallback((key, value) => {
     const cur = energySub || {};
     const v = cur[key] === value ? null : value;
@@ -426,19 +435,23 @@ export default function ChangePage({ onTabChange }) {
               if (cat.key === 'energy') return (
                 <div key="energy" style={{ ...v2CardStyle, ...fadeUp(delay) }}>
                   {[
-                    { subKey: 'vitality', label: '활력', labels: ['매우 낮음','낮음','약간 낮음','조금 부족','보통','괜찮음','좋음','활발','높음','최고'], min: 1, max: 10, rgb: [245,200,112], value: energySub?.vitality ?? null },
-                    { subKey: 'focus', label: '집중력', labels: ['매우 낮음','낮음','약간 낮음','조금 부족','보통','괜찮음','좋음','집중됨','높음','최고'], min: 1, max: 10, rgb: [245,200,112], value: energySub?.focus ?? null },
+                    { subKey: 'vitality', label: '활력', labels: ['매우 낮음','낮음','약간 낮음','조금 부족','보통','괜찮음','좋음','활발','높음','최고'], rgb: [245,200,112], value: energySub?.vitality ?? null },
+                    { subKey: 'focus', label: '집중력', labels: ['매우 낮음','낮음','약간 낮음','조금 부족','보통','괜찮음','좋음','집중됨','높음','최고'], rgb: [245,200,112], value: energySub?.focus ?? null },
                   ].map((s, si) => {
                     const val = s.value ?? 7;
-                    const pct = ((val - s.min) / (s.max - s.min)) * 100;
+                    const pct = subSliderPcts[s.subKey];
                     const trackH = 9;
                     const color = getCategoryColor('energy');
+                    let cachedRect = null;
                     const handleTouch = (e) => {
-                      const rect = e.currentTarget.getBoundingClientRect();
-                      const clientX = (e.touches ? e.touches[0].clientX : e.clientX);
+                      if (e.type === 'touchstart' || e.type === 'click') cachedRect = e.currentTarget.getBoundingClientRect();
+                      const rect = cachedRect || e.currentTarget.getBoundingClientRect();
+                      const clientX = (e.type === 'touchstart' || e.type === 'touchmove') ? e.touches[0].clientX : e.clientX;
                       const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
-                      const v = Math.round((x / rect.width) * (s.max - s.min)) + s.min;
-                      handleEnergySub(s.subKey, Math.max(s.min, Math.min(s.max, v)));
+                      const rawPct = (x / rect.width) * 100;
+                      setSubSliderPcts(prev => ({ ...prev, [s.subKey]: rawPct }));
+                      const v = Math.round((x / rect.width) * 9) + 1;
+                      handleEnergySub(s.subKey, Math.max(1, Math.min(10, v)));
                     };
                     return (
                       <div key={s.subKey} style={{ marginBottom: si === 0 ? 18 : 0 }}>
@@ -447,7 +460,7 @@ export default function ChangePage({ onTabChange }) {
                             <div style={{ width: 3, height: 14, borderRadius: 2, background: color }} />
                             <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>{s.label}</span>
                           </div>
-                          <span style={{ fontSize: 14, fontWeight: 600, color }}>{s.value ? s.labels[s.value - s.min] : '—'}</span>
+                          <span style={{ fontSize: 14, fontWeight: 600, color }}>{s.labels[val - 1]}</span>
                         </div>
                         <div
                           onTouchStart={handleTouch} onTouchMove={handleTouch} onClick={handleTouch}
@@ -470,14 +483,18 @@ export default function ChangePage({ onTabChange }) {
                 const stressVal = moodSub?.stress ?? null;
                 const stressLabels = ['매우 낮음','낮음','약간 낮음','조금 있음','보통','약간 높음','높음','꽤 높음','매우 높음','극심'];
                 const sVal = stressVal ?? 7;
-                const sPct = ((sVal - 1) / 9) * 100;
+                const sPct = subSliderPcts.stress;
                 const sColor = getCategoryColor('mood');
                 const sRgb = [240,160,112];
                 const trackH = 9;
+                let cachedStressRect = null;
                 const handleStressTouch = (e) => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const clientX = (e.touches ? e.touches[0].clientX : e.clientX);
+                  if (e.type === 'touchstart' || e.type === 'click') cachedStressRect = e.currentTarget.getBoundingClientRect();
+                  const rect = cachedStressRect || e.currentTarget.getBoundingClientRect();
+                  const clientX = (e.type === 'touchstart' || e.type === 'touchmove') ? e.touches[0].clientX : e.clientX;
                   const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
+                  const rawPct = (x / rect.width) * 100;
+                  setSubSliderPcts(prev => ({ ...prev, stress: rawPct }));
                   const v = Math.round((x / rect.width) * 9) + 1;
                   handleMoodStress(Math.max(1, Math.min(10, v)));
                 };
@@ -1049,13 +1066,17 @@ export default function ChangePage({ onTabChange }) {
               { subKey: 'focus', label: '집중력', labels: ['매우 낮음','낮음','약간 낮음','조금 부족','보통','괜찮음','좋음','집중됨','높음','최고'], rgb: [245,200,112], value: energySub?.focus ?? null },
             ].map((s, si) => {
               const val = s.value ?? 7;
-              const pct = ((val - 1) / 9) * 100;
+              const pct = subSliderPcts[s.subKey];
               const trackH = 9;
               const color = getCategoryColor('energy');
+              let cachedRect = null;
               const ht = (e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                const clientX = (e.touches ? e.touches[0].clientX : e.clientX);
+                if (e.type === 'touchstart' || e.type === 'click') cachedRect = e.currentTarget.getBoundingClientRect();
+                const rect = cachedRect || e.currentTarget.getBoundingClientRect();
+                const clientX = (e.type === 'touchstart' || e.type === 'touchmove') ? e.touches[0].clientX : e.clientX;
                 const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
+                const rawPct = (x / rect.width) * 100;
+                setSubSliderPcts(prev => ({ ...prev, [s.subKey]: rawPct }));
                 const v = Math.round((x / rect.width) * 9) + 1;
                 handleEnergySub(s.subKey, Math.max(1, Math.min(10, v)));
               };
@@ -1066,7 +1087,7 @@ export default function ChangePage({ onTabChange }) {
                       <div style={{ width: 3, height: 14, borderRadius: 2, background: color }} />
                       <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>{s.label}</span>
                     </div>
-                    <span style={{ fontSize: 14, fontWeight: 600, color }}>{s.value ? s.labels[s.value - 1] : '—'}</span>
+                    <span style={{ fontSize: 14, fontWeight: 600, color }}>{s.labels[val - 1]}</span>
                   </div>
                   <div onTouchStart={ht} onTouchMove={ht} onClick={ht}
                     style={{ position: 'relative', width: '100%', height: trackH, borderRadius: trackH / 2, background: 'rgba(0,0,0,0.06)', cursor: 'pointer', touchAction: 'none' }}>
@@ -1134,14 +1155,18 @@ export default function ChangePage({ onTabChange }) {
             {(() => {
               const sLabels = ['매우 낮음','낮음','약간 낮음','조금 있음','보통','약간 높음','높음','꽤 높음','매우 높음','극심'];
               const sVal = stressVal ?? 7;
-              const sPct = ((sVal - 1) / 9) * 100;
+              const sPct = subSliderPcts.stress;
               const sColor = getCategoryColor('mood');
               const sRgb = [240,160,112];
               const trackH = 9;
+              let cachedRect = null;
               const ht = (e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                const clientX = (e.touches ? e.touches[0].clientX : e.clientX);
+                if (e.type === 'touchstart' || e.type === 'click') cachedRect = e.currentTarget.getBoundingClientRect();
+                const rect = cachedRect || e.currentTarget.getBoundingClientRect();
+                const clientX = (e.type === 'touchstart' || e.type === 'touchmove') ? e.touches[0].clientX : e.clientX;
                 const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
+                const rawPct = (x / rect.width) * 100;
+                setSubSliderPcts(prev => ({ ...prev, stress: rawPct }));
                 const v = Math.round((x / rect.width) * 9) + 1;
                 handleMoodStress(Math.max(1, Math.min(10, v)));
               };
