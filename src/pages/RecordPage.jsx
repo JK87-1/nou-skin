@@ -1146,45 +1146,49 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
             {/* 시간 입력 */}
             {sleepMode === 'time' && (
               <div style={{ marginBottom: 12 }}>
-                <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 10 }}>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', marginBottom: 10 }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 10, color: '#9ABBC8', marginBottom: 4 }}>잠든 시간</div>
-                    <input type="time" value={sleepBedtime || ''} disabled={false}
+                    <input type="time" value={sleepBedtime || ''}
                       onChange={e => {
                         const v = e.target.value;
                         setSleepBedtime(v);
                         if (v && sleepWakeTime) calcSleepFromTime(v, sleepWakeTime);
                       }}
                       style={{
-                        width: '100%', padding: '8px 10px', borderRadius: 10, fontSize: 14, fontWeight: 500,
-                        border: '1px solid rgba(200,160,224,.3)', background: 'rgba(200,160,224,.08)',
+                        width: '100%', padding: '6px 8px', borderRadius: 8, fontSize: 13, fontWeight: 500,
+                        border: '1px solid rgba(200,160,224,.3)', background: 'rgba(200,160,224,.06)',
                         color: '#1A3A4A', fontFamily: 'inherit', outline: 'none',
+                        boxSizing: 'border-box', height: 36,
+                        WebkitAppearance: 'none', MozAppearance: 'none',
                       }}
                     />
                   </div>
-                  <div style={{ fontSize: 16, color: '#C8A0E0', marginTop: 16 }}>→</div>
+                  <div style={{ fontSize: 13, color: '#C8A0E0', paddingBottom: 8 }}>→</div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 10, color: '#9ABBC8', marginBottom: 4 }}>일어난 시간</div>
-                    <input type="time" value={sleepWakeTime || ''} disabled={false}
+                    <input type="time" value={sleepWakeTime || ''}
                       onChange={e => {
                         const v = e.target.value;
                         setSleepWakeTime(v);
                         if (sleepBedtime && v) calcSleepFromTime(sleepBedtime, v);
                       }}
                       style={{
-                        width: '100%', padding: '8px 10px', borderRadius: 10, fontSize: 14, fontWeight: 500,
-                        border: '1px solid rgba(200,160,224,.3)', background: 'rgba(200,160,224,.08)',
+                        width: '100%', padding: '6px 8px', borderRadius: 8, fontSize: 13, fontWeight: 500,
+                        border: '1px solid rgba(200,160,224,.3)', background: 'rgba(200,160,224,.06)',
                         color: '#1A3A4A', fontFamily: 'inherit', outline: 'none',
+                        boxSizing: 'border-box', height: 36,
+                        WebkitAppearance: 'none', MozAppearance: 'none',
                       }}
                     />
                   </div>
                 </div>
                 {sleepBedtime && sleepWakeTime && (
                   <div style={{
-                    textAlign: 'center', padding: '8px 0', borderRadius: 10,
-                    background: 'rgba(200,160,224,.08)',
+                    textAlign: 'center', padding: '6px 0', borderRadius: 8,
+                    background: 'rgba(200,160,224,.06)',
                   }}>
-                    <span style={{ fontSize: 20, fontWeight: 600, color: '#1A3A4A' }}>{sleepHours}</span>
+                    <span style={{ fontSize: 16, fontWeight: 600, color: '#1A3A4A' }}>{sleepHours}</span>
                     <span style={{ fontSize: 11, color: '#7AAABB', marginLeft: 3 }}>시간 수면</span>
                   </div>
                 )}
