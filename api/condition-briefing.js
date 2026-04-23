@@ -39,9 +39,9 @@ function buildBodyPrompt(data) {
   if (recentData?.bloodSugar) dataLines.push(`혈당: ${recentData.bloodSugar}`);
   if (recentData?.sleep) dataLines.push(`수면: ${recentData.sleep}`);
 
-  return `아래는 이 사람이 최근 5시간 내에 기록한 웰니스 데이터야.
-현재 상태를 1문장으로 진단하고, 지금부터 3시간 이내에 할 수 있는 웰니스 행동 2가지를 제안해줘.
-따뜻하고 구체적인 톤, 전체 3문장 이내.
+  return `아래는 이 사람이 최근 3시간 내에 기록한 웰니스 데이터야.
+현재 상태를 1문장으로 진단하고, 지금 바로 할 수 있는 웰니스 행동 1-2가지를 제안해줘.
+따뜻하고 구체적인 톤, 전체 2-3문장 이내.
 시간대: ${timeOfDay}
 "~해요" 체, 친구처럼 다정한 톤.
 매번 다른 표현과 문장 구조를 사용해.
