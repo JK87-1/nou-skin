@@ -372,15 +372,12 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
             </div>
           </div>
 
-          {/* Name + bio */}
-          <div style={{ padding: '12px 18px 4px' }}>
-            {profileData.nickname && (
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>{profileData.nickname}</div>
-            )}
-            {profileData.skinType && (
+          {/* Bio */}
+          {profileData.skinType && (
+            <div style={{ padding: '12px 18px 4px' }}>
               <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{profileData.skinType} 피부</div>
-            )}
-          </div>
+            </div>
+          )}
         </>;
       })()}
 
