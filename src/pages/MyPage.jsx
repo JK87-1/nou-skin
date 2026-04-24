@@ -303,26 +303,28 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
   return (
     <div style={{ minHeight: '100dvh', paddingBottom: 40 }}>
 
-      {/* Profile + Header */}
+      {/* Profile Header — Instagram style */}
       {(() => {
         const latestRecord = records.length > 0 ? records[records.length - 1] : null;
         const profileImg = getProfile().profileImage;
         const avatarSrc = profileImg || (latestRecord ? (thumbs[String(latestRecord.id)] || thumbs[latestRecord.date]) : null);
-        return (
-          <div style={{ padding: '16px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', background: 'var(--bg-secondary)', flexShrink: 0, border: '2px solid rgba(255,255,255,.5)' }}>
-                {avatarSrc ? (
-                  <img src={avatarSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
-                      <circle cx="12" cy="10" r="4" /><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" strokeLinecap="round" />
-                    </svg>
-                  </div>
-                )}
-              </div>
-            </div>
+        const profileData = getProfile();
+        const uniqueDays = new Set(records.map(r => r.date)).size;
+        const streak = (() => {
+          const dates = [...new Set(records.map(r => r.date))].sort().reverse();
+          if (dates.length === 0) return 0;
+          let count = 1;
+          for (let i = 0; i < dates.length - 1; i++) {
+            const d1 = new Date(dates[i]), d2 = new Date(dates[i + 1]);
+            if ((d1 - d2) / 86400000 === 1) count++;
+            else break;
+          }
+          return count;
+        })();
+        return <>
+          {/* Top bar: 닉네임 + 아이콘 */}
+          <div style={{ padding: '12px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{profileData.nickname || 'MY'}</span>
             <div style={{ display: 'flex', gap: 8 }}>
               <div onClick={() => {
                 if ((albumCategory === 'all' || albumCategory === 'food') && onTabChange) onTabChange('food', { openAdd: true });
@@ -340,7 +342,46 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
               </div>
             </div>
           </div>
-        );
+
+          {/* Avatar + Stats row */}
+          <div style={{ padding: '16px 18px 0', display: 'flex', alignItems: 'center', gap: 20 }}>
+            {/* Avatar */}
+            <div style={{ width: 80, height: 80, borderRadius: '50%', overflow: 'hidden', background: 'var(--bg-secondary)', flexShrink: 0, border: '2.5px solid rgba(0,0,0,0.08)' }}>
+              {avatarSrc ? (
+                <img src={avatarSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
+                    <circle cx="12" cy="10" r="4" /><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" strokeLinecap="round" />
+                  </svg>
+                </div>
+              )}
+            </div>
+            {/* Stats */}
+            <div style={{ flex: 1, display: 'flex', justifyContent: 'space-around', textAlign: 'center' }}>
+              {[
+                { value: records.length, label: '기록' },
+                { value: uniqueDays, label: '기록일' },
+                { value: streak, label: '연속일' },
+              ].map(stat => (
+                <div key={stat.label}>
+                  <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)' }}>{stat.value}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Name + bio */}
+          <div style={{ padding: '12px 18px 4px' }}>
+            {profileData.nickname && (
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>{profileData.nickname}</div>
+            )}
+            {profileData.skinType && (
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{profileData.skinType} 피부</div>
+            )}
+          </div>
+        </>;
       })()}
 
       {/* Record Detail Modal */}
