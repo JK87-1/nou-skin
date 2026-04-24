@@ -343,8 +343,8 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
             </div>
           </div>
 
-          {/* Avatar + Stats row */}
-          <div style={{ padding: '16px 18px 0', display: 'flex', alignItems: 'center', gap: 20 }}>
+          {/* Avatar + Name/Bio row */}
+          <div style={{ padding: '16px 18px 0', display: 'flex', alignItems: 'center', gap: 16 }}>
             {/* Avatar */}
             <div style={{ width: 80, height: 80, borderRadius: '50%', overflow: 'hidden', background: 'var(--bg-secondary)', flexShrink: 0, border: '2.5px solid rgba(0,0,0,0.08)' }}>
               {avatarSrc ? (
@@ -357,27 +357,12 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
                 </div>
               )}
             </div>
-            {/* Stats */}
-            <div style={{ flex: 1, display: 'flex', justifyContent: 'space-around', textAlign: 'center' }}>
-              {[
-                { value: records.length, label: '기록' },
-                { value: uniqueDays, label: '기록일' },
-                { value: streak, label: '연속일' },
-              ].map(stat => (
-                <div key={stat.label}>
-                  <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)' }}>{stat.value}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{stat.label}</div>
-                </div>
-              ))}
+            {/* Name + Bio */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>{profileData.nickname || 'MY'}</div>
+              <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5, wordBreak: 'break-word' }}>{profileData.bio || '프로필에 자기소개를 입력해보세요'}</div>
             </div>
           </div>
-
-          {/* Bio */}
-          {profileData.bio && (
-            <div style={{ padding: '8px 18px 0' }}>
-              <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.5 }}>{profileData.bio}</div>
-            </div>
-          )}
         </>;
       })()}
 
