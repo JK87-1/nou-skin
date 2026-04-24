@@ -469,8 +469,6 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
                 {allPhotos.map((p, i) => (
                   <div key={p.id || i} onClick={() => { if (p.type === 'food') setSelectedFood({ ...p, _date: p.date }); else if (p.type === 'skin_scan') { const rec = records.find(r => r.id === p.id || r.date === p.date); if (rec) handleSelectRecord(rec); } }} style={{ aspectRatio: '1', borderRadius: 4, overflow: 'hidden', position: 'relative', cursor: 'pointer', background: 'var(--bg-card-hover)' }}>
                     {p.type === 'food' ? <FoodPhoto photo={p.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <img src={p.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
-                    <span style={{ position: 'absolute', bottom: 3, left: 5, fontSize: 9, color: '#fff', fontWeight: 600, textShadow: '0 1px 3px rgba(0,0,0,.6)' }}>{p.label}</span>
-                    <span style={{ position: 'absolute', top: 3, right: 5, fontSize: 8, color: '#fff', background: 'rgba(0,0,0,.3)', padding: '1px 5px', borderRadius: 99 }}>{p.sub}</span>
                   </div>
                 ))}
               </div>
