@@ -436,7 +436,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
         const allFoods = getFoodRecords();
         Object.entries(allFoods).forEach(([date, foods]) => {
           foods.filter(f => f.photo && !f.name?.startsWith('물 ')).forEach(f => {
-            allPhotos.push({ type: 'food', date, photo: f.photo, label: f.name, sub: f.meal, id: f.id, ts: f.id || new Date(date).getTime() });
+            allPhotos.push({ ...f, type: 'food', date, ts: f.id || new Date(date).getTime() });
           });
         });
         // 피부 스캔 (r.timestamp = ISO string)
