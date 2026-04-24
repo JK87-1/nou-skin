@@ -372,12 +372,6 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
             </div>
           </div>
 
-          {/* Bio */}
-          {profileData.skinType && (
-            <div style={{ padding: '12px 18px 4px' }}>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{profileData.skinType} 피부</div>
-            </div>
-          )}
         </>;
       })()}
 
