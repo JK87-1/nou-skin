@@ -392,13 +392,16 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
         <div onClick={goNextDate} style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isToday ? 'default' : 'pointer', background: 'rgba(255,255,255,.5)', border: '0.5px solid rgba(100,180,220,.2)', opacity: isToday ? 0.3 : 1 }}>
           <span style={{ fontSize: 13, color: '#3A8AAA', fontWeight: 600 }}>›</span>
         </div>
-        <div style={{ display: 'flex', background: 'rgba(255,255,255,.5)', borderRadius: 99, border: '0.5px solid rgba(100,180,220,.2)', overflow: 'hidden', flexShrink: 0 }}>
-          {['기록', '흐름'].map(m => (
-            <div key={m} onClick={() => setRecordViewMode(m)} style={{
-              padding: '6px 10px', fontSize: 10, fontWeight: recordViewMode === m ? 600 : 400, cursor: 'pointer',
-              background: recordViewMode === m ? 'rgba(100,180,220,.15)' : 'transparent',
-              color: recordViewMode === m ? '#2A6A8A' : '#7AAABB',
-            }}>{m}</div>
+        <div style={{ display: 'flex', background: 'rgba(255,255,255,.5)', borderRadius: 8, border: '0.5px solid rgba(100,180,220,.2)', overflow: 'hidden', flexShrink: 0 }}>
+          {[
+            { key: '기록', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" /></svg> },
+            { key: '흐름', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5" /><rect x="13" y="3" width="8" height="8" rx="1.5" /><rect x="3" y="13" width="8" height="8" rx="1.5" /><rect x="13" y="13" width="8" height="8" rx="1.5" /></svg> },
+          ].map(m => (
+            <div key={m.key} onClick={() => setRecordViewMode(m.key)} style={{
+              padding: '6px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: recordViewMode === m.key ? 'rgba(100,180,220,.15)' : 'transparent',
+              color: recordViewMode === m.key ? '#2A6A8A' : '#7AAABB',
+            }}>{m.icon}</div>
           ))}
         </div>
       </div>
