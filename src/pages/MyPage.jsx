@@ -432,30 +432,30 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
       {/* ===== 전체: 모든 사진 통합 앨범 ===== */}
       {albumCategory === 'all' && (() => {
         const allPhotos = [];
-        // 식단 사진
+        // 식단 사진 (f.id = Date.now() timestamp)
         const allFoods = getFoodRecords();
         Object.entries(allFoods).forEach(([date, foods]) => {
           foods.filter(f => f.photo && !f.name?.startsWith('물 ')).forEach(f => {
-            allPhotos.push({ type: 'food', date, photo: f.photo, label: f.name, sub: f.meal, id: f.id });
+            allPhotos.push({ type: 'food', date, photo: f.photo, label: f.name, sub: f.meal, id: f.id, ts: f.id || new Date(date).getTime() });
           });
         });
-        // 피부 스캔
+        // 피부 스캔 (r.timestamp = ISO string)
         records.forEach(r => {
           const thumb = thumbs[String(r.id)] || thumbs[r.date];
-          if (thumb) allPhotos.push({ type: 'skin_scan', date: r.date, photo: thumb, label: `${r.overallScore}점`, sub: '피부스캔', id: r.id });
+          if (thumb) allPhotos.push({ type: 'skin_scan', date: r.date, photo: thumb, label: `${r.overallScore}점`, sub: '피부스캔', id: r.id, ts: r.timestamp ? new Date(r.timestamp).getTime() : new Date(r.date).getTime() });
         });
         // 얼굴 사진
         const skinSubAll = getSkinSubChecks();
         skinSubAll.forEach(s => {
-          if (s.photos?.face) allPhotos.push({ type: 'face', date: s.date, photo: s.photos.face, label: '얼굴', sub: s.score ? `${s.score}점` : '', id: `face_${s.date}` });
+          if (s.photos?.face) allPhotos.push({ type: 'face', date: s.date, photo: s.photos.face, label: '얼굴', sub: s.score ? `${s.score}점` : '', id: `face_${s.date}`, ts: s.timestamp ? new Date(s.timestamp).getTime() : new Date(s.date).getTime() });
         });
         // 눈바디
         const eyeBodyAll = getEyeBodyChecks();
         eyeBodyAll.forEach(eb => {
           const photo = eb.photos?.['정면'] || Object.values(eb.photos || {})[0];
-          if (photo) allPhotos.push({ type: 'eye_body', date: eb.date, photo, label: '눈바디', sub: '정면', id: `eb_${eb.date}` });
+          if (photo) allPhotos.push({ type: 'eye_body', date: eb.date, photo, label: '눈바디', sub: '정면', id: `eb_${eb.date}`, ts: eb.timestamp ? new Date(eb.timestamp).getTime() : new Date(eb.date).getTime() });
         });
-        allPhotos.sort((a, b) => b.date.localeCompare(a.date));
+        allPhotos.sort((a, b) => b.ts - a.ts);
         return (
           <div style={{ padding: '8px 18px 0' }}>
             {allPhotos.length === 0 ? (
