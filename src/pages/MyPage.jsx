@@ -322,9 +322,8 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
           return count;
         })();
         return <>
-          {/* Top bar: 닉네임 + 아이콘 */}
-          <div style={{ padding: '12px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{profileData.nickname || 'MY'}</span>
+          {/* Top bar: 아이콘 */}
+          <div style={{ padding: '12px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
             <div style={{ display: 'flex', gap: 8 }}>
               <div onClick={() => {
                 if ((albumCategory === 'all' || albumCategory === 'food') && onTabChange) onTabChange('food', { openAdd: true });
