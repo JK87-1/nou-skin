@@ -372,6 +372,12 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
             </div>
           </div>
 
+          {/* Bio */}
+          {profileData.bio && (
+            <div style={{ padding: '8px 18px 0' }}>
+              <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.5 }}>{profileData.bio}</div>
+            </div>
+          )}
         </>;
       })()}
 
@@ -1820,6 +1826,14 @@ function ProfileSettingsPage({ onClose }) {
           <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>닉네임</div>
           <input value={profile.nickname || ''} onChange={e => onUpdate('nickname', e.target.value)}
             placeholder="닉네임" maxLength={20} style={inputStyle} />
+        </div>
+
+        {/* Bio */}
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>자기소개</div>
+          <textarea value={profile.bio || ''} onChange={e => onUpdate('bio', e.target.value)}
+            placeholder="자기소개를 입력하세요" maxLength={150} rows={3}
+            style={{ ...inputStyle, resize: 'none', lineHeight: 1.5, fontFamily: 'inherit' }} />
         </div>
 
         {/* 기본 정보 */}
