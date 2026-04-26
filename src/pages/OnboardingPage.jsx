@@ -13,7 +13,7 @@ const GRADIENTS = [
   'linear-gradient(180deg, #C8681A 0%, #D97820 25%, #E88828 50%, #C85A10 75%, #8A3208 100%)',       // 01 여명
   'linear-gradient(180deg, #FDE090 0%, #FAC860 20%, #F5A030 45%, #E88020 70%, #E08030 100%)',       // 02 해뜨기
   'linear-gradient(180deg, #FDE8A0 0%, #FCD870 18%, #FAC040 38%, #F8B030 58%, #F5C060 78%, #FADA70 100%)', // 03 일출
-  'linear-gradient(180deg, #F8E090 0%, #F0CE78 10%, #E8BC60 18%, #C8DDF0 40%, #B8DFF0 58%, #B8DFF0 100%)', // 04 완전히 뜬 해
+  'linear-gradient(180deg, #F5D880 0%, #EDD088 8%, #E0C890 16%, #D0CCA8 26%, #C0D0C0 36%, #B8D8D8 48%, #B8DDF0 62%, #B8DFF0 100%)', // 04 완전히 뜬 해
 ];
 
 /* ── Sun configs per step ── */
