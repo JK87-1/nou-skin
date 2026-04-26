@@ -155,6 +155,8 @@ export default function App() {
   }, [showSplash]);
 
   useEffect(() => {
+    // Capacitor 네이티브 초기화
+    import('./native/capacitor-init.js').then(m => m.initNative());
     refreshLandingData();
     // Migrate localStorage thumbnails to IndexedDB (one-time)
     migrateFromLocalStorage();

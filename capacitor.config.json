@@ -1,0 +1,17 @@
+{
+  "appId": "co.luaskin.app",
+  "appName": "루아",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https",
+    "iosScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": false
+    },
+    "StatusBar": {
+      "style": "Dark"
+    }
+  }
+}

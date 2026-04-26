@@ -4,15 +4,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-NOU Skin is a client-side AI skin analysis web app. Users take a selfie (or use demo mode), and the app analyzes 10 skin metrics using Canvas API pixel analysis + MediaPipe Face Mesh + optional GPT-5.2 Vision AI hybrid scoring. Korean language UI. Brand color: `#FF8C42`.
+LUA (루아) is a hybrid wellness app built with React + Vite + Capacitor. Targets iOS/Android native apps via Capacitor, with web (luaskin.co) as fallback. AI skin analysis using Canvas API + MediaPipe Face Mesh + GPT-5.2 Vision hybrid scoring. Korean language UI.
 
 ## Commands
 
 - `npm run dev` — Start Vite dev server at http://localhost:5173
 - `npm run build` — Production build to `dist/`
 - `npm run preview` — Preview production build
+- `npm run cap:sync` — Build + sync to native platforms
+- `npm run cap:ios` — Build + open Xcode
+- `npm run cap:android` — Build + open Android Studio
 
 No test framework or linter is configured.
+
+## Hybrid App (Capacitor)
+
+- **Config**: `capacitor.config.json` (appId: `co.luaskin.app`)
+- **Native init**: `src/native/capacitor-init.js` — StatusBar, Keyboard, SplashScreen setup
+- **Platform check**: `import { Capacitor } from '@capacitor/core'` → `Capacitor.isNativePlatform()`
+- **PWA SW**: Disabled on native platforms (see `src/main.jsx`)
+- All new features should consider native platform compatibility (use Capacitor plugins over web APIs when available)
 
 ## Architecture
 
