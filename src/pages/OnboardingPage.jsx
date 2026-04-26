@@ -58,6 +58,28 @@ export default function OnboardingPage({ onComplete }) {
       if (dx < 0) goNext(); else goPrev();
     }
   };
+  // PC: mouse drag support
+  const handleMouseDown = (e) => {
+    touchRef.current.startX = e.clientX;
+    touchRef.current.startY = e.clientY;
+    touchRef.current.mouseDown = true;
+  };
+  const handleMouseUp = (e) => {
+    if (!touchRef.current.mouseDown) return;
+    touchRef.current.mouseDown = false;
+    const dx = e.clientX - touchRef.current.startX;
+    const dy = e.clientY - touchRef.current.startY;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+      if (dx < 0) goNext(); else goPrev();
+    }
+  };
+  // PC: click to advance (steps 0,1 only — no sliders/buttons to conflict)
+  const handleBgClick = (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+    const dx = Math.abs(e.clientX - touchRef.current.startX);
+    const dy = Math.abs(e.clientY - touchRef.current.startY);
+    if (dx < 5 && dy < 5 && step < 2) goNext();
+  };
 
   const handleFinish = () => {
     saveProfile({
@@ -82,6 +104,9 @@ export default function OnboardingPage({ onComplete }) {
     <div
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onClick={handleBgClick}
       style={{
         position: 'fixed', inset: 0, zIndex: 2003,
         background: GRADIENTS[step],
@@ -256,8 +281,8 @@ export default function OnboardingPage({ onComplete }) {
       }}>
         {[0, 1, 2, 3].map(i => (
           <div key={i} onClick={() => setStep(i)} style={{
-            width: step === i ? 18 : 5,
-            height: 5,
+            width: step === i ? 20 : 8,
+            height: 8,
             borderRadius: step === i ? 99 : '50%',
             background: step === i ? '#FFD060' : 'rgba(255,200,80,.2)',
             transition: 'all 0.3s ease',
