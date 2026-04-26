@@ -15,14 +15,21 @@ const GRADIENTS = [
 ];
 
 /* ── Sun configs per step ── */
-/* 태양 중심이 화면 0% → 33% → 66% → 100% 균등 이동 */
+/* 04 기준 대칭: 01·04 ���두 155px 잘림, 02·03 균등 배치 */
 const screenH = () => typeof window !== 'undefined' ? window.innerHeight : 800;
 const SUN_SIZES = [260, 250, 280, 310];
 const getSunBottom = (step) => {
   const H = screenH();
   const size = SUN_SIZES[step];
-  const centerY = [0, 0.33, 0.66, 1][step] * H; // 태양 중심의 화면 내 Y (bottom 기준)
-  return Math.round(centerY - size / 2);
+  // 01: 하단 155px 잘림 → bottom = -155
+  // 04: 상단 155px 잘림 → bottom = H - (size - 155) = H - 155
+  // 01 center = -155 + 130 = -25,  04 center = H - 155 + 155 = H
+  // 간격 = (H - (-25)) / 3 = (H + 25) / 3
+  const c1 = -155 + SUN_SIZES[0] / 2;            // 01 center: -25
+  const c4 = H - 155 + SUN_SIZES[3] / 2;         // 04 center: H
+  const gap = (c4 - c1) / 3;
+  const centers = [c1, c1 + gap, c1 + gap * 2, c4];
+  return Math.round(centers[step] - size / 2);
 };
 const SUN_STEPS = [
   { size: 260, blur: 2,   glow: 'none',
