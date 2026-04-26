@@ -1879,6 +1879,37 @@ function ProfileSettingsPage({ onClose }) {
           </div>
         </div>
 
+        {/* 관심사 */}
+        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: '24px 0 12px' }}>관심사</div>
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>웰니스 관심사 (중복 선택)</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {[
+              { icon: '\u26A1', label: '에너지·컨디션' },
+              { icon: '\u2728', label: '피부 관리' },
+              { icon: '\u2696\uFE0F', label: '체중 관리' },
+              { icon: '\uD83D\uDE34', label: '수면 개선' },
+              { icon: '\uD83E\uDDD8', label: '스트레스' },
+              { icon: '\uD83D\uDC8A', label: '영양 관리' },
+            ].map(item => {
+              const active = (profile.onboardingInterests || []).includes(item.label);
+              return (
+                <button key={item.label} onClick={() => {
+                  const list = active
+                    ? profile.onboardingInterests.filter(x => x !== item.label)
+                    : [...(profile.onboardingInterests || []), item.label];
+                  onUpdate('onboardingInterests', list);
+                }} style={{
+                  padding: '8px 14px', borderRadius: 10, border: 'none',
+                  background: active ? 'var(--accent-primary)' : 'var(--bg-input, #F2F3F5)',
+                  color: active ? '#fff' : 'var(--text-muted)',
+                  fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                }}>{item.icon} {item.label}</button>
+              );
+            })}
+          </div>
+        </div>
+
         {/* 피부 정보 */}
         <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: '24px 0 12px' }}>피부 정보</div>
 
