@@ -13,6 +13,7 @@ const GRADIENTS = [
   'linear-gradient(180deg, #FDE8A0 0%, #FCD870 18%, #FAC040 38%, #F8B030 58%, #F5C060 78%, #FADA70 100%)',
   'linear-gradient(180deg, #F8E090 0%, #F0CE78 10%, #E8BC60 18%, #C8DDF0 40%, #B8DFF0 58%, #B8DFF0 100%)',
 ];
+const ANALYZING_GRADIENT = 'linear-gradient(180deg, #FBE898 0%, #F2D070 15%, #E0C468 30%, #D0D4E8 55%, #C4DBEE 75%, #B8DFF0 100%)';
 
 /* ── sun config per step ── */
 const SUN_CONFIGS = [
@@ -41,11 +42,16 @@ export default function OnboardingPage({ onComplete }) {
   const [energy, setEnergy] = useState(2);
   const [mood, setMood] = useState(2);
   const [hydra, setHydra] = useState(2);
+  const [analyzing, setAnalyzing] = useState(false);
 
   const touchRef = useRef({ startX: 0, startY: 0 });
 
-  const goNext = useCallback(() => setStep(s => Math.min(s + 1, 3)), []);
+  const goNext = useCallback(() => setStep(s => s >= 2 ? s : Math.min(s + 1, 3)), []);
   const goPrev = useCallback(() => setStep(s => Math.max(s - 1, 0)), []);
+  const goToResult = useCallback(() => {
+    setAnalyzing(true);
+    setTimeout(() => { setAnalyzing(false); setStep(3); }, 1800);
+  }, []);
 
   const handleTouchStart = (e) => {
     touchRef.current.startX = e.touches[0].clientX;
@@ -91,7 +97,10 @@ export default function OnboardingPage({ onComplete }) {
     onComplete();
   };
 
-  const sun = SUN_CONFIGS[step];
+  const sun = analyzing ? {
+    size: 300, top: -40, blur: 1.5, glow: '0 0 120px rgba(255,240,100,.2)',
+    bg: 'radial-gradient(circle at 50% 50%, #FFFFFF 0%, rgba(255,250,210,.9) 8%, rgba(255,235,100,.3) 22%, rgba(200,230,245,.2) 42%, transparent 58%)',
+  } : SUN_CONFIGS[step];
 
   /* ── slider style injection ── */
   const sliderCSS = `
@@ -109,8 +118,8 @@ export default function OnboardingPage({ onComplete }) {
       onClick={handleBgClick}
       style={{
         position: 'fixed', inset: 0, zIndex: 2003,
-        background: GRADIENTS[step],
-        transition: 'background 0.8s ease',
+        background: analyzing ? ANALYZING_GRADIENT : GRADIENTS[step],
+        transition: 'background 1.2s ease',
         display: 'flex', flexDirection: 'column',
         overflow: 'hidden',
         fontFamily: 'inherit',
@@ -190,7 +199,7 @@ export default function OnboardingPage({ onComplete }) {
         )}
 
         {/* 03 — 일출 */}
-        {step === 2 && (
+        {step === 2 && !analyzing && (
           <div style={{ padding: '26px 20px 0' }}>
             <div style={{
               fontSize: 8, letterSpacing: '.22em', textTransform: 'uppercase',
@@ -220,7 +229,7 @@ export default function OnboardingPage({ onComplete }) {
               </div>
             ))}
 
-            <button onClick={goNext} style={{
+            <button onClick={goToResult} style={{
               width: '100%', padding: 11, borderRadius: 99,
               background: 'rgba(180,100,0,.08)',
               border: '1px solid rgba(180,100,0,.15)',
@@ -228,6 +237,26 @@ export default function OnboardingPage({ onComplete }) {
               fontSize: 13, fontWeight: 500, cursor: 'pointer',
               fontFamily: 'inherit', marginTop: 8,
             }}>LUA가 분석할게요 →</button>
+          </div>
+        )}
+
+        {/* Analyzing transition */}
+        {analyzing && (
+          <div style={{
+            flex: 1, display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center', paddingBottom: 60,
+          }}>
+            <style>{`
+              @keyframes luaPulse { 0%,100% { opacity: .6; transform: scale(1); } 50% { opacity: 1; transform: scale(1.04); } }
+              @keyframes luaDots { 0% { content: ''; } 33% { content: '.'; } 66% { content: '..'; } 100% { content: '...'; } }
+              .lua-analyzing-dots::after { content: ''; animation: luaDots 1.2s steps(1) infinite; }
+            `}</style>
+            <div style={{
+              fontSize: 14, fontWeight: 300, color: 'rgba(80,60,20,.7)',
+              animation: 'luaPulse 2s ease-in-out infinite',
+            }}>
+              <span className="lua-analyzing-dots">분석 중</span>
+            </div>
           </div>
         )}
 
@@ -275,12 +304,12 @@ export default function OnboardingPage({ onComplete }) {
       </div>
 
       {/* ── Dot indicators ── */}
-      <div style={{
+      {!analyzing && <div style={{
         position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)',
         left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: 6, zIndex: 2,
       }}>
         {[0, 1, 2, 3].map(i => (
-          <div key={i} onClick={() => setStep(i)} style={{
+          <div key={i} onClick={() => { if (i <= 2 || step === 3) setStep(i); }} style={{
             width: step === i ? 20 : 8,
             height: 8,
             borderRadius: step === i ? 99 : '50%',
@@ -289,7 +318,7 @@ export default function OnboardingPage({ onComplete }) {
             cursor: 'pointer',
           }} />
         ))}
-      </div>
+      </div>}
     </div>
   );
 }
