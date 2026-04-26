@@ -71,11 +71,11 @@ const keyframes = `
     60%  { opacity: 0; }   /* 1.5s */
     100% { opacity: 1; }   /* 2.5s */
   }
-  /* Sun: bottom -200 → -155 starting at 1.5s */
+  /* Sun: bottom -200 → -130 starting at 1.5s (01 = half visible at bottom) */
   @keyframes sunRiseFirst {
     0%   { bottom: -200px; filter: blur(8px); width: 220px; height: 220px; }
     60%  { bottom: -200px; filter: blur(8px); width: 220px; height: 220px; }  /* 1.5s */
-    100% { bottom: -165px; filter: blur(2px); width: 260px; height: 260px; }  /* 2.5s */
+    100% { bottom: -130px; filter: blur(2px); width: 260px; height: 260px; }  /* 2.5s */
   }
   /* Horizon glow: subtle → strong */
   @keyframes horizonGlowIn {

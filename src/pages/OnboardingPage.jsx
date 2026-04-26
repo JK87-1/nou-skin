@@ -14,16 +14,24 @@ const GRADIENTS = [
   'linear-gradient(180deg, #F8E090 0%, #F0CE78 10%, #E8BC60 18%, #C8DDF0 40%, #B8DFF0 58%, #B8DFF0 100%)', // 04 완전히 뜬 해
 ];
 
-/* ── Sun configs per step (all use bottom) ── */
+/* ── Sun configs per step ── */
+/* 태양 중심이 화면 0% → 33% → 66% → 100% 균등 이동 */
 const screenH = () => typeof window !== 'undefined' ? window.innerHeight : 800;
+const SUN_SIZES = [260, 250, 280, 310];
+const getSunBottom = (step) => {
+  const H = screenH();
+  const size = SUN_SIZES[step];
+  const centerY = [0, 0.33, 0.66, 1][step] * H; // 태양 중심의 화면 내 Y (bottom 기준)
+  return Math.round(centerY - size / 2);
+};
 const SUN_STEPS = [
-  { size: 260, bottom: -165, blur: 2,   glow: 'none',
+  { size: 260, blur: 2,   glow: 'none',
     bg: 'radial-gradient(circle at 50% 40%, #FFFFFF 0%, #FFE840 12%, #FFA820 35%, rgba(255,140,20,.25) 60%, transparent 75%)' },
-  { size: 250, bottom: -70,  blur: 1,   glow: '0 0 80px rgba(255,200,60,.2)',
+  { size: 250, blur: 1,   glow: '0 0 80px rgba(255,200,60,.2)',
     bg: 'radial-gradient(circle at 50% 45%, #FFFFFF 0%, #FFFB70 8%, #FFD030 25%, rgba(255,170,40,.4) 50%, transparent 70%)' },
-  { size: 280, bottom: 90,   blur: 0.5, glow: '0 0 100px rgba(255,230,80,.25)',
+  { size: 280, blur: 0.5, glow: '0 0 100px rgba(255,230,80,.25)',
     bg: 'radial-gradient(circle at 50% 50%, #FFFFFF 0%, #FFFCE0 6%, #FFE860 16%, rgba(255,215,60,.3) 35%, rgba(255,180,30,.08) 55%, transparent 70%)' },
-  { size: 310, bottom: null,  blur: 1,  glow: 'none',  // bottom calculated dynamically
+  { size: 310, blur: 1,   glow: 'none',
     bg: 'radial-gradient(circle at 50% 50%, #FFFFFF 0%, rgba(255,248,200,.85) 10%, rgba(255,228,130,.3) 26%, rgba(184,223,240,.2) 44%, transparent 60%)' },
 ];
 
@@ -126,7 +134,7 @@ export default function OnboardingPage({ onComplete }) {
 
   /* ── Sun style (CSS-transition driven) ── */
   const sun = SUN_STEPS[step];
-  const sunBottom = step === 3 ? screenH() - 155 : sun.bottom;
+  const sunBottom = getSunBottom(step);
   const transDur = step === 3 && prevStepRef.current === 2
     ? `${TRANS_DUR.toS4}ms` : `${TRANS_DUR.normal}ms`;
 
