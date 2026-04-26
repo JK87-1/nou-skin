@@ -1,5 +1,6 @@
-// Vercel Serverless Function: AI 데일리 인사이트 (GPT-4o-mini)
+// Vercel Serverless Function: AI Daily Insight (GPT-4o-mini)
 // 어제 데이터 80% + 최근 7일 데이터 20% 기반 카테고리별 인사이트 생성
+// v1.0
 
 const RATE_LIMIT = new Map();
 const MAX_REQUESTS_PER_DAY = 20;
