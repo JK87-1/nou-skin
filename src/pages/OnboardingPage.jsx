@@ -234,8 +234,9 @@ export default function OnboardingPage({ onComplete }) {
         }}>
           <div style={{ textAlign: 'center', paddingBottom: 90 }}>
             <div style={{
-              fontSize: 48, fontWeight: 200, fontStyle: 'italic',
-              letterSpacing: '.2em',
+              fontFamily: "'Dancing Script', cursive",
+              fontSize: 48, fontWeight: 500,
+              letterSpacing: '.08em',
               color: 'rgba(255,248,220,.95)',
               textShadow: '0 0 40px rgba(255,220,80,.5)',
             }}>lua</div>

@@ -189,35 +189,37 @@ export default function SplashScreen({ exiting, onAnimationEnd }) {
           pointerEvents: 'none',
         }} />
 
-        {/* Splash logo (night) */}
-        <div style={{
-          position: 'absolute',
-          textAlign: 'center', paddingBottom: 60,
-          pointerEvents: 'none',
-        }}>
-          <div style={{
-            fontSize: 42, fontWeight: 200, fontStyle: 'italic',
-            letterSpacing: '.22em',
-            color: 'rgba(255,248,230,.9)',
-            textShadow: '0 0 30px rgba(255,200,80,.2), 0 0 80px rgba(255,180,60,.08)',
-            animation: `splashNightLogoLife ${DUR}s ease both`,
-          }}>lua</div>
-          <div style={{
-            fontSize: 8, letterSpacing: '.25em', textTransform: 'uppercase',
-            color: 'rgba(200,220,255,.25)', marginTop: 10,
-            animation: `splashNightTagLife ${DUR}s ease both`,
-          }}>Know your body</div>
-        </div>
-
-        {/* Onboarding 01 logo (dawn) */}
+        {/* Splash logo (night) — same position as onboarding 01 */}
         <div style={{
           position: 'absolute',
           textAlign: 'center', paddingBottom: 90,
           pointerEvents: 'none',
         }}>
           <div style={{
-            fontSize: 48, fontWeight: 200, fontStyle: 'italic',
-            letterSpacing: '.2em',
+            fontFamily: "'Dancing Script', cursive",
+            fontSize: 48, fontWeight: 500,
+            letterSpacing: '.08em',
+            color: 'rgba(255,248,230,.9)',
+            textShadow: '0 0 30px rgba(255,200,80,.2), 0 0 80px rgba(255,180,60,.08)',
+            animation: `splashNightLogoLife ${DUR}s ease both`,
+          }}>lua</div>
+          <div style={{
+            fontSize: 9, letterSpacing: '.25em', textTransform: 'uppercase',
+            color: 'rgba(200,220,255,.25)', marginTop: 10,
+            animation: `splashNightTagLife ${DUR}s ease both`,
+          }}>Know your body</div>
+        </div>
+
+        {/* Onboarding 01 logo (dawn) — same position */}
+        <div style={{
+          position: 'absolute',
+          textAlign: 'center', paddingBottom: 90,
+          pointerEvents: 'none',
+        }}>
+          <div style={{
+            fontFamily: "'Dancing Script', cursive",
+            fontSize: 48, fontWeight: 500,
+            letterSpacing: '.08em',
             color: 'rgba(255,248,220,.95)',
             textShadow: '0 0 40px rgba(255,220,80,.5)',
             animation: `ob01LogoIn ${DUR}s ease both`,
