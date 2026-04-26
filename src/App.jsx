@@ -141,10 +141,11 @@ export default function App() {
 
   useEffect(() => {
     if (showSplash) {
-      // theme-color를 dissolve 시작 200ms 전에 전환하여 상태바 깜빡임 방지
+      const isFirst = !isOnboardingDone();
+      // theme-color: 첫 실행은 밤→새벽 앰버, 재실행은 하늘색
       const tColor = setTimeout(() => {
-        document.querySelector('meta[name="theme-color"]').content = '#ace2fc';
-      }, 1300);
+        document.querySelector('meta[name="theme-color"]').content = isFirst ? '#C8681A' : '#ace2fc';
+      }, isFirst ? 1100 : 1300);
       const t = setTimeout(() => {
         setSplashExiting(true);
       }, 1500);
