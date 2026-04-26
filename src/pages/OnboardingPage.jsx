@@ -244,40 +244,40 @@ export default function OnboardingPage({ onComplete }) {
           </div>
         </div>
 
-        {/* 02 — 해뜨기 */}
+        {/* 02 �� 해뜨기 */}
         <div style={contentStyle(1)}>
-          <div style={{ padding: '38px 24px 125px' }}>
+          <div style={{ padding: '42px 48px 125px' }}>
             <div style={{
-              fontSize: 8, letterSpacing: '.22em', textTransform: 'uppercase',
-              color: 'rgba(180,90,10,.5)', marginBottom: 24,
+              fontSize: 11, letterSpacing: '.22em', textTransform: 'uppercase',
+              color: 'rgba(180,90,10,.5)', marginBottom: 28,
             }}>Welcome to LUA</div>
             <div style={{
-              fontSize: 19, fontWeight: 300, lineHeight: 1.42,
-              color: 'rgba(120,50,5,.9)', marginBottom: 16,
+              fontSize: 24, fontWeight: 300, lineHeight: 1.45,
+              color: 'rgba(120,50,5,.9)', marginBottom: 20,
             }}>
-              내 몸에서 일어나는 일을<br/>
-              <strong style={{ fontWeight: 500, color: '#8A3800' }}>처음으로 이해</strong>하게 돼요
+              내 몸에서 ���어나는 일을<br/>
+              <strong style={{ fontWeight: 500, color: '#8A3800' }}>��음으로 ���해</strong>하게 돼요
             </div>
             <div style={{
-              fontSize: 11, lineHeight: 1.75,
+              fontSize: 14, lineHeight: 1.75,
               color: 'rgba(140,70,10,.45)',
             }}>
               식단, 수면, 움직임이<br/>
-              에너지와 피부와 기분으로 연결되고 있어요.
+              에너지와 피부와 기분으로 연���되고 있어요.
             </div>
           </div>
         </div>
 
         {/* 03 — 일출 */}
         <div style={contentStyle(2)}>
-          <div style={{ padding: '26px 20px 0' }}>
+          <div style={{ padding: '30px 40px 0' }}>
             <div style={{
-              fontSize: 8, letterSpacing: '.22em', textTransform: 'uppercase',
-              color: 'rgba(160,100,0,.5)', textAlign: 'center', marginBottom: 8,
+              fontSize: 11, letterSpacing: '.22em', textTransform: 'uppercase',
+              color: 'rgba(160,100,0,.5)', textAlign: 'center', marginBottom: 10,
             }}>Right now</div>
             <div style={{
-              fontSize: 16, fontWeight: 300, textAlign: 'center',
-              color: 'rgba(100,50,0,.85)', marginBottom: 28,
+              fontSize: 20, fontWeight: 300, textAlign: 'center',
+              color: 'rgba(100,50,0,.85)', marginBottom: 32,
             }}>지금 어떤 상태예요?</div>
 
             {[
@@ -285,10 +285,10 @@ export default function OnboardingPage({ onComplete }) {
               { label: '기분', value: mood, set: setMood, labels: MOOD_LABELS },
               { label: '수분', value: hydra, set: setHydra, labels: HYDRA_LABELS },
             ].map(({ label, value, set, labels }) => (
-              <div key={label} style={{ marginBottom: 22 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
-                  <span style={{ fontSize: 11, color: 'rgba(150,90,0,.45)' }}>{label}</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: '#8A5000' }}>{labels[value]}</span>
+              <div key={label} style={{ marginBottom: 26 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
+                  <span style={{ fontSize: 14, color: 'rgba(150,90,0,.45)' }}>{label}</span>
+                  <span style={{ fontSize: 15, fontWeight: 600, color: '#8A5000' }}>{labels[value]}</span>
                 </div>
                 <input
                   type="range" min={0} max={4} step={1}
@@ -300,60 +300,60 @@ export default function OnboardingPage({ onComplete }) {
             ))}
 
             <button onClick={goToS4} style={{
-              width: '100%', padding: 11, borderRadius: 99,
+              width: '100%', padding: 14, borderRadius: 99,
               background: 'rgba(180,100,0,.08)',
               border: '1px solid rgba(180,100,0,.15)',
               color: 'rgba(120,60,0,.65)',
-              fontSize: 13, fontWeight: 500, cursor: 'pointer',
-              fontFamily: 'inherit', marginTop: 8,
+              fontSize: 15, fontWeight: 500, cursor: 'pointer',
+              fontFamily: 'inherit', marginTop: 10,
             }}>LUA가 분석할게요 →</button>
           </div>
         </div>
 
         {/* 04 — 완전히 �� 해 (staggered fade-in) */}
         <div style={contentStyle(3)}>
-          <div style={{ padding: '148px 20px 40px' }}>
+          <div style={{ padding: '148px 40px 40px' }}>
             <div style={{
-              fontSize: 8, letterSpacing: '.2em', textTransform: 'uppercase',
-              color: 'rgba(26,58,74,.45)', textAlign: 'center', marginBottom: 16,
+              fontSize: 11, letterSpacing: '.2em', textTransform: 'uppercase',
+              color: 'rgba(26,58,74,.45)', textAlign: 'center', marginBottom: 20,
               ...(s4Phase === 'contentIn' ? { animation: 'luaFadeSlideIn 0.4s ease-out both' } : {}),
               ...(s4Phase === 'done' || s4Phase === 'idle' ? { opacity: 1 } : {}),
             }}>LUA가 발견한 것</div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 32 }}>
               {INSIGHTS.map((item, i) => (
                 <div key={i} style={{
                   background: 'rgba(255,255,255,.68)',
                   border: '0.5px solid rgba(100,180,220,.18)',
-                  borderRadius: 12, padding: '10px 12px',
+                  borderRadius: 14, padding: '14px 16px',
                   ...(s4Phase === 'contentIn' ? {
                     animation: 'luaFadeSlideIn 0.4s ease-out both',
                     animationDelay: `${0.15 + i * 0.15}s`,
                   } : {}),
                   ...(s4Phase === 'done' || s4Phase === 'idle' ? { opacity: 1 } : {}),
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                     <span style={{
-                      padding: '3px 8px', borderRadius: 99, fontSize: 10, fontWeight: 500,
+                      padding: '4px 10px', borderRadius: 99, fontSize: 12, fontWeight: 500,
                       background: 'rgba(255,210,80,.15)', color: '#8A6000',
                     }}>{item.cause}</span>
-                    <span style={{ fontSize: 10, color: '#AACCD8' }}>→</span>
+                    <span style={{ fontSize: 12, color: '#AACCD8' }}>→</span>
                     <span style={{
-                      padding: '3px 8px', borderRadius: 99, fontSize: 10, fontWeight: 500,
+                      padding: '4px 10px', borderRadius: 99, fontSize: 12, fontWeight: 500,
                       background: 'rgba(100,180,220,.14)', color: '#2A6A8A',
                     }}>{item.result}</span>
                   </div>
-                  <div style={{ fontSize: 9, color: '#6A9AAA', lineHeight: 1.55 }}>{item.desc}</div>
+                  <div style={{ fontSize: 12, color: '#6A9AAA', lineHeight: 1.6 }}>{item.desc}</div>
                 </div>
               ))}
             </div>
 
             <button onClick={handleFinish} style={{
-              width: '100%', padding: 12, borderRadius: 99,
+              width: '100%', padding: 15, borderRadius: 99,
               background: 'linear-gradient(120deg, rgba(26,58,74,.12), rgba(26,58,74,.08))',
               border: '1px solid rgba(26,58,74,.14)',
               color: '#1A3A4A',
-              fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+              fontSize: 16, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
               ...(s4Phase === 'contentIn' ? {
                 animation: 'luaFadeSlideIn 0.4s ease-out both',
                 animationDelay: '0.6s',
