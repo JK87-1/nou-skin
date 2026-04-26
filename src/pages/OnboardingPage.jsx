@@ -232,16 +232,16 @@ export default function OnboardingPage({ onComplete }) {
           flex: step === 0 ? 1 : undefined,
           height: step !== 0 ? '100%' : undefined,
         }}>
-          <div style={{ textAlign: 'center', paddingBottom: 90 }}>
+          <div style={{ textAlign: 'center', paddingBottom: 90, opacity: 0 }}>
             <div style={{
               fontFamily: "'Dancing Script', cursive",
               fontSize: 48, fontWeight: 500,
               letterSpacing: '.08em',
-              color: 'rgba(255,248,220,.35)',
+              color: 'rgba(255,248,220,.95)',
             }}>lua</div>
             <div style={{
               fontSize: 9, letterSpacing: '.25em', textTransform: 'uppercase',
-              color: 'rgba(255,220,140,.2)', marginTop: 10,
+              color: 'rgba(255,220,140,.45)', marginTop: 10,
             }}>Know your body</div>
           </div>
         </div>
