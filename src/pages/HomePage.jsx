@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import DailyInsightSlider from '../components/DailyInsightSlider';
 import SkinWeather from '../components/SkinWeather';
 import { getLatestRecord } from '../storage/SkinStorage';
 import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, GENDER_OPTIONS, getCategoryColor } from '../storage/ProfileStorage';
@@ -489,6 +490,9 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             : ''}
         </div>
       </div>
+
+      {/* ===== 데일리 인사이트 슬라이더 ===== */}
+      <DailyInsightSlider />
 
       {/* ===== 카드 영역 (순서 변경 가능) ===== */}
       {editMode && (

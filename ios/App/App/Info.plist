@@ -35,8 +35,6 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
@@ -47,5 +45,11 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>피부 분석을 위해 카메라 접근이 필요합니다</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>피부 분석을 위해 사진 접근이 필요합니다</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>분석 결과를 저장하기 위해 사진 접근이 필요합니다</string>
 </dict>
 </plist>
