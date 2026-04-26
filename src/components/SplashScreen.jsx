@@ -37,21 +37,17 @@ const keyframes = `
     50%      { opacity: calc(var(--star-o) * 0.4); }
   }
 
-  /* Night logo: fade in 0.1-0.5s, hold, fade out in last 0.5s */
-  @keyframes splashNightLogoLife {
-    0%   { opacity: 0; transform: scale(0.85); }
-    28%  { opacity: 1; transform: scale(1); }
-    ${HOLD}%  { opacity: 1; }
-    72%  { opacity: 0; }
-    100% { opacity: 0; }
+  /* Single logo: fade in gently during splash, stays visible into 01 */
+  @keyframes splashLogoFadeIn {
+    0%   { opacity: 0; }
+    50%  { opacity: 0.85; }
+    100% { opacity: 0.85; }
   }
-  @keyframes splashNightTagLife {
-    0%   { opacity: 0; transform: translateY(8px); }
-    22%  { opacity: 0; transform: translateY(8px); }
-    39%  { opacity: 1; transform: translateY(0); }
-    ${HOLD}%  { opacity: 1; }
-    72%  { opacity: 0; }
-    100% { opacity: 0; }
+  @keyframes splashTagFadeIn {
+    0%   { opacity: 0; }
+    30%  { opacity: 0; }
+    60%  { opacity: 0.6; }
+    100% { opacity: 0.6; }
   }
 
   /* Stars & moon: hold then fade out */
@@ -83,18 +79,6 @@ const keyframes = `
     ${HOLD + 10}%  { opacity: 0.3; filter: blur(6px); }
     ${HOLD + 25}%  { opacity: 0.7; filter: blur(4px); }
     100% { bottom: -155px; opacity: 1; width: 260px; height: 260px; filter: blur(2px); }
-  }
-
-  /* Onboarding 01 logo: appears in last 30% */
-  @keyframes ob01LogoIn {
-    0%   { opacity: 0; }
-    72%  { opacity: 0; }
-    100% { opacity: 1; }
-  }
-  @keyframes ob01TagIn {
-    0%   { opacity: 0; }
-    78%  { opacity: 0; }
-    100% { opacity: 1; }
   }
 
   @keyframes splashInstantOff {
@@ -189,28 +173,7 @@ export default function SplashScreen({ exiting, onAnimationEnd }) {
           pointerEvents: 'none',
         }} />
 
-        {/* Splash logo (night) — same position as onboarding 01 */}
-        <div style={{
-          position: 'absolute',
-          textAlign: 'center', paddingBottom: 90,
-          pointerEvents: 'none',
-        }}>
-          <div style={{
-            fontFamily: "'Dancing Script', cursive",
-            fontSize: 48, fontWeight: 500,
-            letterSpacing: '.08em',
-            color: 'rgba(255,248,230,.9)',
-            textShadow: '0 0 30px rgba(255,200,80,.2), 0 0 80px rgba(255,180,60,.08)',
-            animation: `splashNightLogoLife ${DUR}s ease both`,
-          }}>lua</div>
-          <div style={{
-            fontSize: 9, letterSpacing: '.25em', textTransform: 'uppercase',
-            color: 'rgba(200,220,255,.25)', marginTop: 10,
-            animation: `splashNightTagLife ${DUR}s ease both`,
-          }}>Know your body</div>
-        </div>
-
-        {/* Onboarding 01 logo (dawn) — same position */}
+        {/* Logo — fades in gently, carries over to onboarding 01 */}
         <div style={{
           position: 'absolute',
           textAlign: 'center', paddingBottom: 90,
@@ -221,13 +184,12 @@ export default function SplashScreen({ exiting, onAnimationEnd }) {
             fontSize: 48, fontWeight: 500,
             letterSpacing: '.08em',
             color: 'rgba(255,248,220,.95)',
-            textShadow: '0 0 40px rgba(255,220,80,.5)',
-            animation: `ob01LogoIn ${DUR}s ease both`,
+            animation: `splashLogoFadeIn ${DUR}s ease both`,
           }}>lua</div>
           <div style={{
             fontSize: 9, letterSpacing: '.25em', textTransform: 'uppercase',
             color: 'rgba(255,220,140,.45)', marginTop: 10,
-            animation: `ob01TagIn ${DUR}s ease both`,
+            animation: `splashTagFadeIn ${DUR}s ease both`,
           }}>Know your body</div>
         </div>
       </div>

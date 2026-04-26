@@ -237,12 +237,11 @@ export default function OnboardingPage({ onComplete }) {
               fontFamily: "'Dancing Script', cursive",
               fontSize: 48, fontWeight: 500,
               letterSpacing: '.08em',
-              color: 'rgba(255,248,220,.95)',
-              textShadow: '0 0 40px rgba(255,220,80,.5)',
+              color: 'rgba(255,248,220,.35)',
             }}>lua</div>
             <div style={{
               fontSize: 9, letterSpacing: '.25em', textTransform: 'uppercase',
-              color: 'rgba(255,220,140,.45)', marginTop: 10,
+              color: 'rgba(255,220,140,.2)', marginTop: 10,
             }}>Know your body</div>
           </div>
         </div>
