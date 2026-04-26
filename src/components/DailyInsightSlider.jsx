@@ -202,10 +202,10 @@ export default function DailyInsightSlider() {
     const yesterday = gatherYesterdayData();
     const weekData = gatherWeekData();
 
-    fetch('/api/daily-insight', {
+    fetch('/api/condition-briefing', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ yesterday, weekData }),
+      body: JSON.stringify({ type: 'daily-insight', yesterday, weekData }),
     })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
