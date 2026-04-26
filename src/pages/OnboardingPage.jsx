@@ -126,7 +126,7 @@ export default function OnboardingPage({ onComplete }) {
 
   /* ── Sun style (CSS-transition driven) ── */
   const sun = SUN_STEPS[step];
-  const sunBottom = step === 3 ? screenH() + 115 : sun.bottom;
+  const sunBottom = step === 3 ? screenH() - 155 : sun.bottom;
   const transDur = step === 3 && prevStepRef.current === 2
     ? `${TRANS_DUR.toS4}ms` : `${TRANS_DUR.normal}ms`;
 
