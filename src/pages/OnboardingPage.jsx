@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { saveProfile } from '../storage/ProfileStorage';
 
 const ONBOARDING_KEY = 'lua_onboarding_done';
@@ -13,7 +13,6 @@ const GRADIENTS = [
   'linear-gradient(180deg, #FDE8A0 0%, #FCD870 18%, #FAC040 38%, #F8B030 58%, #F5C060 78%, #FADA70 100%)',
   'linear-gradient(180deg, #F8E090 0%, #F0CE78 10%, #E8BC60 18%, #C8DDF0 40%, #B8DFF0 58%, #B8DFF0 100%)',
 ];
-const ANALYZING_GRADIENT = 'linear-gradient(180deg, #FBE898 0%, #F2D070 15%, #E0C468 30%, #D0D4E8 55%, #C4DBEE 75%, #B8DFF0 100%)';
 
 /* ── sun config per step ── */
 const SUN_CONFIGS = [
@@ -37,21 +36,34 @@ const INSIGHTS = [
   { cause: '14일 기록', result: '내 패턴 발견', desc: '2주만 기록하면 내 몸의 패턴이 보여요.' },
 ];
 
+/* ── transition phases: idle → sunRise → contentIn → done ── */
+
 export default function OnboardingPage({ onComplete }) {
   const [step, setStep] = useState(0);
   const [energy, setEnergy] = useState(2);
   const [mood, setMood] = useState(2);
   const [hydra, setHydra] = useState(2);
-  const [analyzing, setAnalyzing] = useState(false);
+  const [phase, setPhase] = useState('idle'); // idle | sunRise | contentIn | done
 
   const touchRef = useRef({ startX: 0, startY: 0 });
 
   const goNext = useCallback(() => setStep(s => s >= 2 ? s : Math.min(s + 1, 3)), []);
   const goPrev = useCallback(() => setStep(s => Math.max(s - 1, 0)), []);
-  const goToResult = useCallback(() => {
-    setAnalyzing(true);
-    setTimeout(() => { setAnalyzing(false); setStep(3); }, 1800);
-  }, []);
+
+  /* ── 03→04 transition: sun rise → content fade in ── */
+  const startTransition = useCallback(() => {
+    if (phase !== 'idle') return;
+    setPhase('sunRise');
+    // 1.0s: sun rises + bg crossfade + step3 fadeout
+    setTimeout(() => {
+      setPhase('contentIn');
+      setStep(3);
+    }, 1000);
+    // 1.8s: all content visible, mark done
+    setTimeout(() => {
+      setPhase('done');
+    }, 1800);
+  }, [phase]);
 
   const handleTouchStart = (e) => {
     touchRef.current.startX = e.touches[0].clientX;
@@ -64,7 +76,6 @@ export default function OnboardingPage({ onComplete }) {
       if (dx < 0) goNext(); else goPrev();
     }
   };
-  // PC: mouse drag support
   const handleMouseDown = (e) => {
     touchRef.current.startX = e.clientX;
     touchRef.current.startY = e.clientY;
@@ -79,7 +90,6 @@ export default function OnboardingPage({ onComplete }) {
       if (dx < 0) goNext(); else goPrev();
     }
   };
-  // PC: click to advance (steps 0,1 only — no sliders/buttons to conflict)
   const handleBgClick = (e) => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
     const dx = Math.abs(e.clientX - touchRef.current.startX);
@@ -97,16 +107,51 @@ export default function OnboardingPage({ onComplete }) {
     onComplete();
   };
 
-  const sun = analyzing ? {
-    size: 300, top: -40, blur: 1.5, glow: '0 0 120px rgba(255,240,100,.2)',
-    bg: 'radial-gradient(circle at 50% 50%, #FFFFFF 0%, rgba(255,250,210,.9) 8%, rgba(255,235,100,.3) 22%, rgba(200,230,245,.2) 42%, transparent 58%)',
-  } : SUN_CONFIGS[step];
+  const isTransitioning = phase === 'sunRise' || phase === 'contentIn';
+  const showStep4Content = phase === 'contentIn' || phase === 'done' || (step === 3 && phase === 'idle');
 
-  /* ── slider style injection ── */
+  /* ── sun position/size during transition ── */
+  let sunStyle;
+  if (isTransitioning) {
+    const screenH = typeof window !== 'undefined' ? window.innerHeight : 800;
+    if (phase === 'sunRise') {
+      // Animating: bottom goes from 90 → screenH+115 over 1s
+      sunStyle = {
+        bottom: screenH + 115,
+        width: 310, height: 310,
+        background: SUN_CONFIGS[2].bg,
+        filter: 'blur(0.8px)',
+        boxShadow: '0 0 120px rgba(255,240,100,.2)',
+        transition: 'bottom 1s cubic-bezier(0.25, 0.1, 0.25, 1), width 1s ease-out, height 1s ease-out, filter 1s ease',
+      };
+    } else {
+      // contentIn: sun already at top (step 4 position)
+      sunStyle = {
+        top: -115,
+        width: 310, height: 310,
+        background: SUN_CONFIGS[3].bg,
+        filter: 'blur(1px)',
+        boxShadow: 'none',
+        transition: 'none',
+      };
+    }
+  } else {
+    const sun = SUN_CONFIGS[step];
+    sunStyle = {
+      ...(sun.top !== undefined ? { top: sun.top } : { bottom: sun.bottom }),
+      width: sun.size, height: sun.size,
+      background: sun.bg,
+      filter: `blur(${sun.blur}px)`,
+      boxShadow: sun.glow,
+      transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+    };
+  }
+
   const sliderCSS = `
     .lua-onb-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 2px; background: rgba(180,110,0,.15); border-radius: 99px; outline: none; }
     .lua-onb-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 15px; height: 15px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #FFFFFF, #FFD830); box-shadow: 0 0 10px rgba(255,200,30,.5); cursor: pointer; border: none; }
     .lua-onb-slider::-moz-range-thumb { width: 15px; height: 15px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #FFFFFF, #FFD830); box-shadow: 0 0 10px rgba(255,200,30,.5); cursor: pointer; border: none; }
+    @keyframes luaFadeSlideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
   `;
 
   return (
@@ -118,8 +163,6 @@ export default function OnboardingPage({ onComplete }) {
       onClick={handleBgClick}
       style={{
         position: 'fixed', inset: 0, zIndex: 2003,
-        background: analyzing ? ANALYZING_GRADIENT : GRADIENTS[step],
-        transition: 'background 1.2s ease',
         display: 'flex', flexDirection: 'column',
         overflow: 'hidden',
         fontFamily: 'inherit',
@@ -127,21 +170,34 @@ export default function OnboardingPage({ onComplete }) {
     >
       <style>{sliderCSS}</style>
 
+      {/* ── Background layers for crossfade ── */}
+      {/* Base layer: current step gradient */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: isTransitioning ? GRADIENTS[2] : GRADIENTS[step],
+        transition: isTransitioning ? 'none' : 'background 0.8s ease',
+        zIndex: -2,
+      }} />
+      {/* Overlay layer: step 4 gradient, fades in during transition */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: GRADIENTS[3],
+        opacity: isTransitioning || step === 3 ? 1 : 0,
+        transition: phase === 'sunRise' ? 'opacity 1s cubic-bezier(0.4, 0, 0.2, 1)' : (step === 3 ? 'none' : 'opacity 0.8s ease'),
+        zIndex: -1,
+      }} />
+
       {/* ── Sun orb ── */}
       <div style={{
         position: 'absolute',
         left: '50%', transform: 'translateX(-50%)',
-        width: sun.size, height: sun.size, borderRadius: '50%',
-        background: sun.bg,
-        filter: `blur(${sun.blur}px)`,
-        boxShadow: sun.glow,
-        ...(sun.top !== undefined ? { top: sun.top } : { bottom: sun.bottom }),
-        transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+        borderRadius: '50%',
         pointerEvents: 'none', zIndex: 0,
+        ...sunStyle,
       }} />
 
       {/* ── Bottom glow (step 0 only) ── */}
-      {step === 0 && (
+      {step === 0 && !isTransitioning && (
         <div style={{
           position: 'absolute', bottom: 0, left: 0, right: 0,
           height: 110, background: 'linear-gradient(180deg, transparent, rgba(255,160,30,.3))',
@@ -153,8 +209,8 @@ export default function OnboardingPage({ onComplete }) {
       <div style={{
         position: 'relative', zIndex: 1,
         flex: 1, display: 'flex', flexDirection: 'column',
-        justifyContent: step === 0 ? 'center' : 'flex-start',
-        overflowY: step >= 2 ? 'auto' : 'hidden',
+        justifyContent: step === 0 && !isTransitioning ? 'center' : 'flex-start',
+        overflowY: step >= 2 || showStep4Content ? 'auto' : 'hidden',
         WebkitOverflowScrolling: 'touch',
       }}>
 
@@ -192,15 +248,20 @@ export default function OnboardingPage({ onComplete }) {
               fontSize: 11, lineHeight: 1.75,
               color: 'rgba(140,70,10,.45)',
             }}>
-              식단, 수면, 움직임이<br/>
+              식단, 수면, 움��임이<br/>
               에너지와 피부와 기분으로 연결되고 있어요.
             </div>
           </div>
         )}
 
-        {/* 03 — 일출 */}
-        {step === 2 && !analyzing && (
-          <div style={{ padding: '26px 20px 0' }}>
+        {/* 03 — 일출 (fade out during transition) */}
+        {step === 2 && (
+          <div style={{
+            padding: '26px 20px 0',
+            opacity: phase === 'sunRise' ? 0 : 1,
+            transition: 'opacity 0.6s ease',
+            pointerEvents: phase === 'sunRise' ? 'none' : 'auto',
+          }}>
             <div style={{
               fontSize: 8, letterSpacing: '.22em', textTransform: 'uppercase',
               color: 'rgba(160,100,0,.5)', textAlign: 'center', marginBottom: 8,
@@ -229,7 +290,7 @@ export default function OnboardingPage({ onComplete }) {
               </div>
             ))}
 
-            <button onClick={goToResult} style={{
+            <button onClick={startTransition} style={{
               width: '100%', padding: 11, borderRadius: 99,
               background: 'rgba(180,100,0,.08)',
               border: '1px solid rgba(180,100,0,.15)',
@@ -240,32 +301,15 @@ export default function OnboardingPage({ onComplete }) {
           </div>
         )}
 
-        {/* Analyzing transition */}
-        {analyzing && (
-          <div style={{
-            flex: 1, display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center', paddingBottom: 60,
-          }}>
-            <style>{`
-              @keyframes luaPulse { 0%,100% { opacity: .6; transform: scale(1); } 50% { opacity: 1; transform: scale(1.04); } }
-              @keyframes luaDots { 0% { content: ''; } 33% { content: '.'; } 66% { content: '..'; } 100% { content: '...'; } }
-              .lua-analyzing-dots::after { content: ''; animation: luaDots 1.2s steps(1) infinite; }
-            `}</style>
-            <div style={{
-              fontSize: 14, fontWeight: 300, color: 'rgba(80,60,20,.7)',
-              animation: 'luaPulse 2s ease-in-out infinite',
-            }}>
-              <span className="lua-analyzing-dots">분석 중</span>
-            </div>
-          </div>
-        )}
-
-        {/* 04 — 완전히 뜬 해 */}
-        {step === 3 && (
+        {/* 04 — 완전히 뜬 해 (staggered fade-in) */}
+        {showStep4Content && step === 3 && (
           <div style={{ padding: '148px 20px 40px' }}>
             <div style={{
               fontSize: 8, letterSpacing: '.2em', textTransform: 'uppercase',
               color: 'rgba(26,58,74,.45)', textAlign: 'center', marginBottom: 16,
+              animation: phase === 'contentIn' ? 'luaFadeSlideIn 0.4s ease-out both' : undefined,
+              animationDelay: phase === 'contentIn' ? '0s' : undefined,
+              opacity: phase === 'done' || phase === 'idle' ? 1 : undefined,
             }}>LUA가 발견한 것</div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
@@ -274,6 +318,9 @@ export default function OnboardingPage({ onComplete }) {
                   background: 'rgba(255,255,255,.68)',
                   border: '0.5px solid rgba(100,180,220,.18)',
                   borderRadius: 12, padding: '10px 12px',
+                  animation: phase === 'contentIn' ? 'luaFadeSlideIn 0.4s ease-out both' : undefined,
+                  animationDelay: phase === 'contentIn' ? `${0.15 + i * 0.15}s` : undefined,
+                  opacity: phase === 'done' || phase === 'idle' ? 1 : undefined,
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
                     <span style={{
@@ -298,13 +345,16 @@ export default function OnboardingPage({ onComplete }) {
               color: '#1A3A4A',
               fontSize: 14, fontWeight: 500, cursor: 'pointer',
               fontFamily: 'inherit',
+              animation: phase === 'contentIn' ? 'luaFadeSlideIn 0.4s ease-out both' : undefined,
+              animationDelay: phase === 'contentIn' ? '0.6s' : undefined,
+              opacity: phase === 'done' || phase === 'idle' ? 1 : undefined,
             }}>LUA 시작하기</button>
           </div>
         )}
       </div>
 
-      {/* ── Dot indicators ── */}
-      {!analyzing && <div style={{
+      {/* ── Dot indicators (hidden during transition) ── */}
+      {!isTransitioning && <div style={{
         position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)',
         left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: 6, zIndex: 2,
       }}>
