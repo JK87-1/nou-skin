@@ -1,469 +1,270 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { saveProfile } from '../storage/ProfileStorage';
-import { saveBodyRecord, saveBodyProfile } from '../storage/BodyStorage';
 
 const ONBOARDING_KEY = 'lua_onboarding_done';
 export function isOnboardingDone() {
   return localStorage.getItem(ONBOARDING_KEY) === 'true';
 }
 
-const SECTIONS = ['환영', '기본 정보', '관심사', '완료'];
-
-const INTERESTS = [
-  { icon: '⚡', label: '에너지·컨디션' },
-  { icon: '✨', label: '피부 관리' },
-  { icon: '⚖️', label: '체중 관리' },
-  { icon: '😴', label: '수면 개선' },
-  { icon: '🧘', label: '스트레스' },
-  { icon: '💊', label: '영양 관리' },
+/* ── gradient backgrounds per step ── */
+const GRADIENTS = [
+  'linear-gradient(180deg, #C8681A 0%, #D97820 25%, #E88828 50%, #C85A10 75%, #8A3208 100%)',
+  'linear-gradient(180deg, #FDE090 0%, #FAC860 20%, #F5A030 45%, #E88020 70%, #E08030 100%)',
+  'linear-gradient(180deg, #FDE8A0 0%, #FCD870 18%, #FAC040 38%, #F8B030 58%, #F5C060 78%, #FADA70 100%)',
+  'linear-gradient(180deg, #F8E090 0%, #F0CE78 10%, #E8BC60 18%, #C8DDF0 40%, #B8DFF0 58%, #B8DFF0 100%)',
 ];
 
-function calcAgeFromYear(year) {
-  if (!year) return 25;
-  return new Date().getFullYear() - year;
-}
+/* ── sun config per step ── */
+const SUN_CONFIGS = [
+  { size: 260, bottom: -165, blur: 2, glow: 'none',
+    bg: 'radial-gradient(circle at 50% 40%, #FFFFFF 0%, #FFE840 12%, #FFA820 35%, rgba(255,140,20,.25) 60%, transparent 75%)' },
+  { size: 250, bottom: -70, blur: 1, glow: '0 0 80px rgba(255,200,60,.2)',
+    bg: 'radial-gradient(circle at 50% 45%, #FFFFFF 0%, #FFFB70 8%, #FFD030 25%, rgba(255,170,40,.4) 50%, transparent 70%)' },
+  { size: 280, bottom: 90, blur: 0.5, glow: '0 0 100px rgba(255,230,80,.25)',
+    bg: 'radial-gradient(circle at 50% 50%, #FFFFFF 0%, #FFFCE0 6%, #FFE860 16%, rgba(255,215,60,.3) 35%, rgba(255,180,30,.08) 55%, transparent 70%)' },
+  { size: 310, bottom: undefined, top: -115, blur: 1, glow: 'none',
+    bg: 'radial-gradient(circle at 50% 50%, #FFFFFF 0%, rgba(255,248,200,.85) 10%, rgba(255,228,130,.3) 26%, rgba(184,223,240,.2) 44%, transparent 60%)' },
+];
 
-const ITEM_H = 40;
-const VISIBLE = 5;
-const CENTER = Math.floor(VISIBLE / 2);
+const ENERGY_LABELS = ['매우 낮음', '낮음', '보통', '좋음', '활기참'];
+const MOOD_LABELS   = ['우울', '기분 다운', '평온', '좋음', '행복'];
+const HYDRA_LABELS  = ['갈증', '약간 부족', '적당', '충분', '완벽'];
 
-function ScrollPicker({ items, value, onChange, suffix }) {
-  const ref = useRef(null);
-  const touching = useRef(false);
-  const timer = useRef(null);
+const INSIGHTS = [
+  { cause: '탄수 위주 식사', result: '오후 에너지 저하', desc: '오늘 에너지가 낮은 건 어제 식단과 연결돼 있을 수 있어요.' },
+  { cause: '수분 부족', result: '피부 수분 감소', desc: '물을 충분히 마시면 내일 피부가 달라질 수 있어요.' },
+  { cause: '14일 기록', result: '내 패턴 발견', desc: '2주만 기록하면 내 몸의 패턴이 보여요.' },
+];
 
-  const idx = items.indexOf(value);
-  const startIdx = idx >= 0 ? idx : 0;
-
-  useEffect(() => {
-    if (ref.current && !touching.current) {
-      ref.current.scrollTop = startIdx * ITEM_H;
-    }
-  }, []);
-
-  const snap = useCallback(() => {
-    if (!ref.current) return;
-    const i = Math.round(ref.current.scrollTop / ITEM_H);
-    const clamped = Math.max(0, Math.min(i, items.length - 1));
-    ref.current.scrollTo({ top: clamped * ITEM_H, behavior: 'smooth' });
-    if (items[clamped] !== value) onChange(items[clamped]);
-  }, [items, value, onChange]);
-
-  const handleScroll = () => {
-    clearTimeout(timer.current);
-    timer.current = setTimeout(() => {
-      if (!touching.current) snap();
-    }, 80);
-  };
-
-  return (
-    <div style={{ position: 'relative', height: ITEM_H * VISIBLE, overflow: 'hidden', flex: 1 }}>
-      {/* Highlight band */}
-      <div style={{
-        position: 'absolute', top: CENTER * ITEM_H, left: 0, right: 0, height: ITEM_H,
-        background: 'rgba(137,206,245,0.12)', borderRadius: 10, zIndex: 0,
-        pointerEvents: 'none',
-      }} />
-      {/* Fade top/bottom */}
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: ITEM_H * 1.5, background: 'linear-gradient(to bottom, rgba(255,255,255,0.95), transparent)', zIndex: 1, pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: ITEM_H * 1.5, background: 'linear-gradient(to top, rgba(255,255,255,0.95), transparent)', zIndex: 1, pointerEvents: 'none' }} />
-      <div
-        ref={ref}
-        onScroll={handleScroll}
-        onTouchStart={() => { touching.current = true; }}
-        onTouchEnd={() => { touching.current = false; snap(); }}
-        onMouseDown={() => { touching.current = true; }}
-        onMouseUp={() => { touching.current = false; snap(); }}
-        style={{
-          height: '100%', overflowY: 'auto', WebkitOverflowScrolling: 'touch',
-          scrollbarWidth: 'none', msOverflowStyle: 'none',
-          paddingTop: CENTER * ITEM_H, paddingBottom: CENTER * ITEM_H,
-          position: 'relative', zIndex: 0,
-        }}
-      >
-        <style>{`.scroll-picker::-webkit-scrollbar { display: none; }`}</style>
-        {items.map((item, i) => (
-          <div key={i} className="scroll-picker" style={{
-            height: ITEM_H, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 18, fontWeight: 600, color: 'var(--text-primary)',
-            opacity: item === value ? 1 : 0.3,
-            transition: 'opacity 0.15s',
-          }}>
-            {item}{suffix || ''}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function calcBMR(gender, weight, height, age) {
-  if (gender === '여성') return Math.round(10 * weight + 6.25 * height - 5 * age - 161);
-  return Math.round(10 * weight + 6.25 * height - 5 * age + 5);
-}
-
-export default function OnboardingPage({ onComplete, onGoSettings }) {
+export default function OnboardingPage({ onComplete }) {
   const [step, setStep] = useState(0);
+  const [energy, setEnergy] = useState(2);
+  const [mood, setMood] = useState(2);
+  const [hydra, setHydra] = useState(2);
 
-  const [name, setName] = useState('');
-  const [gender, setGender] = useState('');
-  const [birthYear, setBirthYear] = useState(1995);
-  const [birthMonth, setBirthMonth] = useState(1);
-  const [birthDay, setBirthDay] = useState(1);
-  const [height, setHeight] = useState('');
-  const [weight, setWeight] = useState('');
-  const [interests, setInterests] = useState([]);
-  const [showBirthPicker, setShowBirthPicker] = useState(false);
+  const touchRef = useRef({ startX: 0, startY: 0 });
 
-  const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 80 }, (_, i) => currentYear - i - 10);
-  const months = Array.from({ length: 12 }, (_, i) => i + 1);
-  const daysInMonth = new Date(birthYear, birthMonth, 0).getDate();
-  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  const goNext = useCallback(() => setStep(s => Math.min(s + 1, 3)), []);
+  const goPrev = useCallback(() => setStep(s => Math.max(s - 1, 0)), []);
 
-  const age = calcAgeFromYear(birthYear);
-  const w = Number(weight);
-  const h = Number(height);
-  const bmr = w > 0 && h > 0 && gender ? calcBMR(gender, w, h, age) : 0;
-  const tdee = bmr > 0 ? Math.round(bmr * 1.55) : 0;
-
-  const canNext = [
-    name.trim().length > 0,
-    gender && h > 0 && w > 0,
-    interests.length > 0,
-    true,
-  ];
+  const handleTouchStart = (e) => {
+    touchRef.current.startX = e.touches[0].clientX;
+    touchRef.current.startY = e.touches[0].clientY;
+  };
+  const handleTouchEnd = (e) => {
+    const dx = e.changedTouches[0].clientX - touchRef.current.startX;
+    const dy = e.changedTouches[0].clientY - touchRef.current.startY;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+      if (dx < 0) goNext(); else goPrev();
+    }
+  };
 
   const handleFinish = () => {
     saveProfile({
-      nickname: name.trim(),
-      gender,
-      birthYear: String(birthYear),
-      onboardingInterests: interests,
+      onboardingEnergy: energy,
+      onboardingMood: mood,
+      onboardingHydration: hydra,
     });
-    saveBodyProfile({ height: h });
-    if (w > 0) saveBodyRecord(w);
-    if (tdee > 0) {
-      saveProfile({ dietTargetCal: tdee, currentWeight: w, goalWeight: w });
-    }
     localStorage.setItem(ONBOARDING_KEY, 'true');
     onComplete();
   };
 
-  const toggleInterest = (label) => {
-    setInterests(prev => prev.includes(label) ? prev.filter(x => x !== label) : [...prev, label]);
-  };
+  const sun = SUN_CONFIGS[step];
 
-  const next = () => { if (canNext[step]) setStep(s => s + 1); };
-  const prev = () => { if (step > 0) setStep(s => s - 1); };
-
-  const selectStyle = (isSelected) => ({
-    padding: '16px 20px', borderRadius: 16, cursor: 'pointer',
-    background: isSelected ? 'rgba(137,206,245,0.1)' : 'var(--bg-card, #fff)',
-    border: isSelected ? '2px solid var(--accent-primary)' : '2px solid transparent',
-    transition: 'all 0.15s ease', fontFamily: 'inherit',
-  });
-
-  const inputStyle = {
-    width: '100%',
-    padding: '14px 16px', borderRadius: 14, border: '2px solid transparent',
-    background: 'var(--bg-card, #fff)', fontSize: 15, color: 'var(--text-primary)',
-    outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
-  };
-
-  const renderStep = () => {
-    if (step === 0) return (
-      <div>
-        <div style={{ textAlign: 'center', marginTop: 40, marginBottom: 32 }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>🌿</div>
-          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>안녕하세요!</div>
-          <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6 }}>나만의 웰니스 루틴을 함께 만들어가요</div>
-        </div>
-        <div style={{ marginBottom: 12 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>이름 또는 닉네임</div>
-          <input
-            value={name}
-            onChange={e => setName(e.target.value)}
-            placeholder="이름을 입력해주세요"
-            style={inputStyle}
-            autoFocus
-          />
-        </div>
-        <div style={{
-          padding: '14px 16px', borderRadius: 14,
-          background: 'rgba(137,206,245,0.08)', border: '1px solid rgba(137,206,245,0.15)',
-          fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6, marginTop: 16,
-        }}>
-          이름으로 맞춤 인사이트를 전달해드릴게요 😊
-        </div>
-      </div>
-    );
-
-    if (step === 1) return (
-      <div>
-        <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>기본 정보</div>
-        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>맞춤 분석에 사용돼요</div>
-
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>신체 기준</div>
-          <div style={{ display: 'flex', gap: 10 }}>
-            {['여성', '남성'].map(g => (
-              <div key={g} onClick={() => setGender(g)} style={{
-                ...selectStyle(gender === g),
-                flex: 1, textAlign: 'center', padding: '14px 0',
-              }}>
-                <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{g}</span>
-              </div>
-            ))}
-          </div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6, opacity: 0.7 }}>
-            성 정체성과 다른 경우 본인에게 맞는 신체 기준을 선택해주세요
-          </div>
-        </div>
-
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>생년월일</div>
-          <div onClick={() => setShowBirthPicker(true)} style={{
-            ...inputStyle, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          }}>
-            <span>{birthYear}년 {String(birthMonth).padStart(2, '0')}월 {String(birthDay).padStart(2, '0')}일</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-          </div>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>키</div>
-            <div style={{ position: 'relative' }}>
-              <input
-                value={height}
-                onChange={e => setHeight(e.target.value)}
-                type="number" placeholder="165"
-                style={{ ...inputStyle, paddingRight: 40 }}
-              />
-              <span style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', fontSize: 13, color: 'var(--text-muted)' }}>cm</span>
-            </div>
-          </div>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>몸무게</div>
-            <div style={{ position: 'relative' }}>
-              <input
-                value={weight}
-                onChange={e => setWeight(e.target.value)}
-                type="number" placeholder="55"
-                style={{ ...inputStyle, paddingRight: 40 }}
-              />
-              <span style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', fontSize: 13, color: 'var(--text-muted)' }}>kg</span>
-            </div>
-          </div>
-        </div>
-
-        <div style={{
-          padding: '14px 16px', borderRadius: 14,
-          background: 'rgba(137,206,245,0.08)', border: '1px solid rgba(137,206,245,0.15)',
-          fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6,
-        }}>
-          개인정보는 기기에만 저장되며 외부로 전송되지 않아요
-        </div>
-
-        {bmr > 0 && (
-          <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-            <div style={{
-              flex: 1, ...selectStyle(true), textAlign: 'center', padding: '12px 0',
-              background: 'rgba(137,206,245,0.1)', border: '2px solid var(--accent-primary)',
-            }}>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>BMR</div>
-              <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)' }}>{bmr.toLocaleString()}</div>
-            </div>
-            <div style={{
-              flex: 1, ...selectStyle(true), textAlign: 'center', padding: '12px 0',
-              background: 'rgba(137,206,245,0.1)', border: '2px solid var(--accent-primary)',
-            }}>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>TDEE</div>
-              <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)' }}>{tdee.toLocaleString()}</div>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-
-    if (step === 2) return (
-      <div>
-        <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>관심사 선택</div>
-        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>중복 선택 가능해요</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-          {INTERESTS.map(item => {
-            const active = interests.includes(item.label);
-            return (
-              <div key={item.label} onClick={() => toggleInterest(item.label)} style={{
-                ...selectStyle(active),
-                textAlign: 'center', padding: '20px 8px',
-              }}>
-                <div style={{ fontSize: 32, marginBottom: 8 }}>{item.icon}</div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{item.label}</div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
-
-    if (step === 3) return (
-      <div>
-        <div style={{ textAlign: 'center', marginTop: 20, marginBottom: 24 }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>🌱</div>
-          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>준비 완료!</div>
-          <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.8 }}>
-            {name.trim()}님의 맞춤 웰니스 루틴을 시작할게요
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {interests.map(label => {
-            const item = INTERESTS.find(i => i.label === label);
-            return (
-              <div key={label} style={{
-                ...selectStyle(true), padding: '12px 16px',
-                display: 'flex', alignItems: 'center', gap: 10,
-              }}>
-                <span style={{ fontSize: 18 }}>{item?.icon}</span>
-                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{label}</span>
-              </div>
-            );
-          })}
-          {tdee > 0 && (
-            <div style={{
-              ...selectStyle(true), padding: '12px 16px',
-              display: 'flex', alignItems: 'center', gap: 10,
-            }}>
-              <span style={{ fontSize: 18 }}>📊</span>
-              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>TDEE {tdee.toLocaleString()} kcal 계산 완료</span>
-            </div>
-          )}
-        </div>
-
-        <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)', margin: '20px 0' }} />
-
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10 }}>나중에 설정에서 추가할 수 있어요</div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {[
-            { icon: '⚖️', text: '다이어트 프로그램 · 목표 몸무게' },
-            { icon: '😴', text: '수면 목표 · 활동 수준 세부 설정' },
-            { icon: '💊', text: '영양제 루틴 · 알림 시간 설정' },
-          ].map(item => (
-            <div key={item.text} style={{
-              padding: '12px 16px', borderRadius: 16,
-              background: 'var(--bg-card, #fff)',
-              display: 'flex', alignItems: 'center', gap: 10,
-            }}>
-              <span style={{ fontSize: 16 }}>{item.icon}</span>
-              <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{item.text}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
+  /* ── slider style injection ── */
+  const sliderCSS = `
+    .lua-onb-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 2px; background: rgba(180,110,0,.15); border-radius: 99px; outline: none; }
+    .lua-onb-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 15px; height: 15px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #FFFFFF, #FFD830); box-shadow: 0 0 10px rgba(255,200,30,.5); cursor: pointer; border: none; }
+    .lua-onb-slider::-moz-range-thumb { width: 15px; height: 15px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #FFFFFF, #FFD830); box-shadow: 0 0 10px rgba(255,200,30,.5); cursor: pointer; border: none; }
+  `;
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 2003,
-      background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
-      display: 'flex', flexDirection: 'column',
-    }}>
-      {/* Header */}
-      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
-        {step > 0 && (
-          <div onClick={prev} style={{
-            width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1,
-          }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
-          </div>
-        )}
-        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>시작하기</span>
-      </div>
+    <div
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 2003,
+        background: GRADIENTS[step],
+        transition: 'background 0.8s ease',
+        display: 'flex', flexDirection: 'column',
+        overflow: 'hidden',
+        fontFamily: 'inherit',
+      }}
+    >
+      <style>{sliderCSS}</style>
 
-      {/* Progress bar */}
-      <div style={{ padding: '16px 24px 0' }}>
-        <div style={{ display: 'flex', gap: 4, marginBottom: 8 }}>
-          {SECTIONS.map((s, i) => (
-            <div key={s} style={{ flex: 1, height: 3, borderRadius: 2, background: i <= step ? 'var(--accent-primary)' : 'rgba(0,0,0,0.08)', transition: 'background 0.3s' }} />
-          ))}
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          {SECTIONS.map((s, i) => (
-            <span key={s} style={{ fontSize: 10, fontWeight: i === step ? 700 : 400, color: i === step ? 'var(--accent-primary)' : 'var(--text-muted)' }}>{s}</span>
-          ))}
-        </div>
-      </div>
-
-      {/* Content */}
-      <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '24px 24px 120px' }}>
-        {renderStep()}
-      </div>
-
-      {/* Bottom button */}
+      {/* ── Sun orb ── */}
       <div style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0,
-        padding: '16px 24px calc(env(safe-area-inset-bottom, 0px) + 16px)',
-        background: 'linear-gradient(transparent, #fff 20%)',
+        position: 'absolute',
+        left: '50%', transform: 'translateX(-50%)',
+        width: sun.size, height: sun.size, borderRadius: '50%',
+        background: sun.bg,
+        filter: `blur(${sun.blur}px)`,
+        boxShadow: sun.glow,
+        ...(sun.top !== undefined ? { top: sun.top } : { bottom: sun.bottom }),
+        transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+        pointerEvents: 'none', zIndex: 0,
+      }} />
+
+      {/* ── Bottom glow (step 0 only) ── */}
+      {step === 0 && (
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0,
+          height: 110, background: 'linear-gradient(180deg, transparent, rgba(255,160,30,.3))',
+          pointerEvents: 'none', zIndex: 0,
+        }} />
+      )}
+
+      {/* ── Content area ── */}
+      <div style={{
+        position: 'relative', zIndex: 1,
+        flex: 1, display: 'flex', flexDirection: 'column',
+        justifyContent: step === 0 ? 'center' : 'flex-start',
+        overflowY: step >= 2 ? 'auto' : 'hidden',
+        WebkitOverflowScrolling: 'touch',
       }}>
-        {step === 3 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <button onClick={() => { handleFinish(); onGoSettings?.(); }} style={{
-              width: '100%', padding: '14px 0', borderRadius: 16, border: '2px solid var(--accent-primary)',
-              background: 'transparent', color: 'var(--accent-primary)',
-              fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-            }}>설정 먼저 채우기 →</button>
-            <button onClick={handleFinish} style={{
-              width: '100%', padding: '16px 0', borderRadius: 16, border: 'none',
-              background: 'var(--accent-primary)', color: '#fff',
-              fontSize: 16, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-            }}>지금 바로 시작하기 🌿</button>
+
+        {/* 01 — 여명 */}
+        {step === 0 && (
+          <div style={{ textAlign: 'center', paddingBottom: 90 }}>
+            <div style={{
+              fontSize: 48, fontWeight: 200, fontStyle: 'italic',
+              letterSpacing: '.2em',
+              color: 'rgba(255,248,220,.95)',
+              textShadow: '0 0 40px rgba(255,220,80,.5)',
+            }}>lua</div>
+            <div style={{
+              fontSize: 9, letterSpacing: '.25em', textTransform: 'uppercase',
+              color: 'rgba(255,220,140,.45)', marginTop: 10,
+            }}>Know your body</div>
           </div>
-        ) : (
-          <button onClick={next} disabled={!canNext[step]} style={{
-            width: '100%', padding: '16px 0', borderRadius: 16, border: 'none',
-            background: canNext[step] ? 'var(--accent-primary)' : 'var(--bg-input, #E0E0E0)',
-            color: canNext[step] ? '#fff' : 'var(--text-dim)',
-            fontSize: 16, fontWeight: 600, cursor: canNext[step] ? 'pointer' : 'default',
-            fontFamily: 'inherit', transition: 'all 0.2s ease',
-          }}>다음</button>
+        )}
+
+        {/* 02 — 해뜨기 */}
+        {step === 1 && (
+          <div style={{ padding: '38px 24px 125px' }}>
+            <div style={{
+              fontSize: 8, letterSpacing: '.22em', textTransform: 'uppercase',
+              color: 'rgba(180,90,10,.5)', marginBottom: 24,
+            }}>Welcome to LUA</div>
+            <div style={{
+              fontSize: 19, fontWeight: 300, lineHeight: 1.42,
+              color: 'rgba(120,50,5,.9)', marginBottom: 16,
+            }}>
+              내 몸에서 일어나는 일을<br/>
+              <strong style={{ fontWeight: 500, color: '#8A3800' }}>처음으로 이해</strong>하게 돼요
+            </div>
+            <div style={{
+              fontSize: 11, lineHeight: 1.75,
+              color: 'rgba(140,70,10,.45)',
+            }}>
+              식단, 수면, 움직임이<br/>
+              에너지와 피부와 기분으로 연결되고 있어요.
+            </div>
+          </div>
+        )}
+
+        {/* 03 — 일출 */}
+        {step === 2 && (
+          <div style={{ padding: '26px 20px 0' }}>
+            <div style={{
+              fontSize: 8, letterSpacing: '.22em', textTransform: 'uppercase',
+              color: 'rgba(160,100,0,.5)', textAlign: 'center', marginBottom: 8,
+            }}>Right now</div>
+            <div style={{
+              fontSize: 16, fontWeight: 300, textAlign: 'center',
+              color: 'rgba(100,50,0,.85)', marginBottom: 28,
+            }}>지금 어떤 상태예요?</div>
+
+            {[
+              { label: '에너지', value: energy, set: setEnergy, labels: ENERGY_LABELS },
+              { label: '기분', value: mood, set: setMood, labels: MOOD_LABELS },
+              { label: '수분', value: hydra, set: setHydra, labels: HYDRA_LABELS },
+            ].map(({ label, value, set, labels }) => (
+              <div key={label} style={{ marginBottom: 22 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+                  <span style={{ fontSize: 11, color: 'rgba(150,90,0,.45)' }}>{label}</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: '#8A5000' }}>{labels[value]}</span>
+                </div>
+                <input
+                  type="range" min={0} max={4} step={1}
+                  value={value}
+                  onChange={e => set(Number(e.target.value))}
+                  className="lua-onb-slider"
+                />
+              </div>
+            ))}
+
+            <button onClick={goNext} style={{
+              width: '100%', padding: 11, borderRadius: 99,
+              background: 'rgba(180,100,0,.08)',
+              border: '1px solid rgba(180,100,0,.15)',
+              color: 'rgba(120,60,0,.65)',
+              fontSize: 13, fontWeight: 500, cursor: 'pointer',
+              fontFamily: 'inherit', marginTop: 8,
+            }}>LUA가 분석할게요 →</button>
+          </div>
+        )}
+
+        {/* 04 — 완전히 뜬 해 */}
+        {step === 3 && (
+          <div style={{ padding: '148px 20px 40px' }}>
+            <div style={{
+              fontSize: 8, letterSpacing: '.2em', textTransform: 'uppercase',
+              color: 'rgba(26,58,74,.45)', textAlign: 'center', marginBottom: 16,
+            }}>LUA가 발견한 것</div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
+              {INSIGHTS.map((item, i) => (
+                <div key={i} style={{
+                  background: 'rgba(255,255,255,.68)',
+                  border: '0.5px solid rgba(100,180,220,.18)',
+                  borderRadius: 12, padding: '10px 12px',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                    <span style={{
+                      padding: '3px 8px', borderRadius: 99, fontSize: 10, fontWeight: 500,
+                      background: 'rgba(255,210,80,.15)', color: '#8A6000',
+                    }}>{item.cause}</span>
+                    <span style={{ fontSize: 10, color: '#AACCD8' }}>→</span>
+                    <span style={{
+                      padding: '3px 8px', borderRadius: 99, fontSize: 10, fontWeight: 500,
+                      background: 'rgba(100,180,220,.14)', color: '#2A6A8A',
+                    }}>{item.result}</span>
+                  </div>
+                  <div style={{ fontSize: 9, color: '#6A9AAA', lineHeight: 1.55 }}>{item.desc}</div>
+                </div>
+              ))}
+            </div>
+
+            <button onClick={handleFinish} style={{
+              width: '100%', padding: 12, borderRadius: 99,
+              background: 'linear-gradient(120deg, rgba(26,58,74,.12), rgba(26,58,74,.08))',
+              border: '1px solid rgba(26,58,74,.14)',
+              color: '#1A3A4A',
+              fontSize: 14, fontWeight: 500, cursor: 'pointer',
+              fontFamily: 'inherit',
+            }}>LUA 시작하기</button>
+          </div>
         )}
       </div>
 
-      {/* Birth date picker modal */}
-      {showBirthPicker && (
-        <div onClick={() => setShowBirthPicker(false)} style={{
-          position: 'fixed', inset: 0, zIndex: 3000,
-          background: 'rgba(0,0,0,0.4)',
-          display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-        }}>
-          <div onClick={e => e.stopPropagation()} style={{
-            background: '#fff', borderRadius: '24px 24px 0 0',
-            padding: '20px 20px calc(env(safe-area-inset-bottom, 0px) + 20px)',
-            width: '100%', maxWidth: 420,
-          }}>
-            <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.1)', margin: '0 auto 16px' }} />
-            <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 16 }}>생년월일</div>
-            <div style={{ display: 'flex', gap: 4 }}>
-              <ScrollPicker items={years} value={birthYear} onChange={setBirthYear} suffix="년" />
-              <ScrollPicker items={months} value={birthMonth} onChange={setBirthMonth} suffix="월" />
-              <ScrollPicker items={days} value={birthDay > daysInMonth ? daysInMonth : birthDay} onChange={setBirthDay} suffix="일" />
-            </div>
-            <button onClick={() => setShowBirthPicker(false)} style={{
-              width: '100%', padding: '16px 0', borderRadius: 16, border: 'none',
-              background: 'var(--accent-primary)', color: '#fff',
-              fontSize: 16, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-              marginTop: 16,
-            }}>확인</button>
-          </div>
-        </div>
-      )}
+      {/* ── Dot indicators ── */}
+      <div style={{
+        position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)',
+        left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: 6, zIndex: 2,
+      }}>
+        {[0, 1, 2, 3].map(i => (
+          <div key={i} onClick={() => setStep(i)} style={{
+            width: step === i ? 18 : 5,
+            height: 5,
+            borderRadius: step === i ? 99 : '50%',
+            background: step === i ? '#FFD060' : 'rgba(255,200,80,.2)',
+            transition: 'all 0.3s ease',
+            cursor: 'pointer',
+          }} />
+        ))}
+      </div>
     </div>
   );
 }
