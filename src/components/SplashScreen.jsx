@@ -76,6 +76,15 @@ const keyframes = `
     100% { opacity: 1; }
   }
 
+  /* Sun: hidden at -260 during hold, rises to -155 during transition */
+  @keyframes sunRiseFromNight {
+    0%   { bottom: -260px; opacity: 0; width: 260px; height: 260px; filter: blur(12px); }
+    ${HOLD}%  { bottom: -260px; opacity: 0; width: 260px; height: 260px; filter: blur(12px); }
+    ${HOLD + 10}%  { opacity: 0.3; filter: blur(6px); }
+    ${HOLD + 25}%  { opacity: 0.7; filter: blur(4px); }
+    100% { bottom: -155px; opacity: 1; width: 260px; height: 260px; filter: blur(2px); }
+  }
+
   /* Onboarding 01 logo: appears in last 30% */
   @keyframes ob01LogoIn {
     0%   { opacity: 0; }
@@ -159,6 +168,16 @@ export default function SplashScreen({ exiting, onAnimationEnd }) {
           background: 'radial-gradient(circle, rgba(220,235,255,.25) 0%, transparent 70%)',
           animation: `starsLife ${DUR}s ease forwards`,
           pointerEvents: 'none',
+        }} />
+
+        {/* Sun orb (rises from fully hidden to 01 position) */}
+        <div style={{
+          position: 'absolute',
+          left: '50%', transform: 'translateX(-50%)',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle at 50% 40%, #FFFFFF 0%, #FFE840 12%, #FFA820 35%, rgba(255,140,20,.25) 60%, transparent 75%)',
+          animation: `sunRiseFromNight ${DUR}s cubic-bezier(0.4, 0, 0.2, 1) forwards`,
+          pointerEvents: 'none', zIndex: 0,
         }} />
 
         {/* Horizon glow (appears during transition) */}
