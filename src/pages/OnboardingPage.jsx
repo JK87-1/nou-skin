@@ -38,7 +38,7 @@ const INSIGHTS = [
 ];
 
 /* ── Transition durations ── */
-const TRANS_DUR = { normal: 900, toS4: 1000 }; // ms
+const TRANS_DUR = { normal: 900, toS4: 2000 }; // ms
 
 export default function OnboardingPage({ onComplete }) {
   const [step, setStep] = useState(0);       // visual target step (0-3)
@@ -72,11 +72,11 @@ export default function OnboardingPage({ onComplete }) {
     setStep(3);
     setTimeout(() => {
       setS4Phase('contentIn');
-    }, TRANS_DUR.toS4);
+    }, TRANS_DUR.toS4 + 200);
     setTimeout(() => {
       setS4Phase('done');
       setLocked(false);
-    }, TRANS_DUR.toS4 + 800);
+    }, TRANS_DUR.toS4 + 1000);
   }, [step, locked]);
 
   /* ── Touch / mouse handlers ── */
