@@ -142,11 +142,11 @@ export default function App() {
   useEffect(() => {
     if (showSplash) {
       const isFirst = !isOnboardingDone();
-      const splashDur = isFirst ? 2500 : 1500;
+      const splashDur = isFirst ? 1800 : 1500;
       // theme-color: 첫 실행은 밤→새벽 앰버, 재실행은 하늘색
       const tColor = setTimeout(() => {
         document.querySelector('meta[name="theme-color"]').content = isFirst ? '#C8681A' : '#ace2fc';
-      }, isFirst ? 2000 : 1300);
+      }, isFirst ? 1400 : 1300);
       const t = setTimeout(() => {
         setSplashExiting(true);
       }, splashDur);
