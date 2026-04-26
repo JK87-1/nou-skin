@@ -15,7 +15,7 @@ const GRADIENTS = [
 ];
 
 /* ── Sun configs per step ── */
-/* 04 기준 대칭: 01·04 ���두 155px 잘림, 02·03 균등 배치 */
+/* 04 기준 대칭: 01·04 모두 155px 잘림, 02·03 균등 배치 */
 const screenH = () => typeof window !== 'undefined' ? window.innerHeight : 800;
 const SUN_SIZES = [260, 250, 280, 310];
 const getSunBottom = (step) => {
@@ -244,7 +244,7 @@ export default function OnboardingPage({ onComplete }) {
           </div>
         </div>
 
-        {/* 02 �� 해뜨기 */}
+        {/* 02 — 해뜨기 */}
         <div style={contentStyle(1)}>
           <div style={{ padding: '42px 48px 125px' }}>
             <div style={{
@@ -255,15 +255,15 @@ export default function OnboardingPage({ onComplete }) {
               fontSize: 24, fontWeight: 300, lineHeight: 1.45,
               color: 'rgba(120,50,5,.9)', marginBottom: 20,
             }}>
-              내 몸에서 ���어나는 일을<br/>
-              <strong style={{ fontWeight: 500, color: '#8A3800' }}>��음으로 ���해</strong>하게 돼요
+              내 몸에서 일어나는 일을<br/>
+              <strong style={{ fontWeight: 500, color: '#8A3800' }}>처음으로 이해</strong>하게 돼요
             </div>
             <div style={{
               fontSize: 14, lineHeight: 1.75,
               color: 'rgba(140,70,10,.45)',
             }}>
               식단, 수면, 움직임이<br/>
-              에너지와 피부와 기분으로 연���되고 있어요.
+              에너지와 피부와 기분으로 연결되고 있어요.
             </div>
           </div>
         </div>
@@ -310,7 +310,7 @@ export default function OnboardingPage({ onComplete }) {
           </div>
         </div>
 
-        {/* 04 — 완전히 �� 해 (staggered fade-in) */}
+        {/* 04 — 완전히 뜬 해 (staggered fade-in) */}
         <div style={contentStyle(3)}>
           <div style={{ padding: '148px 40px 40px' }}>
             <div style={{
