@@ -648,25 +648,38 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                     </div>
                   </div>
                   <div onClick={() => onTabChange?.('record')} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>🏃🏻 활동</span>
+                    {/* 상단: 아이콘 + 제목 + 버튼 */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 16 }}>🏃🏻</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>활동</span>
+                      </div>
                       <div onClick={(e) => { e.stopPropagation(); setShowActivityModal(true); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-muted)' }}>+</div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                      <span style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{(burnedFromSteps + burnedFromExercise) > 0 ? (burnedFromSteps + burnedFromExercise).toLocaleString() : '—'}</span>
-                      <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>kcal</span>
-                    </div>
-                    {stepCount > 0 && (
-                      <div style={{ marginTop: 4, fontSize: 10, color: '#22C55E' }}>{stepCount.toLocaleString()}걸음</div>
-                    )}
-                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 30, marginTop: 8 }}>
-                      {stepBars.map((s, i) => (
-                        <div key={i} style={{
-                          flex: 1, borderRadius: 2,
-                          height: s > 0 ? Math.max(4, (s / maxStep) * 28) : 4,
-                          background: i === 6 ? 'var(--text-primary)' : 'rgba(0,0,0,0.12)',
-                        }} />
-                      ))}
+                    {/* 하단: 숫자(좌) + 막대그래프(우) */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{(burnedFromSteps + burnedFromExercise) > 0 ? (burnedFromSteps + burnedFromExercise).toLocaleString() : '—'}</span>
+                          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>kcal</span>
+                        </div>
+                        {stepCount > 0 && (
+                          <div style={{ fontSize: 10, color: '#22C55E', marginTop: 4 }}>{stepCount.toLocaleString()}걸음</div>
+                        )}
+                      </div>
+                      {/* 슬림 막대그래프 */}
+                      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 36, flexShrink: 0 }}>
+                        {stepBars.map((s, i) => (
+                          <div key={i} style={{
+                            width: 6, borderRadius: 3,
+                            height: s > 0 ? Math.max(6, (s / maxStep) * 34) : 6,
+                            background: i === 6
+                              ? 'linear-gradient(180deg, #FF9F43, #F07030)'
+                              : s > 0 ? 'rgba(255,159,67,0.25)' : 'rgba(0,0,0,0.06)',
+                            transition: 'height 0.3s ease',
+                          }} />
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
