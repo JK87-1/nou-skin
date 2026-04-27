@@ -594,7 +594,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                 <div style={{ display: 'flex', gap: 10 }}>
                   <div onClick={() => onTabChange?.('record')} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>체중</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>⚖️ 체중</span>
                       <div onClick={(e) => { e.stopPropagation(); setShowWeightModal(true); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-muted)' }}>+</div>
                     </div>
                     {latestW ? (
@@ -628,16 +628,15 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                   </div>
                   <div onClick={() => onTabChange?.('record')} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>활동</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>🏃🏻 활동</span>
                       <div onClick={(e) => { e.stopPropagation(); setShowActivityModal(true); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-muted)' }}>+</div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <img src="/icons/fire.svg" alt="" style={{ width: 20, height: 20, opacity: 0.5, filter: 'invert(60%) sepia(90%) saturate(500%) hue-rotate(350deg)' }} />
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
                       <span style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{(burnedFromSteps + burnedFromExercise) > 0 ? (burnedFromSteps + burnedFromExercise).toLocaleString() : '—'}</span>
                       <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>kcal</span>
                     </div>
                     {stepCount > 0 && (
-                      <div style={{ marginTop: 4, fontSize: 10, color: '#22C55E' }}>🚶 {stepCount.toLocaleString()}걸음</div>
+                      <div style={{ marginTop: 4, fontSize: 10, color: '#22C55E' }}>{stepCount.toLocaleString()}걸음</div>
                     )}
                     <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 30, marginTop: 8 }}>
                       {stepBars.map((s, i) => (
