@@ -138,7 +138,7 @@ function calcInsightConfidence(yesterday, weekData) {
   return Math.max(1, Math.min(5, score));
 }
 
-function buildInsightPrompt(yesterday, weekData, confidence) {
+function buildInsightPrompt(yesterday, weekData, confidence, env) {
   const yLines = [];
   if (yesterday?.diet) yLines.push(`식단: ${yesterday.diet}`);
   if (yesterday?.calories) yLines.push(`칼로리: ${yesterday.calories}`);
@@ -161,42 +161,49 @@ function buildInsightPrompt(yesterday, weekData, confidence) {
   if (weekData?.avgEnergy) wLines.push(`평균 에너지: ${weekData.avgEnergy}`);
   if (weekData?.avgMood) wLines.push(`평균 기분: ${weekData.avgMood}`);
   if (weekData?.skinTrend) wLines.push(`피부 추이: ${weekData.skinTrend}`);
-  if (weekData?.daysWithData) wLines.push(`데이터 기록 일수: ${weekData.daysWithData}일/7일`);
 
-  const confidenceDesc = ['', '데이터 거의 없음', '데이터 부족', '데이터 보통', '데이터 충분', '데이터 매우 충분'][confidence];
+  const envLines = [];
+  if (env?.weather) envLines.push(`날씨: ${env.weather}`);
+  if (env?.temperature) envLines.push(`기온: ${env.temperature}°`);
+  if (env?.humidity) envLines.push(`습도: ${env.humidity}%`);
+  if (env?.dayOfWeek) envLines.push(`요일: ${env.dayOfWeek}`);
+  if (env?.season) envLines.push(`계절: ${env.season}`);
 
-  return `당신은 웰니스 전문가이자 퍼스널 헬스 코치입니다. 사용자의 건강 데이터를 분석하여 공감적이고 구체적인 인사이트를 제공합니다.
+  const hasYesterday = yLines.length > 0;
+  const hasWeek = wLines.length > 0 && (weekData?.daysWithData || 0) > 0;
+
+  return `당신은 LUA 앱의 AI 웰니스 코치입니다.
+친근하고 따뜻한 톤으로 답해주세요. 숫자보다 상태 언어로 표현하세요.
+
+[어제 기록 — 70% 반영]
+${hasYesterday ? yLines.join('\n') : '기록 없음'}
+
+[최근 1주일 패턴 — 30% 반영]
+${hasWeek ? wLines.join('\n') : '기록 없음'}
+
+[오늘 환경]
+${envLines.length > 0 ? envLines.join('\n') : '환경 정보 없음'}
 
 [규칙]
-- 어제 데이터(80% 비중)와 최근 일주일 데이터(20% 비중)를 종합 분석
-- 현재 데이터 신뢰도: ${confidenceDesc} (${confidence}/5)
-- 정확히 아래 5개 카테고리의 인사이트를 JSON 배열로 생성
-- 각 인사이트는 3-5문장, 구체적 수치와 과학적 근거를 포함
-- 데이터가 부족한 카테고리는 일반적인 건강 정보 기반으로 작성하되, 추측임을 자연스럽게 표현
-- 톤: 따뜻하고 공감적, "~해요" 체, 친근하면서도 전문적
-- 매번 다른 표현과 문장 구조 사용
-
-[카테고리]
-1. condition (오늘의 컨디션) - 전반적인 몸 상태, 에너지, 활력 예측
-2. mood (기분) - 감정 상태, 심리적 웰빙, 스트레스
-3. energy (에너지) - 체력, 피로도, 활동량과의 관계
-4. skin (피부) - 피부 상태, 수분, 관리 팁
-5. tip (오늘의 팁) - 오늘 실천할 수 있는 구체적 행동 1가지
-
-[어제 데이터 — 80% 비중]
-${yLines.length > 0 ? yLines.join('\n') : '기록 없음'}
-
-[최근 7일 데이터 — 20% 비중]
-${wLines.length > 0 ? wLines.join('\n') : '기록 없음'}
+1. 어제 기록 70% + 최근 1주일 30% 종합해서 분석
+2. 기록된 데이터가 있으면 그 데이터 우선 사용
+3. 데이터 없는 항목은 절대 언급하지 않음
+4. 데이터 부족하면 날씨·요일·계절로 자연스럽게 대체
+5. "데이터 부족", "판단 어려움", "기록이 없어서" 같은 부정적 표현 절대 사용 금지
+6. 각 항목 2-3문장 이내
+7. 오늘 컨디션 예측 + 짧은 행동 제안으로 마무리
+8. 데이터 없을 때도 자연스럽고 따뜻하게 — 날씨 앱처럼 앱을 열면 인사이트가 이미 준비돼 있는 느낌
+9. 기록 유도 시 강요 아닌 초대 느낌 ("오늘 기록하면 내일 더 정확한 인사이트를 드릴 수 있어요")
+10. 매번 다른 표현과 문장 구조를 사용
 
 [응답 형식 — 반드시 이 JSON 형식으로만 응답]
-[
-  {"category":"condition","title":"제목(8자 이내)","body":"인사이트 본문(3-5문장)"},
-  {"category":"mood","title":"제목","body":"본문"},
-  {"category":"energy","title":"제목","body":"본문"},
-  {"category":"skin","title":"제목","body":"본문"},
-  {"category":"tip","title":"제목","body":"본문"}
-]
+{
+  "summary": "전체 요약 한 문장 (가장 핵심적인 메시지)",
+  "energy": "오늘 에너지 전망 2-3문장",
+  "skin": "오늘 피부 전망 2-3문장",
+  "mood": "오늘 기분 전망 2-3문장",
+  "action": "오늘 추천 행동 딱 1가지 (구체적으로)"
+}
 
 JSON만 응답하세요. 다른 텍스트 없이.`;
 }
@@ -227,11 +234,11 @@ export default async function handler(req, res) {
     let prompt, maxTokens;
 
     if (type === 'daily-insight') {
-      // ── Daily Insight (5 category cards) ──
-      const { yesterday, weekData } = req.body;
+      // ── Daily Insight (summary + 3 forecasts + action) ──
+      const { yesterday, weekData, env } = req.body;
       const confidence = calcInsightConfidence(yesterday, weekData);
-      prompt = buildInsightPrompt(yesterday, weekData, confidence);
-      maxTokens = 1200;
+      prompt = buildInsightPrompt(yesterday, weekData, confidence, env);
+      maxTokens = 800;
 
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -251,15 +258,15 @@ export default async function handler(req, res) {
 
       const data = await response.json();
       const raw = data.choices?.[0]?.message?.content?.trim() || '';
-      let insights;
+      let insight;
       try {
         const jsonStr = raw.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
-        insights = JSON.parse(jsonStr);
+        insight = JSON.parse(jsonStr);
       } catch {
         return res.status(502).json({ error: 'Failed to parse AI response' });
       }
 
-      return res.status(200).json({ insights, confidence });
+      return res.status(200).json({ insight, confidence });
     }
 
     // ── Body / Skin briefing ──
