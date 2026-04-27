@@ -181,8 +181,9 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   // 카드 순서/편집 관리
   const CARD_REGISTRY = [
     { id: 'weight-activity', label: '체중·활동' },
-    { id: 'calories', label: '칼로리' },
-    { id: 'condition', label: '컨디션' },
+    { id: 'calories', label: '칼로리·수분' },
+    { id: 'condition-sleep', label: '컨디션·수면' },
+    { id: 'condition', label: '컨디션 체크' },
   ];
   const DEFAULT_CARD_ORDER = CARD_REGISTRY.map(c => c.id);
   const [cardOrder, setCardOrder] = useState(() => {
@@ -826,8 +827,150 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           })());
         }
 
+        if (cardId === 'condition-sleep') {
+          return editWrap('컨디션·수면', (() => {
+            const cs = {
+              background: 'rgba(255,255,255,0.2)', borderRadius: 16,
+              backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+              border: '1px solid rgba(255,255,255,0.3)',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+            };
+            const todayKey_ = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
+
+            // 컨디션 7일 데이터
+            const allChecks = JSON.parse(localStorage.getItem('nou_condition_checks') || '[]');
+            const cond7 = [];
+            for (let i = 6; i >= 0; i--) {
+              const d = new Date(); d.setDate(d.getDate() - i);
+              const dk = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+              const dayChecks = allChecks.filter(c => (c.date || c.timestamp?.slice(0,10)) === dk);
+              if (dayChecks.length > 0) {
+                const last = dayChecks[dayChecks.length - 1];
+                cond7.push({ date: dk, avg: ((last.energy || 5) + (last.mood || 5)) / 2 });
+              } else {
+                cond7.push({ date: dk, avg: null });
+              }
+            }
+            const todayCond = cond7[6]?.avg;
+            const condLabel = todayCond ? (todayCond >= 7 ? '좋음' : todayCond >= 4 ? '보통' : '낮음') : null;
+
+            // 수면 7일 데이터
+            const allV2 = JSON.parse(localStorage.getItem('lua_record_v2') || '{}');
+            const sleep7 = [];
+            for (let i = 6; i >= 0; i--) {
+              const d = new Date(); d.setDate(d.getDate() - i);
+              const dk = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+              const rec = allV2[dk];
+              if (rec?.sleep?.hours > 0) {
+                const bedHour = rec.sleep.bedtime ? parseInt(rec.sleep.bedtime.split(':')[0]) : null;
+                sleep7.push({ date: dk, hours: rec.sleep.hours, bedHour });
+              } else {
+                sleep7.push({ date: dk, hours: null, bedHour: null });
+              }
+            }
+            const todaySleep = sleep7[6]?.hours;
+
+            return (
+              <div style={{ margin: '0 18px', marginTop: 10, position: 'relative', zIndex: 1, pointerEvents: isEditing ? 'none' : 'auto' }}>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  {/* 컨디션 카드 */}
+                  <div onClick={() => onTabChange?.('record')} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 16 }}>✨</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>컨디션</span>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{todayCond ? todayCond.toFixed(1) : '—'}</span>
+                          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>/10</span>
+                        </div>
+                        {condLabel && <div style={{ fontSize: 10, color: todayCond >= 7 ? '#22C55E' : todayCond >= 4 ? 'var(--text-muted)' : '#E05050', marginTop: 4 }}>{condLabel}</div>}
+                      </div>
+                      {/* 도트 라인 그래프 */}
+                      {(() => {
+                        const pad = 5, w = 6 * 10 + pad * 2, h = 40;
+                        const valid = cond7.filter(c => c.avg !== null);
+                        if (valid.length < 2) return null;
+                        const pts = cond7.map((c, i) => c.avg !== null ? { x: pad + i * 10, y: pad + (h - pad * 2) - ((c.avg - 1) / 9) * (h - pad * 2) } : null);
+                        const validPts = pts.filter(Boolean);
+                        let d = `M${validPts[0].x},${validPts[0].y}`;
+                        for (let i = 0; i < validPts.length - 1; i++) {
+                          const cx = (validPts[i].x + validPts[i + 1].x) / 2;
+                          d += ` C${cx},${validPts[i].y} ${cx},${validPts[i + 1].y} ${validPts[i + 1].x},${validPts[i + 1].y}`;
+                        }
+                        const last = validPts[validPts.length - 1];
+                        return (
+                          <svg width="65" height={h} viewBox={`0 0 ${w} ${h}`} style={{ flexShrink: 0 }}>
+                            <defs>
+                              <linearGradient id="condLineGrad" x1="0" y1="0" x2="1" y2="0">
+                                <stop offset="0%" stopColor="#C8A8F0" />
+                                <stop offset="100%" stopColor="#9B6DD7" />
+                              </linearGradient>
+                            </defs>
+                            <path d={d} fill="none" stroke="url(#condLineGrad)" strokeWidth="2.5" strokeLinecap="round" />
+                            <circle cx={last.x} cy={last.y} r="3.5" fill="#9B6DD7" />
+                          </svg>
+                        );
+                      })()}
+                    </div>
+                  </div>
+
+                  {/* 수면 카드 */}
+                  <div onClick={() => onTabChange?.('record')} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 16 }}>🌙</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>수면</span>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{todaySleep || '—'}</span>
+                          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>시간</span>
+                        </div>
+                        {todaySleep && <div style={{ fontSize: 10, color: todaySleep >= 7 ? '#22C55E' : todaySleep >= 5 ? 'var(--text-muted)' : '#E05050', marginTop: 4 }}>{todaySleep >= 7 ? '충분' : todaySleep >= 5 ? '보통' : '부족'}</div>}
+                      </div>
+                      {/* 플로팅 바 차트 (취침시간+수면시간) */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 3, height: 40, flexShrink: 0 }}>
+                        {sleep7.map((s, i) => {
+                          if (!s.hours) return <div key={i} style={{ width: 6, height: 6, borderRadius: 3, background: 'rgba(0,0,0,0.06)', alignSelf: 'center' }} />;
+                          // 바 높이 = 수면 시간 (최대 10시간 기준)
+                          const barH = Math.max(8, (s.hours / 10) * 36);
+                          // 바 위치 = 취침 시각 (22시=상단, 2시=하단)
+                          let topOffset = 0;
+                          if (s.bedHour !== null) {
+                            // 22시=0, 23시=1, 0시=2, 1시=3, 2시=4, 3시=5
+                            const normalized = s.bedHour >= 18 ? s.bedHour - 18 : s.bedHour + 6;
+                            topOffset = Math.min(normalized * 3, 20); // 최대 20px 아래로
+                          }
+                          const isToday = i === 6;
+                          return (
+                            <div key={i} style={{
+                              width: 6, borderRadius: 3,
+                              height: barH,
+                              marginTop: topOffset,
+                              background: isToday
+                                ? 'linear-gradient(180deg, #5B6AAF, #8B6AAF)'
+                                : s.hours >= 7 ? 'rgba(91,106,175,0.3)' : 'rgba(91,106,175,0.15)',
+                              transition: 'height 0.3s ease',
+                            }} />
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })());
+        }
+
         if (cardId === 'condition') {
-          return editWrap('컨디션', (
+          return editWrap('컨디션 체크', (
             <div style={{ pointerEvents: isEditing ? 'none' : 'auto' }}>
       {/* ===== 2. 컨디션 체크 카드 ===== */}
       <div style={{
