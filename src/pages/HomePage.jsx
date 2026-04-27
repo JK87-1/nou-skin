@@ -707,7 +707,9 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                           <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{eaten.toLocaleString()}</span>
                           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>kcal</span>
                         </div>
-                        <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>목표 {fullGoal.kcal.toLocaleString()}kcal</div>
+                        <div style={{ fontSize: 10, color: eaten > fullGoal.kcal ? '#E85B5B' : 'var(--text-muted)', marginTop: 4 }}>
+                          {eaten > fullGoal.kcal ? `${(eaten - fullGoal.kcal).toLocaleString()}kcal 초과` : `${remaining.toLocaleString()}kcal 남음`}
+                        </div>
                       </div>
                       {(() => {
                         const ringR = 22, ringC = 2 * Math.PI * ringR;
