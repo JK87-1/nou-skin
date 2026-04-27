@@ -712,20 +712,30 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                       {(() => {
                         const ringR = 22, ringC = 2 * Math.PI * ringR;
                         const remainPct = fullGoal.kcal > 0 ? Math.max(0, Math.round((remaining / fullGoal.kcal) * 100)) : 100;
-                        const fillPct = fullGoal.kcal > 0 ? Math.min(eaten / fullGoal.kcal, 1) : 0;
-                        const ringDash = ringC * fillPct;
+                        const ratio = fullGoal.kcal > 0 ? eaten / fullGoal.kcal : 0;
+                        const isOver = ratio > 1;
+                        const baseFill = ringC * Math.min(ratio, 1);
+                        const overFill = isOver ? ringC * Math.min(ratio - 1, 1) : 0;
                         return (
                           <svg width="52" height="52" viewBox="0 0 52 52">
                             <defs>
                               <linearGradient id="calRingGrad" x1="0" y1="0" x2="1" y2="1">
-                                <stop offset="0%" stopColor={eaten > fullGoal.kcal ? '#E85B5B' : remainPct <= 20 ? '#E8A830' : remainPct <= 70 ? '#4DBDA0' : '#6AB8D8'} />
-                                <stop offset="100%" stopColor={eaten > fullGoal.kcal ? '#F5A0A0' : remainPct <= 20 ? '#FFDB70' : remainPct <= 70 ? '#6ECFB8' : '#90CCE8'} />
+                                <stop offset="0%" stopColor={isOver ? '#E85B5B' : remainPct <= 20 ? '#E8A830' : remainPct <= 70 ? '#4DBDA0' : '#6AB8D8'} />
+                                <stop offset="100%" stopColor={isOver ? '#F5A0A0' : remainPct <= 20 ? '#FFDB70' : remainPct <= 70 ? '#6ECFB8' : '#90CCE8'} />
                               </linearGradient>
                             </defs>
                             <circle cx="26" cy="26" r={ringR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" />
+                            {/* 기본 링 (100%까지, 투명도 적용) */}
                             <circle cx="26" cy="26" r={ringR} fill="none" stroke="url(#calRingGrad)" strokeWidth="5"
-                              strokeDasharray={`${ringDash} ${ringC - ringDash}`} strokeLinecap="round"
+                              strokeDasharray={`${baseFill} ${ringC - baseFill}`} strokeLinecap="round"
+                              opacity={isOver ? 0.35 : 1}
                               transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
+                            {/* 초과 링 (겹쳐서 표시) */}
+                            {isOver && (
+                              <circle cx="26" cy="26" r={ringR} fill="none" stroke="#E85B5B" strokeWidth="5"
+                                strokeDasharray={`${overFill} ${ringC - overFill}`} strokeLinecap="round"
+                                transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
+                            )}
                           </svg>
                         );
                       })()}
