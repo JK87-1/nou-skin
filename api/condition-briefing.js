@@ -168,6 +168,7 @@ function buildInsightPrompt(yesterday, weekData, confidence, env) {
   if (env?.humidity) envLines.push(`습도: ${env.humidity}%`);
   if (env?.dayOfWeek) envLines.push(`요일: ${env.dayOfWeek}`);
   if (env?.season) envLines.push(`계절: ${env.season}`);
+  if (env?.estimatedBedtime) envLines.push(`취침 추정: ${env.estimatedBedtime}`);
 
   const hasYesterday = yLines.length > 0;
   const hasWeek = wLines.length > 0 && (weekData?.daysWithData || 0) > 0;
@@ -195,6 +196,7 @@ ${envLines.length > 0 ? envLines.join('\n') : '환경 정보 없음'}
 8. 기록 유도 시 강요 아닌 초대 느낌 ("오늘 기록하면 내일 더 정확한 인사이트를 드릴 수 있어요")
 9. 매번 다른 표현과 문장 구조를 사용
 10. 톤: 따뜻하고 공감적, "~해요" 체, 친근하면서도 전문적
+11. 취침 추정 데이터가 있으면 반드시 컨디션/에너지 예측에 반영 (늦게 잔 경우 수면 시간이 충분해도 피로감 가능성 언급)
 
 [카테고리]
 1. condition (컨디션 예측) - 전반적인 몸 상태, 에너지, 활력 예측

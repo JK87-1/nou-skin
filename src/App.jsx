@@ -78,6 +78,15 @@ export default function App() {
   const [activeThemeId, setActiveThemeId] = useState(() => getProfile().activeTheme || null);
 
   // Apply data-theme attribute for light/dark CSS variables
+  // 마지막 접속 시간 기록 (취침시각 추정용)
+  useEffect(() => {
+    try { localStorage.setItem('lua_last_active', new Date().toISOString()); } catch {}
+    const interval = setInterval(() => {
+      try { localStorage.setItem('lua_last_active', new Date().toISOString()); } catch {}
+    }, 5 * 60 * 1000); // 5분마다 갱신
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', colorMode);
     const html = document.documentElement;

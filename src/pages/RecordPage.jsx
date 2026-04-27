@@ -268,6 +268,13 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
   // Auto-save when exercise/sleep/water/steps/meditation changes
   useEffect(() => { saveV2(); }, [selectedExercise, exerciseLog, sleepHours, sleepQuality, sleepBedtime, sleepWakeTime, waterCount, stepCount, meditationMin]);
 
+  // 수면 데이터 변경 시 인사이트 갱신 이벤트 발생
+  useEffect(() => {
+    if (sleepHours > 0 && isToday) {
+      window.dispatchEvent(new CustomEvent('lua-sleep-updated'));
+    }
+  }, [sleepHours, sleepQuality, sleepBedtime, sleepWakeTime]);
+
   useEffect(() => {
     if (autoOpenAdd) {
       setFoodTab('food');

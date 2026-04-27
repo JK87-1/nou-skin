@@ -59,7 +59,19 @@ function gatherYesterdayData() {
     if (dayRec.exercise?.log && Object.keys(dayRec.exercise.log).length > 0) {
       data.exercise = Object.entries(dayRec.exercise.log).map(([n, m]) => `${n} ${m}분`).join(', ');
     }
-    if (dayRec.sleep?.hours) data.sleep = `${dayRec.sleep.hours}시간${dayRec.sleep.quality ? ' (' + dayRec.sleep.quality + ')' : ''}`;
+    if (dayRec.sleep?.hours) {
+      data.sleep = `${dayRec.sleep.hours}시간${dayRec.sleep.quality ? ' (' + dayRec.sleep.quality + ')' : ''}`;
+      if (dayRec.sleep.bedtime) data.sleepBedtime = dayRec.sleep.bedtime;
+    }
+    // 어제 수면 데이터 없으면 오늘 기록에서 가져옴 (어젯밤 수면을 오늘 기록하는 경우)
+    if (!data.sleep) {
+      const todayKey = getLocalDateKey(new Date());
+      const todayRec = records[todayKey] || {};
+      if (todayRec.sleep?.hours) {
+        data.sleep = `${todayRec.sleep.hours}시간${todayRec.sleep.quality ? ' (' + todayRec.sleep.quality + ')' : ''} (오늘 기록)`;
+        if (todayRec.sleep.bedtime) data.sleepBedtime = todayRec.sleep.bedtime;
+      }
+    }
 
     const bodyRecs = getBodyRecords?.() || [];
     const yWeight = bodyRecs.find(r => r.date === yKey);
@@ -166,7 +178,34 @@ function gatherWeekData() {
   return week;
 }
 
-/* ── 환경 데이터 수집 (날씨·요일·계절) ── */
+/* ── 취침시각 추정 (마지막 접속 시간 기반) ── */
+function estimateBedtime() {
+  try {
+    const lastActive = localStorage.getItem('lua_last_active');
+    if (!lastActive) return null;
+    const lastTime = new Date(lastActive);
+    const hour = lastTime.getHours();
+    const minute = lastTime.getMinutes();
+    const timeStr = `${hour}시 ${minute}분`;
+
+    // 자정~새벽 4시 사이 마지막 활동 → 늦게 잔 것으로 추정
+    if (hour >= 0 && hour < 4) {
+      return { time: timeStr, quality: '매우 늦은 취침', late: true };
+    }
+    // 밤 11시~자정 → 다소 늦음
+    if (hour >= 23) {
+      return { time: timeStr, quality: '다소 늦은 취침', late: true };
+    }
+    // 밤 10시~11시 → 적정
+    if (hour >= 22) {
+      return { time: timeStr, quality: '적정 취침', late: false };
+    }
+    // 그 외 (오후~저녁) → 추정 불가
+    return null;
+  } catch { return null; }
+}
+
+/* ── 환경 데이터 수집 (날씨·요일·계절·취침추정) ── */
 function gatherEnvData() {
   const now = new Date();
   const days = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
@@ -177,6 +216,12 @@ function gatherEnvData() {
     dayOfWeek: days[now.getDay()],
     season,
   };
+
+  // 취침시각 추정
+  const bedtime = estimateBedtime();
+  if (bedtime) {
+    env.estimatedBedtime = `어젯밤 마지막 활동 ${bedtime.time} (${bedtime.quality})`;
+  }
 
   try {
     const weather = getWeatherData();
@@ -241,6 +286,13 @@ export default function DailyInsightSlider() {
   }, []);
 
   useEffect(() => { fetchInsight(); }, [fetchInsight]);
+
+  // 수면 기록 시 인사이트 자동 갱신
+  useEffect(() => {
+    const handler = () => fetchInsight(true);
+    window.addEventListener('lua-sleep-updated', handler);
+    return () => window.removeEventListener('lua-sleep-updated', handler);
+  }, [fetchInsight]);
 
   const handleScroll = () => {
     if (!scrollRef.current) return;
