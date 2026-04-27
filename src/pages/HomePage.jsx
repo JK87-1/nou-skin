@@ -593,38 +593,59 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               <div style={{ margin: '0 18px', marginTop: 12, position: 'relative', zIndex: 1, pointerEvents: isEditing ? 'none' : 'auto' }}>
                 <div style={{ display: 'flex', gap: 10 }}>
                   <div onClick={() => onTabChange?.('record')} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>⚖️ 체중</span>
+                    {/* 상단: 아이콘 + 제목 + 버튼 */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 16 }}>⚖️</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>체중</span>
+                      </div>
                       <div onClick={(e) => { e.stopPropagation(); setShowWeightModal(true); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-muted)' }}>+</div>
                     </div>
-                    {latestW ? (
-                      <>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                          <span style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{latestW.weight}</span>
-                          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>kg</span>
-                        </div>
-                        {wDiff !== null && (
-                          <div style={{ fontSize: 11, color: Number(wDiff) > 0 ? '#E05050' : '#22C55E', marginTop: 2 }}>
-                            {Number(wDiff) > 0 ? '↑' : '↓'} {Math.abs(Number(wDiff))} kg
-                          </div>
+                    {/* 하단: 숫자(좌) + 그래프(우) */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                      <div>
+                        {latestW ? (
+                          <>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                              <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{latestW.weight}</span>
+                              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>kg</span>
+                            </div>
+                            {wDiff !== null && (
+                              <div style={{ fontSize: 10, color: Number(wDiff) > 0 ? '#E05050' : '#22C55E', marginTop: 4 }}>
+                                {Number(wDiff) > 0 ? '↑' : '↓'} {Math.abs(Number(wDiff))}kg
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
+                            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>kg</div>
+                          </>
                         )}
-                        {last7w.length >= 2 && (
-                          <svg width="100%" height="30" viewBox={`0 0 ${(last7w.length - 1) * 20} 30`} style={{ marginTop: 8 }}>
-                            <path d={(() => {
-                              const pts = last7w.map((r, i) => ({ x: i * 20, y: 28 - ((r.weight - wMin) / wRange) * 24 }));
-                              if (pts.length < 2) return `M${pts[0].x},${pts[0].y}`;
-                              let d = `M${pts[0].x},${pts[0].y}`;
-                              for (let i = 0; i < pts.length - 1; i++) {
-                                const cx = (pts[i].x + pts[i + 1].x) / 2;
-                                d += ` C${cx},${pts[i].y} ${cx},${pts[i + 1].y} ${pts[i + 1].x},${pts[i + 1].y}`;
-                              }
-                              return d;
-                            })()} fill="none" stroke="var(--text-primary)" strokeWidth="2" strokeLinecap="round" />
-                            <circle cx={(last7w.length - 1) * 20} cy={28 - ((last7w[last7w.length - 1].weight - wMin) / wRange) * 24} r="3" fill="var(--text-primary)" />
-                          </svg>
-                        )}
-                      </>
-                    ) : <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>기록 없음</div>}
+                      </div>
+                      {/* 미니 그래프 (우측) */}
+                      {last7w.length >= 2 && (
+                        <svg width="60" height="36" viewBox={`0 0 ${(last7w.length - 1) * 10} 36`} style={{ flexShrink: 0 }}>
+                          <defs>
+                            <linearGradient id="wLineGrad" x1="0" y1="0" x2="1" y2="0">
+                              <stop offset="0%" stopColor="#6ECFB8" />
+                              <stop offset="100%" stopColor="#4AA870" />
+                            </linearGradient>
+                          </defs>
+                          <path d={(() => {
+                            const pts = last7w.map((r, i) => ({ x: i * 10, y: 33 - ((r.weight - wMin) / wRange) * 28 }));
+                            if (pts.length < 2) return `M${pts[0].x},${pts[0].y}`;
+                            let d = `M${pts[0].x},${pts[0].y}`;
+                            for (let i = 0; i < pts.length - 1; i++) {
+                              const cx = (pts[i].x + pts[i + 1].x) / 2;
+                              d += ` C${cx},${pts[i].y} ${cx},${pts[i + 1].y} ${pts[i + 1].x},${pts[i + 1].y}`;
+                            }
+                            return d;
+                          })()} fill="none" stroke="url(#wLineGrad)" strokeWidth="2.5" strokeLinecap="round" />
+                          <circle cx={(last7w.length - 1) * 10} cy={33 - ((last7w[last7w.length - 1].weight - wMin) / wRange) * 28} r="3" fill="#4AA870" />
+                        </svg>
+                      )}
+                    </div>
                   </div>
                   <div onClick={() => onTabChange?.('record')} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
