@@ -138,7 +138,7 @@ function calcInsightConfidence(yesterday, weekData) {
   return Math.max(1, Math.min(5, score));
 }
 
-function buildInsightPrompt(yesterday, weekData, confidence, env) {
+function buildInsightPrompt(yesterday, weekData, env, unlockedCards, userProfile) {
   const yLines = [];
   if (yesterday?.diet) yLines.push(`식단: ${yesterday.diet}`);
   if (yesterday?.calories) yLines.push(`칼로리: ${yesterday.calories}`);
@@ -147,71 +147,85 @@ function buildInsightPrompt(yesterday, weekData, confidence, env) {
   if (yesterday?.steps) yLines.push(`걸음수: ${yesterday.steps}`);
   if (yesterday?.exercise) yLines.push(`운동: ${yesterday.exercise}`);
   if (yesterday?.sleep) yLines.push(`수면: ${yesterday.sleep}`);
-  if (yesterday?.weight) yLines.push(`체중: ${yesterday.weight}`);
+  if (yesterday?.sleepBedtime) yLines.push(`취침시간: ${yesterday.sleepBedtime}`);
   if (yesterday?.bloodSugar) yLines.push(`혈당: ${yesterday.bloodSugar}`);
   if (yesterday?.condition) yLines.push(`컨디션: ${yesterday.condition}`);
   if (yesterday?.skin) yLines.push(`피부: ${yesterday.skin}`);
+  if (yesterday?.sodium) yLines.push(`나트륨: ${yesterday.sodium}`);
+  if (yesterday?.sugar) yLines.push(`당류: ${yesterday.sugar}`);
+  if (yesterday?.fiber) yLines.push(`식이섬유: ${yesterday.fiber}`);
 
   const wLines = [];
   if (weekData?.avgSleep) wLines.push(`평균 수면: ${weekData.avgSleep}`);
   if (weekData?.avgSteps) wLines.push(`평균 걸음수: ${weekData.avgSteps}`);
   if (weekData?.avgCalories) wLines.push(`평균 칼로리: ${weekData.avgCalories}`);
   if (weekData?.avgWater) wLines.push(`평균 수분: ${weekData.avgWater}`);
-  if (weekData?.weightTrend) wLines.push(`체중 추이: ${weekData.weightTrend}`);
   if (weekData?.avgEnergy) wLines.push(`평균 에너지: ${weekData.avgEnergy}`);
   if (weekData?.avgMood) wLines.push(`평균 기분: ${weekData.avgMood}`);
-  if (weekData?.skinTrend) wLines.push(`피부 추이: ${weekData.skinTrend}`);
 
   const envLines = [];
   if (env?.weather) envLines.push(`날씨: ${env.weather}`);
   if (env?.temperature) envLines.push(`기온: ${env.temperature}°`);
   if (env?.humidity) envLines.push(`습도: ${env.humidity}%`);
+  if (env?.dust) envLines.push(`미세먼지: ${env.dust}`);
+  if (env?.uv) envLines.push(`자외선: ${env.uv}`);
   if (env?.dayOfWeek) envLines.push(`요일: ${env.dayOfWeek}`);
   if (env?.season) envLines.push(`계절: ${env.season}`);
   if (env?.estimatedBedtime) envLines.push(`취침 추정: ${env.estimatedBedtime}`);
 
-  const hasYesterday = yLines.length > 0;
-  const hasWeek = wLines.length > 0 && (weekData?.daysWithData || 0) > 0;
+  const profileLines = [];
+  if (userProfile?.skinType) profileLines.push(`피부 타입: ${userProfile.skinType}`);
+  if (userProfile?.skinConcern) profileLines.push(`주요 고민: ${userProfile.skinConcern}`);
+
+  // 생성할 카드 목록
+  const cardInstructions = [];
+  if (unlockedCards.includes('weather')) {
+    cardInstructions.push(`{"category":"weather","title":"제목(8자 이내)","body":"날씨·환경·사용자 피부타입 기반 2문장. 오늘 챙기면 좋을 것 한 가지. 가볍고 부담 없는 톤. 기록 강요 없음."}`);
+  }
+  if (unlockedCards.includes('condition')) {
+    cardInstructions.push(`{"category":"condition","title":"제목","body":"수면(취침시간+시간+질)+수분 기반 컨디션 예측 2-3문장. 취침이 늦으면 수면시간 충분해도 피로감 가능성 반드시 언급."}`);
+  }
+  if (unlockedCards.includes('mood')) {
+    cardInstructions.push(`{"category":"mood","title":"제목","body":"기분 예측 2-3문장. 운동·수면·식단패턴 기반. ⚠️체중 데이터 절대 사용 금지. 체중→기분 연결 금지."}`);
+  }
+  if (unlockedCards.includes('energy')) {
+    cardInstructions.push(`{"category":"energy","title":"제목","body":"에너지 예측 2-3문장. 수면+식단(탄단지)+걸음수+운동 기반. 탄수 위주면 오후 에너지 저하 가능성 언급."}`);
+  }
+  if (unlockedCards.includes('skin')) {
+    cardInstructions.push(`{"category":"skin","title":"제목","body":"피부 예측 2-3문장. 피부분석+수분+나트륨·당류·식이섬유+수면+날씨습도 기반. 나트륨 높으면 붓기, 당류 높으면 트러블 가능성 언급."}`);
+  }
+  if (unlockedCards.includes('tip')) {
+    cardInstructions.push(`{"category":"tip","title":"제목","body":"위 분석 종합하여 가장 개선 필요한 영역에서 오늘 당장 할 수 있는 아주 작은 행동 1가지만. 거창한 목표 금지. 예: '점심 후 10분 걷기', '물 2잔 더 마시기'"}`);
+  }
 
   return `당신은 LUA 앱의 AI 웰니스 코치입니다.
 친근하고 따뜻한 톤으로 답해주세요. 숫자보다 상태 언어로 표현하세요.
 
 [어제 기록 — 70% 반영]
-${hasYesterday ? yLines.join('\n') : '기록 없음'}
+${yLines.length > 0 ? yLines.join('\n') : '기록 없음'}
 
 [최근 1주일 패턴 — 30% 반영]
-${hasWeek ? wLines.join('\n') : '기록 없음'}
+${wLines.length > 0 ? wLines.join('\n') : '기록 없음'}
 
 [오늘 환경]
 ${envLines.length > 0 ? envLines.join('\n') : '환경 정보 없음'}
 
+[사용자 프로필]
+${profileLines.length > 0 ? profileLines.join('\n') : '정보 없음'}
+
 [규칙]
-1. 어제 기록 70% + 최근 1주일 30% 종합해서 분석
+1. 어제 기록 70% + 최근 1주일 30% 종합 분석
 2. 기록된 데이터가 있으면 그 데이터 우선 사용
 3. 데이터 없는 항목은 절대 언급하지 않음
-4. 데이터 부족하면 날씨·요일·계절로 자연스럽게 대체
-5. "데이터 부족", "판단 어려움", "기록이 없어서" 같은 부정적 표현 절대 사용 금지
-6. 각 인사이트는 3-5문장, 구체적 수치와 과학적 근거를 포함
-7. 데이터 없을 때도 자연스럽고 따뜻하게 — 날씨 앱처럼 앱을 열면 인사이트가 이미 준비돼 있는 느낌
-8. 기록 유도 시 강요 아닌 초대 느낌 ("오늘 기록하면 내일 더 정확한 인사이트를 드릴 수 있어요")
-9. 매번 다른 표현과 문장 구조를 사용
-10. 톤: 따뜻하고 공감적, "~해요" 체, 친근하면서도 전문적
-11. 취침 추정 데이터가 있으면 반드시 컨디션/에너지 예측에 반영 (늦게 잔 경우 수면 시간이 충분해도 피로감 가능성 언급)
+4. "데이터 부족", "판단 어려움", "기록이 없어서" 같은 부정적 표현 절대 사용 금지
+5. 매번 다른 표현과 문장 구조 사용
+6. 톤: 따뜻하고 공감적, "~해요" 체
+7. 취침 늦은 경우 수면시간 충분해도 피로감 가능성 반드시 반영
+8. mood 카드에서 체중 데이터 절대 사용 금지
 
-[카테고리]
-1. condition (컨디션 예측) - 전반적인 몸 상태, 에너지, 활력 예측
-2. mood (기분 상태) - 감정 상태, 심리적 웰빙, 스트레스
-3. energy (에너지 수준) - 체력, 피로도, 활동량과의 관계
-4. skin (피부 관리) - 피부 상태, 수분, 관리 팁
-5. tip (하루 한 가지 실천) - 오늘 실천할 수 있는 구체적 행동 1가지
-
-[응답 형식 — 반드시 이 JSON 배열 형식으로만 응답]
+[응답 형식 — 반드시 이 JSON 배열로만 응답. 요청된 카드만 생성]
 [
-  {"category":"condition","title":"제목(8자 이내)","body":"인사이트 본문(3-5문장)"},
-  {"category":"mood","title":"제목","body":"본문"},
-  {"category":"energy","title":"제목","body":"본문"},
-  {"category":"skin","title":"제목","body":"본문"},
-  {"category":"tip","title":"제목","body":"본문"}
+${cardInstructions.join(',\n')}
 ]
 
 JSON만 응답하세요. 다른 텍스트 없이.`;
@@ -243,10 +257,10 @@ export default async function handler(req, res) {
     let prompt, maxTokens;
 
     if (type === 'daily-insight') {
-      // ── Daily Insight (5 category cards) ──
-      const { yesterday, weekData, env } = req.body;
+      // ── Daily Insight (6 category cards with unlock system) ──
+      const { yesterday, weekData, env, unlockedCards, userProfile } = req.body;
       const confidence = calcInsightConfidence(yesterday, weekData);
-      prompt = buildInsightPrompt(yesterday, weekData, confidence, env);
+      prompt = buildInsightPrompt(yesterday, weekData, env, unlockedCards || ['weather'], userProfile);
       maxTokens = 1200;
 
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
