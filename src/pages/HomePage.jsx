@@ -726,9 +726,8 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                     <div>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
                         <span style={{ fontSize: 36, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{remaining.toLocaleString()}</span>
-                        <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>kcal</span>
+                        <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>kcal 남음</span>
                       </div>
-                      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>남은 칼로리</div>
                       <div onClick={() => onTabChange?.('record')} style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
                         목표 {fullGoal.kcal.toLocaleString()}kcal <span style={{ fontSize: 10 }}>›</span>
                       </div>
