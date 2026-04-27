@@ -190,20 +190,29 @@ ${envLines.length > 0 ? envLines.join('\n') : '환경 정보 없음'}
 3. 데이터 없는 항목은 절대 언급하지 않음
 4. 데이터 부족하면 날씨·요일·계절로 자연스럽게 대체
 5. "데이터 부족", "판단 어려움", "기록이 없어서" 같은 부정적 표현 절대 사용 금지
-6. 각 항목 2-3문장 이내
-7. 오늘 컨디션 예측 + 짧은 행동 제안으로 마무리
-8. 데이터 없을 때도 자연스럽고 따뜻하게 — 날씨 앱처럼 앱을 열면 인사이트가 이미 준비돼 있는 느낌
-9. 기록 유도 시 강요 아닌 초대 느낌 ("오늘 기록하면 내일 더 정확한 인사이트를 드릴 수 있어요")
-10. 매번 다른 표현과 문장 구조를 사용
+6. 각 인사이트는 3-5문장, 구체적 수치와 과학적 근거를 포함
+7. 데이터 없을 때도 자연스럽고 따뜻하게 — 날씨 앱처럼 앱을 열면 인사이트가 이미 준비돼 있는 느낌
+8. 기록 유도 시 강요 아닌 초대 느낌 ("오늘 기록하면 내일 더 정확한 인사이트를 드릴 수 있어요")
+9. 매번 다른 표현과 문장 구조를 사용
+10. 톤: 따뜻하고 공감적, "~해요" 체, 친근하면서도 전문적
 
-[응답 형식 — 반드시 이 JSON 형식으로만 응답]
-{
-  "summary": "전체 요약 한 문장 (가장 핵심적인 메시지)",
-  "energy": "오늘 에너지 전망 2-3문장",
-  "skin": "오늘 피부 전망 2-3문장",
-  "mood": "오늘 기분 전망 2-3문장",
-  "action": "오늘 추천 행동 딱 1가지 (구체적으로)"
-}
+[카테고리]
+1. condition (컨디션 예측) - 전반적인 몸 상태, 에너지, 활력 예측
+2. mood (기분 상태) - 감정 상태, 심리적 웰빙, 스트레스
+3. energy (에너지 수준) - 체력, 피로도, 활동량과의 관계
+4. skin (피부 관리) - 피부 상태, 수분, 관리 팁
+5. tip (하루 한 가지 실천) - 오늘 실천할 수 있는 구체적 행동 1가지
+
+[응답 형식 — 반드시 이 JSON 배열 형식으로만 응답]
+[
+  {"category":"condition","title":"제목(8자 이내)","body":"인사이트 본문(3-5문장)"},
+  {"category":"mood","title":"제목","body":"본문"},
+  {"category":"energy","title":"제목","body":"본문"},
+  {"category":"skin","title":"제목","body":"본문"},
+  {"category":"tip","title":"제목","body":"본문"}
+]
+
+JSON만 응답하세요. 다른 텍스트 없이.`;
 
 JSON만 응답하세요. 다른 텍스트 없이.`;
 }
@@ -258,15 +267,15 @@ export default async function handler(req, res) {
 
       const data = await response.json();
       const raw = data.choices?.[0]?.message?.content?.trim() || '';
-      let insight;
+      let insights;
       try {
         const jsonStr = raw.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
-        insight = JSON.parse(jsonStr);
+        insights = JSON.parse(jsonStr);
       } catch {
         return res.status(502).json({ error: 'Failed to parse AI response' });
       }
 
-      return res.status(200).json({ insight, confidence });
+      return res.status(200).json({ insights, confidence });
     }
 
     // ── Body / Skin briefing ──

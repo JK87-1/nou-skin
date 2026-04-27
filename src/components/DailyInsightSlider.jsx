@@ -1,6 +1,14 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { getBodyRecords } from '../storage/BodyStorage';
 import { getWeatherData } from '../storage/WeatherStorage';
+
+const CATEGORY_META = {
+  condition: { emoji: '\u2600\uFE0F', label: '컨디션 예측' },
+  mood:      { emoji: '\uD83D\uDE0A', label: '기분 상태' },
+  energy:    { emoji: '\uD83D\uDD0B', label: '에너지 수준' },
+  skin:      { emoji: '\u2728',       label: '피부 관리' },
+  tip:       { emoji: '\uD83C\uDF1F', label: '하루 한 가지 실천' },
+};
 
 /* ── 신뢰도 점 (라벨 없이 점만) ── */
 function ConfidenceDots({ level }) {
@@ -8,7 +16,7 @@ function ConfidenceDots({ level }) {
     <div style={{ display: 'flex', gap: 3 }}>
       {[1, 2, 3, 4, 5].map(i => (
         <div key={i} style={{
-          width: 5, height: 5, borderRadius: '50%',
+          width: 6, height: 6, borderRadius: '50%',
           background: i <= level ? 'var(--accent-primary, #89cef5)' : 'rgba(0,0,0,0.1)',
           transition: 'background 0.3s',
         }} />
@@ -59,7 +67,7 @@ function gatherYesterdayData() {
 
     if (dayRec.bloodSugar?.value) data.bloodSugar = `${dayRec.bloodSugar.value}mg/dL`;
 
-    // 컨디션 체크 (배열 또는 타임스탬프 기반 필터)
+    // 컨디션 체크
     const allChecks = JSON.parse(localStorage.getItem('nou_condition_checks') || '[]');
     const yChecks = allChecks.filter(c => {
       const cDate = c.date || (c.timestamp ? c.timestamp.slice(0, 10) : '');
@@ -182,26 +190,21 @@ function gatherEnvData() {
   return env;
 }
 
-/* ── 카드 항목 설정 ── */
-const CARD_CONFIG = [
-  { key: 'energy', emoji: '\u26A1', label: '에너지 전망' },
-  { key: 'skin',   emoji: '\u2728', label: '피부 전망' },
-  { key: 'mood',   emoji: '\uD83D\uDE0A', label: '기분 전망' },
-];
-
 export default function DailyInsightSlider() {
-  const [insight, setInsight] = useState(null);
+  const [insights, setInsights] = useState(null);
   const [confidence, setConfidence] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [activeIdx, setActiveIdx] = useState(0);
+  const scrollRef = useRef(null);
 
   const fetchInsight = useCallback((skipCache = false) => {
     const todayKey = getLocalDateKey(new Date());
 
     if (!skipCache) {
       try {
-        const cached = JSON.parse(localStorage.getItem('lua_daily_insight_v2') || 'null');
-        if (cached?.date === todayKey && cached.insight) {
-          setInsight(cached.insight);
+        const cached = JSON.parse(localStorage.getItem('lua_daily_insight_v3') || 'null');
+        if (cached?.date === todayKey && cached.insights?.length > 0) {
+          setInsights(cached.insights);
           setConfidence(cached.confidence || 1);
           return;
         }
@@ -220,11 +223,11 @@ export default function DailyInsightSlider() {
     })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
-        if (data?.insight) {
-          setInsight(data.insight);
+        if (data?.insights?.length > 0) {
+          setInsights(data.insights);
           setConfidence(data.confidence || 1);
-          localStorage.setItem('lua_daily_insight_v2', JSON.stringify({
-            date: todayKey, insight: data.insight, confidence: data.confidence,
+          localStorage.setItem('lua_daily_insight_v3', JSON.stringify({
+            date: todayKey, insights: data.insights, confidence: data.confidence,
           }));
         }
       })
@@ -234,20 +237,26 @@ export default function DailyInsightSlider() {
 
   useEffect(() => { fetchInsight(); }, [fetchInsight]);
 
-  if (!insight && !loading) return null;
+  const handleScroll = () => {
+    if (!scrollRef.current) return;
+    const { scrollLeft, clientWidth } = scrollRef.current;
+    const idx = Math.round(scrollLeft / (clientWidth * 0.78));
+    setActiveIdx(idx);
+  };
+
+  if (!insights && !loading) return null;
 
   return (
-    <div style={{ margin: '12px 18px 8px' }}>
-      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+    <div style={{ margin: '12px 0 8px' }}>
+      <style>{`
+        .insight-scroll::-webkit-scrollbar { display: none; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      `}</style>
+
       {/* 섹션 헤더 */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, padding: '0 4px' }}>
-        <div>
-          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>
-            오늘의 인사이트
-          </div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
-            하루 한 번 · 매일 자동 생성
-          </div>
+      <div style={{ padding: '0 22px', marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>
+          오늘의 인사이트
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           {confidence > 0 && <ConfidenceDots level={confidence} />}
@@ -274,85 +283,66 @@ export default function DailyInsightSlider() {
       </div>
 
       {loading ? (
-        <div style={{
-          background: 'var(--bg-card, rgba(255,255,255,0.2))',
-          backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-          border: '1px solid var(--border-subtle, rgba(255,255,255,0.08))',
-          borderRadius: 20, padding: '28px 20px', textAlign: 'center',
-        }}>
-          <div style={{ fontSize: 13, color: 'var(--text-muted)', opacity: 0.6 }}>
-            인사이트를 준비하고 있어요...
-          </div>
+        <div style={{ padding: '20px 22px', textAlign: 'center' }}>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)', opacity: 0.6 }}>인사이트를 준비하고 있어요...</div>
         </div>
-      ) : insight && (
-        <div style={{
-          background: 'var(--bg-card, rgba(255,255,255,0.2))',
-          backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-          border: '1px solid var(--border-subtle, rgba(255,255,255,0.08))',
-          borderRadius: 20, padding: '20px 18px',
-          boxShadow: 'var(--shadow-elevated, none), inset 0 1px 1px rgba(255,255,255,0.05)',
-        }}>
-          {/* 요약 문장 (가장 크게) */}
-          {insight.summary && (
-            <div style={{
-              fontSize: 15, fontWeight: 600, lineHeight: 1.6,
-              color: 'var(--text-primary)',
-              marginBottom: 18, wordBreak: 'keep-all',
-            }}>
-              {insight.summary}
-            </div>
-          )}
-
-          {/* 구분선 */}
-          <div style={{ height: 1, background: 'rgba(0,0,0,0.06)', marginBottom: 16 }} />
-
-          {/* 에너지 / 피부 / 기분 전망 */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {CARD_CONFIG.map(({ key, emoji, label }) => (
-              insight[key] && (
-                <div key={key} style={{ display: 'flex', gap: 10 }}>
-                  <span style={{ fontSize: 18, flexShrink: 0, marginTop: 1 }}>{emoji}</span>
-                  <div>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>
-                      {label}
-                    </div>
-                    <div style={{
-                      fontSize: 13, lineHeight: 1.7,
-                      color: 'var(--text-secondary, #4E5968)',
-                      wordBreak: 'keep-all',
-                    }}>
-                      {insight[key]}
-                    </div>
-                  </div>
-                </div>
-              )
-            ))}
-          </div>
-
-          {/* 구분선 */}
-          {insight.action && (
-            <>
-              <div style={{ height: 1, background: 'rgba(0,0,0,0.06)', margin: '16px 0' }} />
-
-              {/* 오늘의 추천 행동 */}
-              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                <span style={{ fontSize: 18, flexShrink: 0 }}>🎯</span>
-                <div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent-primary, #89cef5)', marginBottom: 4 }}>
-                    오늘의 추천
+      ) : (
+        <>
+          {/* 가로 스크롤 카드 */}
+          <div
+            ref={scrollRef}
+            onScroll={handleScroll}
+            className="insight-scroll"
+            style={{
+              display: 'flex', gap: 10, overflowX: 'auto',
+              scrollSnapType: 'x mandatory',
+              WebkitOverflowScrolling: 'touch',
+              paddingLeft: 22, paddingRight: 22, paddingBottom: 8,
+              scrollbarWidth: 'none', msOverflowStyle: 'none',
+            }}
+          >
+            {insights.map((item, i) => {
+              const meta = CATEGORY_META[item.category] || { emoji: '\uD83D\uDCA1', label: item.category };
+              return (
+                <div key={i} style={{
+                  minWidth: '78%', maxWidth: '78%',
+                  scrollSnapAlign: 'start',
+                  background: 'var(--bg-card, rgba(255,255,255,0.04))',
+                  backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+                  border: '1px solid var(--border-subtle, rgba(255,255,255,0.08))',
+                  borderRadius: 20, padding: '18px 20px',
+                  boxShadow: 'var(--shadow-elevated, none), inset 0 1px 1px rgba(255,255,255,0.05)',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                    <span style={{ fontSize: 20 }}>{meta.emoji}</span>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{item.title || meta.label}</span>
                   </div>
                   <div style={{
-                    fontSize: 13, lineHeight: 1.7, fontWeight: 500,
-                    color: 'var(--text-primary)',
+                    fontSize: 13, lineHeight: 1.7, color: 'var(--text-secondary, #4E5968)',
                     wordBreak: 'keep-all',
                   }}>
-                    {insight.action}
+                    {item.body}
                   </div>
                 </div>
-              </div>
-            </>
+              );
+            })}
+          </div>
+
+          {/* 도트 인디케이터 */}
+          {insights.length > 1 && (
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 5, marginTop: 8 }}>
+              {insights.map((_, i) => (
+                <div key={i} style={{
+                  width: activeIdx === i ? 16 : 5,
+                  height: 5,
+                  borderRadius: 99,
+                  background: activeIdx === i ? 'var(--accent-primary, #89cef5)' : 'rgba(0,0,0,0.1)',
+                  transition: 'all 0.3s ease',
+                }} />
+              ))}
+            </div>
           )}
-        </div>
+        </>
       )}
     </div>
   );
