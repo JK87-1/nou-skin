@@ -737,7 +737,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                     {(() => {
                       const ringR = 32, ringC = 2 * Math.PI * ringR;
                       const remainPct = fullGoal.kcal > 0 ? Math.max(0, Math.round((remaining / fullGoal.kcal) * 100)) : 100;
-                      const fillPct = fullGoal.kcal > 0 ? Math.min(netCal / fullGoal.kcal, 1) : 0;
+                      const fillPct = fullGoal.kcal > 0 ? Math.max(0, Math.min(remaining / fullGoal.kcal, 1)) : 1;
                       const ringDash = ringC * fillPct;
                       return (
                         <div style={{ position: 'relative', width: 76, height: 76 }}>
