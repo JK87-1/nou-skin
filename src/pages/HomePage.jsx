@@ -692,70 +692,72 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                 <div style={{ display: 'flex', gap: 10 }}>
                   {/* 칼로리 카드 (왼쪽 반) */}
                   <div onClick={(e) => { e.stopPropagation(); setShowCalorieExplain(true); }} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    {/* 상단: 아이콘 + 제목 */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+                      <span style={{ fontSize: 16 }}>🔥</span>
                       <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>칼로리</span>
-                      <div onClick={(e) => { e.stopPropagation(); setShowFoodModal(true); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-muted)' }}>+</div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                      <span style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{remaining.toLocaleString()}</span>
-                      <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>kcal</span>
-                    </div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>남음</div>
-                    {/* 원형 링 */}
-                    {(() => {
-                      const ringR = 20, ringC = 2 * Math.PI * ringR;
-                      const remainPct = fullGoal.kcal > 0 ? Math.max(0, Math.round((remaining / fullGoal.kcal) * 100)) : 100;
-                      const fillPct = fullGoal.kcal > 0 ? Math.max(0, Math.min(remaining / fullGoal.kcal, 1)) : 1;
-                      const ringDash = ringC * fillPct;
-                      return (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
-                          <svg width="44" height="44" viewBox="0 0 44 44">
+                    {/* 하단: 숫자 + 링 */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                      <div>
+                        <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{eaten.toLocaleString()}</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>kcal</div>
+                      </div>
+                      {(() => {
+                        const ringR = 22, ringC = 2 * Math.PI * ringR;
+                        const remainPct = fullGoal.kcal > 0 ? Math.max(0, Math.round((remaining / fullGoal.kcal) * 100)) : 100;
+                        const fillPct = fullGoal.kcal > 0 ? Math.min(eaten / fullGoal.kcal, 1) : 0;
+                        const ringDash = ringC * fillPct;
+                        return (
+                          <svg width="52" height="52" viewBox="0 0 52 52">
                             <defs>
-                              <linearGradient id="remainGrad" x1="0" y1="0" x2="1" y2="1">
+                              <linearGradient id="calRingGrad" x1="0" y1="0" x2="1" y2="1">
                                 <stop offset="0%" stopColor={eaten > fullGoal.kcal ? '#E85B5B' : remainPct <= 20 ? '#E8A830' : remainPct <= 70 ? '#4DBDA0' : '#6AB8D8'} />
                                 <stop offset="100%" stopColor={eaten > fullGoal.kcal ? '#F5A0A0' : remainPct <= 20 ? '#FFDB70' : remainPct <= 70 ? '#6ECFB8' : '#90CCE8'} />
                               </linearGradient>
                             </defs>
-                            <circle cx="22" cy="22" r={ringR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="4" />
-                            <circle cx="22" cy="22" r={ringR} fill="none" stroke="url(#remainGrad)" strokeWidth="4"
+                            <circle cx="26" cy="26" r={ringR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" />
+                            <circle cx="26" cy="26" r={ringR} fill="none" stroke="url(#calRingGrad)" strokeWidth="5"
                               strokeDasharray={`${ringDash} ${ringC - ringDash}`} strokeLinecap="round"
-                              transform="rotate(-90 22 22)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
+                              transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
                           </svg>
-                          <div>
-                            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{remainPct}%</div>
-                            <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>목표 {fullGoal.kcal.toLocaleString()}</div>
-                          </div>
-                        </div>
-                      );
-                    })()}
+                        );
+                      })()}
+                    </div>
                   </div>
 
                   {/* 수분 카드 (오른쪽 반) */}
                   <div onClick={() => onTabChange?.('record')} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    {/* 상단: 아이콘 + 제목 */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+                      <span style={{ fontSize: 16 }}>💧</span>
                       <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>수분</span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                      <span style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{waterCups}</span>
-                      <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>잔</span>
-                    </div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>목표 {waterGoal}잔</div>
-                    {/* 수분 바 */}
-                    <div style={{ marginTop: 10 }}>
-                      <div style={{ display: 'flex', gap: 3 }}>
-                        {Array.from({ length: waterGoal }, (_, i) => (
-                          <div key={i} style={{
-                            flex: 1, height: 18, borderRadius: 4,
-                            background: i < waterCups
-                              ? `linear-gradient(180deg, #B8E0F5, #5BA3D4)`
-                              : 'rgba(0,0,0,0.06)',
-                            transition: 'background 0.3s',
-                          }} />
-                        ))}
+                    {/* 하단: 숫자 + 링 */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                      <div>
+                        <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{waterCups * 250}</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>ml</div>
                       </div>
-                      <div style={{ fontSize: 10, color: waterCups >= waterGoal ? '#22C55E' : 'var(--text-muted)', marginTop: 6, textAlign: 'center' }}>
-                        {waterCups >= waterGoal ? '목표 달성!' : `${waterGoal - waterCups}잔 더 마시면 달성`}
-                      </div>
+                      {(() => {
+                        const ringR = 22, ringC = 2 * Math.PI * ringR;
+                        const fillPct = Math.min(waterCups / waterGoal, 1);
+                        const ringDash = ringC * fillPct;
+                        return (
+                          <svg width="52" height="52" viewBox="0 0 52 52">
+                            <defs>
+                              <linearGradient id="waterRingGrad" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0%" stopColor="#5BA3D4" />
+                                <stop offset="100%" stopColor="#B8E0F5" />
+                              </linearGradient>
+                            </defs>
+                            <circle cx="26" cy="26" r={ringR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" />
+                            <circle cx="26" cy="26" r={ringR} fill="none" stroke="url(#waterRingGrad)" strokeWidth="5"
+                              strokeDasharray={`${ringDash} ${ringC - ringDash}`} strokeLinecap="round"
+                              transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
+                          </svg>
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>
