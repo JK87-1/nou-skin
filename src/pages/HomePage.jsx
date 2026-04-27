@@ -742,8 +742,14 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                       return (
                         <div style={{ position: 'relative', width: 76, height: 76 }}>
                           <svg width="76" height="76" viewBox="0 0 76 76">
+                            <defs>
+                              <linearGradient id="remainGrad" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0%" stopColor={eaten > fullGoal.kcal ? '#F5A0A0' : '#C8E4F8'} />
+                                <stop offset="100%" stopColor={eaten > fullGoal.kcal ? '#E05050' : '#5AAED0'} />
+                              </linearGradient>
+                            </defs>
                             <circle cx="38" cy="38" r={ringR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="6" />
-                            <circle cx="38" cy="38" r={ringR} fill="none" stroke={eaten > fullGoal.kcal ? '#E05050' : '#7BC8F0'} strokeWidth="6"
+                            <circle cx="38" cy="38" r={ringR} fill="none" stroke="url(#remainGrad)" strokeWidth="6"
                               strokeDasharray={`${ringDash} ${ringC - ringDash}`} strokeLinecap="round"
                               transform="rotate(-90 38 38)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
                           </svg>
