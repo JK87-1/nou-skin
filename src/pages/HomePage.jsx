@@ -624,27 +624,30 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                         )}
                       </div>
                       {/* 미니 그래프 (우측) */}
-                      {last7w.length >= 2 && (
-                        <svg width="60" height="36" viewBox={`0 0 ${(last7w.length - 1) * 10} 36`} style={{ flexShrink: 0 }}>
-                          <defs>
-                            <linearGradient id="wLineGrad" x1="0" y1="0" x2="1" y2="0">
-                              <stop offset="0%" stopColor="#6ECFB8" />
-                              <stop offset="100%" stopColor="#4AA870" />
-                            </linearGradient>
-                          </defs>
-                          <path d={(() => {
-                            const pts = last7w.map((r, i) => ({ x: i * 10, y: 33 - ((r.weight - wMin) / wRange) * 28 }));
-                            if (pts.length < 2) return `M${pts[0].x},${pts[0].y}`;
-                            let d = `M${pts[0].x},${pts[0].y}`;
-                            for (let i = 0; i < pts.length - 1; i++) {
-                              const cx = (pts[i].x + pts[i + 1].x) / 2;
-                              d += ` C${cx},${pts[i].y} ${cx},${pts[i + 1].y} ${pts[i + 1].x},${pts[i + 1].y}`;
-                            }
-                            return d;
-                          })()} fill="none" stroke="url(#wLineGrad)" strokeWidth="2.5" strokeLinecap="round" />
-                          <circle cx={(last7w.length - 1) * 10} cy={33 - ((last7w[last7w.length - 1].weight - wMin) / wRange) * 28} r="3" fill="#4AA870" />
-                        </svg>
-                      )}
+                      {last7w.length >= 2 && (() => {
+                        const pad = 5;
+                        const w = (last7w.length - 1) * 10 + pad * 2;
+                        const h = 40;
+                        const pts = last7w.map((r, i) => ({ x: pad + i * 10, y: pad + (h - pad * 2) - ((r.weight - wMin) / wRange) * (h - pad * 2) }));
+                        let d = `M${pts[0].x},${pts[0].y}`;
+                        for (let i = 0; i < pts.length - 1; i++) {
+                          const cx = (pts[i].x + pts[i + 1].x) / 2;
+                          d += ` C${cx},${pts[i].y} ${cx},${pts[i + 1].y} ${pts[i + 1].x},${pts[i + 1].y}`;
+                        }
+                        const last = pts[pts.length - 1];
+                        return (
+                          <svg width="65" height={h} viewBox={`0 0 ${w} ${h}`} style={{ flexShrink: 0 }}>
+                            <defs>
+                              <linearGradient id="wLineGrad" x1="0" y1="0" x2="1" y2="0">
+                                <stop offset="0%" stopColor="#6ECFB8" />
+                                <stop offset="100%" stopColor="#4AA870" />
+                              </linearGradient>
+                            </defs>
+                            <path d={d} fill="none" stroke="url(#wLineGrad)" strokeWidth="2.5" strokeLinecap="round" />
+                            <circle cx={last.x} cy={last.y} r="3.5" fill="#4AA870" />
+                          </svg>
+                        );
+                      })()}
                     </div>
                   </div>
                   <div onClick={() => onTabChange?.('record')} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px' }}>
