@@ -693,9 +693,12 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                   {/* 칼로리 카드 (왼쪽 반) */}
                   <div onClick={(e) => { e.stopPropagation(); setShowCalorieExplain(true); }} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px' }}>
                     {/* 상단: 아이콘 + 제목 */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
-                      <span style={{ fontSize: 16 }}>🔥</span>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>칼로리</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 16 }}>🔥</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>칼로리</span>
+                      </div>
+                      <div onClick={(e) => { e.stopPropagation(); setShowFoodModal(true); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-muted)' }}>+</div>
                     </div>
                     {/* 하단: 숫자 + 링 */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
@@ -732,9 +735,12 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                   {/* 수분 카드 (오른쪽 반) */}
                   <div onClick={() => onTabChange?.('record')} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px' }}>
                     {/* 상단: 아이콘 + 제목 */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
-                      <span style={{ fontSize: 16 }}>💧</span>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>수분</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 16 }}>💧</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>수분</span>
+                      </div>
+                      <div onClick={(e) => { e.stopPropagation(); onTabChange?.('record'); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-muted)' }}>+</div>
                     </div>
                     {/* 하단: 숫자 + 링 */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
