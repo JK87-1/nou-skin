@@ -673,113 +673,90 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             const totalBurned = burnedFromSteps + burnedFromExercise;
             const netCal = eaten - totalBurned;
             const remaining = Math.max(0, fullGoal.kcal - netCal);
-            const burnGoal = 500;
 
-            // 이중 링 계산
-            const OUTER_R = 46, OUTER_C = 2 * Math.PI * OUTER_R;
-            const INNER_R = 32, INNER_C = 2 * Math.PI * INNER_R;
-            const intakeRatio = fullGoal.kcal > 0 ? Math.min(eaten / fullGoal.kcal, 1.15) : 0;
-            const burnRatio = burnGoal > 0 ? Math.min(totalBurned / burnGoal, 1.15) : 0;
-            const intakeFill = OUTER_C * Math.min(intakeRatio, 1);
-            const burnFill = INNER_C * Math.min(burnRatio, 1);
+            // 수분 데이터
+            let waterCups = 0;
+            try { const v2_ = JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); waterCups = v2_[todayKey_]?.water?.cups || 0; } catch {}
+            const waterGoal = 8;
+            const waterPct = Math.min(Math.round((waterCups / waterGoal) * 100), 100);
 
-            // 색상 계산
-            const intakeColors = intakeRatio < 0.5 ? ['#FFE8F0', '#F8C8D8'] : intakeRatio < 0.8 ? ['#FFD0D8', '#F8A8C0'] : intakeRatio < 1 ? ['#F8A8C0', '#E87090'] : ['#F87090', '#D04060'];
-            const burnColors = burnRatio < 0.3 ? ['#D0F0DC', '#A8E4BC'] : burnRatio < 0.6 ? ['#A8E4BC', '#6ACC8A'] : ['#A8E4BC', '#4AA870'];
-
-            // 영양소 상태
-            const getNutStatus = (cur, goal) => {
-              if (goal <= 0) return { color: '#90CCE8', textColor: '#3A8AAA', statusLabel: '적정' };
-              const r = cur / goal;
-              if (r > 1.1) return { color: '#F8A8C0', textColor: '#C05080', statusLabel: '과다' };
-              if (r > 0.7) return { color: '#90CCE8', textColor: '#3A8AAA', statusLabel: '적정' };
-              return { color: '#FFD070', textColor: '#B08000', statusLabel: '부족' };
+            const cs = {
+              background: 'rgba(255,255,255,0.2)', borderRadius: 16,
+              backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+              border: '1px solid rgba(255,255,255,0.3)',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
             };
-            const macros = [
-              { label: '탄수화물', cur: Math.round(todayNut.carb || 0), goal: fullGoal.carb },
-              { label: '단백질', cur: Math.round(todayNut.protein || 0), goal: fullGoal.protein },
-              { label: '지방', cur: Math.round(todayNut.fat || 0), goal: fullGoal.fat },
-            ].map(m => ({ ...m, ...getNutStatus(m.cur, m.goal) }));
-
-            const svgSize = 120;
-            const center = svgSize / 2;
 
             return (
               <div style={{ margin: '0 18px', marginTop: 10, position: 'relative', zIndex: 1, pointerEvents: isEditing ? 'none' : 'auto' }}>
-                <div style={{
-                  background: 'rgba(255,255,255,0.2)', borderRadius: 16, padding: '20px 18px',
-                  backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-                  border: '1px solid rgba(255,255,255,0.3)',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
-                }}>
-                  {/* 헤더 */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>칼로리</span>
-                    <div onClick={(e) => { e.stopPropagation(); setShowFoodModal(true); }} style={{
-                      width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 14, color: 'var(--text-muted)', cursor: 'pointer',
-                    }}>+</div>
-                  </div>
-
-                  {/* 상단: 큰 숫자 + 원형 링 */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                        <span style={{ fontSize: 36, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{remaining.toLocaleString()}</span>
-                        <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>kcal 남음</span>
-                      </div>
-                      <div onClick={(e) => { e.stopPropagation(); setShowCalorieExplain(true); }} style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
-                        목표 {fullGoal.kcal.toLocaleString()}kcal <span style={{ fontSize: 10 }}>›</span>
-                      </div>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  {/* 칼로리 카드 (왼쪽 반) */}
+                  <div onClick={(e) => { e.stopPropagation(); setShowCalorieExplain(true); }} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>칼로리</span>
+                      <div onClick={(e) => { e.stopPropagation(); setShowFoodModal(true); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-muted)' }}>+</div>
                     </div>
-                    {/* 원형 % 링 */}
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                      <span style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{remaining.toLocaleString()}</span>
+                      <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>kcal</span>
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>남음</div>
+                    {/* 원형 링 */}
                     {(() => {
-                      const ringR = 32, ringC = 2 * Math.PI * ringR;
+                      const ringR = 20, ringC = 2 * Math.PI * ringR;
                       const remainPct = fullGoal.kcal > 0 ? Math.max(0, Math.round((remaining / fullGoal.kcal) * 100)) : 100;
                       const fillPct = fullGoal.kcal > 0 ? Math.max(0, Math.min(remaining / fullGoal.kcal, 1)) : 1;
                       const ringDash = ringC * fillPct;
                       return (
-                        <div style={{ position: 'relative', width: 76, height: 76 }}>
-                          <svg width="76" height="76" viewBox="0 0 76 76">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
+                          <svg width="44" height="44" viewBox="0 0 44 44">
                             <defs>
                               <linearGradient id="remainGrad" x1="0" y1="0" x2="1" y2="1">
                                 <stop offset="0%" stopColor={eaten > fullGoal.kcal ? '#E85B5B' : remainPct <= 20 ? '#E8A830' : remainPct <= 70 ? '#4DBDA0' : '#6AB8D8'} />
                                 <stop offset="100%" stopColor={eaten > fullGoal.kcal ? '#F5A0A0' : remainPct <= 20 ? '#FFDB70' : remainPct <= 70 ? '#6ECFB8' : '#90CCE8'} />
                               </linearGradient>
                             </defs>
-                            <circle cx="38" cy="38" r={ringR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="6" />
-                            <circle cx="38" cy="38" r={ringR} fill="none" stroke="url(#remainGrad)" strokeWidth="6"
+                            <circle cx="22" cy="22" r={ringR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="4" />
+                            <circle cx="22" cy="22" r={ringR} fill="none" stroke="url(#remainGrad)" strokeWidth="4"
                               strokeDasharray={`${ringDash} ${ringC - ringDash}`} strokeLinecap="round"
-                              transform="rotate(-90 38 38)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
+                              transform="rotate(-90 22 22)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
                           </svg>
-                          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                            <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>{remainPct}%</span>
-                            <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>남음</span>
+                          <div>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{remainPct}%</div>
+                            <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>목표 {fullGoal.kcal.toLocaleString()}</div>
                           </div>
                         </div>
                       );
                     })()}
                   </div>
 
-                  {/* 구분선 */}
-                  <div style={{ height: 1, background: 'rgba(0,0,0,0.04)', margin: '16px 0 14px' }} />
-
-                  {/* 하단: 섭취 | 총 소모 | 순 칼로리 */}
-                  <div style={{ display: 'flex', justifyContent: 'center', gap: 0 }}>
-                    {[
-                      { label: '섭취', value: eaten, color: 'var(--text-primary)' },
-                      { label: '총 소모', value: totalBurned, color: '#22C55E' },
-                      { label: '순 칼로리', value: netCal, color: netCal > fullGoal.kcal ? '#E05050' : '#5AAABB' },
-                    ].map((item, idx) => (
-                      <div key={item.label} style={{
-                        flex: 1, textAlign: 'center',
-                        borderLeft: idx > 0 ? '1px solid rgba(0,0,0,0.04)' : 'none',
-                      }}>
-                        <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>{item.label}</div>
-                        <div style={{ fontSize: 16, fontWeight: 600, color: item.color, fontFamily: 'var(--font-display)' }}>{item.value}</div>
+                  {/* 수분 카드 (오른쪽 반) */}
+                  <div onClick={() => onTabChange?.('record')} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>수분</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                      <span style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{waterCups}</span>
+                      <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>잔</span>
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>목표 {waterGoal}잔</div>
+                    {/* 수분 바 */}
+                    <div style={{ marginTop: 10 }}>
+                      <div style={{ display: 'flex', gap: 3 }}>
+                        {Array.from({ length: waterGoal }, (_, i) => (
+                          <div key={i} style={{
+                            flex: 1, height: 18, borderRadius: 4,
+                            background: i < waterCups
+                              ? `linear-gradient(180deg, #B8E0F5, #5BA3D4)`
+                              : 'rgba(0,0,0,0.06)',
+                            transition: 'background 0.3s',
+                          }} />
+                        ))}
                       </div>
-                    ))}
+                      <div style={{ fontSize: 10, color: waterCups >= waterGoal ? '#22C55E' : 'var(--text-muted)', marginTop: 6, textAlign: 'center' }}>
+                        {waterCups >= waterGoal ? '목표 달성!' : `${waterGoal - waterCups}잔 더 마시면 달성`}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
