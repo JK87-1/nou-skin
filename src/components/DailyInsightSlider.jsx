@@ -361,11 +361,11 @@ export default function DailyInsightSlider() {
               return (
                 <div key={card.id} style={{
                   minWidth: '78%', maxWidth: '78%', scrollSnapAlign: 'start',
-                  background: 'var(--bg-card, rgba(255,255,255,0.04))',
+                  background: 'rgba(255,255,255,0.2)',
                   backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-                  border: '1px solid var(--border-subtle, rgba(255,255,255,0.08))',
-                  borderRadius: 20, padding: '18px 20px',
-                  boxShadow: 'var(--shadow-elevated, none), inset 0 1px 1px rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.3)',
+                  borderRadius: 16, padding: '18px 20px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
                   opacity: isUnlocked ? 1 : 0.5,
                   position: 'relative',
                 }}>
