@@ -1856,6 +1856,11 @@ function ProfileSettingsPage({ onClose }) {
             <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6 }}>현재 몸무게 (kg)</div>
             <input value={profile.currentWeight || ''} onChange={e => onUpdate('currentWeight', e.target.value)}
               placeholder="60" type="number" step="0.1" style={inputStyle} />
+            {profile.currentWeightDate && (
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4, opacity: 0.7 }}>
+                ({profile.currentWeightDate.replace(/-/g, '.')} 기준)
+              </div>
+            )}
           </div>
         </div>
 

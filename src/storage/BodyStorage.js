@@ -22,6 +22,15 @@ export function saveBodyRecord(weight) {
   }
   records.sort((a, b) => a.date.localeCompare(b.date));
   localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
+
+  // 프로필 현재 몸무게 자동 반영
+  try {
+    const profile = JSON.parse(localStorage.getItem('nou_profile') || '{}');
+    profile.currentWeight = weight;
+    profile.currentWeightDate = today;
+    localStorage.setItem('nou_profile', JSON.stringify(profile));
+  } catch {}
+
   return records;
 }
 
