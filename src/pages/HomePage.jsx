@@ -706,17 +706,18 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             return (
               <div style={{ margin: '0 18px', marginTop: 10, position: 'relative', zIndex: 1, pointerEvents: isEditing ? 'none' : 'auto' }}>
                 <div style={{
-                  background: 'rgba(255,255,255,0.78)', borderRadius: 22, padding: '20px 20px 18px',
-                  border: '0.5px solid rgba(255,255,255,0.95)',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                  background: 'rgba(255,255,255,0.2)', borderRadius: 16, padding: '20px 18px',
+                  backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+                  border: '1px solid rgba(255,255,255,0.3)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
                 }}>
                   {/* 헤더 */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                    <span style={{ fontSize: 12, fontWeight: 500, color: '#7AAABB' }}>오늘 식단</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>칼로리</span>
                     <div onClick={(e) => { e.stopPropagation(); setShowFoodModal(true); }} style={{
-                      width: 24, height: 24, borderRadius: 8, background: 'rgba(100,180,220,0.1)',
+                      width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 14, color: '#7AAABB', cursor: 'pointer', fontWeight: 300,
+                      fontSize: 14, color: 'var(--text-muted)', cursor: 'pointer',
                     }}>+</div>
                   </div>
 
@@ -752,9 +753,9 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                       </svg>
                       {/* 중앙 텍스트 */}
                       <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                        <span style={{ fontSize: 8, color: '#9ABBC8' }}>순 칼로리</span>
-                        <span style={{ fontSize: 20, fontWeight: 400, color: '#1A3A4A', fontFamily: 'var(--font-display)', lineHeight: 1.2 }}>{netCal}</span>
-                        <span style={{ fontSize: 8, color: '#9ABBC8' }}>kcal</span>
+                        <span style={{ fontSize: 8, color: 'var(--text-muted)' }}>순 칼로리</span>
+                        <span style={{ fontSize: 20, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.2 }}>{netCal}</span>
+                        <span style={{ fontSize: 8, color: 'var(--text-muted)' }}>kcal</span>
                       </div>
                     </div>
 
@@ -765,35 +766,35 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                             <div style={{ width: 7, height: 7, borderRadius: '50%', background: intakeColors[1] }} />
-                            <span style={{ fontSize: 11, color: '#5A7A8A' }}>섭취</span>
+                            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>섭취</span>
                           </div>
-                          <span style={{ fontSize: 13, fontWeight: 600, color: '#1A3A4A', fontFamily: 'var(--font-display)' }}>{eaten} <span style={{ fontSize: 10, fontWeight: 400, color: '#9ABBC8' }}>kcal</span></span>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{eaten} <span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>kcal</span></span>
                         </div>
-                        <div style={{ fontSize: 9, color: '#9ABBC8', marginTop: 2, marginLeft: 13 }}>목표 {fullGoal.kcal.toLocaleString()} 중 {fullGoal.kcal > 0 ? Math.round((eaten / fullGoal.kcal) * 100) : 0}%</div>
+                        <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2, marginLeft: 13 }}>목표 {fullGoal.kcal.toLocaleString()} 중 {fullGoal.kcal > 0 ? Math.round((eaten / fullGoal.kcal) * 100) : 0}%</div>
                       </div>
                       {/* 소모 */}
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                             <div style={{ width: 7, height: 7, borderRadius: '50%', background: burnColors[1] }} />
-                            <span style={{ fontSize: 11, color: '#5A7A8A' }}>소모</span>
+                            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>소모</span>
                           </div>
-                          <span style={{ fontSize: 13, fontWeight: 600, color: '#1A3A4A', fontFamily: 'var(--font-display)' }}>{totalBurned} <span style={{ fontSize: 10, fontWeight: 400, color: '#9ABBC8' }}>kcal</span></span>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{totalBurned} <span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>kcal</span></span>
                         </div>
-                        <div style={{ fontSize: 9, color: '#9ABBC8', marginTop: 2, marginLeft: 13 }}>목표 {burnGoal} 중 {Math.round((totalBurned / burnGoal) * 100)}%</div>
+                        <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2, marginLeft: 13 }}>목표 {burnGoal} 중 {Math.round((totalBurned / burnGoal) * 100)}%</div>
                       </div>
                       {/* 구분선 + 남은 칼로리 */}
-                      <div style={{ borderTop: '1px solid rgba(100,180,220,0.1)', paddingTop: 8 }}>
+                      <div style={{ borderTop: '1px solid rgba(0,0,0,0.04)', paddingTop: 8 }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <span style={{ fontSize: 11, color: '#5A7A8A' }}>남은 칼로리</span>
-                          <span style={{ fontSize: 13, fontWeight: 600, color: '#1A3A4A', fontFamily: 'var(--font-display)' }}>{remaining.toLocaleString()} <span style={{ fontSize: 10, fontWeight: 400, color: '#9ABBC8' }}>kcal</span></span>
+                          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>남은 칼로리</span>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{remaining.toLocaleString()} <span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>kcal</span></span>
                         </div>
                       </div>
                     </div>
                   </div>
 
                   {/* 구분선 */}
-                  <div style={{ height: 1, background: 'rgba(100,180,220,0.1)', margin: '16px 0 14px' }} />
+                  <div style={{ height: 1, background: 'rgba(0,0,0,0.04)', margin: '16px 0 14px' }} />
 
                   {/* 영양소 바 */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -801,8 +802,8 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                       const barW = m.goal > 0 ? Math.min((m.cur / m.goal) * 100, 100) : 0;
                       return (
                         <div key={m.label} style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
-                          <span style={{ width: 42, fontSize: 11, color: '#5A7A8A', flexShrink: 0 }}>{m.label}</span>
-                          <div style={{ flex: 1, height: 4, borderRadius: 99, background: 'rgba(100,180,220,0.1)', position: 'relative' }}>
+                          <span style={{ width: 42, fontSize: 11, color: 'var(--text-muted)', flexShrink: 0 }}>{m.label}</span>
+                          <div style={{ flex: 1, height: 4, borderRadius: 99, background: 'rgba(0,0,0,0.06)', position: 'relative' }}>
                             <div style={{ height: '100%', borderRadius: 99, background: m.color, width: `${barW}%`, transition: 'width 0.3s ease' }} />
                           </div>
                           <span style={{ width: 36, fontSize: 10, fontWeight: 600, color: m.textColor, textAlign: 'right', flexShrink: 0, marginLeft: 8 }}>{m.statusLabel}</span>
