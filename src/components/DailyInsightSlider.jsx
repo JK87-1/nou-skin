@@ -17,22 +17,27 @@ function ConfidenceDots({ level }) {
   );
 }
 
+/* ── 로컬(KST) 날짜 키 생성 ── */
+function getLocalDateKey(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 /* ── 어제 데이터 수집 ── */
 function gatherYesterdayData() {
   const y = new Date();
   y.setDate(y.getDate() - 1);
-  const yKey = y.toISOString().slice(0, 10);
+  const yKey = getLocalDateKey(y);
   const data = {};
 
   try {
     const records = JSON.parse(localStorage.getItem('lua_record_v2') || '{}');
     const dayRec = records[yKey] || {};
 
-    // 식단
-    const allFoods = JSON.parse(localStorage.getItem('lua_food_records') || '[]');
-    const yFoods = allFoods.filter(f => f.date === yKey && !f.name?.startsWith('물 '));
+    // 식단 (lua_food_records는 { "날짜": [기록들] } 객체 형태)
+    const allFoods = JSON.parse(localStorage.getItem('lua_food_records') || '{}');
+    const yFoods = (allFoods[yKey] || []).filter(f => !f.name?.startsWith('물 '));
     if (yFoods.length > 0) {
-      const totalCal = yFoods.reduce((s, f) => s + (f.calories || 0), 0);
+      const totalCal = yFoods.reduce((s, f) => s + (f.calories || f.kcal || 0), 0);
       const totalCarb = yFoods.reduce((s, f) => s + (f.carb || 0), 0);
       const totalProt = yFoods.reduce((s, f) => s + (f.protein || 0), 0);
       const totalFat = yFoods.reduce((s, f) => s + (f.fat || 0), 0);
@@ -54,9 +59,12 @@ function gatherYesterdayData() {
 
     if (dayRec.bloodSugar?.value) data.bloodSugar = `${dayRec.bloodSugar.value}mg/dL`;
 
-    // 컨디션 체크
+    // 컨디션 체크 (배열 또는 타임스탬프 기반 필터)
     const allChecks = JSON.parse(localStorage.getItem('nou_condition_checks') || '[]');
-    const yChecks = allChecks.filter(c => c.date === yKey);
+    const yChecks = allChecks.filter(c => {
+      const cDate = c.date || (c.timestamp ? c.timestamp.slice(0, 10) : '');
+      return cDate === yKey;
+    });
     if (yChecks.length > 0) {
       const last = yChecks[yChecks.length - 1];
       const eLabels = ['', '매우 낮음', '낮음', '약간 낮음', '조금 부족', '보통', '괜찮음', '좋음', '활발', '높음', '활기참'];
@@ -71,7 +79,9 @@ function gatherYesterdayData() {
       const s = ySkin[ySkin.length - 1];
       data.skin = `종합 ${s.overallScore}점, 수분 ${s.moisture}%, 피부결 ${s.textureScore}점`;
     }
-  } catch { /* ignore */ }
+  } catch (e) {
+    console.warn('[DailyInsight] gatherYesterdayData error:', e);
+  }
 
   return data;
 }
@@ -83,7 +93,7 @@ function gatherWeekData() {
 
   try {
     const records = JSON.parse(localStorage.getItem('lua_record_v2') || '{}');
-    const allFoods = JSON.parse(localStorage.getItem('lua_food_records') || '[]');
+    const allFoods = JSON.parse(localStorage.getItem('lua_food_records') || '{}');
     const allChecks = JSON.parse(localStorage.getItem('nou_condition_checks') || '[]');
     const bodyRecs = getBodyRecords?.() || [];
 
@@ -97,7 +107,7 @@ function gatherWeekData() {
     for (let i = 1; i <= 7; i++) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      const key = d.toISOString().slice(0, 10);
+      const key = getLocalDateKey(d);
       const dayRec = records[key] || {};
       let hasData = false;
 
@@ -105,14 +115,17 @@ function gatherWeekData() {
       if (dayRec.steps > 0) { totalSteps += dayRec.steps; stepDays++; hasData = true; }
       if (dayRec.water?.cups > 0) { totalWater += dayRec.water.cups; waterDays++; hasData = true; }
 
-      const dayFoods = allFoods.filter(f => f.date === key && !f.name?.startsWith('물 '));
+      const dayFoods = (allFoods[key] || []).filter(f => !f.name?.startsWith('물 '));
       if (dayFoods.length > 0) {
-        totalCal += dayFoods.reduce((s, f) => s + (f.calories || 0), 0);
+        totalCal += dayFoods.reduce((s, f) => s + (f.calories || f.kcal || 0), 0);
         calDays++;
         hasData = true;
       }
 
-      const dayChecks = allChecks.filter(c => c.date === key);
+      const dayChecks = allChecks.filter(c => {
+        const cDate = c.date || (c.timestamp ? c.timestamp.slice(0, 10) : '');
+        return cDate === key;
+      });
       if (dayChecks.length > 0) {
         const last = dayChecks[dayChecks.length - 1];
         totalEnergy += last.energy || 3;
@@ -182,7 +195,7 @@ export default function DailyInsightSlider() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const todayKey = new Date().toISOString().slice(0, 10);
+    const todayKey = getLocalDateKey(new Date());
 
     // 캐시 확인 — 하루 한 번만 생성
     try {
