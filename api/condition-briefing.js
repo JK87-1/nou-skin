@@ -213,8 +213,6 @@ ${envLines.length > 0 ? envLines.join('\n') : '환경 정보 없음'}
 ]
 
 JSON만 응답하세요. 다른 텍스트 없이.`;
-
-JSON만 응답하세요. 다른 텍스트 없이.`;
 }
 
 export default async function handler(req, res) {
