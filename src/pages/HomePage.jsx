@@ -175,6 +175,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [showWeightModal, setShowWeightModal] = useState(false);
   const [showActivityModal, setShowActivityModal] = useState(false);
   const [showFoodModal, setShowFoodModal] = useState(false);
+  const [showCalorieExplain, setShowCalorieExplain] = useState(false);
   const [weightRefreshKey, setWeightRefreshKey] = useState(0);
 
   // 카드 순서/편집 관리
@@ -728,7 +729,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                         <span style={{ fontSize: 36, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{remaining.toLocaleString()}</span>
                         <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>kcal 남음</span>
                       </div>
-                      <div onClick={() => onTabChange?.('record')} style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <div onClick={(e) => { e.stopPropagation(); setShowCalorieExplain(true); }} style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
                         목표 {fullGoal.kcal.toLocaleString()}kcal <span style={{ fontSize: 10 }}>›</span>
                       </div>
                     </div>
@@ -1048,6 +1049,111 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           onClose={() => setShowActivityModal(false)}
         />
       )}
+
+      {/* 칼로리 목표 설명 모달 */}
+      {showCalorieExplain && (() => {
+        const p = getProfile();
+        const goalCal = getFoodGoal().kcal;
+        const tdee = p.dietTDEE || 0;
+        const objective = p.dietObjective || '';
+        const speed = p.dietSpeed || 'normal';
+        const objLabel = { lose: '감량', gain: '증량', tone: '체형 유지', maintain: '유지' }[objective] || '설정 없음';
+        const speedLabel = { slow: '느리게', normal: '보통', fast: '빠르게' }[speed] || speed;
+        const actLabel = { sedentary: '좌식 생활', light: '가벼운 활동', moderate: '보통 활동' }[p.dietActivityLevel] || p.dietActivityLevel || '-';
+        const exLabel = { none: '없음', walking: '걷기', pilates: '필라테스', gym: '헬스', mixed: '복합' }[p.dietExerciseType] || p.dietExerciseType || '-';
+        const freqLabel = { none: '없음', '1-2': '주 1-2회', '3-4': '주 3-4회', '5+': '주 5회+' }[p.dietExerciseFreq] || p.dietExerciseFreq || '-';
+        const calAdjust = goalCal - tdee;
+        const highCalDays = p.dietHighCalDays || [];
+        const hasCycleCal = highCalDays.length > 0;
+        const highCal = hasCycleCal ? Math.round(goalCal * 1.15) : null;
+        const lowCal = hasCycleCal ? Math.round((goalCal * 7 - highCal * highCalDays.length) / (7 - highCalDays.length)) : null;
+
+        return (
+          <div onClick={() => setShowCalorieExplain(false)} style={{
+            position: 'fixed', inset: 0, zIndex: 1100,
+            background: 'rgba(0,0,0,0.35)',
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            animation: 'fadeIn 0.2s ease',
+          }}>
+            <div onClick={e => e.stopPropagation()} style={{
+              width: '100%', maxWidth: 440, maxHeight: '80vh', overflowY: 'auto',
+              background: 'var(--bg-primary, #fff)', borderRadius: '24px 24px 0 0',
+              padding: '28px 24px 36px',
+              boxShadow: '0 -4px 20px rgba(0,0,0,0.1)',
+            }}>
+              <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.1)', margin: '0 auto 20px' }} />
+              <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20 }}>내 목표 칼로리</div>
+
+              {/* 목표 칼로리 큰 숫자 */}
+              <div style={{ textAlign: 'center', marginBottom: 20 }}>
+                <span style={{ fontSize: 36, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{goalCal.toLocaleString()}</span>
+                <span style={{ fontSize: 14, color: 'var(--text-muted)', marginLeft: 4 }}>kcal/일</span>
+              </div>
+
+              {/* 계산 과정 */}
+              <div style={{ background: 'rgba(0,0,0,0.03)', borderRadius: 14, padding: '16px 18px', marginBottom: 16 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 12 }}>계산 과정</div>
+                {[
+                  { label: '기초대사량(TDEE)', value: `${tdee.toLocaleString()} kcal` },
+                  { label: '목표', value: objLabel },
+                  { label: '칼로리 조정', value: `${calAdjust >= 0 ? '+' : ''}${calAdjust} kcal` },
+                  { label: '= 일일 목표', value: `${goalCal.toLocaleString()} kcal`, bold: true },
+                ].map((row, i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{row.label}</span>
+                    <span style={{ fontSize: 13, fontWeight: row.bold ? 700 : 500, color: row.bold ? 'var(--text-primary)' : 'var(--text-secondary)' }}>{row.value}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* 내 설정 */}
+              <div style={{ background: 'rgba(0,0,0,0.03)', borderRadius: 14, padding: '16px 18px', marginBottom: 16 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 12 }}>내 설정</div>
+                {[
+                  { label: '현재 체중', value: `${p.currentWeight || '-'}kg` },
+                  { label: '목표 체중', value: `${p.goalWeight || '-'}kg` },
+                  { label: '활동 수준', value: actLabel },
+                  { label: '운동', value: `${exLabel} · ${freqLabel}` },
+                  { label: '속도', value: speedLabel },
+                ].map((row, i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{row.label}</span>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)' }}>{row.value}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* 칼로리 사이클링 (설정된 경우) */}
+              {hasCycleCal && (
+                <div style={{ background: 'rgba(0,0,0,0.03)', borderRadius: 14, padding: '16px 18px', marginBottom: 16 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 12 }}>칼로리 사이클링</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>고칼로리 ({highCalDays.join('·')})</span>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)' }}>{highCal?.toLocaleString()} kcal</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>저칼로리 (나머지)</span>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)' }}>{lowCal?.toLocaleString()} kcal</span>
+                  </div>
+                </div>
+              )}
+
+              {!p.dietOnboardingDone && (
+                <div style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 16, lineHeight: 1.6 }}>
+                  다이어트 프로그램을 아직 설정하지 않았어요.<br/>
+                  마이페이지에서 설정할 수 있어요.
+                </div>
+              )}
+
+              <button onClick={() => setShowCalorieExplain(false)} style={{
+                width: '100%', padding: '12px 0', borderRadius: 12, border: 'none',
+                background: 'var(--accent-primary, #89cef5)', color: '#fff',
+                fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+              }}>확인</button>
+            </div>
+          </div>
+        );
+      })()}
 
       {showFoodModal && (
         <AddFoodModal
