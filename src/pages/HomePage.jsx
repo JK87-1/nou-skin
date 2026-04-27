@@ -712,7 +712,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                   boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
                 }}>
                   {/* 헤더 */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                     <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>칼로리</span>
                     <div onClick={(e) => { e.stopPropagation(); setShowFoodModal(true); }} style={{
                       width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)',
@@ -721,95 +721,59 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                     }}>+</div>
                   </div>
 
-                  {/* 이중 링 + 범례 */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-                    {/* SVG 이중 링 */}
-                    <div style={{ position: 'relative', width: svgSize, height: svgSize, flexShrink: 0 }}>
-                      <svg width={svgSize} height={svgSize} viewBox={`0 0 ${svgSize} ${svgSize}`}>
-                        <defs>
-                          <linearGradient id="intakeGrad" x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0%" stopColor={intakeColors[0]} />
-                            <stop offset="100%" stopColor={intakeColors[1]} />
-                          </linearGradient>
-                          <linearGradient id="burnGrad" x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0%" stopColor={burnColors[0]} />
-                            <stop offset="100%" stopColor={burnColors[1]} />
-                          </linearGradient>
-                        </defs>
-                        {/* 바깥 링 트랙 (섭취) */}
-                        <circle cx={center} cy={center} r={OUTER_R} fill="none" stroke="rgba(248,168,192,0.12)" strokeWidth="7" />
-                        {/* 바깥 링 (섭취) */}
-                        <circle cx={center} cy={center} r={OUTER_R} fill="none" stroke="url(#intakeGrad)" strokeWidth="7"
-                          strokeDasharray={`${intakeFill} ${OUTER_C - intakeFill}`}
-                          strokeDashoffset={OUTER_C * 0.25} strokeLinecap="round"
-                          style={{ transition: 'stroke-dasharray 0.5s ease' }} />
-                        {/* 안쪽 링 트랙 (소모) */}
-                        <circle cx={center} cy={center} r={INNER_R} fill="none" stroke="rgba(74,168,112,0.08)" strokeWidth="6" />
-                        {/* 안쪽 링 (소모, 반시계) */}
-                        <circle cx={center} cy={center} r={INNER_R} fill="none" stroke="url(#burnGrad)" strokeWidth="6"
-                          strokeDasharray={`${burnFill} ${INNER_C - burnFill}`}
-                          strokeDashoffset={-INNER_C * 0.25} strokeLinecap="round"
-                          style={{ transition: 'stroke-dasharray 0.5s ease' }} />
-                      </svg>
-                      {/* 중앙 텍스트 */}
-                      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                        <span style={{ fontSize: 8, color: 'var(--text-muted)' }}>순 칼로리</span>
-                        <span style={{ fontSize: 20, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.2 }}>{netCal}</span>
-                        <span style={{ fontSize: 8, color: 'var(--text-muted)' }}>kcal</span>
+                  {/* 상단: 큰 숫자 + 원형 링 */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                        <span style={{ fontSize: 36, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{remaining.toLocaleString()}</span>
+                        <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>kcal</span>
+                      </div>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>남은 칼로리</div>
+                      <div onClick={() => onTabChange?.('record')} style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        목표 {fullGoal.kcal.toLocaleString()}kcal <span style={{ fontSize: 10 }}>›</span>
                       </div>
                     </div>
-
-                    {/* 범례 */}
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                      {/* 섭취 */}
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <div style={{ width: 7, height: 7, borderRadius: '50%', background: intakeColors[1] }} />
-                            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>섭취</span>
+                    {/* 원형 % 링 */}
+                    {(() => {
+                      const ringR = 32, ringC = 2 * Math.PI * ringR;
+                      const remainPct = fullGoal.kcal > 0 ? Math.max(0, Math.round((remaining / fullGoal.kcal) * 100)) : 100;
+                      const fillPct = fullGoal.kcal > 0 ? Math.min(netCal / fullGoal.kcal, 1) : 0;
+                      const ringDash = ringC * fillPct;
+                      return (
+                        <div style={{ position: 'relative', width: 76, height: 76 }}>
+                          <svg width="76" height="76" viewBox="0 0 76 76">
+                            <circle cx="38" cy="38" r={ringR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="6" />
+                            <circle cx="38" cy="38" r={ringR} fill="none" stroke={eaten > fullGoal.kcal ? '#E05050' : '#7BC8F0'} strokeWidth="6"
+                              strokeDasharray={`${ringDash} ${ringC - ringDash}`} strokeLinecap="round"
+                              transform="rotate(-90 38 38)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
+                          </svg>
+                          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                            <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>{remainPct}%</span>
+                            <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>남음</span>
                           </div>
-                          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{eaten} <span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>kcal</span></span>
                         </div>
-                        <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2, marginLeft: 13 }}>목표 {fullGoal.kcal.toLocaleString()} 중 {fullGoal.kcal > 0 ? Math.round((eaten / fullGoal.kcal) * 100) : 0}%</div>
-                      </div>
-                      {/* 소모 */}
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <div style={{ width: 7, height: 7, borderRadius: '50%', background: burnColors[1] }} />
-                            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>소모</span>
-                          </div>
-                          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{totalBurned} <span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>kcal</span></span>
-                        </div>
-                        <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2, marginLeft: 13 }}>목표 {burnGoal} 중 {Math.round((totalBurned / burnGoal) * 100)}%</div>
-                      </div>
-                      {/* 구분선 + 남은 칼로리 */}
-                      <div style={{ borderTop: '1px solid rgba(0,0,0,0.04)', paddingTop: 8 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>남은 칼로리</span>
-                          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{remaining.toLocaleString()} <span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>kcal</span></span>
-                        </div>
-                      </div>
-                    </div>
+                      );
+                    })()}
                   </div>
 
                   {/* 구분선 */}
                   <div style={{ height: 1, background: 'rgba(0,0,0,0.04)', margin: '16px 0 14px' }} />
 
-                  {/* 영양소 바 */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    {macros.map(m => {
-                      const barW = m.goal > 0 ? Math.min((m.cur / m.goal) * 100, 100) : 0;
-                      return (
-                        <div key={m.label} style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
-                          <span style={{ width: 42, fontSize: 11, color: 'var(--text-muted)', flexShrink: 0 }}>{m.label}</span>
-                          <div style={{ flex: 1, height: 4, borderRadius: 99, background: 'rgba(0,0,0,0.06)', position: 'relative' }}>
-                            <div style={{ height: '100%', borderRadius: 99, background: m.color, width: `${barW}%`, transition: 'width 0.3s ease' }} />
-                          </div>
-                          <span style={{ width: 36, fontSize: 10, fontWeight: 600, color: m.textColor, textAlign: 'right', flexShrink: 0, marginLeft: 8 }}>{m.statusLabel}</span>
-                        </div>
-                      );
-                    })}
+                  {/* 하단: 섭취 | 총 소모 | 순 칼로리 */}
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: 0 }}>
+                    {[
+                      { label: '섭취', value: eaten, color: 'var(--text-primary)' },
+                      { label: '총 소모', value: totalBurned, color: '#22C55E' },
+                      { label: '순 칼로리', value: netCal, color: netCal > fullGoal.kcal ? '#E05050' : '#5AAABB' },
+                    ].map((item, idx) => (
+                      <div key={item.label} style={{
+                        flex: 1, textAlign: 'center',
+                        borderLeft: idx > 0 ? '1px solid rgba(0,0,0,0.04)' : 'none',
+                      }}>
+                        <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>{item.label}</div>
+                        <div style={{ fontSize: 16, fontWeight: 600, color: item.color, fontFamily: 'var(--font-display)' }}>{item.value}</div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
