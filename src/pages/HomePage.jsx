@@ -491,9 +491,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         </div>
       </div>
 
-      {/* ===== 데일리 인사이트 슬라이더 ===== */}
-      <DailyInsightSlider />
-
       {/* ===== 카드 영역 (순서 변경 가능) ===== */}
       {editMode && (
         <style>{`
@@ -844,6 +841,9 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
         return null;
       })}
+
+      {/* ===== 데일리 인사이트 슬라이더 ===== */}
+      <DailyInsightSlider />
 
       {/* ===== 인사이트 + 오늘 흐름 모달 (업데이트 후 표시) ===== */}
       {justUpdated && (
