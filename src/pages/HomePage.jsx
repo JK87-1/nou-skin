@@ -744,8 +744,8 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                           <svg width="76" height="76" viewBox="0 0 76 76">
                             <defs>
                               <linearGradient id="remainGrad" x1="0" y1="0" x2="1" y2="1">
-                                <stop offset="0%" stopColor={eaten > fullGoal.kcal ? '#E05050' : remainPct <= 15 ? '#E8A830' : '#5AAED0'} />
-                                <stop offset="100%" stopColor={eaten > fullGoal.kcal ? '#F5A0A0' : remainPct <= 15 ? '#F5D070' : '#C8E4F8'} />
+                                <stop offset="0%" stopColor={eaten > fullGoal.kcal ? '#E85B5B' : remainPct <= 20 ? '#E8A830' : remainPct <= 70 ? '#4DBDA0' : '#6AB8D8'} />
+                                <stop offset="100%" stopColor={eaten > fullGoal.kcal ? '#F5A0A0' : remainPct <= 20 ? '#FFD070' : remainPct <= 70 ? '#6ECFB8' : '#90CCE8'} />
                               </linearGradient>
                             </defs>
                             <circle cx="38" cy="38" r={ringR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="6" />
