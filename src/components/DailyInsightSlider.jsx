@@ -259,7 +259,7 @@ export default function DailyInsightSlider() {
       `}</style>
 
       {/* 섹션 헤더 */}
-      <div style={{ padding: '0 22px', marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ padding: '0 18px', marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>
           오늘의 인사이트
         </div>
@@ -302,7 +302,7 @@ export default function DailyInsightSlider() {
               display: 'flex', gap: 10, overflowX: 'auto',
               scrollSnapType: 'x mandatory',
               WebkitOverflowScrolling: 'touch',
-              paddingLeft: 22, paddingRight: 22, paddingBottom: 8,
+              paddingLeft: 18, paddingRight: 18, paddingBottom: 8,
               scrollbarWidth: 'none', msOverflowStyle: 'none',
             }}
           >
