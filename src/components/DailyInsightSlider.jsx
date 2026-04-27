@@ -304,15 +304,15 @@ export default function DailyInsightSlider() {
   if (!insights && !loading) return null;
 
   return (
-    <div style={{ margin: '12px 0 8px' }}>
+    <div style={{ margin: '10px 18px 8px' }}>
       <style>{`
         .insight-scroll::-webkit-scrollbar { display: none; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       `}</style>
 
       {/* 섹션 헤더 */}
-      <div style={{ padding: '0 18px', marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>
+      <div style={{ marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>
           오늘의 인사이트
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -340,7 +340,7 @@ export default function DailyInsightSlider() {
       </div>
 
       {loading ? (
-        <div style={{ padding: '20px 22px', textAlign: 'center' }}>
+        <div style={{ padding: '20px 0', textAlign: 'center' }}>
           <div style={{ fontSize: 13, color: 'var(--text-muted)', opacity: 0.6 }}>인사이트를 준비하고 있어요...</div>
         </div>
       ) : (
@@ -354,7 +354,7 @@ export default function DailyInsightSlider() {
               display: 'flex', gap: 10, overflowX: 'auto',
               scrollSnapType: 'x mandatory',
               WebkitOverflowScrolling: 'touch',
-              paddingLeft: 18, paddingRight: 18, paddingBottom: 8,
+              paddingLeft: 0, paddingRight: 0, paddingBottom: 8,
               scrollbarWidth: 'none', msOverflowStyle: 'none',
             }}
           >
