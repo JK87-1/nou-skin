@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getBodyRecords } from '../storage/BodyStorage';
 import { getWeatherData } from '../storage/WeatherStorage';
 
@@ -194,20 +194,20 @@ export default function DailyInsightSlider() {
   const [confidence, setConfidence] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
+  const fetchInsight = useCallback((skipCache = false) => {
     const todayKey = getLocalDateKey(new Date());
 
-    // 캐시 확인 — 하루 한 번만 생성
-    try {
-      const cached = JSON.parse(localStorage.getItem('lua_daily_insight_v2') || 'null');
-      if (cached?.date === todayKey && cached.insight) {
-        setInsight(cached.insight);
-        setConfidence(cached.confidence || 1);
-        return;
-      }
-    } catch { /* ignore */ }
+    if (!skipCache) {
+      try {
+        const cached = JSON.parse(localStorage.getItem('lua_daily_insight_v2') || 'null');
+        if (cached?.date === todayKey && cached.insight) {
+          setInsight(cached.insight);
+          setConfidence(cached.confidence || 1);
+          return;
+        }
+      } catch { /* ignore */ }
+    }
 
-    // API 호출
     setLoading(true);
     const yesterday = gatherYesterdayData();
     const weekData = gatherWeekData();
@@ -232,10 +232,13 @@ export default function DailyInsightSlider() {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => { fetchInsight(); }, [fetchInsight]);
+
   if (!insight && !loading) return null;
 
   return (
     <div style={{ margin: '12px 18px 8px' }}>
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       {/* 섹션 헤더 */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, padding: '0 4px' }}>
         <div>
@@ -246,7 +249,28 @@ export default function DailyInsightSlider() {
             하루 한 번 · 매일 자동 생성
           </div>
         </div>
-        {confidence > 0 && <ConfidenceDots level={confidence} />}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {confidence > 0 && <ConfidenceDots level={confidence} />}
+          <div
+            onClick={() => !loading && fetchInsight(true)}
+            style={{
+              width: 28, height: 28, borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(0,0,0,0.04)',
+              cursor: loading ? 'default' : 'pointer',
+              opacity: loading ? 0.4 : 0.6,
+              transition: 'opacity 0.2s',
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #8B95A1)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+              style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }}>
+              <path d="M21 2v6h-6" />
+              <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+              <path d="M3 22v-6h6" />
+              <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+            </svg>
+          </div>
+        </div>
       </div>
 
       {loading ? (
