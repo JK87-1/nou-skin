@@ -183,13 +183,20 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
     { id: 'weight-activity', label: '체중·활동' },
     { id: 'calories', label: '칼로리·수분' },
     { id: 'condition-sleep', label: '컨디션·수면' },
-    { id: 'condition', label: '컨디션 체크' },
+    { id: 'condition', label: '컨디션 슬라이더' },
   ];
+  // v2: 새 카드 추가 시 기존 캐시 순서 리셋
+  const CARD_ORDER_VERSION = 2;
   const DEFAULT_CARD_ORDER = CARD_REGISTRY.map(c => c.id);
   const [cardOrder, setCardOrder] = useState(() => {
     try {
+      const savedVer = localStorage.getItem('lua_home_card_order_ver');
+      if (savedVer !== String(CARD_ORDER_VERSION)) {
+        localStorage.setItem('lua_home_card_order_ver', String(CARD_ORDER_VERSION));
+        localStorage.removeItem('lua_home_card_order');
+        return DEFAULT_CARD_ORDER;
+      }
       const saved = JSON.parse(localStorage.getItem('lua_home_card_order') || '[]');
-      // 새 카드가 추가됐을 수 있으므로 병합
       const known = new Set(saved);
       const merged = [...saved.filter(id => CARD_REGISTRY.some(c => c.id === id))];
       CARD_REGISTRY.forEach(c => { if (!known.has(c.id)) merged.push(c.id); });
