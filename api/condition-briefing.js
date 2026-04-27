@@ -243,11 +243,11 @@ export default async function handler(req, res) {
     let prompt, maxTokens;
 
     if (type === 'daily-insight') {
-      // ── Daily Insight (summary + 3 forecasts + action) ──
+      // ── Daily Insight (5 category cards) ──
       const { yesterday, weekData, env } = req.body;
       const confidence = calcInsightConfidence(yesterday, weekData);
       prompt = buildInsightPrompt(yesterday, weekData, confidence, env);
-      maxTokens = 800;
+      maxTokens = 1200;
 
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',

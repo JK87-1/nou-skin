@@ -221,7 +221,10 @@ export default function DailyInsightSlider() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type: 'daily-insight', yesterday, weekData, env }),
     })
-      .then(r => r.ok ? r.json() : null)
+      .then(r => {
+        if (!r.ok) { console.warn('[DailyInsight] API error:', r.status); return null; }
+        return r.json();
+      })
       .then(data => {
         if (data?.insights?.length > 0) {
           setInsights(data.insights);
@@ -229,9 +232,11 @@ export default function DailyInsightSlider() {
           localStorage.setItem('lua_daily_insight_v3', JSON.stringify({
             date: todayKey, insights: data.insights, confidence: data.confidence,
           }));
+        } else {
+          console.warn('[DailyInsight] No insights in response:', data);
         }
       })
-      .catch(() => {})
+      .catch(e => { console.warn('[DailyInsight] fetch error:', e); })
       .finally(() => setLoading(false));
   }, []);
 
