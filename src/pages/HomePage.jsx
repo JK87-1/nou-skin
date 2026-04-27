@@ -700,8 +700,11 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                     {/* 하단: 숫자 + 링 */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                       <div>
-                        <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{eaten.toLocaleString()}</div>
-                        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>kcal</div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{eaten.toLocaleString()}</span>
+                          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>kcal</span>
+                        </div>
+                        <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>목표 {fullGoal.kcal.toLocaleString()}kcal</div>
                       </div>
                       {(() => {
                         const ringR = 22, ringC = 2 * Math.PI * ringR;
@@ -736,8 +739,11 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                     {/* 하단: 숫자 + 링 */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                       <div>
-                        <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{waterCups * 250}</div>
-                        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>ml</div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{(waterCups * 250).toLocaleString()}</span>
+                          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>ml</span>
+                        </div>
+                        <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>목표 {(waterGoal * 250).toLocaleString()}ml</div>
                       </div>
                       {(() => {
                         const ringR = 22, ringC = 2 * Math.PI * ringR;
