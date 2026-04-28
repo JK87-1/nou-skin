@@ -177,6 +177,13 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [showFoodModal, setShowFoodModal] = useState(false);
   const [showCalorieExplain, setShowCalorieExplain] = useState(false);
   const [weightRefreshKey, setWeightRefreshKey] = useState(0);
+  const [tappedCard, setTappedCard] = useState(null);
+  const handleCardTap = (cardName, callback) => {
+    setTappedCard(cardName);
+    if (navigator.vibrate) navigator.vibrate(8);
+    setTimeout(() => setTappedCard(null), 300);
+    callback?.();
+  };
 
   // 카드 순서/편집 관리
   const CARD_REGISTRY = [
@@ -500,15 +507,19 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       </div>
 
       {/* ===== 카드 영역 (순서 변경 가능) ===== */}
-      {editMode && (
-        <style>{`
-          @keyframes cardWiggle {
-            0% { transform: rotate(-0.5deg); }
-            50% { transform: rotate(0.5deg); }
-            100% { transform: rotate(-0.5deg); }
-          }
-        `}</style>
-      )}
+      <style>{`
+        @keyframes cardWiggle {
+          0% { transform: rotate(-0.5deg); }
+          50% { transform: rotate(0.5deg); }
+          100% { transform: rotate(-0.5deg); }
+        }
+        @keyframes cardTap {
+          0% { transform: scale(1); }
+          40% { transform: scale(0.96); }
+          70% { transform: scale(1.02); }
+          100% { transform: scale(1); }
+        }
+      `}</style>
       {cardOrder.map((cardId, cardIdx) => {
         const isEditing = editMode;
         const isFirst = cardIdx === 0;
@@ -599,14 +610,13 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             return (
               <div style={{ margin: '0 18px', marginTop: 15, position: 'relative', zIndex: 1, pointerEvents: isEditing ? 'none' : 'auto' }}>
                 <div style={{ display: 'flex', gap: 15 }}>
-                  <div onClick={() => onTabChange?.('record')} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px' }}>
-                    {/* 상단: 아이콘 + 제목 + 버튼 */}
+                  <div onClick={() => handleCardTap('weight', () => setShowWeightModal(true))} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px', animation: tappedCard === 'weight' ? 'cardTap 0.3s ease' : 'none' }}>
+                    {/* 상단: 아이콘 + 제목 */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <img src="/icons/scale.svg" width="18" height="18" alt="" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(180,180,180,0.3))' }} />
                         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>체중</span>
                       </div>
-                      <div onClick={(e) => { e.stopPropagation(); setShowWeightModal(true); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'rgba(0,0,0,0.2)' }}>+</div>
                     </div>
                     {/* 하단: 숫자(좌) + 그래프(우) */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
@@ -657,14 +667,13 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                       })()}
                     </div>
                   </div>
-                  <div onClick={() => onTabChange?.('record')} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px' }}>
-                    {/* 상단: 아이콘 + 제목 + 버튼 */}
+                  <div onClick={() => handleCardTap('activity', () => setShowActivityModal(true))} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px', animation: tappedCard === 'activity' ? 'cardTap 0.3s ease' : 'none' }}>
+                    {/* 상단: 아이콘 + 제목 */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(232,130,53,0.3))' }}><defs><linearGradient id="fireCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F5C8A0"/><stop offset="100%" stopColor="#E87835"/></linearGradient></defs><path d="M9.28,0l.46.29c2.08,1.04,3.6,2.7,4.6,4.79.77,1.62,1.22,3.24,1.18,5.12,1.33-.89,1.7-3.24,1.92-3.19.1.02.26.14.39.24,3.09,2.49,4.39,6.5,3.11,10.36-1.15,3.47-4.42,6.09-8.15,6.39l-1.59-.03c-3.19-.29-6.04-2.11-7.57-4.99-2.14-4.06-1.01-8.98,2.62-11.77,1.25-.96,2.15-2.26,2.61-3.77.26-.85.19-1.71.17-2.59l.02-.85h.22,0Z" fill="url(#fireCard)" opacity="0.6"/></svg>
                         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>활동</span>
                       </div>
-                      <div onClick={(e) => { e.stopPropagation(); setShowActivityModal(true); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'rgba(0,0,0,0.2)' }}>+</div>
                     </div>
                     {/* 하단: 숫자(좌) + 막대그래프(우) */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
@@ -734,14 +743,13 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               <div style={{ margin: '0 18px', marginTop: 15, position: 'relative', zIndex: 1, pointerEvents: isEditing ? 'none' : 'auto' }}>
                 <div style={{ display: 'flex', gap: 15 }}>
                   {/* 칼로리 카드 (왼쪽 반) */}
-                  <div onClick={(e) => { e.stopPropagation(); setShowCalorieExplain(true); }} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px' }}>
+                  <div onClick={(e) => { e.stopPropagation(); handleCardTap('food', () => setShowFoodModal(true)); }} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px', animation: tappedCard === 'food' ? 'cardTap 0.3s ease' : 'none' }}>
                     {/* 상단: 아이콘 + 제목 */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <svg width="16" height="16" viewBox="0 0 1254 1254" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(123,198,123,0.3))' }}><defs><linearGradient id="appleCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#A8E6A3"/><stop offset="100%" stopColor="#7BC67B"/></linearGradient></defs><path d="M852.51,1114.52C822.56,1133.36,790.72,1145.62,755.49,1148.31C718.9,1151.11,684.66,1142.94,652.14,1126.65C645.15,1123.15,638.33,1119.22,631.86,1114.87C628.65,1112.72,626.65,1113.54,623.94,1115.2C596.76,1131.87,567.54,1143,535.83,1147.21C491.83,1153.05,450.67,1143.99,411.83,1123.23C369.95,1100.84,336.1,1069,306.69,1032.31C243.86,953.89,200.68,865.58,176.61,768.11C162.75,711.98,159.24,654.92,166.15,597.45C172.23,546.91,187.01,499.36,216.16,456.92C248.57,409.71,292.47,378.61,347.36,363.01C391.12,350.57,435.67,348.92,480.62,354.47C518.12,359.11,554.54,368.34,590.23,380.63C592.44,381.39,594.82,381.67,596.97,382.14C598.41,359.44,599.8,337.56,601.19,315.63C590.93,317.2,580.22,319.19,569.43,320.44C526.57,325.37,485.28,320.34,446.56,300.15C418.24,285.37,395.38,264.25,376.51,238.74C348.56,200.95,330.22,158.8,320.39,112.9C320.08,111.43,319.84,109.95,319.62,108.47C317.74,95.9,321.66,89.96,334.08,88.2C347.93,86.24,361.84,84.4,375.79,83.56C419.19,80.94,462.16,83.39,503.56,98.09C553.43,115.79,593.86,145.54,620.07,192.46C625.39,201.98,629.27,212.29,633.88,222.38C636.78,217.79,639.84,212.77,643.09,207.87C661.04,180.78,683.41,157.84,709.46,138.56C726.51,125.95,748.78,135.42,751.3,156.2C752.54,166.47,747.98,174.47,739.69,180.66C720.61,194.88,703.83,211.44,689.71,230.67C669.45,258.27,657.8,289.38,653.28,323.02C650.87,340.97,650.42,359.18,649.28,377.29C648.95,382.59,649.99,383.17,655.09,381.34C690.88,368.52,727.35,358.25,764.96,352.44C818.12,344.21,870.99,344.39,922.73,361.04C987.39,381.84,1032.33,424.8,1060.25,486.13C1080.83,531.32,1087.87,579.32,1088.93,628.47C1090.56,703.51,1074.69,775.27,1047.53,844.76C1022.21,909.55,989.75,970.49,946.75,1025.43C919.92,1059.72,889.78,1090.66,852.51,1114.52z" fill="url(#appleCard)" opacity="0.6"/></svg>
                         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>식사</span>
                       </div>
-                      <div onClick={(e) => { e.stopPropagation(); setShowFoodModal(true); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'rgba(0,0,0,0.2)' }}>+</div>
                     </div>
                     {/* 하단: 숫자 + 링 */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
@@ -788,14 +796,13 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                   </div>
 
                   {/* 수분 카드 (오른쪽 반) */}
-                  <div onClick={() => onTabChange?.('record')} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px' }}>
+                  <div onClick={() => handleCardTap('water', () => onTabChange?.('record'))} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px', animation: tappedCard === 'water' ? 'cardTap 0.3s ease' : 'none' }}>
                     {/* 상단: 아이콘 + 제목 */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(91,163,212,0.3))' }}><defs><linearGradient id="dropCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#B8E0F5"/><stop offset="100%" stopColor="#5BA3D4"/></linearGradient></defs><path d="M12 2.5c0 0-7.5 8-7.5 13a7.5 7.5 0 0015 0c0-5-7.5-13-7.5-13z" fill="url(#dropCard)" opacity="0.6"/></svg>
                         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>수분</span>
                       </div>
-                      <div onClick={(e) => { e.stopPropagation(); onTabChange?.('record'); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'rgba(0,0,0,0.2)' }}>+</div>
                     </div>
                     {/* 하단: 숫자 + 링 */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
@@ -880,13 +887,12 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               <div style={{ margin: '0 18px', marginTop: 15, position: 'relative', zIndex: 1, pointerEvents: isEditing ? 'none' : 'auto' }}>
                 <div style={{ display: 'flex', gap: 15 }}>
                   {/* 컨디션 카드 */}
-                  <div onClick={() => onTabChange?.('record')} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px' }}>
+                  <div onClick={() => handleCardTap('condition', () => onTabChange?.('record'))} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px', animation: tappedCard === 'condition' ? 'cardTap 0.3s ease' : 'none' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(240,208,96,0.3))' }}><defs><linearGradient id="starCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#FFE066"/><stop offset="100%" stopColor="#E8B800"/></linearGradient></defs><path d="M10.48,23.25c-.15.41-.5.71-.86.75-.27.03-.78-.29-.9-.59l-1.53-4.02c-.48-1.26-1.41-2.1-2.67-2.58l-3.91-1.48c-.29-.11-.59-.51-.6-.76-.01-.39.23-.79.6-.93l3.9-1.49c1.27-.48,2.19-1.31,2.68-2.59l1.57-4.14c.08-.2.52-.44.74-.46.24-.02.77.21.86.46l1.57,4.14c.5,1.32,1.47,2.15,2.78,2.63l3.7,1.37c.31.11.66.55.67.83.02.42-.29.82-.68.97l-3.8,1.44c-1.26.48-2.2,1.32-2.67,2.58l-1.45,3.86z" fill="url(#starCard)" opacity="0.8"/><path d="M21.48,6.29c-1.03.59-.9,2.91-2.01,2.98-1.23.08-.99-1.68-1.94-2.78-.77-.88-2.68-.63-2.74-1.78-.07-1.27,2.01-1.1,2.74-1.91.87-.95.73-2.72,1.78-2.8,1.29-.1.98,1.81,1.95,2.77.87.86,2.67.71,2.73,1.8.07,1.08-1.29,1.02-2.51,1.72z" fill="url(#starCard)" opacity="0.8"/></svg>
                         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>컨디션</span>
                       </div>
-                      <div onClick={(e) => { e.stopPropagation(); onTabChange?.('record'); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'rgba(0,0,0,0.2)' }}>+</div>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                       <div>
@@ -926,13 +932,12 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                   </div>
 
                   {/* 수면 카드 */}
-                  <div onClick={() => onTabChange?.('record')} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px' }}>
+                  <div onClick={() => handleCardTap('sleep', () => onTabChange?.('record'))} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px', animation: tappedCard === 'sleep' ? 'cardTap 0.3s ease' : 'none' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(91,106,175,0.3))' }}><defs><linearGradient id="moonCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#C8D0F0"/><stop offset="100%" stopColor="#5B6AAF"/></linearGradient></defs><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="url(#moonCard)" opacity="0.6"/></svg>
                         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>수면</span>
                       </div>
-                      <div onClick={(e) => { e.stopPropagation(); onTabChange?.('record'); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'rgba(0,0,0,0.2)' }}>+</div>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                       <div>

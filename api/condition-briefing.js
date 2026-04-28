@@ -180,22 +180,19 @@ function buildInsightPrompt(yesterday, weekData, env, unlockedCards, userProfile
   // 생성할 카드 목록
   const cardInstructions = [];
   if (unlockedCards.includes('weather')) {
-    cardInstructions.push(`{"category":"weather","title":"제목(8자 이내)","body":"날씨·환경·사용자 피부타입 기반 2문장. 오늘 챙기면 좋을 것 한 가지. 가볍고 부담 없는 톤. 기록 강요 없음."}`);
+    cardInstructions.push(`{"category":"weather","title":"제목(8자 이내)","body":"날씨·환경·사용자 피부타입 기반 3-4문장. 오늘 챙기면 좋을 것 한 가지. 가볍고 부담 없는 톤. 기록 강요 없음."}`);
   }
-  if (unlockedCards.includes('condition')) {
-    cardInstructions.push(`{"category":"condition","title":"제목","body":"수면(취침시간+시간+질)+수분 기반 컨디션 예측 2-3문장. 취침이 늦으면 수면시간 충분해도 피로감 가능성 반드시 언급."}`);
+  if (unlockedCards.includes('energy') || unlockedCards.includes('condition')) {
+    cardInstructions.push(`{"category":"energy","title":"제목","body":"에너지·컨디션 종합 예측 4-5문장. 수면(취침시간+시간+질)+수분+식단(탄단지)+걸음수+운동 기반. 취침이 늦으면 수면시간 충분해도 피로감 가능성 반드시 언급. 탄수 위주면 오후 에너지 저하 가능성 언급."}`);
   }
   if (unlockedCards.includes('mood')) {
-    cardInstructions.push(`{"category":"mood","title":"제목","body":"기분 예측 2-3문장. 운동·수면·식단패턴 기반. ⚠️체중 데이터 절대 사용 금지. 체중→기분 연결 금지."}`);
-  }
-  if (unlockedCards.includes('energy')) {
-    cardInstructions.push(`{"category":"energy","title":"제목","body":"에너지 예측 2-3문장. 수면+식단(탄단지)+걸음수+운동 기반. 탄수 위주면 오후 에너지 저하 가능성 언급."}`);
+    cardInstructions.push(`{"category":"mood","title":"제목","body":"기분 예측 3-4문장. 운동·수면·식단패턴 기반. ⚠️체중 데이터 절대 사용 금지. 체중→기분 연결 금지."}`);
   }
   if (unlockedCards.includes('skin')) {
-    cardInstructions.push(`{"category":"skin","title":"제목","body":"피부 예측 2-3문장. 피부분석+수분+나트륨·당류·식이섬유+수면+날씨습도 기반. 나트륨 높으면 붓기, 당류 높으면 트러블 가능성 언급."}`);
+    cardInstructions.push(`{"category":"skin","title":"제목","body":"피부 예측 3-4문장. 피부분석+수분+나트륨·당류·식이섬유+수면+날씨습도 기반. 나트륨 높으면 붓기, 당류 높으면 트러블 가능성 언급."}`);
   }
   if (unlockedCards.includes('tip')) {
-    cardInstructions.push(`{"category":"tip","title":"제목","body":"위 분석 종합하여 가장 개선 필요한 영역에서 오늘 당장 할 수 있는 아주 작은 행동 1가지만. 거창한 목표 금지. 예: '점심 후 10분 걷기', '물 2잔 더 마시기'"}`);
+    cardInstructions.push(`{"category":"tip","title":"제목","body":"위 분석 종합하여 가장 개선 필요한 영역에서 오늘 당장 할 수 있는 아주 작은 행동 1-2가지. 3-4문장. 거창한 목표 금지. 예: '점심 후 10분 걷기', '물 2잔 더 마시기'"}`);
   }
 
   return `당신은 LUA 앱의 AI 웰니스 코치입니다.
@@ -261,7 +258,7 @@ export default async function handler(req, res) {
       const { yesterday, weekData, env, unlockedCards, userProfile } = req.body;
       const confidence = calcInsightConfidence(yesterday, weekData);
       prompt = buildInsightPrompt(yesterday, weekData, env, unlockedCards || ['weather'], userProfile);
-      maxTokens = 1200;
+      maxTokens = 1800;
 
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
