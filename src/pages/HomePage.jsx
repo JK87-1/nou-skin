@@ -592,14 +592,14 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             const wMax = last7w.length > 0 ? Math.max(...last7w.map(r => r.weight)) : 0;
             const wRange = wMax - wMin || 1;
             const cs = {
-              background: 'rgba(255,255,255,0.2)', borderRadius: 16, padding: '20px 18px',
+              background: 'rgba(255,255,255,0.2)', borderRadius: 22, padding: '20px 18px',
               backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
               border: '1px solid rgba(255,255,255,0.3)',
               boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
             };
             return (
-              <div style={{ margin: '0 18px', marginTop: 12, position: 'relative', zIndex: 1, pointerEvents: isEditing ? 'none' : 'auto' }}>
-                <div style={{ display: 'flex', gap: 10 }}>
+              <div style={{ margin: '0 18px', marginTop: 15, position: 'relative', zIndex: 1, pointerEvents: isEditing ? 'none' : 'auto' }}>
+                <div style={{ display: 'flex', gap: 15 }}>
                   <div onClick={() => onTabChange?.('record')} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px' }}>
                     {/* 상단: 아이콘 + 제목 + 버튼 */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
@@ -607,7 +607,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                         <span style={{ fontSize: 16 }}>🪽</span>
                         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>체중</span>
                       </div>
-                      <div onClick={(e) => { e.stopPropagation(); setShowWeightModal(true); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-muted)' }}>+</div>
+                      <div onClick={(e) => { e.stopPropagation(); setShowWeightModal(true); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'rgba(0,0,0,0.2)' }}>+</div>
                     </div>
                     {/* 하단: 숫자(좌) + 그래프(우) */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
@@ -665,7 +665,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                         <span style={{ fontSize: 16 }}>💥</span>
                         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>활동</span>
                       </div>
-                      <div onClick={(e) => { e.stopPropagation(); setShowActivityModal(true); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-muted)' }}>+</div>
+                      <div onClick={(e) => { e.stopPropagation(); setShowActivityModal(true); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'rgba(0,0,0,0.2)' }}>+</div>
                     </div>
                     {/* 하단: 숫자(좌) + 막대그래프(우) */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
@@ -725,15 +725,15 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             const waterPct = Math.min(Math.round((waterCups / waterGoal) * 100), 100);
 
             const cs = {
-              background: 'rgba(255,255,255,0.2)', borderRadius: 16,
+              background: 'rgba(255,255,255,0.2)', borderRadius: 22,
               backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
               border: '1px solid rgba(255,255,255,0.3)',
               boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
             };
 
             return (
-              <div style={{ margin: '0 18px', marginTop: 10, position: 'relative', zIndex: 1, pointerEvents: isEditing ? 'none' : 'auto' }}>
-                <div style={{ display: 'flex', gap: 10 }}>
+              <div style={{ margin: '0 18px', marginTop: 15, position: 'relative', zIndex: 1, pointerEvents: isEditing ? 'none' : 'auto' }}>
+                <div style={{ display: 'flex', gap: 15 }}>
                   {/* 칼로리 카드 (왼쪽 반) */}
                   <div onClick={(e) => { e.stopPropagation(); setShowCalorieExplain(true); }} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px' }}>
                     {/* 상단: 아이콘 + 제목 */}
@@ -742,7 +742,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                         <span style={{ fontSize: 16 }}>🔥</span>
                         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>칼로리</span>
                       </div>
-                      <div onClick={(e) => { e.stopPropagation(); setShowFoodModal(true); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-muted)' }}>+</div>
+                      <div onClick={(e) => { e.stopPropagation(); setShowFoodModal(true); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'rgba(0,0,0,0.2)' }}>+</div>
                     </div>
                     {/* 하단: 숫자 + 링 */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
@@ -796,7 +796,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                         <span style={{ fontSize: 16 }}>💧</span>
                         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>수분</span>
                       </div>
-                      <div onClick={(e) => { e.stopPropagation(); onTabChange?.('record'); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'var(--text-muted)' }}>+</div>
+                      <div onClick={(e) => { e.stopPropagation(); onTabChange?.('record'); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'rgba(0,0,0,0.2)' }}>+</div>
                     </div>
                     {/* 하단: 숫자 + 링 */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
@@ -837,7 +837,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         if (cardId === 'condition-sleep') {
           return editWrap('컨디션·수면', (() => {
             const cs = {
-              background: 'rgba(255,255,255,0.2)', borderRadius: 16,
+              background: 'rgba(255,255,255,0.2)', borderRadius: 22,
               backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
               border: '1px solid rgba(255,255,255,0.3)',
               boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
@@ -878,8 +878,8 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             const todaySleep = sleep7[6]?.hours;
 
             return (
-              <div style={{ margin: '0 18px', marginTop: 10, position: 'relative', zIndex: 1, pointerEvents: isEditing ? 'none' : 'auto' }}>
-                <div style={{ display: 'flex', gap: 10 }}>
+              <div style={{ margin: '0 18px', marginTop: 15, position: 'relative', zIndex: 1, pointerEvents: isEditing ? 'none' : 'auto' }}>
+                <div style={{ display: 'flex', gap: 15 }}>
                   {/* 컨디션 카드 */}
                   <div onClick={() => onTabChange?.('record')} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
@@ -887,6 +887,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                         <span style={{ fontSize: 16 }}>✨</span>
                         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>컨디션</span>
                       </div>
+                      <div onClick={(e) => { e.stopPropagation(); onTabChange?.('record'); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'rgba(0,0,0,0.2)' }}>+</div>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                       <div>
@@ -913,12 +914,12 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                           <svg width="65" height={h} viewBox={`0 0 ${w} ${h}`} style={{ flexShrink: 0 }}>
                             <defs>
                               <linearGradient id="condLineGrad" x1="0" y1="0" x2="1" y2="0">
-                                <stop offset="0%" stopColor="#C8A8F0" />
-                                <stop offset="100%" stopColor="#9B6DD7" />
+                                <stop offset="0%" stopColor="#FFF0B8" />
+                                <stop offset="100%" stopColor="#F0D060" />
                               </linearGradient>
                             </defs>
                             <path d={d} fill="none" stroke="url(#condLineGrad)" strokeWidth="2.5" strokeLinecap="round" />
-                            <circle cx={last.x} cy={last.y} r="3.5" fill="#9B6DD7" />
+                            <circle cx={last.x} cy={last.y} r="3.5" fill="#F0D060" />
                           </svg>
                         );
                       })()}
@@ -932,6 +933,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                         <span style={{ fontSize: 16 }}>🌙</span>
                         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>수면</span>
                       </div>
+                      <div onClick={(e) => { e.stopPropagation(); onTabChange?.('record'); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'rgba(0,0,0,0.2)' }}>+</div>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                       <div>
@@ -981,8 +983,8 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             <div style={{ pointerEvents: isEditing ? 'none' : 'auto' }}>
       {/* ===== 2. 컨디션 체크 카드 ===== */}
       <div style={{
-        margin: '0 18px', marginTop: 10, position: 'relative', zIndex: 1,
-        background: 'rgba(255,255,255,0.2)', borderRadius: 16, padding: '20px 14px',
+        margin: '0 18px', marginTop: 15, position: 'relative', zIndex: 1,
+        background: 'rgba(255,255,255,0.2)', borderRadius: 22, padding: '20px 14px',
         backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
         border: '1px solid rgba(255,255,255,0.3)',
         boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
