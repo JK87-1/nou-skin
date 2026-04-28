@@ -6,8 +6,8 @@ import { getWeatherData } from '../storage/WeatherStorage';
 const CARDS = [
   { id: 'weather',   emoji: '🌤️', title: '오늘의 날씨·기본', unlockKeys: null },
   { id: 'condition', emoji: '☀️',  title: '컨디션 예측',      unlockKeys: ['sleep', 'water'],          lockMsg: '수면과 수분을 기록하면 열려요' },
-  { id: 'mood',      emoji: '😊', title: '기분 예측',         unlockKeys: ['sleep', 'water', 'meal'],  lockMsg: '식단을 기록하면 열려요' },
-  { id: 'energy',    emoji: '🔋', title: '에너지 예측',       unlockKeys: ['sleep', 'water', 'meal'],  lockMsg: '식단을 기록하면 열려요' },
+  { id: 'mood',      emoji: 'heart',  title: '기분 예측',         unlockKeys: ['sleep', 'water', 'meal'],  lockMsg: '식단을 기록하면 열려요' },
+  { id: 'energy',    emoji: 'bolt',   title: '에너지 예측',       unlockKeys: ['sleep', 'water', 'meal'],  lockMsg: '식단을 기록하면 열려요' },
   { id: 'skin',      emoji: '✨', title: '피부 예측',         unlockKeys: ['sleep', 'water', 'meal', 'skin'], lockMsg: '피부 상태를 기록하면 열려요' },
   { id: 'tip',       emoji: '🌟', title: '하루 한 가지 실천', unlockKeys: ['sleep', 'water', 'meal'],  lockMsg: '더 기록할수록 정확해져요' },
 ];
@@ -371,7 +371,13 @@ export default function DailyInsightSlider() {
                 }}>
                   {/* 카드 헤더 */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                    <span style={{ fontSize: 20 }}>{card.emoji}</span>
+                    <span style={{ fontSize: 20, display: 'flex', alignItems: 'center' }}>
+                      {card.emoji === 'heart' ? (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(212,112,126,0.3))' }}><defs><linearGradient id={`heartI${i}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F0B8C0"/><stop offset="100%" stopColor="#D4707E"/></linearGradient></defs><path d="M12 4.5C10 2 6.5 1.5 4.5 4c-2 2.5-1.5 6 1 8.5L12 20l6.5-7.5c2.5-2.5 3-6 1-8.5C17.5 1.5 14 2 12 4.5z" fill={`url(#heartI${i})`} opacity="0.6"/></svg>
+                      ) : card.emoji === 'bolt' ? (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(232,161,53,0.3))' }}><defs><linearGradient id={`boltI${i}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F5DFA0"/><stop offset="100%" stopColor="#E8A135"/></linearGradient></defs><path d="M14 1L3 14h8l-3 9 12-13h-8l2-9z" fill={`url(#boltI${i})`} opacity="0.6"/></svg>
+                      ) : card.emoji}
+                    </span>
                     <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
                       {content?.title || card.title}
                     </span>

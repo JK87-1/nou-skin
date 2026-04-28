@@ -183,10 +183,9 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
     { id: 'weight-activity', label: '체중·활동' },
     { id: 'calories', label: '칼로리·수분' },
     { id: 'condition-sleep', label: '컨디션·수면' },
-    { id: 'condition', label: '컨디션 슬라이더' },
   ];
-  // v2: 새 카드 추가 시 기존 캐시 순서 리셋
-  const CARD_ORDER_VERSION = 2;
+  // v3: condition 슬라이더를 인사이트 아래로 분리
+  const CARD_ORDER_VERSION = 3;
   const DEFAULT_CARD_ORDER = CARD_REGISTRY.map(c => c.id);
   const [cardOrder, setCardOrder] = useState(() => {
     try {
@@ -662,7 +661,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                     {/* 상단: 아이콘 + 제목 + 버튼 */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontSize: 16 }}>💥</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(232,130,53,0.3))' }}><defs><linearGradient id="fireCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F5C8A0"/><stop offset="100%" stopColor="#E87835"/></linearGradient></defs><path d="M9.28,0l.46.29c2.08,1.04,3.6,2.7,4.6,4.79.77,1.62,1.22,3.24,1.18,5.12,1.33-.89,1.7-3.24,1.92-3.19.1.02.26.14.39.24,3.09,2.49,4.39,6.5,3.11,10.36-1.15,3.47-4.42,6.09-8.15,6.39l-1.59-.03c-3.19-.29-6.04-2.11-7.57-4.99-2.14-4.06-1.01-8.98,2.62-11.77,1.25-.96,2.15-2.26,2.61-3.77.26-.85.19-1.71.17-2.59l.02-.85h.22,0Z" fill="url(#fireCard)" opacity="0.6"/></svg>
                         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>활동</span>
                       </div>
                       <div onClick={(e) => { e.stopPropagation(); setShowActivityModal(true); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'rgba(0,0,0,0.2)' }}>+</div>
@@ -739,8 +738,8 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                     {/* 상단: 아이콘 + 제목 */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontSize: 16 }}>🔥</span>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>칼로리</span>
+                        <svg width="16" height="16" viewBox="0 0 32 32" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(76,175,80,0.3))' }}><defs><linearGradient id="appleCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#A8E6A3"/><stop offset="100%" stopColor="#4CAF50"/></linearGradient></defs><path d="M16 10c-4.5 0-7.5 2-9 4.5C5.5 17 5.5 20 6.5 23c1 2.5 3 4.5 5.5 5.5 1.2.5 2.5.8 4 .8s2.8-.3 4-.8c2.5-1 4.5-3 5.5-5.5 1-3 1-6-.5-8.5C23.5 12 20.5 10 16 10z" fill="url(#appleCard)" opacity="0.6"/><path d="M16.5 10c.3-1.5.8-3 1.5-4" stroke="url(#appleCard)" strokeWidth="2" strokeLinecap="round" opacity="0.7"/><path d="M18 5.5c1.2-.3 2.5 0 3.2.8.2.2.1.5-.2.6-1.2.4-2.5.2-3.3-.5-.3-.3-.2-.7.3-.9z" fill="url(#appleCard)" opacity="0.6"/></svg>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>식사</span>
                       </div>
                       <div onClick={(e) => { e.stopPropagation(); setShowFoodModal(true); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'rgba(0,0,0,0.2)' }}>+</div>
                     </div>
@@ -793,7 +792,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                     {/* 상단: 아이콘 + 제목 */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontSize: 16 }}>💧</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(91,163,212,0.3))' }}><defs><linearGradient id="dropCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#B8E0F5"/><stop offset="100%" stopColor="#5BA3D4"/></linearGradient></defs><path d="M12 2.5c0 0-7.5 8-7.5 13a7.5 7.5 0 0015 0c0-5-7.5-13-7.5-13z" fill="url(#dropCard)" opacity="0.6"/></svg>
                         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>수분</span>
                       </div>
                       <div onClick={(e) => { e.stopPropagation(); onTabChange?.('record'); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'rgba(0,0,0,0.2)' }}>+</div>
@@ -930,7 +929,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                   <div onClick={() => onTabChange?.('record')} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontSize: 16 }}>🌙</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(91,106,175,0.3))' }}><defs><linearGradient id="moonCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#C8D0F0"/><stop offset="100%" stopColor="#5B6AAF"/></linearGradient></defs><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="url(#moonCard)" opacity="0.6"/></svg>
                         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>수면</span>
                       </div>
                       <div onClick={(e) => { e.stopPropagation(); onTabChange?.('record'); }} style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: 'rgba(0,0,0,0.2)' }}>+</div>
@@ -976,96 +975,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               </div>
             );
           })());
-        }
-
-        if (cardId === 'condition') {
-          return editWrap('컨디션 체크', (
-            <div style={{ pointerEvents: isEditing ? 'none' : 'auto' }}>
-      {/* ===== 2. 컨디션 체크 카드 ===== */}
-      <div style={{
-        margin: '0 18px', marginTop: 15, position: 'relative', zIndex: 1,
-        background: 'rgba(255,255,255,0.2)', borderRadius: 22, padding: '20px 14px',
-        backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-        border: '1px solid rgba(255,255,255,0.3)',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
-      }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 16 }}>컨디션</div>
-
-        {[
-          { key: 'mood', label: '기분', get color() { return getCategoryColor('mood'); }, rgb: [245,194,203], get textColor() { return getCategoryColor('mood'); }, labels: MOOD_LABELS, ends: ['우울', '행복'],
-            icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(212,112,126,0.3))' }}><defs><linearGradient id="heartG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F0B8C0"/><stop offset="100%" stopColor="#D4707E"/></linearGradient></defs><path d="M12 4.5C10 2 6.5 1.5 4.5 4c-2 2.5-1.5 6 1 8.5L12 20l6.5-7.5c2.5-2.5 3-6 1-8.5C17.5 1.5 14 2 12 4.5z" fill="url(#heartG)" opacity="0.6"/></svg> },
-          { key: 'energy', label: '에너지', get color() { return getCategoryColor('energy'); }, rgb: [245,230,163], get textColor() { return getCategoryColor('energy'); }, labels: ENERGY_LABELS, ends: ['매우 낮음', '활기참'],
-            icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(232,161,53,0.3))' }}><defs><linearGradient id="boltG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F5DFA0"/><stop offset="100%" stopColor="#E8A135"/></linearGradient></defs><path d="M14 1L3 14h8l-3 9 12-13h-8l2-9z" fill="url(#boltG)" opacity="0.6"/></svg> },
-          { key: 'water', label: '수분', get color() { return getCategoryColor('water'); }, rgb: [194,234,255], get textColor() { return getCategoryColor('water'); }, labels: WATER_LABELS, ends: ['갈증', '충분'],
-            icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(91,163,212,0.3))' }}><defs><linearGradient id="dropG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#B8E0F5"/><stop offset="100%" stopColor="#5BA3D4"/></linearGradient></defs><path d="M12 2.5c0 0-7.5 8-7.5 13a7.5 7.5 0 0015 0c0-5-7.5-13-7.5-13z" fill="url(#dropG)" opacity="0.6"/></svg> },
-        ].map((s, si) => {
-          const val = selections[s.key];
-          const pct = sliderPcts[s.key];
-          const trackH = 9;
-          let cachedRect = null;
-          const handleTouch = (e) => {
-            if (e.type === 'touchstart' || e.type === 'click') {
-              cachedRect = e.currentTarget.getBoundingClientRect();
-            }
-            const rect = cachedRect || e.currentTarget.getBoundingClientRect();
-            const clientX = (e.type === 'touchstart' || e.type === 'touchmove') ? e.touches[0].clientX : e.clientX;
-            const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
-            const rawPct = (x / rect.width) * 100;
-            setSliderPcts(prev => ({ ...prev, [s.key]: rawPct }));
-            const v = Math.round((x / rect.width) * 9) + 1;
-            handleSelect(s.key, Math.max(1, Math.min(10, v)));
-          };
-          return (
-            <div key={s.key} style={{ marginBottom: si < 2 ? 18 : 16 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 15, fontWeight: 500, color: 'var(--text-muted)' }}>{s.icon}{s.label}</span>
-                <span style={{ fontSize: 15, fontWeight: 600, color: s.textColor }}>{s.labels[val - 1]}</span>
-              </div>
-              <div
-                onTouchStart={handleTouch}
-                onTouchMove={handleTouch}
-                onClick={handleTouch}
-                style={{
-                  position: 'relative', width: '100%', height: trackH, borderRadius: trackH / 2,
-                  background: 'rgba(0,0,0,0.06)',
-                  cursor: 'pointer', touchAction: 'none',
-                }}
-              >
-                <div style={{
-                  position: 'absolute', top: 0, left: 0, height: '100%',
-                  width: `${Math.max(pct, 5)}%`,
-                  borderRadius: trackH / 2,
-                  background: `linear-gradient(90deg, rgba(255,255,255,0.3), ${s.color}40)`,
-                  boxShadow: 'none',
-                  transition: 'none',
-                }} />
-                {/* 동그라미 핸들 */}
-                <div style={{
-                  position: 'absolute', top: '50%', left: `${Math.max(pct, 2)}%`,
-                  transform: 'translate(-50%, -50%)',
-                  width: 20, height: 20, borderRadius: '50%',
-                  background: `rgb(${Math.round(255+(s.rgb[0]-255)*pct/100)},${Math.round(255+(s.rgb[1]-255)*pct/100)},${Math.round(255+(s.rgb[2]-255)*pct/100)})`,
-                  border: '1px solid rgba(255,255,255,0.9)',
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
-                  transition: 'none',
-                  pointerEvents: 'none',
-                }} />
-              </div>
-            </div>
-          );
-        })}
-
-        {/* 업데이트 버튼 */}
-        <button onClick={handleUpdate} style={{
-          marginTop: 30, width: '100%', padding: '10px 0',
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.7))',
-          backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-          color: '#0D3028', border: '1px solid rgba(255,255,255,0.5)', borderRadius: 10,
-          fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-        }}>업데이트 →</button>
-      </div>
-            </div>
-          ));
         }
 
         return null;
