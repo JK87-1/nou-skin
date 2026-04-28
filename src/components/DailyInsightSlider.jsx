@@ -309,7 +309,7 @@ export default function DailyInsightSlider() {
   insights.forEach(i => { insightMap[i.category] = i; });
 
   return (
-    <div style={{ margin: '10px 18px 8px' }}>
+    <div style={{ margin: '20px 18px 8px' }}>
       <style>{`
         .insight-scroll::-webkit-scrollbar { display: none; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
