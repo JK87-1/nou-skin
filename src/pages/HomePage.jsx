@@ -646,12 +646,12 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                           <svg width="65" height={h} viewBox={`0 0 ${w} ${h}`} style={{ flexShrink: 0 }}>
                             <defs>
                               <linearGradient id="wLineGrad" x1="0" y1="0" x2="1" y2="0">
-                                <stop offset="0%" stopColor="#6ECFB8" />
-                                <stop offset="100%" stopColor="#4AA870" />
+                                <stop offset="0%" stopColor="#E0E0E0" />
+                                <stop offset="100%" stopColor="#FFFFFF" />
                               </linearGradient>
                             </defs>
                             <path d={d} fill="none" stroke="url(#wLineGrad)" strokeWidth="2.5" strokeLinecap="round" />
-                            <circle cx={last.x} cy={last.y} r="3.5" fill="#4AA870" />
+                            <circle cx={last.x} cy={last.y} r="3.5" fill="#E0E0E0" />
                           </svg>
                         );
                       })()}
@@ -765,8 +765,8 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                           <svg width="52" height="52" viewBox="0 0 52 52">
                             <defs>
                               <linearGradient id="calRingGrad" x1="0" y1="0" x2="1" y2="1">
-                                <stop offset="0%" stopColor={isOver ? '#E85B5B' : remainPct <= 20 ? '#E8A830' : remainPct <= 70 ? '#4DBDA0' : '#6AB8D8'} />
-                                <stop offset="100%" stopColor={isOver ? '#F5A0A0' : remainPct <= 20 ? '#FFDB70' : remainPct <= 70 ? '#6ECFB8' : '#90CCE8'} />
+                                <stop offset="0%" stopColor={isOver ? '#E85B5B' : remainPct <= 20 ? '#E8A830' : remainPct <= 70 ? '#4DBDA0' : '#7BC67B'} />
+                                <stop offset="100%" stopColor={isOver ? '#F5A0A0' : remainPct <= 20 ? '#FFDB70' : remainPct <= 70 ? '#6ECFB8' : '#A8E6A3'} />
                               </linearGradient>
                             </defs>
                             <circle cx="26" cy="26" r={ringR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" />
@@ -804,7 +804,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                           <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{(waterCups * 250).toLocaleString()}</span>
                           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>ml</span>
                         </div>
-                        <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>목표 {(waterGoal * 250).toLocaleString()}ml</div>
+                        <div style={{ fontSize: 10, color: waterCups >= waterGoal ? '#22C55E' : 'var(--text-muted)', marginTop: 4 }}>{waterCups >= waterGoal ? '목표 달성!' : `${((waterGoal - waterCups) * 250).toLocaleString()}ml 남음`}</div>
                       </div>
                       {(() => {
                         const ringR = 22, ringC = 2 * Math.PI * ringR;
