@@ -177,6 +177,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [showActivityModal, setShowActivityModal] = useState(false);
   const [showFoodModal, setShowFoodModal] = useState(false);
   const [showCalorieExplain, setShowCalorieExplain] = useState(false);
+  const [showConditionModal, setShowConditionModal] = useState(false);
   const [weightRefreshKey, setWeightRefreshKey] = useState(0);
   const [tappedCard, setTappedCard] = useState(null);
   const handleCardTap = (cardName, callback) => {
@@ -455,8 +456,8 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             {editMode ? (
               <span style={{ fontSize: 14, fontWeight: 600, color: '#4DB8A0' }}>완료</span>
             ) : (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.8)" strokeWidth="2" strokeLinecap="round">
-                <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.8)" strokeWidth="1.6" strokeLinecap="round">
+                <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" />
               </svg>
             )}
           </div>
@@ -470,7 +471,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           const greeting = getGreeting();
           return (
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <div style={{ fontSize: 14, fontWeight: 500, color: '#ffffff', marginBottom: 12 }}>
+              <div style={{ fontSize: 14, fontWeight: 500, color: 'rgba(0,0,0,0.35)', marginBottom: 12 }}>
                 {dateStr}
               </div>
               {bodyBriefing ? (
@@ -504,11 +505,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             </div>
           );
         })()}
-        <div style={{ fontSize: 9, color: '#ffffff' }}>
-          {minutesAgo !== null
-            ? minutesAgo < 1 ? '방금 업데이트' : `${minutesAgo}분 전 업데이트`
-            : ''}
-        </div>
       </div>
 
       {/* ===== 카드 영역 (순서 변경 가능, 2열 그리드) ===== */}
@@ -611,8 +607,38 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
         const isEditing = editMode;
 
+        // 오늘의 진행률 계산
+        const _recordedItems = [];
+        const _missingItems = [];
+        if (_todayCond) _recordedItems.push('컨디션'); else _missingItems.push('컨디션');
+        if (_todaySleep) _recordedItems.push('수면'); else _missingItems.push('수면');
+        if (_eaten > 0) _recordedItems.push('식사'); else _missingItems.push('식사');
+        if (_waterCups > 0) _recordedItems.push('수분'); else _missingItems.push('수분');
+        if (_latestW) _recordedItems.push('체중'); else _missingItems.push('체중');
+        if (_todaySteps > 0) _recordedItems.push('활동'); else _missingItems.push('활동');
+
         return (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 15, margin: '0 18px', marginTop: 15 }}>
+          <>
+          {/* 오늘의 진행률 */}
+          <div style={{ margin: '0 22px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ fontSize: 12, color: 'rgba(0,0,0,0.3)', fontWeight: 500 }}>
+              {_recordedItems.length === 6
+                ? '오늘 기록 완료!'
+                : _missingItems.length <= 2
+                  ? `${_missingItems.join(' · ')} 미입력`
+                  : `${_recordedItems.length}/6 기록 완료`}
+            </div>
+            <div style={{ display: 'flex', gap: 3 }}>
+              {[...Array(6)].map((_, i) => (
+                <div key={i} style={{
+                  width: i < _recordedItems.length ? 14 : 6, height: 4, borderRadius: 2,
+                  background: i < _recordedItems.length ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.06)',
+                  transition: 'all 0.3s ease',
+                }} />
+              ))}
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 15, margin: '0 18px' }}>
             {cardOrder.map((cardId, cardIdx) => {
               const isFirst = cardIdx === 0;
               const isLast = cardIdx === cardOrder.length - 1;
@@ -665,7 +691,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
               if (cardId === 'condition') {
                 return editWrap('컨디션', (
-                  <div onClick={() => handleCardTap('condition', () => onTabChange?.('record'))} style={{ ..._cs, cursor: 'pointer', padding: '20px', animation: tappedCard === 'condition' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
+                  <div onClick={() => handleCardTap('condition', () => setShowConditionModal(true))} style={{ ..._cs, cursor: 'pointer', padding: '20px', animation: tappedCard === 'condition' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 0, flex: '0 0 auto' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(240,208,96,0.3))' }}><defs><linearGradient id="starCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#FFE066"/><stop offset="100%" stopColor="#E8B800"/></linearGradient></defs><path d="M10.48,23.25c-.15.41-.5.71-.86.75-.27.03-.78-.29-.9-.59l-1.53-4.02c-.48-1.26-1.41-2.1-2.67-2.58l-3.91-1.48c-.29-.11-.59-.51-.6-.76-.01-.39.23-.79.6-.93l3.9-1.49c1.27-.48,2.19-1.31,2.68-2.59l1.57-4.14c.08-.2.52-.44.74-.46.24-.02.77.21.86.46l1.57,4.14c.5,1.32,1.47,2.15,2.78,2.63l3.7,1.37c.31.11.66.55.67.83.02.42-.29.82-.68.97l-3.8,1.44c-1.26.48-2.2,1.32-2.67,2.58l-1.45,3.86z" fill="url(#starCard)" opacity="0.8"/><path d="M21.48,6.29c-1.03.59-.9,2.91-2.01,2.98-1.23.08-.99-1.68-1.94-2.78-.77-.88-2.68-.63-2.74-1.78-.07-1.27,2.01-1.1,2.74-1.91.87-.95.73-2.72,1.78-2.8,1.29-.1.98,1.81,1.95,2.77.87.86,2.67.71,2.73,1.8.07,1.08-1.29,1.02-2.51,1.72z" fill="url(#starCard)" opacity="0.8"/></svg>
@@ -678,7 +704,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                           <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_todayCond ? _todayCond.toFixed(1) : '0'}</span>
                           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>/10</span>
                         </div>
-                        <div style={{ fontSize: 10, color: _todayCond >= 7 ? '#22C55E' : _todayCond >= 4 ? 'var(--text-muted)' : '#E05050', marginTop: 4, minHeight: 14 }}>{_condLabel || '\u00A0'}</div>
+                        <div style={{ fontSize: 10, color: _todayCond ? (_todayCond >= 7 ? '#22C55E' : _todayCond >= 4 ? 'var(--text-muted)' : '#E05050') : 'var(--accent-primary, #89cef5)', marginTop: 4, minHeight: 14 }}>{_condLabel || (_todayCond ? '\u00A0' : '체크하기')}</div>
                       </div>
                       {(() => {
                         const pad = 5, w = 6 * 10 + pad * 2, h = 40;
@@ -946,6 +972,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               return null;
             })}
           </div>
+          </>
         );
       })()}
 
@@ -1236,6 +1263,17 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         />
       )}
 
+      {showConditionModal && (
+        <ConditionCheckModal
+          selections={selections}
+          sliderPcts={sliderPcts}
+          onSelect={(id, val) => { handleSelect(id, val); }}
+          onSliderChange={(key, pct) => setSliderPcts(prev => ({ ...prev, [key]: pct }))}
+          onUpdate={() => { handleUpdate(); setShowConditionModal(false); }}
+          onClose={() => setShowConditionModal(false)}
+        />
+      )}
+
     </div>
   );
 
@@ -1246,6 +1284,111 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
     if (bodyRoutine.done < bodyRoutine.total) names.push('바디');
     return names.length > 0 ? `${names.join(' · ')} 루틴이 남았어요` : '';
   }
+}
+
+function ConditionCheckModal({ selections, sliderPcts, onSelect, onSliderChange, onUpdate, onClose }) {
+  const sliders = [
+    { key: 'mood', label: '기분', rgb: [245,194,203], labels: MOOD_LABELS,
+      icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(212,112,126,0.3))' }}><defs><linearGradient id="heartM" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F0B8C0"/><stop offset="100%" stopColor="#D4707E"/></linearGradient></defs><path d="M12 4.5C10 2 6.5 1.5 4.5 4c-2 2.5-1.5 6 1 8.5L12 20l6.5-7.5c2.5-2.5 3-6 1-8.5C17.5 1.5 14 2 12 4.5z" fill="url(#heartM)" opacity="0.6"/></svg> },
+    { key: 'energy', label: '에너지', rgb: [245,230,163], labels: ENERGY_LABELS,
+      icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(232,161,53,0.3))' }}><defs><linearGradient id="boltM" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F5DFA0"/><stop offset="100%" stopColor="#E8A135"/></linearGradient></defs><path d="M14 1L3 14h8l-3 9 12-13h-8l2-9z" fill="url(#boltM)" opacity="0.6"/></svg> },
+    { key: 'water', label: '수분', rgb: [194,234,255], labels: WATER_LABELS,
+      icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(91,163,212,0.3))' }}><defs><linearGradient id="dropM" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#B8E0F5"/><stop offset="100%" stopColor="#5BA3D4"/></linearGradient></defs><path d="M12 2.5c0 0-7.5 8-7.5 13a7.5 7.5 0 0015 0c0-5-7.5-13-7.5-13z" fill="url(#dropM)" opacity="0.6"/></svg> },
+  ];
+
+  return (
+    <div onClick={onClose} style={{
+      position: 'fixed', inset: 0, zIndex: 1100,
+      background: 'rgba(0,0,0,0.5)',
+      display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
+        padding: '24px 24px 40px', width: '100%', maxWidth: 420,
+      }}>
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
+        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24, textAlign: 'center' }}>컨디션 체크</div>
+
+        {sliders.map((s, si) => {
+          const val = selections[s.key];
+          const pct = sliderPcts[s.key];
+          const trackH = 9;
+          const color = `rgb(${s.rgb.join(',')})`;
+          const calcFromEvent = (e, rect) => {
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
+            const rawPct = (x / rect.width) * 100;
+            onSliderChange(s.key, rawPct);
+            const v = Math.round((x / rect.width) * 9) + 1;
+            onSelect(s.key, Math.max(1, Math.min(10, v)));
+          };
+          const handleStart = (e) => {
+            e.preventDefault();
+            const rect = e.currentTarget.getBoundingClientRect();
+            calcFromEvent(e, rect);
+            const handleMove = (ev) => { ev.preventDefault(); calcFromEvent(ev, rect); };
+            const handleEnd = () => {
+              window.removeEventListener('touchmove', handleMove);
+              window.removeEventListener('touchend', handleEnd);
+              window.removeEventListener('mousemove', handleMove);
+              window.removeEventListener('mouseup', handleEnd);
+            };
+            window.addEventListener('touchmove', handleMove, { passive: false });
+            window.addEventListener('touchend', handleEnd);
+            window.addEventListener('mousemove', handleMove);
+            window.addEventListener('mouseup', handleEnd);
+          };
+          return (
+            <div key={s.key} style={{ marginBottom: si < 2 ? 22 : 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 15, fontWeight: 500, color: 'var(--text-muted)' }}>{s.icon}{s.label}</span>
+                <span style={{ fontSize: 15, fontWeight: 600, color }}>{s.labels[val - 1]}</span>
+              </div>
+              <div
+                onTouchStart={handleStart} onMouseDown={handleStart}
+                style={{
+                  position: 'relative', width: '100%', height: trackH, borderRadius: trackH / 2,
+                  background: 'rgba(0,0,0,0.06)', cursor: 'pointer', touchAction: 'none',
+                }}
+              >
+                <div style={{
+                  position: 'absolute', top: 0, left: 0, height: '100%',
+                  width: `${Math.max(pct, 5)}%`, borderRadius: trackH / 2,
+                  background: `linear-gradient(90deg, rgba(255,255,255,0.3), ${color}40)`,
+                  transition: 'width 0.05s ease-out',
+                }} />
+                <div style={{
+                  position: 'absolute', top: '50%', left: `${Math.max(pct, 2)}%`,
+                  transform: 'translate(-50%, -50%)',
+                  width: 22, height: 22, borderRadius: '50%',
+                  background: `rgb(${Math.round(255+(s.rgb[0]-255)*pct/100)},${Math.round(255+(s.rgb[1]-255)*pct/100)},${Math.round(255+(s.rgb[2]-255)*pct/100)})`,
+                  border: '1.5px solid rgba(255,255,255,0.9)',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
+                  pointerEvents: 'none',
+                  transition: 'left 0.05s ease-out',
+                }} />
+              </div>
+            </div>
+          );
+        })}
+
+        <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
+          <button onClick={onClose} style={{
+            flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
+            border: 'none', background: 'var(--bg-input, #F2F3F5)',
+            color: 'var(--text-muted)', fontSize: 14, fontWeight: 600,
+            cursor: 'pointer', fontFamily: 'inherit',
+          }}>취소</button>
+          <button onClick={onUpdate} style={{
+            flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
+            border: 'none', background: 'var(--accent-primary)',
+            color: '#fff', fontSize: 14, fontWeight: 600,
+            cursor: 'pointer', fontFamily: 'inherit',
+          }}>업데이트</button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function AddWeightModal({ onSave, onClose, latest }) {
@@ -1340,7 +1483,7 @@ function AddActivityModal({ onSave, onClose }) {
     const today = all[todayKey] || { date: todayKey };
 
     if (tab === 'walk' && steps) {
-      today.steps = (today.steps || 0) + Number(steps);
+      today.steps = Number(steps);
     } else if (tab === 'exercise' && selectedEx && minutes) {
       const log = today.exercise?.log || {};
       log[selectedEx.name] = (log[selectedEx.name] || 0) + Number(minutes);

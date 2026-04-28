@@ -5,10 +5,10 @@ import { getWeatherData } from '../storage/WeatherStorage';
 /* ── 카드 설정 ── */
 const CARDS = [
   { id: 'weather',   emoji: 'sun',   title: '오늘의 날씨·기본', unlockKeys: null },
-  { id: 'energy',    emoji: 'bolt',  title: '에너지·컨디션 예측', unlockKeys: ['sleep', 'water'],          lockMsg: '수면과 수분을 기록하면 열려요' },
-  { id: 'mood',      emoji: 'heart', title: '기분 예측',          unlockKeys: ['sleep', 'water', 'meal'],  lockMsg: '식단을 기록하면 열려요' },
-  { id: 'skin',      emoji: '✨',   title: '피부 예측',          unlockKeys: ['sleep', 'water', 'meal', 'skin'], lockMsg: '피부 상태를 기록하면 열려요' },
-  { id: 'tip',       emoji: '🌟',   title: '하루 한 가지 실천',  unlockKeys: ['sleep', 'water', 'meal'],  lockMsg: '더 기록할수록 정확해져요' },
+  { id: 'energy',    emoji: 'bolt',  title: '에너지·컨디션 예측', unlockKeys: ['sleep', 'water'],          lockMsg: '수면 시간과 수분 섭취량을 기록해보세요' },
+  { id: 'mood',      emoji: 'heart', title: '기분 예측',          unlockKeys: ['sleep', 'water', 'meal'],  lockMsg: '수면 + 수분 + 식단까지 기록하면 열려요' },
+  { id: 'skin',      emoji: '✨',   title: '피부 예측',          unlockKeys: ['sleep', 'water', 'meal', 'skin'], lockMsg: '피부 분석까지 완료하면 열려요' },
+  { id: 'tip',       emoji: '🌟',   title: '하루 한 가지 실천',  unlockKeys: ['sleep', 'water', 'meal'],  lockMsg: '수면 + 수분 + 식단을 기록하면 맞춤 팁을 드려요' },
 ];
 
 /* ── 신뢰도 점 ── */
