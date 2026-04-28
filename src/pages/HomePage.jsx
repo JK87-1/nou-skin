@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { hapticLight } from '../utils/haptic';
 import DailyInsightSlider from '../components/DailyInsightSlider';
 import SkinWeather from '../components/SkinWeather';
 import { getLatestRecord } from '../storage/SkinStorage';
@@ -180,6 +181,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [tappedCard, setTappedCard] = useState(null);
   const handleCardTap = (cardName, callback) => {
     setTappedCard(cardName);
+    hapticLight();
     if (navigator.vibrate) navigator.vibrate(8);
     setTimeout(() => setTappedCard(null), 300);
     callback?.();
@@ -187,12 +189,15 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
   // 카드 순서/편집 관리
   const CARD_REGISTRY = [
-    { id: 'weight-activity', label: '체중·활동' },
-    { id: 'calories', label: '칼로리·수분' },
-    { id: 'condition-sleep', label: '컨디션·수면' },
+    { id: 'condition', label: '컨디션' },
+    { id: 'sleep', label: '수면' },
+    { id: 'food', label: '식사' },
+    { id: 'water', label: '수분' },
+    { id: 'weight', label: '체중' },
+    { id: 'activity', label: '활동' },
   ];
-  // v3: condition 슬라이더를 인사이트 아래로 분리
-  const CARD_ORDER_VERSION = 3;
+  // v5: 개별 카드 분리 (6개 카드, 2열 그리드)
+  const CARD_ORDER_VERSION = 5;
   const DEFAULT_CARD_ORDER = CARD_REGISTRY.map(c => c.id);
   const [cardOrder, setCardOrder] = useState(() => {
     try {
@@ -506,7 +511,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         </div>
       </div>
 
-      {/* ===== 카드 영역 (순서 변경 가능) ===== */}
+      {/* ===== 카드 영역 (순서 변경 가능, 2열 그리드) ===== */}
       <style>{`
         @keyframes cardWiggle {
           0% { transform: rotate(-0.5deg); }
@@ -520,394 +525,165 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           100% { transform: scale(1); }
         }
       `}</style>
-      {cardOrder.map((cardId, cardIdx) => {
-        const isEditing = editMode;
-        const isFirst = cardIdx === 0;
-        const isLast = cardIdx === cardOrder.length - 1;
-        const arrowBtn = (dir) => {
-          const isUp = dir === 'up';
-          return (
-            <div
-              onClick={(e) => { e.stopPropagation(); moveCard(cardIdx, isUp ? cardIdx - 1 : cardIdx + 1); }}
-              style={{
-                width: 28, height: 28, borderRadius: '50%',
-                background: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
-              }}
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                {isUp ? <path d="M18 15l-6-6-6 6"/> : <path d="M6 9l6 6 6-6"/>}
-              </svg>
-            </div>
-          );
+      {(() => {
+        // 공통 데이터를 한 번만 계산
+        const _todayKey = new Date().toISOString().slice(0, 10);
+        const _allV2 = (() => { try { return JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); } catch { return {}; } })();
+        const _todayRec = _allV2[_todayKey] || {};
+        const _curWeight = getLatestWeight()?.weight || 55;
+        const _todaySteps = _todayRec.steps || 0;
+        const _todayExerciseLog = _todayRec.exercise?.log || {};
+        const _burnedFromSteps = Math.round(_todaySteps * 0.0005 * _curWeight);
+        const _burnedFromExercise = Object.entries(_todayExerciseLog).reduce((sum, [name, mins]) => {
+          const met = ALL_EXERCISES.find(e => e.name === name)?.met || 4.0;
+          return sum + Math.round(met * _curWeight * (mins / 60));
+        }, 0);
+        const _cs = {
+          background: 'rgba(255,255,255,0.2)', borderRadius: 22,
+          backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          border: '1px solid rgba(255,255,255,0.3)',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
         };
-        const editWrap = (label, content) => (
-          <div
-            key={cardId}
-            style={{
-              animation: isEditing ? 'cardWiggle 0.3s ease-in-out infinite' : 'none',
-              position: 'relative',
-            }}
-          >
-            {isEditing && (
-              <div style={{
-                position: 'absolute', top: 6, left: 0, right: 0, zIndex: 10,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-              }}>
-                {!isFirst && arrowBtn('up')}
-                <div style={{
-                  background: 'rgba(0,0,0,0.6)', borderRadius: 12, padding: '4px 14px',
-                  display: 'flex', alignItems: 'center', gap: 6,
-                }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round">
-                    <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-                  </svg>
-                  <span style={{ fontSize: 11, color: '#fff', fontWeight: 500 }}>{label}</span>
-                </div>
-                {!isLast && arrowBtn('down')}
-              </div>
-            )}
-            {content}
-          </div>
-        );
 
-        if (cardId === 'weight-activity') {
-          return editWrap('체중·활동', (() => {
-            const curWeight = getLatestWeight()?.weight || 55;
-            const todayKey_ = new Date().toISOString().slice(0, 10);
-            let todaySteps = 0;
-            let todayExerciseLog = {};
-            try { const v2_ = JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); todaySteps = v2_[todayKey_]?.steps || 0; todayExerciseLog = v2_[todayKey_]?.exercise?.log || {}; } catch {}
-            const burnedFromSteps = Math.round(todaySteps * 0.0005 * curWeight);
-            const burnedFromExercise = Object.entries(todayExerciseLog).reduce((sum, [name, mins]) => {
-              const met = ALL_EXERCISES.find(e => e.name === name)?.met || 4.0;
-              return sum + Math.round(met * curWeight * (mins / 60));
-            }, 0);
-            const latestW = getLatestWeight();
-            const bodyRecs = getBodyRecords();
-            const prevW = bodyRecs.length >= 2 ? bodyRecs[bodyRecs.length - 2] : null;
-            const wDiff = latestW && prevW ? (latestW.weight - prevW.weight).toFixed(1) : null;
-            const todayKey = new Date().toISOString().slice(0, 10);
-            let stepCount = 0;
-            try { const v2 = JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); stepCount = v2[todayKey]?.steps || 0; } catch {}
-            const stepBars = [];
-            for (let i = 6; i >= 0; i--) {
-              const d = new Date(); d.setDate(d.getDate() - i);
-              const dk = d.toISOString().slice(0, 10);
-              try { const v2 = JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); stepBars.push(v2[dk]?.steps || 0); } catch { stepBars.push(0); }
-            }
-            const maxStep = Math.max(...stepBars, 1);
-            const last7w = bodyRecs.slice(-7);
-            const wMin = last7w.length > 0 ? Math.min(...last7w.map(r => r.weight)) : 0;
-            const wMax = last7w.length > 0 ? Math.max(...last7w.map(r => r.weight)) : 0;
-            const wRange = wMax - wMin || 1;
-            const cs = {
-              background: 'rgba(255,255,255,0.2)', borderRadius: 22, padding: '20px 18px',
-              backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-              border: '1px solid rgba(255,255,255,0.3)',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
-            };
-            return (
-              <div style={{ margin: '0 18px', marginTop: 15, position: 'relative', zIndex: 1, pointerEvents: isEditing ? 'none' : 'auto' }}>
-                <div style={{ display: 'flex', gap: 15 }}>
-                  <div onClick={() => handleCardTap('weight', () => setShowWeightModal(true))} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px', animation: tappedCard === 'weight' ? 'cardTap 0.3s ease' : 'none' }}>
-                    {/* 상단: 아이콘 + 제목 */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <img src="/icons/scale.svg" width="18" height="18" alt="" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(180,180,180,0.3))' }} />
-                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>체중</span>
-                      </div>
-                    </div>
-                    {/* 하단: 숫자(좌) + 그래프(우) */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                      <div>
-                        {latestW ? (
-                          <>
-                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                              <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{latestW.weight}</span>
-                              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>kg</span>
-                            </div>
-                            {wDiff !== null && (
-                              <div style={{ fontSize: 10, color: Number(wDiff) > 0 ? '#E05050' : '#22C55E', marginTop: 4 }}>
-                                {Number(wDiff) > 0 ? '↑' : '↓'} {Math.abs(Number(wDiff))}kg
-                              </div>
-                            )}
-                          </>
-                        ) : (
-                          <>
-                            <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
-                            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>kg</div>
-                          </>
-                        )}
-                      </div>
-                      {/* 미니 그래프 (우측) */}
-                      {last7w.length >= 2 && (() => {
-                        const pad = 5;
-                        const w = (last7w.length - 1) * 10 + pad * 2;
-                        const h = 40;
-                        const pts = last7w.map((r, i) => ({ x: pad + i * 10, y: pad + (h - pad * 2) - ((r.weight - wMin) / wRange) * (h - pad * 2) }));
-                        let d = `M${pts[0].x},${pts[0].y}`;
-                        for (let i = 0; i < pts.length - 1; i++) {
-                          const cx = (pts[i].x + pts[i + 1].x) / 2;
-                          d += ` C${cx},${pts[i].y} ${cx},${pts[i + 1].y} ${pts[i + 1].x},${pts[i + 1].y}`;
-                        }
-                        const last = pts[pts.length - 1];
-                        return (
-                          <svg width="65" height={h} viewBox={`0 0 ${w} ${h}`} style={{ flexShrink: 0 }}>
-                            <defs>
-                              <linearGradient id="wLineGrad" x1="0" y1="0" x2="1" y2="0">
-                                <stop offset="0%" stopColor="#FFFFFF" />
-                                <stop offset="100%" stopColor="#D0D0D0" />
-                              </linearGradient>
-                            </defs>
-                            <path d={d} fill="none" stroke="url(#wLineGrad)" strokeWidth="2.5" strokeLinecap="round" />
-                            <circle cx={last.x} cy={last.y} r="3.5" fill="#D0D0D0" />
-                          </svg>
-                        );
-                      })()}
-                    </div>
-                  </div>
-                  <div onClick={() => handleCardTap('activity', () => setShowActivityModal(true))} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px', animation: tappedCard === 'activity' ? 'cardTap 0.3s ease' : 'none' }}>
-                    {/* 상단: 아이콘 + 제목 */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(232,130,53,0.3))' }}><defs><linearGradient id="fireCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F5C8A0"/><stop offset="100%" stopColor="#E87835"/></linearGradient></defs><path d="M9.28,0l.46.29c2.08,1.04,3.6,2.7,4.6,4.79.77,1.62,1.22,3.24,1.18,5.12,1.33-.89,1.7-3.24,1.92-3.19.1.02.26.14.39.24,3.09,2.49,4.39,6.5,3.11,10.36-1.15,3.47-4.42,6.09-8.15,6.39l-1.59-.03c-3.19-.29-6.04-2.11-7.57-4.99-2.14-4.06-1.01-8.98,2.62-11.77,1.25-.96,2.15-2.26,2.61-3.77.26-.85.19-1.71.17-2.59l.02-.85h.22,0Z" fill="url(#fireCard)" opacity="0.6"/></svg>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>활동</span>
-                      </div>
-                    </div>
-                    {/* 하단: 숫자(좌) + 막대그래프(우) */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{(burnedFromSteps + burnedFromExercise) > 0 ? (burnedFromSteps + burnedFromExercise).toLocaleString() : '—'}</span>
-                          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>kcal</span>
-                        </div>
-                        {stepCount > 0 && (
-                          <div style={{ fontSize: 10, color: '#22C55E', marginTop: 4 }}>{stepCount.toLocaleString()}걸음</div>
-                        )}
-                      </div>
-                      {/* 슬림 막대그래프 */}
-                      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 36, flexShrink: 0 }}>
-                        {stepBars.map((s, i) => (
-                          <div key={i} style={{
-                            width: 6, borderRadius: 3,
-                            height: s > 0 ? Math.max(6, (s / maxStep) * 34) : 6,
-                            background: i === 6
-                              ? 'linear-gradient(180deg, #FF9F43, #F07030)'
-                              : s > 0 ? 'rgba(255,159,67,0.25)' : 'rgba(0,0,0,0.06)',
-                            transition: 'height 0.3s ease',
-                          }} />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })());
+        // 체중 데이터
+        const _latestW = getLatestWeight();
+        const _bodyRecs = getBodyRecords();
+        const _prevW = _bodyRecs.length >= 2 ? _bodyRecs[_bodyRecs.length - 2] : null;
+        const _wDiff = _latestW && _prevW ? (_latestW.weight - _prevW.weight).toFixed(1) : null;
+        const _last7w = _bodyRecs.slice(-7);
+        const _wMin = _last7w.length > 0 ? Math.min(..._last7w.map(r => r.weight)) : 0;
+        const _wMax = _last7w.length > 0 ? Math.max(..._last7w.map(r => r.weight)) : 0;
+        const _wRange = _wMax - _wMin || 1;
+
+        // 걸음수 7일 바
+        const _stepBars = [];
+        for (let i = 6; i >= 0; i--) {
+          const d = new Date(); d.setDate(d.getDate() - i);
+          const dk = d.toISOString().slice(0, 10);
+          _stepBars.push(_allV2[dk]?.steps || 0);
         }
+        const _maxStep = Math.max(..._stepBars, 1);
 
-        if (cardId === 'calories') {
-          return editWrap('칼로리', (() => {
-            const todayNut = getTodayNutrition();
-            const fullGoal = getFoodGoal();
-            const eaten = Math.round(todayNut.kcal || 0);
-            const curWeight = getLatestWeight()?.weight || 55;
-            const todayKey_ = new Date().toISOString().slice(0, 10);
-            let todaySteps = 0;
-            let todayExerciseLog = {};
-            try { const v2_ = JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); todaySteps = v2_[todayKey_]?.steps || 0; todayExerciseLog = v2_[todayKey_]?.exercise?.log || {}; } catch {}
-            const burnedFromSteps = Math.round(todaySteps * 0.0005 * curWeight);
-            const burnedFromExercise = Object.entries(todayExerciseLog).reduce((sum, [name, mins]) => {
-              const met = ALL_EXERCISES.find(e => e.name === name)?.met || 4.0;
-              return sum + Math.round(met * curWeight * (mins / 60));
-            }, 0);
-            const totalBurned = burnedFromSteps + burnedFromExercise;
-            const netCal = eaten - totalBurned;
-            const remaining = Math.max(0, fullGoal.kcal - netCal);
+        // 칼로리 데이터
+        const _todayNut = getTodayNutrition();
+        const _fullGoal = getFoodGoal();
+        const _eaten = Math.round(_todayNut.kcal || 0);
+        const _totalBurned = _burnedFromSteps + _burnedFromExercise;
+        const _netCal = _eaten - _totalBurned;
+        const _remaining = Math.max(0, _fullGoal.kcal - _netCal);
 
-            // 수분 데이터
-            let waterCups = 0;
-            try { const v2_ = JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); waterCups = v2_[todayKey_]?.water?.cups || 0; } catch {}
-            const waterGoal = 8;
-            const waterPct = Math.min(Math.round((waterCups / waterGoal) * 100), 100);
+        // 수분 데이터
+        const _waterCups = _todayRec.water?.cups || 0;
+        const _waterGoal = 8;
 
-            const cs = {
-              background: 'rgba(255,255,255,0.2)', borderRadius: 22,
-              backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-              border: '1px solid rgba(255,255,255,0.3)',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
-            };
-
-            return (
-              <div style={{ margin: '0 18px', marginTop: 15, position: 'relative', zIndex: 1, pointerEvents: isEditing ? 'none' : 'auto' }}>
-                <div style={{ display: 'flex', gap: 15 }}>
-                  {/* 칼로리 카드 (왼쪽 반) */}
-                  <div onClick={(e) => { e.stopPropagation(); handleCardTap('food', () => setShowFoodModal(true)); }} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px', animation: tappedCard === 'food' ? 'cardTap 0.3s ease' : 'none' }}>
-                    {/* 상단: 아이콘 + 제목 */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <svg width="16" height="16" viewBox="0 0 1254 1254" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(123,198,123,0.3))' }}><defs><linearGradient id="appleCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#A8E6A3"/><stop offset="100%" stopColor="#7BC67B"/></linearGradient></defs><path d="M852.51,1114.52C822.56,1133.36,790.72,1145.62,755.49,1148.31C718.9,1151.11,684.66,1142.94,652.14,1126.65C645.15,1123.15,638.33,1119.22,631.86,1114.87C628.65,1112.72,626.65,1113.54,623.94,1115.2C596.76,1131.87,567.54,1143,535.83,1147.21C491.83,1153.05,450.67,1143.99,411.83,1123.23C369.95,1100.84,336.1,1069,306.69,1032.31C243.86,953.89,200.68,865.58,176.61,768.11C162.75,711.98,159.24,654.92,166.15,597.45C172.23,546.91,187.01,499.36,216.16,456.92C248.57,409.71,292.47,378.61,347.36,363.01C391.12,350.57,435.67,348.92,480.62,354.47C518.12,359.11,554.54,368.34,590.23,380.63C592.44,381.39,594.82,381.67,596.97,382.14C598.41,359.44,599.8,337.56,601.19,315.63C590.93,317.2,580.22,319.19,569.43,320.44C526.57,325.37,485.28,320.34,446.56,300.15C418.24,285.37,395.38,264.25,376.51,238.74C348.56,200.95,330.22,158.8,320.39,112.9C320.08,111.43,319.84,109.95,319.62,108.47C317.74,95.9,321.66,89.96,334.08,88.2C347.93,86.24,361.84,84.4,375.79,83.56C419.19,80.94,462.16,83.39,503.56,98.09C553.43,115.79,593.86,145.54,620.07,192.46C625.39,201.98,629.27,212.29,633.88,222.38C636.78,217.79,639.84,212.77,643.09,207.87C661.04,180.78,683.41,157.84,709.46,138.56C726.51,125.95,748.78,135.42,751.3,156.2C752.54,166.47,747.98,174.47,739.69,180.66C720.61,194.88,703.83,211.44,689.71,230.67C669.45,258.27,657.8,289.38,653.28,323.02C650.87,340.97,650.42,359.18,649.28,377.29C648.95,382.59,649.99,383.17,655.09,381.34C690.88,368.52,727.35,358.25,764.96,352.44C818.12,344.21,870.99,344.39,922.73,361.04C987.39,381.84,1032.33,424.8,1060.25,486.13C1080.83,531.32,1087.87,579.32,1088.93,628.47C1090.56,703.51,1074.69,775.27,1047.53,844.76C1022.21,909.55,989.75,970.49,946.75,1025.43C919.92,1059.72,889.78,1090.66,852.51,1114.52z" fill="url(#appleCard)" opacity="0.6"/></svg>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>식사</span>
-                      </div>
-                    </div>
-                    {/* 하단: 숫자 + 링 */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{eaten.toLocaleString()}</span>
-                          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>kcal</span>
-                        </div>
-                        <div style={{ fontSize: 10, color: eaten > fullGoal.kcal ? '#E85B5B' : 'var(--text-muted)', marginTop: 4 }}>
-                          {eaten > fullGoal.kcal ? `${(eaten - fullGoal.kcal).toLocaleString()}kcal 초과` : `${remaining.toLocaleString()}kcal 남음`}
-                        </div>
-                      </div>
-                      {(() => {
-                        const ringR = 22, ringC = 2 * Math.PI * ringR;
-                        const remainPct = fullGoal.kcal > 0 ? Math.max(0, Math.round((remaining / fullGoal.kcal) * 100)) : 100;
-                        const ratio = fullGoal.kcal > 0 ? eaten / fullGoal.kcal : 0;
-                        const isOver = ratio > 1;
-                        const baseFill = ringC * Math.min(ratio, 1);
-                        const overFill = isOver ? ringC * Math.min(ratio - 1, 1) : 0;
-                        return (
-                          <svg width="52" height="52" viewBox="0 0 52 52">
-                            <defs>
-                              <linearGradient id="calRingGrad" x1="0" y1="0" x2="1" y2="1">
-                                <stop offset="0%" stopColor={isOver ? '#E85B5B' : remainPct <= 20 ? '#E8A830' : remainPct <= 70 ? '#4DBDA0' : '#7BC67B'} />
-                                <stop offset="100%" stopColor={isOver ? '#F5A0A0' : remainPct <= 20 ? '#FFDB70' : remainPct <= 70 ? '#6ECFB8' : '#A8E6A3'} />
-                              </linearGradient>
-                            </defs>
-                            <circle cx="26" cy="26" r={ringR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" />
-                            {/* 기본 링 (100%까지, 투명도 적용) */}
-                            <circle cx="26" cy="26" r={ringR} fill="none" stroke="url(#calRingGrad)" strokeWidth="5"
-                              strokeDasharray={`${baseFill} ${ringC - baseFill}`} strokeLinecap="round"
-                              opacity={isOver ? 0.35 : 1}
-                              transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
-                            {/* 초과 링 (겹쳐서 표시) */}
-                            {isOver && (
-                              <circle cx="26" cy="26" r={ringR} fill="none" stroke="#E85B5B" strokeWidth="5"
-                                strokeDasharray={`${overFill} ${ringC - overFill}`} strokeLinecap="round"
-                                transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
-                            )}
-                          </svg>
-                        );
-                      })()}
-                    </div>
-                  </div>
-
-                  {/* 수분 카드 (오른쪽 반) */}
-                  <div onClick={() => handleCardTap('water', () => onTabChange?.('record'))} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px', animation: tappedCard === 'water' ? 'cardTap 0.3s ease' : 'none' }}>
-                    {/* 상단: 아이콘 + 제목 */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(91,163,212,0.3))' }}><defs><linearGradient id="dropCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#B8E0F5"/><stop offset="100%" stopColor="#5BA3D4"/></linearGradient></defs><path d="M12 2.5c0 0-7.5 8-7.5 13a7.5 7.5 0 0015 0c0-5-7.5-13-7.5-13z" fill="url(#dropCard)" opacity="0.6"/></svg>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>수분</span>
-                      </div>
-                    </div>
-                    {/* 하단: 숫자 + 링 */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{(waterCups * 250).toLocaleString()}</span>
-                          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>ml</span>
-                        </div>
-                        <div style={{ fontSize: 10, color: waterCups >= waterGoal ? '#22C55E' : 'var(--text-muted)', marginTop: 4 }}>{waterCups >= waterGoal ? '목표 달성!' : `${((waterGoal - waterCups) * 250).toLocaleString()}ml 남음`}</div>
-                      </div>
-                      {(() => {
-                        const ringR = 22, ringC = 2 * Math.PI * ringR;
-                        const fillPct = Math.min(waterCups / waterGoal, 1);
-                        const ringDash = ringC * fillPct;
-                        return (
-                          <svg width="52" height="52" viewBox="0 0 52 52">
-                            <defs>
-                              <linearGradient id="waterRingGrad" x1="0" y1="0" x2="1" y2="1">
-                                <stop offset="0%" stopColor="#5BA3D4" />
-                                <stop offset="100%" stopColor="#B8E0F5" />
-                              </linearGradient>
-                            </defs>
-                            <circle cx="26" cy="26" r={ringR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" />
-                            <circle cx="26" cy="26" r={ringR} fill="none" stroke="url(#waterRingGrad)" strokeWidth="5"
-                              strokeDasharray={`${ringDash} ${ringC - ringDash}`} strokeLinecap="round"
-                              transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
-                          </svg>
-                        );
-                      })()}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })());
+        // 컨디션 7일 데이터
+        const _allChecks = (() => { try { return JSON.parse(localStorage.getItem('nou_condition_checks') || '[]'); } catch { return []; } })();
+        const _cond7 = [];
+        for (let i = 6; i >= 0; i--) {
+          const d = new Date(); d.setDate(d.getDate() - i);
+          const dk = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+          const dayChecks = _allChecks.filter(c => (c.date || c.timestamp?.slice(0,10)) === dk);
+          if (dayChecks.length > 0) {
+            const last = dayChecks[dayChecks.length - 1];
+            _cond7.push({ date: dk, avg: ((last.energy || 5) + (last.mood || 5)) / 2 });
+          } else {
+            _cond7.push({ date: dk, avg: null });
+          }
         }
+        const _todayCond = _cond7[6]?.avg;
+        const _condLabel = _todayCond ? (_todayCond >= 7 ? '좋음' : _todayCond >= 4 ? '보통' : '낮음') : null;
 
-        if (cardId === 'condition-sleep') {
-          return editWrap('컨디션·수면', (() => {
-            const cs = {
-              background: 'rgba(255,255,255,0.2)', borderRadius: 22,
-              backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-              border: '1px solid rgba(255,255,255,0.3)',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
-            };
-            const todayKey_ = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
+        // 수면 7일 데이터
+        const _sleep7 = [];
+        for (let i = 6; i >= 0; i--) {
+          const d = new Date(); d.setDate(d.getDate() - i);
+          const dk = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+          const rec = _allV2[dk];
+          if (rec?.sleep?.hours > 0) {
+            const bedHour = rec.sleep.bedtime ? parseInt(rec.sleep.bedtime.split(':')[0]) : null;
+            _sleep7.push({ date: dk, hours: rec.sleep.hours, bedHour });
+          } else {
+            _sleep7.push({ date: dk, hours: null, bedHour: null });
+          }
+        }
+        const _todaySleep = _sleep7[6]?.hours;
 
-            // 컨디션 7일 데이터
-            const allChecks = JSON.parse(localStorage.getItem('nou_condition_checks') || '[]');
-            const cond7 = [];
-            for (let i = 6; i >= 0; i--) {
-              const d = new Date(); d.setDate(d.getDate() - i);
-              const dk = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-              const dayChecks = allChecks.filter(c => (c.date || c.timestamp?.slice(0,10)) === dk);
-              if (dayChecks.length > 0) {
-                const last = dayChecks[dayChecks.length - 1];
-                cond7.push({ date: dk, avg: ((last.energy || 5) + (last.mood || 5)) / 2 });
-              } else {
-                cond7.push({ date: dk, avg: null });
-              }
-            }
-            const todayCond = cond7[6]?.avg;
-            const condLabel = todayCond ? (todayCond >= 7 ? '좋음' : todayCond >= 4 ? '보통' : '낮음') : null;
+        const isEditing = editMode;
 
-            // 수면 7일 데이터
-            const allV2 = JSON.parse(localStorage.getItem('lua_record_v2') || '{}');
-            const sleep7 = [];
-            for (let i = 6; i >= 0; i--) {
-              const d = new Date(); d.setDate(d.getDate() - i);
-              const dk = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-              const rec = allV2[dk];
-              if (rec?.sleep?.hours > 0) {
-                const bedHour = rec.sleep.bedtime ? parseInt(rec.sleep.bedtime.split(':')[0]) : null;
-                sleep7.push({ date: dk, hours: rec.sleep.hours, bedHour });
-              } else {
-                sleep7.push({ date: dk, hours: null, bedHour: null });
-              }
-            }
-            const todaySleep = sleep7[6]?.hours;
+        return (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 15, margin: '0 18px', marginTop: 15 }}>
+            {cardOrder.map((cardId, cardIdx) => {
+              const isFirst = cardIdx === 0;
+              const isLast = cardIdx === cardOrder.length - 1;
+              const arrowBtn = (dir) => {
+                const isLeft = dir === 'left';
+                return (
+                  <div
+                    onClick={(e) => { e.stopPropagation(); moveCard(cardIdx, isLeft ? cardIdx - 1 : cardIdx + 1); }}
+                    style={{
+                      width: 28, height: 28, borderRadius: '50%',
+                      background: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
+                    }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      {isLeft ? <path d="M15 18l-6-6 6-6"/> : <path d="M9 6l6 6-6 6"/>}
+                    </svg>
+                  </div>
+                );
+              };
+              const editWrap = (label, content) => (
+                <div
+                  key={cardId}
+                  style={{
+                    animation: isEditing ? 'cardWiggle 0.3s ease-in-out infinite' : 'none',
+                    position: 'relative',
+                  }}
+                >
+                  {isEditing && (
+                    <div style={{
+                      position: 'absolute', top: 6, left: 0, right: 0, zIndex: 10,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                    }}>
+                      {!isFirst && arrowBtn('left')}
+                      <div style={{
+                        background: 'rgba(0,0,0,0.6)', borderRadius: 12, padding: '4px 14px',
+                        display: 'flex', alignItems: 'center', gap: 6,
+                      }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round">
+                          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+                        </svg>
+                        <span style={{ fontSize: 11, color: '#fff', fontWeight: 500 }}>{label}</span>
+                      </div>
+                      {!isLast && arrowBtn('right')}
+                    </div>
+                  )}
+                  {content}
+                </div>
+              );
 
-            return (
-              <div style={{ margin: '0 18px', marginTop: 15, position: 'relative', zIndex: 1, pointerEvents: isEditing ? 'none' : 'auto' }}>
-                <div style={{ display: 'flex', gap: 15 }}>
-                  {/* 컨디션 카드 */}
-                  <div onClick={() => handleCardTap('condition', () => onTabChange?.('record'))} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px', animation: tappedCard === 'condition' ? 'cardTap 0.3s ease' : 'none' }}>
+              if (cardId === 'condition') {
+                return editWrap('컨디션', (
+                  <div onClick={() => handleCardTap('condition', () => onTabChange?.('record'))} style={{ ..._cs, cursor: 'pointer', padding: '16px 14px', animation: tappedCard === 'condition' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(240,208,96,0.3))' }}><defs><linearGradient id="starCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#FFE066"/><stop offset="100%" stopColor="#E8B800"/></linearGradient></defs><path d="M10.48,23.25c-.15.41-.5.71-.86.75-.27.03-.78-.29-.9-.59l-1.53-4.02c-.48-1.26-1.41-2.1-2.67-2.58l-3.91-1.48c-.29-.11-.59-.51-.6-.76-.01-.39.23-.79.6-.93l3.9-1.49c1.27-.48,2.19-1.31,2.68-2.59l1.57-4.14c.08-.2.52-.44.74-.46.24-.02.77.21.86.46l1.57,4.14c.5,1.32,1.47,2.15,2.78,2.63l3.7,1.37c.31.11.66.55.67.83.02.42-.29.82-.68.97l-3.8,1.44c-1.26.48-2.2,1.32-2.67,2.58l-1.45,3.86z" fill="url(#starCard)" opacity="0.8"/><path d="M21.48,6.29c-1.03.59-.9,2.91-2.01,2.98-1.23.08-.99-1.68-1.94-2.78-.77-.88-2.68-.63-2.74-1.78-.07-1.27,2.01-1.1,2.74-1.91.87-.95.73-2.72,1.78-2.8,1.29-.1.98,1.81,1.95,2.77.87.86,2.67.71,2.73,1.8.07,1.08-1.29,1.02-2.51,1.72z" fill="url(#starCard)" opacity="0.8"/></svg>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>컨디션</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>컨디션</span>
                       </div>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                       <div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{todayCond ? todayCond.toFixed(1) : '—'}</span>
+                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_todayCond ? _todayCond.toFixed(1) : '—'}</span>
                           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>/10</span>
                         </div>
-                        {condLabel && <div style={{ fontSize: 10, color: todayCond >= 7 ? '#22C55E' : todayCond >= 4 ? 'var(--text-muted)' : '#E05050', marginTop: 4 }}>{condLabel}</div>}
+                        {_condLabel && <div style={{ fontSize: 10, color: _todayCond >= 7 ? '#22C55E' : _todayCond >= 4 ? 'var(--text-muted)' : '#E05050', marginTop: 4 }}>{_condLabel}</div>}
                       </div>
-                      {/* 도트 라인 그래프 */}
                       {(() => {
                         const pad = 5, w = 6 * 10 + pad * 2, h = 40;
-                        const valid = cond7.filter(c => c.avg !== null);
+                        const valid = _cond7.filter(c => c.avg !== null);
                         if (valid.length < 2) return null;
-                        const pts = cond7.map((c, i) => c.avg !== null ? { x: pad + i * 10, y: pad + (h - pad * 2) - ((c.avg - 1) / 9) * (h - pad * 2) } : null);
+                        const pts = _cond7.map((c, i) => c.avg !== null ? { x: pad + i * 10, y: pad + (h - pad * 2) - ((c.avg - 1) / 9) * (h - pad * 2) } : null);
                         const validPts = pts.filter(Boolean);
                         let d = `M${validPts[0].x},${validPts[0].y}`;
                         for (let i = 0; i < validPts.length - 1; i++) {
@@ -930,60 +706,247 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                       })()}
                     </div>
                   </div>
+                ));
+              }
 
-                  {/* 수면 카드 */}
-                  <div onClick={() => handleCardTap('sleep', () => onTabChange?.('record'))} style={{ ...cs, flex: 1, cursor: 'pointer', padding: '16px 14px', animation: tappedCard === 'sleep' ? 'cardTap 0.3s ease' : 'none' }}>
+              if (cardId === 'sleep') {
+                return editWrap('수면', (
+                  <div onClick={() => handleCardTap('sleep', () => onTabChange?.('record'))} style={{ ..._cs, cursor: 'pointer', padding: '16px 14px', animation: tappedCard === 'sleep' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(91,106,175,0.3))' }}><defs><linearGradient id="moonCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#C8D0F0"/><stop offset="100%" stopColor="#5B6AAF"/></linearGradient></defs><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="url(#moonCard)" opacity="0.6"/></svg>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>수면</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>수면</span>
                       </div>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                       <div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{todaySleep || '—'}</span>
+                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_todaySleep || '—'}</span>
                           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>시간</span>
                         </div>
-                        {todaySleep && <div style={{ fontSize: 10, color: todaySleep >= 7 ? '#22C55E' : todaySleep >= 5 ? 'var(--text-muted)' : '#E05050', marginTop: 4 }}>{todaySleep >= 7 ? '충분' : todaySleep >= 5 ? '보통' : '부족'}</div>}
+                        {_todaySleep && <div style={{ fontSize: 10, color: _todaySleep >= 7 ? '#22C55E' : _todaySleep >= 5 ? 'var(--text-muted)' : '#E05050', marginTop: 4 }}>{_todaySleep >= 7 ? '충분' : _todaySleep >= 5 ? '보통' : '부족'}</div>}
                       </div>
-                      {/* 플로팅 바 차트 (취침시간+수면시간) */}
-                      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 36, flexShrink: 0 }}>
-                        {sleep7.map((s, i) => {
-                          if (!s.hours) return <div key={i} style={{ width: 6, height: 6, borderRadius: 3, background: 'rgba(0,0,0,0.06)', alignSelf: 'center' }} />;
-                          // 바 높이 = 수면 시간 (최대 10시간 기준)
-                          const barH = Math.max(8, (s.hours / 10) * 36);
-                          // 바 위치 = 취침 시각 (22시=상단, 2시=하단)
-                          let topOffset = 0;
+                      <div style={{ display: 'flex', gap: 3, height: 44, flexShrink: 0, position: 'relative' }}>
+                        {_sleep7.map((s, i) => {
+                          if (!s.hours) return <div key={i} style={{ width: 6, height: 6, borderRadius: 3, background: 'rgba(0,0,0,0.06)', alignSelf: 'center', marginTop: 19 }} />;
+                          const barH = Math.max(8, (s.hours / 10) * 34);
+                          let topPos = 10;
                           if (s.bedHour !== null) {
-                            // 22시=0, 23시=1, 0시=2, 1시=3, 2시=4, 3시=5
-                            const normalized = s.bedHour >= 18 ? s.bedHour - 18 : s.bedHour + 6;
-                            topOffset = Math.min(normalized * 3, 20); // 최대 20px 아래로
+                            const norm = s.bedHour >= 18 ? s.bedHour - 18 : s.bedHour + 6;
+                            topPos = Math.min(norm * 3, 24);
                           }
                           const isToday = i === 6;
                           return (
                             <div key={i} style={{
                               width: 6, borderRadius: 3,
                               height: barH,
-                              marginTop: topOffset,
+                              marginTop: topPos,
                               background: isToday
                                 ? 'linear-gradient(180deg, #5B6AAF, #8B6AAF)'
                                 : s.hours >= 7 ? 'rgba(91,106,175,0.3)' : 'rgba(91,106,175,0.15)',
-                              transition: 'height 0.3s ease',
+                              transition: 'all 0.3s ease',
                             }} />
                           );
                         })}
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            );
-          })());
-        }
+                ));
+              }
 
-        return null;
-      })}
+              if (cardId === 'food') {
+                return editWrap('식사', (
+                  <div onClick={(e) => { e.stopPropagation(); handleCardTap('food', () => setShowFoodModal(true)); }} style={{ ..._cs, cursor: 'pointer', padding: '16px 14px', animation: tappedCard === 'food' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <svg width="16" height="16" viewBox="0 0 1254 1254" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(123,198,123,0.3))' }}><defs><linearGradient id="appleCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#A8E6A3"/><stop offset="100%" stopColor="#7BC67B"/></linearGradient></defs><path d="M852.51,1114.52C822.56,1133.36,790.72,1145.62,755.49,1148.31C718.9,1151.11,684.66,1142.94,652.14,1126.65C645.15,1123.15,638.33,1119.22,631.86,1114.87C628.65,1112.72,626.65,1113.54,623.94,1115.2C596.76,1131.87,567.54,1143,535.83,1147.21C491.83,1153.05,450.67,1143.99,411.83,1123.23C369.95,1100.84,336.1,1069,306.69,1032.31C243.86,953.89,200.68,865.58,176.61,768.11C162.75,711.98,159.24,654.92,166.15,597.45C172.23,546.91,187.01,499.36,216.16,456.92C248.57,409.71,292.47,378.61,347.36,363.01C391.12,350.57,435.67,348.92,480.62,354.47C518.12,359.11,554.54,368.34,590.23,380.63C592.44,381.39,594.82,381.67,596.97,382.14C598.41,359.44,599.8,337.56,601.19,315.63C590.93,317.2,580.22,319.19,569.43,320.44C526.57,325.37,485.28,320.34,446.56,300.15C418.24,285.37,395.38,264.25,376.51,238.74C348.56,200.95,330.22,158.8,320.39,112.9C320.08,111.43,319.84,109.95,319.62,108.47C317.74,95.9,321.66,89.96,334.08,88.2C347.93,86.24,361.84,84.4,375.79,83.56C419.19,80.94,462.16,83.39,503.56,98.09C553.43,115.79,593.86,145.54,620.07,192.46C625.39,201.98,629.27,212.29,633.88,222.38C636.78,217.79,639.84,212.77,643.09,207.87C661.04,180.78,683.41,157.84,709.46,138.56C726.51,125.95,748.78,135.42,751.3,156.2C752.54,166.47,747.98,174.47,739.69,180.66C720.61,194.88,703.83,211.44,689.71,230.67C669.45,258.27,657.8,289.38,653.28,323.02C650.87,340.97,650.42,359.18,649.28,377.29C648.95,382.59,649.99,383.17,655.09,381.34C690.88,368.52,727.35,358.25,764.96,352.44C818.12,344.21,870.99,344.39,922.73,361.04C987.39,381.84,1032.33,424.8,1060.25,486.13C1080.83,531.32,1087.87,579.32,1088.93,628.47C1090.56,703.51,1074.69,775.27,1047.53,844.76C1022.21,909.55,989.75,970.49,946.75,1025.43C919.92,1059.72,889.78,1090.66,852.51,1114.52z" fill="url(#appleCard)" opacity="0.6"/></svg>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>식사</span>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_eaten.toLocaleString()}</span>
+                          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>kcal</span>
+                        </div>
+                        <div style={{ fontSize: 10, color: _eaten > _fullGoal.kcal ? '#E85B5B' : 'var(--text-muted)', marginTop: 4 }}>
+                          {_eaten > _fullGoal.kcal ? `${(_eaten - _fullGoal.kcal).toLocaleString()}kcal 초과` : `${_remaining.toLocaleString()}kcal 남음`}
+                        </div>
+                      </div>
+                      {(() => {
+                        const ringR = 22, ringC = 2 * Math.PI * ringR;
+                        const remainPct = _fullGoal.kcal > 0 ? Math.max(0, Math.round((_remaining / _fullGoal.kcal) * 100)) : 100;
+                        const ratio = _fullGoal.kcal > 0 ? _eaten / _fullGoal.kcal : 0;
+                        const isOver = ratio > 1;
+                        const baseFill = ringC * Math.min(ratio, 1);
+                        const overFill = isOver ? ringC * Math.min(ratio - 1, 1) : 0;
+                        return (
+                          <svg width="52" height="52" viewBox="0 0 52 52">
+                            <defs>
+                              <linearGradient id="calRingGrad" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0%" stopColor={isOver ? '#E85B5B' : remainPct <= 20 ? '#E8A830' : remainPct <= 70 ? '#4DBDA0' : '#7BC67B'} />
+                                <stop offset="100%" stopColor={isOver ? '#F5A0A0' : remainPct <= 20 ? '#FFDB70' : remainPct <= 70 ? '#6ECFB8' : '#A8E6A3'} />
+                              </linearGradient>
+                            </defs>
+                            <circle cx="26" cy="26" r={ringR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" />
+                            <circle cx="26" cy="26" r={ringR} fill="none" stroke="url(#calRingGrad)" strokeWidth="5"
+                              strokeDasharray={`${baseFill} ${ringC - baseFill}`} strokeLinecap="round"
+                              opacity={isOver ? 0.35 : 1}
+                              transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
+                            {isOver && (
+                              <circle cx="26" cy="26" r={ringR} fill="none" stroke="#E85B5B" strokeWidth="5"
+                                strokeDasharray={`${overFill} ${ringC - overFill}`} strokeLinecap="round"
+                                transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
+                            )}
+                          </svg>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                ));
+              }
+
+              if (cardId === 'water') {
+                return editWrap('수분', (
+                  <div onClick={() => handleCardTap('water', () => onTabChange?.('record'))} style={{ ..._cs, cursor: 'pointer', padding: '16px 14px', animation: tappedCard === 'water' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(91,163,212,0.3))' }}><defs><linearGradient id="dropCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#B8E0F5"/><stop offset="100%" stopColor="#5BA3D4"/></linearGradient></defs><path d="M12 2.5c0 0-7.5 8-7.5 13a7.5 7.5 0 0015 0c0-5-7.5-13-7.5-13z" fill="url(#dropCard)" opacity="0.6"/></svg>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>수분</span>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{(_waterCups * 250).toLocaleString()}</span>
+                          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>ml</span>
+                        </div>
+                        <div style={{ fontSize: 10, color: _waterCups >= _waterGoal ? '#22C55E' : 'var(--text-muted)', marginTop: 4 }}>{_waterCups >= _waterGoal ? '목표 달성!' : `${((_waterGoal - _waterCups) * 250).toLocaleString()}ml 남음`}</div>
+                      </div>
+                      {(() => {
+                        const ringR = 22, ringC = 2 * Math.PI * ringR;
+                        const fillPct = Math.min(_waterCups / _waterGoal, 1);
+                        const ringDash = ringC * fillPct;
+                        return (
+                          <svg width="52" height="52" viewBox="0 0 52 52">
+                            <defs>
+                              <linearGradient id="waterRingGrad" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0%" stopColor="#5BA3D4" />
+                                <stop offset="100%" stopColor="#B8E0F5" />
+                              </linearGradient>
+                            </defs>
+                            <circle cx="26" cy="26" r={ringR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" />
+                            <circle cx="26" cy="26" r={ringR} fill="none" stroke="url(#waterRingGrad)" strokeWidth="5"
+                              strokeDasharray={`${ringDash} ${ringC - ringDash}`} strokeLinecap="round"
+                              transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
+                          </svg>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                ));
+              }
+
+              if (cardId === 'weight') {
+                return editWrap('체중', (
+                  <div onClick={() => handleCardTap('weight', () => setShowWeightModal(true))} style={{ ..._cs, cursor: 'pointer', padding: '16px 14px', animation: tappedCard === 'weight' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <img src="/icons/scale.svg" width="18" height="18" alt="" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(180,180,180,0.3))' }} />
+                        <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>체중</span>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                      <div>
+                        {_latestW ? (
+                          <>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                              <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_latestW.weight}</span>
+                              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>kg</span>
+                            </div>
+                            {_wDiff !== null && (
+                              <div style={{ fontSize: 10, color: Number(_wDiff) > 0 ? '#E05050' : '#22C55E', marginTop: 4 }}>
+                                {Number(_wDiff) > 0 ? '↑' : '↓'} {Math.abs(Number(_wDiff))}kg
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
+                            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>kg</div>
+                          </>
+                        )}
+                      </div>
+                      {_last7w.length >= 2 && (() => {
+                        const pad = 5;
+                        const w = (_last7w.length - 1) * 10 + pad * 2;
+                        const h = 40;
+                        const pts = _last7w.map((r, i) => ({ x: pad + i * 10, y: pad + (h - pad * 2) - ((r.weight - _wMin) / _wRange) * (h - pad * 2) }));
+                        let d = `M${pts[0].x},${pts[0].y}`;
+                        for (let i = 0; i < pts.length - 1; i++) {
+                          const cx = (pts[i].x + pts[i + 1].x) / 2;
+                          d += ` C${cx},${pts[i].y} ${cx},${pts[i + 1].y} ${pts[i + 1].x},${pts[i + 1].y}`;
+                        }
+                        const last = pts[pts.length - 1];
+                        return (
+                          <svg width="65" height={h} viewBox={`0 0 ${w} ${h}`} style={{ flexShrink: 0 }}>
+                            <defs>
+                              <linearGradient id="wLineGrad" x1="0" y1="0" x2="1" y2="0">
+                                <stop offset="0%" stopColor="#FFFFFF" />
+                                <stop offset="100%" stopColor="#D0D0D0" />
+                              </linearGradient>
+                            </defs>
+                            <path d={d} fill="none" stroke="url(#wLineGrad)" strokeWidth="2.5" strokeLinecap="round" />
+                            <circle cx={last.x} cy={last.y} r="3.5" fill="#D0D0D0" />
+                          </svg>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                ));
+              }
+
+              if (cardId === 'activity') {
+                return editWrap('활동', (
+                  <div onClick={() => handleCardTap('activity', () => setShowActivityModal(true))} style={{ ..._cs, cursor: 'pointer', padding: '16px 14px', animation: tappedCard === 'activity' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(232,130,53,0.3))' }}><defs><linearGradient id="fireCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F5C8A0"/><stop offset="100%" stopColor="#E87835"/></linearGradient></defs><path d="M9.28,0l.46.29c2.08,1.04,3.6,2.7,4.6,4.79.77,1.62,1.22,3.24,1.18,5.12,1.33-.89,1.7-3.24,1.92-3.19.1.02.26.14.39.24,3.09,2.49,4.39,6.5,3.11,10.36-1.15,3.47-4.42,6.09-8.15,6.39l-1.59-.03c-3.19-.29-6.04-2.11-7.57-4.99-2.14-4.06-1.01-8.98,2.62-11.77,1.25-.96,2.15-2.26,2.61-3.77.26-.85.19-1.71.17-2.59l.02-.85h.22,0Z" fill="url(#fireCard)" opacity="0.6"/></svg>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>활동</span>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{(_burnedFromSteps + _burnedFromExercise) > 0 ? (_burnedFromSteps + _burnedFromExercise).toLocaleString() : '—'}</span>
+                          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>kcal</span>
+                        </div>
+                        {_todaySteps > 0 && (
+                          <div style={{ fontSize: 10, color: '#22C55E', marginTop: 4 }}>{_todaySteps.toLocaleString()}걸음</div>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 36, flexShrink: 0 }}>
+                        {_stepBars.map((s, i) => (
+                          <div key={i} style={{
+                            width: 6, borderRadius: 3,
+                            height: s > 0 ? Math.max(6, (s / _maxStep) * 34) : 6,
+                            background: i === 6
+                              ? 'linear-gradient(180deg, #FF9F43, #F07030)'
+                              : s > 0 ? 'rgba(255,159,67,0.25)' : 'rgba(0,0,0,0.06)',
+                            transition: 'height 0.3s ease',
+                          }} />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ));
+              }
+
+              return null;
+            })}
+          </div>
+        );
+      })()}
 
       {/* ===== 데일리 인사이트 슬라이더 ===== */}
       <DailyInsightSlider />

@@ -322,7 +322,7 @@ export default function DailyInsightSlider() {
 
       {/* 헤더 */}
       <div style={{ marginBottom: 10, padding: '0 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>오늘의 인사이트</div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>오늘의 인사이트</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           {confidence > 0 && <ConfidenceDots level={confidence} />}
           <div

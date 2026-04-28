@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { hapticLight } from '../utils/haptic';
 
 // 단일 AudioContext 재사용 (매 탭마다 새로 만들면 브라우저 한도 초과로 사운드가 끊김)
 let _audioCtx = null;
@@ -53,6 +54,7 @@ export default function TabBar({ activeTab, onTabChange }) {
   const handleTap = (key) => {
     setBouncingTab(key);
     onTabChange(key);
+    hapticLight();
     if (navigator.vibrate) navigator.vibrate(8);
     playTick();
     setTimeout(() => setBouncingTab(null), 300);
