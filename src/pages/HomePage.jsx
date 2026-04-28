@@ -1285,7 +1285,14 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 }
 
 function AddWeightModal({ onSave, onClose, latest }) {
-  const [weight, setWeight] = useState(latest ? String(latest.weight) : '');
+  const [weight, setWeight] = useState(latest ? latest.weight : 55.0);
+  const adjust = (delta) => setWeight(w => Math.round((w + delta) * 10) / 10);
+  const btnStyle = {
+    width: 48, height: 48, borderRadius: '50%', border: 'none',
+    background: 'var(--bg-input, #F2F3F5)', fontSize: 22, fontWeight: 600,
+    color: 'var(--text-primary)', cursor: 'pointer', fontFamily: 'inherit',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+  };
   return (
     <div onClick={onClose} style={{
       position: 'fixed', inset: 0, zIndex: 1100,
@@ -1297,27 +1304,25 @@ function AddWeightModal({ onSave, onClose, latest }) {
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
-        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 20, textAlign: 'center' }}>오늘 몸무게</div>
-        <input
-          value={weight} onChange={e => setWeight(e.target.value)}
-          placeholder="0.0" type="number" step="0.1"
-          style={{
-            width: '100%', padding: '14px', borderRadius: 12, border: 'none',
-            background: 'var(--bg-input, #F2F3F5)', fontSize: 20, fontWeight: 600,
-            color: 'var(--text-primary)', fontFamily: 'var(--font-display)',
-            textAlign: 'center', outline: 'none',
-          }}
-          autoFocus
-        />
-        <div style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>kg</div>
-        <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
+        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24, textAlign: 'center' }}>오늘 몸무게</div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, marginBottom: 8 }}>
+          <button onClick={() => adjust(-1)} style={btnStyle}>−1</button>
+          <button onClick={() => adjust(-0.1)} style={{ ...btnStyle, width: 40, height: 40, fontSize: 18 }}>−</button>
+          <div style={{ textAlign: 'center', minWidth: 80 }}>
+            <span style={{ fontSize: 36, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{weight.toFixed(1)}</span>
+          </div>
+          <button onClick={() => adjust(0.1)} style={{ ...btnStyle, width: 40, height: 40, fontSize: 18 }}>+</button>
+          <button onClick={() => adjust(1)} style={btnStyle}>+1</button>
+        </div>
+        <div style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-muted)', marginBottom: 24 }}>kg</div>
+        <div style={{ display: 'flex', gap: 10 }}>
           <button onClick={onClose} style={{
             flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
             border: 'none', background: 'var(--bg-input, #F2F3F5)',
             color: 'var(--text-muted)', fontSize: 14, fontWeight: 600,
             cursor: 'pointer', fontFamily: 'inherit',
           }}>취소</button>
-          <button onClick={() => { if (weight) onSave(Number(weight)); }} style={{
+          <button onClick={() => onSave(weight)} style={{
             flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
             border: 'none', background: 'var(--accent-primary)',
             color: '#fff', fontSize: 14, fontWeight: 600,
@@ -1415,14 +1420,13 @@ function AddActivityModal({ onSave, onClose }) {
           <div>
             <input
               value={steps} onChange={e => setSteps(e.target.value)}
-              placeholder="걸음 수 입력" type="number"
+              placeholder="걸음 수 입력" type="number" inputMode="numeric"
               style={{
                 width: '100%', padding: '14px', borderRadius: 12, border: 'none',
                 background: 'var(--bg-input, #F2F3F5)', fontSize: 20, fontWeight: 600,
                 color: 'var(--text-primary)', fontFamily: 'var(--font-display)',
                 textAlign: 'center', outline: 'none',
               }}
-              autoFocus
             />
             <div style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>걸음</div>
             <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginTop: 12 }}>
