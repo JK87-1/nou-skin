@@ -476,8 +476,18 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           const greeting = getGreeting();
           return (
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <div style={{ fontSize: 14, fontWeight: 500, color: 'rgba(0,0,0,0.35)', marginBottom: 12 }}>
-                {dateStr}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <div style={{ fontSize: 14, fontWeight: 500, color: 'rgba(0,0,0,0.35)' }}>
+                  {dateStr}
+                </div>
+                <div onClick={() => { setHomeView(v => v === 'briefing' ? 'cards' : 'briefing'); if (homeView === 'cards') setEditMode(false); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 20, background: 'rgba(0,0,0,0.04)', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>
+                  <span style={{ fontSize: 11, fontWeight: 500, color: homeView === 'briefing' ? 'var(--text-primary, #111)' : 'rgba(0,0,0,0.3)' }}>알림장</span>
+                  <div style={{ width: 28, height: 16, borderRadius: 8, background: homeView === 'cards' ? 'var(--accent-primary, #89cef5)' : 'rgba(0,0,0,0.12)', position: 'relative', transition: 'background 0.2s ease' }}>
+                    <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#fff', position: 'absolute', top: 2, left: homeView === 'cards' ? 14 : 2, transition: 'left 0.2s ease', boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }} />
+                  </div>
+                  <span style={{ fontSize: 11, fontWeight: 500, color: homeView === 'cards' ? 'var(--text-primary, #111)' : 'rgba(0,0,0,0.3)' }}>기록</span>
+                </div>
               </div>
               {homeView === 'cards' && bodyBriefing ? (
                 <>
@@ -510,26 +520,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             </div>
           );
         })()}
-      </div>
-
-      {/* ===== 뷰 탭 전환 ===== */}
-      <div style={{ display: 'flex', margin: '0 22px 16px', background: 'rgba(0,0,0,0.04)', borderRadius: 12, padding: 3 }}>
-        {[
-          { key: 'briefing', label: '알림장' },
-          { key: 'cards', label: '기록' },
-        ].map(tab => {
-          const active = homeView === tab.key;
-          return (
-            <button key={tab.key} onClick={() => { setHomeView(tab.key); if (tab.key !== 'cards') setEditMode(false); }} style={{
-              flex: 1, padding: '10px 0', borderRadius: 10, fontSize: 13, fontWeight: active ? 600 : 500,
-              border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-              background: active ? '#fff' : 'transparent',
-              color: active ? 'var(--text-primary, #111)' : 'rgba(0,0,0,0.35)',
-              boxShadow: active ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
-              transition: 'all 0.2s ease',
-            }}>{tab.label}</button>
-          );
-        })}
       </div>
 
       {/* ===== 알림장 뷰 ===== */}
