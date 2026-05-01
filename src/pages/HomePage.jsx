@@ -180,6 +180,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [showConditionModal, setShowConditionModal] = useState(false);
   const [showWaterModal, setShowWaterModal] = useState(false);
   const [showSleepModal, setShowSleepModal] = useState(false);
+  const [homeView, setHomeView] = useState('briefing'); // 'briefing' | 'cards'
   const [dataRefreshKey, setWeightRefreshKey] = useState(0);
   const [tappedCard, setTappedCard] = useState(null);
   const handleCardTap = (cardName, callback) => {
@@ -452,20 +453,22 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             </svg>
           </div>
           <img src="/luasky.svg" alt="lua" style={{ height: 30, objectFit: 'contain', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }} />
-          <div onClick={() => setEditMode(e => !e)} style={{
-            cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1,
-          }}>
-            {editMode ? (
-              <span style={{ fontSize: 14, fontWeight: 600, color: '#4DB8A0' }}>완료</span>
-            ) : (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.8)" strokeWidth="1.6" strokeLinecap="round">
-                <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" />
-              </svg>
-            )}
-          </div>
+          {homeView === 'cards' ? (
+            <div onClick={() => setEditMode(e => !e)} style={{
+              cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1,
+            }}>
+              {editMode ? (
+                <span style={{ fontSize: 14, fontWeight: 600, color: '#4DB8A0' }}>완료</span>
+              ) : (
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.8)" strokeWidth="1.6" strokeLinecap="round">
+                  <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" />
+                </svg>
+              )}
+            </div>
+          ) : <div style={{ width: 24 }} />}
         </div>
 
-        {/* 날짜 + 인사/브리핑 */}
+        {/* 날짜 + 인사 */}
         {(() => {
           const now = new Date();
           const days = ['일','월','화','수','목','금','토'];
@@ -476,7 +479,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               <div style={{ fontSize: 14, fontWeight: 500, color: 'rgba(0,0,0,0.35)', marginBottom: 12 }}>
                 {dateStr}
               </div>
-              {bodyBriefing ? (
+              {homeView === 'cards' && bodyBriefing ? (
                 <>
                   <div style={{ fontSize: 15, fontWeight: 500, color: '#0D3028', lineHeight: 1.65, marginBottom: 12 }}>
                     {bodyBriefing}
@@ -509,7 +512,93 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         })()}
       </div>
 
-      {/* ===== 카드 영역 (순서 변경 가능, 2열 그리드) ===== */}
+      {/* ===== 뷰 탭 전환 ===== */}
+      <div style={{ display: 'flex', margin: '0 22px 16px', background: 'rgba(0,0,0,0.04)', borderRadius: 12, padding: 3 }}>
+        {[
+          { key: 'briefing', label: '알림장' },
+          { key: 'cards', label: '기록' },
+        ].map(tab => {
+          const active = homeView === tab.key;
+          return (
+            <button key={tab.key} onClick={() => { setHomeView(tab.key); if (tab.key !== 'cards') setEditMode(false); }} style={{
+              flex: 1, padding: '10px 0', borderRadius: 10, fontSize: 13, fontWeight: active ? 600 : 500,
+              border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+              background: active ? '#fff' : 'transparent',
+              color: active ? 'var(--text-primary, #111)' : 'rgba(0,0,0,0.35)',
+              boxShadow: active ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
+              transition: 'all 0.2s ease',
+            }}>{tab.label}</button>
+          );
+        })}
+      </div>
+
+      {/* ===== 알림장 뷰 ===== */}
+      {homeView === 'briefing' && (
+        <div>
+          {/* AI 브리핑 카드 */}
+          {bodyBriefing && (
+            <div style={{ margin: '0 22px 16px', background: 'rgba(255,255,255,0.5)', borderRadius: 20, padding: '20px', border: '1px solid rgba(255,255,255,0.6)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><defs><linearGradient id="briefIcon" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#89cef5"/><stop offset="100%" stopColor="#4A9BD9"/></linearGradient></defs><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-2h2v2h-2zm0-4V7h2v6h-2z" fill="url(#briefIcon)" opacity="0.7"/></svg>
+                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>AI 브리핑</span>
+                {briefingTime && <span style={{ fontSize: 10, color: 'rgba(0,0,0,0.25)', marginLeft: 'auto' }}>{briefingTime}</span>}
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 500, color: '#0D3028', lineHeight: 1.7 }}>{bodyBriefing}</div>
+            </div>
+          )}
+
+          {/* 오늘의 상태 예측 + 인사이트 */}
+          <DailyInsightSlider />
+
+          {/* 오늘의 웰니스 추천 */}
+          {(() => {
+            const todayKey = new Date().toISOString().slice(0, 10);
+            const allV2 = (() => { try { return JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); } catch { return {}; } })();
+            const todayRec = allV2[todayKey] || {};
+            const todaySleep = todayRec.sleep?.hours || 0;
+            const waterCups = todayRec.water?.cups || 0;
+            const wSettings = (() => { try { return { cupMl: 250, goalMl: 2000, ...JSON.parse(localStorage.getItem('lua_water_settings') || '{}') }; } catch { return { cupMl: 250, goalMl: 2000 }; } })();
+            const waterGoalCups = Math.ceil(wSettings.goalMl / wSettings.cupMl);
+            const steps = todayRec.steps || 0;
+            const hasExercise = todayRec.exercise?.log && Object.keys(todayRec.exercise.log).length > 0;
+            const check = latestCheck;
+
+            const actions = [];
+            if (todaySleep < 5) actions.push({ icon: '🌙', text: '오늘 일찍 취침해보세요', sub: '수면 부족이 에너지와 피부에 영향을 줘요', color: '#5B6AAF' });
+            else if (todaySleep >= 7) actions.push({ icon: '🌙', text: '수면이 충분해요!', sub: '좋은 컨디션의 시작이에요', color: '#22C55E' });
+            if (waterCups < waterGoalCups * 0.5) actions.push({ icon: '💧', text: '물 한 잔 마셔보세요', sub: `목표까지 ${waterGoalCups - waterCups}잔 남았어요`, color: '#4A9BD9' });
+            if (steps < 3000 && !hasExercise) actions.push({ icon: '🚶', text: '가벼운 산책을 추천해요', sub: '10분 걷기도 기분 전환에 좋아요', color: '#E8A135' });
+            if (check?.energy <= 4) actions.push({ icon: '🧘', text: '5분 스트레칭 해보세요', sub: '에너지가 낮을 때 가벼운 움직임이 도움돼요', color: '#D4707E' });
+            if (check?.mood <= 4) actions.push({ icon: '☀️', text: '잠깐 바깥 공기를 쐬어보세요', sub: '기분 전환에 효과적이에요', color: '#F0D060' });
+            if (actions.length === 0) actions.push({ icon: '✨', text: '오늘도 좋은 하루 보내세요', sub: '기록을 추가하면 맞춤 추천을 드릴게요', color: '#89cef5' });
+
+            return (
+              <div style={{ margin: '8px 22px 0' }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(0,0,0,0.4)', marginBottom: 12 }}>오늘의 추천</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {actions.slice(0, 3).map((a, i) => (
+                    <div key={i} style={{
+                      background: 'rgba(255,255,255,0.5)', borderRadius: 16, padding: '16px 18px',
+                      border: '1px solid rgba(255,255,255,0.6)',
+                      backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+                      display: 'flex', alignItems: 'center', gap: 14,
+                    }}>
+                      <div style={{ fontSize: 24, width: 40, height: 40, borderRadius: 12, background: `${a.color}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{a.icon}</div>
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 3 }}>{a.text}</div>
+                        <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.4)', lineHeight: 1.4 }}>{a.sub}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
+      {/* ===== 기록 뷰 (기존 카드 그리드) ===== */}
+      {homeView === 'cards' && <>
       <style>{`
         @keyframes cardWiggle {
           0% { transform: rotate(-0.5deg); }
@@ -982,8 +1071,9 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         );
       })()}
 
-      {/* ===== 데일리 인사이트 슬라이더 ===== */}
-      <DailyInsightSlider />
+      </>}
+
+      {/* DailyInsightSlider moved to briefing view */}
 
       {/* ===== 인사이트 + 오늘 흐름 모달 (업데이트 후 표시) ===== */}
       {justUpdated && (
