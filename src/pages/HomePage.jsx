@@ -3,6 +3,7 @@ import { hapticLight } from '../utils/haptic';
 import DailyInsightSlider from '../components/DailyInsightSlider';
 import MorningCheckIn, { CheckInSummaryCard, loadTodayCheckIn } from '../components/MorningCheckIn';
 import EveningCheckIn, { EveningSummaryCard, YesterdayPromiseCard, loadTodayEveningCheckIn } from '../components/EveningCheckIn';
+import AfternoonCheckIn, { AfternoonSummaryCard, loadTodayAfternoonCheckIn } from '../components/AfternoonCheckIn';
 import SkinWeather from '../components/SkinWeather';
 import { getLatestRecord } from '../storage/SkinStorage';
 import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, GENDER_OPTIONS, getCategoryColor } from '../storage/ProfileStorage';
@@ -196,7 +197,9 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [homeView, setHomeView] = useState('briefing'); // 'briefing' | 'cards'
   const [showCheckIn, setShowCheckIn] = useState(false);
   const [showEveningCheckIn, setShowEveningCheckIn] = useState(false);
+  const [showAfternoonCheckIn, setShowAfternoonCheckIn] = useState(false);
   const [checkInDone, setCheckInDone] = useState(() => !!loadTodayCheckIn());
+  const [afternoonDone, setAfternoonDone] = useState(() => !!loadTodayAfternoonCheckIn());
   const [eveningDone, setEveningDone] = useState(() => !!loadTodayEveningCheckIn());
   const [checkInRefresh, setCheckInRefresh] = useState(0);
   const [promiseDismissed, setPromiseDismissed] = useState(false);
@@ -563,7 +566,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         const _dotColor = (done, active) => done ? '#5E9D8A' : active ? `${_accent}b3` : (_isDark ? 'rgba(255,255,255,0.2)' : `${_accent}33`);
         const _dots = [
           { done: _morningDone, active: _tm === 'morning' && !_morningDone },
-          { done: false, active: _tm === 'afternoon' },
+          { done: !!loadTodayAfternoonCheckIn(), active: _tm === 'afternoon' && !loadTodayAfternoonCheckIn() },
           { done: _eveningDone, active: _tm === 'evening' && !_eveningDone },
         ];
         let _dotMsg = '오늘 하루 함께 흘러가요';
@@ -600,7 +603,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
           {/* 시간대별 체크인 */}
           {_tm === 'morning' && renderCheckinCard(checkInDone, () => setShowCheckIn(true), <CheckInSummaryCard />, _tl, _accent, false)}
-          {_tm === 'afternoon' && renderCheckinCard(false, () => {/* 오후 체크인 - 곧 구현 */}, null, _tl, _accent, false)}
+          {_tm === 'afternoon' && renderCheckinCard(afternoonDone, () => setShowAfternoonCheckIn(true), <AfternoonSummaryCard />, _tl, _accent, false)}
           {_tm === 'evening' && renderCheckinCard(eveningDone, () => setShowEveningCheckIn(true), <EveningSummaryCard />, _tl, _accent, true)}
 
           {/* 시간 흐름 인디케이터 */}
@@ -1471,6 +1474,13 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         <MorningCheckIn
           onClose={() => setShowCheckIn(false)}
           onComplete={() => { setShowCheckIn(false); setCheckInDone(true); setCheckInRefresh(k => k + 1); setWeightRefreshKey(k => k + 1); }}
+        />
+      )}
+
+      {showAfternoonCheckIn && (
+        <AfternoonCheckIn
+          onClose={() => setShowAfternoonCheckIn(false)}
+          onComplete={() => { setShowAfternoonCheckIn(false); setAfternoonDone(true); setCheckInRefresh(k => k + 1); }}
         />
       )}
 
