@@ -17,21 +17,32 @@ import {
 } from '../storage/ConditionStorage';
 import { getSupplementItems, getSupplementChecks } from '../storage/SupplementStorage';
 
-function getGreeting() {
+function getTimeMode() {
   const h = new Date().getHours();
-  const greets = [
-    { from:5,  to:7,  main:'이른 아침,\n몸이 깨어나는 시간이에요',           sub:'오늘 에너지를 어떻게 시작할지 정해봐요' },
-    { from:7,  to:9,  main:'좋은 아침이에요\n오늘 컨디션은 어때요?',          sub:'하루의 첫 체크가 하루를 바꿔줘요' },
-    { from:9,  to:11, main:'오전 집중력이\n가장 높은 시간이에요',             sub:'지금 에너지 상태를 기록해봐요' },
-    { from:11, to:13, main:'점심 전,\n에너지가 떨어질 수 있어요',             sub:'식사 전 컨디션을 체크해봐요' },
-    { from:13, to:15, main:'식사 후 몸이\n어떻게 반응하고 있나요?',           sub:'식단이 에너지에 미치는 영향을 확인해봐요' },
-    { from:15, to:17, main:'오후 슬럼프\n느껴지고 있나요?',                   sub:'지금 컨디션을 기록하면 패턴이 보여요' },
-    { from:17, to:19, main:'하루 에너지의\n마무리 시간이에요',                sub:'오늘 컨디션 변화를 돌아봐요' },
-    { from:19, to:21, main:'저녁 시간,\n몸의 긴장이 풀리나요?',              sub:'식사 후 기분과 에너지를 체크해봐요' },
-    { from:21, to:23, main:'오늘 하루\n몸이 수고했어요',                      sub:'마지막 컨디션을 기록하고 마무리해봐요' },
-    { from:23, to:29, main:'좋은 수면이\n내일의 에너지를 만들어요',           sub:'오늘 컨디션 기록을 완성해봐요' },
-  ];
-  return greets.find(g => h >= g.from && h < g.to) || greets[greets.length - 1];
+  if (h >= 5 && h < 11) return 'morning';
+  if (h >= 11 && h < 18) return 'afternoon';
+  return 'evening';
+}
+
+function getTimeBg(mode) {
+  if (mode === 'morning') return 'linear-gradient(180deg, #B8DCEF 0%, #D4E8F4 50%, #E8F1F7 100%)';
+  if (mode === 'afternoon') return 'linear-gradient(180deg, #C8D8E8 0%, #DCD4E0 50%, #E8E0E8 100%)';
+  return 'linear-gradient(180deg, #4A4F7F 0%, #6B5A8A 50%, #8A7AAB 100%)';
+}
+
+function getTimeAccent(mode) {
+  if (mode === 'morning') return '#4A6B85';
+  if (mode === 'afternoon') return '#B8865C';
+  return '#4A4F7F';
+}
+
+function getGreeting(nickname) {
+  const h = new Date().getHours();
+  const name = nickname ? `, ${nickname}님` : '';
+  if (h >= 5 && h < 11) return { main: `좋은 아침이에요${name} ☀`, sub: '오늘은 어떤 기분이에요?' };
+  if (h >= 11 && h < 18) return { main: `오후도 잘 지내고 계세요?${name ? ' ' + nickname + '님' : ''} ☁`, sub: '점심 후 컨디션 어때요?' };
+  if (h >= 18 && h < 24) return { main: `오늘 하루 어떠셨어요?${name ? ' ' + nickname + '님' : ''} 🌙`, sub: '함께 마무리해요 ✨' };
+  return { main: `늦게까지 깨어 있으시네요${name ? ' ' + nickname + '님' : ''} ✨`, sub: '오늘 하루 정리해볼까요?' };
 }
 
 const ENERGY_LABELS = ['매우 낮음', '낮음', '약간 낮음', '조금 부족', '보통', '괜찮음', '좋음', '활발', '높음', '활기참'];
@@ -442,7 +453,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   }, [todayChecks]);
 
   return (
-    <div style={{ minHeight: '100dvh', paddingBottom: 90 }}>
+    <div style={{ minHeight: '100dvh', paddingBottom: 90, background: homeView === 'briefing' ? getTimeBg(getTimeMode()) : undefined, transition: 'background 0.5s ease' }}>
 
       {/* ===== 1. 히어로 영역 ===== */}
       <div style={{
@@ -477,48 +488,46 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           const now = new Date();
           const days = ['일','월','화','수','목','금','토'];
           const dateStr = `${now.getFullYear()}. ${String(now.getMonth()+1).padStart(2,'0')}. ${String(now.getDate()).padStart(2,'0')}  ${days[now.getDay()]}요일`;
-          const greeting = getGreeting();
+          const _tm = getTimeMode();
+          const _isDark = _tm === 'evening' && homeView === 'briefing';
+          const greeting = getGreeting(profile.nickname);
+          const txtP = _isDark ? '#fff' : '#0D3028';
+          const txtH = _isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.35)';
+          const txtS = _isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.3)';
           return (
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                <div style={{ fontSize: 14, fontWeight: 500, color: 'rgba(0,0,0,0.35)' }}>
+                <div style={{ fontSize: 14, fontWeight: 500, color: txtH }}>
                   {dateStr}
                 </div>
                 <div onClick={() => { setHomeView(v => v === 'briefing' ? 'cards' : 'briefing'); if (homeView === 'cards') setEditMode(false); }}
-                  style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 20, background: 'rgba(0,0,0,0.04)', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>
-                  <span style={{ fontSize: 11, fontWeight: 500, color: homeView === 'briefing' ? 'var(--text-primary, #111)' : 'rgba(0,0,0,0.3)' }}>오늘</span>
-                  <div style={{ width: 28, height: 16, borderRadius: 8, background: homeView === 'cards' ? 'var(--accent-primary, #89cef5)' : 'rgba(0,0,0,0.12)', position: 'relative', transition: 'background 0.2s ease' }}>
+                  style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 20, background: _isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.04)', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>
+                  <span style={{ fontSize: 11, fontWeight: 500, color: homeView === 'briefing' ? (_isDark ? '#fff' : 'var(--text-primary, #111)') : txtS }}>오늘</span>
+                  <div style={{ width: 28, height: 16, borderRadius: 8, background: homeView === 'cards' ? 'var(--accent-primary, #89cef5)' : (_isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.12)'), position: 'relative', transition: 'background 0.2s ease' }}>
                     <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#fff', position: 'absolute', top: 2, left: homeView === 'cards' ? 14 : 2, transition: 'left 0.2s ease', boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }} />
                   </div>
-                  <span style={{ fontSize: 11, fontWeight: 500, color: homeView === 'cards' ? 'var(--text-primary, #111)' : 'rgba(0,0,0,0.3)' }}>기록</span>
+                  <span style={{ fontSize: 11, fontWeight: 500, color: homeView === 'cards' ? (_isDark ? '#fff' : 'var(--text-primary, #111)') : txtS }}>기록</span>
                 </div>
               </div>
               {homeView === 'cards' && bodyBriefing ? (
                 <>
-                  <div style={{ fontSize: 15, fontWeight: 500, color: '#0D3028', lineHeight: 1.65, marginBottom: 12 }}>
+                  <div style={{ fontSize: 15, fontWeight: 500, color: txtP, lineHeight: 1.65, marginBottom: 12 }}>
                     {bodyBriefing}
                   </div>
-                  <div style={{ fontSize: 11, fontWeight: 500, color: 'rgba(0,0,0,0.25)' }}>
+                  <div style={{ fontSize: 11, fontWeight: 500, color: txtS }}>
                     {briefingTime ? `${briefingTime} 기준 AI 브리핑` : ''}
-                  </div>
-                </>
-              ) : briefingLoading ? (
-                <>
-                  <div style={{ fontSize: 26, fontWeight: 500, color: '#0D3028', lineHeight: 1.35, whiteSpace: 'pre-line', marginBottom: 12 }}>
-                    {greeting.main}
-                  </div>
-                  <div style={{ fontSize: 13, fontWeight: 500, color: 'rgba(0,0,0,0.3)' }}>
-                    AI 브리핑 준비 중...
                   </div>
                 </>
               ) : (
                 <>
-                  <div style={{ fontSize: 26, fontWeight: 500, color: '#0D3028', lineHeight: 1.35, whiteSpace: 'pre-line', marginBottom: 12 }}>
-                    {greeting.main}
+                  <div style={{ fontSize: homeView === 'briefing' ? 19 : 26, fontWeight: 500, color: txtP, lineHeight: 1.4, whiteSpace: 'pre-line', marginBottom: 10 }}>
+                    {homeView === 'briefing' && checkInDone ? '체크인 완료, 좋은 하루 ✨' : greeting.main}
                   </div>
-                  <div style={{ fontSize: 16, fontWeight: 500, color: 'rgba(0,0,0,0.3)', marginBottom: 24 }}>
-                    {greeting.sub}
-                  </div>
+                  {!(homeView === 'briefing' && checkInDone) && (
+                    <div style={{ fontSize: 13, fontWeight: 500, color: txtS, marginBottom: 20 }}>
+                      {briefingLoading ? 'AI 브리핑 준비 중...' : greeting.sub}
+                    </div>
+                  )}
                 </>
               )}
             </div>
@@ -527,35 +536,59 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       </div>
 
       {/* ===== 오늘 뷰 ===== */}
-      {homeView === 'briefing' && (
+      {homeView === 'briefing' && (() => {
+        const _tm = getTimeMode();
+        const _accent = getTimeAccent(_tm);
+        const _isDark = _tm === 'evening';
+        const _timeLabels = { morning: { icon: '☀', label: '아침 체크인', sub: '1분이면 끝나요 · 컨디션·수면·기분·피부' }, afternoon: { icon: '🍽', label: '오후 체크인', sub: '30초 · 식후 컨디션 변화' }, evening: { icon: '🌙', label: '저녁 체크인', sub: '35초 · 하루 회고 + 내일 의도' } };
+        const _tl = _timeLabels[_tm];
+        // 시간흐름 인디케이터
+        const _morningDone = !!loadTodayCheckIn(); // 간단히 아침 완료 여부
+        const _dotColor = (done, active) => done ? '#5E9D8A' : active ? `${_accent}b3` : (_isDark ? 'rgba(255,255,255,0.2)' : `${_accent}33`);
+        const _dots = [
+          { done: _morningDone, active: _tm === 'morning' && !_morningDone },
+          { done: false, active: _tm === 'afternoon' },
+          { done: false, active: _tm === 'evening' },
+        ];
+        let _dotMsg = '오늘 하루 함께 흘러가요';
+        if (_morningDone && _tm === 'morning') _dotMsg = '아침 완료 · 오후 11시부터';
+        else if (_morningDone && _tm === 'afternoon') _dotMsg = '아침 완료 · 오후 진행 중';
+        else if (_morningDone && _tm === 'evening') _dotMsg = '아침 완료 · 저녁 진행 중';
+
+        return (
         <div>
           {/* 체크인 버튼 or 완료 요약 */}
           {checkInDone ? (
             <div style={{ margin: '0 22px 16px' }} key={checkInRefresh}>
-              <div style={{ fontSize: 17, fontWeight: 500, color: '#2C4A5E', marginBottom: 14 }}>체크인 완료, 좋은 하루 ✨</div>
               <CheckInSummaryCard />
             </div>
           ) : (
             <div onClick={() => { hapticLight(); setShowCheckIn(true); }} style={{
-              margin: '0 18px 16px', padding: '20px', borderRadius: 30, cursor: 'pointer',
-              background: 'rgba(255,255,255,0.2)',
-              backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-              border: '1px solid rgba(255,255,255,0.3)',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+              margin: '0 18px 16px', padding: '18px 22px', borderRadius: 20, cursor: 'pointer',
+              background: _accent, position: 'relative', overflow: 'hidden',
               WebkitTapHighlightColor: 'transparent',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(78,184,160,0.3))' }}><defs><linearGradient id="checkinIcon" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#A8E6CF"/><stop offset="100%" stopColor="#4EB8A0"/></linearGradient></defs><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 12c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" fill="url(#checkinIcon)" opacity="0.6"/></svg>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>오늘의 체크인</span>
-              </div>
-              <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: 4 }}>1분이면 끝나는 아침 체크인</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted, #8B95A1)', marginBottom: 14 }}>컨디션 · 수면 · 기분 · 피부</div>
-              <div style={{
-                display: 'inline-block', padding: '8px 16px', borderRadius: 10,
-                background: 'rgba(0,0,0,0.04)', fontSize: 12, fontWeight: 500, color: 'var(--text-primary)',
-              }}>시작하기 →</div>
+              <div style={{ position: 'absolute', top: -20, right: -20, width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', marginBottom: 8 }}>지금의 체크인</div>
+              <div style={{ fontSize: 16, fontWeight: 500, color: '#fff', lineHeight: 1.4, marginBottom: 4 }}>{_tl.icon} {_tl.label}</div>
+              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)', marginBottom: 14 }}>{_tl.sub}</div>
+              <div style={{ display: 'inline-block', padding: '8px 18px', borderRadius: 10, background: '#fff', fontSize: 12, fontWeight: 500, color: _accent }}>시작하기 →</div>
             </div>
           )}
+
+          {/* 시간 흐름 인디케이터 */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, margin: '0 22px 16px' }}>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {_dots.map((d, i) => (
+                <div key={i} style={{
+                  width: 8, height: 8, borderRadius: '50%',
+                  background: _dotColor(d.done, d.active),
+                  transition: 'background 0.3s ease',
+                }} />
+              ))}
+            </div>
+            <span style={{ fontSize: 10, color: _isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.3)', fontWeight: 500 }}>{_dotMsg}</span>
+          </div>
 
           {/* AI 브리핑 카드 */}
           {bodyBriefing && (
@@ -617,7 +650,8 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             );
           })()}
         </div>
-      )}
+        );
+      })()}
 
       {/* ===== 기록 뷰 (기존 카드 그리드) ===== */}
       {homeView === 'cards' && <>
