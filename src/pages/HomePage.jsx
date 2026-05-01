@@ -458,7 +458,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       minHeight: '100dvh', paddingBottom: 90, transition: 'background 0.5s ease',
       ...(homeView === 'briefing' ? (
         getTimeMode() === 'night'
-          ? { background: 'linear-gradient(180deg, #1C1F3B 0%, #2A2D52 40%, #6B6E94 75%, #9B9FC0 100%)' }
+          ? { background: 'linear-gradient(180deg, #1C1F3B 0%, #9B9FC0 100%)' }
           : { background: getTimeBg('day') }
       ) : {}),
     }}>
