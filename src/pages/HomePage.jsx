@@ -180,7 +180,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [showConditionModal, setShowConditionModal] = useState(false);
   const [showWaterModal, setShowWaterModal] = useState(false);
   const [showSleepModal, setShowSleepModal] = useState(false);
-  const [weightRefreshKey, setWeightRefreshKey] = useState(0);
+  const [dataRefreshKey, setWeightRefreshKey] = useState(0);
   const [tappedCard, setTappedCard] = useState(null);
   const handleCardTap = (cardName, callback) => {
     setTappedCard(cardName);
@@ -625,7 +625,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           <>
           {/* 오늘의 진행률 */}
           <div style={{ margin: '0 22px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ fontSize: 12, color: 'rgba(0,0,0,0.3)', fontWeight: 500 }}>
+            <div style={{ fontSize: 12, color: _recordedItems.length === 6 ? '#22C55E' : 'rgba(0,0,0,0.45)', fontWeight: 500 }}>
               {_recordedItems.length === 6
                 ? '오늘 기록 완료!'
                 : _missingItems.length <= 2
@@ -636,7 +636,9 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               {[...Array(6)].map((_, i) => (
                 <div key={i} style={{
                   width: i < _recordedItems.length ? 14 : 6, height: 4, borderRadius: 2,
-                  background: i < _recordedItems.length ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.06)',
+                  background: i < _recordedItems.length
+                    ? (_recordedItems.length === 6 ? '#22C55E' : 'rgba(0,0,0,0.25)')
+                    : 'rgba(0,0,0,0.08)',
                   transition: 'all 0.3s ease',
                 }} />
               ))}
@@ -755,7 +757,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                           <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_todaySleep || '0'}</span>
                           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>시간</span>
                         </div>
-                        <div style={{ fontSize: 10, color: _todaySleep >= 7 ? '#22C55E' : _todaySleep >= 5 ? 'var(--text-muted)' : '#E05050', marginTop: 4, minHeight: 14 }}>{_todaySleep ? (_todaySleep >= 7 ? '충분' : _todaySleep >= 5 ? '보통' : '부족') : '\u00A0'}</div>
+                        <div style={{ fontSize: 10, color: _todaySleep ? (_todaySleep >= 7 ? '#22C55E' : _todaySleep >= 5 ? 'var(--text-muted)' : '#E05050') : 'var(--accent-primary, #89cef5)', marginTop: 4, minHeight: 14 }}>{_todaySleep ? (_todaySleep >= 7 ? '충분' : _todaySleep >= 5 ? '보통' : '부족') : '기록하기'}</div>
                       </div>
                       <div style={{ display: 'flex', gap: 3, height: 44, flexShrink: 0, position: 'relative' }}>
                         {_sleep7.map((s, i) => {
@@ -801,8 +803,8 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                           <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_eaten.toLocaleString()}</span>
                           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>kcal</span>
                         </div>
-                        <div style={{ fontSize: 10, color: _eaten > _fullGoal.kcal ? '#E85B5B' : 'var(--text-muted)', marginTop: 4, minHeight: 14 }}>
-                          {_eaten > _fullGoal.kcal ? `${(_eaten - _fullGoal.kcal).toLocaleString()}kcal 초과` : `${_remaining.toLocaleString()}kcal 남음`}
+                        <div style={{ fontSize: 10, color: _eaten > 0 ? (_eaten > _fullGoal.kcal ? '#E85B5B' : 'var(--text-muted)') : 'var(--accent-primary, #89cef5)', marginTop: 4, minHeight: 14 }}>
+                          {_eaten > 0 ? (_eaten > _fullGoal.kcal ? `${(_eaten - _fullGoal.kcal).toLocaleString()}kcal 초과` : `${_remaining.toLocaleString()}kcal 남음`) : '기록하기'}
                         </div>
                       </div>
                       {(() => {
@@ -853,7 +855,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                           <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{(_waterCups * _cupMl).toLocaleString()}</span>
                           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>ml</span>
                         </div>
-                        <div style={{ fontSize: 10, color: _waterCups >= _waterGoal ? '#22C55E' : 'var(--text-muted)', marginTop: 4, minHeight: 14 }}>{_waterCups >= _waterGoal ? '목표 달성!' : `${((_waterGoal - _waterCups) * _cupMl).toLocaleString()}ml 남음`}</div>
+                        <div style={{ fontSize: 10, color: _waterCups > 0 ? (_waterCups >= _waterGoal ? '#22C55E' : 'var(--text-muted)') : 'var(--accent-primary, #89cef5)', marginTop: 4, minHeight: 14 }}>{_waterCups > 0 ? (_waterCups >= _waterGoal ? '목표 달성!' : `${((_waterGoal - _waterCups) * _cupMl).toLocaleString()}ml 남음`) : '기록하기'}</div>
                       </div>
                       {(() => {
                         const ringR = 22, ringC = 2 * Math.PI * ringR;
@@ -906,7 +908,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                               <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>0</span>
                               <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>kg</span>
                             </div>
-                            <div style={{ fontSize: 10, marginTop: 4, minHeight: 14 }}>{'\u00A0'}</div>
+                            <div style={{ fontSize: 10, color: 'var(--accent-primary, #89cef5)', marginTop: 4, minHeight: 14 }}>기록하기</div>
                           </>
                         )}
                       </div>
@@ -954,7 +956,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                           <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{(_burnedFromSteps + _burnedFromExercise) > 0 ? (_burnedFromSteps + _burnedFromExercise).toLocaleString() : '0'}</span>
                           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>kcal</span>
                         </div>
-                        <div style={{ fontSize: 10, color: '#22C55E', marginTop: 4, minHeight: 14 }}>{_todaySteps > 0 ? `${_todaySteps.toLocaleString()}걸음` : '\u00A0'}</div>
+                        <div style={{ fontSize: 10, color: (_burnedFromSteps + _burnedFromExercise) > 0 ? '#22C55E' : 'var(--accent-primary, #89cef5)', marginTop: 4, minHeight: 14 }}>{_todaySteps > 0 ? `${_todaySteps.toLocaleString()}걸음` : (_burnedFromExercise > 0 ? '\u00A0' : '기록하기')}</div>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 36, flexShrink: 0 }}>
                         {_stepBars.map((s, i) => (
@@ -1701,7 +1703,7 @@ function WaterIntakeModal({ onClose, onUpdate }) {
 
         {/* Water bottle visualization */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 28 }}>
-          <div style={{ position: 'relative', width: 120, height: 160, cursor: 'pointer' }} onClick={addCup}>
+          <div style={{ position: 'relative', width: 120, height: 160 }}>
             {/* Bottle shape */}
             <svg width="120" height="160" viewBox="0 0 120 160" style={{ position: 'absolute', top: 0, left: 0 }}>
               <defs>
