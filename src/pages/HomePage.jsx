@@ -178,6 +178,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [showFoodModal, setShowFoodModal] = useState(false);
   const [showCalorieExplain, setShowCalorieExplain] = useState(false);
   const [showConditionModal, setShowConditionModal] = useState(false);
+  const [showWaterModal, setShowWaterModal] = useState(false);
   const [weightRefreshKey, setWeightRefreshKey] = useState(0);
   const [tappedCard, setTappedCard] = useState(null);
   const handleCardTap = (cardName, callback) => {
@@ -570,8 +571,10 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         const _remaining = Math.max(0, _fullGoal.kcal - _netCal);
 
         // 수분 데이터
+        const _wSettings = (() => { try { return { cupMl: 250, goalMl: 2000, ...JSON.parse(localStorage.getItem('lua_water_settings') || '{}') }; } catch { return { cupMl: 250, goalMl: 2000 }; } })();
         const _waterCups = _todayRec.water?.cups || 0;
-        const _waterGoal = 8;
+        const _waterGoal = Math.ceil(_wSettings.goalMl / _wSettings.cupMl);
+        const _cupMl = _wSettings.cupMl;
 
         // 컨디션 7일 데이터
         const _allChecks = (() => { try { return JSON.parse(localStorage.getItem('nou_condition_checks') || '[]'); } catch { return []; } })();
@@ -836,7 +839,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
               if (cardId === 'water') {
                 return editWrap('수분', (
-                  <div onClick={() => handleCardTap('water', () => onTabChange?.('record'))} style={{ ..._cs, cursor: 'pointer', padding: '20px', animation: tappedCard === 'water' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
+                  <div onClick={() => handleCardTap('water', () => setShowWaterModal(true))} style={{ ..._cs, cursor: 'pointer', padding: '20px', animation: tappedCard === 'water' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 0, flex: '0 0 auto' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(91,163,212,0.3))' }}><defs><linearGradient id="dropCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#B8E0F5"/><stop offset="100%" stopColor="#5BA3D4"/></linearGradient></defs><path d="M12 2.5c0 0-7.5 8-7.5 13a7.5 7.5 0 0015 0c0-5-7.5-13-7.5-13z" fill="url(#dropCard)" opacity="0.6"/></svg>
@@ -846,10 +849,10 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
                       <div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{(_waterCups * 250).toLocaleString()}</span>
+                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{(_waterCups * _cupMl).toLocaleString()}</span>
                           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>ml</span>
                         </div>
-                        <div style={{ fontSize: 10, color: _waterCups >= _waterGoal ? '#22C55E' : 'var(--text-muted)', marginTop: 4, minHeight: 14 }}>{_waterCups >= _waterGoal ? '목표 달성!' : `${((_waterGoal - _waterCups) * 250).toLocaleString()}ml 남음`}</div>
+                        <div style={{ fontSize: 10, color: _waterCups >= _waterGoal ? '#22C55E' : 'var(--text-muted)', marginTop: 4, minHeight: 14 }}>{_waterCups >= _waterGoal ? '목표 달성!' : `${((_waterGoal - _waterCups) * _cupMl).toLocaleString()}ml 남음`}</div>
                       </div>
                       {(() => {
                         const ringR = 22, ringC = 2 * Math.PI * ringR;
@@ -1143,6 +1146,13 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         <AddActivityModal
           onSave={() => { setShowActivityModal(false); setWeightRefreshKey(k => k + 1); }}
           onClose={() => setShowActivityModal(false)}
+        />
+      )}
+
+      {showWaterModal && (
+        <WaterIntakeModal
+          onClose={() => setShowWaterModal(false)}
+          onUpdate={() => { setShowWaterModal(false); setWeightRefreshKey(k => k + 1); }}
         />
       )}
 
@@ -1613,6 +1623,195 @@ function AddActivityModal({ onSave, onClose }) {
             cursor: 'pointer', fontFamily: 'inherit',
           }}>저장</button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== Water Intake Modal =====
+function WaterIntakeModal({ onClose, onUpdate }) {
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const getAll = () => { try { return JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); } catch { return {}; } };
+  const getSettings = () => { try { return { cupMl: 250, goalMl: 2000, ...JSON.parse(localStorage.getItem('lua_water_settings') || '{}') }; } catch { return { cupMl: 250, goalMl: 2000 }; } };
+
+  const settings = getSettings();
+  const { cupMl, goalMl } = settings;
+  const totalCups = Math.ceil(goalMl / cupMl);
+
+  const allData = getAll();
+  const todayRec = allData[todayKey] || {};
+  const [cups, setCups] = useState(todayRec.water?.cups || 0);
+  const [ripple, setRipple] = useState(false);
+  const [splash, setSplash] = useState(false);
+
+  const fillPct = Math.min(cups / totalCups, 1);
+  const currentMl = cups * cupMl;
+  const goalReached = cups >= totalCups;
+
+  const addCup = () => {
+    const next = cups + 1;
+    setCups(next);
+    setSplash(true);
+    setRipple(true);
+    setTimeout(() => setSplash(false), 600);
+    setTimeout(() => setRipple(false), 800);
+    hapticLight();
+    if (navigator.vibrate) navigator.vibrate(8);
+    // save
+    const all = getAll();
+    const rec = all[todayKey] || { date: todayKey };
+    rec.water = { cups: next };
+    all[todayKey] = rec;
+    localStorage.setItem('lua_record_v2', JSON.stringify(all));
+  };
+
+  const removeCup = () => {
+    if (cups <= 0) return;
+    const next = cups - 1;
+    setCups(next);
+    hapticLight();
+    const all = getAll();
+    const rec = all[todayKey] || { date: todayKey };
+    rec.water = { cups: next };
+    all[todayKey] = rec;
+    localStorage.setItem('lua_record_v2', JSON.stringify(all));
+  };
+
+  return (
+    <div onClick={onClose} style={{
+      position: 'fixed', inset: 0, zIndex: 1100,
+      background: 'rgba(0,0,0,0.5)',
+      display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
+        padding: '24px 24px 40px', width: '100%', maxWidth: 420,
+      }}>
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
+        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6, textAlign: 'center' }}>수분 섭취</div>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 24 }}>1잔 = {cupMl}ml</div>
+
+        {/* Water bottle visualization */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 28 }}>
+          <div style={{ position: 'relative', width: 120, height: 160, cursor: 'pointer' }} onClick={addCup}>
+            {/* Bottle shape */}
+            <svg width="120" height="160" viewBox="0 0 120 160" style={{ position: 'absolute', top: 0, left: 0 }}>
+              <defs>
+                <clipPath id="bottleClip">
+                  <path d="M42 12 Q42 4 50 4 L70 4 Q78 4 78 12 L78 24 Q96 32 96 48 L96 140 Q96 152 84 152 L36 152 Q24 152 24 140 L24 48 Q24 32 42 24 Z" />
+                </clipPath>
+                <linearGradient id="waterFillGrad" x1="0" y1="1" x2="0" y2="0">
+                  <stop offset="0%" stopColor="#4A9BD9" />
+                  <stop offset="100%" stopColor="#89CEF5" />
+                </linearGradient>
+              </defs>
+              {/* Bottle outline */}
+              <path d="M42 12 Q42 4 50 4 L70 4 Q78 4 78 12 L78 24 Q96 32 96 48 L96 140 Q96 152 84 152 L36 152 Q24 152 24 140 L24 48 Q24 32 42 24 Z"
+                fill="none" stroke="rgba(91,163,212,0.3)" strokeWidth="2" />
+              {/* Water fill */}
+              <g clipPath="url(#bottleClip)">
+                <rect x="20" y={152 - (fillPct * 148)}
+                  width="80" height={fillPct * 148}
+                  fill="url(#waterFillGrad)" opacity="0.7"
+                  style={{ transition: 'y 0.5s cubic-bezier(0.4, 0, 0.2, 1), height 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }} />
+                {/* Wave animation */}
+                {fillPct > 0 && (
+                  <path d={`M20 ${152 - fillPct * 148} Q40 ${152 - fillPct * 148 - (ripple ? 8 : 3)} 60 ${152 - fillPct * 148} Q80 ${152 - fillPct * 148 + (ripple ? 8 : 3)} 100 ${152 - fillPct * 148} L100 152 L20 152 Z`}
+                    fill="url(#waterFillGrad)" opacity="0.5"
+                    style={{ transition: 'all 0.5s ease' }} />
+                )}
+              </g>
+              {/* Percentage text inside bottle */}
+              <text x="60" y="100" textAnchor="middle" fontSize="14" fontWeight="600"
+                fill={fillPct > 0.5 ? '#fff' : 'var(--text-muted)'} fontFamily="var(--font-display)">
+                {Math.round(fillPct * 100)}%
+              </text>
+            </svg>
+            {/* Splash effect */}
+            {splash && (
+              <div style={{
+                position: 'absolute', top: Math.max(4, 152 - fillPct * 148 - 20), left: '50%',
+                transform: 'translateX(-50%)',
+                pointerEvents: 'none',
+              }}>
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} style={{
+                    position: 'absolute',
+                    width: 6, height: 6, borderRadius: '50%',
+                    background: '#89CEF5',
+                    left: Math.cos(i * Math.PI / 3) * 20,
+                    top: Math.sin(i * Math.PI / 3) * 15,
+                    animation: 'waterSplash 0.6s ease-out forwards',
+                    opacity: 0.8,
+                  }} />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Current ml display */}
+          <div style={{ marginTop: 16, textAlign: 'center' }}>
+            <span style={{ fontSize: 32, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
+              {currentMl.toLocaleString()}
+            </span>
+            <span style={{ fontSize: 14, color: 'var(--text-muted)', marginLeft: 4 }}>ml</span>
+          </div>
+          <div style={{ fontSize: 12, color: goalReached ? '#22C55E' : 'var(--text-muted)', marginTop: 4, fontWeight: goalReached ? 600 : 400 }}>
+            {goalReached ? '목표 달성!' : `목표 ${goalMl.toLocaleString()}ml (${(goalMl - currentMl).toLocaleString()}ml 남음)`}
+          </div>
+        </div>
+
+        {/* Cup count display */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, marginBottom: 24 }}>
+          <button onClick={removeCup} style={{
+            width: 40, height: 40, borderRadius: '50%', border: 'none',
+            background: cups > 0 ? 'var(--bg-input, #F2F3F5)' : 'transparent',
+            fontSize: 20, fontWeight: 600, color: cups > 0 ? 'var(--text-primary)' : 'transparent',
+            cursor: cups > 0 ? 'pointer' : 'default', fontFamily: 'inherit',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>-</button>
+          <div style={{ textAlign: 'center', minWidth: 60 }}>
+            <span style={{ fontSize: 28, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{cups}</span>
+            <span style={{ fontSize: 13, color: 'var(--text-muted)', marginLeft: 4 }}>잔</span>
+          </div>
+          <button onClick={addCup} style={{
+            width: 40, height: 40, borderRadius: '50%', border: 'none',
+            background: 'rgba(91,163,212,0.15)',
+            fontSize: 20, fontWeight: 600, color: '#5BA3D4',
+            cursor: 'pointer', fontFamily: 'inherit',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>+</button>
+        </div>
+
+        {/* Add water button */}
+        <button onClick={addCup} style={{
+          width: '100%', padding: '16px 0', borderRadius: 'var(--btn-radius)',
+          border: 'none', background: goalReached ? 'linear-gradient(135deg, #22C55E, #4ADE80)' : 'linear-gradient(135deg, #5BA3D4, #89CEF5)',
+          color: '#fff', fontSize: 16, fontWeight: 600,
+          cursor: 'pointer', fontFamily: 'inherit',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          transition: 'all 0.3s ease',
+          transform: splash ? 'scale(0.97)' : 'scale(1)',
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2.5c0 0-7.5 8-7.5 13a7.5 7.5 0 0015 0c0-5-7.5-13-7.5-13z" fill="#fff" opacity="0.9"/>
+          </svg>
+          한 잔 마시기 ({cupMl}ml)
+        </button>
+
+        <button onClick={onUpdate} style={{
+          width: '100%', padding: '14px 0', borderRadius: 'var(--btn-radius)',
+          border: 'none', background: 'var(--bg-input, #F2F3F5)',
+          color: 'var(--text-muted)', fontSize: 14, fontWeight: 600,
+          cursor: 'pointer', fontFamily: 'inherit', marginTop: 10,
+        }}>닫기</button>
+
+        <style>{`
+          @keyframes waterSplash {
+            0% { transform: scale(1) translateY(0); opacity: 0.8; }
+            100% { transform: scale(0.3) translateY(-25px); opacity: 0; }
+          }
+        `}</style>
       </div>
     </div>
   );
