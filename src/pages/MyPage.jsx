@@ -1482,8 +1482,8 @@ function CategorySettingsPage({ onClose, onSave }) {
           </div>
         </div>
         {[
-          { group: 'cause', label: '가꾸기', desc: '내가 하는 것들' },
-          { group: 'result', label: '느낌', desc: '몸에 나타나는 변화' },
+          { group: 'cause', label: '내가 하는 것', desc: '' },
+          { group: 'result', label: '나의 상태', desc: '' },
         ].map(({ group, label, desc }) => {
           const groupCats = categories.filter(c => c.group === group);
           if (groupCats.length === 0) return null;
