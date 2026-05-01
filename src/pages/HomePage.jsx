@@ -179,6 +179,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [showCalorieExplain, setShowCalorieExplain] = useState(false);
   const [showConditionModal, setShowConditionModal] = useState(false);
   const [showWaterModal, setShowWaterModal] = useState(false);
+  const [showSleepModal, setShowSleepModal] = useState(false);
   const [weightRefreshKey, setWeightRefreshKey] = useState(0);
   const [tappedCard, setTappedCard] = useState(null);
   const handleCardTap = (cardName, callback) => {
@@ -741,7 +742,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
               if (cardId === 'sleep') {
                 return editWrap('수면', (
-                  <div onClick={() => handleCardTap('sleep', () => onTabChange?.('record'))} style={{ ..._cs, cursor: 'pointer', padding: '20px', animation: tappedCard === 'sleep' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
+                  <div onClick={() => handleCardTap('sleep', () => setShowSleepModal(true))} style={{ ..._cs, cursor: 'pointer', padding: '20px', animation: tappedCard === 'sleep' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 0, flex: '0 0 auto' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(91,106,175,0.3))' }}><defs><linearGradient id="moonCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#C8D0F0"/><stop offset="100%" stopColor="#5B6AAF"/></linearGradient></defs><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="url(#moonCard)" opacity="0.6"/></svg>
@@ -1281,6 +1282,13 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           onSliderChange={(key, pct) => setSliderPcts(prev => ({ ...prev, [key]: pct }))}
           onUpdate={() => { handleUpdate(); setShowConditionModal(false); }}
           onClose={() => setShowConditionModal(false)}
+        />
+      )}
+
+      {showSleepModal && (
+        <SleepInputModal
+          onClose={() => setShowSleepModal(false)}
+          onUpdate={() => { setShowSleepModal(false); setWeightRefreshKey(k => k + 1); }}
         />
       )}
 
@@ -1995,6 +2003,184 @@ function AccountPage({ profile, onUpdate, onClose }) {
               );
             })}
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== Sleep Input Modal =====
+const SLEEP_QUALITIES = ['깊은 수면', '보통', '얕은 수면'];
+
+function SleepInputModal({ onClose, onUpdate }) {
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const getAll = () => { try { return JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); } catch { return {}; } };
+
+  const allData = getAll();
+  const todayRec = allData[todayKey] || {};
+  const [sleepHours, setSleepHours] = useState(todayRec.sleep?.hours ?? 7);
+  const [sleepQuality, setSleepQuality] = useState(todayRec.sleep?.quality || null);
+  const [sleepBedtime, setSleepBedtime] = useState(todayRec.sleep?.bedtime || null);
+  const [sleepWakeTime, setSleepWakeTime] = useState(todayRec.sleep?.wakeTime || null);
+  const [sleepMode, setSleepMode] = useState(todayRec.sleep?.bedtime ? 'time' : 'simple');
+
+  const calcSleepFromTime = (bed, wake) => {
+    if (!bed || !wake) return;
+    const [bh, bm] = bed.split(':').map(Number);
+    const [wh, wm] = wake.split(':').map(Number);
+    let bedMin = bh * 60 + bm;
+    let wakeMin = wh * 60 + wm;
+    if (wakeMin <= bedMin) wakeMin += 24 * 60;
+    const diff = (wakeMin - bedMin) / 60;
+    setSleepHours(Math.round(diff * 2) / 2);
+  };
+
+  const handleSave = () => {
+    const all = getAll();
+    const rec = all[todayKey] || { date: todayKey };
+    rec.sleep = { hours: sleepHours, quality: sleepQuality, bedtime: sleepBedtime, wakeTime: sleepWakeTime };
+    all[todayKey] = rec;
+    localStorage.setItem('lua_record_v2', JSON.stringify(all));
+    hapticLight();
+    onUpdate?.();
+  };
+
+  return (
+    <div onClick={onClose} style={{
+      position: 'fixed', inset: 0, zIndex: 1100,
+      background: 'rgba(0,0,0,0.5)',
+      display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
+        padding: '24px 24px 40px', width: '100%', maxWidth: 420,
+      }}>
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 6 }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><defs><linearGradient id="moonModal" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#C8D0F0"/><stop offset="100%" stopColor="#5B6AAF"/></linearGradient></defs><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="url(#moonModal)" opacity="0.7"/></svg>
+          <span style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>수면 기록</span>
+        </div>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 24 }}>
+          {sleepQuality ? `${sleepHours}시간 · ${sleepQuality}` : `${sleepHours}시간`}
+        </div>
+
+        {/* 입력 모드 토글 */}
+        <div style={{ display: 'flex', background: 'rgba(91,106,175,.08)', borderRadius: 10, padding: 3, marginBottom: 20 }}>
+          {[{ key: 'simple', label: '간단 입력' }, { key: 'time', label: '시간 입력' }].map(m => (
+            <button key={m.key} onClick={() => setSleepMode(m.key)} style={{
+              flex: 1, padding: '8px 0', borderRadius: 8, fontSize: 12, fontWeight: sleepMode === m.key ? 600 : 400,
+              border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+              background: sleepMode === m.key ? 'rgba(255,255,255,.95)' : 'transparent',
+              color: sleepMode === m.key ? '#5B6AAF' : 'var(--text-muted)',
+              boxShadow: sleepMode === m.key ? '0 1px 4px rgba(91,106,175,.15)' : 'none',
+              transition: 'all 0.15s ease',
+            }}>{m.label}</button>
+          ))}
+        </div>
+
+        {/* 간단 입력 */}
+        {sleepMode === 'simple' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
+            <div style={{ textAlign: 'center', minWidth: 56 }}>
+              <span style={{ fontSize: 32, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{sleepHours}</span>
+              <span style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 2 }}>시간</span>
+            </div>
+            <div style={{ flex: 1 }}>
+              <input type="range" min="2" max="12" step="0.5" value={sleepHours}
+                onChange={e => setSleepHours(parseFloat(e.target.value))}
+                style={{
+                  width: '100%', height: 6, appearance: 'none', WebkitAppearance: 'none',
+                  background: `linear-gradient(90deg, #5B6AAF ${((sleepHours - 2) / 10) * 100}%, rgba(91,106,175,.15) ${((sleepHours - 2) / 10) * 100}%)`,
+                  borderRadius: 3, outline: 'none',
+                }} />
+            </div>
+          </div>
+        )}
+
+        {/* 시간 입력 */}
+        {sleepMode === 'time' && (
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end', marginBottom: 12 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>잠든 시간</div>
+                <input type="time" value={sleepBedtime || ''}
+                  onChange={e => {
+                    const v = e.target.value;
+                    setSleepBedtime(v);
+                    if (v && sleepWakeTime) calcSleepFromTime(v, sleepWakeTime);
+                  }}
+                  style={{
+                    width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 14, fontWeight: 500,
+                    border: '1px solid rgba(91,106,175,.2)', background: 'rgba(91,106,175,.04)',
+                    color: 'var(--text-primary)', fontFamily: 'inherit', outline: 'none',
+                    boxSizing: 'border-box', height: 42,
+                    WebkitAppearance: 'none', MozAppearance: 'none',
+                  }}
+                />
+              </div>
+              <div style={{ fontSize: 16, color: '#5B6AAF', paddingBottom: 12, fontWeight: 500 }}>→</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>일어난 시간</div>
+                <input type="time" value={sleepWakeTime || ''}
+                  onChange={e => {
+                    const v = e.target.value;
+                    setSleepWakeTime(v);
+                    if (sleepBedtime && v) calcSleepFromTime(sleepBedtime, v);
+                  }}
+                  style={{
+                    width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 14, fontWeight: 500,
+                    border: '1px solid rgba(91,106,175,.2)', background: 'rgba(91,106,175,.04)',
+                    color: 'var(--text-primary)', fontFamily: 'inherit', outline: 'none',
+                    boxSizing: 'border-box', height: 42,
+                    WebkitAppearance: 'none', MozAppearance: 'none',
+                  }}
+                />
+              </div>
+            </div>
+            {sleepBedtime && sleepWakeTime && (
+              <div style={{
+                textAlign: 'center', padding: '10px 0', borderRadius: 10,
+                background: 'rgba(91,106,175,.05)',
+              }}>
+                <span style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{sleepHours}</span>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 4 }}>시간 수면</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 수면의 질 */}
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10, fontWeight: 500 }}>수면의 질</div>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 28 }}>
+          {SLEEP_QUALITIES.map(q => {
+            const active = sleepQuality === q;
+            return (
+              <button key={q} onClick={() => { setSleepQuality(active ? null : q); hapticLight(); }}
+                style={{
+                  flex: 1, padding: '10px 0', borderRadius: 10, fontSize: 12, fontWeight: active ? 600 : 400,
+                  border: `1.5px solid ${active ? 'rgba(91,106,175,.4)' : 'rgba(91,106,175,.12)'}`,
+                  background: active ? 'rgba(91,106,175,.1)' : 'var(--bg-input, #F2F3F5)',
+                  color: active ? '#5B6AAF' : 'var(--text-muted)',
+                  cursor: 'pointer', transition: 'all 0.15s ease',
+                  fontFamily: 'inherit',
+                }}>{q}</button>
+            );
+          })}
+        </div>
+
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button onClick={onClose} style={{
+            flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
+            border: 'none', background: 'var(--bg-input, #F2F3F5)',
+            color: 'var(--text-muted)', fontSize: 14, fontWeight: 600,
+            cursor: 'pointer', fontFamily: 'inherit',
+          }}>취소</button>
+          <button onClick={handleSave} style={{
+            flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
+            border: 'none', background: '#5B6AAF',
+            color: '#fff', fontSize: 14, fontWeight: 600,
+            cursor: 'pointer', fontFamily: 'inherit',
+          }}>저장</button>
         </div>
       </div>
     </div>
