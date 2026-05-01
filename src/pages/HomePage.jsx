@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { hapticLight } from '../utils/haptic';
 import DailyInsightSlider from '../components/DailyInsightSlider';
+import MorningCheckIn, { CheckInSummaryCard, loadTodayCheckIn } from '../components/MorningCheckIn';
 import SkinWeather from '../components/SkinWeather';
 import { getLatestRecord } from '../storage/SkinStorage';
 import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, GENDER_OPTIONS, getCategoryColor } from '../storage/ProfileStorage';
@@ -181,6 +182,9 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [showWaterModal, setShowWaterModal] = useState(false);
   const [showSleepModal, setShowSleepModal] = useState(false);
   const [homeView, setHomeView] = useState('briefing'); // 'briefing' | 'cards'
+  const [showCheckIn, setShowCheckIn] = useState(false);
+  const [checkInDone, setCheckInDone] = useState(() => !!loadTodayCheckIn());
+  const [checkInRefresh, setCheckInRefresh] = useState(0);
   const [dataRefreshKey, setWeightRefreshKey] = useState(0);
   const [tappedCard, setTappedCard] = useState(null);
   const handleCardTap = (cardName, callback) => {
@@ -525,6 +529,29 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       {/* ===== 오늘 뷰 ===== */}
       {homeView === 'briefing' && (
         <div>
+          {/* 체크인 버튼 or 완료 요약 */}
+          {checkInDone ? (
+            <div style={{ margin: '0 22px 16px' }} key={checkInRefresh}>
+              <div style={{ fontSize: 17, fontWeight: 500, color: '#2C4A5E', marginBottom: 14 }}>체크인 완료, 좋은 하루 ✨</div>
+              <CheckInSummaryCard />
+            </div>
+          ) : (
+            <div onClick={() => { hapticLight(); setShowCheckIn(true); }} style={{
+              margin: '0 22px 16px', padding: '24px 22px', borderRadius: 22, cursor: 'pointer',
+              background: '#4A6B85', position: 'relative', overflow: 'hidden',
+              WebkitTapHighlightColor: 'transparent',
+            }}>
+              <div style={{ position: 'absolute', top: -20, right: -20, width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', marginBottom: 8 }}>오늘의 체크인</div>
+              <div style={{ fontSize: 18, fontWeight: 500, color: '#fff', lineHeight: 1.4, marginBottom: 6 }}>1분이면 끝나는{'\n'}아침 체크인</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', marginBottom: 16 }}>컨디션 · 수면 · 기분 · 피부</div>
+              <div style={{
+                display: 'inline-block', padding: '10px 20px', borderRadius: 10,
+                background: '#fff', fontSize: 13, fontWeight: 500, color: '#4A6B85',
+              }}>시작하기 →</div>
+            </div>
+          )}
+
           {/* AI 브리핑 카드 */}
           {bodyBriefing && (
             <div style={{ margin: '0 22px 16px', background: 'rgba(255,255,255,0.5)', borderRadius: 20, padding: '20px', border: '1px solid rgba(255,255,255,0.6)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
@@ -1371,6 +1398,13 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         <SleepInputModal
           onClose={() => setShowSleepModal(false)}
           onUpdate={() => { setShowSleepModal(false); setWeightRefreshKey(k => k + 1); }}
+        />
+      )}
+
+      {showCheckIn && (
+        <MorningCheckIn
+          onClose={() => setShowCheckIn(false)}
+          onComplete={() => { setShowCheckIn(false); setCheckInDone(true); setCheckInRefresh(k => k + 1); setWeightRefreshKey(k => k + 1); }}
         />
       )}
 
