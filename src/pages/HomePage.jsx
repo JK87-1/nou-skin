@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { hapticLight } from '../utils/haptic';
 import DailyInsightSlider from '../components/DailyInsightSlider';
 import MorningCheckIn, { CheckInSummaryCard, loadTodayCheckIn } from '../components/MorningCheckIn';
+import EveningCheckIn, { EveningSummaryCard, YesterdayPromiseCard, loadTodayEveningCheckIn } from '../components/EveningCheckIn';
 import SkinWeather from '../components/SkinWeather';
 import { getLatestRecord } from '../storage/SkinStorage';
 import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, GENDER_OPTIONS, getCategoryColor } from '../storage/ProfileStorage';
@@ -191,8 +192,11 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [showSleepModal, setShowSleepModal] = useState(false);
   const [homeView, setHomeView] = useState('briefing'); // 'briefing' | 'cards'
   const [showCheckIn, setShowCheckIn] = useState(false);
+  const [showEveningCheckIn, setShowEveningCheckIn] = useState(false);
   const [checkInDone, setCheckInDone] = useState(() => !!loadTodayCheckIn());
+  const [eveningDone, setEveningDone] = useState(() => !!loadTodayEveningCheckIn());
   const [checkInRefresh, setCheckInRefresh] = useState(0);
+  const [promiseDismissed, setPromiseDismissed] = useState(false);
   const [dataRefreshKey, setWeightRefreshKey] = useState(0);
   const [tappedCard, setTappedCard] = useState(null);
   const handleCardTap = (cardName, callback) => {
@@ -547,35 +551,65 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         const _timeLabels = { day: { icon: '☀', label: '오늘의 체크인', sub: '1분이면 끝나요 · 컨디션·수면·기분·피부' }, night: { icon: '🌙', label: '저녁 체크인', sub: '35초 · 하루 회고 + 내일 의도' } };
         const _tl = _timeLabels[_tm];
         // 시간흐름 인디케이터 (낮/밤 2개)
-        const _checkinDone = !!loadTodayCheckIn();
+        const _morningDone = !!loadTodayCheckIn();
+        const _eveningDone = !!loadTodayEveningCheckIn();
         const _dotColor = (done, active) => done ? '#5E9D8A' : active ? `${_accent}b3` : (_isDark ? 'rgba(255,255,255,0.2)' : `${_accent}33`);
         const _dots = [
-          { done: _checkinDone, active: _tm === 'day' && !_checkinDone },
-          { done: false, active: _tm === 'night' },
+          { done: _morningDone, active: _tm === 'day' && !_morningDone },
+          { done: _eveningDone, active: _tm === 'night' && !_eveningDone },
         ];
         let _dotMsg = '오늘 하루 함께 흘러가요';
-        if (_checkinDone && _tm === 'day') _dotMsg = '체크인 완료 · 저녁 18시부터';
-        else if (_checkinDone && _tm === 'night') _dotMsg = '체크인 완료 · 저녁 진행 중';
+        if (_morningDone && _tm === 'day') _dotMsg = '아침 완료 · 저녁 18시부터';
+        else if (_morningDone && !_eveningDone && _tm === 'night') _dotMsg = '아침 완료 · 저녁 진행 중';
+        else if (_morningDone && _eveningDone) _dotMsg = '하루 완성 · 내일 또 만나요';
+        else if (!_morningDone && _tm === 'night') _dotMsg = '저녁 체크인 가능해요';
 
         return (
         <div>
-          {/* 체크인 버튼 or 완료 요약 */}
-          {checkInDone ? (
-            <div style={{ margin: '0 22px 16px' }} key={checkInRefresh}>
-              <CheckInSummaryCard />
-            </div>
+          {/* 어젯밤 약속 확인 카드 (아침에만) */}
+          {_tm === 'day' && !promiseDismissed && (
+            <YesterdayPromiseCard onDismiss={() => setPromiseDismissed(true)} />
+          )}
+
+          {/* 낮: 아침 체크인 / 밤: 저녁 체크인 */}
+          {_tm === 'day' ? (
+            /* 아침 체크인 */
+            checkInDone ? (
+              <div style={{ margin: '0 22px 16px' }} key={checkInRefresh}>
+                <CheckInSummaryCard />
+              </div>
+            ) : (
+              <div onClick={() => { hapticLight(); setShowCheckIn(true); }} style={{
+                margin: '0 18px 16px', padding: '18px 22px', borderRadius: 20, cursor: 'pointer',
+                background: _accent, position: 'relative', overflow: 'hidden',
+                WebkitTapHighlightColor: 'transparent',
+              }}>
+                <div style={{ position: 'absolute', top: -20, right: -20, width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', marginBottom: 8 }}>지금의 체크인</div>
+                <div style={{ fontSize: 16, fontWeight: 500, color: '#fff', lineHeight: 1.4, marginBottom: 4 }}>{_tl.icon} {_tl.label}</div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)', marginBottom: 14 }}>{_tl.sub}</div>
+                <div style={{ display: 'inline-block', padding: '8px 18px', borderRadius: 10, background: '#fff', fontSize: 12, fontWeight: 500, color: _accent }}>시작하기 →</div>
+              </div>
+            )
           ) : (
-            <div onClick={() => { hapticLight(); setShowCheckIn(true); }} style={{
-              margin: '0 18px 16px', padding: '18px 22px', borderRadius: 20, cursor: 'pointer',
-              background: _accent, position: 'relative', overflow: 'hidden',
-              WebkitTapHighlightColor: 'transparent',
-            }}>
-              <div style={{ position: 'absolute', top: -20, right: -20, width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', marginBottom: 8 }}>지금의 체크인</div>
-              <div style={{ fontSize: 16, fontWeight: 500, color: '#fff', lineHeight: 1.4, marginBottom: 4 }}>{_tl.icon} {_tl.label}</div>
-              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)', marginBottom: 14 }}>{_tl.sub}</div>
-              <div style={{ display: 'inline-block', padding: '8px 18px', borderRadius: 10, background: '#fff', fontSize: 12, fontWeight: 500, color: _accent }}>시작하기 →</div>
-            </div>
+            /* 저녁 체크인 */
+            eveningDone ? (
+              <div style={{ margin: '0 22px 16px' }} key={checkInRefresh}>
+                <EveningSummaryCard />
+              </div>
+            ) : (
+              <div onClick={() => { hapticLight(); setShowEveningCheckIn(true); }} style={{
+                margin: '0 18px 16px', padding: '22px 20px', borderRadius: 22, cursor: 'pointer',
+                background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+                border: '0.5px solid rgba(255,255,255,0.2)',
+                WebkitTapHighlightColor: 'transparent',
+              }}>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', marginBottom: 8, letterSpacing: 0.5 }}>오늘의 마무리</div>
+                <div style={{ fontSize: 17, fontWeight: 500, color: '#fff', lineHeight: 1.4, marginBottom: 4 }}>🌙 저녁 체크인</div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', marginBottom: 14 }}>35초 · 집중·하루·내일</div>
+                <div style={{ display: 'inline-block', padding: '11px 20px', borderRadius: 12, background: '#fff', fontSize: 13, fontWeight: 500, color: '#4A4F7F' }}>시작하기 →</div>
+              </div>
+            )
           )}
 
           {/* 시간 흐름 인디케이터 */}
@@ -1446,6 +1480,13 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         <MorningCheckIn
           onClose={() => setShowCheckIn(false)}
           onComplete={() => { setShowCheckIn(false); setCheckInDone(true); setCheckInRefresh(k => k + 1); setWeightRefreshKey(k => k + 1); }}
+        />
+      )}
+
+      {showEveningCheckIn && (
+        <EveningCheckIn
+          onClose={() => setShowEveningCheckIn(false)}
+          onComplete={() => { setShowEveningCheckIn(false); setEveningDone(true); setCheckInRefresh(k => k + 1); }}
         />
       )}
 
