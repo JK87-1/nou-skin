@@ -537,17 +537,22 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             </div>
           ) : (
             <div onClick={() => { hapticLight(); setShowCheckIn(true); }} style={{
-              margin: '0 22px 16px', padding: '24px 22px', borderRadius: 22, cursor: 'pointer',
-              background: '#4A6B85', position: 'relative', overflow: 'hidden',
+              margin: '0 18px 16px', padding: '20px', borderRadius: 30, cursor: 'pointer',
+              background: 'rgba(255,255,255,0.2)',
+              backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+              border: '1px solid rgba(255,255,255,0.3)',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
               WebkitTapHighlightColor: 'transparent',
             }}>
-              <div style={{ position: 'absolute', top: -20, right: -20, width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', marginBottom: 8 }}>오늘의 체크인</div>
-              <div style={{ fontSize: 18, fontWeight: 500, color: '#fff', lineHeight: 1.4, marginBottom: 6 }}>1분이면 끝나는{'\n'}아침 체크인</div>
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', marginBottom: 16 }}>컨디션 · 수면 · 기분 · 피부</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(78,184,160,0.3))' }}><defs><linearGradient id="checkinIcon" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#A8E6CF"/><stop offset="100%" stopColor="#4EB8A0"/></linearGradient></defs><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 12c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" fill="url(#checkinIcon)" opacity="0.6"/></svg>
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>오늘의 체크인</span>
+              </div>
+              <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: 4 }}>1분이면 끝나는 아침 체크인</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted, #8B95A1)', marginBottom: 14 }}>컨디션 · 수면 · 기분 · 피부</div>
               <div style={{
-                display: 'inline-block', padding: '10px 20px', borderRadius: 10,
-                background: '#fff', fontSize: 13, fontWeight: 500, color: '#4A6B85',
+                display: 'inline-block', padding: '8px 16px', borderRadius: 10,
+                background: 'rgba(0,0,0,0.04)', fontSize: 12, fontWeight: 500, color: 'var(--text-primary)',
               }}>시작하기 →</div>
             </div>
           )}
