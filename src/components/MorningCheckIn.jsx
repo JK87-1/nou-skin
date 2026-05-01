@@ -42,12 +42,13 @@ const SKIN_SIGNALS = [
 /* ── 시간대 (낮/밤 2분할) ── */
 function getTimeMode() {
   const h = new Date().getHours();
-  if (h >= 5 && h < 18) return 'day';
-  return 'night';
+  if (h >= 5 && h < 12) return 'morning';
+  if (h >= 12 && h < 21) return 'afternoon';
+  return 'evening';
 }
 
 function getTimePalette(mode) {
-  if (mode === 'day') return {
+  if (mode === 'morning' || mode === 'afternoon') return {
     bg: 'linear-gradient(180deg, #B8DCEF 0%, #D4E8F4 50%, #E8F1F7 100%)',
     accent: '#4A6B85', cardBg: '#4A6B85', textPrimary: '#2C4A5E',
     textSecondary: '#4A6B85', textHint: '#8BA6BD', isDark: false,

@@ -20,26 +20,29 @@ import { getSupplementItems, getSupplementChecks } from '../storage/SupplementSt
 
 function getTimeMode() {
   const h = new Date().getHours();
-  if (h >= 5 && h < 18) return 'day';
-  return 'night';
+  if (h >= 5 && h < 12) return 'morning';
+  if (h >= 12 && h < 21) return 'afternoon';
+  return 'evening'; // 21:00~04:59
 }
 
 function getTimeBg(mode) {
-  if (mode === 'day') return 'linear-gradient(180deg, #B8DCEF 0%, #D4E8F4 50%, #E8F1F7 100%)';
-  return 'none'; // night uses background-image
+  if (mode === 'morning') return 'linear-gradient(180deg, #B8DCEF 0%, #D4E8F4 50%, #E8F1F7 100%)';
+  if (mode === 'afternoon') return 'linear-gradient(180deg, #B8DCEF 0%, #D4E8F4 50%, #E8F1F7 100%)';
+  return 'none';
 }
 
 function getTimeAccent(mode) {
-  if (mode === 'day') return '#4A6B85';
+  if (mode === 'morning') return '#4A6B85';
+  if (mode === 'afternoon') return '#B8865C';
   return '#4A4F7F';
 }
 
 function getGreeting(nickname) {
   const h = new Date().getHours();
   const name = nickname ? `, ${nickname}님` : '';
-  if (h >= 5 && h < 11) return { main: `좋은 아침이에요${name} ☀`, sub: '오늘은 어떤 기분이에요?' };
-  if (h >= 11 && h < 18) return { main: `오후도 잘 지내고 계세요?${name ? ' ' + nickname + '님' : ''} ☁`, sub: '점심 후 컨디션 어때요?' };
-  if (h >= 18 && h < 24) return { main: `오늘 하루 어떠셨어요?${name ? ' ' + nickname + '님' : ''} 🌙`, sub: '함께 마무리해요 ✨' };
+  if (h >= 5 && h < 12) return { main: `좋은 아침이에요${name} ☀`, sub: '오늘은 어떤 기분이에요?' };
+  if (h >= 12 && h < 21) return { main: `오후도 잘 지내고 계세요?${name ? ' ' + nickname + '님' : ''} ☁`, sub: '점심 후 컨디션 어때요?' };
+  if (h >= 21 && h < 24) return { main: `오늘 하루 어떠셨어요?${name ? ' ' + nickname + '님' : ''} 🌙`, sub: '함께 마무리해요 ✨' };
   return { main: `늦게까지 깨어 있으시네요${name ? ' ' + nickname + '님' : ''} ✨`, sub: '오늘 하루 정리해볼까요?' };
 }
 
@@ -457,9 +460,9 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
     <div style={{
       minHeight: '100dvh', paddingBottom: 90, transition: 'background 0.5s ease',
       ...(homeView === 'briefing' ? (
-        getTimeMode() === 'night'
+        getTimeMode() === 'evening'
           ? { background: 'linear-gradient(180deg, #1C1F3B 0%, #9B9FC0 100%)' }
-          : { background: getTimeBg('day') }
+          : { background: getTimeBg(getTimeMode()) }
       ) : {}),
     }}>
 
@@ -497,7 +500,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           const days = ['일','월','화','수','목','금','토'];
           const dateStr = `${now.getFullYear()}. ${String(now.getMonth()+1).padStart(2,'0')}. ${String(now.getDate()).padStart(2,'0')}  ${days[now.getDay()]}요일`;
           const _tm = getTimeMode();
-          const _isDark = _tm === 'night' && homeView === 'briefing';
+          const _isDark = _tm === 'evening' && homeView === 'briefing';
           const greeting = getGreeting(profile.nickname);
           const txtP = _isDark ? '#fff' : '#0D3028';
           const txtH = _isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.35)';
@@ -547,70 +550,58 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       {homeView === 'briefing' && (() => {
         const _tm = getTimeMode();
         const _accent = getTimeAccent(_tm);
-        const _isDark = _tm === 'night';
-        const _timeLabels = { day: { icon: '☀', label: '오늘의 체크인', sub: '1분이면 끝나요 · 컨디션·수면·기분·피부' }, night: { icon: '🌙', label: '저녁 체크인', sub: '35초 · 하루 회고 + 내일 의도' } };
+        const _isDark = _tm === 'evening';
+        const _timeLabels = {
+          morning: { icon: '☀', label: '아침 체크인', sub: '1분이면 끝나요 · 컨디션·수면·기분·피부' },
+          afternoon: { icon: '☁', label: '오후 체크인', sub: '30초 · 식후 컨디션 변화' },
+          evening: { icon: '🌙', label: '저녁 체크인', sub: '35초 · 집중·하루·내일' },
+        };
         const _tl = _timeLabels[_tm];
-        // 시간흐름 인디케이터 (낮/밤 2개)
+        // 시간흐름 인디케이터 (3개)
         const _morningDone = !!loadTodayCheckIn();
         const _eveningDone = !!loadTodayEveningCheckIn();
         const _dotColor = (done, active) => done ? '#5E9D8A' : active ? `${_accent}b3` : (_isDark ? 'rgba(255,255,255,0.2)' : `${_accent}33`);
         const _dots = [
-          { done: _morningDone, active: _tm === 'day' && !_morningDone },
-          { done: _eveningDone, active: _tm === 'night' && !_eveningDone },
+          { done: _morningDone, active: _tm === 'morning' && !_morningDone },
+          { done: false, active: _tm === 'afternoon' },
+          { done: _eveningDone, active: _tm === 'evening' && !_eveningDone },
         ];
         let _dotMsg = '오늘 하루 함께 흘러가요';
-        if (_morningDone && _tm === 'day') _dotMsg = '아침 완료 · 저녁 18시부터';
-        else if (_morningDone && !_eveningDone && _tm === 'night') _dotMsg = '아침 완료 · 저녁 진행 중';
+        if (_morningDone && _tm === 'morning') _dotMsg = '아침 완료 · 오후 12시부터';
+        else if (_tm === 'afternoon') _dotMsg = _morningDone ? '아침 완료 · 오후 진행 중' : '오후 체크인 가능해요';
+        else if (_tm === 'evening' && !_eveningDone) _dotMsg = _morningDone ? '아침 완료 · 저녁 진행 중' : '저녁 체크인 가능해요';
         else if (_morningDone && _eveningDone) _dotMsg = '하루 완성 · 내일 또 만나요';
-        else if (!_morningDone && _tm === 'night') _dotMsg = '저녁 체크인 가능해요';
+
+        // 체크인 카드 렌더
+        const renderCheckinCard = (done, onStart, summaryComponent, tl, accent, isDark) => {
+          if (done) return <div style={{ margin: '0 22px 16px' }} key={checkInRefresh}>{summaryComponent}</div>;
+          return (
+            <div onClick={() => { hapticLight(); onStart(); }} style={{
+              margin: '0 18px 16px', padding: isDark ? '22px 20px' : '18px 22px', borderRadius: isDark ? 22 : 20, cursor: 'pointer',
+              background: isDark ? 'rgba(255,255,255,0.15)' : accent,
+              ...(isDark ? { backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '0.5px solid rgba(255,255,255,0.2)' } : {}),
+              position: 'relative', overflow: 'hidden', WebkitTapHighlightColor: 'transparent',
+            }}>
+              {!isDark && <div style={{ position: 'absolute', top: -20, right: -20, width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />}
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', marginBottom: 8, letterSpacing: isDark ? 0.5 : 0 }}>{isDark ? '오늘의 마무리' : '지금의 체크인'}</div>
+              <div style={{ fontSize: isDark ? 17 : 16, fontWeight: 500, color: '#fff', lineHeight: 1.4, marginBottom: 4 }}>{tl.icon} {tl.label}</div>
+              <div style={{ fontSize: isDark ? 11 : 10, color: 'rgba(255,255,255,0.7)', marginBottom: 14 }}>{tl.sub}</div>
+              <div style={{ display: 'inline-block', padding: isDark ? '11px 20px' : '8px 18px', borderRadius: isDark ? 12 : 10, background: '#fff', fontSize: isDark ? 13 : 12, fontWeight: 500, color: isDark ? '#4A4F7F' : accent }}>시작하기 →</div>
+            </div>
+          );
+        };
 
         return (
         <div>
           {/* 어젯밤 약속 확인 카드 (아침에만) */}
-          {_tm === 'day' && !promiseDismissed && (
+          {_tm === 'morning' && !promiseDismissed && (
             <YesterdayPromiseCard onDismiss={() => setPromiseDismissed(true)} />
           )}
 
-          {/* 낮: 아침 체크인 / 밤: 저녁 체크인 */}
-          {_tm === 'day' ? (
-            /* 아침 체크인 */
-            checkInDone ? (
-              <div style={{ margin: '0 22px 16px' }} key={checkInRefresh}>
-                <CheckInSummaryCard />
-              </div>
-            ) : (
-              <div onClick={() => { hapticLight(); setShowCheckIn(true); }} style={{
-                margin: '0 18px 16px', padding: '18px 22px', borderRadius: 20, cursor: 'pointer',
-                background: _accent, position: 'relative', overflow: 'hidden',
-                WebkitTapHighlightColor: 'transparent',
-              }}>
-                <div style={{ position: 'absolute', top: -20, right: -20, width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', marginBottom: 8 }}>지금의 체크인</div>
-                <div style={{ fontSize: 16, fontWeight: 500, color: '#fff', lineHeight: 1.4, marginBottom: 4 }}>{_tl.icon} {_tl.label}</div>
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)', marginBottom: 14 }}>{_tl.sub}</div>
-                <div style={{ display: 'inline-block', padding: '8px 18px', borderRadius: 10, background: '#fff', fontSize: 12, fontWeight: 500, color: _accent }}>시작하기 →</div>
-              </div>
-            )
-          ) : (
-            /* 저녁 체크인 */
-            eveningDone ? (
-              <div style={{ margin: '0 22px 16px' }} key={checkInRefresh}>
-                <EveningSummaryCard />
-              </div>
-            ) : (
-              <div onClick={() => { hapticLight(); setShowEveningCheckIn(true); }} style={{
-                margin: '0 18px 16px', padding: '22px 20px', borderRadius: 22, cursor: 'pointer',
-                background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-                border: '0.5px solid rgba(255,255,255,0.2)',
-                WebkitTapHighlightColor: 'transparent',
-              }}>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', marginBottom: 8, letterSpacing: 0.5 }}>오늘의 마무리</div>
-                <div style={{ fontSize: 17, fontWeight: 500, color: '#fff', lineHeight: 1.4, marginBottom: 4 }}>🌙 저녁 체크인</div>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', marginBottom: 14 }}>35초 · 집중·하루·내일</div>
-                <div style={{ display: 'inline-block', padding: '11px 20px', borderRadius: 12, background: '#fff', fontSize: 13, fontWeight: 500, color: '#4A4F7F' }}>시작하기 →</div>
-              </div>
-            )
-          )}
+          {/* 시간대별 체크인 */}
+          {_tm === 'morning' && renderCheckinCard(checkInDone, () => setShowCheckIn(true), <CheckInSummaryCard />, _tl, _accent, false)}
+          {_tm === 'afternoon' && renderCheckinCard(false, () => {/* 오후 체크인 - 곧 구현 */}, null, _tl, _accent, false)}
+          {_tm === 'evening' && renderCheckinCard(eveningDone, () => setShowEveningCheckIn(true), <EveningSummaryCard />, _tl, _accent, true)}
 
           {/* 시간 흐름 인디케이터 */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, margin: '0 22px 16px' }}>
