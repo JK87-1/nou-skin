@@ -39,27 +39,21 @@ const SKIN_SIGNALS = [
   { id: 'better', emoji: '✨', label: '평소보다 좋음', tone: 'positive' },
 ];
 
-/* ── 시간대 ── */
+/* ── 시간대 (낮/밤 2분할) ── */
 function getTimeMode() {
   const h = new Date().getHours();
-  if (h >= 5 && h < 11) return 'morning';
-  if (h >= 11 && h < 18) return 'afternoon';
-  return 'evening';
+  if (h >= 5 && h < 18) return 'day';
+  return 'night';
 }
 
 function getTimePalette(mode) {
-  if (mode === 'morning') return {
+  if (mode === 'day') return {
     bg: 'linear-gradient(180deg, #B8DCEF 0%, #D4E8F4 50%, #E8F1F7 100%)',
     accent: '#4A6B85', cardBg: '#4A6B85', textPrimary: '#2C4A5E',
     textSecondary: '#4A6B85', textHint: '#8BA6BD', isDark: false,
   };
-  if (mode === 'afternoon') return {
-    bg: 'linear-gradient(180deg, #C8D8E8 0%, #DCD4E0 50%, #E8E0E8 100%)',
-    accent: '#B8865C', cardBg: '#B8865C', textPrimary: '#2C4A5E',
-    textSecondary: '#4A6B85', textHint: '#8BA6BD', isDark: false,
-  };
   return {
-    bg: 'linear-gradient(180deg, #4A4F7F 0%, #6B5A8A 50%, #8A7AAB 100%)',
+    bg: 'linear-gradient(180deg, #1a1a3e 0%, #2d2d5e 50%, #3a3a6e 100%)',
     accent: '#4A4F7F', cardBg: 'rgba(255,255,255,0.15)', textPrimary: '#fff',
     textSecondary: 'rgba(255,255,255,0.85)', textHint: 'rgba(255,255,255,0.5)', isDark: true,
     border: '0.5px solid rgba(255,255,255,0.2)',

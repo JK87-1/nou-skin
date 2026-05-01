@@ -19,20 +19,17 @@ import { getSupplementItems, getSupplementChecks } from '../storage/SupplementSt
 
 function getTimeMode() {
   const h = new Date().getHours();
-  if (h >= 5 && h < 11) return 'morning';
-  if (h >= 11 && h < 18) return 'afternoon';
-  return 'evening';
+  if (h >= 5 && h < 18) return 'day';
+  return 'night';
 }
 
 function getTimeBg(mode) {
-  if (mode === 'morning') return 'linear-gradient(180deg, #B8DCEF 0%, #D4E8F4 50%, #E8F1F7 100%)';
-  if (mode === 'afternoon') return 'linear-gradient(180deg, #C8D8E8 0%, #DCD4E0 50%, #E8E0E8 100%)';
-  return 'linear-gradient(180deg, #4A4F7F 0%, #6B5A8A 50%, #8A7AAB 100%)';
+  if (mode === 'day') return 'linear-gradient(180deg, #B8DCEF 0%, #D4E8F4 50%, #E8F1F7 100%)';
+  return 'none'; // night uses background-image
 }
 
 function getTimeAccent(mode) {
-  if (mode === 'morning') return '#4A6B85';
-  if (mode === 'afternoon') return '#B8865C';
+  if (mode === 'day') return '#4A6B85';
   return '#4A4F7F';
 }
 
@@ -453,7 +450,14 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   }, [todayChecks]);
 
   return (
-    <div style={{ minHeight: '100dvh', paddingBottom: 90, background: homeView === 'briefing' ? getTimeBg(getTimeMode()) : undefined, transition: 'background 0.5s ease' }}>
+    <div style={{
+      minHeight: '100dvh', paddingBottom: 90, transition: 'background 0.5s ease',
+      ...(homeView === 'briefing' ? (
+        getTimeMode() === 'night'
+          ? { backgroundImage: 'url(/night.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }
+          : { background: getTimeBg('day') }
+      ) : {}),
+    }}>
 
       {/* ===== 1. 히어로 영역 ===== */}
       <div style={{
@@ -489,7 +493,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           const days = ['일','월','화','수','목','금','토'];
           const dateStr = `${now.getFullYear()}. ${String(now.getMonth()+1).padStart(2,'0')}. ${String(now.getDate()).padStart(2,'0')}  ${days[now.getDay()]}요일`;
           const _tm = getTimeMode();
-          const _isDark = _tm === 'evening' && homeView === 'briefing';
+          const _isDark = _tm === 'night' && homeView === 'briefing';
           const greeting = getGreeting(profile.nickname);
           const txtP = _isDark ? '#fff' : '#0D3028';
           const txtH = _isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.35)';
@@ -539,21 +543,19 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       {homeView === 'briefing' && (() => {
         const _tm = getTimeMode();
         const _accent = getTimeAccent(_tm);
-        const _isDark = _tm === 'evening';
-        const _timeLabels = { morning: { icon: '☀', label: '아침 체크인', sub: '1분이면 끝나요 · 컨디션·수면·기분·피부' }, afternoon: { icon: '🍽', label: '오후 체크인', sub: '30초 · 식후 컨디션 변화' }, evening: { icon: '🌙', label: '저녁 체크인', sub: '35초 · 하루 회고 + 내일 의도' } };
+        const _isDark = _tm === 'night';
+        const _timeLabels = { day: { icon: '☀', label: '오늘의 체크인', sub: '1분이면 끝나요 · 컨디션·수면·기분·피부' }, night: { icon: '🌙', label: '저녁 체크인', sub: '35초 · 하루 회고 + 내일 의도' } };
         const _tl = _timeLabels[_tm];
-        // 시간흐름 인디케이터
-        const _morningDone = !!loadTodayCheckIn(); // 간단히 아침 완료 여부
+        // 시간흐름 인디케이터 (낮/밤 2개)
+        const _checkinDone = !!loadTodayCheckIn();
         const _dotColor = (done, active) => done ? '#5E9D8A' : active ? `${_accent}b3` : (_isDark ? 'rgba(255,255,255,0.2)' : `${_accent}33`);
         const _dots = [
-          { done: _morningDone, active: _tm === 'morning' && !_morningDone },
-          { done: false, active: _tm === 'afternoon' },
-          { done: false, active: _tm === 'evening' },
+          { done: _checkinDone, active: _tm === 'day' && !_checkinDone },
+          { done: false, active: _tm === 'night' },
         ];
         let _dotMsg = '오늘 하루 함께 흘러가요';
-        if (_morningDone && _tm === 'morning') _dotMsg = '아침 완료 · 오후 11시부터';
-        else if (_morningDone && _tm === 'afternoon') _dotMsg = '아침 완료 · 오후 진행 중';
-        else if (_morningDone && _tm === 'evening') _dotMsg = '아침 완료 · 저녁 진행 중';
+        if (_checkinDone && _tm === 'day') _dotMsg = '체크인 완료 · 저녁 18시부터';
+        else if (_checkinDone && _tm === 'night') _dotMsg = '체크인 완료 · 저녁 진행 중';
 
         return (
         <div>
