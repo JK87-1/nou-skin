@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { hapticLight } from '../utils/haptic';
 import DailyInsightSlider from '../components/DailyInsightSlider';
 import MorningCheckIn, { CheckInSummaryCard, loadTodayCheckIn } from '../components/MorningCheckIn';
@@ -463,11 +463,10 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   return (
     <div style={{
       minHeight: '100dvh', paddingBottom: 90, transition: 'background 0.5s ease',
-      ...(homeView === 'briefing' ? (
-        getTimeMode() === 'evening'
-          ? { background: 'linear-gradient(180deg, #1C1F3B 0%, #9B9FC0 100%)' }
-          : { background: getTimeBg(getTimeMode()) }
-      ) : {}),
+      ...(getTimeMode() === 'evening'
+        ? { background: 'linear-gradient(180deg, #1C1F3B 0%, #9B9FC0 100%)' }
+        : { background: getTimeBg(getTimeMode()) }
+      ),
     }}>
 
       {/* ===== 1. 히어로 영역 ===== */}
@@ -608,6 +607,17 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           );
         };
 
+        // 스와이프 핸들러
+        const _swipeRef = useRef({ startX: 0, startY: 0 });
+        const _onTouchStart = (e) => { _swipeRef.current.startX = e.touches[0].clientX; _swipeRef.current.startY = e.touches[0].clientY; };
+        const _onTouchEnd = (e) => {
+          const dx = e.changedTouches[0].clientX - _swipeRef.current.startX;
+          const dy = e.changedTouches[0].clientY - _swipeRef.current.startY;
+          if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
+          if (dx < 0 && _viewIdx < 2) { hapticLight(); setCheckinViewMode(_modes[_viewIdx + 1]); }
+          if (dx > 0 && _viewIdx > 0) { hapticLight(); setCheckinViewMode(_modes[_viewIdx - 1]); }
+        };
+
         return (
         <div>
           {/* 어젯밤 약속 확인 카드 (아침에만) */}
@@ -615,44 +625,20 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             <YesterdayPromiseCard onDismiss={() => setPromiseDismissed(true)} />
           )}
 
-          {/* 시간대별 체크인 (현재 viewMode) */}
-          {renderCheckinCard(_viewDone, _viewOnStart, _viewSummary, _viewTl, _viewAccent, _viewIsDark)}
+          {/* 상단 우측 시간 흐름 인디케이터 */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', margin: '0 26px 6px', gap: 3 }}>
+            {_dots.map((d, i) => (
+              <div key={i} onClick={() => { hapticLight(); setCheckinViewMode(_modes[i]); }} style={{
+                width: i === _viewIdx ? 14 : 6, height: 4, borderRadius: 2,
+                background: _dotColor(d.done, d.active),
+                transition: 'all 0.3s ease', cursor: 'pointer',
+              }} />
+            ))}
+          </div>
 
-          {/* < > 네비게이션 + 시간 흐름 인디케이터 */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, margin: '0 22px 16px' }}>
-            <div
-              onClick={() => { if (_viewIdx > 0) { hapticLight(); setCheckinViewMode(_modes[_viewIdx - 1]); } }}
-              style={{
-                width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: _viewIdx > 0 ? 'pointer' : 'default',
-                opacity: _viewIdx > 0 ? 1 : 0.2,
-                background: _viewIsDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-                WebkitTapHighlightColor: 'transparent', transition: 'opacity 0.2s',
-              }}
-            >
-              <span style={{ fontSize: 13, color: _viewIsDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.4)', fontWeight: 600, lineHeight: 1 }}>‹</span>
-            </div>
-            <div style={{ display: 'flex', gap: 6 }}>
-              {_dots.map((d, i) => (
-                <div key={i} onClick={() => { hapticLight(); setCheckinViewMode(_modes[i]); }} style={{
-                  width: i === _viewIdx ? 18 : 8, height: 8, borderRadius: 4,
-                  background: _dotColor(d.done, d.active),
-                  transition: 'all 0.3s ease', cursor: 'pointer',
-                }} />
-              ))}
-            </div>
-            <div
-              onClick={() => { if (_viewIdx < 2) { hapticLight(); setCheckinViewMode(_modes[_viewIdx + 1]); } }}
-              style={{
-                width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: _viewIdx < 2 ? 'pointer' : 'default',
-                opacity: _viewIdx < 2 ? 1 : 0.2,
-                background: _viewIsDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-                WebkitTapHighlightColor: 'transparent', transition: 'opacity 0.2s',
-              }}
-            >
-              <span style={{ fontSize: 13, color: _viewIsDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.4)', fontWeight: 600, lineHeight: 1 }}>›</span>
-            </div>
+          {/* 시간대별 체크인 (스와이프 가능) */}
+          <div onTouchStart={_onTouchStart} onTouchEnd={_onTouchEnd}>
+            {renderCheckinCard(_viewDone, _viewOnStart, _viewSummary, _viewTl, _viewAccent, _viewIsDark)}
           </div>
 
           {/* AI 브리핑 카드 */}
