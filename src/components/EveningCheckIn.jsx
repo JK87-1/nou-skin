@@ -36,7 +36,7 @@ const BG = 'linear-gradient(180deg, #1a1a3e 0%, #2d2d5e 50%, #3a3a6e 100%)';
 const TEXT = { p: '#fff', s: 'rgba(255,255,255,0.85)', t: 'rgba(255,255,255,0.7)', h: 'rgba(255,255,255,0.5)' };
 const GLASS = { background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '0.5px solid rgba(255,255,255,0.15)' };
 const GLASS_SUB = { background: 'rgba(255,255,255,0.08)', border: '0.5px solid rgba(255,255,255,0.1)' };
-const ACCENT = '#4A4F7F';
+const ACCENT = '#C5B3D9';
 
 /* ── 유틸 ── */
 function getTodayKey() {
@@ -445,7 +445,8 @@ export function EveningSummaryCard() {
 
   const glassNight = {
     background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-    border: '0.5px solid rgba(255,255,255,0.15)', borderRadius: 18,
+    border: '1px solid rgba(255,255,255,0.15)', borderRadius: 30,
+    boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.1)',
   };
 
   return (

@@ -250,11 +250,11 @@ function gatherEnvData() {
 
 /* ── 카드 스타일 ── */
 const cardStyle = {
-  background: 'rgba(255,255,255,0.45)',
+  background: 'rgba(255,255,255,0.2)',
   backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-  border: '1px solid rgba(255,255,255,0.5)',
-  borderRadius: 22, padding: '20px',
-  boxShadow: '0 2px 8px rgba(0,0,0,0.03), inset 0 1px 0 rgba(255,255,255,0.4)',
+  border: '1px solid rgba(255,255,255,0.3)',
+  borderRadius: 30, padding: '20px',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
 };
 
 export default function DailyInsightSlider() {
@@ -342,7 +342,7 @@ export default function DailyInsightSlider() {
   const statusColor = status.overall >= 70 ? '#22C55E' : status.overall >= 50 ? '#89cef5' : status.overall >= 35 ? '#E8A135' : '#E05050';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, margin: '0 22px 16px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, margin: '0 18px 16px' }}>
 
       {/* ===== 1. 오늘의 상태 ===== */}
       <div style={cardStyle}>

@@ -34,7 +34,7 @@ const DISCOMFORT_SIGNALS = [
 const LUNCH_CATEGORIES = ['한식', '분식', '파스타', '샐러드', '중식', '일식', '패스트푸드', '빵·디저트', '안 먹음', '기타'];
 
 /* ── 스타일 ── */
-const ACCENT = '#B8865C';
+const ACCENT = '#FFBB80';
 const TXT = { p: '#4A3A2E', s: '#6B5A4E', t: '#6B8499', a: '#8A5A3C', h: '#8BA6BD' };
 const BG = 'linear-gradient(180deg, #B8DCEF 0%, #D4E8F4 50%, #E8F1F7 100%)';
 const RESULT_BG = 'linear-gradient(180deg, #FFF5EB 0%, #FFE8D6 100%)';
@@ -418,9 +418,9 @@ export function AfternoonSummaryCard() {
   let streakMsg = streak >= 14 ? `✨ ${streak}일 연속` : streak >= 7 ? '🎉 일주일!' : streak >= 2 ? `🔥 ${streak}일 연속` : '🌱 첫 오후 체크인';
 
   const glass = {
-    background: 'rgba(255,255,255,0.45)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-    border: '1px solid rgba(255,255,255,0.5)', borderRadius: 22,
-    boxShadow: '0 2px 8px rgba(0,0,0,0.03), inset 0 1px 0 rgba(255,255,255,0.4)',
+    background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+    border: '1px solid rgba(255,255,255,0.3)', borderRadius: 30,
+    boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
   };
 
   return (

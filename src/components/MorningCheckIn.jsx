@@ -48,14 +48,19 @@ function getTimeMode() {
 }
 
 function getTimePalette(mode) {
-  if (mode === 'morning' || mode === 'afternoon') return {
+  if (mode === 'morning') return {
     bg: 'linear-gradient(180deg, #B8DCEF 0%, #D4E8F4 50%, #E8F1F7 100%)',
-    accent: '#4A6B85', cardBg: '#4A6B85', textPrimary: '#2C4A5E',
+    accent: '#FFE082', cardBg: '#FFE082', textPrimary: '#2C4A5E',
+    textSecondary: '#4A6B85', textHint: '#8BA6BD', isDark: false,
+  };
+  if (mode === 'afternoon') return {
+    bg: 'linear-gradient(180deg, #B8DCEF 0%, #D4E8F4 50%, #E8F1F7 100%)',
+    accent: '#FFBB80', cardBg: '#FFBB80', textPrimary: '#2C4A5E',
     textSecondary: '#4A6B85', textHint: '#8BA6BD', isDark: false,
   };
   return {
     bg: 'linear-gradient(180deg, #1a1a3e 0%, #2d2d5e 50%, #3a3a6e 100%)',
-    accent: '#4A4F7F', cardBg: 'rgba(255,255,255,0.15)', textPrimary: '#fff',
+    accent: '#C5B3D9', cardBg: 'rgba(255,255,255,0.15)', textPrimary: '#fff',
     textSecondary: 'rgba(255,255,255,0.85)', textHint: 'rgba(255,255,255,0.5)', isDark: true,
     border: '0.5px solid rgba(255,255,255,0.2)',
   };
@@ -675,9 +680,9 @@ export function CheckInSummaryCard() {
   };
 
   const glassLight = {
-    background: 'rgba(255,255,255,0.45)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-    border: '1px solid rgba(255,255,255,0.5)', borderRadius: 22,
-    boxShadow: '0 2px 8px rgba(0,0,0,0.03), inset 0 1px 0 rgba(255,255,255,0.4)',
+    background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+    border: '1px solid rgba(255,255,255,0.3)', borderRadius: 30,
+    boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
   };
 
   return (
