@@ -463,7 +463,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   return (
     <div style={{
       minHeight: '100dvh', paddingBottom: 90, transition: 'background 0.5s ease',
-      ...(getTimeMode() === 'evening'
+      ...(getTimeMode() === 'evening' && homeView === 'briefing'
         ? { background: 'linear-gradient(180deg, #1C1F3B 0%, #9B9FC0 100%)' }
         : { background: getTimeBg(getTimeMode()) }
       ),
@@ -587,7 +587,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           if (done) return <div style={{ margin: '0 22px 16px' }} key={checkInRefresh}>{summaryComponent}</div>;
           return (
             <div onClick={() => { hapticLight(); onStart(); }} style={{
-              margin: '0 18px 16px', padding: '20px', borderRadius: 30, cursor: 'pointer',
+              margin: '0 18px 16px', padding: '20px', borderRadius: 30, cursor: 'pointer', minHeight: 120,
               background: 'rgba(255,255,255,0.2)',
               backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
               border: '1px solid rgba(255,255,255,0.3)',
