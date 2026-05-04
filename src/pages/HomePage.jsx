@@ -26,12 +26,6 @@ function getTimeMode() {
   return 'evening'; // 21:00~04:59
 }
 
-function getTimeBg(mode) {
-  if (mode === 'morning') return 'linear-gradient(180deg, #B8DCEF 0%, #D4E8F4 50%, #E8F1F7 100%)';
-  if (mode === 'afternoon') return 'linear-gradient(180deg, #B8DCEF 0%, #D4E8F4 50%, #E8F1F7 100%)';
-  return 'none';
-}
-
 function getTimeAccent(mode) {
   if (mode === 'morning') return '#FFE082';
   if (mode === 'afternoon') return '#FFBB80';
@@ -198,7 +192,8 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [showCheckIn, setShowCheckIn] = useState(false);
   const [showEveningCheckIn, setShowEveningCheckIn] = useState(false);
   const [showAfternoonCheckIn, setShowAfternoonCheckIn] = useState(false);
-  const [checkinViewMode, setCheckinViewMode] = useState(null); // null = auto (current time), or 'morning'|'afternoon'|'evening'
+  const [checkinViewMode, setCheckinViewMode] = useState(null);
+  const checkinTouchRef = useRef({ startX: 0, startY: 0 });
   const [checkInDone, setCheckInDone] = useState(() => !!loadTodayCheckIn());
   const [afternoonDone, setAfternoonDone] = useState(() => !!loadTodayAfternoonCheckIn());
   const [eveningDone, setEveningDone] = useState(() => !!loadTodayEveningCheckIn());
@@ -462,11 +457,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
   return (
     <div style={{
-      minHeight: '100dvh', paddingBottom: 90, transition: 'background 0.5s ease',
-      ...(getTimeMode() === 'evening' && homeView === 'briefing'
-        ? { background: 'linear-gradient(180deg, #1C1F3B 0%, #9B9FC0 100%)' }
-        : { background: getTimeBg(getTimeMode()) }
-      ),
+      minHeight: '100dvh', paddingBottom: 90,
     }}>
 
       {/* ===== 1. 히어로 영역 ===== */}
@@ -553,69 +544,64 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       {homeView === 'briefing' && (() => {
         const _tm = getTimeMode();
         const _timeLabels = {
-          morning: { icon: '☀', label: '아침 체크인', sub: '1분이면 끝나요 · 컨디션·수면·기분·피부' },
-          afternoon: { icon: '☁', label: '오후 체크인', sub: '30초 · 식후 컨디션 변화' },
+          morning: { icon: '⛅️', label: '아침 체크인', sub: '1분이면 끝나요 · 컨디션·수면·기분·피부' },
+          afternoon: { icon: '☀️', label: '오후 체크인', sub: '30초 · 식후 컨디션 변화' },
           evening: { icon: '🌙', label: '저녁 체크인', sub: '35초 · 집중·하루·내일' },
         };
-        // 현재 보여줄 시간대 (기본: 현재 시간대, < > 로 전환 가능)
+        // 스와이프로 시간대 전환
         const _modes = ['morning', 'afternoon', 'evening'];
         const _viewMode = checkinViewMode || _tm;
         const _viewIdx = _modes.indexOf(_viewMode);
         const _viewAccent = getTimeAccent(_viewMode);
-        const _viewIsDark = _viewMode === 'evening';
         const _viewTl = _timeLabels[_viewMode];
-        const _isCurrentTime = _viewMode === _tm;
+        const _viewDone = _viewMode === 'morning' ? checkInDone : _viewMode === 'afternoon' ? afternoonDone : eveningDone;
+        const _viewOnStart = _viewMode === 'morning' ? () => setShowCheckIn(true) : _viewMode === 'afternoon' ? () => setShowAfternoonCheckIn(true) : () => setShowEveningCheckIn(true);
+        const _viewSummary = _viewMode === 'morning' ? <CheckInSummaryCard /> : _viewMode === 'afternoon' ? <AfternoonSummaryCard /> : <EveningSummaryCard />;
 
-        // 시간흐름 인디케이터 (3개)
         const _morningDone = !!loadTodayCheckIn();
         const _afternoonDoneCheck = !!loadTodayAfternoonCheckIn();
         const _eveningDone = !!loadTodayEveningCheckIn();
-        const _dotColor = (done, active) => done ? '#5E9D8A' : active ? `${_viewAccent}b3` : (_viewIsDark ? 'rgba(255,255,255,0.2)' : `${_viewAccent}33`);
+        const _dotColor = (done, active) => done ? '#5E9D8A' : active ? `${_viewAccent}b3` : `${_viewAccent}33`;
         const _dots = [
           { done: _morningDone, active: _viewMode === 'morning' && !_morningDone },
           { done: _afternoonDoneCheck, active: _viewMode === 'afternoon' && !_afternoonDoneCheck },
           { done: _eveningDone, active: _viewMode === 'evening' && !_eveningDone },
         ];
 
-        // 현재 보여주는 시간대의 done 상태
-        const _viewDone = _viewMode === 'morning' ? checkInDone : _viewMode === 'afternoon' ? afternoonDone : eveningDone;
-        const _viewOnStart = _viewMode === 'morning' ? () => setShowCheckIn(true) : _viewMode === 'afternoon' ? () => setShowAfternoonCheckIn(true) : () => setShowEveningCheckIn(true);
-        const _viewSummary = _viewMode === 'morning' ? <CheckInSummaryCard /> : _viewMode === 'afternoon' ? <AfternoonSummaryCard /> : <EveningSummaryCard />;
+        const handleSwipe = (dir) => {
+          const next = _viewIdx + dir;
+          if (next >= 0 && next < 3) { hapticLight(); setCheckinViewMode(_modes[next]); }
+        };
+        const onTouchStart = (e) => { checkinTouchRef.current = { startX: e.touches[0].clientX, startY: e.touches[0].clientY }; };
+        const onTouchEnd = (e) => {
+          const dx = e.changedTouches[0].clientX - checkinTouchRef.current.startX;
+          const dy = e.changedTouches[0].clientY - checkinTouchRef.current.startY;
+          if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) handleSwipe(dx < 0 ? 1 : -1);
+        };
 
-        // 체크인 카드 렌더 (기록 카드 스타일 통일)
-        const renderCheckinCard = (done, onStart, summaryComponent, tl, accent, isDark) => {
+        // 체크인 카드 렌더 (컨디션 카드 스타일 통일)
+        const renderCheckinCard = (done, onStart, summaryComponent, tl, accent) => {
           if (done) return <div style={{ margin: '0 22px 16px' }} key={checkInRefresh}>{summaryComponent}</div>;
           return (
             <div onClick={() => { hapticLight(); onStart(); }} style={{
-              margin: '0 18px 16px', padding: '20px', borderRadius: 30, cursor: 'pointer', minHeight: 120,
+              margin: '0 18px 16px', padding: '20px', borderRadius: 30, cursor: 'pointer', height: 120,
               background: 'rgba(255,255,255,0.2)',
               backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
               border: '1px solid rgba(255,255,255,0.3)',
               boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
-              position: 'relative', overflow: 'hidden', WebkitTapHighlightColor: 'transparent',
+              WebkitTapHighlightColor: 'transparent',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ fontSize: 16 }}>{tl.icon}</span>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>{tl.label}</span>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                  <span style={{ fontSize: 24 }}>{tl.icon}</span>
+                  <span style={{ fontSize: 20, fontWeight: 600, color: '#b1b8ba' }}>{tl.label}</span>
                 </div>
-                {!_isCurrentTime && <span style={{ fontSize: 10, color: 'var(--text-muted)', background: 'rgba(0,0,0,0.04)', padding: '2px 8px', borderRadius: 8 }}>다른 시간대</span>}
+                <div style={{ fontSize: 16, color: 'var(--text-muted)' }}>{tl.sub}</div>
               </div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 12 }}>{tl.sub}</div>
-              <div style={{ display: 'inline-block', padding: '8px 18px', borderRadius: 12, background: accent, fontSize: 12, fontWeight: 500, color: '#fff' }}>시작하기 →</div>
+              <div style={{ padding: '8px 18px', borderRadius: 12, background: accent, fontSize: 12, fontWeight: 500, color: '#fff', flexShrink: 0 }}>시작하기 →</div>
             </div>
           );
-        };
-
-        // 스와이프 핸들러
-        const _swipeRef = useRef({ startX: 0, startY: 0 });
-        const _onTouchStart = (e) => { _swipeRef.current.startX = e.touches[0].clientX; _swipeRef.current.startY = e.touches[0].clientY; };
-        const _onTouchEnd = (e) => {
-          const dx = e.changedTouches[0].clientX - _swipeRef.current.startX;
-          const dy = e.changedTouches[0].clientY - _swipeRef.current.startY;
-          if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
-          if (dx < 0 && _viewIdx < 2) { hapticLight(); setCheckinViewMode(_modes[_viewIdx + 1]); }
-          if (dx > 0 && _viewIdx > 0) { hapticLight(); setCheckinViewMode(_modes[_viewIdx - 1]); }
         };
 
         return (
@@ -625,25 +611,25 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             <YesterdayPromiseCard onDismiss={() => setPromiseDismissed(true)} />
           )}
 
-          {/* 상단 우측 시간 흐름 인디케이터 */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', margin: '0 26px 6px', gap: 3 }}>
+          {/* 체크인 카드 (스와이프 가능) */}
+          <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+            {renderCheckinCard(_viewDone, _viewOnStart, _viewSummary, _viewTl, _viewAccent)}
+          </div>
+
+          {/* dot 인디케이터 */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, margin: '0 22px 16px' }}>
             {_dots.map((d, i) => (
               <div key={i} onClick={() => { hapticLight(); setCheckinViewMode(_modes[i]); }} style={{
-                width: i === _viewIdx ? 14 : 6, height: 4, borderRadius: 2,
+                width: i === _viewIdx ? 18 : 8, height: 8, borderRadius: 4,
                 background: _dotColor(d.done, d.active),
                 transition: 'all 0.3s ease', cursor: 'pointer',
               }} />
             ))}
           </div>
 
-          {/* 시간대별 체크인 (스와이프 가능) */}
-          <div onTouchStart={_onTouchStart} onTouchEnd={_onTouchEnd}>
-            {renderCheckinCard(_viewDone, _viewOnStart, _viewSummary, _viewTl, _viewAccent, _viewIsDark)}
-          </div>
-
           {/* AI 브리핑 카드 */}
           {bodyBriefing && (
-            <div style={{ margin: '0 18px 16px', background: 'rgba(255,255,255,0.2)', borderRadius: 30, padding: '20px', border: '1px solid rgba(255,255,255,0.3)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)' }}>
+            <div style={{ margin: '0 22px 16px', background: 'rgba(255,255,255,0.5)', borderRadius: 20, padding: '20px', border: '1px solid rgba(255,255,255,0.6)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><defs><linearGradient id="briefIcon" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#89cef5"/><stop offset="100%" stopColor="#4A9BD9"/></linearGradient></defs><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-2h2v2h-2zm0-4V7h2v6h-2z" fill="url(#briefIcon)" opacity="0.7"/></svg>
                 <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>AI 브리핑</span>
@@ -679,15 +665,14 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             if (actions.length === 0) actions.push({ icon: '✨', text: '오늘도 좋은 하루 보내세요', sub: '기록을 추가하면 맞춤 추천을 드릴게요', color: '#89cef5' });
 
             return (
-              <div style={{ margin: '8px 18px 0' }}>
+              <div style={{ margin: '8px 22px 0' }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(0,0,0,0.4)', marginBottom: 12 }}>오늘의 추천</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {actions.slice(0, 3).map((a, i) => (
                     <div key={i} style={{
-                      background: 'rgba(255,255,255,0.2)', borderRadius: 30, padding: '16px 18px',
-                      border: '1px solid rgba(255,255,255,0.3)',
-                      backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+                      background: 'rgba(255,255,255,0.5)', borderRadius: 16, padding: '16px 18px',
+                      border: '1px solid rgba(255,255,255,0.6)',
+                      backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
                       display: 'flex', alignItems: 'center', gap: 14,
                     }}>
                       <div style={{ fontSize: 24, width: 40, height: 40, borderRadius: 12, background: `${a.color}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{a.icon}</div>
