@@ -261,6 +261,7 @@ export default function DailyInsightSlider() {
   const [insights, setInsights] = useState([]);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(gatherData);
+  const [statusModal, setStatusModal] = useState(false);
 
   const refreshData = useCallback(() => setData(gatherData()), []);
 
@@ -343,23 +344,19 @@ export default function DailyInsightSlider() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, margin: '0 18px 16px' }}>
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
 
       {/* ===== 1. 오늘의 상태 ===== */}
-      <div style={cardStyle}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18 }}>
-          <span style={{ fontSize: 16 }}>✨</span>
-          <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>오늘의 상태</span>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 22 }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-            <span style={{ fontSize: 48, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1 }}>{status.overall}</span>
-            <span style={{ fontSize: 16, color: 'rgba(0,0,0,0.25)', fontWeight: 500 }}>/100</span>
+      <div style={{ ...cardStyle, cursor: 'pointer' }} onClick={() => setStatusModal(true)}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 16 }}>✨</span>
+            <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>오늘의 상태</span>
           </div>
           <div style={{
-            padding: '5px 14px', borderRadius: 20,
+            padding: '4px 12px', borderRadius: 20,
             background: `${statusColor}14`, border: `1px solid ${statusColor}30`,
-            fontSize: 12, fontWeight: 600, color: statusColor,
+            fontSize: 11, fontWeight: 600, color: statusColor,
           }}>{status.overallLabel}</div>
         </div>
 
@@ -368,24 +365,97 @@ export default function DailyInsightSlider() {
             const indColor = ind.score >= 60 ? '#22C55E' : ind.score >= 40 ? '#E8A135' : '#E05050';
             return (
               <div key={ind.key} style={{
-                flex: 1, textAlign: 'center', padding: '12px 0 10px',
-                background: 'rgba(0,0,0,0.02)', borderRadius: 14,
+                flex: 1, textAlign: 'center', padding: '10px 0 8px',
+                borderRadius: 14,
               }}>
-                <div style={{ fontSize: 22, marginBottom: 6 }}>{ind.icon}</div>
-                <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.4)', marginBottom: 3 }}>{ind.label}</div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: indColor }}>{ind.status}</div>
+                <div style={{ fontSize: 18, marginBottom: 4 }}>{ind.icon}</div>
+                <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.35)', marginBottom: 2 }}>{ind.label}</div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: indColor }}>{ind.status}</div>
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* ===== 2. 오늘의 인사이트 ===== */}
+      {/* 오늘의 상태 모달 */}
+      {statusModal && (
+        <div onClick={() => setStatusModal(false)} style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999,
+          background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            width: '100%', maxWidth: 480, maxHeight: '80vh', overflowY: 'auto',
+            background: '#fff', borderRadius: '28px 28px 0 0', padding: '28px 22px 40px',
+            boxShadow: '0 -4px 24px rgba(0,0,0,0.1)',
+          }}>
+            {/* 핸들 */}
+            <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.1)', margin: '0 auto 24px' }} />
+
+            {/* 헤더 */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 18 }}>✨</span>
+                <span style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)' }}>오늘의 상태</span>
+              </div>
+              <div style={{
+                padding: '5px 14px', borderRadius: 20,
+                background: `${statusColor}14`, border: `1px solid ${statusColor}30`,
+                fontSize: 12, fontWeight: 600, color: statusColor,
+              }}>{status.overallLabel}</div>
+            </div>
+
+            {/* 지표 */}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 28 }}>
+              {status.indicators.map(ind => {
+                const indColor = ind.score >= 60 ? '#22C55E' : ind.score >= 40 ? '#E8A135' : '#E05050';
+                return (
+                  <div key={ind.key} style={{
+                    flex: 1, textAlign: 'center', padding: '14px 0 12px',
+                    borderRadius: 16, background: 'rgba(0,0,0,0.03)',
+                  }}>
+                    <div style={{ fontSize: 22, marginBottom: 6 }}>{ind.icon}</div>
+                    <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.4)', marginBottom: 3 }}>{ind.label}</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: indColor }}>{ind.status}</div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* 영향 요소 */}
+            <div style={{ marginBottom: 8 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 16 }}>영향 요소</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {factors.map(f => (
+                  <div key={f.key} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <span style={{ fontSize: 18, width: 24, textAlign: 'center' }}>{f.icon}</span>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', width: 36 }}>{f.label}</span>
+                    <div style={{ flex: 1, height: 8, borderRadius: 4, background: 'rgba(0,0,0,0.05)', overflow: 'hidden' }}>
+                      <div style={{
+                        height: '100%', borderRadius: 4,
+                        width: `${Math.max(f.pct * 100, f.pct > 0 ? 8 : 0)}%`,
+                        background: f.color, opacity: 0.7,
+                        transition: 'width 0.5s ease',
+                      }} />
+                    </div>
+                    <span style={{
+                      fontSize: 11, fontWeight: 600, minWidth: 42, textAlign: 'right',
+                      color: f.status === '미입력' ? 'rgba(0,0,0,0.2)' : f.pct >= 0.6 ? '#22C55E' : f.pct >= 0.3 ? 'rgba(0,0,0,0.4)' : '#E05050',
+                    }}>{f.status}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== 2. 인사이트 ===== */}
       <div style={cardStyle}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 16 }}>🔍</span>
-            <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>오늘의 인사이트</span>
+            <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>인사이트</span>
           </div>
           <div
             onClick={() => !loading && fetchInsight(true)}
@@ -403,15 +473,14 @@ export default function DailyInsightSlider() {
             </svg>
           </div>
         </div>
-        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
 
         {loading && insights.length === 0 ? (
-          <div style={{ padding: '8px 0', fontSize: 13, color: 'rgba(0,0,0,0.3)' }}>인사이트를 준비하고 있어요...</div>
+          <div style={{ padding: '4px 0', fontSize: 13, color: 'rgba(0,0,0,0.3)' }}>인사이트를 준비하고 있어요...</div>
         ) : insights.length > 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {insights.map((text, i) => (
-              <div key={i} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(0,0,0,0.15)', minWidth: 22, fontFamily: 'var(--font-display)' }}>
+              <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(0,0,0,0.12)', minWidth: 18, fontFamily: 'var(--font-display)' }}>
                   {String(i + 1).padStart(2, '0')}
                 </span>
                 <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary, #4E5968)', lineHeight: 1.6, wordBreak: 'keep-all' }}>
@@ -421,40 +490,10 @@ export default function DailyInsightSlider() {
             ))}
           </div>
         ) : (
-          <div style={{ padding: '8px 0', fontSize: 13, color: 'rgba(0,0,0,0.3)', lineHeight: 1.6 }}>
+          <div style={{ padding: '4px 0', fontSize: 13, color: 'rgba(0,0,0,0.3)', lineHeight: 1.6 }}>
             기록을 추가하면 AI가 패턴을 분석해드려요
           </div>
         )}
-      </div>
-
-      {/* ===== 3. 상태에 영향을 준 요소 ===== */}
-      <div style={cardStyle}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18 }}>
-          <span style={{ fontSize: 16 }}>📊</span>
-          <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>상태에 영향을 준 요소</span>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {factors.map(f => (
-            <div key={f.key} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span style={{ fontSize: 18, width: 24, textAlign: 'center' }}>{f.icon}</span>
-              <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', width: 36 }}>{f.label}</span>
-              <div style={{ flex: 1, height: 8, borderRadius: 4, background: 'rgba(0,0,0,0.05)', overflow: 'hidden' }}>
-                <div style={{
-                  height: '100%', borderRadius: 4,
-                  width: `${Math.max(f.pct * 100, f.pct > 0 ? 8 : 0)}%`,
-                  background: f.color,
-                  opacity: 0.7,
-                  transition: 'width 0.5s ease',
-                }} />
-              </div>
-              <span style={{
-                fontSize: 11, fontWeight: 600, minWidth: 42, textAlign: 'right',
-                color: f.status === '미입력' ? 'rgba(0,0,0,0.2)' : f.pct >= 0.6 ? '#22C55E' : f.pct >= 0.3 ? 'rgba(0,0,0,0.4)' : '#E05050',
-              }}>{f.status}</span>
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );

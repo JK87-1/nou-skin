@@ -580,26 +580,42 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         };
 
         // 체크인 카드 렌더 (컨디션 카드 스타일 통일)
+        const dotIndicator = (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 4 }}>
+            {_dots.map((d, i) => (
+              <div key={i} onClick={(e) => { e.stopPropagation(); hapticLight(); setCheckinViewMode(_modes[i]); }} style={{
+                width: i === _viewIdx ? 14 : 6, height: 6, borderRadius: 3,
+                background: _dotColor(d.done, d.active),
+                transition: 'all 0.3s ease', cursor: 'pointer',
+              }} />
+            ))}
+          </div>
+        );
+
         const renderCheckinCard = (done, onStart, summaryComponent, tl, accent) => {
-          if (done) return <div style={{ margin: '0 22px 16px' }} key={checkInRefresh}>{summaryComponent}</div>;
+          if (done) return <div key={checkInRefresh} style={{ position: 'relative' }}>
+            <div style={{ position: 'absolute', top: 16, right: 18, zIndex: 1 }}>{dotIndicator}</div>
+            {summaryComponent}
+          </div>;
           return (
             <div onClick={() => { hapticLight(); onStart(); }} style={{
-              margin: '0 18px 16px', padding: '20px', borderRadius: 30, cursor: 'pointer', height: 120,
+              padding: '20px', borderRadius: 30, cursor: 'pointer', position: 'relative',
               background: 'rgba(255,255,255,0.2)',
               backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
               border: '1px solid rgba(255,255,255,0.3)',
               boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
               WebkitTapHighlightColor: 'transparent',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
             }}>
+              <div style={{ position: 'absolute', top: 14, right: 20 }}>{dotIndicator}</div>
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-                  <span style={{ fontSize: 24 }}>{tl.icon}</span>
-                  <span style={{ fontSize: 20, fontWeight: 600, color: '#b1b8ba' }}>{tl.label}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <span style={{ fontSize: 20 }}>{tl.icon}</span>
+                  <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{tl.label}</span>
                 </div>
-                <div style={{ fontSize: 16, color: 'var(--text-muted)' }}>{tl.sub}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>{tl.sub}</div>
               </div>
-              <div style={{ padding: '8px 18px', borderRadius: 12, background: accent, fontSize: 12, fontWeight: 500, color: '#fff', flexShrink: 0 }}>시작하기 →</div>
+              <div style={{ padding: '8px 16px', borderRadius: 20, background: accent, fontSize: 12, fontWeight: 600, color: '#fff', flexShrink: 0 }}>시작 →</div>
             </div>
           );
         };
@@ -612,34 +628,24 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           )}
 
           {/* 체크인 카드 (스와이프 가능) */}
-          <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+          <div style={{ margin: '0 18px 16px' }} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
             {renderCheckinCard(_viewDone, _viewOnStart, _viewSummary, _viewTl, _viewAccent)}
           </div>
 
-          {/* dot 인디케이터 */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, margin: '0 22px 16px' }}>
-            {_dots.map((d, i) => (
-              <div key={i} onClick={() => { hapticLight(); setCheckinViewMode(_modes[i]); }} style={{
-                width: i === _viewIdx ? 18 : 8, height: 8, borderRadius: 4,
-                background: _dotColor(d.done, d.active),
-                transition: 'all 0.3s ease', cursor: 'pointer',
-              }} />
-            ))}
-          </div>
-
-          {/* AI 브리핑 카드 */}
+          {/* AI 브리핑 */}
           {bodyBriefing && (
-            <div style={{ margin: '0 22px 16px', background: 'rgba(255,255,255,0.5)', borderRadius: 20, padding: '20px', border: '1px solid rgba(255,255,255,0.6)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><defs><linearGradient id="briefIcon" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#89cef5"/><stop offset="100%" stopColor="#4A9BD9"/></linearGradient></defs><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-2h2v2h-2zm0-4V7h2v6h-2z" fill="url(#briefIcon)" opacity="0.7"/></svg>
-                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>AI 브리핑</span>
-                {briefingTime && <span style={{ fontSize: 10, color: 'rgba(0,0,0,0.25)', marginLeft: 'auto' }}>{briefingTime}</span>}
+            <div style={{
+              margin: '0 18px 12px', padding: '16px 20px', borderRadius: 20,
+              background: 'rgba(0,0,0,0.02)',
+            }}>
+              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary, #4E5968)', lineHeight: 1.7 }}>
+                {bodyBriefing}
               </div>
-              <div style={{ fontSize: 14, fontWeight: 500, color: '#0D3028', lineHeight: 1.7 }}>{bodyBriefing}</div>
+              {briefingTime && <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.15)', marginTop: 8 }}>{briefingTime}</div>}
             </div>
           )}
 
-          {/* 오늘의 상태 예측 + 인사이트 */}
+          {/* 오늘의 상태 + 인사이트 */}
           <DailyInsightSlider />
 
           {/* 오늘의 웰니스 추천 */}
@@ -665,24 +671,21 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             if (actions.length === 0) actions.push({ icon: '✨', text: '오늘도 좋은 하루 보내세요', sub: '기록을 추가하면 맞춤 추천을 드릴게요', color: '#89cef5' });
 
             return (
-              <div style={{ margin: '8px 22px 0' }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(0,0,0,0.4)', marginBottom: 12 }}>오늘의 추천</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {actions.slice(0, 3).map((a, i) => (
-                    <div key={i} style={{
-                      background: 'rgba(255,255,255,0.5)', borderRadius: 16, padding: '16px 18px',
-                      border: '1px solid rgba(255,255,255,0.6)',
-                      backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-                      display: 'flex', alignItems: 'center', gap: 14,
-                    }}>
-                      <div style={{ fontSize: 24, width: 40, height: 40, borderRadius: 12, background: `${a.color}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{a.icon}</div>
-                      <div>
-                        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 3 }}>{a.text}</div>
-                        <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.4)', lineHeight: 1.4 }}>{a.sub}</div>
-                      </div>
+              <div style={{ margin: '0 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {actions.slice(0, 2).map((a, i) => (
+                  <div key={i} style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '14px 18px', borderRadius: 20,
+                    background: 'rgba(255,255,255,0.15)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                  }}>
+                    <span style={{ fontSize: 18 }}>{a.icon}</span>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{a.text}</div>
+                      <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.3)', marginTop: 1 }}>{a.sub}</div>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
             );
           })()}
