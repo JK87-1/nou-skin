@@ -355,7 +355,17 @@ export default function QuickCheckIn({ onDataSaved }) {
     if (current > 0) setAnswers(prev => ({ ...prev, water: current - 1 }));
   };
 
+  const getAnsweredCount = (mode) => {
+    const qs = QUESTIONS[mode];
+    return qs.filter(q => {
+      if (q.type === 'water') return false; // 수분은 별도
+      if (q.type === 'multi') return (answers[q.id] || []).length > 0;
+      return answers[q.id] != null;
+    }).length;
+  };
+
   const handleComplete = (mode) => {
+    if (getAnsweredCount(mode) === 0) return; // 최소 1개 응답 필요
     hapticLight();
     // 데이터 브릿지
     BRIDGE[mode](answers);
@@ -489,16 +499,25 @@ export default function QuickCheckIn({ onDataSaved }) {
           </div>
 
           {/* 완료 버튼 */}
-          <div
-            onClick={() => handleComplete(expanded)}
-            style={{
-              marginTop: 20, padding: '12px 0', borderRadius: 20, textAlign: 'center',
-              background: meta.color, color: '#fff', fontSize: 14, fontWeight: 600,
-              cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
-            }}
-          >
-            완료
-          </div>
+          {(() => {
+            const canComplete = getAnsweredCount(expanded) > 0;
+            return (
+              <div
+                onClick={() => handleComplete(expanded)}
+                style={{
+                  marginTop: 20, padding: '12px 0', borderRadius: 20, textAlign: 'center',
+                  background: canComplete ? meta.color : 'rgba(0,0,0,0.08)',
+                  color: canComplete ? '#fff' : 'rgba(0,0,0,0.25)',
+                  fontSize: 14, fontWeight: 600,
+                  cursor: canComplete ? 'pointer' : 'default',
+                  WebkitTapHighlightColor: 'transparent',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                완료
+              </div>
+            );
+          })()}
         </div>
       )}
     </div>
