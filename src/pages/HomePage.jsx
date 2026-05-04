@@ -1368,7 +1368,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
               if (cardId === 'cycle') {
                 // 여성 사용자만 표시
-                if (profile.gender !== 'female') return null;
+                if (profile.gender !== '여성') return null;
                 const _cycleData = getCycleData();
                 const _cs2 = calculateCycleState(_cycleData);
                 const _bg = getCycleBgStyle(_cs2.state);

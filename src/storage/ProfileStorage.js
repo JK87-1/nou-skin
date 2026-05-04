@@ -33,7 +33,7 @@ const DEFAULTS = {
     { key: 'skin',       label: '피부',     color: '#D8A0E0', enabled: true,  group: 'result',
       subs: [{ key: 'skin_condition', label: '피부상태', enabled: true }] },
     { key: 'cycle',      label: '생리주기', color: '#F5A0B8', enabled: true,  group: 'external',
-      subs: [], genderFilter: 'female' },
+      subs: [], genderFilter: '여성' },
     { key: 'weather',    label: '날씨',     color: '#89CEF5', enabled: true,  group: 'external',
       subs: [] },
   ],
