@@ -217,6 +217,10 @@ export default function App() {
       navigator.serviceWorker.ready.then(reg => reg.update());
     }
 
+    // 홈에서 피부 스캔 트리거
+    const handleStartScan = () => { setActiveTab('measure'); setStage('camera'); };
+    window.addEventListener('lua:start-scan', handleStartScan);
+
     // SW 업데이트 후 데이터 무결성 검증
     if (sessionStorage.getItem('nou_sw_updating')) {
       sessionStorage.removeItem('nou_sw_updating');

@@ -1,6 +1,6 @@
 const WEATHER_KEY = 'lua_weather_data';
 const LOCATION_KEY = 'lua_weather_location';
-const STALE_MS = 30 * 60 * 1000; // 30분
+const STALE_MS = 3 * 60 * 60 * 1000; // 3시간
 const CACHE_VERSION = 2; // bump to invalidate old cache
 
 /**
@@ -77,5 +77,24 @@ export function getUserLocation() {
     return parsed;
   } catch {
     return null;
+  }
+}
+
+/**
+ * 저장된 위치 기반 자동 날씨 갱신 (캐시 만료 시)
+ * 홈 로드 시 호출 — 저장된 위치가 있으면 백그라운드로 갱신
+ */
+export async function refreshWeatherIfNeeded() {
+  if (!isStale()) return getWeatherData();
+  const loc = getUserLocation();
+  if (!loc) return null;
+  try {
+    const res = await fetch(`/api/weather?lat=${loc.lat}&lon=${loc.lon}`);
+    if (!res.ok) return getWeatherData();
+    const data = await res.json();
+    saveWeatherData(data);
+    return data;
+  } catch {
+    return getWeatherData();
   }
 }

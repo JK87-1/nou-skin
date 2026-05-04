@@ -10,13 +10,15 @@ import { getLatestRecord } from '../storage/SkinStorage';
 import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, GENDER_OPTIONS, getCategoryColor } from '../storage/ProfileStorage';
 import { getTodayNutrition, getTodayFoods, getFoodGoal, saveFoodRecord } from '../storage/FoodStorage';
 import { AddFoodModal } from './RecordPage';
-import { getWeatherData } from '../storage/WeatherStorage';
+import { getWeatherData, refreshWeatherIfNeeded } from '../storage/WeatherStorage';
+import { calculateCycleState, getActivePosition, getCycleBgStyle, getCycleData, saveCycleData } from '../utils/cycleUtils';
 import { getTodayProgress } from '../storage/RoutineCheckStorage';
 import { getLatestWeight, getBodyRecords, saveBodyRecord } from '../storage/BodyStorage';
 import {
   getTodayChecks, getLatestCheck, saveConditionCheck,
   shouldResetCheck, getMinutesSinceLastCheck,
   getTodayBloodSugar, saveBloodSugar, getBloodSugarChecks,
+  getTodaySkinSubCheck, saveSkinSubCheck,
 } from '../storage/ConditionStorage';
 import { getSupplementItems, getSupplementChecks, toggleSupplementCheck, addSupplementItem, deleteSupplementItem } from '../storage/SupplementStorage';
 
@@ -190,6 +192,8 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [showBloodSugarModal, setShowBloodSugarModal] = useState(false);
   const [showDrinkModal, setShowDrinkModal] = useState(false);
   const [showSupplementModal, setShowSupplementModal] = useState(false);
+  const [showSkinCheckModal, setShowSkinCheckModal] = useState(false);
+  const [showCycleModal, setShowCycleModal] = useState(false);
   const [showWaterModal, setShowWaterModal] = useState(false);
   const [showSleepModal, setShowSleepModal] = useState(false);
   const [homeView, setHomeView] = useState('cards'); // 'cards' | 'briefing'
@@ -224,8 +228,11 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
     { id: 'blood_sugar', label: '혈당' },
     { id: 'drink', label: '드링크' },
     { id: 'supplement', label: '영양제' },
+    { id: 'skin_check', label: '피부' },
+    { id: 'weather', label: '날씨' },
+    { id: 'cycle', label: '주기' },
   ];
-  const CARD_ORDER_VERSION = 9;
+  const CARD_ORDER_VERSION = 12;
   const DEFAULT_CARD_ORDER = CARD_REGISTRY.map(c => c.id);
   const [cardOrder, setCardOrder] = useState(() => {
     try {
@@ -301,6 +308,11 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   useEffect(() => {
     const timer = setInterval(() => setMinutesAgo(getMinutesSinceLastCheck()), 60000);
     return () => clearInterval(timer);
+  }, []);
+
+  // 홈 로드 시 저장된 위치로 날씨 자동 갱신
+  useEffect(() => {
+    refreshWeatherIfNeeded().then(() => setWeightRefreshKey(k => k + 1));
   }, []);
 
   // localStorage 변경 감지 → 기록 추가 시 브리핑 갱신 (1초 디바운스)
@@ -1255,7 +1267,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                   <div onClick={() => handleCardTap('supplement', () => setShowSupplementModal(true))} style={{ ..._cs, cursor: 'pointer', padding: '20px', animation: tappedCard === 'supplement' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 0, flex: '0 0 auto' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(100,180,220,0.3))' }}><defs><linearGradient id="pillCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#B8DFF0"/><stop offset="100%" stopColor="#6AAFD4"/></linearGradient></defs><rect x="8" y="2" width="8" height="20" rx="4" fill="url(#pillCard)" opacity="0.6"/><line x1="8" y1="12" x2="16" y2="12" stroke="#fff" strokeWidth="1.5" opacity="0.5"/></svg>
+                        <img src="/pill.svg" width="16" height="16" alt="" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(200,180,50,0.3))' }} />
                         <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>영양제</span>
                       </div>
                     </div>
@@ -1277,6 +1289,122 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                         </div>
                       )}
                     </div>
+                  </div>
+                ));
+              }
+
+              if (cardId === 'skin_check') {
+                const _skinSub = getTodaySkinSubCheck();
+                const _skinTags = _skinSub?.tags || [];
+                const _tagCount = _skinTags.length;
+                return editWrap('피부', (
+                  <div onClick={() => handleCardTap('skin_check', () => setShowSkinCheckModal(true))} style={{ ..._cs, cursor: 'pointer', padding: '20px', animation: tappedCard === 'skin_check' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 0, flex: '0 0 auto' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(180,130,210,0.3))' }}><defs><linearGradient id="skinCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#E0C0F0"/><stop offset="100%" stopColor="#B080D0"/></linearGradient></defs><circle cx="12" cy="12" r="10" fill="url(#skinCard)" opacity="0.6"/><path d="M8 14s1.5 2 4 2 4-2 4-2" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.6"/><circle cx="9" cy="10" r="1" fill="#fff" opacity="0.6"/><circle cx="15" cy="10" r="1" fill="#fff" opacity="0.6"/></svg>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>피부</span>
+                      </div>
+                    </div>
+                    <div style={{ marginTop: 'auto' }}>
+                      {_tagCount > 0 ? (
+                        <div>
+                          <div style={{ fontSize: 18, lineHeight: 1.3 }}>
+                            {_skinTags.slice(0, 3).map(t => {
+                              const icons = { trouble: '🔴', dry: '🌵', oily: '💧', puffy: '🎈', redness: '🌡️', sensitive: '😰', dull: '😴', good: '✨' };
+                              return icons[t] || '•';
+                            }).join(' ')}
+                          </div>
+                          <div style={{ fontSize: 10, color: '#22C55E', marginTop: 4 }}>{_tagCount}개 체크됨</div>
+                        </div>
+                      ) : (
+                        <div>
+                          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
+                          <div style={{ fontSize: 10, color: 'var(--accent-primary, #89cef5)', marginTop: 4 }}>체크하기</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ));
+              }
+
+              if (cardId === 'weather') {
+                const _w = getWeatherData();
+                const _humTag = _w ? (_w.humidity < 40 ? '건조주의' : _w.humidity <= 70 ? '적정' : '습함') : null;
+                const _humColor = _w ? (_w.humidity < 40 ? '#f59e0b' : _w.humidity <= 70 ? '#89cef5' : '#38bdf8') : null;
+                return editWrap('날씨', (
+                  <div onClick={() => { handleCardTap('weather', () => setShowWeather(true)); }} style={{ ..._cs, cursor: 'pointer', padding: '20px', animation: tappedCard === 'weather' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 0, flex: '0 0 auto' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(137,206,245,0.3))' }}><defs><linearGradient id="weatherCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#B8E4F8"/><stop offset="100%" stopColor="#6AB4E0"/></linearGradient></defs><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" fill="url(#weatherCard)" opacity="0.6"/></svg>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>날씨</span>
+                      </div>
+                    </div>
+                    <div style={{ marginTop: 'auto' }}>
+                      {_w ? (
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{ fontSize: 18 }}>{_w.conditionIcon}</span>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 2 }}>
+                              <span style={{ fontSize: 11, color: '#89cef5' }}>{_w.tempMin}°</span>
+                              <span style={{ fontSize: 10, color: 'rgba(0,0,0,0.15)' }}>/</span>
+                              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{_w.tempMax}°</span>
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
+                            <span style={{ fontSize: 10, fontWeight: 600, color: _humColor, padding: '1px 6px', borderRadius: 6, background: `${_humColor}15` }}>{_humTag}</span>
+                            {_w.uv >= 6 && <span style={{ fontSize: 10, fontWeight: 600, color: '#f59e0b', padding: '1px 6px', borderRadius: 6, background: 'rgba(245,158,11,0.1)' }}>UV {_w.uv}</span>}
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
+                          <div style={{ fontSize: 10, color: 'var(--accent-primary, #89cef5)', marginTop: 4 }}>확인하기</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ));
+              }
+
+              if (cardId === 'cycle') {
+                // 여성 사용자만 표시
+                if (profile.gender !== 'female') return null;
+                const _cycleData = getCycleData();
+                const _cs2 = calculateCycleState(_cycleData);
+                const _bg = getCycleBgStyle(_cs2.state);
+                const _isUnset = _cs2.state === 'unset';
+                const _activePos = _cs2.stage ? getActivePosition(_cs2.stage) : -1;
+                return editWrap('주기', (
+                  <div onClick={() => handleCardTap('cycle', () => setShowCycleModal(true))} style={{
+                    ..._cs, cursor: 'pointer', padding: '20px', position: 'relative',
+                    background: _bg,
+                    border: _isUnset ? '0.5px dashed rgba(74,107,133,0.2)' : '1px solid rgba(255,255,255,0.3)',
+                    animation: tappedCard === 'cycle' ? 'cardTap 0.3s ease' : 'none',
+                    pointerEvents: isEditing ? 'none' : 'auto',
+                    transition: 'background-color 0.5s ease',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 0, flex: '0 0 auto' }}>
+                      <span style={{ fontSize: 14, opacity: _isUnset ? 0.5 : 1 }}>🌸</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>주기</span>
+                    </div>
+                    <div style={{ marginTop: 'auto' }}>
+                      <div style={{ fontSize: _isUnset ? 16 : 22, fontWeight: 500, color: '#2C4A5E', letterSpacing: _isUnset ? 0 : -0.5, fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_cs2.label}</div>
+                      <div style={{ fontSize: _isUnset ? 10 : 11, color: '#6B8499', marginTop: 4 }}>{_cs2.subtitle}</div>
+                    </div>
+                    {/* 5개 점 인디케이터 */}
+                    {!_isUnset && (
+                      <div style={{ position: 'absolute', right: 14, bottom: 14, display: 'flex', gap: 3, alignItems: 'center' }}>
+                        {[0, 1, 2, 3, 4].map(i => (
+                          <div key={i} style={{
+                            width: i === _activePos ? 7 : 5,
+                            height: i === _activePos ? 7 : 5,
+                            borderRadius: '50%',
+                            background: i === _activePos ? 'rgba(74,107,133,0.6)' : 'rgba(74,107,133,0.2)',
+                            transition: 'all 0.3s ease',
+                          }} />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ));
               }
@@ -1604,6 +1732,14 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
       {showSupplementModal && (
         <SupplementModal onClose={() => setShowSupplementModal(false)} onUpdate={() => { setShowSupplementModal(false); setWeightRefreshKey(k => k + 1); }} />
+      )}
+
+      {showSkinCheckModal && (
+        <SkinCheckModal onClose={() => setShowSkinCheckModal(false)} onUpdate={() => { setShowSkinCheckModal(false); setWeightRefreshKey(k => k + 1); }} />
+      )}
+
+      {showCycleModal && (
+        <CycleModal onClose={() => setShowCycleModal(false)} onUpdate={() => { setShowCycleModal(false); setWeightRefreshKey(k => k + 1); }} />
       )}
 
       {showSleepModal && (
@@ -2970,6 +3106,274 @@ function SupplementModal({ onClose, onUpdate }) {
           border: 'none', background: 'var(--accent-primary)', color: '#fff',
           fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
         }}>완료</button>
+      </div>
+    </div>
+  );
+}
+
+const SKIN_SIGNALS = [
+  { key: 'trouble', icon: '🔴', label: '새 트러블' },
+  { key: 'dry', icon: '🌵', label: '건조함' },
+  { key: 'oily', icon: '💧', label: '번들거림' },
+  { key: 'puffy', icon: '🎈', label: '붓기' },
+  { key: 'redness', icon: '🌡️', label: '홍조·열감' },
+  { key: 'sensitive', icon: '😰', label: '예민함' },
+  { key: 'dull', icon: '😴', label: '칙칙함' },
+  { key: 'good', icon: '✨', label: '평소보다 좋음' },
+];
+
+function SkinCheckModal({ onClose, onUpdate }) {
+  const [tags, setTags] = useState(() => {
+    const sub = getTodaySkinSubCheck();
+    return sub?.tags || [];
+  });
+
+  const toggleTag = (key) => {
+    setTags(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
+  };
+
+  const handleSave = () => {
+    saveSkinSubCheck({ tags });
+    onUpdate();
+  };
+
+  const handleScan = () => {
+    onClose();
+    window.dispatchEvent(new CustomEvent('lua:start-scan'));
+  };
+
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0', padding: '24px 24px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
+        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 20, textAlign: 'center' }}>피부 체크</div>
+
+        {/* AI 피부 분석 버튼 */}
+        <div onClick={handleScan} style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+          padding: '16px 20px', borderRadius: 18, cursor: 'pointer', marginBottom: 24,
+          background: 'linear-gradient(135deg, #E0C0F0, #C090E0)',
+          boxShadow: '0 2px 12px rgba(180,130,210,0.25)',
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/><circle cx="12" cy="13" r="4" stroke="#fff" strokeWidth="2" fill="none"/></svg>
+          <span style={{ fontSize: 15, fontWeight: 600, color: '#fff' }}>AI 피부 분석하기</span>
+        </div>
+
+        {/* 오늘의 피부 상태 */}
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(0,0,0,0.3)', marginBottom: 12 }}>오늘의 피부 상태</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 24 }}>
+          {SKIN_SIGNALS.map(sig => {
+            const active = tags.includes(sig.key);
+            const isGood = sig.key === 'good';
+            return (
+              <div key={sig.key} onClick={() => toggleTag(sig.key)} style={{
+                padding: '14px 14px', borderRadius: 16, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 10,
+                background: active ? (isGood ? 'rgba(34,197,94,0.08)' : 'rgba(216,160,224,0.08)') : 'rgba(0,0,0,0.02)',
+                border: active ? (isGood ? '1.5px solid rgba(34,197,94,0.25)' : '1.5px solid rgba(216,160,224,0.3)') : '1.5px solid rgba(0,0,0,0.05)',
+                transition: 'all 0.15s ease',
+              }}>
+                <span style={{ fontSize: 20 }}>{sig.icon}</span>
+                <span style={{ fontSize: 13, fontWeight: active ? 600 : 500, color: active ? (isGood ? '#22C55E' : '#9060B0') : 'rgba(0,0,0,0.4)' }}>{sig.label}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* 버튼 */}
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button onClick={onClose} style={{ flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)', border: 'none', background: 'var(--bg-input, #F2F3F5)', color: 'var(--text-muted)', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>취소</button>
+          <button onClick={handleSave} style={{ flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)', border: 'none', background: '#B080D0', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>저장</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CycleModal({ onClose, onUpdate }) {
+  const [data, setData] = useState(getCycleData);
+  const isUnset = !data || !data.lastPeriodStart;
+  const cycleState = calculateCycleState(data);
+
+  // 온보딩 상태
+  const [startDate, setStartDate] = useState('');
+  const [cycleLen, setCycleLen] = useState('28');
+  const [periodLen, setPeriodLen] = useState('5');
+
+  // 생리 시작/종료 기록
+  const [showStartRecord, setShowStartRecord] = useState(false);
+  const [startOption, setStartOption] = useState('today');
+
+  const handleSetup = () => {
+    if (!startDate) return;
+    const newData = { lastPeriodStart: startDate, averageCycleLength: Number(cycleLen), averagePeriodLength: Number(periodLen) };
+    saveCycleData(newData);
+    setData(newData);
+  };
+
+  const handlePeriodStart = () => {
+    const dateMap = { today: new Date(), yesterday: new Date(Date.now() - 86400000), '2days': new Date(Date.now() - 172800000) };
+    const d = dateMap[startOption] || new Date();
+    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const prev = data || {};
+    const newData = { ...prev, lastPeriodStart: dateStr, averageCycleLength: prev.averageCycleLength || 28, averagePeriodLength: prev.averagePeriodLength || 5 };
+    saveCycleData(newData);
+    setData(newData);
+    setShowStartRecord(false);
+  };
+
+  const handlePeriodEnd = () => {
+    if (!data?.lastPeriodStart) return;
+    const start = new Date(data.lastPeriodStart);
+    const today = new Date();
+    const actualLen = Math.round((today - start) / 86400000);
+    const avgLen = Math.round((data.averagePeriodLength + actualLen) / 2);
+    const newData = { ...data, averagePeriodLength: Math.max(2, Math.min(10, avgLen)) };
+    saveCycleData(newData);
+    setData(newData);
+  };
+
+  const stageLabels = { menstrual: '생리기', follicular: '난포기', ovulation: '배란기', luteal_early: '황체기 초기', luteal_late: '황체기 후기' };
+  const stageTips = {
+    menstrual: '철분이 풍부한 음식과 따뜻한 차가 도움돼요',
+    follicular: '에스트로겐이 올라가는 시기, 에너지가 좋아요',
+    ovulation: '피부가 가장 빛나는 시기예요',
+    luteal_early: '프로게스테론이 올라가요, 충분한 수면이 중요해요',
+    luteal_late: '수분 섭취를 늘리고 자극적인 음식은 줄여보세요',
+  };
+
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0', padding: '24px 24px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
+
+        {isUnset ? (
+          /* ===== 온보딩 ===== */
+          <div>
+            <div style={{ textAlign: 'center', marginBottom: 24 }}>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>🌸</div>
+              <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>생리주기 설정</div>
+              <div style={{ fontSize: 13, color: 'rgba(0,0,0,0.4)' }}>30초면 끝나요</div>
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(0,0,0,0.3)', marginBottom: 8 }}>마지막 생리 시작일</div>
+              <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
+                style={{ width: '100%', padding: '14px 16px', borderRadius: 14, border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.02)', fontSize: 15, color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit' }} />
+            </div>
+
+            <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(0,0,0,0.3)', marginBottom: 8 }}>평균 주기</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <input type="number" value={cycleLen} onChange={e => setCycleLen(e.target.value)}
+                    style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.02)', fontSize: 18, fontWeight: 600, textAlign: 'center', color: 'var(--text-primary)', outline: 'none', fontFamily: 'var(--font-display)' }} />
+                  <span style={{ fontSize: 12, color: 'rgba(0,0,0,0.3)', flexShrink: 0 }}>일</span>
+                </div>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(0,0,0,0.3)', marginBottom: 8 }}>생리 기간</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <input type="number" value={periodLen} onChange={e => setPeriodLen(e.target.value)}
+                    style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.02)', fontSize: 18, fontWeight: 600, textAlign: 'center', color: 'var(--text-primary)', outline: 'none', fontFamily: 'var(--font-display)' }} />
+                  <span style={{ fontSize: 12, color: 'rgba(0,0,0,0.3)', flexShrink: 0 }}>일</span>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 24 }}>
+              {[25, 26, 27, 28, 29, 30, 31, 32].map(v => (
+                <div key={v} onClick={() => setCycleLen(String(v))} style={{
+                  padding: '6px 12px', borderRadius: 8, cursor: 'pointer',
+                  background: cycleLen === String(v) ? 'rgba(248,215,222,0.5)' : 'rgba(0,0,0,0.03)',
+                  border: cycleLen === String(v) ? '1px solid rgba(248,215,222,0.8)' : '1px solid rgba(0,0,0,0.05)',
+                  fontSize: 12, fontWeight: 500, color: cycleLen === String(v) ? '#8A4A6B' : 'rgba(0,0,0,0.4)',
+                }}>{v}일</div>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={onClose} style={{ flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)', border: 'none', background: 'var(--bg-input, #F2F3F5)', color: 'var(--text-muted)', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>취소</button>
+              <button onClick={handleSetup} style={{ flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)', border: 'none', background: '#C090A8', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', opacity: startDate ? 1 : 0.4 }}>시작하기</button>
+            </div>
+          </div>
+        ) : (
+          /* ===== 주기 상세 ===== */
+          <div>
+            <div style={{ textAlign: 'center', marginBottom: 20 }}>
+              <div style={{ fontSize: 28, marginBottom: 4 }}>🌸</div>
+              <div style={{ fontSize: 28, fontWeight: 500, color: '#2C4A5E', fontFamily: 'var(--font-display)', letterSpacing: -1 }}>{cycleState.label}</div>
+              <div style={{ fontSize: 13, color: '#6B8499', marginTop: 4 }}>{cycleState.subtitle}</div>
+            </div>
+
+            {/* 단계 인디케이터 */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, marginBottom: 20 }}>
+              {['menstrual', 'follicular', 'ovulation', 'luteal_early', 'luteal_late'].map((stage, i) => {
+                const active = cycleState.stage === stage;
+                return (
+                  <div key={stage} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                    <div style={{
+                      width: active ? 10 : 6, height: active ? 10 : 6, borderRadius: '50%',
+                      background: active ? 'rgba(74,107,133,0.6)' : 'rgba(74,107,133,0.2)',
+                      transition: 'all 0.3s ease',
+                    }} />
+                    {active && <span style={{ fontSize: 9, color: '#6B8499', fontWeight: 600 }}>{stageLabels[stage]}</span>}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* 시기별 팁 */}
+            {cycleState.stage && stageTips[cycleState.stage] && (
+              <div style={{ padding: '14px 16px', borderRadius: 16, background: 'rgba(248,215,222,0.2)', marginBottom: 20 }}>
+                <div style={{ fontSize: 12, color: '#6B8499', lineHeight: 1.6 }}>💡 {stageTips[cycleState.stage]}</div>
+              </div>
+            )}
+
+            {/* 빠른 기록 */}
+            {showStartRecord ? (
+              <div style={{ padding: '16px', borderRadius: 16, background: 'rgba(0,0,0,0.02)', border: '1.5px solid rgba(0,0,0,0.05)', marginBottom: 20 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12 }}>생리 시작일</div>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+                  {[{ key: 'today', label: '오늘' }, { key: 'yesterday', label: '어제' }, { key: '2days', label: '2일 전' }].map(opt => (
+                    <div key={opt.key} onClick={() => setStartOption(opt.key)} style={{
+                      flex: 1, padding: '10px 0', borderRadius: 10, textAlign: 'center', cursor: 'pointer',
+                      background: startOption === opt.key ? 'rgba(248,215,222,0.5)' : 'rgba(0,0,0,0.03)',
+                      border: startOption === opt.key ? '1.5px solid rgba(248,215,222,0.8)' : '1.5px solid rgba(0,0,0,0.06)',
+                      fontSize: 13, fontWeight: startOption === opt.key ? 600 : 500, color: startOption === opt.key ? '#8A4A6B' : 'rgba(0,0,0,0.4)',
+                    }}>{opt.label}</div>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={() => setShowStartRecord(false)} style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: 'none', background: 'rgba(0,0,0,0.04)', color: 'rgba(0,0,0,0.4)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>취소</button>
+                  <button onClick={handlePeriodStart} style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: 'none', background: '#C090A8', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>기록</button>
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
+                {cycleState.state === 'active' ? (
+                  <div onClick={handlePeriodEnd} style={{
+                    padding: '14px 16px', borderRadius: 14, cursor: 'pointer', textAlign: 'center',
+                    background: 'rgba(248,215,222,0.3)', border: '1.5px solid rgba(248,215,222,0.5)',
+                    fontSize: 14, fontWeight: 600, color: '#8A4A6B',
+                  }}>생리 종료 기록</div>
+                ) : (
+                  <div onClick={() => setShowStartRecord(true)} style={{
+                    padding: '14px 16px', borderRadius: 14, cursor: 'pointer', textAlign: 'center',
+                    background: 'rgba(248,215,222,0.3)', border: '1.5px solid rgba(248,215,222,0.5)',
+                    fontSize: 14, fontWeight: 600, color: '#8A4A6B',
+                  }}>{cycleState.state === 'imminent' ? '오늘 시작했어요' : '생리 시작 기록'}</div>
+                )}
+              </div>
+            )}
+
+            <button onClick={() => onUpdate()} style={{
+              width: '100%', padding: '14px 0', borderRadius: 'var(--btn-radius)',
+              border: 'none', background: 'var(--bg-input, #F2F3F5)', color: 'var(--text-muted)',
+              fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+            }}>닫기</button>
+          </div>
+        )}
       </div>
     </div>
   );
