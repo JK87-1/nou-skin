@@ -1192,7 +1192,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                   <div onClick={() => handleCardTap('blood_sugar', () => setShowBloodSugarModal(true))} style={{ ..._cs, cursor: 'pointer', padding: '20px', animation: tappedCard === 'blood_sugar' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 0, flex: '0 0 auto' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(224,80,80,0.3))' }}><defs><linearGradient id="dropBS" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F5A8A8"/><stop offset="100%" stopColor="#D45050"/></linearGradient></defs><path d="M12 2.5c0 0-7.5 8-7.5 13a7.5 7.5 0 0015 0c0-5-7.5-13-7.5-13z" fill="url(#dropBS)" opacity="0.6"/></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(224,80,80,0.3))' }}><defs><linearGradient id="dropBS" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#E07060"/><stop offset="100%" stopColor="#C04838"/></linearGradient></defs><path d="M12 2.5c0 0-7.5 8-7.5 13a7.5 7.5 0 0015 0c0-5-7.5-13-7.5-13z" fill="url(#dropBS)" opacity="0.6"/></svg>
                         <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>혈당</span>
                       </div>
                     </div>
@@ -1306,7 +1306,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                   <div onClick={() => handleCardTap('skin_check', () => setShowSkinCheckModal(true))} style={{ ..._cs, cursor: 'pointer', padding: '20px', animation: tappedCard === 'skin_check' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 0, flex: '0 0 auto' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(180,130,210,0.3))' }}><defs><linearGradient id="skinCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#E0C0F0"/><stop offset="100%" stopColor="#B080D0"/></linearGradient></defs><circle cx="12" cy="12" r="10" fill="url(#skinCard)" opacity="0.6"/><path d="M8 14s1.5 2 4 2 4-2 4-2" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.6"/><circle cx="9" cy="10" r="1" fill="#fff" opacity="0.6"/><circle cx="15" cy="10" r="1" fill="#fff" opacity="0.6"/></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(240,160,180,0.3))' }}><defs><linearGradient id="skinCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F8E0C8"/><stop offset="100%" stopColor="#D0A080"/></linearGradient></defs><path d="M10.48,23.25c-.15.41-.5.71-.86.75-.27.03-.78-.29-.9-.59l-1.53-4.02c-.48-1.26-1.41-2.1-2.67-2.58l-3.91-1.48c-.29-.11-.59-.51-.6-.76-.01-.39.23-.79.6-.93l3.9-1.49c1.27-.48,2.19-1.31,2.68-2.59l1.57-4.14c.08-.2.52-.44.74-.46.24-.02.77.21.86.46l1.57,4.14c.5,1.32,1.47,2.15,2.78,2.63l3.7,1.37c.31.11.66.55.67.83.02.42-.29.82-.68.97l-3.8,1.44c-1.26.48-2.2,1.32-2.67,2.58l-1.45,3.86z" fill="url(#skinCard)" opacity="0.8"/><path d="M21.48,6.29c-1.03.59-.9,2.91-2.01,2.98-1.23.08-.99-1.68-1.94-2.78-.77-.88-2.68-.63-2.74-1.78-.07-1.27,2.01-1.1,2.74-1.91.87-.95.73-2.72,1.78-2.8,1.29-.1.98,1.81,1.95,2.77.87.86,2.67.71,2.73,1.8.07,1.08-1.29,1.02-2.51,1.72z" fill="url(#skinCard)" opacity="0.8"/></svg>
                         <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>피부</span>
                       </div>
                     </div>
@@ -1385,7 +1385,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                     pointerEvents: isEditing ? 'none' : 'auto',
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 0, flex: '0 0 auto' }}>
-                      <span style={{ fontSize: 14, opacity: _isUnset ? 0.5 : 1 }}>🌸</span>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(200,64,96,0.3))', opacity: _isUnset ? 0.5 : 1 }}><defs><linearGradient id="cycleCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#FF6080"/><stop offset="100%" stopColor="#A02048"/></linearGradient></defs><path d="M12 2.5c0 0-7.5 8-7.5 13a7.5 7.5 0 0015 0c0-5-7.5-13-7.5-13z" fill="url(#cycleCard)" opacity="0.6"/></svg>
                       <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>주기</span>
                     </div>
                     <div style={{ marginTop: 'auto' }}>
