@@ -151,11 +151,12 @@ export default async function handler(req, res) {
     // 5-day forecast (aggregate by day, KST-based)
     const todayKey = kstDateKey(now);
     const dayMap = new Map();
-    const todayTemps = [weather.main.temp]; // 현재 기온 포함
+    // 오늘 기온: 현재 + API의 temp_min/max + forecast 오늘분 모두 수집
+    const todayTemps = [weather.main.temp, weather.main.temp_min, weather.main.temp_max];
     for (const f of forecast.list || []) {
       const dayKey = kstDateKey(f.dt);
       if (dayKey === todayKey) {
-        todayTemps.push(f.main.temp);
+        todayTemps.push(f.main.temp, f.main.temp_min, f.main.temp_max);
         continue;
       }
       if (!dayMap.has(dayKey)) {

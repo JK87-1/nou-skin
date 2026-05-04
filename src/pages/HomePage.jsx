@@ -1231,6 +1231,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               if (cardId === 'drink') {
                 const _drinkData = (() => { try { const all = JSON.parse(localStorage.getItem('lua_drink_records') || '{}'); return all[_todayKey] || { caffeine: [], alcohol: [] }; } catch { return { caffeine: [], alcohol: [] }; } })();
                 const _cafTotal = _drinkData.caffeine.reduce((s, d) => s + (d.count || 0), 0);
+                const _cafMg = _drinkData.caffeine.reduce((s, d) => { const item = CAFFEINE_ITEMS.find(c => c.key === d.key); return s + (item?.mg || 0) * (d.count || 0); }, 0);
                 const _alcTotal = _drinkData.alcohol.reduce((s, d) => s + (d.count || 0), 0);
                 const _hasData = _cafTotal > 0 || _alcTotal > 0;
                 return editWrap('드링크', (
@@ -1244,12 +1245,12 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                     <div style={{ marginTop: 'auto' }}>
                       {_hasData ? (
                         <div>
-                          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                            {_cafTotal > 0 && <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>☕{_cafTotal}</span>}
-                            {_alcTotal > 0 && <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>🍺{_alcTotal}</span>}
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                            <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_cafMg > 0 ? _cafMg : _alcTotal}</span>
+                            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{_cafMg > 0 ? 'mg' : '잔'}</span>
                           </div>
                           <div style={{ fontSize: 10, color: '#22C55E', marginTop: 4 }}>
-                            {[..._drinkData.caffeine.map(d => d.name), ..._drinkData.alcohol.map(d => d.name)].filter(Boolean).slice(0, 2).join(', ')}
+                            {_cafTotal > 0 && `☕${_cafTotal}잔`}{_cafTotal > 0 && _alcTotal > 0 && ' · '}{_alcTotal > 0 && `🍺${_alcTotal}잔`}
                           </div>
                         </div>
                       ) : (
@@ -2849,6 +2850,7 @@ const CAFFEINE_ITEMS = [
   { key: 'cola', name: '콜라', icon: '🥤', mg: 34 },
   { key: 'decaf', name: '디카페인', icon: '☕', mg: 5 },
   { key: 'matcha', name: '말차', icon: '🍵', mg: 70 },
+  { key: 'hojicha', name: '호지차', icon: '🍵', mg: 20 },
 ];
 
 const ALCOHOL_ITEMS = [
