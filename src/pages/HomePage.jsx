@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { hapticLight } from '../utils/haptic';
 import DailyInsightSlider from '../components/DailyInsightSlider';
 import MorningCheckIn, { CheckInSummaryCard, loadTodayCheckIn } from '../components/MorningCheckIn';
+import QuickCheckIn from '../components/QuickCheckIn';
 import EveningCheckIn, { EveningSummaryCard, YesterdayPromiseCard, loadTodayEveningCheckIn } from '../components/EveningCheckIn';
 import AfternoonCheckIn, { AfternoonSummaryCard, loadTodayAfternoonCheckIn } from '../components/AfternoonCheckIn';
 import SkinWeather from '../components/SkinWeather';
@@ -188,7 +189,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [showConditionModal, setShowConditionModal] = useState(false);
   const [showWaterModal, setShowWaterModal] = useState(false);
   const [showSleepModal, setShowSleepModal] = useState(false);
-  const [homeView, setHomeView] = useState('briefing'); // 'briefing' | 'cards'
+  const [homeView, setHomeView] = useState('cards'); // 'cards' | 'briefing'
   const [showCheckIn, setShowCheckIn] = useState(false);
   const [showEveningCheckIn, setShowEveningCheckIn] = useState(false);
   const [showAfternoonCheckIn, setShowAfternoonCheckIn] = useState(false);
@@ -507,11 +508,11 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                 </div>
                 <div onClick={() => { setHomeView(v => v === 'briefing' ? 'cards' : 'briefing'); if (homeView === 'cards') setEditMode(false); }}
                   style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 20, background: _isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.04)', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>
-                  <span style={{ fontSize: 11, fontWeight: 500, color: homeView === 'briefing' ? (_isDark ? '#fff' : 'var(--text-primary, #111)') : txtS }}>오늘</span>
-                  <div style={{ width: 28, height: 16, borderRadius: 8, background: homeView === 'cards' ? 'var(--accent-primary, #89cef5)' : (_isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.12)'), position: 'relative', transition: 'background 0.2s ease' }}>
-                    <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#fff', position: 'absolute', top: 2, left: homeView === 'cards' ? 14 : 2, transition: 'left 0.2s ease', boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }} />
-                  </div>
                   <span style={{ fontSize: 11, fontWeight: 500, color: homeView === 'cards' ? (_isDark ? '#fff' : 'var(--text-primary, #111)') : txtS }}>기록</span>
+                  <div style={{ width: 28, height: 16, borderRadius: 8, background: homeView === 'briefing' ? 'var(--accent-primary, #89cef5)' : (_isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.12)'), position: 'relative', transition: 'background 0.2s ease' }}>
+                    <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#fff', position: 'absolute', top: 2, left: homeView === 'briefing' ? 14 : 2, transition: 'left 0.2s ease', boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }} />
+                  </div>
+                  <span style={{ fontSize: 11, fontWeight: 500, color: homeView === 'briefing' ? (_isDark ? '#fff' : 'var(--text-primary, #111)') : txtS }}>오늘</span>
                 </div>
               </div>
               {homeView === 'cards' && bodyBriefing ? (
@@ -829,6 +830,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               ))}
             </div>
           </div>
+          <QuickCheckIn onDataSaved={() => { setCheckInRefresh(k => k + 1); setWeightRefreshKey(k => k + 1); setCheckInDone(!!loadTodayCheckIn()); }} />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 15, margin: '0 18px' }}>
             {cardOrder.map((cardId, cardIdx) => {
               const isFirst = cardIdx === 0;
