@@ -509,12 +509,13 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
         const suppItems = [...getRoutineItems('food'), ...getRoutineItems('skin'), ...getRoutineItems('body'), ...getRoutineItems('mood')];
         const totalSupp = suppItems.length;
 
-        const flowCardStyle = { background: 'rgba(255,255,255,.72)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)', marginBottom: 10 };
+        const flowCardStyle = { background: 'rgba(255,255,255,0.2)', borderRadius: 30, padding: '20px', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)', marginBottom: 10 };
+        const FLOW_ICONS = { '식사 칼로리': '🍎', '수분': '💧', '걸음수': '🔥', '운동': '🏃', '수면': '🌙', '식단 앨범': '📸', '영양제 루틴 달성률': '💊' };
         const flowCardHeader = (color, title, status) => (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 3, height: 14, borderRadius: 2, background: color }} />
-              <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>{title}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: 16, filter: `drop-shadow(0 1px 1.5px ${color}50)` }}>{FLOW_ICONS[title] || '📊'}</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>{title}</span>
             </div>
             {status && <span style={{ fontSize: 11, color: '#5AAABB', fontWeight: 500 }}>{status}</span>}
           </div>
@@ -809,12 +810,13 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
       {foodTab === 'all' && (() => {
         const todayMeals = foods.filter(f => !f.name?.startsWith('물 '));
         const totalKcal = Math.round(nutrition.kcal || 0);
-        const allCardStyle = { background: 'rgba(255,255,255,.72)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)', marginBottom: 10 };
+        const allCardStyle = { background: 'rgba(255,255,255,0.2)', borderRadius: 30, padding: '20px', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)', marginBottom: 10 };
+        const ALL_ICONS = { '식사': '🍎', '수분': '💧', '걸음수': '🔥', '운동': '🏃', '수면': '🌙', '명상': '🧘' };
         const allCardHeader = (color, title, _icon, status, statusColor = '#5AAABB') => (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 3, height: 14, borderRadius: 2, background: color }} />
-              <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>{title}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: 16, filter: `drop-shadow(0 1px 1.5px ${color}50)` }}>{ALL_ICONS[title] || '📊'}</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>{title}</span>
             </div>
             <span style={{ fontSize: 11, color: statusColor, fontWeight: 500 }}>{status}</span>
           </div>

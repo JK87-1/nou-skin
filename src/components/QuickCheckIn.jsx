@@ -305,7 +305,7 @@ const glassCard = {
   background: 'rgba(255,255,255,0.2)',
   backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
   border: '1px solid rgba(255,255,255,0.3)',
-  borderRadius: 24,
+  borderRadius: 30,
   boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
 };
 
@@ -403,7 +403,7 @@ export default function QuickCheckIn({ onDataSaved }) {
   return (
     <div style={{ margin: '0 18px 14px' }}>
       {/* 상단 3칸 카드 */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: expanded ? 12 : 0 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: expanded ? 12 : 0 }}>
         {MODES.map(mode => {
           const m = TIME_META[mode];
           const done = doneState[mode];
@@ -414,15 +414,16 @@ export default function QuickCheckIn({ onDataSaved }) {
               key={mode}
               onClick={() => handleExpand(mode)}
               style={{
-                flex: 1, padding: '12px 0', borderRadius: 20, cursor: 'pointer',
+                ...glassCard,
+                padding: '16px 0', cursor: 'pointer',
                 textAlign: 'center', transition: 'all 0.2s ease',
                 WebkitTapHighlightColor: 'transparent',
-                background: active ? `${m.color}20` : done ? 'rgba(34,197,94,0.08)' : isCurrent ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.1)',
-                border: active ? `1.5px solid ${m.color}50` : done ? '1.5px solid rgba(34,197,94,0.2)' : '1.5px solid rgba(255,255,255,0.15)',
+                background: active ? `${m.color}15` : done ? 'rgba(34,197,94,0.06)' : 'rgba(255,255,255,0.2)',
+                border: active ? `1.5px solid ${m.color}40` : done ? '1.5px solid rgba(34,197,94,0.15)' : '1px solid rgba(255,255,255,0.3)',
               }}
             >
-              <div style={{ fontSize: 18, marginBottom: 4 }}>{done ? '✅' : m.icon}</div>
-              <div style={{ fontSize: 11, fontWeight: 600, color: done ? '#22C55E' : active ? m.color : 'rgba(0,0,0,0.4)' }}>
+              <div style={{ fontSize: 20, marginBottom: 6, filter: done ? 'none' : `drop-shadow(0 1px 2px ${m.color}40)` }}>{done ? '✅' : m.icon}</div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: done ? '#22C55E' : active ? m.color : '#b1b8ba' }}>
                 {m.label}
               </div>
             </div>
@@ -432,11 +433,11 @@ export default function QuickCheckIn({ onDataSaved }) {
 
       {/* 펼침 영역 */}
       {expanded && (
-        <div style={{ ...glassCard, padding: '18px 16px', overflow: 'hidden' }}>
+        <div style={{ ...glassCard, padding: '20px', overflow: 'hidden' }}>
           {/* 헤더 */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 18 }}>
-            <span style={{ fontSize: 16 }}>{meta.icon}</span>
-            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{meta.label} 체크인</span>
+            <span style={{ fontSize: 16, filter: `drop-shadow(0 1px 2px ${meta.color}40)` }}>{meta.icon}</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>{meta.label} 체크인</span>
           </div>
 
           {/* 질문들 */}

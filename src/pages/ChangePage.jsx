@@ -436,14 +436,14 @@ export default function ChangePage({ onTabChange }) {
             {enabledCats.map((cat, ci) => {
               const delay = 0.05 + ci * 0.03;
               if (cat.key === 'energy') return (
-                <div key="energy" style={{ ...v2CardStyle, ...fadeUp(delay) }}>
+                <div key="energy" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 10, ...fadeUp(delay) }}>
                   {[
-                    { subKey: 'vitality', label: '활력', labels: ['매우 낮음','낮음','약간 낮음','조금 부족','보통','괜찮음','좋음','활발','높음','최고'], rgb: [245,200,112], value: energySub?.vitality ?? null },
-                    { subKey: 'focus', label: '집중력', labels: ['매우 낮음','낮음','약간 낮음','조금 부족','보통','괜찮음','좋음','집중됨','높음','최고'], rgb: [245,200,112], value: energySub?.focus ?? null },
-                  ].map((s, si) => {
+                    { subKey: 'vitality', label: '활력', icon: '⚡', labels: ['매우 낮음','낮음','약간 낮음','조금 부족','보통','괜찮음','좋음','활발','높음','최고'], rgb: [245,200,112], value: energySub?.vitality ?? null },
+                    { subKey: 'focus', label: '집중력', icon: '🎯', labels: ['매우 낮음','낮음','약간 낮음','조금 부족','보통','괜찮음','좋음','집중됨','높음','최고'], rgb: [245,200,112], value: energySub?.focus ?? null },
+                  ].map((s) => {
                     const val = s.value ?? 7;
                     const pct = subSliderPcts[s.subKey];
-                    const trackH = 9;
+                    const trackH = 6;
                     const color = getCategoryColor('energy');
                     let cachedRect = null;
                     const handleTouch = (e) => {
@@ -456,21 +456,34 @@ export default function ChangePage({ onTabChange }) {
                       const v = Math.round((x / rect.width) * 9) + 1;
                       handleEnergySub(s.subKey, Math.max(1, Math.min(10, v)));
                     };
+                    const valColor = val >= 7 ? '#22C55E' : val >= 4 ? color : '#E05050';
                     return (
-                      <div key={s.subKey} style={{ marginBottom: si === 0 ? 18 : 0 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <div style={{ width: 3, height: 14, borderRadius: 2, background: color }} />
-                            <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>{s.label}</span>
+                      <div key={s.subKey} style={{
+                        background: 'rgba(255,255,255,0.2)', borderRadius: 30,
+                        backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+                        border: '1px solid rgba(255,255,255,0.3)',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+                        padding: '20px', display: 'flex', flexDirection: 'column', minHeight: 120,
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 0, flex: '0 0 auto' }}>
+                          <span style={{ fontSize: 16, filter: 'drop-shadow(0 1px 1.5px rgba(245,200,112,0.3))' }}>{s.icon}</span>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>{s.label}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                              <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{val}</span>
+                              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>/10</span>
+                            </div>
+                            <div style={{ fontSize: 10, color: valColor, marginTop: 4, fontWeight: 500 }}>{s.labels[val - 1]}</div>
                           </div>
-                          <span style={{ fontSize: 14, fontWeight: 600, color }}>{s.labels[val - 1]}</span>
                         </div>
                         <div
                           onTouchStart={handleTouch} onTouchMove={handleTouch} onClick={handleTouch}
-                          style={{ position: 'relative', width: '100%', height: trackH, borderRadius: trackH / 2, background: 'rgba(0,0,0,0.06)', cursor: 'pointer', touchAction: 'none' }}
+                          style={{ position: 'relative', width: '100%', height: trackH, borderRadius: trackH / 2, background: 'rgba(0,0,0,0.05)', cursor: 'pointer', touchAction: 'none', marginTop: 14 }}
                         >
-                          <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: `${Math.max(pct, 5)}%`, borderRadius: trackH / 2, background: `linear-gradient(90deg, rgba(255,255,255,0.3), ${color}40)`, transition: 'none' }} />
-                          <div style={{ position: 'absolute', top: '50%', left: `${Math.max(pct, 2)}%`, transform: 'translate(-50%, -50%)', width: 20, height: 20, borderRadius: '50%', background: `rgb(${Math.round(255+(s.rgb[0]-255)*pct/100)},${Math.round(255+(s.rgb[1]-255)*pct/100)},${Math.round(255+(s.rgb[2]-255)*pct/100)})`, border: '1px solid rgba(255,255,255,0.9)', boxShadow: '0 1px 4px rgba(0,0,0,0.15)', transition: 'none', pointerEvents: 'none' }} />
+                          <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: `${Math.max(pct, 5)}%`, borderRadius: trackH / 2, background: `linear-gradient(90deg, rgba(255,255,255,0.3), ${color}50)`, transition: 'none' }} />
+                          <div style={{ position: 'absolute', top: '50%', left: `${Math.max(pct, 2)}%`, transform: 'translate(-50%, -50%)', width: 18, height: 18, borderRadius: '50%', background: `rgb(${Math.round(255+(s.rgb[0]-255)*pct/100)},${Math.round(255+(s.rgb[1]-255)*pct/100)},${Math.round(255+(s.rgb[2]-255)*pct/100)})`, border: '1px solid rgba(255,255,255,0.9)', boxShadow: '0 1px 4px rgba(0,0,0,0.15)', transition: 'none', pointerEvents: 'none' }} />
                         </div>
                       </div>
                     );
@@ -489,7 +502,6 @@ export default function ChangePage({ onTabChange }) {
                 const sPct = subSliderPcts.stress;
                 const sColor = getCategoryColor('mood');
                 const sRgb = [240,160,112];
-                const trackH = 9;
                 let cachedStressRect = null;
                 const handleStressTouch = (e) => {
                   if (e.type === 'touchstart' || e.type === 'click') cachedStressRect = e.currentTarget.getBoundingClientRect();
@@ -501,44 +513,90 @@ export default function ChangePage({ onTabChange }) {
                   const v = Math.round((x / rect.width) * 9) + 1;
                   handleMoodStress(Math.max(1, Math.min(10, v)));
                 };
+                const trackH = 6;
+                // 다이얼: 현재 포커스 인덱스 (마지막 선택된 감정 기준)
+                const lastSel = selectedEmotions.length > 0 ? selectedEmotions[selectedEmotions.length - 1] : null;
+                const focusIdx = lastSel ? EMOTIONS.findIndex(e => e.key === lastSel) : -1;
+                // 스와이프 (드래그 중 한 칸마다 햅틱)
+                const dialRef = { startX: 0, lastIdx: focusIdx >= 0 ? focusIdx : 0 };
+                const onDialTouchStart = (e) => { dialRef.startX = e.touches[0].clientX; dialRef.lastIdx = focusIdx >= 0 ? focusIdx : 0; };
+                const onDialTouchMove = (e) => {
+                  const dx = e.touches[0].clientX - dialRef.startX;
+                  const steps = Math.round(dx / -40); // 40px당 한 칸
+                  const next = Math.max(0, Math.min(EMOTIONS.length - 1, dialRef.lastIdx + steps));
+                  const curFocus = focusIdx >= 0 ? focusIdx : 0;
+                  if (next !== curFocus) {
+                    hapticLight();
+                    handleMoodEmotion(EMOTIONS[next].key);
+                  }
+                };
+                const onDialTouchEnd = () => {};
                 return (
-                  <div key="mood" style={{ ...v2CardStyle, ...fadeUp(delay) }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                      <div style={{ width: 3, height: 14, borderRadius: 2, background: sColor }} />
-                      <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>감정</span>
+                  <div key="mood" style={{
+                    background: 'rgba(255,255,255,0.55)', borderRadius: 30,
+                    backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+                    border: '1px solid rgba(255,255,255,0.7)',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.5)',
+                    padding: '20px', marginBottom: 10, ...fadeUp(delay),
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+                      <span style={{ fontSize: 16, filter: 'drop-shadow(0 1px 1.5px rgba(240,160,112,0.3))' }}>😊</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>감정</span>
                     </div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                      {EMOTIONS.map(em => {
+
+                    {/* 이모지 다이얼 */}
+                    <div
+                      onTouchStart={onDialTouchStart} onTouchMove={onDialTouchMove} onTouchEnd={onDialTouchEnd}
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0, padding: '10px 0 0', overflow: 'hidden', position: 'relative', touchAction: 'pan-y', minHeight: 80 }}
+                    >
+                      {EMOTIONS.map((em, i) => {
+                        const diff = focusIdx >= 0 ? i - focusIdx : i - Math.floor(EMOTIONS.length / 2);
+                        const absDiff = Math.abs(diff);
+                        const visible = absDiff <= 3;
+                        if (!visible) return null;
+                        const isFocused = diff === 0 && focusIdx >= 0;
                         const sel = selectedEmotions.includes(em.key);
                         return (
-                          <div key={em.key} onClick={() => handleMoodEmotion(em.key)}
+                          <div
+                            key={em.key}
+                            onClick={() => handleMoodEmotion(em.key)}
                             style={{
-                              display: 'flex', alignItems: 'center', gap: 5,
-                              padding: '8px 14px', borderRadius: 99, cursor: 'pointer',
-                              background: sel ? 'rgba(200,230,210,.4)' : 'rgba(255,255,255,.5)',
-                              border: sel ? '1.5px solid rgba(100,180,130,.5)' : '1.5px solid rgba(200,220,230,.3)',
-                              transition: 'all 0.15s ease',
-                            }}>
-                            <span style={{ fontSize: 15 }}>{em.icon}</span>
-                            <span style={{ fontSize: 12, color: sel ? '#2A6A4A' : '#7AAABB', fontWeight: sel ? 600 : 400 }}>{em.key}</span>
+                              display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer',
+                              transition: 'all 0.3s ease', WebkitTapHighlightColor: 'transparent',
+                              width: isFocused ? 80 : 52,
+                              opacity: isFocused ? 1 : absDiff === 1 ? 0.5 : absDiff === 2 ? 0.3 : 0.15,
+                              transform: `scale(${isFocused ? 1.5 : 1})`,
+                              flexShrink: 0,
+                            }}
+                          >
+                            <span style={{
+                              fontSize: 30,
+                              filter: isFocused ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' : 'none',
+                              transition: 'all 0.3s ease', lineHeight: 1,
+                            }}>{em.icon}</span>
                           </div>
                         );
                       })}
                     </div>
-                    <div style={{ marginTop: 18 }}>
+                    {focusIdx >= 0 && (
+                      <div style={{ textAlign: 'center', marginBottom: 4 }}>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(0,0,0,0.5)' }}>{EMOTIONS[focusIdx].key}</span>
+                      </div>
+                    )}
+                    <div style={{ marginTop: 14 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <div style={{ width: 3, height: 14, borderRadius: 2, background: sColor }} />
-                          <span style={{ fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>스트레스</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span style={{ fontSize: 14, filter: 'drop-shadow(0 1px 1.5px rgba(240,160,112,0.3))' }}>😮‍💨</span>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>스트레스</span>
                         </div>
-                        <span style={{ fontSize: 14, fontWeight: 600, color: sColor }}>{stressVal != null ? stressLabels[stressVal - 1] : '—'}</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: sColor }}>{stressVal != null ? stressLabels[stressVal - 1] : '—'}</span>
                       </div>
                       <div
                         onTouchStart={handleStressTouch} onTouchMove={handleStressTouch} onClick={handleStressTouch}
-                        style={{ position: 'relative', width: '100%', height: trackH, borderRadius: trackH / 2, background: 'rgba(0,0,0,0.06)', cursor: 'pointer', touchAction: 'none' }}
+                        style={{ position: 'relative', width: '100%', height: trackH, borderRadius: trackH / 2, background: 'rgba(0,0,0,0.05)', cursor: 'pointer', touchAction: 'none' }}
                       >
-                        <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: `${Math.max(sPct, 5)}%`, borderRadius: trackH / 2, background: `linear-gradient(90deg, rgba(255,255,255,0.3), ${sColor}40)`, transition: 'none' }} />
-                        <div style={{ position: 'absolute', top: '50%', left: `${Math.max(sPct, 2)}%`, transform: 'translate(-50%, -50%)', width: 20, height: 20, borderRadius: '50%', background: `rgb(${Math.round(255+(sRgb[0]-255)*sPct/100)},${Math.round(255+(sRgb[1]-255)*sPct/100)},${Math.round(255+(sRgb[2]-255)*sPct/100)})`, border: '1px solid rgba(255,255,255,0.9)', boxShadow: '0 1px 4px rgba(0,0,0,0.15)', transition: 'none', pointerEvents: 'none' }} />
+                        <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: `${Math.max(sPct, 5)}%`, borderRadius: trackH / 2, background: `linear-gradient(90deg, rgba(255,255,255,0.3), ${sColor}50)`, transition: 'none' }} />
+                        <div style={{ position: 'absolute', top: '50%', left: `${Math.max(sPct, 2)}%`, transform: 'translate(-50%, -50%)', width: 18, height: 18, borderRadius: '50%', background: `rgb(${Math.round(255+(sRgb[0]-255)*sPct/100)},${Math.round(255+(sRgb[1]-255)*sPct/100)},${Math.round(255+(sRgb[2]-255)*sPct/100)})`, border: '1px solid rgba(255,255,255,0.9)', boxShadow: '0 1px 4px rgba(0,0,0,0.15)', transition: 'none', pointerEvents: 'none' }} />
                       </div>
                     </div>
                   </div>
