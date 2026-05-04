@@ -960,7 +960,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
                       <div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_todaySleep || '0'}</span>
+                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_todaySleep ? (_todaySleep % 1 === 0 ? _todaySleep : _todaySleep.toFixed(1)) : '0'}</span>
                           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>시간</span>
                         </div>
                         <div style={{ fontSize: 10, color: _todaySleep ? (_todaySleep >= 7 ? '#22C55E' : _todaySleep >= 5 ? 'var(--text-muted)' : '#E05050') : 'var(--accent-primary, #89cef5)', marginTop: 4, minHeight: 14 }}>{_todaySleep ? (_todaySleep >= 7 ? '충분' : _todaySleep >= 5 ? '보통' : '부족') : '기록하기'}</div>
@@ -1245,8 +1245,8 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                       {_hasData ? (
                         <div>
                           <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                            {_cafTotal > 0 && <span style={{ fontSize: 20, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>☕{_cafTotal}</span>}
-                            {_alcTotal > 0 && <span style={{ fontSize: 20, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>🍺{_alcTotal}</span>}
+                            {_cafTotal > 0 && <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>☕{_cafTotal}</span>}
+                            {_alcTotal > 0 && <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>🍺{_alcTotal}</span>}
                           </div>
                           <div style={{ fontSize: 10, color: '#22C55E', marginTop: 4 }}>
                             {[..._drinkData.caffeine.map(d => d.name), ..._drinkData.alcohol.map(d => d.name)].filter(Boolean).slice(0, 2).join(', ')}
@@ -1254,7 +1254,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                         </div>
                       ) : (
                         <div>
-                          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
+                          <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
                           <div style={{ fontSize: 10, color: 'var(--accent-primary, #89cef5)', marginTop: 4 }}>기록하기</div>
                         </div>
                       )}
@@ -1289,7 +1289,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                         </div>
                       ) : (
                         <div>
-                          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
+                          <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
                           <div style={{ fontSize: 10, color: 'var(--accent-primary, #89cef5)', marginTop: 4 }}>등록하기</div>
                         </div>
                       )}
@@ -1313,7 +1313,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                     <div style={{ marginTop: 'auto' }}>
                       {_tagCount > 0 ? (
                         <div>
-                          <div style={{ fontSize: 18, lineHeight: 1.3 }}>
+                          <div style={{ fontSize: 22, lineHeight: 1.3 }}>
                             {_skinTags.slice(0, 3).map(t => {
                               const icons = { trouble: '🔴', dry: '🌵', oily: '💧', puffy: '🎈', redness: '🌡️', sensitive: '😰', dull: '😴', good: '✨' };
                               return icons[t] || '•';
@@ -1323,7 +1323,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                         </div>
                       ) : (
                         <div>
-                          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
+                          <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
                           <div style={{ fontSize: 10, color: 'var(--accent-primary, #89cef5)', marginTop: 4 }}>체크하기</div>
                         </div>
                       )}
@@ -1348,11 +1348,11 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                       {_w ? (
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <span style={{ fontSize: 18 }}>{_w.conditionIcon}</span>
-                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 2 }}>
-                              <span style={{ fontSize: 11, color: '#89cef5' }}>{_w.tempMin}°</span>
-                              <span style={{ fontSize: 10, color: 'rgba(0,0,0,0.15)' }}>/</span>
-                              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{_w.tempMax}°</span>
+                            <span style={{ fontSize: 22 }}>{_w.conditionIcon}</span>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
+                              <span style={{ fontSize: 13, color: '#89cef5' }}>{_w.tempMin}°</span>
+                              <span style={{ fontSize: 11, color: 'rgba(0,0,0,0.12)' }}>/</span>
+                              <span style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_w.tempMax}°</span>
                             </div>
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
@@ -1362,7 +1362,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                         </div>
                       ) : (
                         <div>
-                          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
+                          <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
                           <div style={{ fontSize: 10, color: 'var(--accent-primary, #89cef5)', marginTop: 4 }}>확인하기</div>
                         </div>
                       )}
@@ -1389,8 +1389,17 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                       <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>주기</span>
                     </div>
                     <div style={{ marginTop: 'auto' }}>
-                      <div style={{ fontSize: _isUnset ? 16 : 22, fontWeight: 500, color: '#2C4A5E', letterSpacing: _isUnset ? 0 : -0.5, fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_cs2.label}</div>
-                      <div style={{ fontSize: _isUnset ? 10 : 11, color: '#6B8499', marginTop: 4 }}>{_cs2.subtitle}</div>
+                      {_isUnset ? (
+                        <>
+                          <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
+                          <div style={{ fontSize: 10, color: 'var(--accent-primary, #89cef5)', marginTop: 4 }}>체크하기</div>
+                        </>
+                      ) : (
+                        <>
+                          <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.5, fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_cs2.label}</div>
+                          <div style={{ fontSize: 11, color: '#6B8499', marginTop: 4 }}>{_cs2.subtitle}</div>
+                        </>
+                      )}
                     </div>
                     {/* 5개 점 인디케이터 */}
                     {!_isUnset && (
