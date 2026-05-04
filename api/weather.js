@@ -151,9 +151,13 @@ export default async function handler(req, res) {
     // 5-day forecast (aggregate by day, KST-based)
     const todayKey = kstDateKey(now);
     const dayMap = new Map();
+    const todayTemps = [weather.main.temp]; // 현재 기온 포함
     for (const f of forecast.list || []) {
       const dayKey = kstDateKey(f.dt);
-      if (dayKey === todayKey) continue;
+      if (dayKey === todayKey) {
+        todayTemps.push(f.main.temp);
+        continue;
+      }
       if (!dayMap.has(dayKey)) {
         dayMap.set(dayKey, { dt: f.dt, temps: [], humidity: [], condition: f.weather?.[0]?.main || 'Clear' });
       }
@@ -164,6 +168,9 @@ export default async function handler(req, res) {
       const h = toKST(f.dt).getUTCHours();
       if (h >= 11 && h <= 14) d.condition = f.weather?.[0]?.main || d.condition;
     }
+    // 오늘 하루 전체 최저/최고 (forecast 기반)
+    const todayMinFromForecast = Math.round(Math.min(...todayTemps));
+    const todayMaxFromForecast = Math.round(Math.max(...todayTemps));
     const weekForecast = [...dayMap.values()].slice(0, 5).map((d) => {
       const c = getCondition(d.condition, false);
       return {
@@ -187,8 +194,8 @@ export default async function handler(req, res) {
       location: locationName,
       date: formatKoreanDate(weather.dt),
       temp: Math.round(weather.main.temp),
-      tempMin: Math.round(weather.main.temp_min),
-      tempMax: Math.round(weather.main.temp_max),
+      tempMin: todayMinFromForecast,
+      tempMax: todayMaxFromForecast,
       condition: cond.label,
       conditionIcon: cond.icon,
       humidity: weather.main.humidity,

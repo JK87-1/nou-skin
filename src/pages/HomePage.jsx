@@ -11,7 +11,7 @@ import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, GENDER_OPTIONS, get
 import { getTodayNutrition, getTodayFoods, getFoodGoal, saveFoodRecord } from '../storage/FoodStorage';
 import { AddFoodModal } from './RecordPage';
 import { getWeatherData, refreshWeatherIfNeeded } from '../storage/WeatherStorage';
-import { calculateCycleState, getActivePosition, getCycleBgStyle, getCycleData, saveCycleData } from '../utils/cycleUtils';
+import { calculateCycleState, getActivePosition, getCycleData, saveCycleData } from '../utils/cycleUtils';
 import { getTodayProgress } from '../storage/RoutineCheckStorage';
 import { getLatestWeight, getBodyRecords, saveBodyRecord } from '../storage/BodyStorage';
 import {
@@ -197,6 +197,9 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [showWaterModal, setShowWaterModal] = useState(false);
   const [showSleepModal, setShowSleepModal] = useState(false);
   const [homeView, setHomeView] = useState('cards'); // 'cards' | 'briefing'
+  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const isToday = selectedDate === new Date().toISOString().slice(0, 10);
   const [showCheckIn, setShowCheckIn] = useState(false);
   const [showEveningCheckIn, setShowEveningCheckIn] = useState(false);
   const [showAfternoonCheckIn, setShowAfternoonCheckIn] = useState(false);
@@ -508,9 +511,9 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
         {/* 날짜 + 인사 */}
         {(() => {
-          const now = new Date();
+          const _selDate = new Date(selectedDate + 'T00:00:00');
           const days = ['일','월','화','수','목','금','토'];
-          const dateStr = `${now.getFullYear()}. ${String(now.getMonth()+1).padStart(2,'0')}. ${String(now.getDate()).padStart(2,'0')}  ${days[now.getDay()]}요일`;
+          const dateStr = `${_selDate.getFullYear()}. ${String(_selDate.getMonth()+1).padStart(2,'0')}. ${String(_selDate.getDate()).padStart(2,'0')}  ${days[_selDate.getDay()]}요일`;
           const _tm = getTimeMode();
           const _isDark = _tm === 'evening' && homeView === 'briefing';
           const greeting = getGreeting(profile.nickname);
@@ -520,8 +523,10 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           return (
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                <div style={{ fontSize: 14, fontWeight: 500, color: txtH }}>
+                <div onClick={() => setShowDatePicker(true)} style={{ fontSize: 14, fontWeight: 500, color: txtH, cursor: 'pointer', WebkitTapHighlightColor: 'transparent', display: 'flex', alignItems: 'center', gap: 6 }}>
                   {dateStr}
+                  {!isToday && <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--accent-primary, #89cef5)', padding: '2px 8px', borderRadius: 8, background: 'rgba(137,206,245,0.1)' }}>과거</span>}
+                  <span style={{ fontSize: 10, color: 'rgba(0,0,0,0.15)' }}>▼</span>
                 </div>
                 <div onClick={() => { setHomeView(v => v === 'briefing' ? 'cards' : 'briefing'); if (homeView === 'cards') setEditMode(false); }}
                   style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 20, background: _isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.04)', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>
@@ -725,8 +730,8 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         }
       `}</style>
       {(() => {
-        // 공통 데이터를 한 번만 계산
-        const _todayKey = new Date().toISOString().slice(0, 10);
+        // 공통 데이터를 한 번만 계산 (선택된 날짜 기준)
+        const _todayKey = selectedDate;
         const _allV2 = (() => { try { return JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); } catch { return {}; } })();
         const _todayRec = _allV2[_todayKey] || {};
         const _curWeight = getLatestWeight()?.weight || 55;
@@ -758,8 +763,8 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         // 걸음수 7일 바
         const _stepBars = [];
         for (let i = 6; i >= 0; i--) {
-          const d = new Date(); d.setDate(d.getDate() - i);
-          const dk = d.toISOString().slice(0, 10);
+          const d = new Date(_todayKey + 'T00:00:00'); d.setDate(d.getDate() - i);
+          const dk = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
           _stepBars.push(_allV2[dk]?.steps || 0);
         }
         const _maxStep = Math.max(..._stepBars, 1);
@@ -778,11 +783,11 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         const _waterGoal = Math.ceil(_wSettings.goalMl / _wSettings.cupMl);
         const _cupMl = _wSettings.cupMl;
 
-        // 컨디션 7일 데이터
+        // 컨디션 7일 데이터 (선택 날짜 기준)
         const _allChecks = (() => { try { return JSON.parse(localStorage.getItem('nou_condition_checks') || '[]'); } catch { return []; } })();
         const _cond7 = [];
         for (let i = 6; i >= 0; i--) {
-          const d = new Date(); d.setDate(d.getDate() - i);
+          const d = new Date(_todayKey + 'T00:00:00'); d.setDate(d.getDate() - i);
           const dk = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
           const dayChecks = _allChecks.filter(c => (c.date || c.timestamp?.slice(0,10)) === dk);
           if (dayChecks.length > 0) {
@@ -798,7 +803,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         // 수면 7일 데이터
         const _sleep7 = [];
         for (let i = 6; i >= 0; i--) {
-          const d = new Date(); d.setDate(d.getDate() - i);
+          const d = new Date(_todayKey + 'T00:00:00'); d.setDate(d.getDate() - i);
           const dk = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
           const rec = _allV2[dk];
           if (rec?.sleep?.hours > 0) {
@@ -1177,7 +1182,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               }
 
               if (cardId === 'blood_sugar') {
-                const _bs = getTodayBloodSugar();
+                const _bs = (() => { const checks = getBloodSugarChecks(); return checks.find(c => c.date === _todayKey) || null; })();
                 const _bsChecks = getBloodSugarChecks().slice(-7);
                 const _bsStatus = _bs ? (_bs.timing === '식후'
                   ? (_bs.value < 140 ? '정상' : _bs.value < 200 ? '주의' : '높음')
@@ -1224,7 +1229,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               }
 
               if (cardId === 'drink') {
-                const _drinkData = (() => { try { const all = JSON.parse(localStorage.getItem('lua_drink_records') || '{}'); return all[new Date().toISOString().slice(0, 10)] || { caffeine: [], alcohol: [] }; } catch { return { caffeine: [], alcohol: [] }; } })();
+                const _drinkData = (() => { try { const all = JSON.parse(localStorage.getItem('lua_drink_records') || '{}'); return all[_todayKey] || { caffeine: [], alcohol: [] }; } catch { return { caffeine: [], alcohol: [] }; } })();
                 const _cafTotal = _drinkData.caffeine.reduce((s, d) => s + (d.count || 0), 0);
                 const _alcTotal = _drinkData.alcohol.reduce((s, d) => s + (d.count || 0), 0);
                 const _hasData = _cafTotal > 0 || _alcTotal > 0;
@@ -1260,7 +1265,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
               if (cardId === 'supplement') {
                 const _suppItems = getSupplementItems();
-                const _suppChecks = getSupplementChecks();
+                const _suppChecks = getSupplementChecks(_todayKey);
                 const _suppDone = _suppItems.filter(s => _suppChecks[s.id]);
                 const _suppTotal = _suppItems.length;
                 return editWrap('영양제', (
@@ -1294,7 +1299,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               }
 
               if (cardId === 'skin_check') {
-                const _skinSub = getTodaySkinSubCheck();
+                const _skinSub = (() => { try { const checks = JSON.parse(localStorage.getItem('nou_skin_sub_checks') || '[]'); return checks.find(c => c.date === _todayKey) || null; } catch { return null; } })();
                 const _skinTags = _skinSub?.tags || [];
                 const _tagCount = _skinTags.length;
                 return editWrap('피부', (
@@ -1371,17 +1376,13 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                 if (profile.gender !== '여성') return null;
                 const _cycleData = getCycleData();
                 const _cs2 = calculateCycleState(_cycleData);
-                const _bg = getCycleBgStyle(_cs2.state);
                 const _isUnset = _cs2.state === 'unset';
                 const _activePos = _cs2.stage ? getActivePosition(_cs2.stage) : -1;
                 return editWrap('주기', (
                   <div onClick={() => handleCardTap('cycle', () => setShowCycleModal(true))} style={{
                     ..._cs, cursor: 'pointer', padding: '20px', position: 'relative',
-                    background: _bg,
-                    border: _isUnset ? '0.5px dashed rgba(74,107,133,0.2)' : '1px solid rgba(255,255,255,0.3)',
                     animation: tappedCard === 'cycle' ? 'cardTap 0.3s ease' : 'none',
                     pointerEvents: isEditing ? 'none' : 'auto',
-                    transition: 'background-color 0.5s ease',
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 0, flex: '0 0 auto' }}>
                       <span style={{ fontSize: 14, opacity: _isUnset ? 0.5 : 1 }}>🌸</span>
@@ -1740,6 +1741,35 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
       {showCycleModal && (
         <CycleModal onClose={() => setShowCycleModal(false)} onUpdate={() => { setShowCycleModal(false); setWeightRefreshKey(k => k + 1); }} />
+      )}
+
+      {/* 날짜 선택 모달 */}
+      {showDatePicker && (
+        <div onClick={() => setShowDatePicker(false)} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0', padding: '24px 24px 40px', width: '100%', maxWidth: 420 }}>
+            <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
+            <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 20, textAlign: 'center' }}>날짜 선택</div>
+            <input type="date" value={selectedDate} max={new Date().toISOString().slice(0, 10)}
+              onChange={e => { setSelectedDate(e.target.value); setShowDatePicker(false); setWeightRefreshKey(k => k + 1); }}
+              style={{ width: '100%', padding: '16px', borderRadius: 14, border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.02)', fontSize: 18, color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', textAlign: 'center' }} />
+            {!isToday && (
+              <button onClick={() => { setSelectedDate(new Date().toISOString().slice(0, 10)); setShowDatePicker(false); setWeightRefreshKey(k => k + 1); }}
+                style={{ width: '100%', marginTop: 12, padding: '14px 0', borderRadius: 'var(--btn-radius)', border: 'none', background: 'var(--accent-primary)', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>오늘로 돌아가기</button>
+            )}
+            <button onClick={() => setShowDatePicker(false)}
+              style={{ width: '100%', marginTop: 8, padding: '14px 0', borderRadius: 'var(--btn-radius)', border: 'none', background: 'var(--bg-input, #F2F3F5)', color: 'var(--text-muted)', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>닫기</button>
+          </div>
+        </div>
+      )}
+
+      {/* 과거 날짜일 때 하단 플로팅 "오늘로" 버튼 */}
+      {!isToday && !showDatePicker && (
+        <div onClick={() => { setSelectedDate(new Date().toISOString().slice(0, 10)); setWeightRefreshKey(k => k + 1); }}
+          style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 100,
+            padding: '10px 20px', borderRadius: 99, background: 'var(--accent-primary)', color: '#fff',
+            fontSize: 13, fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+            WebkitTapHighlightColor: 'transparent',
+          }}>오늘로 돌아가기</div>
       )}
 
       {showSleepModal && (
