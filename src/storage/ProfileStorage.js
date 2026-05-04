@@ -19,21 +19,23 @@ const DEFAULTS = {
   dietGoal: 'balance',
   categories: [
     { key: 'food',       label: '식단',     color: '#F5E6A3', enabled: true,  group: 'cause',
-      subs: [{ key: 'meal', label: '식사', enabled: true }, { key: 'water', label: '수분', enabled: true }] },
+      subs: [{ key: 'meal', label: '식사', enabled: true }, { key: 'water', label: '수분', enabled: true }, { key: 'caffeine', label: '카페인', enabled: true }, { key: 'alcohol', label: '알콜', enabled: true }] },
     { key: 'activity',   label: '활동',     color: '#B8E0C8', enabled: true,  group: 'cause',
       subs: [{ key: 'steps', label: '걸음수', enabled: true }, { key: 'exercise', label: '운동', enabled: true }] },
     { key: 'supplement', label: '영양',     color: '#A8CFF0', enabled: true,  group: 'cause',
       subs: [{ key: 'supplement_pill', label: '영양제', enabled: true }, { key: 'skincare', label: '화장품', enabled: true }] },
     { key: 'sleep',      label: '휴식',     color: '#9AAFD4', enabled: true,  group: 'cause',
-      subs: [{ key: 'meditation', label: '명상', enabled: true }, { key: 'sleep_log', label: '수면', enabled: true }] },
-    { key: 'energy',     label: '에너지',   color: '#F5C870', enabled: true,  group: 'result',
-      subs: [{ key: 'vitality', label: '활력', enabled: true }, { key: 'focus', label: '집중력', enabled: true }] },
-    { key: 'mood',       label: '기분',     color: '#F0A070', enabled: true,  group: 'result',
-      subs: [{ key: 'emotion', label: '감정', enabled: true }, { key: 'stress', label: '스트레스', enabled: true }] },
+      subs: [{ key: 'sleep_log', label: '수면', enabled: true }] },
+    { key: 'condition',  label: '컨디션',   color: '#F5C870', enabled: true,  group: 'result',
+      subs: [{ key: 'physical_energy', label: '신체에너지', enabled: true }, { key: 'mental_energy', label: '멘탈에너지', enabled: true }] },
     { key: 'body',       label: '바디',     color: '#F09888', enabled: true,  group: 'result',
-      subs: [{ key: 'weight', label: '몸무게', enabled: true }, { key: 'inbody', label: '인바디', enabled: true }, { key: 'blood_sugar', label: '혈당', enabled: true }] },
+      subs: [{ key: 'weight', label: '몸무게', enabled: true }, { key: 'blood_sugar', label: '혈당', enabled: true }] },
     { key: 'skin',       label: '피부',     color: '#D8A0E0', enabled: true,  group: 'result',
-      subs: [{ key: 'face', label: '얼굴', enabled: true }, { key: 'skin_condition', label: '피부상태', enabled: true }] },
+      subs: [{ key: 'skin_condition', label: '피부상태', enabled: true }] },
+    { key: 'cycle',      label: '생리주기', color: '#F5A0B8', enabled: true,  group: 'external',
+      subs: [], genderFilter: 'female' },
+    { key: 'weather',    label: '날씨',     color: '#89CEF5', enabled: true,  group: 'external',
+      subs: [] },
   ],
 };
 
@@ -66,7 +68,7 @@ export function getCategories() {
   const saved = profile.categories || [];
   const defaultMap = Object.fromEntries(DEFAULTS.categories.map(c => [c.key, c]));
   // 삭제된 카테고리 목록
-  const REMOVED = ['shape', 'meditation', 'walk', 'exercise', 'water', 'face', 'bodyshape'];
+  const REMOVED = ['shape', 'meditation', 'walk', 'exercise', 'face', 'bodyshape', 'mood', 'inbody', 'energy'];
   // 1) 저장된 카테고리는 순서·활성 유지, 라벨·컬러·그룹·subs는 기본값으로 최신화
   const migrated = saved
     .filter(c => !REMOVED.includes(c.key))
@@ -98,7 +100,13 @@ export function getCategoryColor(categoryKey) {
 }
 
 export function getEnabledCategories(group) {
-  const cats = getCategories().filter(c => c.enabled);
+  const profile = getProfile();
+  const gender = profile.gender || '';
+  const cats = getCategories().filter(c => {
+    if (!c.enabled) return false;
+    if (c.genderFilter && c.genderFilter !== gender) return false;
+    return true;
+  });
   if (group) return cats.filter(c => c.group === group);
   return cats;
 }

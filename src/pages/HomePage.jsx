@@ -16,9 +16,9 @@ import { getLatestWeight, getBodyRecords, saveBodyRecord } from '../storage/Body
 import {
   getTodayChecks, getLatestCheck, saveConditionCheck,
   shouldResetCheck, getMinutesSinceLastCheck,
-  getTodayBloodSugar,
+  getTodayBloodSugar, saveBloodSugar, getBloodSugarChecks,
 } from '../storage/ConditionStorage';
-import { getSupplementItems, getSupplementChecks } from '../storage/SupplementStorage';
+import { getSupplementItems, getSupplementChecks, toggleSupplementCheck, addSupplementItem, deleteSupplementItem } from '../storage/SupplementStorage';
 
 function getTimeMode() {
   const h = new Date().getHours();
@@ -187,6 +187,9 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [showFoodModal, setShowFoodModal] = useState(false);
   const [showCalorieExplain, setShowCalorieExplain] = useState(false);
   const [showConditionModal, setShowConditionModal] = useState(false);
+  const [showBloodSugarModal, setShowBloodSugarModal] = useState(false);
+  const [showDrinkModal, setShowDrinkModal] = useState(false);
+  const [showSupplementModal, setShowSupplementModal] = useState(false);
   const [showWaterModal, setShowWaterModal] = useState(false);
   const [showSleepModal, setShowSleepModal] = useState(false);
   const [homeView, setHomeView] = useState('cards'); // 'cards' | 'briefing'
@@ -218,9 +221,11 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
     { id: 'water', label: '수분' },
     { id: 'weight', label: '체중' },
     { id: 'sleep', label: '수면' },
+    { id: 'blood_sugar', label: '혈당' },
+    { id: 'drink', label: '드링크' },
+    { id: 'supplement', label: '영양제' },
   ];
-  // v5: 개별 카드 분리 (6개 카드, 2열 그리드)
-  const CARD_ORDER_VERSION = 6;
+  const CARD_ORDER_VERSION = 9;
   const DEFAULT_CARD_ORDER = CARD_REGISTRY.map(c => c.id);
   const [cardOrder, setCardOrder] = useState(() => {
     try {
@@ -623,15 +628,13 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
         return (
         <div>
+          {/* 퀵 체크인 */}
+          <QuickCheckIn onDataSaved={() => { setCheckInRefresh(k => k + 1); setWeightRefreshKey(k => k + 1); setCheckInDone(!!loadTodayCheckIn()); }} />
+
           {/* 어젯밤 약속 확인 카드 (아침에만) */}
           {_tm === 'morning' && !promiseDismissed && (
             <YesterdayPromiseCard onDismiss={() => setPromiseDismissed(true)} />
           )}
-
-          {/* 체크인 카드 (스와이프 가능) */}
-          <div style={{ margin: '0 18px 16px' }} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-            {renderCheckinCard(_viewDone, _viewOnStart, _viewSummary, _viewTl, _viewAccent)}
-          </div>
 
           {/* AI 브리핑 */}
           {bodyBriefing && (
@@ -830,7 +833,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               ))}
             </div>
           </div>
-          <QuickCheckIn onDataSaved={() => { setCheckInRefresh(k => k + 1); setWeightRefreshKey(k => k + 1); setCheckInDone(!!loadTodayCheckIn()); }} />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 15, margin: '0 18px' }}>
             {cardOrder.map((cardId, cardIdx) => {
               const isFirst = cardIdx === 0;
@@ -1162,6 +1164,123 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                 ));
               }
 
+              if (cardId === 'blood_sugar') {
+                const _bs = getTodayBloodSugar();
+                const _bsChecks = getBloodSugarChecks().slice(-7);
+                const _bsStatus = _bs ? (_bs.timing === '식후'
+                  ? (_bs.value < 140 ? '정상' : _bs.value < 200 ? '주의' : '높음')
+                  : (_bs.value < 100 ? '정상' : _bs.value < 126 ? '주의' : '높음')) : null;
+                const _bsColor = _bsStatus === '정상' ? '#22C55E' : _bsStatus === '주의' ? '#E8A135' : _bsStatus === '높음' ? '#E05050' : null;
+                return editWrap('혈당', (
+                  <div onClick={() => handleCardTap('blood_sugar', () => setShowBloodSugarModal(true))} style={{ ..._cs, cursor: 'pointer', padding: '20px', animation: tappedCard === 'blood_sugar' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 0, flex: '0 0 auto' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(224,80,80,0.3))' }}><defs><linearGradient id="dropBS" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F5A8A8"/><stop offset="100%" stopColor="#D45050"/></linearGradient></defs><path d="M12 2.5c0 0-7.5 8-7.5 13a7.5 7.5 0 0015 0c0-5-7.5-13-7.5-13z" fill="url(#dropBS)" opacity="0.6"/></svg>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>혈당</span>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_bs ? _bs.value : '—'}</span>
+                          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>mg/dL</span>
+                        </div>
+                        <div style={{ fontSize: 10, color: _bsColor || 'var(--accent-primary, #89cef5)', marginTop: 4, minHeight: 14 }}>
+                          {_bs ? `${_bs.timing} · ${_bsStatus}` : '기록하기'}
+                        </div>
+                      </div>
+                      {_bsChecks.length >= 2 && (() => {
+                        const vals = _bsChecks.map(c => c.value);
+                        const mn = Math.min(...vals), mx = Math.max(...vals), rng = mx - mn || 1;
+                        const pts = vals.map((v, i) => ({ x: 5 + i * 10, y: 5 + 30 - ((v - mn) / rng) * 30 }));
+                        let d = `M${pts[0].x},${pts[0].y}`;
+                        for (let i = 0; i < pts.length - 1; i++) {
+                          const cx2 = (pts[i].x + pts[i+1].x) / 2;
+                          d += ` C${cx2},${pts[i].y} ${cx2},${pts[i+1].y} ${pts[i+1].x},${pts[i+1].y}`;
+                        }
+                        const last = pts[pts.length - 1];
+                        return (
+                          <svg width="65" height={40} viewBox={`0 0 ${5 + vals.length * 10} 40`} style={{ flexShrink: 0 }}>
+                            <path d={d} fill="none" stroke="rgba(240,152,136,0.5)" strokeWidth="2.5" strokeLinecap="round" />
+                            <circle cx={last.x} cy={last.y} r="3.5" fill="#F09888" />
+                          </svg>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                ));
+              }
+
+              if (cardId === 'drink') {
+                const _drinkData = (() => { try { const all = JSON.parse(localStorage.getItem('lua_drink_records') || '{}'); return all[new Date().toISOString().slice(0, 10)] || { caffeine: [], alcohol: [] }; } catch { return { caffeine: [], alcohol: [] }; } })();
+                const _cafTotal = _drinkData.caffeine.reduce((s, d) => s + (d.count || 0), 0);
+                const _alcTotal = _drinkData.alcohol.reduce((s, d) => s + (d.count || 0), 0);
+                const _hasData = _cafTotal > 0 || _alcTotal > 0;
+                return editWrap('드링크', (
+                  <div onClick={() => handleCardTap('drink', () => setShowDrinkModal(true))} style={{ ..._cs, cursor: 'pointer', padding: '20px', animation: tappedCard === 'drink' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 0, flex: '0 0 auto' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <img src="/cup.svg" width="16" height="16" alt="" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(160,120,80,0.3))' }} />
+                        <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>드링크</span>
+                      </div>
+                    </div>
+                    <div style={{ marginTop: 'auto' }}>
+                      {_hasData ? (
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                            {_cafTotal > 0 && <span style={{ fontSize: 20, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>☕{_cafTotal}</span>}
+                            {_alcTotal > 0 && <span style={{ fontSize: 20, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>🍺{_alcTotal}</span>}
+                          </div>
+                          <div style={{ fontSize: 10, color: '#22C55E', marginTop: 4 }}>
+                            {[..._drinkData.caffeine.map(d => d.name), ..._drinkData.alcohol.map(d => d.name)].filter(Boolean).slice(0, 2).join(', ')}
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
+                          <div style={{ fontSize: 10, color: 'var(--accent-primary, #89cef5)', marginTop: 4 }}>기록하기</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ));
+              }
+
+              if (cardId === 'supplement') {
+                const _suppItems = getSupplementItems();
+                const _suppChecks = getSupplementChecks();
+                const _suppDone = _suppItems.filter(s => _suppChecks[s.id]);
+                const _suppTotal = _suppItems.length;
+                return editWrap('영양제', (
+                  <div onClick={() => handleCardTap('supplement', () => setShowSupplementModal(true))} style={{ ..._cs, cursor: 'pointer', padding: '20px', animation: tappedCard === 'supplement' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 0, flex: '0 0 auto' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(100,180,220,0.3))' }}><defs><linearGradient id="pillCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#B8DFF0"/><stop offset="100%" stopColor="#6AAFD4"/></linearGradient></defs><rect x="8" y="2" width="8" height="20" rx="4" fill="url(#pillCard)" opacity="0.6"/><line x1="8" y1="12" x2="16" y2="12" stroke="#fff" strokeWidth="1.5" opacity="0.5"/></svg>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>영양제</span>
+                      </div>
+                    </div>
+                    <div style={{ marginTop: 'auto' }}>
+                      {_suppTotal > 0 ? (
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                            <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_suppDone.length}</span>
+                            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>/{_suppTotal}</span>
+                          </div>
+                          <div style={{ fontSize: 10, color: _suppDone.length === _suppTotal ? '#22C55E' : 'var(--text-muted)', marginTop: 4, minHeight: 14 }}>
+                            {_suppDone.length === _suppTotal ? '오늘 완료!' : `${_suppTotal - _suppDone.length}개 남음`}
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <div style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
+                          <div style={{ fontSize: 10, color: 'var(--accent-primary, #89cef5)', marginTop: 4 }}>등록하기</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ));
+              }
+
               return null;
             })}
           </div>
@@ -1475,6 +1594,18 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         />
       )}
 
+      {showBloodSugarModal && (
+        <BloodSugarModal onClose={() => setShowBloodSugarModal(false)} onUpdate={() => { setShowBloodSugarModal(false); setWeightRefreshKey(k => k + 1); }} />
+      )}
+
+      {showDrinkModal && (
+        <DrinkModal onClose={() => setShowDrinkModal(false)} onSave={() => { setShowDrinkModal(false); setWeightRefreshKey(k => k + 1); }} />
+      )}
+
+      {showSupplementModal && (
+        <SupplementModal onClose={() => setShowSupplementModal(false)} onUpdate={() => { setShowSupplementModal(false); setWeightRefreshKey(k => k + 1); }} />
+      )}
+
       {showSleepModal && (
         <SleepInputModal
           onClose={() => setShowSleepModal(false)}
@@ -1521,8 +1652,6 @@ function ConditionCheckModal({ selections, sliderPcts, onSelect, onSliderChange,
       icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(212,112,126,0.3))' }}><defs><linearGradient id="heartM" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F0B8C0"/><stop offset="100%" stopColor="#D4707E"/></linearGradient></defs><path d="M12 4.5C10 2 6.5 1.5 4.5 4c-2 2.5-1.5 6 1 8.5L12 20l6.5-7.5c2.5-2.5 3-6 1-8.5C17.5 1.5 14 2 12 4.5z" fill="url(#heartM)" opacity="0.6"/></svg> },
     { key: 'energy', label: '에너지', rgb: [245,230,163], labels: ENERGY_LABELS,
       icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(232,161,53,0.3))' }}><defs><linearGradient id="boltM" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F5DFA0"/><stop offset="100%" stopColor="#E8A135"/></linearGradient></defs><path d="M14 1L3 14h8l-3 9 12-13h-8l2-9z" fill="url(#boltM)" opacity="0.6"/></svg> },
-    { key: 'water', label: '수분', rgb: [194,234,255], labels: WATER_LABELS,
-      icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(91,163,212,0.3))' }}><defs><linearGradient id="dropM" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#B8E0F5"/><stop offset="100%" stopColor="#5BA3D4"/></linearGradient></defs><path d="M12 2.5c0 0-7.5 8-7.5 13a7.5 7.5 0 0015 0c0-5-7.5-13-7.5-13z" fill="url(#dropM)" opacity="0.6"/></svg> },
   ];
 
   return (
@@ -2393,6 +2522,454 @@ function SleepInputModal({ onClose, onUpdate }) {
             cursor: 'pointer', fontFamily: 'inherit',
           }}>저장</button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function BloodSugarModal({ onClose, onUpdate }) {
+  const [bsInput, setBsInput] = useState(() => { const t = getTodayBloodSugar(); return t?.value ?? ''; });
+  const [bsTiming, setBsTiming] = useState(() => { const t = getTodayBloodSugar(); return t?.timing ?? '공복'; });
+  const [graphData, setGraphData] = useState(() => { try { return JSON.parse(localStorage.getItem('nou_bs_graph') || 'null'); } catch { return null; } });
+  const [graphLoading, setGraphLoading] = useState(false);
+  const [graphError, setGraphError] = useState(null);
+
+  const bsStatus = bsInput ? (() => {
+    const v = Number(bsInput);
+    return bsTiming === '식후' ? (v < 140 ? '정상' : v < 200 ? '주의' : '높음') : (v < 100 ? '정상' : v < 126 ? '주의' : '높음');
+  })() : null;
+  const statusColor = bsStatus === '정상' ? '#22C55E' : bsStatus === '주의' ? '#E8A135' : bsStatus === '높음' ? '#E05050' : null;
+
+  const handleSave = () => { if (bsInput) saveBloodSugar(Number(bsInput), bsTiming); onUpdate?.(); };
+
+  const handlePhoto = async (e) => {
+    const file = e.target.files?.[0]; if (!file) return;
+    setGraphLoading(true); setGraphError(null);
+    try {
+      const dataUrl = await new Promise(r => { const rd = new FileReader(); rd.onload = ev => { const img = new Image(); img.onload = () => { const c = document.createElement('canvas'); const s = Math.min(1, 1024 / img.width); c.width = img.width * s; c.height = img.height * s; c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); r(c.toDataURL('image/jpeg', 0.8)); }; img.src = ev.target.result; }; rd.readAsDataURL(file); });
+      const resp = await fetch('/api/blood-sugar-graph', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image: dataUrl }) });
+      const result = await resp.json();
+      if (result.error) throw new Error(result.error);
+      if (!result.readings?.length) throw new Error('그래프에서 수치를 읽지 못했어요');
+      const gd = { ...result, uploadedAt: new Date().toISOString() };
+      localStorage.setItem('nou_bs_graph', JSON.stringify(gd)); setGraphData(gd);
+    } catch (err) { setGraphError(err.message); }
+    finally { setGraphLoading(false); e.target.value = ''; }
+  };
+
+  const history = getBloodSugarChecks().slice(-7);
+
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0', padding: '24px 24px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
+        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24, textAlign: 'center' }}>🩸 혈당 기록</div>
+
+        {/* 타이밍 */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          {['공복', '식후'].map(t => (
+            <div key={t} onClick={() => setBsTiming(t)} style={{
+              flex: 1, padding: '10px 0', borderRadius: 14, textAlign: 'center', cursor: 'pointer',
+              background: bsTiming === t ? 'rgba(240,152,136,0.12)' : 'rgba(0,0,0,0.03)',
+              border: bsTiming === t ? '1.5px solid rgba(240,152,136,0.4)' : '1.5px solid rgba(0,0,0,0.06)',
+              fontSize: 13, fontWeight: bsTiming === t ? 600 : 500, color: bsTiming === t ? '#E05050' : 'rgba(0,0,0,0.4)',
+            }}>{t}</div>
+          ))}
+        </div>
+
+        {/* 수치 입력 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+          <input value={bsInput} onChange={e => setBsInput(e.target.value)} placeholder="0" type="number" inputMode="numeric"
+            style={{ flex: 1, padding: '14px 16px', borderRadius: 14, border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.02)', fontSize: 28, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', outline: 'none', textAlign: 'center' }} />
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>mg/dL</div>
+            {bsStatus && <div style={{ fontSize: 12, fontWeight: 600, color: statusColor, marginTop: 4 }}>{bsStatus}</div>}
+          </div>
+        </div>
+
+        {/* 7일 미니차트 */}
+        {history.length >= 2 && (() => {
+          const vals = history.map(c => c.value);
+          const mn = Math.min(...vals, 70), mx = Math.max(...vals, 140), rng = mx - mn || 1;
+          const cW = 300, cH = 60, pd = 10;
+          const pts = vals.map((v, i) => ({ x: pd + (i / (vals.length - 1)) * (cW - pd * 2), y: pd + (cH - pd * 2) - ((v - mn) / rng) * (cH - pd * 2), v, ok: v >= 70 && v <= 140 }));
+          return (
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(0,0,0,0.3)', marginBottom: 8 }}>최근 기록</div>
+              <svg viewBox={`0 0 ${cW} ${cH}`} style={{ width: '100%' }}>
+                {pts.map((pt, i) => i > 0 && <line key={i} x1={pts[i-1].x} y1={pts[i-1].y} x2={pt.x} y2={pt.y} stroke={pt.ok && pts[i-1].ok ? '#4A9A7A' : '#E8944A'} strokeWidth="2.5" strokeLinecap="round" />)}
+                {pts.map((pt, i) => <circle key={`d${i}`} cx={pt.x} cy={pt.y} r="3" fill={pt.ok ? '#4A9A7A' : '#E8944A'} stroke="#fff" strokeWidth="1" />)}
+                {pts.map((pt, i) => (i === 0 || i === pts.length - 1) && <text key={`t${i}`} x={pt.x} y={pt.y - 7} textAnchor="middle" fontSize="9" fontWeight="600" fill={pt.ok ? '#4A9A7A' : '#E8944A'}>{pt.v}</text>)}
+              </svg>
+            </div>
+          );
+        })()}
+
+        {/* 혈당 그래프 (사진 업로드) */}
+        <div style={{ borderTop: '1px solid rgba(0,0,0,0.05)', paddingTop: 16, marginBottom: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(0,0,0,0.3)' }}>혈당 그래프</span>
+            <label style={{ fontSize: 12, color: '#89cef5', fontWeight: 500, cursor: 'pointer' }}>
+              {graphLoading ? '분석중...' : '📷 사진 업로드'}
+              <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhoto} />
+            </label>
+          </div>
+          {graphError && <div style={{ padding: '10px 12px', borderRadius: 12, background: 'rgba(224,80,80,0.08)', marginBottom: 10, fontSize: 12, color: '#E05050' }}>{graphError}</div>}
+          {graphLoading && <div style={{ padding: '24px 0', textAlign: 'center', fontSize: 12, color: 'rgba(0,0,0,0.3)' }}>AI가 그래프를 분석하고 있어요...</div>}
+          {!graphLoading && graphData?.readings?.length > 0 && (() => {
+            const rd = graphData.readings, vl = rd.map(r => r.value);
+            const mn = Math.min(...vl, 70), mx = Math.max(...vl, 140), rng = mx - mn || 1;
+            const pT = 20, pB = 30, pL = 36, pR = 10, cW = 300, cH = 140;
+            const iW = cW - pL - pR, iH = cH - pT - pB;
+            const y70 = pT + iH - ((70 - mn) / rng) * iH, y140 = pT + iH - ((140 - mn) / rng) * iH;
+            const pts = rd.map((r, i) => ({ x: pL + (i / Math.max(rd.length - 1, 1)) * iW, y: pT + iH - ((r.value - mn) / rng) * iH, value: r.value, time: r.time, ok: r.value >= 70 && r.value <= 140 }));
+            return (
+              <div>
+                <svg viewBox={`0 0 ${cW} ${cH}`} style={{ width: '100%' }}>
+                  <rect x={pL} y={y140} width={iW} height={y70 - y140} fill="rgba(100,180,130,.08)" />
+                  <line x1={pL} y1={y140} x2={cW - pR} y2={y140} stroke="rgba(100,180,130,.3)" strokeWidth="0.8" strokeDasharray="4 2" />
+                  <text x={pL - 4} y={y140 + 3} textAnchor="end" fontSize="8" fill="rgba(0,0,0,0.3)">140</text>
+                  <line x1={pL} y1={y70} x2={cW - pR} y2={y70} stroke="rgba(100,180,130,.3)" strokeWidth="0.8" strokeDasharray="4 2" />
+                  <text x={pL - 4} y={y70 + 3} textAnchor="end" fontSize="8" fill="rgba(0,0,0,0.3)">70</text>
+                  {pts.map((pt, i) => i > 0 && <line key={`s${i}`} x1={pts[i-1].x} y1={pts[i-1].y} x2={pt.x} y2={pt.y} stroke={pts[i-1].ok && pt.ok ? '#4A9A7A' : '#E8944A'} strokeWidth="2.5" strokeLinecap="round" />)}
+                  {pts.map((pt, i) => <circle key={`d${i}`} cx={pt.x} cy={pt.y} r="3" fill={pt.ok ? '#4A9A7A' : '#E8944A'} stroke="#fff" strokeWidth="1" />)}
+                  {pts.map((pt, i) => { const edge = i === 0 || i === pts.length - 1; const ext = pt.value === Math.max(...vl) || pt.value === Math.min(...vl); if (!edge && !ext) return null; return <text key={`v${i}`} x={pt.x} y={pt.y - 6} textAnchor="middle" fontSize="8" fontWeight="600" fill={pt.ok ? '#3A7A5A' : '#C4700A'}>{pt.value}</text>; })}
+                  {pts.map((pt, i) => { const sk = pts.length > 10 ? 3 : pts.length > 6 ? 2 : 1; if (i % sk !== 0 && i !== pts.length - 1) return null; return <text key={`tm${i}`} x={pt.x} y={cH - 6} textAnchor="middle" fontSize="7.5" fill="rgba(0,0,0,0.25)">{pt.time}</text>; })}
+                </svg>
+                <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: 8, padding: '10px 0', borderTop: '1px solid rgba(0,0,0,0.04)' }}>
+                  {[{ l: '최저', v: Math.min(...vl) }, { l: '평균', v: Math.round(vl.reduce((a, b) => a + b, 0) / vl.length) }, { l: '최고', v: Math.max(...vl) }].map(s => (
+                    <div key={s.l} style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.3)', marginBottom: 2 }}>{s.l}</div>
+                      <div style={{ fontSize: 16, fontWeight: 600, color: s.v > 140 ? '#E8944A' : 'var(--text-primary)' }}>{s.v}<span style={{ fontSize: 10, color: 'rgba(0,0,0,0.25)', marginLeft: 2 }}>mg/dL</span></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+          {!graphLoading && !graphData && (
+            <div style={{ padding: '20px 0', textAlign: 'center' }}>
+              <div style={{ fontSize: 24, marginBottom: 6 }}>📊</div>
+              <div style={{ fontSize: 12, color: 'rgba(0,0,0,0.3)' }}>혈당 그래프 사진을 올리면</div>
+              <div style={{ fontSize: 12, color: 'rgba(0,0,0,0.3)' }}>AI가 수치를 읽어 그래프로 보여줘요</div>
+            </div>
+          )}
+        </div>
+
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button onClick={onClose} style={{ flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)', border: 'none', background: 'var(--bg-input, #F2F3F5)', color: 'var(--text-muted)', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>취소</button>
+          <button onClick={handleSave} style={{ flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)', border: 'none', background: 'var(--accent-primary)', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>저장</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const CAFFEINE_ITEMS = [
+  { key: 'americano', name: '아메리카노', icon: '☕', mg: 150 },
+  { key: 'latte', name: '라떼', icon: '🥛', mg: 75 },
+  { key: 'espresso', name: '에스프레소', icon: '☕', mg: 63 },
+  { key: 'green_tea', name: '녹차', icon: '🍵', mg: 30 },
+  { key: 'energy_drink', name: '에너지드링크', icon: '⚡', mg: 80 },
+  { key: 'cola', name: '콜라', icon: '🥤', mg: 34 },
+  { key: 'decaf', name: '디카페인', icon: '☕', mg: 5 },
+  { key: 'matcha', name: '말차', icon: '🍵', mg: 70 },
+];
+
+const ALCOHOL_ITEMS = [
+  { key: 'beer', name: '맥주', icon: '🍺', ml: 500 },
+  { key: 'soju', name: '소주', icon: '🍶', ml: 50 },
+  { key: 'wine', name: '와인', icon: '🍷', ml: 150 },
+  { key: 'highball', name: '하이볼', icon: '🥃', ml: 350 },
+  { key: 'makgeolli', name: '막걸리', icon: '🍶', ml: 300 },
+  { key: 'cocktail', name: '칵테일', icon: '🍸', ml: 200 },
+  { key: 'whiskey', name: '위스키', icon: '🥃', ml: 45 },
+];
+
+function DrinkModal({ onClose, onSave }) {
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const [tab, setTab] = useState('caffeine');
+  const [records, setRecords] = useState(() => {
+    try { const all = JSON.parse(localStorage.getItem('lua_drink_records') || '{}'); return all[todayKey] || { caffeine: [], alcohol: [] }; }
+    catch { return { caffeine: [], alcohol: [] }; }
+  });
+  const [selected, setSelected] = useState(null); // 선택된 아이템 key
+
+  const items = tab === 'caffeine' ? CAFFEINE_ITEMS : ALCOHOL_ITEMS;
+  const list = tab === 'caffeine' ? records.caffeine : records.alcohol;
+  const accent = tab === 'caffeine' ? '#8B6914' : '#7B2D3B';
+  const accentBg = tab === 'caffeine' ? 'rgba(139,105,20,' : 'rgba(123,45,59,';
+
+  const getCount = (key) => list.find(d => d.key === key)?.count || 0;
+
+  const setCount = (key, count) => {
+    const item = items.find(i => i.key === key);
+    let updated;
+    if (count <= 0) {
+      updated = list.filter(d => d.key !== key);
+    } else {
+      const existing = list.find(d => d.key === key);
+      if (existing) {
+        updated = list.map(d => d.key === key ? { ...d, count } : d);
+      } else {
+        updated = [...list, { key, name: item.name, icon: item.icon, count }];
+      }
+    }
+    setRecords(prev => ({ ...prev, [tab]: updated }));
+  };
+
+  const handleSave = () => {
+    try {
+      const all = JSON.parse(localStorage.getItem('lua_drink_records') || '{}');
+      all[todayKey] = records;
+      localStorage.setItem('lua_drink_records', JSON.stringify(all));
+    } catch {}
+    onSave();
+  };
+
+  const cafTotal = records.caffeine.reduce((s, d) => s + d.count, 0);
+  const alcTotal = records.alcohol.reduce((s, d) => s + d.count, 0);
+  const cafMg = records.caffeine.reduce((s, d) => { const item = CAFFEINE_ITEMS.find(c => c.key === d.key); return s + (item?.mg || 0) * d.count; }, 0);
+
+  const selItem = selected ? items.find(i => i.key === selected) : null;
+  const selCount = selected ? getCount(selected) : 0;
+
+  const tabStyle = (active) => ({
+    flex: 1, padding: '10px 0', borderRadius: 10, border: 'none',
+    background: active ? accent : 'transparent',
+    color: active ? '#fff' : 'var(--text-muted)',
+    fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+  });
+
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0', padding: '24px 24px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
+        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 16, textAlign: 'center' }}>드링크 기록</div>
+
+        {/* 탭 */}
+        <div style={{ display: 'flex', gap: 6, background: 'var(--bg-input, #F2F3F5)', borderRadius: 12, padding: 4, marginBottom: 20 }}>
+          <button onClick={() => { setTab('caffeine'); setSelected(null); }} style={tabStyle(tab === 'caffeine')}>☕ 카페인</button>
+          <button onClick={() => { setTab('alcohol'); setSelected(null); }} style={tabStyle(tab === 'alcohol')}>🍺 알콜</button>
+        </div>
+
+        {/* ① 종류 선택 */}
+        <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(0,0,0,0.3)', marginBottom: 10 }}>어떤 음료를 마셨어요?</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+          {items.map(item => {
+            const active = selected === item.key;
+            const hasRecord = getCount(item.key) > 0;
+            return (
+              <div key={item.key} onClick={() => setSelected(active ? null : item.key)} style={{
+                padding: '8px 14px', borderRadius: 99, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 6,
+                background: active ? `${accentBg}0.12)` : hasRecord ? `${accentBg}0.06)` : 'rgba(0,0,0,0.02)',
+                border: active ? `1.5px solid ${accentBg}0.4)` : hasRecord ? `1.5px solid ${accentBg}0.15)` : '1.5px solid rgba(0,0,0,0.05)',
+                transition: 'all 0.15s ease',
+              }}>
+                <span style={{ fontSize: 16 }}>{item.icon}</span>
+                <span style={{ fontSize: 12, fontWeight: active || hasRecord ? 600 : 500, color: active ? accent : hasRecord ? accent : 'rgba(0,0,0,0.4)' }}>{item.name}</span>
+                {hasRecord && <span style={{ fontSize: 10, fontWeight: 700, color: accent }}>{getCount(item.key)}</span>}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* ② 잔수 조절 (선택 시 표시) */}
+        {selItem && (
+          <div style={{
+            padding: '20px', borderRadius: 20, marginBottom: 20,
+            background: `${accentBg}0.04)`, border: `1px solid ${accentBg}0.1)`,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+              <span style={{ fontSize: 28 }}>{selItem.icon}</span>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{selItem.name}</div>
+                <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.3)' }}>{tab === 'caffeine' ? `1잔당 ~${selItem.mg}mg 카페인` : `1잔 ~${selItem.ml}ml`}</div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
+              <div onClick={() => { if (selCount > 0) setCount(selected, Math.max(0, selCount - 0.5)); }} style={{
+                width: 40, height: 40, borderRadius: '50%', background: 'rgba(0,0,0,0.06)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                fontSize: 20, color: 'rgba(0,0,0,0.3)', fontWeight: 600,
+              }}>−</div>
+              <div style={{ textAlign: 'center', minWidth: 80 }}>
+                <div style={{ fontSize: 36, fontWeight: 700, color: accent, fontFamily: 'var(--font-display)' }}>{selCount || 0}</div>
+                <div style={{ fontSize: 12, color: 'rgba(0,0,0,0.3)', marginTop: 2 }}>잔</div>
+              </div>
+              <div onClick={() => setCount(selected, selCount + 0.5)} style={{
+                width: 40, height: 40, borderRadius: '50%', background: `${accentBg}0.15)`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                fontSize: 20, color: accent, fontWeight: 600,
+              }}>+</div>
+            </div>
+
+            {/* 프리셋 버튼 */}
+            <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginTop: 14 }}>
+              {[0.5, 1, 1.5, 2, 3].map(v => (
+                <div key={v} onClick={() => setCount(selected, v)} style={{
+                  padding: '6px 12px', borderRadius: 8, cursor: 'pointer',
+                  background: selCount === v ? accent : 'rgba(0,0,0,0.04)',
+                  color: selCount === v ? '#fff' : 'rgba(0,0,0,0.4)',
+                  fontSize: 12, fontWeight: 600, transition: 'all 0.15s ease',
+                }}>{v}잔</div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 오늘 기록 요약 */}
+        {(cafTotal > 0 || alcTotal > 0) && (
+          <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
+            {cafTotal > 0 && (
+              <div style={{ flex: 1, padding: '10px 14px', borderRadius: 14, background: 'rgba(139,105,20,0.06)', textAlign: 'center' }}>
+                <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.35)', marginBottom: 4 }}>카페인</div>
+                <div style={{ fontSize: 18, fontWeight: 600, color: '#8B6914' }}>{cafTotal}<span style={{ fontSize: 11, fontWeight: 400 }}>잔</span></div>
+                <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.25)', marginTop: 2 }}>~{cafMg}mg</div>
+              </div>
+            )}
+            {alcTotal > 0 && (
+              <div style={{ flex: 1, padding: '10px 14px', borderRadius: 14, background: 'rgba(123,45,59,0.06)', textAlign: 'center' }}>
+                <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.35)', marginBottom: 4 }}>알콜</div>
+                <div style={{ fontSize: 18, fontWeight: 600, color: '#7B2D3B' }}>{alcTotal}<span style={{ fontSize: 11, fontWeight: 400 }}>잔</span></div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 버튼 */}
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button onClick={onClose} style={{ flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)', border: 'none', background: 'var(--bg-input, #F2F3F5)', color: 'var(--text-muted)', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>취소</button>
+          <button onClick={handleSave} style={{ flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)', border: 'none', background: accent, color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>저장</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const TIMING_LABELS = { morning: '아침', lunch: '점심', evening: '저녁' };
+
+function SupplementModal({ onClose, onUpdate }) {
+  const [items, setItems] = useState(getSupplementItems);
+  const [checks, setChecks] = useState(() => getSupplementChecks());
+  const [newName, setNewName] = useState('');
+  const [newTiming, setNewTiming] = useState('morning');
+  const [showAdd, setShowAdd] = useState(false);
+
+  const handleToggle = (id) => {
+    const updated = toggleSupplementCheck(id);
+    setChecks(updated);
+  };
+
+  const handleAdd = () => {
+    if (!newName.trim()) return;
+    const updated = addSupplementItem(newName.trim(), newTiming);
+    setItems(updated);
+    setNewName('');
+    setShowAdd(false);
+  };
+
+  const handleDelete = (id) => {
+    const updated = deleteSupplementItem(id);
+    setItems(updated);
+  };
+
+  const doneCount = items.filter(s => checks[s.id]).length;
+  const grouped = { morning: items.filter(s => s.timing === 'morning'), lunch: items.filter(s => s.timing === 'lunch'), evening: items.filter(s => s.timing === 'evening') };
+
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0', padding: '24px 24px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+          <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>💊 영양제</div>
+          {items.length > 0 && <span style={{ fontSize: 13, color: doneCount === items.length ? '#22C55E' : 'rgba(0,0,0,0.3)', fontWeight: 600 }}>{doneCount}/{items.length}</span>}
+        </div>
+
+        {/* 시간대별 체크리스트 */}
+        {items.length > 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 20 }}>
+            {['morning', 'lunch', 'evening'].map(timing => {
+              const group = grouped[timing];
+              if (group.length === 0) return null;
+              return (
+                <div key={timing}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(0,0,0,0.3)', marginBottom: 8 }}>{TIMING_LABELS[timing]}</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {group.map(item => {
+                      const done = !!checks[item.id];
+                      return (
+                        <div key={item.id} style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          padding: '12px 14px', borderRadius: 14,
+                          background: done ? 'rgba(34,197,94,0.06)' : 'rgba(0,0,0,0.02)',
+                          border: done ? '1.5px solid rgba(34,197,94,0.15)' : '1.5px solid rgba(0,0,0,0.05)',
+                          transition: 'all 0.15s ease',
+                        }}>
+                          <div onClick={() => handleToggle(item.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, cursor: 'pointer' }}>
+                            <div style={{
+                              width: 22, height: 22, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              background: done ? '#22C55E' : 'rgba(0,0,0,0.06)', transition: 'all 0.15s ease',
+                            }}>
+                              {done && <span style={{ color: '#fff', fontSize: 13, fontWeight: 700 }}>✓</span>}
+                            </div>
+                            <span style={{
+                              fontSize: 14, fontWeight: 500,
+                              color: done ? 'rgba(0,0,0,0.35)' : 'var(--text-primary)',
+                              textDecoration: done ? 'line-through' : 'none',
+                            }}>{item.name}</span>
+                          </div>
+                          <div onClick={() => handleDelete(item.id)} style={{ fontSize: 14, color: 'rgba(0,0,0,0.15)', cursor: 'pointer', padding: '4px 8px' }}>✕</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div style={{ padding: '30px 0', textAlign: 'center', marginBottom: 20 }}>
+            <div style={{ fontSize: 28, marginBottom: 8 }}>💊</div>
+            <div style={{ fontSize: 13, color: 'rgba(0,0,0,0.3)' }}>영양제를 등록하고 매일 체크하세요</div>
+          </div>
+        )}
+
+        {/* 추가 영역 */}
+        {showAdd ? (
+          <div style={{ padding: '16px', borderRadius: 16, background: 'rgba(0,0,0,0.02)', border: '1.5px solid rgba(0,0,0,0.05)', marginBottom: 20 }}>
+            <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="영양제 이름"
+              style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.08)', background: '#fff', fontSize: 14, color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', marginBottom: 12 }} />
+            <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
+              {['morning', 'lunch', 'evening'].map(t => (
+                <div key={t} onClick={() => setNewTiming(t)} style={{
+                  flex: 1, padding: '8px 0', borderRadius: 10, textAlign: 'center', cursor: 'pointer',
+                  background: newTiming === t ? 'rgba(106,175,212,0.12)' : 'rgba(0,0,0,0.03)',
+                  border: newTiming === t ? '1.5px solid rgba(106,175,212,0.4)' : '1.5px solid rgba(0,0,0,0.06)',
+                  fontSize: 12, fontWeight: newTiming === t ? 600 : 500, color: newTiming === t ? '#6AAFD4' : 'rgba(0,0,0,0.4)',
+                }}>{TIMING_LABELS[t]}</div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => setShowAdd(false)} style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: 'none', background: 'rgba(0,0,0,0.04)', color: 'rgba(0,0,0,0.4)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>취소</button>
+              <button onClick={handleAdd} style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: 'none', background: '#6AAFD4', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>추가</button>
+            </div>
+          </div>
+        ) : (
+          <div onClick={() => setShowAdd(true)} style={{
+            padding: '12px 0', borderRadius: 14, textAlign: 'center', cursor: 'pointer', marginBottom: 20,
+            border: '1.5px dashed rgba(0,0,0,0.1)', color: 'rgba(0,0,0,0.3)', fontSize: 13, fontWeight: 500,
+          }}>+ 영양제 추가</div>
+        )}
+
+        {/* 닫기 */}
+        <button onClick={() => { onUpdate(); }} style={{
+          width: '100%', padding: '14px 0', borderRadius: 'var(--btn-radius)',
+          border: 'none', background: 'var(--accent-primary)', color: '#fff',
+          fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+        }}>완료</button>
       </div>
     </div>
   );
