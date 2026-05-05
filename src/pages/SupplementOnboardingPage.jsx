@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { saveProfile, getProfile } from '../storage/ProfileStorage';
 import { saveRoutineItem, getRoutineItems, deleteRoutineItem } from '../storage/RoutineCheckStorage';
+import { saveSupplementItems } from '../storage/SupplementStorage';
 
 const SECTIONS = ['내 몸 상태', '지금 먹는 영양제', '루틴 설계'];
 const SECTION_STEPS = [3, 2, 3];
@@ -279,6 +280,11 @@ export default function SupplementOnboardingPage({ onClose, onComplete, onNaviga
     routine.evening.forEach((name, i) => {
       saveRoutineItem('supplement', { name, time: '저녁', _offset: 100 + i });
     });
+    // 홈 영양제 카드에도 동기화
+    const suppItems = [];
+    routine.morning.forEach(name => suppItems.push({ id: Date.now() + Math.random() * 1000 | 0, name, timing: 'morning' }));
+    routine.evening.forEach(name => suppItems.push({ id: Date.now() + 500 + Math.random() * 1000 | 0, name, timing: 'evening' }));
+    saveSupplementItems(suppItems);
     // Save profile
     saveProfile({
       supplementOnboardingDone: true,
