@@ -2928,16 +2928,37 @@ function BloodSugarModal({ onClose, onUpdate }) {
   );
 }
 
+const DRINK_CATEGORIES = [
+  { key: 'coffee', emoji: '☕', name: '커피' },
+  { key: 'tea', emoji: '🍵', name: '차' },
+  { key: 'energy_soda', emoji: '⚡', name: '에너지·탄산' },
+  { key: 'cafe_drink', emoji: '🥤', name: '카페 음료' },
+];
+
 const CAFFEINE_ITEMS = [
-  { key: 'hojicha', name: '호지차', icon: '🍵', mg: 20 },
-  { key: 'green_tea', name: '녹차', icon: '🍵', mg: 30 },
-  { key: 'matcha', name: '말차', icon: '🍵', mg: 70 },
-  { key: 'decaf', name: '디카페인', icon: '☕', mg: 5 },
-  { key: 'espresso', name: '에스프레소', icon: '☕', mg: 63 },
-  { key: 'latte', name: '라떼', icon: '🥛', mg: 75 },
-  { key: 'americano', name: '아메리카노', icon: '☕', mg: 150 },
-  { key: 'cola', name: '콜라', icon: '🥤', mg: 34 },
-  { key: 'energy_drink', name: '에너지드링크', icon: '⚡', mg: 80 },
+  // 커피
+  { key: 'americano', name: '아메리카노', icon: '☕', mg: 150, category: 'coffee' },
+  { key: 'latte', name: '라떼', icon: '🥛', mg: 100, category: 'coffee' },
+  { key: 'cappuccino', name: '카푸치노', icon: '☕', mg: 80, category: 'coffee' },
+  { key: 'espresso', name: '에스프레소', icon: '☕', mg: 75, category: 'coffee' },
+  { key: 'cold_brew', name: '콜드브루', icon: '🧊', mg: 200, category: 'coffee' },
+  { key: 'decaf', name: '디카페인', icon: '☕', mg: 5, category: 'coffee' },
+  // 차
+  { key: 'green_tea', name: '녹차', icon: '🍵', mg: 30, category: 'tea' },
+  { key: 'matcha', name: '말차', icon: '🍵', mg: 70, category: 'tea' },
+  { key: 'hojicha', name: '호지차', icon: '🍵', mg: 10, category: 'tea' },
+  { key: 'black_tea', name: '홍차', icon: '🍵', mg: 47, category: 'tea' },
+  { key: 'oolong', name: '우롱차', icon: '🍵', mg: 38, category: 'tea' },
+  { key: 'chamomile', name: '캐모마일', icon: '🌿', mg: 0, category: 'tea' },
+  // 에너지·탄산
+  { key: 'energy_drink', name: '에너지드링크', icon: '⚡', mg: 160, category: 'energy_soda' },
+  { key: 'cola', name: '콜라', icon: '🥤', mg: 35, category: 'energy_soda' },
+  { key: 'tonic_water', name: '토닉워터', icon: '🥤', mg: 0, category: 'energy_soda' },
+  // 카페 음료
+  { key: 'choco_latte', name: '초코라떼', icon: '🍫', mg: 30, category: 'cafe_drink' },
+  { key: 'green_tea_latte', name: '그린티라떼', icon: '🍵', mg: 80, category: 'cafe_drink' },
+  { key: 'chai_latte', name: '차이라떼', icon: '🥛', mg: 50, category: 'cafe_drink' },
+  { key: 'smoothie', name: '스무디', icon: '🥤', mg: 0, category: 'cafe_drink' },
 ];
 
 const ALCOHOL_ITEMS = [
@@ -2953,286 +2974,214 @@ const ALCOHOL_ITEMS = [
 function DrinkModal({ onClose, onSave }) {
   const todayKey = new Date().toISOString().slice(0, 10);
   const [tab, setTab] = useState('caffeine');
+  const [drinkCategory, setDrinkCategory] = useState('coffee');
   const [records, setRecords] = useState(() => {
     try { const all = JSON.parse(localStorage.getItem('lua_drink_records') || '{}'); return all[todayKey] || { caffeine: [], alcohol: [] }; }
     catch { return { caffeine: [], alcohol: [] }; }
   });
   const [selected, setSelected] = useState(null);
-  const [drunkTimeMode, setDrunkTimeMode] = useState('now'); // 'now' | '30min' | 'custom'
+  const [drunkTimeMode, setDrunkTimeMode] = useState('now');
   const [customTime, setCustomTime] = useState('');
 
-  const items = tab === 'caffeine' ? CAFFEINE_ITEMS : ALCOHOL_ITEMS;
+  const items = tab === 'caffeine' ? CAFFEINE_ITEMS.filter(i => i.category === drinkCategory) : ALCOHOL_ITEMS;
+  const allCafItems = CAFFEINE_ITEMS;
   const list = tab === 'caffeine' ? records.caffeine : records.alcohol;
-  const accent = tab === 'caffeine' ? '#8B6914' : '#7B2D3B';
-  const accentBg = tab === 'caffeine' ? 'rgba(139,105,20,' : 'rgba(123,45,59,';
+  const accent = '#B8865C';
 
   const getCount = (key) => list.find(d => d.key === key)?.count || 0;
-
   const setCount = (key, count) => {
-    const item = items.find(i => i.key === key);
+    const item = (tab === 'caffeine' ? allCafItems : ALCOHOL_ITEMS).find(i => i.key === key);
     let updated;
-    if (count <= 0) {
-      updated = list.filter(d => d.key !== key);
-    } else {
+    if (count <= 0) { updated = list.filter(d => d.key !== key); }
+    else {
       const existing = list.find(d => d.key === key);
-      if (existing) {
-        updated = list.map(d => d.key === key ? { ...d, count } : d);
-      } else {
-        updated = [...list, { key, name: item.name, icon: item.icon, count }];
-      }
+      if (existing) { updated = list.map(d => d.key === key ? { ...d, count } : d); }
+      else { updated = [...list, { key, name: item.name, icon: item.icon, count }]; }
     }
     setRecords(prev => ({ ...prev, [tab]: updated }));
   };
 
-  // 마신 시간 계산
   const getDrunkAt = () => {
     const now = new Date();
-    if (drunkTimeMode === '30min') {
-      return new Date(now.getTime() - 30 * 60 * 1000);
-    }
-    if (drunkTimeMode === 'custom' && customTime) {
-      const [h, m] = customTime.split(':').map(Number);
-      const d = new Date(now);
-      d.setHours(h, m, 0, 0);
-      return d;
-    }
+    if (drunkTimeMode === '30min') return new Date(now.getTime() - 30 * 60 * 1000);
+    if (drunkTimeMode === 'custom' && customTime) { const [h, m] = customTime.split(':').map(Number); const d = new Date(now); d.setHours(h, m, 0, 0); return d; }
     return now;
   };
-
-  const formatTime = (date) => {
-    return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-  };
+  const formatTime = (date) => `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 
   const handleSave = () => {
+    if (!selected) return;
     try {
       const all = JSON.parse(localStorage.getItem('lua_drink_records') || '{}');
       const drunkAt = getDrunkAt().toISOString();
       const updatedRecords = { ...records };
-      if (tab === 'caffeine') {
-        updatedRecords.caffeine = records.caffeine.map(d => ({ ...d, drunkAt: d.drunkAt || drunkAt }));
-      } else {
-        updatedRecords.alcohol = records.alcohol.map(d => ({ ...d, drunkAt: d.drunkAt || drunkAt }));
-      }
+      if (tab === 'caffeine') { updatedRecords.caffeine = records.caffeine.map(d => ({ ...d, drunkAt: d.drunkAt || drunkAt })); }
+      else { updatedRecords.alcohol = records.alcohol.map(d => ({ ...d, drunkAt: d.drunkAt || drunkAt })); }
       all[todayKey] = updatedRecords;
       localStorage.setItem('lua_drink_records', JSON.stringify(all));
     } catch {}
 
-    // 카페인 효과 체크 로직
     if (tab === 'caffeine' && cafMg > 30) {
       const drunkAtDate = getDrunkAt();
       const now = new Date();
       const minutesAgo = (now.getTime() - drunkAtDate.getTime()) / (1000 * 60);
-
       if (minutesAgo >= 60) {
-        // 1시간 이상 전이면 즉시 효과 체크 모달
         const latestDrink = records.caffeine[records.caffeine.length - 1];
         onSave({ drunkAt: drunkAtDate, drinkName: latestDrink?.name || '카페인', amount: cafTotal, caffeineMg: cafMg });
         return;
       } else {
-        // 1시간 미만이면 1시간 후 로컬 알림 예약
         const delayMs = (60 - minutesAgo) * 60 * 1000;
         const latestDrink = records.caffeine[records.caffeine.length - 1];
         scheduleCaffeineEffectNotification(delayMs, latestDrink?.name || '카페인', cafTotal);
       }
     }
-
     onSave(null);
   };
 
   const cafTotal = records.caffeine.reduce((s, d) => s + d.count, 0);
   const alcTotal = records.alcohol.reduce((s, d) => s + d.count, 0);
-  const cafMg = records.caffeine.reduce((s, d) => { const item = CAFFEINE_ITEMS.find(c => c.key === d.key); return s + (item?.mg || 0) * d.count; }, 0);
+  const cafMg = records.caffeine.reduce((s, d) => { const item = allCafItems.find(c => c.key === d.key); return s + (item?.mg || 0) * d.count; }, 0);
 
-  // 선택 중인 아이템의 카페인 추가량 계산 (게이지 미리보기용)
-  const pendingMg = (() => {
-    if (tab !== 'caffeine' || !selected) return 0;
-    const selItem = CAFFEINE_ITEMS.find(i => i.key === selected);
-    const currentCount = getCount(selected);
-    // 이미 records에 반영되어 있으므로 pendingMg는 0
-    return 0;
-  })();
-
-  // 카페인 게이지 상태
   const userWeight = getLatestWeight()?.weight || 0;
-  const cafState = calculateCaffeineState(cafMg, userWeight, pendingMg);
+  const cafState = calculateCaffeineState(cafMg, userWeight, 0);
 
-  const selItem = selected ? items.find(i => i.key === selected) : null;
+  const selItem = selected ? (tab === 'caffeine' ? allCafItems : ALCOHOL_ITEMS).find(i => i.key === selected) : null;
   const selCount = selected ? getCount(selected) : 0;
-
-  const tabStyle = (active) => ({
-    flex: 1, padding: '10px 0', borderRadius: 10, border: 'none',
-    background: active ? accent : 'transparent',
-    color: active ? '#fff' : 'var(--text-muted)',
-    fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-  });
 
   const nowTime = new Date();
   const thirtyAgo = new Date(nowTime.getTime() - 30 * 60 * 1000);
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0', padding: '24px 24px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
-        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
-        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 16, textAlign: 'center' }}>드링크 기록</div>
+      <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '18px 18px 36px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.1)', margin: '0 auto 16px' }} />
+        <div style={{ fontSize: 16, fontWeight: 600, color: '#2C4A5E', marginBottom: 14, textAlign: 'center' }}>드링크 기록</div>
 
-        {/* 탭 */}
-        <div style={{ display: 'flex', gap: 6, background: 'var(--bg-input, #F2F3F5)', borderRadius: 12, padding: 4, marginBottom: 20 }}>
-          <button onClick={() => { setTab('caffeine'); setSelected(null); }} style={tabStyle(tab === 'caffeine')}>☕ 카페인</button>
-          <button onClick={() => { setTab('alcohol'); setSelected(null); }} style={tabStyle(tab === 'alcohol')}>🍺 알콜</button>
+        {/* 카페인/알콜 토글 */}
+        <div style={{ display: 'flex', gap: 4, background: '#F4F4F4', borderRadius: 10, padding: 4, marginBottom: 14 }}>
+          <button onClick={() => { setTab('caffeine'); setSelected(null); }} style={{ flex: 1, padding: '7px', borderRadius: 8, border: 'none', background: tab === 'caffeine' ? '#B8865C' : 'transparent', color: tab === 'caffeine' ? '#fff' : '#6B8499', fontSize: 10, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>☕ 카페인</button>
+          <button onClick={() => { setTab('alcohol'); setSelected(null); }} style={{ flex: 1, padding: '7px', borderRadius: 8, border: 'none', background: tab === 'alcohol' ? '#B8865C' : 'transparent', color: tab === 'alcohol' ? '#fff' : '#6B8499', fontSize: 10, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>🍺 알콜</button>
         </div>
 
-        {/* ① 종류 선택 */}
-        <div style={{ fontSize: 12, fontWeight: 600, color: 'rgba(0,0,0,0.3)', marginBottom: 10 }}>어떤 음료를 마셨어요?</div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+        {/* 카테고리 탭 (카페인 전용) */}
+        {tab === 'caffeine' && (
+          <>
+            <div style={{ fontSize: 10, fontWeight: 500, color: '#4A6B85', marginBottom: 8 }}>어떤 종류 드셨어요?</div>
+            <div style={{ display: 'flex', gap: 5, marginBottom: 14 }}>
+              {DRINK_CATEGORIES.map(cat => (
+                <div key={cat.key} onClick={() => { setDrinkCategory(cat.key); setSelected(null); }} style={{
+                  flex: 1, padding: '9px 4px', borderRadius: 10, textAlign: 'center', cursor: 'pointer',
+                  background: drinkCategory === cat.key ? '#B8865C' : '#F4F4F4',
+                  color: drinkCategory === cat.key ? '#fff' : '#6B8499',
+                  transition: 'all 0.15s ease',
+                }}>
+                  <div style={{ fontSize: 14, marginBottom: 2 }}>{cat.emoji}</div>
+                  <div style={{ fontSize: 8, fontWeight: drinkCategory === cat.key ? 500 : 400 }}>{cat.name}</div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* 메뉴 칩 */}
+        <div style={{ fontSize: 10, fontWeight: 500, color: '#4A6B85', marginBottom: 8 }}>메뉴 선택</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 14, transition: 'opacity 0.15s ease' }}>
           {items.map(item => {
             const active = selected === item.key;
             const hasRecord = getCount(item.key) > 0;
             return (
               <div key={item.key} onClick={() => setSelected(active ? null : item.key)} style={{
-                padding: '8px 14px', borderRadius: 99, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 6,
-                background: active ? `${accentBg}0.12)` : hasRecord ? `${accentBg}0.06)` : 'rgba(0,0,0,0.02)',
-                border: active ? `1.5px solid ${accentBg}0.4)` : hasRecord ? `1.5px solid ${accentBg}0.15)` : '1.5px solid rgba(0,0,0,0.05)',
+                padding: '7px 11px', borderRadius: 14, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 5,
+                background: active ? '#FAF1E0' : '#F4F4F4',
+                border: active ? '0.5px solid #B8865C' : '0.5px solid transparent',
                 transition: 'all 0.15s ease',
               }}>
-                <span style={{ fontSize: 16 }}>{item.icon}</span>
-                <span style={{ fontSize: 12, fontWeight: active || hasRecord ? 600 : 500, color: active ? accent : hasRecord ? accent : 'rgba(0,0,0,0.4)' }}>{item.name}</span>
-                {hasRecord && <span style={{ fontSize: 10, fontWeight: 700, color: accent }}>{getCount(item.key)}</span>}
+                <span style={{ fontSize: 11 }}>{item.icon}</span>
+                <span style={{ fontSize: 10, fontWeight: active ? 500 : 400, color: active ? '#6B4A2A' : '#2C4A5E' }}>{item.name}</span>
+                {hasRecord && <span style={{ fontSize: 9, fontWeight: 600, color: '#B8865C' }}>{getCount(item.key)}</span>}
               </div>
             );
           })}
         </div>
 
-        {/* ② 잔수 조절 (선택 시 표시) */}
-        {selItem && (
-          <div style={{
-            padding: '20px', borderRadius: 20, marginBottom: 20,
-            background: `${accentBg}0.04)`, border: `1px solid ${accentBg}0.1)`,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-              <span style={{ fontSize: 28 }}>{selItem.icon}</span>
-              <div>
-                <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{selItem.name}</div>
-                <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.3)' }}>{tab === 'caffeine' ? `1잔당 ~${selItem.mg}mg 카페인` : `1잔 ~${selItem.ml}ml`}</div>
+        {/* 잔수 조절 */}
+        {selItem ? (
+          <div style={{ background: '#FAF1E0', borderRadius: 14, padding: 14, marginBottom: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 14 }}>{selItem.icon}</span>
+                <span style={{ fontSize: 12, fontWeight: 500, color: '#2C4A5E' }}>{selItem.name}</span>
               </div>
+              <span style={{ fontSize: 9, color: '#8A5A3C' }}>~{selItem.mg}mg/잔</span>
             </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
-              <div onClick={() => { if (selCount > 0) setCount(selected, Math.max(0, selCount - 0.5)); }} style={{
-                width: 40, height: 40, borderRadius: '50%', background: 'rgba(0,0,0,0.06)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                fontSize: 20, color: 'rgba(0,0,0,0.3)', fontWeight: 600,
-              }}>−</div>
-              <div style={{ textAlign: 'center', minWidth: 80 }}>
-                <div style={{ fontSize: 36, fontWeight: 700, color: accent, fontFamily: 'var(--font-display)' }}>{selCount || 0}</div>
-                <div style={{ fontSize: 12, color: 'rgba(0,0,0,0.3)', marginTop: 2 }}>잔</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <div onClick={() => { if (selCount > 0.5) setCount(selected, selCount - 0.5); }} style={{ width: 28, height: 28, borderRadius: '50%', background: '#F4F4F4', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 14, color: '#6B8499' }}>−</div>
+              <div style={{ textAlign: 'center' }}>
+                <span style={{ fontSize: 22, fontWeight: 500, color: '#6B4A2A' }}>{selCount || 0}</span>
+                <span style={{ fontSize: 9, color: '#8A5A3C', marginLeft: 4 }}>잔</span>
               </div>
-              <div onClick={() => setCount(selected, selCount + 0.5)} style={{
-                width: 40, height: 40, borderRadius: '50%', background: `${accentBg}0.15)`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                fontSize: 20, color: accent, fontWeight: 600,
-              }}>+</div>
+              <div onClick={() => setCount(selected, (selCount || 0) + 0.5)} style={{ width: 28, height: 28, borderRadius: '50%', background: '#F4F4F4', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 14, color: '#B8865C' }}>+</div>
             </div>
-
-            {/* 프리셋 버튼 */}
-            <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginTop: 14 }}>
-              {[0.5, 1, 1.5, 2, 3].map(v => (
+            <div style={{ display: 'flex', gap: 4 }}>
+              {[0.5, 1, 1.5, 2].map(v => (
                 <div key={v} onClick={() => setCount(selected, v)} style={{
-                  padding: '6px 12px', borderRadius: 8, cursor: 'pointer',
-                  background: selCount === v ? accent : 'rgba(0,0,0,0.04)',
-                  color: selCount === v ? '#fff' : 'rgba(0,0,0,0.4)',
-                  fontSize: 12, fontWeight: 600, transition: 'all 0.15s ease',
+                  flex: 1, padding: '5px', borderRadius: 7, textAlign: 'center', cursor: 'pointer', fontSize: 9,
+                  background: selCount === v ? '#B8865C' : 'white', color: selCount === v ? '#fff' : '#6B8499', fontWeight: selCount === v ? 500 : 400,
+                  transition: 'all 0.15s',
                 }}>{v}잔</div>
               ))}
             </div>
           </div>
+        ) : (
+          <div style={{ background: '#F8F8F5', borderRadius: 14, padding: 14, textAlign: 'center', marginBottom: 14 }}>
+            <div style={{ fontSize: 9, color: '#8BA6BD' }}>메뉴를 선택하면</div>
+            <div style={{ fontSize: 11, color: '#6B8499', marginTop: 2 }}>잔 수 입력이 나타나요</div>
+          </div>
         )}
 
-        {/* ③ 오늘의 카페인 게이지 (카페인 탭일 때만) */}
+        {/* 카페인 게이지 */}
         {tab === 'caffeine' && (
-          <div style={{ background: '#FFF8F0', borderRadius: 14, padding: 12, border: '0.5px solid rgba(184, 134, 92, 0.2)', marginBottom: 14 }}>
-            <div style={{ fontSize: 9, color: '#8A5A3C', letterSpacing: 0.3, marginBottom: 8, fontWeight: 500 }}>
-              {userWeight ? `📊 오늘의 카페인 (몸무게 ${userWeight}kg)` : '📊 오늘의 카페인 (체중 미입력)'}
-            </div>
-            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 6 }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                <span style={{ fontSize: 18, fontWeight: 500, color: '#2C4A5E' }}>{Math.round(cafState.projectedMg)}</span>
-                <span style={{ fontSize: 10, color: '#8A5A3C' }}>/ {cafState.limitMg}mg</span>
-              </div>
+          <div style={{ background: '#FFF8F0', borderRadius: 12, padding: 11, border: '0.5px solid rgba(184,134,92,0.2)', marginBottom: 12, opacity: selected ? 1 : 0.6, transition: 'opacity 0.2s' }}>
+            <div style={{ fontSize: 9, color: '#8A5A3C', letterSpacing: 0.3, marginBottom: 6, fontWeight: 500 }}>📊 오늘 누적</div>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4 }}>
+              <span style={{ fontSize: 14, fontWeight: 500, color: '#2C4A5E' }}>{Math.round(cafState.projectedMg)} <span style={{ fontSize: 9, color: '#8A5A3C' }}>/ {cafState.limitMg}mg</span></span>
               <span style={{ fontSize: 9, color: cafState.statusColor, fontWeight: 500 }}>{cafState.status}</span>
             </div>
-            <div style={{ width: '100%', height: 6, background: '#F4F4F4', borderRadius: 3, overflow: 'hidden' }}>
-              <div style={{ width: `${cafState.percent}%`, height: '100%', background: cafState.gaugeColor, borderRadius: 3, transition: 'width 0.3s ease' }} />
-            </div>
-            <div style={{ fontSize: 9, color: '#6B8499', marginTop: 6 }}>
-              {cafState.remainingText}
-              {!userWeight && <span style={{ marginLeft: 6, color: '#B8865C' }}>· 체중 입력하면 더 정확해요</span>}
+            <div style={{ width: '100%', height: 4, background: '#F4F4F4', borderRadius: 2, overflow: 'hidden' }}>
+              <div style={{ width: `${cafState.percent}%`, height: '100%', background: cafState.gaugeColor, borderRadius: 2, transition: 'width 0.3s' }} />
             </div>
           </div>
         )}
 
-        {/* ④ 마신 시간 선택 */}
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 10, fontWeight: 500, color: '#6B8499', marginBottom: 8 }}>언제 마셨어요?</div>
+        {/* 시간 선택 */}
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 10, fontWeight: 500, color: '#4A6B85', marginBottom: 6 }}>언제 마셨어요?</div>
           <div style={{ display: 'flex', gap: 4 }}>
-            <div onClick={() => setDrunkTimeMode('now')} style={{
-              flex: 1, padding: '8px 4px', borderRadius: 10, textAlign: 'center', cursor: 'pointer',
-              background: drunkTimeMode === 'now' ? '#FAF1E0' : '#F4F4F4',
-              border: drunkTimeMode === 'now' ? '0.5px solid #B8865C' : '0.5px solid transparent',
-            }}>
-              <div style={{ fontSize: 10, fontWeight: 500, color: drunkTimeMode === 'now' ? '#6B4A2A' : '#6B8499' }}>방금</div>
-              <div style={{ fontSize: 8, color: '#8A5A3C', marginTop: 2 }}>{formatTime(nowTime)}</div>
-            </div>
-            <div onClick={() => setDrunkTimeMode('30min')} style={{
-              flex: 1, padding: '8px 4px', borderRadius: 10, textAlign: 'center', cursor: 'pointer',
-              background: drunkTimeMode === '30min' ? '#FAF1E0' : '#F4F4F4',
-              border: drunkTimeMode === '30min' ? '0.5px solid #B8865C' : '0.5px solid transparent',
-            }}>
-              <div style={{ fontSize: 10, fontWeight: 500, color: drunkTimeMode === '30min' ? '#6B4A2A' : '#6B8499' }}>30분 전</div>
-              <div style={{ fontSize: 8, color: '#8A5A3C', marginTop: 2 }}>{formatTime(thirtyAgo)}</div>
-            </div>
-            <div onClick={() => setDrunkTimeMode('custom')} style={{
-              flex: 1, padding: '8px 4px', borderRadius: 10, textAlign: 'center', cursor: 'pointer', position: 'relative',
-              background: drunkTimeMode === 'custom' ? '#FAF1E0' : '#F4F4F4',
-              border: drunkTimeMode === 'custom' ? '0.5px solid #B8865C' : '0.5px solid transparent',
-            }}>
-              <div style={{ fontSize: 10, fontWeight: 500, color: drunkTimeMode === 'custom' ? '#6B4A2A' : '#6B8499' }}>시간 선택</div>
-              {drunkTimeMode === 'custom' && (
-                <input
-                  type="time"
-                  value={customTime}
-                  onChange={e => setCustomTime(e.target.value)}
-                  max={formatTime(nowTime)}
-                  style={{ fontSize: 8, color: '#8A5A3C', marginTop: 2, border: 'none', background: 'transparent', width: '100%', textAlign: 'center', outline: 'none' }}
-                />
-              )}
-            </div>
+            {[
+              { key: 'now', label: '방금', sub: formatTime(nowTime) },
+              { key: '30min', label: '30분 전', sub: formatTime(thirtyAgo) },
+              { key: 'custom', label: '시간 선택', sub: '' },
+            ].map(opt => (
+              <div key={opt.key} onClick={() => setDrunkTimeMode(opt.key)} style={{
+                flex: 1, padding: '7px 4px', borderRadius: 9, textAlign: 'center', cursor: 'pointer',
+                background: drunkTimeMode === opt.key ? '#FAF1E0' : '#F4F4F4',
+                border: drunkTimeMode === opt.key ? '0.5px solid #B8865C' : '0.5px solid transparent',
+              }}>
+                <div style={{ fontSize: 9, fontWeight: 500, color: drunkTimeMode === opt.key ? '#6B4A2A' : '#6B8499' }}>{opt.label}</div>
+                {opt.sub && <div style={{ fontSize: 7, color: '#8A5A3C', marginTop: 1 }}>{opt.sub}</div>}
+                {opt.key === 'custom' && drunkTimeMode === 'custom' && (
+                  <input type="time" value={customTime} onChange={e => setCustomTime(e.target.value)} style={{ fontSize: 8, border: 'none', background: 'transparent', width: '100%', textAlign: 'center', outline: 'none', color: '#8A5A3C', marginTop: 2 }} />
+                )}
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* 오늘 기록 요약 */}
-        {(cafTotal > 0 || alcTotal > 0) && (
-          <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
-            {cafTotal > 0 && (
-              <div style={{ flex: 1, padding: '10px 14px', borderRadius: 14, background: 'rgba(139,105,20,0.06)', textAlign: 'center' }}>
-                <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.35)', marginBottom: 4 }}>카페인</div>
-                <div style={{ fontSize: 18, fontWeight: 600, color: '#8B6914' }}>{cafTotal}<span style={{ fontSize: 11, fontWeight: 400 }}>잔</span></div>
-                <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.25)', marginTop: 2 }}>~{cafMg}mg</div>
-              </div>
-            )}
-            {alcTotal > 0 && (
-              <div style={{ flex: 1, padding: '10px 14px', borderRadius: 14, background: 'rgba(123,45,59,0.06)', textAlign: 'center' }}>
-                <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.35)', marginBottom: 4 }}>알콜</div>
-                <div style={{ fontSize: 18, fontWeight: 600, color: '#7B2D3B' }}>{alcTotal}<span style={{ fontSize: 11, fontWeight: 400 }}>잔</span></div>
-              </div>
-            )}
-          </div>
-        )}
-
         {/* 버튼 */}
-        <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={onClose} style={{ flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)', border: 'none', background: 'var(--bg-input, #F2F3F5)', color: 'var(--text-muted)', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>취소</button>
-          <button onClick={handleSave} style={{ flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)', border: 'none', background: accent, color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>저장</button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={onClose} style={{ flex: 1, padding: '9px', borderRadius: 10, border: 'none', background: '#F4F4F4', color: '#6B8499', fontSize: 10, cursor: 'pointer', fontFamily: 'inherit' }}>취소</button>
+          <button onClick={handleSave} disabled={!selected || selCount === 0} style={{ flex: 1.5, padding: '9px', borderRadius: 10, border: 'none', background: (selected && selCount > 0) ? '#B8865C' : '#F4F4F4', color: (selected && selCount > 0) ? '#fff' : '#8BA6BD', fontSize: 10, fontWeight: 500, cursor: (selected && selCount > 0) ? 'pointer' : 'default', fontFamily: 'inherit', transition: 'all 0.15s' }}>저장</button>
         </div>
       </div>
     </div>
