@@ -192,6 +192,8 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [showConditionModal, setShowConditionModal] = useState(false);
   const [showBloodSugarModal, setShowBloodSugarModal] = useState(false);
   const [showDrinkModal, setShowDrinkModal] = useState(false);
+  const [showEffectCheckModal, setShowEffectCheckModal] = useState(false);
+  const [effectCheckDrink, setEffectCheckDrink] = useState(null);
   const [showSupplementModal, setShowSupplementModal] = useState(false);
   const [showSkinCheckModal, setShowSkinCheckModal] = useState(false);
   const [showCycleModal, setShowCycleModal] = useState(false);
@@ -317,6 +319,29 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   // 홈 로드 시 저장된 위치로 날씨 자동 갱신
   useEffect(() => {
     refreshWeatherIfNeeded().then(() => setWeightRefreshKey(k => k + 1));
+  }, []);
+
+  // 카페인 효과 체크 예약 확인 (앱 재진입 시)
+  useEffect(() => {
+    const checkScheduled = () => {
+      try {
+        const raw = localStorage.getItem('lua_caffeine_effect_scheduled');
+        if (!raw) return;
+        const scheduled = JSON.parse(raw);
+        if (new Date() >= new Date(scheduled.fireAt)) {
+          setEffectCheckDrink({
+            drunkAt: new Date(new Date(scheduled.fireAt).getTime() - 60 * 60 * 1000).toISOString(),
+            drinkName: scheduled.drinkName,
+            amount: scheduled.amount,
+            caffeineMg: 0,
+          });
+          setShowEffectCheckModal(true);
+        }
+      } catch {}
+    };
+    checkScheduled();
+    const interval = setInterval(checkScheduled, 60000);
+    return () => clearInterval(interval);
   }, []);
 
   // localStorage 변경 감지 → 기록 추가 시 브리핑 갱신 (1초 디바운스)
@@ -1749,7 +1774,11 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       )}
 
       {showDrinkModal && (
-        <DrinkModal onClose={() => setShowDrinkModal(false)} onSave={() => { setShowDrinkModal(false); setWeightRefreshKey(k => k + 1); }} />
+        <DrinkModal onClose={() => setShowDrinkModal(false)} onSave={(drinkInfo) => { setShowDrinkModal(false); setWeightRefreshKey(k => k + 1); if (drinkInfo) { setEffectCheckDrink(drinkInfo); setShowEffectCheckModal(true); } }} />
+      )}
+
+      {showEffectCheckModal && effectCheckDrink && (
+        <CaffeineEffectCheckModal drink={effectCheckDrink} onClose={() => { setShowEffectCheckModal(false); setEffectCheckDrink(null); }} onSave={() => { setShowEffectCheckModal(false); setEffectCheckDrink(null); setWeightRefreshKey(k => k + 1); }} />
       )}
 
       {showSupplementModal && (
@@ -2930,7 +2959,6 @@ function DrinkModal({ onClose, onSave }) {
   const handleSave = () => {
     try {
       const all = JSON.parse(localStorage.getItem('lua_drink_records') || '{}');
-      // drunkAt 시간 저장
       const drunkAt = getDrunkAt().toISOString();
       const updatedRecords = { ...records };
       if (tab === 'caffeine') {
@@ -2941,7 +2969,27 @@ function DrinkModal({ onClose, onSave }) {
       all[todayKey] = updatedRecords;
       localStorage.setItem('lua_drink_records', JSON.stringify(all));
     } catch {}
-    onSave();
+
+    // 카페인 효과 체크 로직
+    if (tab === 'caffeine' && cafMg > 30) {
+      const drunkAtDate = getDrunkAt();
+      const now = new Date();
+      const minutesAgo = (now.getTime() - drunkAtDate.getTime()) / (1000 * 60);
+
+      if (minutesAgo >= 60) {
+        // 1시간 이상 전이면 즉시 효과 체크 모달
+        const latestDrink = records.caffeine[records.caffeine.length - 1];
+        onSave({ drunkAt: drunkAtDate, drinkName: latestDrink?.name || '카페인', amount: cafTotal, caffeineMg: cafMg });
+        return;
+      } else {
+        // 1시간 미만이면 1시간 후 로컬 알림 예약
+        const delayMs = (60 - minutesAgo) * 60 * 1000;
+        const latestDrink = records.caffeine[records.caffeine.length - 1];
+        scheduleCaffeineEffectNotification(delayMs, latestDrink?.name || '카페인', cafTotal);
+      }
+    }
+
+    onSave(null);
   };
 
   const cafTotal = records.caffeine.reduce((s, d) => s + d.count, 0);
@@ -3138,6 +3186,208 @@ function DrinkModal({ onClose, onSave }) {
         <div style={{ display: 'flex', gap: 10 }}>
           <button onClick={onClose} style={{ flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)', border: 'none', background: 'var(--bg-input, #F2F3F5)', color: 'var(--text-muted)', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>취소</button>
           <button onClick={handleSave} style={{ flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)', border: 'none', background: accent, color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>저장</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 카페인 효과 체크 로컬 알림 예약
+function scheduleCaffeineEffectNotification(delayMs, drinkName, amount) {
+  // localStorage에 예약 저장 (앱 재진입 시 체크용)
+  const scheduled = {
+    fireAt: new Date(Date.now() + delayMs).toISOString(),
+    drinkName,
+    amount,
+  };
+  localStorage.setItem('lua_caffeine_effect_scheduled', JSON.stringify(scheduled));
+
+  // 브라우저 Notification API (허용된 경우)
+  if ('Notification' in window && Notification.permission === 'granted') {
+    setTimeout(() => {
+      new Notification('☕ 효과 체크 시간이에요', {
+        body: `${drinkName} ${amount}잔 마신 후 1시간 지났어요. 30초만 체크해요`,
+        tag: 'caffeine-effect',
+      });
+    }, delayMs);
+  }
+}
+
+// 카페인 효과 체크 모달
+function CaffeineEffectCheckModal({ drink, onClose, onSave }) {
+  const [positiveEffects, setPositiveEffects] = useState([]);
+  const [negativeEffects, setNegativeEffects] = useState([]);
+
+  const positiveOptions = [
+    { id: 'alert', emoji: '⚡', label: '정신 또렷' },
+    { id: 'focus', emoji: '🎯', label: '집중 잘됨' },
+    { id: 'refreshed', emoji: '💪', label: '피로 풀림' },
+    { id: 'unsure', emoji: '😶', label: '잘 모르겠음' },
+  ];
+
+  const negativeOptions = [
+    { id: 'heart_pounding', emoji: '💓', label: '심장 두근' },
+    { id: 'anxious', emoji: '😰', label: '긴장됨' },
+    { id: 'nauseous', emoji: '🤢', label: '속 불편' },
+    { id: 'frequent_urine', emoji: '💧', label: '화장실 자주' },
+    { id: 'none', emoji: '✨', label: '없어요' },
+  ];
+
+  const togglePositive = (id) => {
+    setPositiveEffects(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
+  const toggleNegative = (id) => {
+    if (id === 'none') {
+      setNegativeEffects(['none']);
+    } else {
+      setNegativeEffects(prev => {
+        const without = prev.filter(x => x !== 'none');
+        return without.includes(id) ? without.filter(x => x !== id) : [...without, id];
+      });
+    }
+  };
+
+  const getTimeSince = () => {
+    if (!drink?.drunkAt) return '';
+    const diff = (new Date().getTime() - new Date(drink.drunkAt).getTime()) / (1000 * 60);
+    const h = Math.floor(diff / 60);
+    const m = Math.round(diff % 60);
+    if (h > 0) return `${h}시간 ${m}분 전`;
+    return `${m}분 전`;
+  };
+
+  const getEffectPhase = () => {
+    if (!drink?.drunkAt) return '';
+    const diff = (new Date().getTime() - new Date(drink.drunkAt).getTime()) / (1000 * 60);
+    if (diff <= 120) return '효과 절정 시간이에요';
+    if (diff <= 180) return '효과 슬슬 줄어드는 시간';
+    return '효과 거의 끝났어요';
+  };
+
+  const handleSave = () => {
+    try {
+      const checks = JSON.parse(localStorage.getItem('lua_caffeine_effect_checks') || '[]');
+      checks.push({
+        drunkAt: drink.drunkAt,
+        drinkName: drink.drinkName,
+        amount: drink.amount,
+        caffeineMg: drink.caffeineMg,
+        checkedAt: new Date().toISOString(),
+        positiveEffects,
+        negativeEffects,
+        skipped: false,
+      });
+      localStorage.setItem('lua_caffeine_effect_checks', JSON.stringify(checks));
+    } catch {}
+    localStorage.removeItem('lua_caffeine_effect_scheduled');
+    onSave();
+  };
+
+  const handleSkip = () => {
+    localStorage.removeItem('lua_caffeine_effect_scheduled');
+    onClose();
+  };
+
+  // 패턴 분석 (5건 이상)
+  const patternInsight = (() => {
+    try {
+      const checks = JSON.parse(localStorage.getItem('lua_caffeine_effect_checks') || '[]');
+      if (checks.length < 5) return null;
+      const positiveCount = {};
+      const negativeCount = {};
+      checks.forEach(c => {
+        (c.positiveEffects || []).forEach(e => { positiveCount[e] = (positiveCount[e] || 0) + 1; });
+        (c.negativeEffects || []).filter(e => e !== 'none').forEach(e => { negativeCount[e] = (negativeCount[e] || 0) + 1; });
+      });
+      const topPositive = Object.entries(positiveCount).sort((a, b) => b[1] - a[1])[0];
+      const topNegative = Object.entries(negativeCount).sort((a, b) => b[1] - a[1])[0];
+      const topPosLabel = topPositive ? positiveOptions.find(o => o.id === topPositive[0])?.label : null;
+      const topNegLabel = topNegative ? negativeOptions.find(o => o.id === topNegative[0])?.label : null;
+      return { topPosLabel, topNegLabel, totalLogs: checks.length };
+    } catch { return null; }
+  })();
+
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '24px 24px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.1)', margin: '0 auto 20px' }} />
+        <div style={{ fontSize: 17, fontWeight: 600, color: '#2C4A5E', marginBottom: 16, textAlign: 'center' }}>카페인 효과 체크</div>
+
+        {/* 마신 음료 정보 */}
+        <div style={{ background: '#FAF1E0', borderRadius: 14, padding: 14, marginBottom: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 14 }}>☕</span>
+            <span style={{ fontSize: 11, fontWeight: 500, color: '#6B4A2A' }}>
+              {drink.drinkName} {drink.amount}잔
+            </span>
+          </div>
+          <div style={{ fontSize: 9, color: '#8A5A3C', marginTop: 4, paddingLeft: 22 }}>
+            {getTimeSince()} · {getEffectPhase()}
+          </div>
+        </div>
+
+        {/* 긍정 효과 */}
+        <div style={{ fontSize: 11, fontWeight: 500, color: '#4A6B85', marginBottom: 10 }}>긍정 효과 — 느껴지는 거 있어요?</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+          {positiveOptions.map(opt => {
+            const active = positiveEffects.includes(opt.id);
+            return (
+              <div key={opt.id} onClick={() => togglePositive(opt.id)} style={{
+                padding: '7px 11px', borderRadius: 14, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 4,
+                background: active ? 'rgba(94, 157, 138, 0.15)' : '#F4F4F4',
+                border: active ? '0.5px solid rgba(94, 157, 138, 0.4)' : '0.5px solid transparent',
+                transition: 'all 0.15s ease',
+              }}>
+                <span style={{ fontSize: 11 }}>{opt.emoji}</span>
+                <span style={{ fontSize: 10, fontWeight: active ? 500 : 400, color: active ? '#2E6E5A' : '#2C4A5E' }}>{opt.label}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* 부정 효과 */}
+        <div style={{ fontSize: 11, fontWeight: 500, color: '#4A6B85', marginBottom: 10 }}>불편한 거 있어요?</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+          {negativeOptions.map(opt => {
+            const active = negativeEffects.includes(opt.id);
+            const isNone = opt.id === 'none';
+            return (
+              <div key={opt.id} onClick={() => toggleNegative(opt.id)} style={{
+                padding: '7px 11px', borderRadius: 14, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 4,
+                background: active
+                  ? (isNone ? 'rgba(94, 157, 138, 0.15)' : 'rgba(217, 124, 94, 0.15)')
+                  : '#F4F4F4',
+                border: active
+                  ? (isNone ? '0.5px solid rgba(94, 157, 138, 0.4)' : '0.5px solid rgba(217, 124, 94, 0.4)')
+                  : '0.5px solid transparent',
+                transition: 'all 0.15s ease',
+              }}>
+                <span style={{ fontSize: 11 }}>{opt.emoji}</span>
+                <span style={{ fontSize: 10, fontWeight: active ? 500 : 400, color: active ? (isNone ? '#2E6E5A' : '#8A4A3C') : '#2C4A5E' }}>{opt.label}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* 패턴 발견 (5건 이상) */}
+        {patternInsight && (
+          <div style={{ background: '#FAF8F4', borderRadius: 14, padding: 12, marginBottom: 20 }}>
+            <div style={{ fontSize: 9, color: '#8A5A3C', letterSpacing: 0.3, marginBottom: 6, fontWeight: 500 }}>🔍 lua가 발견한 패턴</div>
+            <div style={{ fontSize: 11, color: '#4A3A2E', lineHeight: 1.6 }}>
+              {patternInsight.topPosLabel && <span>주로 <strong style={{ color: '#2E6E5A' }}>{patternInsight.topPosLabel}</strong>을 느끼는 편이에요. </span>}
+              {patternInsight.topNegLabel && <span><strong style={{ color: '#8A4A3C' }}>{patternInsight.topNegLabel}</strong>이 가끔 있어요. </span>}
+              <span style={{ fontSize: 9, color: '#8A5A3C' }}>({patternInsight.totalLogs}건 기반)</span>
+            </div>
+          </div>
+        )}
+
+        {/* 버튼 */}
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button onClick={handleSkip} style={{ flex: 1, padding: '11px 0', borderRadius: 12, border: 'none', background: '#F4F4F4', color: '#6B8499', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>건너뛰기</button>
+          <button onClick={handleSave} style={{ flex: 1.5, padding: '11px 0', borderRadius: 12, border: 'none', background: '#B8865C', color: '#fff', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>기록하기</button>
         </div>
       </div>
     </div>
