@@ -2300,7 +2300,8 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 export function AddFoodModal({ onAdd, onClose, initialMeal, onDetail }) {
   const [mode, setMode] = useState(null); // null = selection, 'text' = name input, 'photo' = photo analysis
   const [foodItems, setFoodItems] = useState([{ name: '', qty: 1, unit: '인분' }]);
-  const [meal, setMeal] = useState(initialMeal || '아침');
+  const defaultMeal = (() => { const h = new Date().getHours(); if (h >= 5 && h < 10) return '아침'; if (h >= 11 && h < 14) return '점심'; if (h >= 17 && h < 21) return '저녁'; return '간식'; })();
+  const [meal, setMeal] = useState(initialMeal || defaultMeal);
   const [analyzing, setAnalyzing] = useState(false);
   const [preview, setPreview] = useState(null);
   const [aiResult, setAiResult] = useState(null);
@@ -2311,6 +2312,9 @@ export function AddFoodModal({ onAdd, onClose, initialMeal, onDetail }) {
   const [cropSrc, setCropSrc] = useState(null);
   const [photoHint, setPhotoHint] = useState(''); // optional food name hint
   const [photoPortionLabel, setPhotoPortionLabel] = useState('전체'); // how much eaten
+  const [mealTimeMode, setMealTimeMode] = useState('now'); // 'now' | '1hour' | 'custom'
+  const [customMealTime, setCustomMealTime] = useState('');
+  const [mealContext, setMealContext] = useState(null); // 'home_cooked' | 'dining_out' | 'delivery' | 'convenience'
 
   // Handle mobile keyboard: adjust modal position when keyboard appears
   useEffect(() => {
@@ -2457,6 +2461,56 @@ export function AddFoodModal({ onAdd, onClose, initialMeal, onDetail }) {
           </div>
         ))}
       </div>
+      {/* 영양 균형 바 + lua 한 마디 */}
+      {(() => {
+        const userWeight = (() => { try { const all = JSON.parse(localStorage.getItem('lua_body_records') || '[]'); return all.length > 0 ? all[all.length - 1].weight : 0; } catch { return 0; } })();
+        const targets = { protein: (userWeight || 60) * 0.4, carbs: (userWeight || 60) * 0.8, veggies: 100, sodium: 800 };
+        const values = { protein: aiResult.protein || 0, carbs: aiResult.carb || 0, veggies: (aiResult.fiber || 0) * 15, sodium: (aiResult.sugar || 0) * 40 };
+        const evaluate = (val, target) => { const r = val / target; if (r < 0.5) return { level: 'low', label: '조금 부족', color: '#B8865C', pct: Math.max(r * 100, 8) }; if (r > 1.3) return { level: 'high', label: '조금 많음', color: '#C97C5E', pct: 100 }; return { level: 'good', label: '충분 ✓', color: '#5E9D8A', pct: Math.min(r * 100, 100) }; };
+        const bars = [
+          { name: '탄수화물', ...evaluate(values.carbs, targets.carbs) },
+          { name: '단백질', ...evaluate(values.protein, targets.protein) },
+          { name: '채소·과일', ...evaluate(values.veggies, targets.veggies) },
+          { name: '나트륨', ...evaluate(values.sodium, targets.sodium) },
+        ];
+        // lua 한 마디
+        const issues = bars.filter(b => b.level !== 'good');
+        const foodName = (aiResult.name || '').split('+')[0].trim();
+        let luaMsg = '';
+        if (issues.length === 0) luaMsg = `${foodName}, 영양 균형이 좋아요. 이 패턴 그대로 유지해보세요 ✨`;
+        else if (issues.length === 1) {
+          const i = issues[0];
+          if (i.level === 'low') luaMsg = `${foodName} 좋아요. ${i.name}이 좀 부족하니 다음 끼니에 챙기면 베스트.`;
+          else luaMsg = `${foodName} 좋아요. ${i.name}이 살짝 많으니 물 충분히 마셔주세요.`;
+        } else {
+          const low = issues.find(i => i.level === 'low');
+          const high = issues.find(i => i.level === 'high');
+          if (low && high) luaMsg = `${foodName}네요. ${low.name}이 부족하고 ${high.name}이 많으니 다음 끼니에 균형 맞춰보세요.`;
+          else luaMsg = `${foodName} 좋아요. ${issues[0].name}${issues[0].level === 'low' ? '을 더 챙겨보세요.' : '은 줄여보세요.'}`;
+        }
+        return (
+          <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(137,206,245,0.15)' }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>🍎 영양 균형</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 }}>
+              {bars.map(bar => (
+                <div key={bar.name}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+                    <span style={{ fontSize: 9, color: '#2C4A5E' }}>{bar.name}</span>
+                    <span style={{ fontSize: 8, color: bar.color, fontWeight: 500 }}>{bar.label}</span>
+                  </div>
+                  <div style={{ height: 4, background: '#F4F4F4', borderRadius: 2, overflow: 'hidden' }}>
+                    <div style={{ width: `${bar.pct}%`, height: '100%', background: bar.color, borderRadius: 2, transition: 'width 0.3s' }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{ background: '#FAF8F4', borderRadius: 10, padding: 10 }}>
+              <div style={{ fontSize: 9, color: '#8A5A3C', marginBottom: 3 }}>🔍 lua의 한 마디</div>
+              <div style={{ fontSize: 10, color: '#4A3A2E', lineHeight: 1.5 }}>{luaMsg}</div>
+            </div>
+          </div>
+        );
+      })()}
       {/* Ingredients breakdown */}
       {filterIngredients(aiResult.ingredients).length > 0 && (
         <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(137,206,245,0.15)' }}>
@@ -2541,6 +2595,53 @@ export function AddFoodModal({ onAdd, onClose, initialMeal, onDetail }) {
             }}>{m}</button>
           ))}
         </div>
+
+        {/* 식사 시간 + 컨텍스트 */}
+        {!mode && (
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ fontSize: 10, fontWeight: 500, color: '#4A6B85', marginBottom: 6 }}>⏱ 식사 시간</div>
+            <div style={{ display: 'flex', gap: 4, marginBottom: 12 }}>
+              {[
+                { key: 'now', label: '방금', sub: `${String(new Date().getHours()).padStart(2,'0')}:${String(new Date().getMinutes()).padStart(2,'0')}` },
+                { key: '1hour', label: '1시간 전', sub: `${String(new Date(Date.now()-3600000).getHours()).padStart(2,'0')}:${String(new Date(Date.now()-3600000).getMinutes()).padStart(2,'0')}` },
+                { key: 'custom', label: '시간 선택', sub: '' },
+              ].map(opt => (
+                <div key={opt.key} onClick={() => setMealTimeMode(opt.key)} style={{
+                  flex: 1, padding: '6px 4px', borderRadius: 8, textAlign: 'center', cursor: 'pointer',
+                  background: mealTimeMode === opt.key ? '#E8F1ED' : '#F4F4F4',
+                  border: mealTimeMode === opt.key ? '0.5px solid #5E9D8A' : '0.5px solid transparent',
+                }}>
+                  <div style={{ fontSize: 9, fontWeight: 500, color: mealTimeMode === opt.key ? '#2E6E5A' : '#6B8499' }}>{opt.label}</div>
+                  {opt.sub && <div style={{ fontSize: 7, color: '#5E9D8A', marginTop: 1 }}>{opt.sub}</div>}
+                  {opt.key === 'custom' && mealTimeMode === 'custom' && (
+                    <input type="time" value={customMealTime} onChange={e => setCustomMealTime(e.target.value)}
+                      style={{ fontSize: 8, border: 'none', background: 'transparent', width: '100%', textAlign: 'center', outline: 'none', color: '#2E6E5A', marginTop: 2 }} />
+                  )}
+                </div>
+              ))}
+            </div>
+            <div style={{ fontSize: 10, fontWeight: 500, color: '#4A6B85', marginBottom: 6 }}>함께 (선택)</div>
+            <div style={{ display: 'flex', gap: 4 }}>
+              {[
+                { key: 'home_cooked', emoji: '🏠', label: '집밥' },
+                { key: 'dining_out', emoji: '🍔', label: '외식' },
+                { key: 'delivery', emoji: '🥡', label: '배달' },
+                { key: 'convenience', emoji: '🥪', label: '편의점' },
+              ].map(ctx => (
+                <div key={ctx.key} onClick={() => setMealContext(mealContext === ctx.key ? null : ctx.key)} style={{
+                  padding: '5px 9px', borderRadius: 12, cursor: 'pointer', fontSize: 9,
+                  display: 'flex', alignItems: 'center', gap: 3,
+                  background: mealContext === ctx.key ? 'rgba(94,157,138,0.18)' : '#F4F4F4',
+                  border: mealContext === ctx.key ? '0.5px solid #5E9D8A' : '0.5px solid transparent',
+                  color: mealContext === ctx.key ? '#2E6E5A' : '#2C4A5E',
+                  fontWeight: mealContext === ctx.key ? 500 : 400,
+                }}>
+                  <span>{ctx.emoji}</span><span>{ctx.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Mode selection */}
         {!mode && (
