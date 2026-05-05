@@ -1343,17 +1343,38 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                         <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>영양제</span>
                       </div>
                     </div>
-                    <div style={{ marginTop: 'auto' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
                       {_suppTotal > 0 ? (
-                        <div>
-                          <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                            <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_suppDone.length}</span>
-                            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>/{_suppTotal}</span>
+                        <>
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                              <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_suppDone.length}</span>
+                              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>/{_suppTotal}</span>
+                            </div>
+                            <div style={{ fontSize: 10, color: _suppDone.length === _suppTotal ? '#22C55E' : 'var(--text-muted)', marginTop: 4, minHeight: 14 }}>
+                              {_suppDone.length === _suppTotal ? '오늘 완료!' : `${_suppTotal - _suppDone.length}개 남음`}
+                            </div>
                           </div>
-                          <div style={{ fontSize: 10, color: _suppDone.length === _suppTotal ? '#22C55E' : 'var(--text-muted)', marginTop: 4, minHeight: 14 }}>
-                            {_suppDone.length === _suppTotal ? '오늘 완료!' : `${_suppTotal - _suppDone.length}개 남음`}
-                          </div>
-                        </div>
+                          {(() => {
+                            const ringR = 22, ringC = 2 * Math.PI * ringR;
+                            const fillPct = Math.min(_suppDone.length / _suppTotal, 1);
+                            const ringDash = ringC * fillPct;
+                            return (
+                              <svg width="52" height="52" viewBox="0 0 52 52">
+                                <defs>
+                                  <linearGradient id="suppRingGrad" x1="0" y1="0" x2="1" y2="1">
+                                    <stop offset="0%" stopColor="#C8B040" />
+                                    <stop offset="100%" stopColor="#E8D88C" />
+                                  </linearGradient>
+                                </defs>
+                                <circle cx="26" cy="26" r={ringR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" />
+                                <circle cx="26" cy="26" r={ringR} fill="none" stroke="url(#suppRingGrad)" strokeWidth="5"
+                                  strokeDasharray={`${ringDash} ${ringC - ringDash}`} strokeLinecap="round"
+                                  transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
+                              </svg>
+                            );
+                          })()}
+                        </>
                       ) : (
                         <div>
                           <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
