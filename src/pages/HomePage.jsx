@@ -2951,16 +2951,13 @@ const CAFFEINE_ITEMS = [
   { key: 'hojicha', name: '호지차', icon: '🍵', mg: 10, category: 'tea' },
   { key: 'black_tea', name: '홍차', icon: '🍵', mg: 47, category: 'tea' },
   { key: 'oolong', name: '우롱차', icon: '🍵', mg: 38, category: 'tea' },
-  { key: 'chamomile', name: '캐모마일', icon: '🌿', mg: 0, category: 'tea' },
   // 에너지·탄산
   { key: 'energy_drink', name: '에너지드링크', icon: '⚡', mg: 160, category: 'energy_soda' },
   { key: 'cola', name: '콜라', icon: '🥤', mg: 35, category: 'energy_soda' },
-  { key: 'tonic_water', name: '토닉워터', icon: '🥤', mg: 0, category: 'energy_soda' },
   // 카페 음료
   { key: 'choco_latte', name: '초코라떼', icon: '🍫', mg: 30, category: 'cafe_drink' },
   { key: 'green_tea_latte', name: '그린티라떼', icon: '🍵', mg: 80, category: 'cafe_drink' },
   { key: 'chai_latte', name: '차이라떼', icon: '🥛', mg: 50, category: 'cafe_drink' },
-  { key: 'smoothie', name: '스무디', icon: '🥤', mg: 0, category: 'cafe_drink' },
 ];
 
 const ALCOHOL_ITEMS = [
