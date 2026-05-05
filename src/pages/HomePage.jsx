@@ -1310,13 +1310,12 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                         const ringR = 22, ringC = 2 * Math.PI * ringR;
                         const fillPct = Math.min(_cafState.percent / 100, 1);
                         const ringDash = ringC * fillPct;
-                        const ringColor = _cafState.percent < 50 ? '#5E9D8A' : _cafState.percent < 80 ? '#B8865C' : '#C97C5E';
                         return (
                           <svg width="52" height="52" viewBox="0 0 52 52">
                             <defs>
                               <linearGradient id="cafRingGrad" x1="0" y1="0" x2="1" y2="1">
-                                <stop offset="0%" stopColor={ringColor} />
-                                <stop offset="100%" stopColor={_cafState.percent < 50 ? '#B8865C' : ringColor} />
+                                <stop offset="0%" stopColor="#B8865C" />
+                                <stop offset="100%" stopColor="#DEC8A8" />
                               </linearGradient>
                             </defs>
                             <circle cx="26" cy="26" r={ringR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" />
