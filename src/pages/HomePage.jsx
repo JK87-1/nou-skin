@@ -1305,7 +1305,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                             <circle cx="26" cy="26" r={ringR} fill="none" stroke="url(#cafRingGrad)" strokeWidth="5"
                               strokeDasharray={`${ringDash} ${ringC - ringDash}`} strokeLinecap="round"
                               transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
-                            <text x="26" y="28" textAnchor="middle" style={{ fontSize: 10, fontWeight: 600, fill: ringColor }}>{Math.round(_cafState.percent)}%</text>
                           </svg>
                         );
                       })()}
