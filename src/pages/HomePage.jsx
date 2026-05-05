@@ -3529,25 +3529,33 @@ function CardDetailPage({ type, data, onClose }) {
 
 // 카페인 효과 체크 로컬 알림 예약
 const NC_CATEGORIES = [
-  { key: 'herb', emoji: '🌿', name: '허브·꽃차' },
-  { key: 'grain', emoji: '🌾', name: '곡물차' },
-  { key: 'leaf', emoji: '🍃', name: '잎차' },
+  { key: 'herb', emoji: '🌿', name: '허브차' },
+  { key: 'grain', emoji: '🌾', name: '곡물·씨앗차' },
+  { key: 'root', emoji: '🫚', name: '뿌리·열매차' },
 ];
 
 const NONCAFFEINE_ITEMS = [
-  // 허브·꽃차
-  { key: 'chamomile', name: '캐모마일', icon: '🌿', category: 'herb' },
-  { key: 'lavender', name: '라벤더', icon: '🌺', category: 'herb' },
-  { key: 'limeflower', name: '라임블라썸', icon: '🌸', category: 'herb' },
+  // 허브차
   { key: 'chrysanthemum', name: '국화차', icon: '🌼', category: 'herb' },
-  // 곡물차
+  { key: 'chamomile', name: '캐모마일', icon: '🌿', category: 'herb' },
+  { key: 'hibiscus', name: '히비스커스', icon: '🌺', category: 'herb' },
+  { key: 'rooibos', name: '루이보스', icon: '🌹', category: 'herb' },
+  { key: 'peppermint', name: '페퍼민트', icon: '🍃', category: 'herb' },
+  { key: 'spearmint', name: '스피어민트', icon: '🍃', category: 'herb' },
+  { key: 'lemon_balm', name: '레몬밤', icon: '🍋', category: 'herb' },
+  { key: 'rosemary', name: '로즈마리', icon: '🌱', category: 'herb' },
+  { key: 'jasmine', name: '자스민', icon: '🌸', category: 'herb' },
+  // 곡물·씨앗차
   { key: 'barley_tea', name: '보리차', icon: '🌾', category: 'grain' },
+  { key: 'brown_rice_tea', name: '현미차', icon: '🍚', category: 'grain' },
   { key: 'corn_tea', name: '옥수수차', icon: '🌽', category: 'grain' },
-  { key: 'rooibos', name: '루이보스', icon: '🌹', category: 'grain' },
-  // 잎차
-  { key: 'peppermint', name: '페퍼민트', icon: '🍃', category: 'leaf' },
-  { key: 'spearmint', name: '스피어민트', icon: '🍃', category: 'leaf' },
-  { key: 'rosemary', name: '로즈마리', icon: '🌱', category: 'leaf' },
+  { key: 'corn_silk_tea', name: '옥수수수염차', icon: '🌽', category: 'grain' },
+  { key: 'cassia_tea', name: '결명자차', icon: '🫘', category: 'grain' },
+  // 뿌리·열매차
+  { key: 'ginger_tea', name: '생강차', icon: '🫚', category: 'root' },
+  { key: 'burdock_tea', name: '우엉차', icon: '🥕', category: 'root' },
+  { key: 'pumpkin_tea', name: '호박차', icon: '🎃', category: 'root' },
+  { key: 'red_bean_tea', name: '팥차', icon: '🫘', category: 'root' },
 ];
 
 const NONCAFFEINE_INTENTS = [
