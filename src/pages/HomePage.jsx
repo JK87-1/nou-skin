@@ -196,6 +196,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [showDrinkModal, setShowDrinkModal] = useState(false);
   const [showEffectCheckModal, setShowEffectCheckModal] = useState(false);
   const [effectCheckDrink, setEffectCheckDrink] = useState(null);
+  const [showNoncaffeineModal, setShowNoncaffeineModal] = useState(false);
   const [showSupplementModal, setShowSupplementModal] = useState(false);
   const [showSkinCheckModal, setShowSkinCheckModal] = useState(false);
   const [showCycleModal, setShowCycleModal] = useState(false);
@@ -235,12 +236,13 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
     { id: 'sleep', label: '수면' },
     { id: 'blood_sugar', label: '혈당' },
     { id: 'drink', label: '드링크' },
+    { id: 'noncaffeine', label: '논카페인' },
     { id: 'supplement', label: '영양제' },
     { id: 'skin_check', label: '피부' },
     { id: 'weather', label: '날씨' },
     { id: 'cycle', label: '주기' },
   ];
-  const CARD_ORDER_VERSION = 12;
+  const CARD_ORDER_VERSION = 13;
   const DEFAULT_CARD_ORDER = CARD_REGISTRY.map(c => c.id);
   const [cardOrder, setCardOrder] = useState(() => {
     try {
@@ -1309,6 +1311,38 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                 ));
               }
 
+              if (cardId === 'noncaffeine') {
+                const _ncLogs = (() => { try { const all = JSON.parse(localStorage.getItem('lua_noncaffeine_records') || '{}'); return all[_todayKey] || []; } catch { return []; } })();
+                const _ncTotal = _ncLogs.reduce((s, d) => s + (d.amount || 0), 0);
+                const _ncIntents = (() => { const counts = {}; _ncLogs.forEach(l => (l.intents || []).forEach(i => { counts[i] = (counts[i] || 0) + 1; })); return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([k]) => ({ sleep: '잠용', calm: '진정용', stress: '스트레스용', pms: 'PMS용', decaffeine: '카페인 대신', just_like: '취향' }[k] || k)); })();
+                return editWrap('논카페인', (
+                  <div onClick={() => handleCardTap('noncaffeine', () => setShowNoncaffeineModal(true))} style={{ ..._cs, cursor: 'pointer', padding: '20px', animation: tappedCard === 'noncaffeine' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 0, flex: '0 0 auto' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 14 }}>🌿</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>논카페인</span>
+                      </div>
+                    </div>
+                    <div style={{ marginTop: 'auto' }}>
+                      {_ncTotal > 0 ? (
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                            <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_ncTotal}</span>
+                            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>잔</span>
+                          </div>
+                          <div style={{ fontSize: 10, color: '#8A7AAB', marginTop: 4 }}>{_ncIntents.join(' · ') || '기록됨'}</div>
+                        </div>
+                      ) : (
+                        <div>
+                          <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
+                          <div style={{ fontSize: 10, color: 'var(--accent-primary, #89cef5)', marginTop: 4 }}>기록하기</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ));
+              }
+
               if (cardId === 'supplement') {
                 const _suppItems = getSupplementItems();
                 const _suppChecks = getSupplementChecks(_todayKey);
@@ -1806,6 +1840,10 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
       {showEffectCheckModal && effectCheckDrink && (
         <CaffeineEffectCheckModal drink={effectCheckDrink} onClose={() => { setShowEffectCheckModal(false); setEffectCheckDrink(null); }} onSave={() => { setShowEffectCheckModal(false); setEffectCheckDrink(null); setWeightRefreshKey(k => k + 1); }} />
+      )}
+
+      {showNoncaffeineModal && (
+        <NoncaffeineModal onClose={() => setShowNoncaffeineModal(false)} onSave={() => { setShowNoncaffeineModal(false); setWeightRefreshKey(k => k + 1); }} />
       )}
 
       {showSupplementModal && (
@@ -3482,6 +3520,206 @@ function CardDetailPage({ type, data, onClose }) {
 }
 
 // 카페인 효과 체크 로컬 알림 예약
+const NONCAFFEINE_ITEMS = [
+  { key: 'chamomile', name: '캐모마일', icon: '🌿' },
+  { key: 'peppermint', name: '페퍼민트', icon: '🍃' },
+  { key: 'rooibos', name: '루이보스', icon: '🌹' },
+  { key: 'chrysanthemum', name: '국화차', icon: '🌼' },
+  { key: 'barley_tea', name: '보리차', icon: '🌾' },
+  { key: 'rosemary', name: '로즈마리', icon: '🌱' },
+  { key: 'lavender', name: '라벤더', icon: '🌺' },
+  { key: 'limeflower', name: '라임블라썸', icon: '🌸' },
+];
+
+const NONCAFFEINE_INTENTS = [
+  { key: 'sleep', emoji: '😴', label: '잠 잘 자려고' },
+  { key: 'calm', emoji: '😌', label: '진정·릴렉스' },
+  { key: 'stress', emoji: '💆', label: '스트레스 풀려고' },
+  { key: 'pms', emoji: '🌙', label: 'PMS 완화' },
+  { key: 'decaffeine', emoji: '☕', label: '카페인 줄이려고' },
+  { key: 'just_like', emoji: '🤍', label: '그냥 좋아서' },
+];
+
+function NoncaffeineModal({ onClose, onSave }) {
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const [selected, setSelected] = useState(null);
+  const [amount, setAmount] = useState(1);
+  const [intents, setIntents] = useState([]);
+  const [timeMode, setTimeMode] = useState('now');
+  const [customTime, setCustomTime] = useState('');
+
+  const formatTime = (date) => `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+  const nowTime = new Date();
+  const thirtyAgo = new Date(nowTime.getTime() - 30 * 60 * 1000);
+
+  const getDrunkAt = () => {
+    const now = new Date();
+    if (timeMode === '30min') return new Date(now.getTime() - 30 * 60 * 1000);
+    if (timeMode === 'custom' && customTime) { const [h, m] = customTime.split(':').map(Number); const d = new Date(now); d.setHours(h, m, 0, 0); return d; }
+    return now;
+  };
+
+  const toggleIntent = (key) => {
+    setIntents(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
+  };
+
+  const handleSave = () => {
+    if (!selected) return;
+    try {
+      const all = JSON.parse(localStorage.getItem('lua_noncaffeine_records') || '{}');
+      const todayLogs = all[todayKey] || [];
+      todayLogs.push({ key: selected, name: NONCAFFEINE_ITEMS.find(i => i.key === selected)?.name, amount, intents, drunkAt: getDrunkAt().toISOString(), createdAt: new Date().toISOString() });
+      all[todayKey] = todayLogs;
+      localStorage.setItem('lua_noncaffeine_records', JSON.stringify(all));
+    } catch {}
+    onSave();
+  };
+
+  // lua 메시지
+  const luaMsg = (() => {
+    if (!selected || intents.length === 0) return null;
+    try {
+      const all = JSON.parse(localStorage.getItem('lua_noncaffeine_records') || '{}');
+      const allLogs = Object.values(all).flat();
+      const thisWeek = allLogs.filter(l => { const d = new Date(l.createdAt); return (Date.now() - d.getTime()) < 7 * 86400000; });
+      const count = thisWeek.length + 1;
+      if (intents.includes('decaffeine')) {
+        const cafData = (() => { try { const dr = JSON.parse(localStorage.getItem('lua_drink_records') || '{}'); const td = dr[todayKey] || { caffeine: [] }; return td.caffeine.reduce((s, d) => { const item = CAFFEINE_ITEMS.find(c => c.key === d.key); return s + (item?.mg || 0) * (d.count || 0); }, 0); } catch { return 0; } })();
+        if (cafData > 200) return `오늘 카페인 ${cafData}mg 마셨는데 논카페인으로 균형 잘 잡으셨어요`;
+        return `카페인 의식하는 좋은 선택이에요`;
+      }
+      if (intents.includes('sleep')) return `이번 주 잠용 ${count}번째 · 수면 데이터 쌓이면 효과 분석 가능`;
+      if (intents.includes('calm') || intents.includes('stress')) return `이번 주 ${count}번째 진정 음료`;
+      return `이번 주 논카페인 ${count}번째`;
+    } catch { return null; }
+  })();
+
+  const selItem = selected ? NONCAFFEINE_ITEMS.find(i => i.key === selected) : null;
+
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '18px 18px 36px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.1)', margin: '0 auto 16px' }} />
+        <div style={{ fontSize: 16, fontWeight: 600, color: '#2C4A5E', marginBottom: 14, textAlign: 'center' }}>논카페인 기록</div>
+
+        {/* 음료 선택 */}
+        <div style={{ fontSize: 10, fontWeight: 500, color: '#4A6B85', marginBottom: 8 }}>어떤 음료 드셨어요?</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 14 }}>
+          {NONCAFFEINE_ITEMS.map(item => {
+            const active = selected === item.key;
+            return (
+              <div key={item.key} onClick={() => { setSelected(active ? null : item.key); if (!active) setAmount(1); }} style={{
+                padding: '7px 11px', borderRadius: 14, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 5,
+                background: active ? 'rgba(123,94,158,0.12)' : '#F4F4F4',
+                border: active ? '0.5px solid #7B5E9E' : '0.5px solid transparent',
+                transition: 'all 0.15s ease',
+              }}>
+                <span style={{ fontSize: 11 }}>{item.icon}</span>
+                <span style={{ fontSize: 10, fontWeight: active ? 500 : 400, color: active ? '#4A3A6B' : '#2C4A5E' }}>{item.name}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* 잔수 조절 */}
+        {selItem ? (
+          <div style={{ background: 'rgba(238,237,254,0.7)', borderRadius: 14, padding: 14, marginBottom: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 14 }}>{selItem.icon}</span>
+                <span style={{ fontSize: 12, fontWeight: 500, color: '#4A3A6B' }}>{selItem.name}</span>
+              </div>
+              <span style={{ fontSize: 9, color: '#8A7AAB' }}>0kcal · 카페인 없음</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <div onClick={() => { if (amount > 0.5) setAmount(amount - 0.5); }} style={{ width: 28, height: 28, borderRadius: '50%', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 14, color: '#6B8499' }}>−</div>
+              <div style={{ textAlign: 'center' }}>
+                <span style={{ fontSize: 22, fontWeight: 500, color: '#4A3A6B' }}>{amount}</span>
+                <span style={{ fontSize: 9, color: '#8A7AAB', marginLeft: 4 }}>잔</span>
+              </div>
+              <div onClick={() => setAmount(amount + 0.5)} style={{ width: 28, height: 28, borderRadius: '50%', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 14, color: '#7B5E9E' }}>+</div>
+            </div>
+            <div style={{ display: 'flex', gap: 4 }}>
+              {[0.5, 1, 1.5, 2].map(v => (
+                <div key={v} onClick={() => setAmount(v)} style={{
+                  flex: 1, padding: '5px', borderRadius: 7, textAlign: 'center', cursor: 'pointer', fontSize: 9,
+                  background: amount === v ? '#7B5E9E' : 'white', color: amount === v ? '#fff' : '#6B8499', fontWeight: amount === v ? 500 : 400,
+                }}>{v}잔</div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div style={{ background: '#F8F8F5', borderRadius: 14, padding: 14, textAlign: 'center', marginBottom: 14 }}>
+            <div style={{ fontSize: 9, color: '#8BA6BD' }}>음료를 선택하면</div>
+            <div style={{ fontSize: 11, color: '#6B8499', marginTop: 2 }}>잔 수 입력이 나타나요</div>
+          </div>
+        )}
+
+        {/* 의도 칩 */}
+        {selected && (
+          <div style={{ background: 'rgba(123,94,158,0.08)', borderRadius: 12, padding: 12, marginBottom: 14 }}>
+            <div style={{ fontSize: 9, color: '#4A3A6B', marginBottom: 6, fontWeight: 500 }}>🌿 왜 마셨어요? (선택)</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+              {NONCAFFEINE_INTENTS.map(opt => {
+                const active = intents.includes(opt.key);
+                return (
+                  <div key={opt.key} onClick={() => toggleIntent(opt.key)} style={{
+                    padding: '5px 9px', borderRadius: 10, cursor: 'pointer', fontSize: 9,
+                    display: 'flex', alignItems: 'center', gap: 3,
+                    background: active ? 'rgba(123,94,158,0.20)' : 'white',
+                    border: active ? '0.5px solid rgba(123,94,158,0.4)' : '0.5px solid transparent',
+                    color: active ? '#4A3A6B' : '#6B8499', fontWeight: active ? 500 : 400,
+                  }}>
+                    <span>{opt.emoji}</span><span>{opt.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* 시간 선택 */}
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 10, fontWeight: 500, color: '#4A6B85', marginBottom: 6 }}>언제 마셨어요?</div>
+          <div style={{ display: 'flex', gap: 4 }}>
+            {[
+              { key: 'now', label: '방금', sub: formatTime(nowTime) },
+              { key: '30min', label: '30분 전', sub: formatTime(thirtyAgo) },
+              { key: 'custom', label: '시간 선택', sub: '' },
+            ].map(opt => (
+              <div key={opt.key} onClick={() => setTimeMode(opt.key)} style={{
+                flex: 1, padding: '7px 4px', borderRadius: 9, textAlign: 'center', cursor: 'pointer',
+                background: timeMode === opt.key ? 'rgba(123,94,158,0.12)' : '#F4F4F4',
+                border: timeMode === opt.key ? '0.5px solid #7B5E9E' : '0.5px solid transparent',
+              }}>
+                <div style={{ fontSize: 9, fontWeight: 500, color: timeMode === opt.key ? '#4A3A6B' : '#6B8499' }}>{opt.label}</div>
+                {opt.sub && <div style={{ fontSize: 7, color: '#6B4A8A', marginTop: 1 }}>{opt.sub}</div>}
+                {opt.key === 'custom' && timeMode === 'custom' && (
+                  <input type="time" value={customTime} onChange={e => setCustomTime(e.target.value)} style={{ fontSize: 8, border: 'none', background: 'transparent', width: '100%', textAlign: 'center', outline: 'none', color: '#6B4A8A', marginTop: 2 }} />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* lua 메시지 */}
+        {luaMsg && (
+          <div style={{ background: 'rgba(94,157,138,0.08)', borderRadius: 10, padding: 9, marginBottom: 12 }}>
+            <div style={{ fontSize: 9, color: '#2E6E5A', lineHeight: 1.4 }}>{luaMsg}</div>
+          </div>
+        )}
+
+        {/* 버튼 */}
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={onClose} style={{ flex: 1, padding: '9px', borderRadius: 10, border: 'none', background: '#F4F4F4', color: '#6B8499', fontSize: 10, cursor: 'pointer', fontFamily: 'inherit' }}>취소</button>
+          <button onClick={handleSave} disabled={!selected} style={{ flex: 1.5, padding: '9px', borderRadius: 10, border: 'none', background: selected ? '#7B5E9E' : '#F4F4F4', color: selected ? '#fff' : '#8BA6BD', fontSize: 10, fontWeight: 500, cursor: selected ? 'pointer' : 'default', fontFamily: 'inherit', transition: 'all 0.15s' }}>저장</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function scheduleCaffeineEffectNotification(delayMs, drinkName, amount) {
   // localStorage에 예약 저장 (앱 재진입 시 체크용)
   const scheduled = {
