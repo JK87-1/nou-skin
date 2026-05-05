@@ -1,44 +1,52 @@
 /**
- * 카페인 적정량 계산 유틸리티
+ * 카페인 5단계 상태 계산 유틸리티
  */
 
 export function calculateCaffeineState(todayTotalMg, userWeightKg, pendingAdditionMg = 0) {
   const limit = userWeightKg ? userWeightKg * 5 : 400;
   const projected = todayTotalMg + pendingAdditionMg;
-  const percent = Math.min((projected / limit) * 100, 200);
+  const percent = Math.min((projected / limit) * 100, 100);
 
-  let status, statusColor, gaugeColor;
+  let stage, status, statusColor, gaugeColor;
 
-  if (percent < 50) {
-    status = '여유 있어요';
-    statusColor = '#5E9D8A';
+  if (projected < 50) {
+    stage = 1;
+    status = '차분한 시작이에요';
+    statusColor = '#2E6E5A';
+    gaugeColor = '#5E9D8A';
+  } else if (projected < 150) {
+    stage = 2;
+    status = '오늘 적당해요';
+    statusColor = '#6B4A2A';
     gaugeColor = 'linear-gradient(90deg, #5E9D8A, #B8865C)';
-  } else if (percent < 80) {
-    status = '적정 수준';
-    statusColor = '#B8865C';
-    gaugeColor = '#B8865C';
-  } else if (percent < 100) {
-    status = '곧 한도 도달';
-    statusColor = '#C97C5E';
-    gaugeColor = '#C97C5E';
+  } else if (projected < 200) {
+    stage = 3;
+    status = '적정선이에요';
+    statusColor = '#8A5A3C';
+    gaugeColor = 'linear-gradient(90deg, #5E9D8A 0%, #B8865C 60%)';
+  } else if (projected < limit) {
+    stage = 4;
+    status = '많이 마셨어요';
+    statusColor = '#8A4A3C';
+    gaugeColor = 'linear-gradient(90deg, #5E9D8A 0%, #B8865C 50%, #C97C5E 100%)';
   } else {
-    status = '한도 초과';
-    statusColor = '#A32D2D';
-    gaugeColor = '#A32D2D';
+    stage = 5;
+    status = '과하게 마신 편이에요';
+    statusColor = '#791F1F';
+    gaugeColor = 'linear-gradient(90deg, #5E9D8A 0%, #B8865C 35%, #C97C5E 70%, #A32D2D 100%)';
   }
-
-  const remaining = Math.max(0, limit - projected);
 
   return {
     currentMg: todayTotalMg,
     projectedMg: projected,
-    limitMg: limit,
-    percent: Math.min(percent, 100),
+    limitMg: Math.round(limit),
+    percent,
+    stage,
     status,
     statusColor,
     gaugeColor,
-    remainingText: remaining > 0
-      ? `권장 한도까지 ${Math.round(remaining)}mg 남음`
-      : `오늘은 충분해요`,
+    remainingText: projected < limit
+      ? `${Math.round(limit - projected)}mg 더 마실 수 있어요`
+      : '오늘은 충분해요',
   };
 }
