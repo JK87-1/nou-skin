@@ -2972,7 +2972,7 @@ function DrinkModal({ onClose, onSave }) {
   const [tab, setTab] = useState('caffeine');
   const [drinkCategory, setDrinkCategory] = useState('coffee');
   const [records, setRecords] = useState(() => {
-    try { const all = JSON.parse(localStorage.getItem('lua_drink_records') || '{}'); return all[todayKey] || { caffeine: [], noncaffeine: [], alcohol: [] }; }
+    try { const all = JSON.parse(localStorage.getItem('lua_drink_records') || '{}'); const r = all[todayKey] || {}; return { caffeine: r.caffeine || [], noncaffeine: r.noncaffeine || [], alcohol: r.alcohol || [] }; }
     catch { return { caffeine: [], noncaffeine: [], alcohol: [] }; }
   });
   const [ncIntents, setNcIntents] = useState([]);
@@ -2982,7 +2982,7 @@ function DrinkModal({ onClose, onSave }) {
 
   const items = tab === 'caffeine' ? CAFFEINE_ITEMS.filter(i => i.category === drinkCategory) : tab === 'noncaffeine' ? NONCAFFEINE_ITEMS : ALCOHOL_ITEMS;
   const allCafItems = CAFFEINE_ITEMS;
-  const list = tab === 'caffeine' ? records.caffeine : tab === 'noncaffeine' ? records.noncaffeine : records.alcohol;
+  const list = tab === 'caffeine' ? records.caffeine : tab === 'noncaffeine' ? (records.noncaffeine || []) : records.alcohol;
   const accent = tab === 'noncaffeine' ? '#7B5E9E' : '#B8865C';
 
   const getCount = (key) => list.find(d => d.key === key)?.count || 0;
