@@ -234,7 +234,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
     { id: 'weight', label: '체중' },
     { id: 'sleep', label: '수면' },
     { id: 'blood_sugar', label: '혈당' },
-    { id: 'drink', label: '드링크' },
+    { id: 'drink', label: '음료' },
     { id: 'supplement', label: '영양제' },
     { id: 'skin_check', label: '피부' },
     { id: 'weather', label: '날씨' },
@@ -1257,12 +1257,12 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                 const _hasData = _cafTotal > 0 || _alcTotal > 0 || _ncTotal > 0;
                 const _userWeight = getLatestWeight()?.weight || 0;
                 const _cafState = calculateCaffeineState(_cafMg, _userWeight);
-                return editWrap('드링크', (
+                return editWrap('음료', (
                   <div onClick={() => handleCardTap('drink', () => setShowDrinkModal(true))} style={{ ..._cs, cursor: 'pointer', padding: '20px', animation: tappedCard === 'drink' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 0, flex: '0 0 auto' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <img src="/cup.svg" width="16" height="16" alt="" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(160,120,80,0.3))' }} />
-                        <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>드링크</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>음료</span>
                       </div>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
@@ -3079,7 +3079,7 @@ function DrinkModal({ onClose, onSave }) {
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
       <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '18px 18px 36px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.1)', margin: '0 auto 16px' }} />
-        <div style={{ fontSize: 16, fontWeight: 600, color: '#2C4A5E', marginBottom: 14, textAlign: 'center' }}>드링크 기록</div>
+        <div style={{ fontSize: 16, fontWeight: 600, color: '#2C4A5E', marginBottom: 14, textAlign: 'center' }}>음료 기록</div>
 
         {/* 카페인/논카페인/알콜 토글 */}
         <div style={{ display: 'flex', gap: 3, background: '#F4F4F4', borderRadius: 10, padding: 3, marginBottom: 14 }}>
