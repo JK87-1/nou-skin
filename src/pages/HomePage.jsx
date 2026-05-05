@@ -2882,15 +2882,15 @@ function BloodSugarModal({ onClose, onUpdate }) {
 }
 
 const CAFFEINE_ITEMS = [
-  { key: 'americano', name: '아메리카노', icon: '☕', mg: 150 },
-  { key: 'latte', name: '라떼', icon: '🥛', mg: 75 },
-  { key: 'espresso', name: '에스프레소', icon: '☕', mg: 63 },
-  { key: 'green_tea', name: '녹차', icon: '🍵', mg: 30 },
-  { key: 'energy_drink', name: '에너지드링크', icon: '⚡', mg: 80 },
-  { key: 'cola', name: '콜라', icon: '🥤', mg: 34 },
-  { key: 'decaf', name: '디카페인', icon: '☕', mg: 5 },
-  { key: 'matcha', name: '말차', icon: '🍵', mg: 70 },
   { key: 'hojicha', name: '호지차', icon: '🍵', mg: 20 },
+  { key: 'green_tea', name: '녹차', icon: '🍵', mg: 30 },
+  { key: 'matcha', name: '말차', icon: '🍵', mg: 70 },
+  { key: 'decaf', name: '디카페인', icon: '☕', mg: 5 },
+  { key: 'espresso', name: '에스프레소', icon: '☕', mg: 63 },
+  { key: 'latte', name: '라떼', icon: '🥛', mg: 75 },
+  { key: 'americano', name: '아메리카노', icon: '☕', mg: 150 },
+  { key: 'cola', name: '콜라', icon: '🥤', mg: 34 },
+  { key: 'energy_drink', name: '에너지드링크', icon: '⚡', mg: 80 },
 ];
 
 const ALCOHOL_ITEMS = [
