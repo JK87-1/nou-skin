@@ -3246,6 +3246,43 @@ function DrinkModal({ onClose, onSave }) {
           </div>
         )}
 
+        {/* 수분 보충 권장 (카페인/알콜) */}
+        {selected && selCount > 0 && tab !== 'noncaffeine' && (() => {
+          const DRINK_ML = { americano: 350, latte: 350, cappuccino: 350, espresso: 60, cold_brew: 350, decaf: 350, green_tea: 250, matcha: 250, hojicha: 250, black_tea: 250, oolong: 250, energy_drink: 250, cola: 355, choco_latte: 350, green_tea_latte: 350, chai_latte: 350, beer: 500, makgeolli: 300, highball: 350, wine: 150, cocktail: 200, soju: 50, whiskey: 45 };
+          const drinkMl = DRINK_ML[selected] || 250;
+          const totalMl = Math.round(drinkMl * selCount);
+          const ratio = tab === 'alcohol' ? 1.5 : 1.0;
+          const compensationMl = Math.round(totalMl * ratio);
+          const totalCaffeine = selItem?.mg ? selItem.mg * selCount : 0;
+          if (tab === 'caffeine' && totalCaffeine < 10) return null;
+          const isAlcohol = tab === 'alcohol';
+          return (
+            <div style={{
+              background: isAlcohol ? 'rgba(217,124,94,0.12)' : 'rgba(74,107,133,0.08)',
+              border: `0.5px solid ${isAlcohol ? 'rgba(217,124,94,0.4)' : 'rgba(74,107,133,0.25)'}`,
+              borderRadius: 12, padding: 11, marginBottom: 12,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 5 }}>
+                <span style={{ fontSize: 12 }}>💧</span>
+                <span style={{ fontSize: 9, fontWeight: 500, color: isAlcohol ? '#8A4A3C' : '#4A6B85' }}>수분 보충 권장{isAlcohol ? ' (꼭!)' : ''}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 5 }}>
+                <span style={{ fontSize: 16, fontWeight: 500, color: '#2C4A5E' }}>+{compensationMl}</span>
+                <span style={{ fontSize: 9, color: '#6B8499' }}>ml</span>
+              </div>
+              <div style={{ fontSize: 8, color: '#6B8499', lineHeight: 1.4 }}>
+                {isAlcohol ? '알코올 이뇨작용으로 음료의 1.5배 보충 필요해요' : `이 음료의 카페인 영향으로 물 ${compensationMl}ml 더 챙기면 좋아요`}
+              </div>
+              {isAlcohol && (
+                <div style={{ background: 'white', borderRadius: 8, padding: '6px 8px', marginTop: 6, display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span style={{ fontSize: 10 }}>💡</span>
+                  <span style={{ fontSize: 8, color: '#4A3A2E', lineHeight: 1.4 }}>자기 전 한 잔, 다음날 아침 한 잔 어때요?</span>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
         {/* 시간 선택 */}
         <div style={{ marginBottom: 16 }}>
           <div style={{ fontSize: 10, fontWeight: 500, color: '#4A6B85', marginBottom: 6 }}>언제 마셨어요?</div>
