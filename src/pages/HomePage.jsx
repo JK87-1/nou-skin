@@ -1271,24 +1271,16 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                         <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>드링크</span>
                       </div>
                     </div>
-                    <div style={{ marginTop: 'auto' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
                       {_hasData ? (
                         <div>
                           <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
                             <span style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_cafMg > 0 ? _cafMg : _alcTotal}</span>
-                            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{_cafMg > 0 ? `/ ${_cafState.limitMg}mg` : '잔'}</span>
+                            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{_cafMg > 0 ? 'mg' : '잔'}</span>
                           </div>
-                          {_cafMg > 0 && (
-                            <div style={{ marginTop: 6 }}>
-                              <div style={{ width: '100%', height: 4, background: '#F4F4F4', borderRadius: 2, overflow: 'hidden' }}>
-                                <div style={{ width: `${_cafState.percent}%`, height: '100%', background: _cafState.gaugeColor, borderRadius: 2, transition: 'width 0.3s ease' }} />
-                              </div>
-                              <div style={{ fontSize: 9, color: _cafState.statusColor, marginTop: 3, fontWeight: 500 }}>{_cafState.status}</div>
-                            </div>
-                          )}
-                          {!_cafMg && _alcTotal > 0 && (
-                            <div style={{ fontSize: 10, color: '#22C55E', marginTop: 4 }}>🍺{_alcTotal}잔</div>
-                          )}
+                          <div style={{ fontSize: 9, color: _cafMg > 0 ? _cafState.statusColor : '#22C55E', marginTop: 3, fontWeight: 500 }}>
+                            {_cafMg > 0 ? _cafState.status : `🍺${_alcTotal}잔`}
+                          </div>
                         </div>
                       ) : (
                         <div>
@@ -1296,6 +1288,27 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                           <div style={{ fontSize: 10, color: 'var(--accent-primary, #89cef5)', marginTop: 4 }}>기록하기</div>
                         </div>
                       )}
+                      {_cafMg > 0 && (() => {
+                        const ringR = 22, ringC = 2 * Math.PI * ringR;
+                        const fillPct = Math.min(_cafState.percent / 100, 1);
+                        const ringDash = ringC * fillPct;
+                        const ringColor = _cafState.percent < 50 ? '#5E9D8A' : _cafState.percent < 80 ? '#B8865C' : '#C97C5E';
+                        return (
+                          <svg width="52" height="52" viewBox="0 0 52 52">
+                            <defs>
+                              <linearGradient id="cafRingGrad" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0%" stopColor={ringColor} />
+                                <stop offset="100%" stopColor={_cafState.percent < 50 ? '#B8865C' : ringColor} />
+                              </linearGradient>
+                            </defs>
+                            <circle cx="26" cy="26" r={ringR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" />
+                            <circle cx="26" cy="26" r={ringR} fill="none" stroke="url(#cafRingGrad)" strokeWidth="5"
+                              strokeDasharray={`${ringDash} ${ringC - ringDash}`} strokeLinecap="round"
+                              transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
+                            <text x="26" y="28" textAnchor="middle" style={{ fontSize: 10, fontWeight: 600, fill: ringColor }}>{Math.round(_cafState.percent)}%</text>
+                          </svg>
+                        );
+                      })()}
                     </div>
                   </div>
                 ));
