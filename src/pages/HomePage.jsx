@@ -15,6 +15,7 @@ import { calculateCycleState, getActivePosition, getCycleData, saveCycleData } f
 import { getTodayProgress } from '../storage/RoutineCheckStorage';
 import { getLatestWeight, getBodyRecords, saveBodyRecord } from '../storage/BodyStorage';
 import { calculateCaffeineState } from '../utils/caffeineUtils';
+import { calculateSkinScore, getScoreState, getTopImpactSignals, getDotColors } from '../utils/skinCheckUtils';
 import {
   getTodayChecks, getLatestCheck, saveConditionCheck,
   shouldResetCheck, getMinutesSinceLastCheck,
@@ -1336,32 +1337,43 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               }
 
               if (cardId === 'skin_check') {
-                const _skinSub = (() => { try { const checks = JSON.parse(localStorage.getItem('nou_skin_sub_checks') || '[]'); return checks.find(c => c.date === _todayKey) || null; } catch { return null; } })();
-                const _skinTags = _skinSub?.tags || [];
-                const _tagCount = _skinTags.length;
+                const _skinLog = (() => { try { const logs = JSON.parse(localStorage.getItem('lua_skin_check_logs') || '{}'); return logs[_todayKey] || null; } catch { return null; } })();
+                const _skinScore = _skinLog ? calculateSkinScore(_skinLog) : null;
+                const _skinState = _skinScore !== null ? getScoreState(_skinScore) : 'unchecked';
+                const _yesterdayLog = (() => { try { const logs = JSON.parse(localStorage.getItem('lua_skin_check_logs') || '{}'); const yd = new Date(Date.now() - 86400000).toISOString().slice(0, 10); return logs[yd] || null; } catch { return null; } })();
+                const _yesterdayScore = _yesterdayLog ? calculateSkinScore(_yesterdayLog) : null;
+                const _delta = (_skinScore !== null && _yesterdayScore !== null) ? _skinScore - _yesterdayScore : null;
+                const _dots = _skinScore !== null ? getDotColors(_skinScore, _skinLog?.signals || []) : [];
+                const _skinBg = _skinState === 'needs_care' ? 'rgba(252, 235, 235, 0.7)' : _skinState === 'signals' ? 'rgba(252, 245, 235, 0.7)' : 'rgba(255, 255, 255, 0.5)';
+                const _topSignals = _skinLog?.signals?.length > 0 ? getTopImpactSignals(_skinLog.signals).replace('이 영향을 주고 있어요', '') : '';
                 return editWrap('피부', (
-                  <div onClick={() => handleCardTap('skin_check', () => setShowSkinCheckModal(true))} style={{ ..._cs, cursor: 'pointer', padding: '20px', animation: tappedCard === 'skin_check' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
+                  <div onClick={() => handleCardTap('skin_check', () => setShowSkinCheckModal(true))} style={{ ..._cs, cursor: 'pointer', padding: '20px', background: _skinBg, position: 'relative', animation: tappedCard === 'skin_check' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 0, flex: '0 0 auto' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(240,160,180,0.3))' }}><defs><linearGradient id="skinCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F8E0C8"/><stop offset="100%" stopColor="#D0A080"/></linearGradient></defs><path d="M10.48,23.25c-.15.41-.5.71-.86.75-.27.03-.78-.29-.9-.59l-1.53-4.02c-.48-1.26-1.41-2.1-2.67-2.58l-3.91-1.48c-.29-.11-.59-.51-.6-.76-.01-.39.23-.79.6-.93l3.9-1.49c1.27-.48,2.19-1.31,2.68-2.59l1.57-4.14c.08-.2.52-.44.74-.46.24-.02.77.21.86.46l1.57,4.14c.5,1.32,1.47,2.15,2.78,2.63l3.7,1.37c.31.11.66.55.67.83.02.42-.29.82-.68.97l-3.8,1.44c-1.26.48-2.2,1.32-2.67,2.58l-1.45,3.86z" fill="url(#skinCard)" opacity="0.8"/><path d="M21.48,6.29c-1.03.59-.9,2.91-2.01,2.98-1.23.08-.99-1.68-1.94-2.78-.77-.88-2.68-.63-2.74-1.78-.07-1.27,2.01-1.1,2.74-1.91.87-.95.73-2.72,1.78-2.8,1.29-.1.98,1.81,1.95,2.77.87.86,2.67.71,2.73,1.8.07,1.08-1.29,1.02-2.51,1.72z" fill="url(#skinCard)" opacity="0.8"/></svg>
+                        <span style={{ fontSize: 14, opacity: _skinState === 'unchecked' ? 0.7 : 1 }}>✨</span>
                         <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>피부</span>
                       </div>
                     </div>
                     <div style={{ marginTop: 'auto' }}>
-                      {_tagCount > 0 ? (
+                      {_skinScore !== null ? (
                         <div>
-                          <div style={{ fontSize: 22, lineHeight: 1.3 }}>
-                            {_skinTags.slice(0, 3).map(t => {
-                              const icons = { trouble: '🔴', dry: '🌵', oily: '💧', puffy: '🎈', redness: '🌡️', sensitive: '😰', dull: '😴', good: '✨' };
-                              return icons[t] || '•';
-                            }).join(' ')}
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                            <span style={{ fontSize: 22, fontWeight: 500, color: '#2C4A5E', fontFamily: 'var(--font-display)', lineHeight: 1.1, letterSpacing: -0.5 }}>{_skinScore}</span>
                           </div>
-                          <div style={{ fontSize: 10, color: '#22C55E', marginTop: 4 }}>{_tagCount}개 체크됨</div>
+                          {_delta !== null && (
+                            <div style={{ fontSize: 11, color: _delta >= 0 ? '#5E9D8A' : _delta >= -5 ? '#B8865C' : '#C97C5E', marginTop: 3 }}>
+                              {_delta >= 0 ? '↑' : '↓'} 어제 {_delta >= 0 ? '+' : ''}{_delta}
+                            </div>
+                          )}
+                          {_topSignals && <div style={{ fontSize: 10, color: '#6B8499', marginTop: 2 }}>{_topSignals}</div>}
+                          <div style={{ position: 'absolute', right: 14, bottom: 14, display: 'flex', gap: 3 }}>
+                            {_dots.map((c, i) => <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: c }} />)}
+                          </div>
                         </div>
                       ) : (
                         <div>
-                          <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
-                          <div style={{ fontSize: 10, color: 'var(--accent-primary, #89cef5)', marginTop: 4 }}>체크하기</div>
+                          <div style={{ fontSize: 16, fontWeight: 500, color: '#6B8499' }}>체크하기</div>
+                          <div style={{ fontSize: 10, color: '#8BA6BD', marginTop: 2 }}>10초만에 끝나요</div>
                         </div>
                       )}
                     </div>
@@ -3521,78 +3533,206 @@ function SupplementModal({ onClose, onUpdate }) {
 }
 
 const SKIN_SIGNALS = [
-  { key: 'trouble', icon: '🔴', label: '새 트러블' },
-  { key: 'dry', icon: '🌵', label: '건조함' },
-  { key: 'oily', icon: '💧', label: '번들거림' },
-  { key: 'puffy', icon: '🎈', label: '붓기' },
-  { key: 'redness', icon: '🌡️', label: '홍조·열감' },
-  { key: 'sensitive', icon: '😰', label: '예민함' },
-  { key: 'dull', icon: '😴', label: '칙칙함' },
-  { key: 'good', icon: '✨', label: '평소보다 좋음' },
+  { key: 'new_trouble', icon: '🔴', label: '새 트러블', group: 'trouble' },
+  { key: 'dry', icon: '🌵', label: '건조함', group: 'dry' },
+  { key: 'oily', icon: '💧', label: '번들거림', group: 'neutral' },
+  { key: 'puffy', icon: '🎈', label: '붓기', group: 'neutral' },
+  { key: 'redness', icon: '🌡️', label: '홍조·열감', group: 'neutral' },
+  { key: 'sensitive', icon: '😰', label: '예민함', group: 'neutral' },
+  { key: 'dull', icon: '😴', label: '칙칙함', group: 'neutral' },
+];
+
+const SKIN_LOCATIONS = [
+  { key: 'forehead', label: '이마' },
+  { key: 'cheek', label: '볼' },
+  { key: 'chin', label: '턱' },
+  { key: 'nose', label: '코' },
+  { key: 'all_over', label: '전체' },
+];
+
+const CONDITION_OPTIONS = [
+  { key: 'bad', emoji: '😟', label: '안 좋음' },
+  { key: 'normal', emoji: '😐', label: '평소' },
+  { key: 'okay', emoji: '🙂', label: '괜찮음' },
+  { key: 'glowing', emoji: '✨', label: '빛남' },
 ];
 
 function SkinCheckModal({ onClose, onUpdate }) {
-  const [tags, setTags] = useState(() => {
-    const sub = getTodaySkinSubCheck();
-    return sub?.tags || [];
-  });
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const existingLog = (() => { try { const logs = JSON.parse(localStorage.getItem('lua_skin_check_logs') || '{}'); return logs[todayKey] || null; } catch { return null; } })();
 
-  const toggleTag = (key) => {
-    setTags(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
+  const [condition, setCondition] = useState(existingLog?.overallCondition || null);
+  const [signals, setSignals] = useState(existingLog?.signals || []);
+  const [locations, setLocations] = useState(existingLog?.locations || []);
+
+  // 어제 점수
+  const yesterdayScore = (() => { try { const logs = JSON.parse(localStorage.getItem('lua_skin_check_logs') || '{}'); const yd = new Date(Date.now() - 86400000).toISOString().slice(0, 10); const yl = logs[yd]; return yl ? calculateSkinScore(yl) : null; } catch { return null; } })();
+
+  // 실시간 점수 계산
+  const currentInput = { overallCondition: condition, signals, locations };
+  const score = condition ? calculateSkinScore(currentInput) : null;
+  const delta = (score !== null && yesterdayScore !== null) ? score - yesterdayScore : null;
+  const impactText = getTopImpactSignals(signals);
+
+  const toggleSignal = (key) => {
+    setSignals(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
+  };
+
+  const toggleLocation = (key) => {
+    if (key === 'all_over') {
+      setLocations(['all_over']);
+    } else {
+      setLocations(prev => {
+        const without = prev.filter(k => k !== 'all_over');
+        return without.includes(key) ? without.filter(k => k !== key) : [...without, key];
+      });
+    }
   };
 
   const handleSave = () => {
-    saveSkinSubCheck({ tags });
+    if (!condition) return;
+    try {
+      const logs = JSON.parse(localStorage.getItem('lua_skin_check_logs') || '{}');
+      logs[todayKey] = { overallCondition: condition, signals, locations, createdAt: new Date().toISOString() };
+      localStorage.setItem('lua_skin_check_logs', JSON.stringify(logs));
+      // 기존 호환: nou_skin_sub_checks에도 저장
+      saveSkinSubCheck({ tags: signals });
+    } catch {}
     onUpdate();
   };
 
-  const handleScan = () => {
-    onClose();
-    window.dispatchEvent(new CustomEvent('lua:start-scan'));
+  const getSignalChipStyle = (sig, active) => {
+    if (!active) return { background: '#F4F4F4', border: '0.5px solid transparent', color: '#2C4A5E' };
+    if (sig.group === 'trouble') return { background: 'rgba(217, 124, 94, 0.25)', border: '0.5px solid rgba(217, 124, 94, 0.4)', color: '#8A4A3C' };
+    if (sig.group === 'dry') return { background: 'rgba(184, 134, 92, 0.25)', border: '0.5px solid rgba(184, 134, 92, 0.4)', color: '#6B4A2A' };
+    return { background: 'rgba(184, 134, 92, 0.18)', border: '0.5px solid rgba(184, 134, 92, 0.3)', color: '#6B4A2A' };
   };
+
+  // 권장 관리 메시지
+  const getCareMessage = () => {
+    if (score === null) return null;
+    if (score >= 75) return { type: 'good', text: '오늘 컨디션 좋아요. 이 흐름 그대로 유지해보세요 ✨' };
+    const recs = [];
+    if (signals.includes('dry')) recs.push({ icon: '💧', text: '수분 마스크 또는 보습 한 번 더' });
+    if (signals.includes('new_trouble')) recs.push({ icon: '🧴', text: '진정 토너 사용' });
+    if (signals.includes('redness') || signals.includes('sensitive')) recs.push({ icon: '🌡️', text: '미온수 세안, 자극 줄이기' });
+    if (signals.includes('dull')) recs.push({ icon: '🛌', text: '충분한 휴식' });
+    if (signals.includes('oily')) recs.push({ icon: '💧', text: '시카 토너 또는 가벼운 수분' });
+    if (recs.length === 0) recs.push({ icon: '💧', text: '수분 한 번 더' }, { icon: '🛌', text: '충분한 휴식' });
+    return { type: 'care', items: recs.slice(0, 3) };
+  };
+
+  const care = getCareMessage();
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0', padding: '24px 24px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
-        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
-        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 20, textAlign: 'center' }}>피부 체크</div>
+      <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '20px 20px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.1)', margin: '0 auto 20px' }} />
+        <div style={{ fontSize: 17, fontWeight: 600, color: '#2C4A5E', marginBottom: 20, textAlign: 'center' }}>피부 체크</div>
 
-        {/* AI 피부 분석 버튼 */}
-        <div onClick={handleScan} style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-          padding: '16px 20px', borderRadius: 18, cursor: 'pointer', marginBottom: 24,
-          background: 'linear-gradient(135deg, #E0C0F0, #C090E0)',
-          boxShadow: '0 2px 12px rgba(180,130,210,0.25)',
-        }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/><circle cx="12" cy="13" r="4" stroke="#fff" strokeWidth="2" fill="none"/></svg>
-          <span style={{ fontSize: 15, fontWeight: 600, color: '#fff' }}>AI 피부 분석하기</span>
-        </div>
-
-        {/* 오늘의 피부 상태 */}
-        <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(0,0,0,0.3)', marginBottom: 12 }}>오늘의 피부 상태</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 24 }}>
-          {SKIN_SIGNALS.map(sig => {
-            const active = tags.includes(sig.key);
-            const isGood = sig.key === 'good';
+        {/* 1. 전체 컨디션 */}
+        <div style={{ fontSize: 12, fontWeight: 500, color: '#4A6B85', marginBottom: 10 }}>전체 컨디션</div>
+        <div style={{ display: 'flex', gap: 6, marginBottom: 22 }}>
+          {CONDITION_OPTIONS.map(opt => {
+            const active = condition === opt.key;
             return (
-              <div key={sig.key} onClick={() => toggleTag(sig.key)} style={{
-                padding: '14px 14px', borderRadius: 16, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 10,
-                background: active ? (isGood ? 'rgba(34,197,94,0.08)' : 'rgba(216,160,224,0.08)') : 'rgba(0,0,0,0.02)',
-                border: active ? (isGood ? '1.5px solid rgba(34,197,94,0.25)' : '1.5px solid rgba(216,160,224,0.3)') : '1.5px solid rgba(0,0,0,0.05)',
+              <div key={opt.key} onClick={() => setCondition(opt.key)} style={{
+                flex: 1, padding: '12px 4px', borderRadius: 12, textAlign: 'center', cursor: 'pointer',
+                background: active ? '#FAF1E0' : '#F4F4F4',
+                border: active ? '0.5px solid #B8865C' : '0.5px solid transparent',
                 transition: 'all 0.15s ease',
               }}>
-                <span style={{ fontSize: 20 }}>{sig.icon}</span>
-                <span style={{ fontSize: 13, fontWeight: active ? 600 : 500, color: active ? (isGood ? '#22C55E' : '#9060B0') : 'rgba(0,0,0,0.4)' }}>{sig.label}</span>
+                <div style={{ fontSize: 18 }}>{opt.emoji}</div>
+                <div style={{ fontSize: 9, color: active ? '#6B4A2A' : '#6B8499', fontWeight: active ? 500 : 400, marginTop: 4 }}>{opt.label}</div>
               </div>
             );
           })}
         </div>
 
+        {/* 2. 신호 칩 */}
+        <div style={{ fontSize: 12, fontWeight: 500, color: '#4A6B85', marginBottom: 10 }}>눈에 띄는 신호 (있으면 탭)</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+          {SKIN_SIGNALS.map(sig => {
+            const active = signals.includes(sig.key);
+            const chipStyle = getSignalChipStyle(sig, active);
+            return (
+              <div key={sig.key} onClick={() => toggleSignal(sig.key)} style={{
+                padding: '7px 10px', borderRadius: 14, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 4,
+                background: chipStyle.background, border: chipStyle.border,
+                transition: 'all 0.15s ease',
+              }}>
+                <span style={{ fontSize: 11 }}>{sig.icon}</span>
+                <span style={{ fontSize: 10, fontWeight: active ? 500 : 400, color: chipStyle.color }}>{sig.label}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* 3. 신호 위치 (신호 1개 이상 선택 시) */}
+        {signals.length > 0 && (
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontSize: 12, fontWeight: 500, color: '#4A6B85', marginBottom: 10 }}>신호 위치 (선택)</div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {SKIN_LOCATIONS.map(loc => {
+                const active = locations.includes(loc.key);
+                return (
+                  <div key={loc.key} onClick={() => toggleLocation(loc.key)} style={{
+                    flex: 1, padding: 8, borderRadius: 10, textAlign: 'center', cursor: 'pointer',
+                    background: active ? '#FAF1E0' : '#F4F4F4',
+                    border: active ? '0.5px solid #B8865C' : '0.5px solid transparent',
+                    fontSize: 10, color: active ? '#6B4A2A' : '#6B8499', fontWeight: active ? 500 : 400,
+                    transition: 'all 0.15s ease',
+                  }}>{loc.label}</div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* 4. 자동 계산 점수 카드 */}
+        {score !== null && (
+          <div style={{ background: '#FFF8F0', borderRadius: 14, padding: 14, border: '0.5px solid rgba(184, 134, 92, 0.2)', marginBottom: 14 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+              <span style={{ fontSize: 9, color: '#8A5A3C', letterSpacing: 0.3 }}>📊 오늘 피부 점수</span>
+              <span style={{ fontSize: 9, color: '#B8865C' }}>자동 계산</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+              <span style={{ fontSize: 24, fontWeight: 500, color: '#2C4A5E' }}>{score}</span>
+              {delta !== null && (
+                <span style={{ fontSize: 11, color: delta >= 0 ? '#5E9D8A' : delta >= -5 ? '#B8865C' : '#C97C5E' }}>
+                  {delta >= 0 ? '↑' : '↓'} 어제 {yesterdayScore}
+                </span>
+              )}
+            </div>
+            {impactText && <div style={{ fontSize: 10, color: '#6B8499', marginTop: 4 }}>{impactText}</div>}
+          </div>
+        )}
+
+        {/* 5. 권장 관리 */}
+        {care && care.type === 'good' && (
+          <div style={{ background: '#FAF8F4', borderRadius: 14, padding: 12, marginBottom: 16 }}>
+            <div style={{ fontSize: 11, color: '#4A3A2E', lineHeight: 1.5 }}>{care.text}</div>
+          </div>
+        )}
+        {care && care.type === 'care' && (
+          <div style={{ background: '#FAF1E0', borderRadius: 14, padding: 14, marginBottom: 16 }}>
+            <div style={{ fontSize: 9, color: '#8A5A3C', letterSpacing: 0.3, marginBottom: 8, fontWeight: 500 }}>🌿 오늘 권장 관리</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {care.items.map((item, i) => (
+                <div key={i} style={{ background: 'white', borderRadius: 8, padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 12 }}>{item.icon}</span>
+                  <span style={{ fontSize: 10, color: '#4A3A2E' }}>{item.text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* 버튼 */}
         <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={onClose} style={{ flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)', border: 'none', background: 'var(--bg-input, #F2F3F5)', color: 'var(--text-muted)', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>취소</button>
-          <button onClick={handleSave} style={{ flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)', border: 'none', background: '#B080D0', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>저장</button>
+          <button onClick={onClose} style={{ flex: 1, padding: '11px 0', borderRadius: 12, border: 'none', background: '#F4F4F4', color: '#6B8499', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>취소</button>
+          <button onClick={handleSave} disabled={!condition} style={{ flex: 1.5, padding: '11px 0', borderRadius: 12, border: 'none', background: condition ? '#B8865C' : '#ddd', color: condition ? '#fff' : '#999', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}>저장</button>
         </div>
       </div>
     </div>
