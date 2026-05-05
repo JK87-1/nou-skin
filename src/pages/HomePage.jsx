@@ -1249,11 +1249,12 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               }
 
               if (cardId === 'drink') {
-                const _drinkData = (() => { try { const all = JSON.parse(localStorage.getItem('lua_drink_records') || '{}'); return all[_todayKey] || { caffeine: [], alcohol: [] }; } catch { return { caffeine: [], alcohol: [] }; } })();
+                const _drinkData = (() => { try { const all = JSON.parse(localStorage.getItem('lua_drink_records') || '{}'); const r = all[_todayKey] || {}; return { caffeine: r.caffeine || [], noncaffeine: r.noncaffeine || [], alcohol: r.alcohol || [] }; } catch { return { caffeine: [], noncaffeine: [], alcohol: [] }; } })();
                 const _cafTotal = _drinkData.caffeine.reduce((s, d) => s + (d.count || 0), 0);
                 const _cafMg = _drinkData.caffeine.reduce((s, d) => { const item = CAFFEINE_ITEMS.find(c => c.key === d.key); return s + (item?.mg || 0) * (d.count || 0); }, 0);
                 const _alcTotal = _drinkData.alcohol.reduce((s, d) => s + (d.count || 0), 0);
-                const _hasData = _cafTotal > 0 || _alcTotal > 0;
+                const _ncTotal = _drinkData.noncaffeine.reduce((s, d) => s + (d.count || 0), 0);
+                const _hasData = _cafTotal > 0 || _alcTotal > 0 || _ncTotal > 0;
                 const _userWeight = getLatestWeight()?.weight || 0;
                 const _cafState = calculateCaffeineState(_cafMg, _userWeight);
                 return editWrap('드링크', (
@@ -1267,13 +1268,37 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
                       {_hasData ? (
                         <div>
-                          <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                            <span style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_cafMg > 0 ? _cafMg : _alcTotal}</span>
-                            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{_cafMg > 0 ? 'mg' : '잔'}</span>
-                          </div>
-                          <div style={{ fontSize: 9, color: _cafMg > 0 ? _cafState.statusColor : '#22C55E', marginTop: 3, fontWeight: 500 }}>
-                            {_cafMg > 0 ? _cafState.status : `🍺${_alcTotal}잔`}
-                          </div>
+                          {_cafMg > 0 ? (
+                            <>
+                              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                                <span style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_cafMg}</span>
+                                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>mg</span>
+                              </div>
+                              <div style={{ fontSize: 9, color: _cafState.statusColor, marginTop: 3, fontWeight: 500 }}>{_cafState.status}</div>
+                            </>
+                          ) : _alcTotal > 0 ? (
+                            <>
+                              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                                <span style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_alcTotal}</span>
+                                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>잔</span>
+                              </div>
+                              <div style={{ fontSize: 9, color: '#8A7AAB', marginTop: 3, fontWeight: 500 }}>🍺 알콜</div>
+                            </>
+                          ) : (
+                            <>
+                              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                                <span style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_ncTotal}</span>
+                                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>잔</span>
+                              </div>
+                              <div style={{ fontSize: 9, color: '#7B5E9E', marginTop: 3, fontWeight: 500 }}>🌿 논카페인</div>
+                            </>
+                          )}
+                          {/* 복수 카테고리 기록 시 서브라인 */}
+                          {((_cafMg > 0 ? 1 : 0) + (_alcTotal > 0 ? 1 : 0) + (_ncTotal > 0 ? 1 : 0)) > 1 && (
+                            <div style={{ fontSize: 8, color: 'var(--text-muted)', marginTop: 2 }}>
+                              {[_cafMg > 0 && `☕${_cafTotal}`, _ncTotal > 0 && `🌿${_ncTotal}`, _alcTotal > 0 && `🍺${_alcTotal}`].filter(Boolean).join(' · ')}
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <div>
