@@ -2895,11 +2895,11 @@ const CAFFEINE_ITEMS = [
 
 const ALCOHOL_ITEMS = [
   { key: 'beer', name: '맥주', icon: '🍺', ml: 500 },
-  { key: 'soju', name: '소주', icon: '🍶', ml: 50 },
-  { key: 'wine', name: '와인', icon: '🍷', ml: 150 },
-  { key: 'highball', name: '하이볼', icon: '🥃', ml: 350 },
   { key: 'makgeolli', name: '막걸리', icon: '🍶', ml: 300 },
+  { key: 'highball', name: '하이볼', icon: '🥃', ml: 350 },
+  { key: 'wine', name: '와인', icon: '🍷', ml: 150 },
   { key: 'cocktail', name: '칵테일', icon: '🍸', ml: 200 },
+  { key: 'soju', name: '소주', icon: '🍶', ml: 50 },
   { key: 'whiskey', name: '위스키', icon: '🥃', ml: 45 },
 ];
 
