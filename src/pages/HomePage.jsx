@@ -14,6 +14,7 @@ import { getWeatherData, refreshWeatherIfNeeded } from '../storage/WeatherStorag
 import { calculateCycleState, getActivePosition, getCycleData, saveCycleData } from '../utils/cycleUtils';
 import { getTodayProgress } from '../storage/RoutineCheckStorage';
 import { getLatestWeight, getBodyRecords, saveBodyRecord } from '../storage/BodyStorage';
+import { calculateCaffeineState } from '../utils/caffeineUtils';
 import {
   getTodayChecks, getLatestCheck, saveConditionCheck,
   shouldResetCheck, getMinutesSinceLastCheck,
@@ -1234,6 +1235,8 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                 const _cafMg = _drinkData.caffeine.reduce((s, d) => { const item = CAFFEINE_ITEMS.find(c => c.key === d.key); return s + (item?.mg || 0) * (d.count || 0); }, 0);
                 const _alcTotal = _drinkData.alcohol.reduce((s, d) => s + (d.count || 0), 0);
                 const _hasData = _cafTotal > 0 || _alcTotal > 0;
+                const _userWeight = getLatestWeight()?.weight || 0;
+                const _cafState = calculateCaffeineState(_cafMg, _userWeight);
                 return editWrap('드링크', (
                   <div onClick={() => handleCardTap('drink', () => setShowDrinkModal(true))} style={{ ..._cs, cursor: 'pointer', padding: '20px', animation: tappedCard === 'drink' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 0, flex: '0 0 auto' }}>
@@ -1246,12 +1249,20 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                       {_hasData ? (
                         <div>
                           <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                            <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_cafMg > 0 ? _cafMg : _alcTotal}</span>
-                            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{_cafMg > 0 ? 'mg' : '잔'}</span>
+                            <span style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_cafMg > 0 ? _cafMg : _alcTotal}</span>
+                            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{_cafMg > 0 ? `/ ${_cafState.limitMg}mg` : '잔'}</span>
                           </div>
-                          <div style={{ fontSize: 10, color: '#22C55E', marginTop: 4 }}>
-                            {_cafTotal > 0 && `☕${_cafTotal}잔`}{_cafTotal > 0 && _alcTotal > 0 && ' · '}{_alcTotal > 0 && `🍺${_alcTotal}잔`}
-                          </div>
+                          {_cafMg > 0 && (
+                            <div style={{ marginTop: 6 }}>
+                              <div style={{ width: '100%', height: 4, background: '#F4F4F4', borderRadius: 2, overflow: 'hidden' }}>
+                                <div style={{ width: `${_cafState.percent}%`, height: '100%', background: _cafState.gaugeColor, borderRadius: 2, transition: 'width 0.3s ease' }} />
+                              </div>
+                              <div style={{ fontSize: 9, color: _cafState.statusColor, marginTop: 3, fontWeight: 500 }}>{_cafState.status}</div>
+                            </div>
+                          )}
+                          {!_cafMg && _alcTotal > 0 && (
+                            <div style={{ fontSize: 10, color: '#22C55E', marginTop: 4 }}>🍺{_alcTotal}잔</div>
+                          )}
                         </div>
                       ) : (
                         <div>
@@ -2870,7 +2881,9 @@ function DrinkModal({ onClose, onSave }) {
     try { const all = JSON.parse(localStorage.getItem('lua_drink_records') || '{}'); return all[todayKey] || { caffeine: [], alcohol: [] }; }
     catch { return { caffeine: [], alcohol: [] }; }
   });
-  const [selected, setSelected] = useState(null); // 선택된 아이템 key
+  const [selected, setSelected] = useState(null);
+  const [drunkTimeMode, setDrunkTimeMode] = useState('now'); // 'now' | '30min' | 'custom'
+  const [customTime, setCustomTime] = useState('');
 
   const items = tab === 'caffeine' ? CAFFEINE_ITEMS : ALCOHOL_ITEMS;
   const list = tab === 'caffeine' ? records.caffeine : records.alcohol;
@@ -2895,10 +2908,37 @@ function DrinkModal({ onClose, onSave }) {
     setRecords(prev => ({ ...prev, [tab]: updated }));
   };
 
+  // 마신 시간 계산
+  const getDrunkAt = () => {
+    const now = new Date();
+    if (drunkTimeMode === '30min') {
+      return new Date(now.getTime() - 30 * 60 * 1000);
+    }
+    if (drunkTimeMode === 'custom' && customTime) {
+      const [h, m] = customTime.split(':').map(Number);
+      const d = new Date(now);
+      d.setHours(h, m, 0, 0);
+      return d;
+    }
+    return now;
+  };
+
+  const formatTime = (date) => {
+    return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+  };
+
   const handleSave = () => {
     try {
       const all = JSON.parse(localStorage.getItem('lua_drink_records') || '{}');
-      all[todayKey] = records;
+      // drunkAt 시간 저장
+      const drunkAt = getDrunkAt().toISOString();
+      const updatedRecords = { ...records };
+      if (tab === 'caffeine') {
+        updatedRecords.caffeine = records.caffeine.map(d => ({ ...d, drunkAt: d.drunkAt || drunkAt }));
+      } else {
+        updatedRecords.alcohol = records.alcohol.map(d => ({ ...d, drunkAt: d.drunkAt || drunkAt }));
+      }
+      all[todayKey] = updatedRecords;
       localStorage.setItem('lua_drink_records', JSON.stringify(all));
     } catch {}
     onSave();
@@ -2907,6 +2947,19 @@ function DrinkModal({ onClose, onSave }) {
   const cafTotal = records.caffeine.reduce((s, d) => s + d.count, 0);
   const alcTotal = records.alcohol.reduce((s, d) => s + d.count, 0);
   const cafMg = records.caffeine.reduce((s, d) => { const item = CAFFEINE_ITEMS.find(c => c.key === d.key); return s + (item?.mg || 0) * d.count; }, 0);
+
+  // 선택 중인 아이템의 카페인 추가량 계산 (게이지 미리보기용)
+  const pendingMg = (() => {
+    if (tab !== 'caffeine' || !selected) return 0;
+    const selItem = CAFFEINE_ITEMS.find(i => i.key === selected);
+    const currentCount = getCount(selected);
+    // 이미 records에 반영되어 있으므로 pendingMg는 0
+    return 0;
+  })();
+
+  // 카페인 게이지 상태
+  const userWeight = getLatestWeight()?.weight || 0;
+  const cafState = calculateCaffeineState(cafMg, userWeight, pendingMg);
 
   const selItem = selected ? items.find(i => i.key === selected) : null;
   const selCount = selected ? getCount(selected) : 0;
@@ -2917,6 +2970,9 @@ function DrinkModal({ onClose, onSave }) {
     color: active ? '#fff' : 'var(--text-muted)',
     fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
   });
+
+  const nowTime = new Date();
+  const thirtyAgo = new Date(nowTime.getTime() - 30 * 60 * 1000);
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
@@ -2996,6 +3052,68 @@ function DrinkModal({ onClose, onSave }) {
             </div>
           </div>
         )}
+
+        {/* ③ 오늘의 카페인 게이지 (카페인 탭일 때만) */}
+        {tab === 'caffeine' && (
+          <div style={{ background: '#FFF8F0', borderRadius: 14, padding: 12, border: '0.5px solid rgba(184, 134, 92, 0.2)', marginBottom: 14 }}>
+            <div style={{ fontSize: 9, color: '#8A5A3C', letterSpacing: 0.3, marginBottom: 8, fontWeight: 500 }}>
+              {userWeight ? `📊 오늘의 카페인 (몸무게 ${userWeight}kg)` : '📊 오늘의 카페인 (체중 미입력)'}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 6 }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                <span style={{ fontSize: 18, fontWeight: 500, color: '#2C4A5E' }}>{Math.round(cafState.projectedMg)}</span>
+                <span style={{ fontSize: 10, color: '#8A5A3C' }}>/ {cafState.limitMg}mg</span>
+              </div>
+              <span style={{ fontSize: 9, color: cafState.statusColor, fontWeight: 500 }}>{cafState.status}</span>
+            </div>
+            <div style={{ width: '100%', height: 6, background: '#F4F4F4', borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{ width: `${cafState.percent}%`, height: '100%', background: cafState.gaugeColor, borderRadius: 3, transition: 'width 0.3s ease' }} />
+            </div>
+            <div style={{ fontSize: 9, color: '#6B8499', marginTop: 6 }}>
+              {cafState.remainingText}
+              {!userWeight && <span style={{ marginLeft: 6, color: '#B8865C' }}>· 체중 입력하면 더 정확해요</span>}
+            </div>
+          </div>
+        )}
+
+        {/* ④ 마신 시간 선택 */}
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 10, fontWeight: 500, color: '#6B8499', marginBottom: 8 }}>언제 마셨어요?</div>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <div onClick={() => setDrunkTimeMode('now')} style={{
+              flex: 1, padding: '8px 4px', borderRadius: 10, textAlign: 'center', cursor: 'pointer',
+              background: drunkTimeMode === 'now' ? '#FAF1E0' : '#F4F4F4',
+              border: drunkTimeMode === 'now' ? '0.5px solid #B8865C' : '0.5px solid transparent',
+            }}>
+              <div style={{ fontSize: 10, fontWeight: 500, color: drunkTimeMode === 'now' ? '#6B4A2A' : '#6B8499' }}>방금</div>
+              <div style={{ fontSize: 8, color: '#8A5A3C', marginTop: 2 }}>{formatTime(nowTime)}</div>
+            </div>
+            <div onClick={() => setDrunkTimeMode('30min')} style={{
+              flex: 1, padding: '8px 4px', borderRadius: 10, textAlign: 'center', cursor: 'pointer',
+              background: drunkTimeMode === '30min' ? '#FAF1E0' : '#F4F4F4',
+              border: drunkTimeMode === '30min' ? '0.5px solid #B8865C' : '0.5px solid transparent',
+            }}>
+              <div style={{ fontSize: 10, fontWeight: 500, color: drunkTimeMode === '30min' ? '#6B4A2A' : '#6B8499' }}>30분 전</div>
+              <div style={{ fontSize: 8, color: '#8A5A3C', marginTop: 2 }}>{formatTime(thirtyAgo)}</div>
+            </div>
+            <div onClick={() => setDrunkTimeMode('custom')} style={{
+              flex: 1, padding: '8px 4px', borderRadius: 10, textAlign: 'center', cursor: 'pointer', position: 'relative',
+              background: drunkTimeMode === 'custom' ? '#FAF1E0' : '#F4F4F4',
+              border: drunkTimeMode === 'custom' ? '0.5px solid #B8865C' : '0.5px solid transparent',
+            }}>
+              <div style={{ fontSize: 10, fontWeight: 500, color: drunkTimeMode === 'custom' ? '#6B4A2A' : '#6B8499' }}>시간 선택</div>
+              {drunkTimeMode === 'custom' && (
+                <input
+                  type="time"
+                  value={customTime}
+                  onChange={e => setCustomTime(e.target.value)}
+                  max={formatTime(nowTime)}
+                  style={{ fontSize: 8, color: '#8A5A3C', marginTop: 2, border: 'none', background: 'transparent', width: '100%', textAlign: 'center', outline: 'none' }}
+                />
+              )}
+            </div>
+          </div>
+        </div>
 
         {/* 오늘 기록 요약 */}
         {(cafTotal > 0 || alcTotal > 0) && (
