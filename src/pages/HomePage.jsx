@@ -1852,7 +1852,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
 
       {showSupplementModal && (
-        <SupplementModal onClose={() => setShowSupplementModal(false)} onUpdate={() => { setShowSupplementModal(false); setWeightRefreshKey(k => k + 1); }} />
+        <SupplementModal onClose={() => setShowSupplementModal(false)} onUpdate={() => { setShowSupplementModal(false); setWeightRefreshKey(k => k + 1); }} onCheck={() => setWeightRefreshKey(k => k + 1)} />
       )}
 
       {showSkinCheckModal && (
@@ -4029,7 +4029,7 @@ function CaffeineEffectCheckModal({ drink, onClose, onSave }) {
 
 const TIMING_LABELS = { morning: '아침', lunch: '점심', evening: '저녁' };
 
-function SupplementModal({ onClose, onUpdate }) {
+function SupplementModal({ onClose, onUpdate, onCheck }) {
   const [items, setItems] = useState(getSupplementItems);
   const [checks, setChecks] = useState(() => getSupplementChecks());
   const [newName, setNewName] = useState('');
@@ -4039,6 +4039,7 @@ function SupplementModal({ onClose, onUpdate }) {
   const handleToggle = (id) => {
     const updated = toggleSupplementCheck(id);
     setChecks(updated);
+    onCheck?.();
   };
 
   const handleAdd = () => {

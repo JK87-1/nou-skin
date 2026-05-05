@@ -282,8 +282,8 @@ export default function SupplementOnboardingPage({ onClose, onComplete, onNaviga
     });
     // 홈 영양제 카드에도 동기화
     const suppItems = [];
-    routine.morning.forEach(name => suppItems.push({ id: Date.now() + Math.random() * 1000 | 0, name, timing: 'morning' }));
-    routine.evening.forEach(name => suppItems.push({ id: Date.now() + 500 + Math.random() * 1000 | 0, name, timing: 'evening' }));
+    routine.morning.forEach((name, i) => suppItems.push({ id: Date.now() + i * 7 + 1, name, timing: 'morning' }));
+    routine.evening.forEach((name, i) => suppItems.push({ id: Date.now() + 1000 + i * 7 + 1, name, timing: 'evening' }));
     saveSupplementItems(suppItems);
     // Save profile
     saveProfile({
