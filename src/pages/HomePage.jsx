@@ -185,6 +185,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
   const [showSettings, setShowSettings] = useState(false);
   const [showAccountPage, setShowAccountPage] = useState(false);
+  const [detailPage, setDetailPage] = useState(null); // { type: 'sleep'|'condition'|'meal', data: any }
   const [showWeather, setShowWeather] = useState(false);
   const [showWeightModal, setShowWeightModal] = useState(false);
   const [showActivityModal, setShowActivityModal] = useState(false);
@@ -1643,6 +1644,10 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         />
       )}
 
+      {detailPage && (
+        <CardDetailPage type={detailPage.type} data={detailPage.data} onClose={() => setDetailPage(null)} />
+      )}
+
       {showWeightModal && (
         <AddWeightModal
           latest={getLatestWeight()}
@@ -1779,6 +1784,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             setWeightRefreshKey(k => k + 1);
           }}
           onClose={() => setShowFoodModal(false)}
+          onDetail={(food) => { setShowFoodModal(false); setDetailPage({ type: 'meal', data: food }); }}
         />
       )}
 
@@ -1790,6 +1796,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           onSliderChange={(key, pct) => setSliderPcts(prev => ({ ...prev, [key]: pct }))}
           onUpdate={() => { handleUpdate(); setShowConditionModal(false); }}
           onClose={() => setShowConditionModal(false)}
+          onDetail={(data) => { setShowConditionModal(false); setDetailPage({ type: 'condition', data }); }}
         />
       )}
 
@@ -1850,6 +1857,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         <SleepInputModal
           onClose={() => setShowSleepModal(false)}
           onUpdate={() => { setShowSleepModal(false); setWeightRefreshKey(k => k + 1); }}
+          onDetail={(data) => { setShowSleepModal(false); setDetailPage({ type: 'sleep', data }); }}
         />
       )}
 
@@ -1886,7 +1894,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   }
 }
 
-function ConditionCheckModal({ selections, sliderPcts, onSelect, onSliderChange, onUpdate, onClose }) {
+function ConditionCheckModal({ selections, sliderPcts, onSelect, onSliderChange, onUpdate, onClose, onDetail }) {
   const sliders = [
     { key: 'mood', label: '기분', rgb: [245,194,203], labels: MOOD_LABELS,
       icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(212,112,126,0.3))' }}><defs><linearGradient id="heartM" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F0B8C0"/><stop offset="100%" stopColor="#D4707E"/></linearGradient></defs><path d="M12 4.5C10 2 6.5 1.5 4.5 4c-2 2.5-1.5 6 1 8.5L12 20l6.5-7.5c2.5-2.5 3-6 1-8.5C17.5 1.5 14 2 12 4.5z" fill="url(#heartM)" opacity="0.6"/></svg> },
@@ -1970,7 +1978,17 @@ function ConditionCheckModal({ selections, sliderPcts, onSelect, onSliderChange,
           );
         })}
 
-        <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
+        {onDetail && (
+          <div onClick={() => onDetail(selections)} style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+            padding: 9, borderRadius: 10, cursor: 'pointer', marginTop: 20,
+            background: 'white', border: '0.5px solid #B8865C',
+          }}>
+            <span style={{ fontSize: 10, color: '#B8865C', fontWeight: 500 }}>📊 자세히 보기 →</span>
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
           <button onClick={onClose} style={{
             flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
             border: 'none', background: 'var(--bg-input, #F2F3F5)',
@@ -2592,7 +2610,7 @@ function AccountPage({ profile, onUpdate, onClose }) {
 // ===== Sleep Input Modal =====
 const SLEEP_QUALITIES = ['깊은 수면', '보통', '얕은 수면'];
 
-function SleepInputModal({ onClose, onUpdate }) {
+function SleepInputModal({ onClose, onUpdate, onDetail }) {
   const todayKey = new Date().toISOString().slice(0, 10);
   const getAll = () => { try { return JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); } catch { return {}; } };
 
@@ -2747,6 +2765,16 @@ function SleepInputModal({ onClose, onUpdate }) {
             );
           })}
         </div>
+
+        {onDetail && (
+          <div onClick={() => onDetail({ hours: sleepHours, quality: sleepQuality, bedtime: sleepBedtime, wakeTime: sleepWakeTime })} style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+            padding: 9, borderRadius: 10, cursor: 'pointer', marginBottom: 12,
+            background: 'white', border: '0.5px solid #4A4F7F',
+          }}>
+            <span style={{ fontSize: 10, color: '#4A4F7F', fontWeight: 500 }}>📊 자세히 보기 →</span>
+          </div>
+        )}
 
         <div style={{ display: 'flex', gap: 10 }}>
           <button onClick={onClose} style={{
@@ -3211,6 +3239,298 @@ function DrinkModal({ onClose, onSave }) {
           <button onClick={onClose} style={{ flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)', border: 'none', background: 'var(--bg-input, #F2F3F5)', color: 'var(--text-muted)', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>취소</button>
           <button onClick={handleSave} style={{ flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)', border: 'none', background: accent, color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>저장</button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// 상세 페이지 공통 컴포넌트
+function CardDetailPage({ type, data, onClose }) {
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const todayLabel = (() => {
+    const d = new Date();
+    const days = ['일', '월', '화', '수', '목', '금', '토'];
+    return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')} ${days[d.getDay()]}요일`;
+  })();
+
+  const headerColor = type === 'sleep' ? '#4A4F7F' : type === 'condition' ? '#B8865C' : '#5E9D8A';
+
+  // 수면 상세
+  const renderSleepDetail = () => {
+    const allData = (() => { try { return JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); } catch { return {}; } })();
+    const todayRec = allData[todayKey]?.sleep || data || {};
+    const hours = todayRec.hours || data?.hours || 0;
+    const quality = todayRec.quality || data?.quality || '';
+    const bedtime = todayRec.bedtime || data?.bedtime || '';
+    const wakeTime = todayRec.wakeTime || data?.wakeTime || '';
+
+    // 최근 7일 평균
+    const last7 = [];
+    for (let i = 1; i <= 7; i++) {
+      const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+      const rec = allData[d]?.sleep;
+      if (rec?.hours) last7.push(rec.hours);
+    }
+    const avg7 = last7.length > 0 ? (last7.reduce((a, b) => a + b, 0) / last7.length).toFixed(1) : null;
+
+    // 카페인 데이터 (어제)
+    const yesterdayKey = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    const cafData = (() => { try { const all = JSON.parse(localStorage.getItem('lua_drink_records') || '{}'); return all[yesterdayKey] || { caffeine: [] }; } catch { return { caffeine: [] }; } })();
+    const cafMg = cafData.caffeine.reduce((s, d) => { const item = CAFFEINE_ITEMS.find(c => c.key === d.key); return s + (item?.mg || 0) * (d.count || 0); }, 0);
+    const lastCafTime = cafData.caffeine.length > 0 ? cafData.caffeine[cafData.caffeine.length - 1]?.drunkAt : null;
+
+    return (
+      <>
+        <div style={{ fontSize: 12, color: 'rgba(0,0,0,0.4)', marginBottom: 20 }}>{todayLabel} · {bedtime && wakeTime ? `${bedtime} → ${wakeTime}` : ''}</div>
+
+        {/* 수면 정보 */}
+        <div style={{ background: 'rgba(91,106,175,0.05)', borderRadius: 16, padding: 16, marginBottom: 16 }}>
+          <div style={{ fontSize: 11, color: '#5B6AAF', fontWeight: 500, marginBottom: 12 }}>수면 정보</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            {[
+              { label: '총 수면', value: `${hours}시간`, icon: '⏱' },
+              { label: '수면의 질', value: quality || '미입력', icon: '🌊' },
+              { label: '취침 시각', value: bedtime || '—', icon: '🛏' },
+              { label: '기상 시각', value: wakeTime || '—', icon: '☀' },
+            ].map((item, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 14 }}>{item.icon}</span>
+                <div>
+                  <div style={{ fontSize: 9, color: 'rgba(0,0,0,0.4)' }}>{item.label}</div>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: '#2C4A5E' }}>{item.value}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 주간 비교 */}
+        {avg7 && (
+          <div style={{ background: 'rgba(91,106,175,0.05)', borderRadius: 16, padding: 16, marginBottom: 16 }}>
+            <div style={{ fontSize: 11, color: '#5B6AAF', fontWeight: 500, marginBottom: 10 }}>주간 비교</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: 9, color: 'rgba(0,0,0,0.4)' }}>7일 평균</div>
+                <div style={{ fontSize: 16, fontWeight: 600, color: '#2C4A5E' }}>{avg7}시간</div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: 9, color: 'rgba(0,0,0,0.4)' }}>오늘</div>
+                <div style={{ fontSize: 16, fontWeight: 600, color: hours >= parseFloat(avg7) ? '#5E9D8A' : '#C97C5E' }}>
+                  {hours}시간 {hours >= parseFloat(avg7) ? '↑' : '↓'}
+                </div>
+              </div>
+            </div>
+            {/* 미니 바 차트 */}
+            <div style={{ display: 'flex', gap: 3, alignItems: 'flex-end', marginTop: 12, height: 40 }}>
+              {[...last7].reverse().map((h, i) => (
+                <div key={i} style={{ flex: 1, background: 'rgba(91,106,175,0.2)', borderRadius: 3, height: `${Math.max(10, (h / 12) * 100)}%` }} />
+              ))}
+              <div style={{ flex: 1, background: '#5B6AAF', borderRadius: 3, height: `${Math.max(10, (hours / 12) * 100)}%` }} />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 4 }}>
+              <span style={{ fontSize: 8, color: 'rgba(0,0,0,0.3)' }}>오늘</span>
+            </div>
+          </div>
+        )}
+
+        {/* 영향 요인 */}
+        {cafMg > 0 && (
+          <div style={{ background: '#FFF8F0', borderRadius: 16, padding: 16, marginBottom: 16 }}>
+            <div style={{ fontSize: 11, color: '#B8865C', fontWeight: 500, marginBottom: 8 }}>수면 영향 요인</div>
+            <div style={{ fontSize: 12, color: '#4A3A2E', lineHeight: 1.6 }}>
+              어제 카페인 {cafMg}mg 섭취{lastCafTime ? ` (마지막: ${new Date(lastCafTime).getHours()}시)` : ''}
+              {cafMg > 200 ? ' — 수면 질에 영향을 줄 수 있어요' : ''}
+            </div>
+          </div>
+        )}
+      </>
+    );
+  };
+
+  // 컨디션 상세
+  const renderConditionDetail = () => {
+    const allChecks = (() => { try { return JSON.parse(localStorage.getItem('nou_condition_checks') || '[]'); } catch { return []; } })();
+    const todayChecks = allChecks.filter(c => c.date === todayKey);
+    const latestCheck = todayChecks[todayChecks.length - 1] || data || {};
+    const mood = latestCheck.mood || data?.mood || 5;
+    const energy = latestCheck.energy || data?.energy || 5;
+    const score = Math.round((mood + energy) / 2 * 10);
+
+    // 최근 7일 점수
+    const last7scores = [];
+    for (let i = 1; i <= 7; i++) {
+      const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+      const dayChecks = allChecks.filter(c => c.date === d);
+      const last = dayChecks[dayChecks.length - 1];
+      if (last) last7scores.push(Math.round((last.mood + last.energy) / 2 * 10));
+    }
+    const avg7 = last7scores.length > 0 ? Math.round(last7scores.reduce((a, b) => a + b, 0) / last7scores.length) : null;
+
+    // 수면 (오늘)
+    const sleepData = (() => { try { const all = JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); return all[todayKey]?.sleep || null; } catch { return null; } })();
+
+    return (
+      <>
+        <div style={{ fontSize: 12, color: 'rgba(0,0,0,0.4)', marginBottom: 20 }}>{todayLabel}</div>
+
+        {/* 점수 */}
+        <div style={{ background: 'rgba(184,134,92,0.06)', borderRadius: 16, padding: 16, marginBottom: 16 }}>
+          <div style={{ fontSize: 11, color: '#B8865C', fontWeight: 500, marginBottom: 12 }}>컨디션 점수</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, textAlign: 'center' }}>
+            <div>
+              <div style={{ fontSize: 9, color: 'rgba(0,0,0,0.4)' }}>종합</div>
+              <div style={{ fontSize: 22, fontWeight: 600, color: '#2C4A5E' }}>{score}</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 9, color: 'rgba(0,0,0,0.4)' }}>기분</div>
+              <div style={{ fontSize: 22, fontWeight: 600, color: '#D4707E' }}>{mood * 10}</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 9, color: 'rgba(0,0,0,0.4)' }}>에너지</div>
+              <div style={{ fontSize: 22, fontWeight: 600, color: '#E8A135' }}>{energy * 10}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* 주간 추이 */}
+        {last7scores.length > 0 && (
+          <div style={{ background: 'rgba(184,134,92,0.06)', borderRadius: 16, padding: 16, marginBottom: 16 }}>
+            <div style={{ fontSize: 11, color: '#B8865C', fontWeight: 500, marginBottom: 10 }}>7일 추이</div>
+            <div style={{ display: 'flex', gap: 3, alignItems: 'flex-end', height: 50 }}>
+              {[...last7scores].reverse().map((s, i) => (
+                <div key={i} style={{ flex: 1, background: s >= 70 ? 'rgba(94,157,138,0.4)' : s >= 50 ? 'rgba(184,134,92,0.4)' : 'rgba(201,124,94,0.4)', borderRadius: 3, height: `${Math.max(10, s)}%` }} />
+              ))}
+              <div style={{ flex: 1, background: score >= 70 ? '#5E9D8A' : score >= 50 ? '#B8865C' : '#C97C5E', borderRadius: 3, height: `${Math.max(10, score)}%` }} />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+              <span style={{ fontSize: 8, color: 'rgba(0,0,0,0.3)' }}>7일 전</span>
+              <span style={{ fontSize: 8, color: 'rgba(0,0,0,0.3)' }}>오늘</span>
+            </div>
+            {avg7 && <div style={{ fontSize: 10, color: '#6B8499', marginTop: 8 }}>7일 평균 {avg7}점 {score > avg7 ? '↑' : score < avg7 ? '↓' : '→'} 오늘 {score}점</div>}
+          </div>
+        )}
+
+        {/* 영향 요인 */}
+        <div style={{ background: '#FFF8F0', borderRadius: 16, padding: 16, marginBottom: 16 }}>
+          <div style={{ fontSize: 11, color: '#B8865C', fontWeight: 500, marginBottom: 8 }}>영향 요인</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {sleepData && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#4A3A2E' }}>
+                <span>{sleepData.hours >= 7 ? '↑' : '↓'}</span>
+                <span>수면 {sleepData.hours}시간 {sleepData.hours >= 7 ? '(충분)' : '(부족)'}</span>
+              </div>
+            )}
+            {!sleepData && <div style={{ fontSize: 11, color: '#8A5A3C' }}>수면 데이터를 기록하면 영향 분석을 볼 수 있어요</div>}
+          </div>
+        </div>
+      </>
+    );
+  };
+
+  // 식단 상세
+  const renderMealDetail = () => {
+    if (!data) return <div style={{ fontSize: 12, color: '#6B8499' }}>식사 데이터가 없어요</div>;
+    const { name, meal, kcal, protein, carb, fat, fiber, iron, calcium, sugar, bloodSugar, bloodSugarNote, drowsiness, drowsinessNote, skinImpact, skinImpactNote, ingredients } = data;
+
+    return (
+      <>
+        <div style={{ fontSize: 12, color: 'rgba(0,0,0,0.4)', marginBottom: 20 }}>{todayLabel} · {meal || '식사'}</div>
+
+        {/* 음식명 */}
+        <div style={{ fontSize: 16, fontWeight: 600, color: '#2C4A5E', marginBottom: 16 }}>{name || '식사'}</div>
+
+        {/* 영양 정보 */}
+        <div style={{ background: 'rgba(94,157,138,0.06)', borderRadius: 16, padding: 16, marginBottom: 16 }}>
+          <div style={{ fontSize: 11, color: '#5E9D8A', fontWeight: 500, marginBottom: 12 }}>영양 정보</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            {[
+              { icon: '🔥', label: '칼로리', value: `${kcal || 0}kcal` },
+              { icon: '🥩', label: '단백질', value: `${protein || 0}g` },
+              { icon: '🍞', label: '탄수화물', value: `${carb || 0}g` },
+              { icon: '🥑', label: '지방', value: `${fat || 0}g` },
+              { icon: '🥕', label: '식이섬유', value: `${fiber || 0}g` },
+              { icon: '🍯', label: '당류', value: `${sugar || 0}g` },
+              { icon: '🥦', label: '철분', value: `${iron || 0}mg` },
+              { icon: '🐟', label: '칼슘', value: `${calcium || 0}mg` },
+            ].map((item, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 12 }}>{item.icon}</span>
+                <div>
+                  <div style={{ fontSize: 9, color: 'rgba(0,0,0,0.4)' }}>{item.label}</div>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: '#2C4A5E' }}>{item.value}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 재료 구성 */}
+        {ingredients && ingredients.length > 0 && (
+          <div style={{ background: 'rgba(94,157,138,0.06)', borderRadius: 16, padding: 16, marginBottom: 16 }}>
+            <div style={{ fontSize: 11, color: '#5E9D8A', fontWeight: 500, marginBottom: 10 }}>재료 구성</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {ingredients.map((ing, i) => (
+                <div key={i} style={{ fontSize: 11, color: '#4A3A2E', padding: '4px 0', borderBottom: i < ingredients.length - 1 ? '0.5px solid rgba(0,0,0,0.05)' : 'none' }}>
+                  {typeof ing === 'string' ? ing : `${ing.name || ''} ${ing.amount || ''}`}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 식후 영향 분석 */}
+        {(bloodSugar || drowsiness || skinImpact) && (
+          <div style={{ background: '#FFF8F0', borderRadius: 16, padding: 16, marginBottom: 16 }}>
+            <div style={{ fontSize: 11, color: '#B8865C', fontWeight: 500, marginBottom: 10 }}>식후 영향 분석</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {bloodSugar && (
+                <div>
+                  <div style={{ fontSize: 11, color: '#4A3A2E', fontWeight: 500 }}>📈 혈당 상승 [{bloodSugar}]</div>
+                  {bloodSugarNote && <div style={{ fontSize: 10, color: '#6B8499', marginTop: 2, lineHeight: 1.5 }}>{bloodSugarNote}</div>}
+                </div>
+              )}
+              {drowsiness && (
+                <div>
+                  <div style={{ fontSize: 11, color: '#4A3A2E', fontWeight: 500 }}>😴 졸림 확률 [{drowsiness}]</div>
+                  {drowsinessNote && <div style={{ fontSize: 10, color: '#6B8499', marginTop: 2, lineHeight: 1.5 }}>{drowsinessNote}</div>}
+                </div>
+              )}
+              {skinImpact && (
+                <div>
+                  <div style={{ fontSize: 11, color: '#4A3A2E', fontWeight: 500 }}>✨ 피부 영향 [{skinImpact}]</div>
+                  {skinImpactNote && <div style={{ fontSize: 10, color: '#6B8499', marginTop: 2, lineHeight: 1.5 }}>{skinImpactNote}</div>}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </>
+    );
+  };
+
+  const titles = { sleep: '수면 분석', condition: '컨디션 분석', meal: '식사 분석' };
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 1200,
+      background: '#fff', overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+      animation: 'slideInRight 0.3s ease',
+    }}>
+      {/* 헤더 */}
+      <div style={{ display: 'flex', alignItems: 'center', padding: '16px 20px', position: 'sticky', top: 0, background: '#fff', zIndex: 10 }}>
+        <div onClick={onClose} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 18, color: headerColor }}>←</span>
+          <span style={{ fontSize: 12, color: headerColor }}>돌아가기</span>
+        </div>
+        <div style={{ flex: 1, textAlign: 'center', fontSize: 15, fontWeight: 600, color: '#2C4A5E' }}>{titles[type] || '상세'}</div>
+        <div style={{ width: 60 }} />
+      </div>
+
+      {/* 본문 */}
+      <div style={{ padding: '0 20px 40px' }}>
+        {type === 'sleep' && renderSleepDetail()}
+        {type === 'condition' && renderConditionDetail()}
+        {type === 'meal' && renderMealDetail()}
       </div>
     </div>
   );

@@ -2297,7 +2297,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
   );
 }
 
-export function AddFoodModal({ onAdd, onClose, initialMeal }) {
+export function AddFoodModal({ onAdd, onClose, initialMeal, onDetail }) {
   const [mode, setMode] = useState(null); // null = selection, 'text' = name input, 'photo' = photo analysis
   const [foodItems, setFoodItems] = useState([{ name: '', qty: 1, unit: '인분' }]);
   const [meal, setMeal] = useState(initialMeal || '아침');
@@ -2824,22 +2824,33 @@ export function AddFoodModal({ onAdd, onClose, initialMeal }) {
 
         {/* Buttons */}
         {mode && (
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={onClose} style={{
-              flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
-              border: 'none', background: 'var(--bg-input, #F2F3F5)',
-              color: 'var(--text-muted)', fontSize: 14, fontWeight: 600,
-              cursor: 'pointer', fontFamily: 'inherit',
-            }}>취소</button>
-            <button onClick={handleSubmit} disabled={!aiResult} style={{
-              flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
-              border: 'none',
-              background: aiResult ? 'var(--accent-primary)' : 'var(--bg-input, #F2F3F5)',
-              color: aiResult ? '#fff' : 'var(--text-dim)',
-              fontSize: 14, fontWeight: 600,
-              cursor: aiResult ? 'pointer' : 'default', fontFamily: 'inherit',
-            }}>추가</button>
-          </div>
+          <>
+            {onDetail && aiResult && (
+              <div onClick={() => onDetail(aiResult)} style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+                padding: 9, borderRadius: 10, cursor: 'pointer', marginBottom: 12,
+                background: 'white', border: '0.5px solid #5E9D8A',
+              }}>
+                <span style={{ fontSize: 10, color: '#5E9D8A', fontWeight: 500 }}>📊 자세히 보기 →</span>
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={onClose} style={{
+                flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
+                border: 'none', background: 'var(--bg-input, #F2F3F5)',
+                color: 'var(--text-muted)', fontSize: 14, fontWeight: 600,
+                cursor: 'pointer', fontFamily: 'inherit',
+              }}>취소</button>
+              <button onClick={handleSubmit} disabled={!aiResult} style={{
+                flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
+                border: 'none',
+                background: aiResult ? 'var(--accent-primary)' : 'var(--bg-input, #F2F3F5)',
+                color: aiResult ? '#fff' : 'var(--text-dim)',
+                fontSize: 14, fontWeight: 600,
+                cursor: aiResult ? 'pointer' : 'default', fontFamily: 'inherit',
+              }}>추가</button>
+            </div>
+          </>
         )}
 
         {/* Cancel button for mode selection */}
