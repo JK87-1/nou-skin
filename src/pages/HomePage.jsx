@@ -196,7 +196,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [showDrinkModal, setShowDrinkModal] = useState(false);
   const [showEffectCheckModal, setShowEffectCheckModal] = useState(false);
   const [effectCheckDrink, setEffectCheckDrink] = useState(null);
-  const [showNoncaffeineModal, setShowNoncaffeineModal] = useState(false);
   const [showSupplementModal, setShowSupplementModal] = useState(false);
   const [showSkinCheckModal, setShowSkinCheckModal] = useState(false);
   const [showCycleModal, setShowCycleModal] = useState(false);
@@ -236,13 +235,12 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
     { id: 'sleep', label: '수면' },
     { id: 'blood_sugar', label: '혈당' },
     { id: 'drink', label: '드링크' },
-    { id: 'noncaffeine', label: '논카페인' },
     { id: 'supplement', label: '영양제' },
     { id: 'skin_check', label: '피부' },
     { id: 'weather', label: '날씨' },
     { id: 'cycle', label: '주기' },
   ];
-  const CARD_ORDER_VERSION = 13;
+  const CARD_ORDER_VERSION = 14;
   const DEFAULT_CARD_ORDER = CARD_REGISTRY.map(c => c.id);
   const [cardOrder, setCardOrder] = useState(() => {
     try {
@@ -1311,38 +1309,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                 ));
               }
 
-              if (cardId === 'noncaffeine') {
-                const _ncLogs = (() => { try { const all = JSON.parse(localStorage.getItem('lua_noncaffeine_records') || '{}'); return all[_todayKey] || []; } catch { return []; } })();
-                const _ncTotal = _ncLogs.reduce((s, d) => s + (d.amount || 0), 0);
-                const _ncIntents = (() => { const counts = {}; _ncLogs.forEach(l => (l.intents || []).forEach(i => { counts[i] = (counts[i] || 0) + 1; })); return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([k]) => ({ sleep: '잠용', calm: '진정용', stress: '스트레스용', pms: 'PMS용', decaffeine: '카페인 대신', just_like: '취향' }[k] || k)); })();
-                return editWrap('논카페인', (
-                  <div onClick={() => handleCardTap('noncaffeine', () => setShowNoncaffeineModal(true))} style={{ ..._cs, cursor: 'pointer', padding: '20px', animation: tappedCard === 'noncaffeine' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 0, flex: '0 0 auto' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontSize: 14 }}>🌿</span>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>논카페인</span>
-                      </div>
-                    </div>
-                    <div style={{ marginTop: 'auto' }}>
-                      {_ncTotal > 0 ? (
-                        <div>
-                          <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                            <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_ncTotal}</span>
-                            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>잔</span>
-                          </div>
-                          <div style={{ fontSize: 10, color: '#8A7AAB', marginTop: 4 }}>{_ncIntents.join(' · ') || '기록됨'}</div>
-                        </div>
-                      ) : (
-                        <div>
-                          <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
-                          <div style={{ fontSize: 10, color: 'var(--accent-primary, #89cef5)', marginTop: 4 }}>기록하기</div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ));
-              }
-
               if (cardId === 'supplement') {
                 const _suppItems = getSupplementItems();
                 const _suppChecks = getSupplementChecks(_todayKey);
@@ -1842,9 +1808,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
         <CaffeineEffectCheckModal drink={effectCheckDrink} onClose={() => { setShowEffectCheckModal(false); setEffectCheckDrink(null); }} onSave={() => { setShowEffectCheckModal(false); setEffectCheckDrink(null); setWeightRefreshKey(k => k + 1); }} />
       )}
 
-      {showNoncaffeineModal && (
-        <NoncaffeineModal onClose={() => setShowNoncaffeineModal(false)} onSave={() => { setShowNoncaffeineModal(false); setWeightRefreshKey(k => k + 1); }} />
-      )}
 
       {showSupplementModal && (
         <SupplementModal onClose={() => setShowSupplementModal(false)} onUpdate={() => { setShowSupplementModal(false); setWeightRefreshKey(k => k + 1); }} />
@@ -3015,21 +2978,22 @@ function DrinkModal({ onClose, onSave }) {
   const [tab, setTab] = useState('caffeine');
   const [drinkCategory, setDrinkCategory] = useState('coffee');
   const [records, setRecords] = useState(() => {
-    try { const all = JSON.parse(localStorage.getItem('lua_drink_records') || '{}'); return all[todayKey] || { caffeine: [], alcohol: [] }; }
-    catch { return { caffeine: [], alcohol: [] }; }
+    try { const all = JSON.parse(localStorage.getItem('lua_drink_records') || '{}'); return all[todayKey] || { caffeine: [], noncaffeine: [], alcohol: [] }; }
+    catch { return { caffeine: [], noncaffeine: [], alcohol: [] }; }
   });
+  const [ncIntents, setNcIntents] = useState([]);
   const [selected, setSelected] = useState(null);
   const [drunkTimeMode, setDrunkTimeMode] = useState('now');
   const [customTime, setCustomTime] = useState('');
 
-  const items = tab === 'caffeine' ? CAFFEINE_ITEMS.filter(i => i.category === drinkCategory) : ALCOHOL_ITEMS;
+  const items = tab === 'caffeine' ? CAFFEINE_ITEMS.filter(i => i.category === drinkCategory) : tab === 'noncaffeine' ? NONCAFFEINE_ITEMS : ALCOHOL_ITEMS;
   const allCafItems = CAFFEINE_ITEMS;
-  const list = tab === 'caffeine' ? records.caffeine : records.alcohol;
-  const accent = '#B8865C';
+  const list = tab === 'caffeine' ? records.caffeine : tab === 'noncaffeine' ? records.noncaffeine : records.alcohol;
+  const accent = tab === 'noncaffeine' ? '#7B5E9E' : '#B8865C';
 
   const getCount = (key) => list.find(d => d.key === key)?.count || 0;
   const setCount = (key, count) => {
-    const item = (tab === 'caffeine' ? allCafItems : ALCOHOL_ITEMS).find(i => i.key === key);
+    const item = (tab === 'caffeine' ? allCafItems : tab === 'noncaffeine' ? NONCAFFEINE_ITEMS : ALCOHOL_ITEMS).find(i => i.key === key);
     let updated;
     if (count <= 0) { updated = list.filter(d => d.key !== key); }
     else {
@@ -3053,8 +3017,9 @@ function DrinkModal({ onClose, onSave }) {
     try {
       const all = JSON.parse(localStorage.getItem('lua_drink_records') || '{}');
       const drunkAt = getDrunkAt().toISOString();
-      const updatedRecords = { ...records };
+      const updatedRecords = { ...records, noncaffeine: records.noncaffeine || [] };
       if (tab === 'caffeine') { updatedRecords.caffeine = records.caffeine.map(d => ({ ...d, drunkAt: d.drunkAt || drunkAt })); }
+      else if (tab === 'noncaffeine') { updatedRecords.noncaffeine = (records.noncaffeine || []).map(d => ({ ...d, drunkAt: d.drunkAt || drunkAt, intents: d.intents || ncIntents })); }
       else { updatedRecords.alcohol = records.alcohol.map(d => ({ ...d, drunkAt: d.drunkAt || drunkAt })); }
       all[todayKey] = updatedRecords;
       localStorage.setItem('lua_drink_records', JSON.stringify(all));
@@ -3084,7 +3049,7 @@ function DrinkModal({ onClose, onSave }) {
   const userWeight = getLatestWeight()?.weight || 0;
   const cafState = calculateCaffeineState(cafMg, userWeight, 0);
 
-  const selItem = selected ? (tab === 'caffeine' ? allCafItems : ALCOHOL_ITEMS).find(i => i.key === selected) : null;
+  const selItem = selected ? (tab === 'caffeine' ? allCafItems : tab === 'noncaffeine' ? NONCAFFEINE_ITEMS : ALCOHOL_ITEMS).find(i => i.key === selected) : null;
   const selCount = selected ? getCount(selected) : 0;
 
   const nowTime = new Date();
@@ -3096,10 +3061,15 @@ function DrinkModal({ onClose, onSave }) {
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.1)', margin: '0 auto 16px' }} />
         <div style={{ fontSize: 16, fontWeight: 600, color: '#2C4A5E', marginBottom: 14, textAlign: 'center' }}>드링크 기록</div>
 
-        {/* 카페인/알콜 토글 */}
-        <div style={{ display: 'flex', gap: 4, background: '#F4F4F4', borderRadius: 10, padding: 4, marginBottom: 14 }}>
-          <button onClick={() => { setTab('caffeine'); setSelected(null); }} style={{ flex: 1, padding: '7px', borderRadius: 8, border: 'none', background: tab === 'caffeine' ? '#B8865C' : 'transparent', color: tab === 'caffeine' ? '#fff' : '#6B8499', fontSize: 10, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>☕ 카페인</button>
-          <button onClick={() => { setTab('alcohol'); setSelected(null); }} style={{ flex: 1, padding: '7px', borderRadius: 8, border: 'none', background: tab === 'alcohol' ? '#B8865C' : 'transparent', color: tab === 'alcohol' ? '#fff' : '#6B8499', fontSize: 10, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>🍺 알콜</button>
+        {/* 카페인/논카페인/알콜 토글 */}
+        <div style={{ display: 'flex', gap: 3, background: '#F4F4F4', borderRadius: 10, padding: 3, marginBottom: 14 }}>
+          {[
+            { key: 'caffeine', label: '☕ 카페인', color: '#B8865C' },
+            { key: 'noncaffeine', label: '🌿 논카페인', color: '#7B5E9E' },
+            { key: 'alcohol', label: '🍺 알콜', color: '#B8865C' },
+          ].map(t => (
+            <button key={t.key} onClick={() => { setTab(t.key); setSelected(null); setNcIntents([]); }} style={{ flex: 1, padding: '7px 4px', borderRadius: 8, border: 'none', background: tab === t.key ? t.color : 'transparent', color: tab === t.key ? '#fff' : '#6B8499', fontSize: 9, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>{t.label}</button>
+          ))}
         </div>
 
         {/* 카테고리 탭 (카페인 전용) */}
@@ -3146,27 +3116,27 @@ function DrinkModal({ onClose, onSave }) {
 
         {/* 잔수 조절 */}
         {selItem ? (
-          <div style={{ background: '#FAF1E0', borderRadius: 14, padding: 14, marginBottom: 14 }}>
+          <div style={{ background: tab === 'noncaffeine' ? 'rgba(238,237,254,0.7)' : '#FAF1E0', borderRadius: 14, padding: 14, marginBottom: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ fontSize: 14 }}>{selItem.icon}</span>
-                <span style={{ fontSize: 12, fontWeight: 500, color: '#2C4A5E' }}>{selItem.name}</span>
+                <span style={{ fontSize: 12, fontWeight: 500, color: tab === 'noncaffeine' ? '#4A3A6B' : '#2C4A5E' }}>{selItem.name}</span>
               </div>
-              <span style={{ fontSize: 9, color: '#8A5A3C' }}>~{selItem.mg}mg/잔</span>
+              <span style={{ fontSize: 9, color: tab === 'noncaffeine' ? '#8A7AAB' : '#8A5A3C' }}>{tab === 'noncaffeine' ? '카페인 없음' : `~${selItem.mg}mg/잔`}</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <div onClick={() => { if (selCount > 0.5) setCount(selected, selCount - 0.5); }} style={{ width: 28, height: 28, borderRadius: '50%', background: '#F4F4F4', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 14, color: '#6B8499' }}>−</div>
+              <div onClick={() => { if (selCount > 0.5) setCount(selected, selCount - 0.5); }} style={{ width: 28, height: 28, borderRadius: '50%', background: tab === 'noncaffeine' ? 'white' : '#F4F4F4', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 14, color: '#6B8499' }}>−</div>
               <div style={{ textAlign: 'center' }}>
-                <span style={{ fontSize: 22, fontWeight: 500, color: '#6B4A2A' }}>{selCount || 0}</span>
-                <span style={{ fontSize: 9, color: '#8A5A3C', marginLeft: 4 }}>잔</span>
+                <span style={{ fontSize: 22, fontWeight: 500, color: tab === 'noncaffeine' ? '#4A3A6B' : '#6B4A2A' }}>{selCount || 0}</span>
+                <span style={{ fontSize: 9, color: tab === 'noncaffeine' ? '#8A7AAB' : '#8A5A3C', marginLeft: 4 }}>잔</span>
               </div>
-              <div onClick={() => setCount(selected, (selCount || 0) + 0.5)} style={{ width: 28, height: 28, borderRadius: '50%', background: '#F4F4F4', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 14, color: '#B8865C' }}>+</div>
+              <div onClick={() => setCount(selected, (selCount || 0) + 0.5)} style={{ width: 28, height: 28, borderRadius: '50%', background: tab === 'noncaffeine' ? 'white' : '#F4F4F4', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 14, color: accent }}>+</div>
             </div>
             <div style={{ display: 'flex', gap: 4 }}>
               {[0.5, 1, 1.5, 2].map(v => (
                 <div key={v} onClick={() => setCount(selected, v)} style={{
                   flex: 1, padding: '5px', borderRadius: 7, textAlign: 'center', cursor: 'pointer', fontSize: 9,
-                  background: selCount === v ? '#B8865C' : 'white', color: selCount === v ? '#fff' : '#6B8499', fontWeight: selCount === v ? 500 : 400,
+                  background: selCount === v ? accent : 'white', color: selCount === v ? '#fff' : '#6B8499', fontWeight: selCount === v ? 500 : 400,
                   transition: 'all 0.15s',
                 }}>{v}잔</div>
               ))}
@@ -3176,6 +3146,29 @@ function DrinkModal({ onClose, onSave }) {
           <div style={{ background: '#F8F8F5', borderRadius: 14, padding: 14, textAlign: 'center', marginBottom: 14 }}>
             <div style={{ fontSize: 9, color: '#8BA6BD' }}>메뉴를 선택하면</div>
             <div style={{ fontSize: 11, color: '#6B8499', marginTop: 2 }}>잔 수 입력이 나타나요</div>
+          </div>
+        )}
+
+        {/* 의도 칩 (논카페인 탭) */}
+        {tab === 'noncaffeine' && selected && (
+          <div style={{ background: 'rgba(123,94,158,0.08)', borderRadius: 12, padding: 12, marginBottom: 14 }}>
+            <div style={{ fontSize: 9, color: '#4A3A6B', marginBottom: 6, fontWeight: 500 }}>🌿 왜 마셨어요? (선택)</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+              {NONCAFFEINE_INTENTS.map(opt => {
+                const active = ncIntents.includes(opt.key);
+                return (
+                  <div key={opt.key} onClick={() => setNcIntents(prev => prev.includes(opt.key) ? prev.filter(k => k !== opt.key) : [...prev, opt.key])} style={{
+                    padding: '5px 9px', borderRadius: 10, cursor: 'pointer', fontSize: 9,
+                    display: 'flex', alignItems: 'center', gap: 3,
+                    background: active ? 'rgba(123,94,158,0.20)' : 'white',
+                    border: active ? '0.5px solid rgba(123,94,158,0.4)' : '0.5px solid transparent',
+                    color: active ? '#4A3A6B' : '#6B8499', fontWeight: active ? 500 : 400,
+                  }}>
+                    <span>{opt.emoji}</span><span>{opt.label}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 
@@ -3540,11 +3533,8 @@ const NONCAFFEINE_INTENTS = [
   { key: 'just_like', emoji: '🤍', label: '그냥 좋아서' },
 ];
 
-function NoncaffeineModal({ onClose, onSave }) {
-  const todayKey = new Date().toISOString().slice(0, 10);
-  const [selected, setSelected] = useState(null);
-  const [amount, setAmount] = useState(1);
-  const [intents, setIntents] = useState([]);
+// NoncaffeineModal - merged into DrinkModal as 논카페인 tab
+function _NoncaffeineModal_UNUSED() { return null; /* kept for reference */
   const [timeMode, setTimeMode] = useState('now');
   const [customTime, setCustomTime] = useState('');
 
