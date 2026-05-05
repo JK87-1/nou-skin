@@ -1032,36 +1032,33 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                       </div>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_eaten.toLocaleString()}</span>
+                          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>kcal</span>
+                        </div>
+                        <div style={{ fontSize: 10, color: _eaten > 0 ? (_eaten > _fullGoal.kcal ? '#E85B5B' : 'var(--text-muted)') : 'var(--accent-primary, #89cef5)', marginTop: 4, minHeight: 14 }}>
+                          {_eaten > 0 ? (_eaten > _fullGoal.kcal ? `${(_eaten - _fullGoal.kcal).toLocaleString()}kcal 초과` : `${_remaining.toLocaleString()}kcal 남음`) : '기록하기'}
+                        </div>
+                      </div>
                       {(() => {
-                        const mealCount = getTodayFoods().filter(f => !f.name?.startsWith('물 ')).length;
-                        const mealGoal = 3;
                         const ringR = 22, ringC = 2 * Math.PI * ringR;
-                        const ratio = Math.min(mealCount / mealGoal, 1);
+                        const ratio = _fullGoal.kcal > 0 ? Math.min(_eaten / _fullGoal.kcal, 1) : 0;
                         const ringDash = ringC * ratio;
+                        const isOver = _fullGoal.kcal > 0 && _eaten > _fullGoal.kcal;
                         return (
-                          <>
-                            <div>
-                              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                                <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{mealCount}</span>
-                                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>끼니</span>
-                              </div>
-                              <div style={{ fontSize: 10, color: mealCount > 0 ? (mealCount >= mealGoal ? '#5E9D8A' : 'var(--text-muted)') : 'var(--accent-primary, #89cef5)', marginTop: 4, minHeight: 14 }}>
-                                {mealCount > 0 ? (mealCount >= mealGoal ? '오늘 식사 완료' : `${mealGoal - mealCount}끼 남음`) : '기록하기'}
-                              </div>
-                            </div>
-                            <svg width="52" height="52" viewBox="0 0 52 52">
-                              <defs>
-                                <linearGradient id="mealRingGrad" x1="0" y1="0" x2="1" y2="1">
-                                  <stop offset="0%" stopColor="#5E9D8A" />
-                                  <stop offset="100%" stopColor="#A8E6A3" />
-                                </linearGradient>
-                              </defs>
-                              <circle cx="26" cy="26" r={ringR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" />
-                              <circle cx="26" cy="26" r={ringR} fill="none" stroke="url(#mealRingGrad)" strokeWidth="5"
-                                strokeDasharray={`${ringDash} ${ringC - ringDash}`} strokeLinecap="round"
-                                transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
-                            </svg>
-                          </>
+                          <svg width="52" height="52" viewBox="0 0 52 52">
+                            <defs>
+                              <linearGradient id="calRingGrad" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0%" stopColor={isOver ? '#E85B5B' : '#7BC67B'} />
+                                <stop offset="100%" stopColor={isOver ? '#F5A0A0' : '#A8E6A3'} />
+                              </linearGradient>
+                            </defs>
+                            <circle cx="26" cy="26" r={ringR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" />
+                            <circle cx="26" cy="26" r={ringR} fill="none" stroke="url(#calRingGrad)" strokeWidth="5"
+                              strokeDasharray={`${ringDash} ${ringC - ringDash}`} strokeLinecap="round"
+                              transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
+                          </svg>
                         );
                       })()}
                     </div>
