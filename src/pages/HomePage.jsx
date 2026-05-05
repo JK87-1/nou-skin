@@ -2971,6 +2971,7 @@ function DrinkModal({ onClose, onSave }) {
   const todayKey = new Date().toISOString().slice(0, 10);
   const [tab, setTab] = useState('caffeine');
   const [drinkCategory, setDrinkCategory] = useState('coffee');
+  const [ncCategory, setNcCategory] = useState('herb');
   const [records, setRecords] = useState(() => {
     try { const all = JSON.parse(localStorage.getItem('lua_drink_records') || '{}'); const r = all[todayKey] || {}; return { caffeine: r.caffeine || [], noncaffeine: r.noncaffeine || [], alcohol: r.alcohol || [] }; }
     catch { return { caffeine: [], noncaffeine: [], alcohol: [] }; }
@@ -2980,7 +2981,7 @@ function DrinkModal({ onClose, onSave }) {
   const [drunkTimeMode, setDrunkTimeMode] = useState('now');
   const [customTime, setCustomTime] = useState('');
 
-  const items = tab === 'caffeine' ? CAFFEINE_ITEMS.filter(i => i.category === drinkCategory) : tab === 'noncaffeine' ? NONCAFFEINE_ITEMS : ALCOHOL_ITEMS;
+  const items = tab === 'caffeine' ? CAFFEINE_ITEMS.filter(i => i.category === drinkCategory) : tab === 'noncaffeine' ? NONCAFFEINE_ITEMS.filter(i => i.category === ncCategory) : ALCOHOL_ITEMS;
   const allCafItems = CAFFEINE_ITEMS;
   const list = tab === 'caffeine' ? records.caffeine : tab === 'noncaffeine' ? (records.noncaffeine || []) : records.alcohol;
   const accent = tab === 'noncaffeine' ? '#7B5E9E' : '#B8865C';
@@ -3066,7 +3067,7 @@ function DrinkModal({ onClose, onSave }) {
           ))}
         </div>
 
-        {/* 카테고리 탭 (카페인 전용) */}
+        {/* 카테고리 탭 (카페인) */}
         {tab === 'caffeine' && (
           <>
             <div style={{ fontSize: 10, fontWeight: 500, color: '#4A6B85', marginBottom: 8 }}>어떤 종류 드셨어요?</div>
@@ -3080,6 +3081,26 @@ function DrinkModal({ onClose, onSave }) {
                 }}>
                   <div style={{ fontSize: 14, marginBottom: 2 }}>{cat.emoji}</div>
                   <div style={{ fontSize: 8, fontWeight: drinkCategory === cat.key ? 500 : 400 }}>{cat.name}</div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* 카테고리 탭 (논카페인) */}
+        {tab === 'noncaffeine' && (
+          <>
+            <div style={{ fontSize: 10, fontWeight: 500, color: '#4A6B85', marginBottom: 8 }}>어떤 종류 드셨어요?</div>
+            <div style={{ display: 'flex', gap: 5, marginBottom: 14 }}>
+              {NC_CATEGORIES.map(cat => (
+                <div key={cat.key} onClick={() => { setNcCategory(cat.key); setSelected(null); }} style={{
+                  flex: 1, padding: '9px 4px', borderRadius: 10, textAlign: 'center', cursor: 'pointer',
+                  background: ncCategory === cat.key ? '#7B5E9E' : '#F4F4F4',
+                  color: ncCategory === cat.key ? '#fff' : '#6B8499',
+                  transition: 'all 0.15s ease',
+                }}>
+                  <div style={{ fontSize: 14, marginBottom: 2 }}>{cat.emoji}</div>
+                  <div style={{ fontSize: 8, fontWeight: ncCategory === cat.key ? 500 : 400 }}>{cat.name}</div>
                 </div>
               ))}
             </div>
@@ -3507,15 +3528,26 @@ function CardDetailPage({ type, data, onClose }) {
 }
 
 // 카페인 효과 체크 로컬 알림 예약
+const NC_CATEGORIES = [
+  { key: 'herb', emoji: '🌿', name: '허브·꽃차' },
+  { key: 'grain', emoji: '🌾', name: '곡물차' },
+  { key: 'leaf', emoji: '🍃', name: '잎차' },
+];
+
 const NONCAFFEINE_ITEMS = [
-  { key: 'chamomile', name: '캐모마일', icon: '🌿' },
-  { key: 'peppermint', name: '페퍼민트', icon: '🍃' },
-  { key: 'rooibos', name: '루이보스', icon: '🌹' },
-  { key: 'chrysanthemum', name: '국화차', icon: '🌼' },
-  { key: 'barley_tea', name: '보리차', icon: '🌾' },
-  { key: 'rosemary', name: '로즈마리', icon: '🌱' },
-  { key: 'lavender', name: '라벤더', icon: '🌺' },
-  { key: 'limeflower', name: '라임블라썸', icon: '🌸' },
+  // 허브·꽃차
+  { key: 'chamomile', name: '캐모마일', icon: '🌿', category: 'herb' },
+  { key: 'lavender', name: '라벤더', icon: '🌺', category: 'herb' },
+  { key: 'limeflower', name: '라임블라썸', icon: '🌸', category: 'herb' },
+  { key: 'chrysanthemum', name: '국화차', icon: '🌼', category: 'herb' },
+  // 곡물차
+  { key: 'barley_tea', name: '보리차', icon: '🌾', category: 'grain' },
+  { key: 'corn_tea', name: '옥수수차', icon: '🌽', category: 'grain' },
+  { key: 'rooibos', name: '루이보스', icon: '🌹', category: 'grain' },
+  // 잎차
+  { key: 'peppermint', name: '페퍼민트', icon: '🍃', category: 'leaf' },
+  { key: 'spearmint', name: '스피어민트', icon: '🍃', category: 'leaf' },
+  { key: 'rosemary', name: '로즈마리', icon: '🌱', category: 'leaf' },
 ];
 
 const NONCAFFEINE_INTENTS = [
