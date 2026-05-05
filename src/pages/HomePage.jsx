@@ -1352,10 +1352,9 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                 const _yesterdayScore = _yesterdayLog ? calculateSkinScore(_yesterdayLog) : null;
                 const _delta = (_skinScore !== null && _yesterdayScore !== null) ? _skinScore - _yesterdayScore : null;
                 const _dots = _skinScore !== null ? getDotColors(_skinScore, _skinLog?.signals || []) : [];
-                const _skinBg = _skinState === 'needs_care' ? 'rgba(252, 235, 235, 0.7)' : _skinState === 'signals' ? 'rgba(252, 245, 235, 0.7)' : 'rgba(255, 255, 255, 0.5)';
                 const _topSignals = _skinLog?.signals?.length > 0 ? getTopImpactSignals(_skinLog.signals).replace('이 영향을 주고 있어요', '') : '';
                 return editWrap('피부', (
-                  <div onClick={() => handleCardTap('skin_check', () => setShowSkinCheckModal(true))} style={{ ..._cs, cursor: 'pointer', padding: '20px', background: _skinBg, position: 'relative', animation: tappedCard === 'skin_check' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
+                  <div onClick={() => handleCardTap('skin_check', () => setShowSkinCheckModal(true))} style={{ ..._cs, cursor: 'pointer', padding: '20px', position: 'relative', animation: tappedCard === 'skin_check' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 0, flex: '0 0 auto' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <span style={{ fontSize: 14, opacity: _skinState === 'unchecked' ? 0.7 : 1 }}>✨</span>
@@ -1366,22 +1365,24 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                       {_skinScore !== null ? (
                         <div>
                           <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                            <span style={{ fontSize: 22, fontWeight: 500, color: '#2C4A5E', fontFamily: 'var(--font-display)', lineHeight: 1.1, letterSpacing: -0.5 }}>{_skinScore}</span>
+                            <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_skinScore}</span>
+                            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>점</span>
                           </div>
-                          {_delta !== null && (
-                            <div style={{ fontSize: 11, color: _delta >= 0 ? '#5E9D8A' : _delta >= -5 ? '#B8865C' : '#C97C5E', marginTop: 3 }}>
+                          {_delta !== null ? (
+                            <div style={{ fontSize: 10, color: _delta >= 0 ? '#5E9D8A' : _delta >= -5 ? '#B8865C' : '#C97C5E', marginTop: 4 }}>
                               {_delta >= 0 ? '↑' : '↓'} 어제 {_delta >= 0 ? '+' : ''}{_delta}
                             </div>
-                          )}
-                          {_topSignals && <div style={{ fontSize: 10, color: '#6B8499', marginTop: 2 }}>{_topSignals}</div>}
+                          ) : _topSignals ? (
+                            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>{_topSignals}</div>
+                          ) : null}
                           <div style={{ position: 'absolute', right: 14, bottom: 14, display: 'flex', gap: 3 }}>
                             {_dots.map((c, i) => <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: c }} />)}
                           </div>
                         </div>
                       ) : (
                         <div>
-                          <div style={{ fontSize: 16, fontWeight: 500, color: '#6B8499' }}>체크하기</div>
-                          <div style={{ fontSize: 10, color: '#8BA6BD', marginTop: 2 }}>10초만에 끝나요</div>
+                          <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
+                          <div style={{ fontSize: 10, color: 'var(--accent-primary, #89cef5)', marginTop: 4 }}>체크하기</div>
                         </div>
                       )}
                     </div>
