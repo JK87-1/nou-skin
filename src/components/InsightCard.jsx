@@ -66,7 +66,7 @@ export default function InsightCard() {
         borderRadius: '24px 24px 24px 6px',
         border: '1px solid rgba(255,255,255,0.4)',
         boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.5)',
-        padding: '18px 20px',
+        padding: '18px 20px 12px',
       }}>
 
         {/* lua 아이콘 + 이름 + 인사 + 새로고침 */}
@@ -105,7 +105,7 @@ export default function InsightCard() {
         </div>
 
         {/* 하단: 행동 + 하트 */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
           <div>
             {main.action && (
               <button onClick={handleAction} style={{
