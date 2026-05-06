@@ -72,8 +72,8 @@ export default function InsightCard() {
         {/* lua 아이콘 + 이름 + 인사 + 새로고침 */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ position: 'relative', flexShrink: 0 }}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 2px rgba(220,160,170,0.35))' }}>
+            <div style={{ position: 'relative', flexShrink: 0, width: 36, height: 36 }}>
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 2px rgba(220,160,170,0.35))' }}>
                 <defs><linearGradient id="luaSmile" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F8C8D0"/><stop offset="100%" stopColor="#E8A0B0"/></linearGradient></defs>
                 <circle cx="12" cy="12" r="10" fill="url(#luaSmile)" opacity="0.7"/>
                 <circle cx="9" cy="10.5" r="1.2" fill="#fff" opacity="0.9"/>
@@ -81,9 +81,9 @@ export default function InsightCard() {
                 <path d="M8.5 14.5c0 0 1.5 2.5 3.5 2.5s3.5-2.5 3.5-2.5" stroke="#fff" strokeWidth="1.3" strokeLinecap="round" fill="none" opacity="0.9"/>
               </svg>
               <div style={{
-                position: 'absolute', bottom: -2, right: -2,
-                width: 9, height: 9, borderRadius: '50%',
-                background: '#89cef5', border: '1.5px solid #fff',
+                position: 'absolute', bottom: 0, right: 0,
+                width: 10, height: 10, borderRadius: '50%',
+                background: '#89cef5', border: '2px solid #fff',
               }} />
             </div>
             <div>
