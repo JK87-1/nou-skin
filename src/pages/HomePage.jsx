@@ -589,27 +589,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                   <span style={{ fontSize: 11, fontWeight: 500, color: homeView === 'briefing' ? (_isDark ? '#fff' : 'var(--text-primary, #111)') : txtS }}>오늘</span>
                 </div>
               </div>
-              {homeView === 'cards' && bodyBriefing ? (
-                <>
-                  <div style={{ fontSize: 15, fontWeight: 500, color: txtP, lineHeight: 1.65, marginBottom: 12 }}>
-                    {bodyBriefing}
-                  </div>
-                  <div style={{ fontSize: 11, fontWeight: 500, color: txtS }}>
-                    {briefingTime ? `${briefingTime} 기준 AI 브리핑` : ''}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div style={{ fontSize: homeView === 'briefing' ? 19 : 26, fontWeight: 500, color: txtP, lineHeight: 1.4, whiteSpace: 'pre-line', marginBottom: 10 }}>
-                    {greeting.main}
-                  </div>
-                  {(
-                    <div style={{ fontSize: 13, fontWeight: 500, color: txtS, marginBottom: 20 }}>
-                      {briefingLoading ? 'AI 브리핑 준비 중...' : greeting.sub}
-                    </div>
-                  )}
-                </>
-              )}
             </div>
           );
         })()}
