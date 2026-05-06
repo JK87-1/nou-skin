@@ -66,7 +66,7 @@ export default function InsightCard() {
         borderRadius: '24px 24px 24px 6px',
         border: '1px solid rgba(255,255,255,0.4)',
         boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.5)',
-        padding: '16px 18px 16px',
+        padding: '16px 18px 20px',
       }}>
 
         {/* lua 아이콘 + 이름 + 인사 + 새로고침 */}
@@ -120,7 +120,7 @@ export default function InsightCard() {
               transition: 'transform 0.15s',
               transform: isLiked ? 'scale(1.1)' : 'scale(1)',
             }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill={isLiked ? '#C97C5E' : 'none'} stroke={isLiked ? '#C97C5E' : '#ccc'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transition: 'all 0.15s' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill={isLiked ? '#E8A0B0' : 'none'} stroke={isLiked ? '#E8A0B0' : '#ccc'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transition: 'all 0.15s' }}>
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
               </svg>
             </div>
