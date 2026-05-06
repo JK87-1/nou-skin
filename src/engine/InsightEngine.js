@@ -796,16 +796,19 @@ function wasActedOn(templateId) {
   return diff < ACTION_COOLDOWN_DAYS;
 }
 
-// ===== Fallback 시스템 (v2) =====
+// ===== Fallback 시스템 (v3.1) =====
+let fallbackRotation = 0;
+
 function generateFallback(data) {
   const today = data.days[0] || {};
   const yesterday = data.days[1] || {};
+  const fbId = `fb_${Date.now()}`; // 매번 고유 id → 세션 중복 방지
 
   // Fallback 4: 데이터 부족
   if (data.activeDays < 7) {
     return {
-      id: 'fb4', type: 'fallback', emoji: '✨', label: '',
-      message: `더 기록해주시면 본인만의 패턴 발견을 도와드릴게요! 현재 ${data.activeDays}일 기록 중이에요 📝 30일 차에는 본인만의 영향 요인 분석도 보여드릴 수 있어요`,
+      id: fbId, type: 'fallback', emoji: '✨', label: '',
+      message: `더 기록해주시면 본인만의 패턴 발견을 도와드릴게요! 현재 ${data.activeDays}일 기록 중이에요 📝 30일 차에는 본인만의 영향 요인 분석도 보여드릴 수 있어요.`,
       score: 0,
     };
   }
@@ -820,7 +823,7 @@ function generateFallback(data) {
       if (today.sleep > yesterday.sleep && today.sleep > 0) improved.push(`수면 ${today.sleep}시간`);
       const what = improved.length > 0 ? improved.join(' · ') + ' 챙기신 덕분인 듯해요' : '몸이 회복하고 있는 듯해요';
       return {
-        id: 'fb3', type: 'fallback', emoji: '✨', label: '회복',
+        id: fbId, type: 'fallback', emoji: '✨', label: '회복',
         message: `어제보다 컨디션이 +${Math.round(tAvg - yAvg)}점이나 좋아졌어요! ${what} ✨ 본인 몸의 회복력이 좋은 신호니 오늘은 무리하지 마세요.`,
         score: 0,
       };
@@ -838,7 +841,7 @@ function generateFallback(data) {
 
   if (positives.length >= 3) {
     return {
-      id: 'fb1', type: 'fallback', emoji: '✨', label: '',
+      id: fbId, type: 'fallback', emoji: '✨', label: '',
       message: `오늘 잘 보내고 계세요! ${positives.slice(0, 3).join(' · ')} 다 챙기셨네요 ✨ 이런 날들이 쌓이면 본인만의 건강 패턴이 만들어질 거예요`,
       score: 0,
     };
@@ -854,16 +857,22 @@ function generateFallback(data) {
 
   if (facts.length >= 2) {
     return {
-      id: 'fb2', type: 'fallback', emoji: '✨', label: '',
+      id: fbId, type: 'fallback', emoji: '✨', label: '',
       message: `오늘 ${facts.slice(0, 2).join(' · ')}이에요! 평소와 비슷한 하루 보내고 계세요 🌿 일관된 루틴이 본인 몸에 안정감을 주는 신호예요`,
       score: 0,
     };
   }
 
-  // 최종 Fallback: 입력 격려
+  // 최종 Fallback: 시간대별 다양한 메시지 순환
+  const h = new Date().getHours();
+  const timeMessages = [
+    h < 12 ? `좋은 아침이에요! 오늘 컨디션이나 수분부터 기록해보세요 📝 기록이 쌓일수록 본인만의 패턴을 발견할 수 있어요.`
+    : h < 18 ? `오후도 잘 보내고 계세요! 지금까지 뭘 먹고 마셨는지 기록해두면 나중에 재밌는 패턴이 보일 거예요 📝`
+    : `수고하셨어요! 오늘 하루 어땠는지 기록 남겨두시면 본인만의 건강 패턴을 만들어드릴게요 🌙`,
+  ];
   return {
-    id: 'fb4b', type: 'fallback', emoji: '✨', label: '',
-    message: `오늘 첫 기록 해보시면 맞춤 인사이트 드릴게요! 컨디션이나 수분부터 시작해보세요 📝 기록이 쌓일수록 본인만의 패턴을 발견할 수 있어요`,
+    id: fbId, type: 'fallback', emoji: '✨', label: '',
+    message: timeMessages[0],
     score: 0,
   };
 }
@@ -906,7 +915,7 @@ export function generateDailyInsights() {
     if (overlap.length > 0) c.score *= 0.5;
   });
 
-  candidates.forEach(c => { c.score += Math.random() * 3; });
+  candidates.forEach(c => { c.score += Math.random() * 5; });
 
   const feedback = safeJSON(FEEDBACK_KEY, {});
   candidates.forEach(c => {
