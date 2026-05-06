@@ -108,7 +108,7 @@ export default function InsightCard() {
             )}
           </div>
           {/* 버튼: 우하단 고정, 마지막 줄 높이 */}
-          <div style={{ position: 'absolute', right: 0, bottom: 0, display: 'flex', gap: 6, background: 'rgba(255,255,255,0.45)', paddingLeft: 6, borderRadius: 4 }}>
+          <div style={{ position: 'absolute', right: 0, bottom: 0, display: 'flex', gap: 12 }}>
             <div onClick={handleRefresh} style={{ cursor: 'pointer', WebkitTapHighlightColor: 'transparent', display: 'flex' }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M23 4v6h-6" /><path d="M1 20v-6h6" />
