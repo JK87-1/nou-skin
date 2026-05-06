@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { getTodayFoods, getTodayNutrition, getFoodRecords, getNutritionForDate, getTimeAdjustedGoal, getFoodGoal, saveFoodRecord, deleteFoodRecord } from '../storage/FoodStorage';
 import { getRecords, getChanges, getTotalChanges, getAllThumbnailsAsync } from '../storage/SkinStorage';
 import { getBodyRecords, getLatestWeight, getStartWeight, getBodyGoal, getBodyProfile, calcBMI, saveBodyRecord, deleteBodyRecord } from '../storage/BodyStorage';
@@ -2298,6 +2298,14 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 }
 
 export function AddFoodModal({ onAdd, onClose, initialMeal, onDetail }) {
+  const swipeStartY = useRef(0);
+  const swipeDY = useRef(0);
+  const swiping = useRef(false);
+  const swipeHandlers = useMemo(() => ({
+    onTouchStart: (e) => { const el = contentRef.current; if (el && el.scrollTop > 0) return; swipeStartY.current = e.touches[0].clientY; swipeDY.current = 0; swiping.current = true; },
+    onTouchMove: (e) => { if (!swiping.current) return; const dy = e.touches[0].clientY - swipeStartY.current; if (dy < 0) { swipeDY.current = 0; if (contentRef.current) contentRef.current.style.transform = ''; return; } swipeDY.current = dy; if (contentRef.current) contentRef.current.style.transform = `translateY(${dy}px)`; },
+    onTouchEnd: () => { if (!swiping.current) return; swiping.current = false; if (swipeDY.current > 120) { if (contentRef.current) { contentRef.current.style.transition = 'transform 0.25s ease'; contentRef.current.style.transform = 'translateY(100%)'; } setTimeout(() => onClose(), 200); } else { if (contentRef.current) { contentRef.current.style.transition = 'transform 0.2s ease'; contentRef.current.style.transform = ''; } setTimeout(() => { if (contentRef.current) contentRef.current.style.transition = ''; }, 200); } },
+  }), [onClose]);
   const [mode, setMode] = useState(null); // null = selection, 'text' = name input, 'photo' = photo analysis
   const [foodItems, setFoodItems] = useState([{ name: '', qty: 1, unit: '인분' }]);
   const defaultMeal = (() => { const h = new Date().getHours(); if (h >= 5 && h < 10) return '아침'; if (h >= 11 && h < 14) return '점심'; if (h >= 17 && h < 21) return '저녁'; return '간식'; })();
@@ -2566,7 +2574,7 @@ export function AddFoodModal({ onAdd, onClose, initialMeal, onDetail }) {
       background: 'rgba(0,0,0,0.5)',
       display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
     }}>
-      <div ref={contentRef} onClick={e => e.stopPropagation()} style={{
+      <div ref={contentRef} onTouchStart={swipeHandlers.onTouchStart} onTouchMove={swipeHandlers.onTouchMove} onTouchEnd={swipeHandlers.onTouchEnd} onClick={e => e.stopPropagation()} style={{
         background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
         maxHeight: '85dvh', overflowY: 'auto', WebkitOverflowScrolling: 'touch',

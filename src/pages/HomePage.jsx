@@ -24,6 +24,44 @@ import {
 } from '../storage/ConditionStorage';
 import { getSupplementItems, getSupplementChecks, toggleSupplementCheck, addSupplementItem, deleteSupplementItem } from '../storage/SupplementStorage';
 
+function useSwipeDown(onClose) {
+  const startY = useRef(0);
+  const currentY = useRef(0);
+  const dragging = useRef(false);
+  const elRef = useRef(null);
+
+  const onTouchStart = useCallback((e) => {
+    const el = elRef.current;
+    if (el && el.scrollTop > 0) return;
+    startY.current = e.touches[0].clientY;
+    currentY.current = 0;
+    dragging.current = true;
+  }, []);
+
+  const onTouchMove = useCallback((e) => {
+    if (!dragging.current) return;
+    const dy = e.touches[0].clientY - startY.current;
+    if (dy < 0) { currentY.current = 0; if (elRef.current) elRef.current.style.transform = ''; return; }
+    currentY.current = dy;
+    if (elRef.current) elRef.current.style.transform = `translateY(${dy}px)`;
+  }, []);
+
+  const onTouchEnd = useCallback(() => {
+    if (!dragging.current) return;
+    dragging.current = false;
+    if (currentY.current > 120) {
+      if (elRef.current) elRef.current.style.transition = 'transform 0.25s ease';
+      if (elRef.current) elRef.current.style.transform = 'translateY(100%)';
+      setTimeout(() => onClose(), 200);
+    } else {
+      if (elRef.current) { elRef.current.style.transition = 'transform 0.2s ease'; elRef.current.style.transform = ''; }
+      setTimeout(() => { if (elRef.current) elRef.current.style.transition = ''; }, 200);
+    }
+  }, [onClose]);
+
+  return { elRef, onTouchStart, onTouchMove, onTouchEnd };
+}
+
 function getTimeMode() {
   const h = new Date().getHours();
   if (h >= 5 && h < 12) return 'morning';
@@ -1271,26 +1309,26 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                           {_cafMg > 0 ? (
                             <>
                               <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                                <span style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_cafMg}</span>
-                                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>mg</span>
+                                <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_cafMg}</span>
+                                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>mg</span>
                               </div>
-                              <div style={{ fontSize: 9, color: _cafState.statusColor, marginTop: 3, fontWeight: 500 }}>{_cafState.status}</div>
+                              <div style={{ fontSize: 10, color: _cafState.statusColor, marginTop: 4, fontWeight: 500 }}>{_cafState.status}</div>
                             </>
                           ) : _alcTotal > 0 ? (
                             <>
                               <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                                <span style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_alcTotal}</span>
-                                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>잔</span>
+                                <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_alcTotal}</span>
+                                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>잔</span>
                               </div>
-                              <div style={{ fontSize: 9, color: '#8A7AAB', marginTop: 3, fontWeight: 500 }}>🍺 알콜</div>
+                              <div style={{ fontSize: 10, color: '#8A7AAB', marginTop: 4, fontWeight: 500 }}>🍺 알콜</div>
                             </>
                           ) : (
                             <>
                               <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                                <span style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_ncTotal}</span>
-                                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>잔</span>
+                                <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_ncTotal}</span>
+                                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>잔</span>
                               </div>
-                              <div style={{ fontSize: 9, color: '#7B5E9E', marginTop: 3, fontWeight: 500 }}>🌿 논카페인</div>
+                              <div style={{ fontSize: 10, color: '#7B5E9E', marginTop: 4, fontWeight: 500 }}>🌿 논카페인</div>
                             </>
                           )}
                           {/* 복수 카테고리 기록 시 서브라인 */}
@@ -1444,16 +1482,12 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                         <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>날씨</span>
                       </div>
                     </div>
-                    <div style={{ marginTop: 'auto' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
                       {_w ? (
                         <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <span style={{ fontSize: 22 }}>{_w.conditionIcon}</span>
-                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
-                              <span style={{ fontSize: 13, color: '#89cef5' }}>{_w.tempMin}°</span>
-                              <span style={{ fontSize: 11, color: 'rgba(0,0,0,0.12)' }}>/</span>
-                              <span style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_w.tempMax}°</span>
-                            </div>
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
+                            <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_w.tempMax}°</span>
+                            <span style={{ fontSize: 18, fontWeight: 500, color: '#89cef5', fontFamily: 'var(--font-display)' }}>{_w.tempMin}°</span>
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
                             <span style={{ fontSize: 10, fontWeight: 600, color: _humColor, padding: '1px 6px', borderRadius: 6, background: `${_humColor}15` }}>{_humTag}</span>
@@ -1466,6 +1500,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                           <div style={{ fontSize: 10, color: 'var(--accent-primary, #89cef5)', marginTop: 4 }}>확인하기</div>
                         </div>
                       )}
+                      {_w && <span style={{ fontSize: 32 }}>{_w.conditionIcon}</span>}
                     </div>
                   </div>
                 ));
@@ -1652,25 +1687,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
       {/* Skin Weather Page */}
       {showWeather && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 1200,
-          background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
-          overflowY: 'auto', WebkitOverflowScrolling: 'touch',
-        }}>
-          <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
-            <div onClick={() => setShowWeather(false)} style={{
-              width: 36, height: 36,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1,
-            }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M15 18l-6-6 6-6" />
-              </svg>
-            </div>
-            <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>날씨</span>
-          </div>
-          <SkinWeather />
-        </div>
+        <WeatherFullModal onClose={() => setShowWeather(false)} />
       )}
 
       {/* Account Page */}
@@ -1933,7 +1950,33 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   }
 }
 
+function WeatherFullModal({ onClose }) {
+  const swipe = useSwipeDown(onClose);
+  return (
+    <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} style={{
+      position: 'fixed', inset: 0, zIndex: 1200,
+      background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
+      overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+    }}>
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+        <div onClick={onClose} style={{
+          width: 36, height: 36,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1,
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </div>
+        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>날씨</span>
+      </div>
+      <SkinWeather />
+    </div>
+  );
+}
+
 function ConditionCheckModal({ selections, sliderPcts, onSelect, onSliderChange, onUpdate, onClose, onDetail }) {
+  const swipe = useSwipeDown(onClose);
   const sliders = [
     { key: 'mood', label: '기분', rgb: [245,194,203], labels: MOOD_LABELS,
       icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(212,112,126,0.3))' }}><defs><linearGradient id="heartM" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F0B8C0"/><stop offset="100%" stopColor="#D4707E"/></linearGradient></defs><path d="M12 4.5C10 2 6.5 1.5 4.5 4c-2 2.5-1.5 6 1 8.5L12 20l6.5-7.5c2.5-2.5 3-6 1-8.5C17.5 1.5 14 2 12 4.5z" fill="url(#heartM)" opacity="0.6"/></svg> },
@@ -1947,7 +1990,7 @@ function ConditionCheckModal({ selections, sliderPcts, onSelect, onSliderChange,
       background: 'rgba(0,0,0,0.5)',
       display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
     }}>
-      <div onClick={e => e.stopPropagation()} style={{
+      <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} onClick={e => e.stopPropagation()} style={{
         background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
@@ -2047,6 +2090,7 @@ function ConditionCheckModal({ selections, sliderPcts, onSelect, onSliderChange,
 }
 
 function AddWeightModal({ onSave, onClose, latest }) {
+  const swipe = useSwipeDown(onClose);
   const [weight, setWeight] = useState(latest ? latest.weight : 55.0);
   const adjust = (delta) => setWeight(w => Math.round((w + delta) * 10) / 10);
   const btnStyle = {
@@ -2061,7 +2105,7 @@ function AddWeightModal({ onSave, onClose, latest }) {
       background: 'rgba(0,0,0,0.5)',
       display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
     }}>
-      <div onClick={e => e.stopPropagation()} style={{
+      <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} onClick={e => e.stopPropagation()} style={{
         background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
@@ -2121,6 +2165,7 @@ function getHomeExercises() {
 }
 
 function AddActivityModal({ onSave, onClose }) {
+  const swipe = useSwipeDown(onClose);
   const [tab, setTab] = useState('walk'); // 'walk' | 'exercise'
   const [steps, setSteps] = useState('');
   const [selectedEx, setSelectedEx] = useState(null);
@@ -2165,7 +2210,7 @@ function AddActivityModal({ onSave, onClose }) {
       background: 'rgba(0,0,0,0.5)',
       display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
     }}>
-      <div onClick={e => e.stopPropagation()} style={{
+      <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} onClick={e => e.stopPropagation()} style={{
         background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
@@ -2275,6 +2320,7 @@ function AddActivityModal({ onSave, onClose }) {
 
 // ===== Water Intake Modal =====
 function WaterIntakeModal({ onClose, onUpdate }) {
+  const swipe = useSwipeDown(onClose);
   const todayKey = new Date().toISOString().slice(0, 10);
   const getAll = () => { try { return JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); } catch { return {}; } };
   const getSettings = () => { try { return { cupMl: 250, goalMl: 2000, ...JSON.parse(localStorage.getItem('lua_water_settings') || '{}') }; } catch { return { cupMl: 250, goalMl: 2000 }; } };
@@ -2328,7 +2374,7 @@ function WaterIntakeModal({ onClose, onUpdate }) {
       background: 'rgba(0,0,0,0.5)',
       display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
     }}>
-      <div onClick={e => e.stopPropagation()} style={{
+      <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} onClick={e => e.stopPropagation()} style={{
         background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
@@ -2650,6 +2696,7 @@ function AccountPage({ profile, onUpdate, onClose }) {
 const SLEEP_QUALITIES = ['깊은 수면', '보통', '얕은 수면'];
 
 function SleepInputModal({ onClose, onUpdate, onDetail }) {
+  const swipe = useSwipeDown(onClose);
   const todayKey = new Date().toISOString().slice(0, 10);
   const getAll = () => { try { return JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); } catch { return {}; } };
 
@@ -2688,7 +2735,7 @@ function SleepInputModal({ onClose, onUpdate, onDetail }) {
       background: 'rgba(0,0,0,0.5)',
       display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
     }}>
-      <div onClick={e => e.stopPropagation()} style={{
+      <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} onClick={e => e.stopPropagation()} style={{
         background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
@@ -2835,6 +2882,7 @@ function SleepInputModal({ onClose, onUpdate, onDetail }) {
 }
 
 function BloodSugarModal({ onClose, onUpdate }) {
+  const swipe = useSwipeDown(onClose);
   const [bsInput, setBsInput] = useState(() => { const t = getTodayBloodSugar(); return t?.value ?? ''; });
   const [bsTiming, setBsTiming] = useState(() => { const t = getTodayBloodSugar(); return t?.timing ?? '공복'; });
   const [graphData, setGraphData] = useState(() => { try { return JSON.parse(localStorage.getItem('nou_bs_graph') || 'null'); } catch { return null; } });
@@ -2868,7 +2916,7 @@ function BloodSugarModal({ onClose, onUpdate }) {
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0', padding: '24px 24px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
+      <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0', padding: '24px 24px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
         <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24, textAlign: 'center' }}>🩸 혈당 기록</div>
 
@@ -3013,6 +3061,7 @@ const ALCOHOL_ITEMS = [
 ];
 
 function DrinkModal({ onClose, onSave }) {
+  const swipe = useSwipeDown(onClose);
   const todayKey = new Date().toISOString().slice(0, 10);
   const [tab, setTab] = useState('caffeine');
   const [drinkCategory, setDrinkCategory] = useState('coffee');
@@ -3097,7 +3146,7 @@ function DrinkModal({ onClose, onSave }) {
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '18px 18px 36px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
+      <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '18px 18px 36px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.1)', margin: '0 auto 16px' }} />
         <div style={{ fontSize: 16, fontWeight: 600, color: '#2C4A5E', marginBottom: 14, textAlign: 'center' }}>음료 기록</div>
 
@@ -4030,6 +4079,7 @@ function CaffeineEffectCheckModal({ drink, onClose, onSave }) {
 const TIMING_LABELS = { morning: '아침', lunch: '점심', evening: '저녁' };
 
 function SupplementModal({ onClose, onUpdate, onCheck }) {
+  const swipe = useSwipeDown(onClose);
   const [items, setItems] = useState(getSupplementItems);
   const [checks, setChecks] = useState(() => getSupplementChecks());
   const [newName, setNewName] = useState('');
@@ -4060,7 +4110,7 @@ function SupplementModal({ onClose, onUpdate, onCheck }) {
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0', padding: '24px 24px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
+      <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0', padding: '24px 24px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
           <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>💊 영양제</div>
@@ -4180,6 +4230,7 @@ const CONDITION_OPTIONS = [
 ];
 
 function SkinCheckModal({ onClose, onUpdate }) {
+  const swipe = useSwipeDown(onClose);
   const todayKey = new Date().toISOString().slice(0, 10);
   const existingLog = (() => { try { const logs = JSON.parse(localStorage.getItem('lua_skin_check_logs') || '{}'); return logs[todayKey] || null; } catch { return null; } })();
 
@@ -4248,7 +4299,7 @@ function SkinCheckModal({ onClose, onUpdate }) {
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '20px 20px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
+      <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '20px 20px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.1)', margin: '0 auto 20px' }} />
         <div style={{ fontSize: 17, fontWeight: 600, color: '#2C4A5E', marginBottom: 20, textAlign: 'center' }}>피부 체크</div>
 
@@ -4362,6 +4413,7 @@ function SkinCheckModal({ onClose, onUpdate }) {
 }
 
 function CycleModal({ onClose, onUpdate }) {
+  const swipe = useSwipeDown(onClose);
   const [data, setData] = useState(getCycleData);
   const isUnset = !data || !data.lastPeriodStart;
   const cycleState = calculateCycleState(data);
@@ -4415,7 +4467,7 @@ function CycleModal({ onClose, onUpdate }) {
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0', padding: '24px 24px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
+      <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0', padding: '24px 24px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
 
         {isUnset ? (
