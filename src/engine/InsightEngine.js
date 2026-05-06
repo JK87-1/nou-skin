@@ -530,9 +530,9 @@ function getShownHistory() {
   try { return JSON.parse(localStorage.getItem('lua_insight_shown') || '{}'); } catch { return {}; }
 }
 
-function markShown(templateId) {
+export function markShown(templateId) {
   const h = getShownHistory();
-  h[templateId] = getDateKey(new Date());
+  h[templateId] = new Date().toISOString();
   localStorage.setItem('lua_insight_shown', JSON.stringify(h));
 }
 
@@ -542,6 +542,14 @@ function wasRecentlyShown(templateId) {
   if (!lastShown) return false;
   const diff = (new Date() - new Date(lastShown)) / (1000 * 60 * 60 * 24);
   return diff < REPEAT_COOLDOWN_DAYS;
+}
+
+// 오늘 이미 표시된 인사이트인지 (같은 날 반복 방지)
+function wasShownToday(templateId) {
+  const h = getShownHistory();
+  const lastShown = h[templateId];
+  if (!lastShown) return false;
+  return lastShown.startsWith(getDateKey(new Date()));
 }
 
 // ===== 메인 API =====
@@ -576,6 +584,11 @@ export function generateDailyInsights() {
       });
     }
   }
+
+  // 오늘 이미 표시 후 상호작용한 인사이트는 점수 대폭 하락
+  candidates.forEach(c => {
+    if (wasShownToday(c.id)) c.score *= 0.1;
+  });
 
   // 피드백 기반 조정
   const feedback = safeJSON(FEEDBACK_KEY, {});

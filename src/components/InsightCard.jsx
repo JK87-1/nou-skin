@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getOrGenerateInsights, refreshInsights } from '../engine/InsightEngine';
+import { getOrGenerateInsights, refreshInsights, markShown } from '../engine/InsightEngine';
 
 const TYPE_COLORS = {
   pattern: '#B8865C',
@@ -69,7 +69,7 @@ export default function InsightCard() {
         {main.action && (
           <div style={{ marginTop: 12 }}>
             <button
-              onClick={(e) => { e.stopPropagation(); handleAction(main.action); }}
+              onClick={(e) => { e.stopPropagation(); handleAction(main.action, main.id, setInsights); }}
               style={{
                 background: 'rgba(0,0,0,0.04)', border: 'none', borderRadius: 10,
                 padding: '8px 14px', fontSize: 11, color: 'var(--text-primary)', fontWeight: 500,
@@ -107,7 +107,7 @@ export default function InsightCard() {
             <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.5 }}>{ins.message}</div>
             {ins.action && (
               <button
-                onClick={() => handleAction(ins.action)}
+                onClick={() => handleAction(ins.action, ins.id, setInsights)}
                 style={{
                   background: 'rgba(0,0,0,0.04)', border: 'none', borderRadius: 8,
                   padding: '6px 12px', fontSize: 10, color: 'var(--text-primary)', fontWeight: 500,
@@ -124,7 +124,10 @@ export default function InsightCard() {
   );
 }
 
-function handleAction(action) {
+function handleAction(action, insightId, setInsights) {
+  // 마킹 후 리프레시
+  if (insightId) markShown(insightId);
+
   if (action.type === 'log_water') {
     try {
       const todayKey = new Date().toISOString().slice(0, 10);
@@ -136,5 +139,10 @@ function handleAction(action) {
       localStorage.setItem('lua_record_v2', JSON.stringify(all));
       window.dispatchEvent(new Event('lua-record-updated'));
     } catch { /* ignore */ }
+  }
+
+  // 새 인사이트로 교체
+  if (setInsights) {
+    setTimeout(() => setInsights(refreshInsights()), 100);
   }
 }
