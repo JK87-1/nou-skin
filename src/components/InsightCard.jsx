@@ -100,7 +100,7 @@ export default function InsightCard() {
         </div>
 
         {/* 메시지 본문 */}
-        <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.7 }}>
+        <div style={{ fontSize: 14, fontWeight: 500, color: 'rgba(0,0,0,0.7)', lineHeight: 1.7 }}>
           {main.message}
         </div>
 
