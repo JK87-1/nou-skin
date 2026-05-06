@@ -1,11 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { hapticLight } from '../utils/haptic';
-import DailyInsightSlider from '../components/DailyInsightSlider';
 import InsightCard from '../components/InsightCard';
-import MorningCheckIn, { CheckInSummaryCard, loadTodayCheckIn } from '../components/MorningCheckIn';
-import QuickCheckIn from '../components/QuickCheckIn';
-import EveningCheckIn, { EveningSummaryCard, YesterdayPromiseCard, loadTodayEveningCheckIn } from '../components/EveningCheckIn';
-import AfternoonCheckIn, { AfternoonSummaryCard, loadTodayAfternoonCheckIn } from '../components/AfternoonCheckIn';
 import SkinWeather from '../components/SkinWeather';
 import { getLatestRecord } from '../storage/SkinStorage';
 import { getProfile, saveProfile, SKIN_TYPES, SKIN_CONCERNS, GENDER_OPTIONS, getCategoryColor } from '../storage/ProfileStorage';
@@ -244,16 +239,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [showDatePicker, setShowDatePicker] = useState(false);
   const isToday = selectedDate === new Date().toISOString().slice(0, 10);
-  const [showCheckIn, setShowCheckIn] = useState(false);
-  const [showEveningCheckIn, setShowEveningCheckIn] = useState(false);
-  const [showAfternoonCheckIn, setShowAfternoonCheckIn] = useState(false);
-  const [checkinViewMode, setCheckinViewMode] = useState(null);
-  const checkinTouchRef = useRef({ startX: 0, startY: 0 });
-  const [checkInDone, setCheckInDone] = useState(() => !!loadTodayCheckIn());
-  const [afternoonDone, setAfternoonDone] = useState(() => !!loadTodayAfternoonCheckIn());
-  const [eveningDone, setEveningDone] = useState(() => !!loadTodayEveningCheckIn());
-  const [checkInRefresh, setCheckInRefresh] = useState(0);
-  const [promiseDismissed, setPromiseDismissed] = useState(false);
   const [dataRefreshKey, setWeightRefreshKey] = useState(0);
   const [tappedCard, setTappedCard] = useState(null);
   const handleCardTap = (cardName, callback) => {
@@ -616,9 +601,9 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               ) : (
                 <>
                   <div style={{ fontSize: homeView === 'briefing' ? 19 : 26, fontWeight: 500, color: txtP, lineHeight: 1.4, whiteSpace: 'pre-line', marginBottom: 10 }}>
-                    {homeView === 'briefing' && checkInDone ? '체크인 완료, 좋은 하루 ✨' : greeting.main}
+                    {greeting.main}
                   </div>
-                  {!(homeView === 'briefing' && checkInDone) && (
+                  {(
                     <div style={{ fontSize: 13, fontWeight: 500, color: txtS, marginBottom: 20 }}>
                       {briefingLoading ? 'AI 브리핑 준비 중...' : greeting.sub}
                     </div>
@@ -1774,27 +1759,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
           onClose={() => setShowSleepModal(false)}
           onUpdate={() => { setShowSleepModal(false); setWeightRefreshKey(k => k + 1); }}
           onDetail={(data) => { setShowSleepModal(false); setDetailPage({ type: 'sleep', data }); }}
-        />
-      )}
-
-      {showCheckIn && (
-        <MorningCheckIn
-          onClose={() => setShowCheckIn(false)}
-          onComplete={() => { setShowCheckIn(false); setCheckInDone(true); setCheckInRefresh(k => k + 1); setWeightRefreshKey(k => k + 1); }}
-        />
-      )}
-
-      {showAfternoonCheckIn && (
-        <AfternoonCheckIn
-          onClose={() => setShowAfternoonCheckIn(false)}
-          onComplete={() => { setShowAfternoonCheckIn(false); setAfternoonDone(true); setCheckInRefresh(k => k + 1); }}
-        />
-      )}
-
-      {showEveningCheckIn && (
-        <EveningCheckIn
-          onClose={() => setShowEveningCheckIn(false)}
-          onComplete={() => { setShowEveningCheckIn(false); setEveningDone(true); setCheckInRefresh(k => k + 1); }}
         />
       )}
 
