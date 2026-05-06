@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { hapticLight } from '../utils/haptic';
 import DailyInsightSlider from '../components/DailyInsightSlider';
+import InsightCard from '../components/InsightCard';
 import MorningCheckIn, { CheckInSummaryCard, loadTodayCheckIn } from '../components/MorningCheckIn';
 import QuickCheckIn from '../components/QuickCheckIn';
 import EveningCheckIn, { EveningSummaryCard, YesterdayPromiseCard, loadTodayEveningCheckIn } from '../components/EveningCheckIn';
@@ -732,7 +733,10 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             </div>
           )}
 
-          {/* 오늘의 상태 + 인사이트 */}
+          {/* 오늘의 인사이트 */}
+          <InsightCard />
+
+          {/* 오늘의 상태 */}
           <DailyInsightSlider />
 
           {/* 오늘의 웰니스 추천 */}
