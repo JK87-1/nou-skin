@@ -52,12 +52,20 @@ export default function InsightCard() {
         onClick={() => additional.length > 0 && setExpanded(!expanded)}
         style={{ ...cardStyle, cursor: additional.length > 0 ? 'pointer' : 'default' }}
       >
-        {/* 상단: 타입 라벨 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-          <span style={{ fontSize: 14 }}>{main.emoji}</span>
-          {main.label && (
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>{main.label}</span>
-          )}
+        {/* 상단: 타입 라벨 + 새로고침 */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 14 }}>{main.emoji}</span>
+            {main.label && (
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>{main.label}</span>
+            )}
+          </div>
+          <div onClick={(e) => { e.stopPropagation(); setInsights(refreshInsights()); }} style={{ cursor: 'pointer', padding: 4, WebkitTapHighlightColor: 'transparent' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b1b8ba" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M23 4v6h-6" /><path d="M1 20v-6h6" />
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+            </svg>
+          </div>
         </div>
 
         {/* 본문 */}
