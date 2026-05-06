@@ -167,7 +167,7 @@ const TEMPLATES = [
       }
       return null;
     },
-    message(r) { return `${r.dayName}요일마다 수분이 부족해지시네요! 벌써 ${r.weeks}주째 같은 패턴이에요 🤔 의식적으로 챙기면 ${r.dayName}요일 컨디션이 확 달라질 거예요`; },
+    message(r) { return `${r.dayName}요일마다 수분이 부족해지시네요! 벌써 ${r.weeks}주째 같은 패턴이에요 🤔 의식적으로 챙기면 ${r.dayName}요일 컨디션이 확 달라질 거예요.`; },
   },
   {
     id: 'A2', relatedCards: ['caffeine'], type: 'pattern', emoji: '☕', label: '발견',
@@ -181,7 +181,7 @@ const TEMPLATES = [
       if (afternoonDays.length / recent.length >= 0.6) return { total: recent.length, afternoon: afternoonDays.length };
       return null;
     },
-    message(r) { return `오후 3시쯤 한 잔 더 챙기시는 패턴이에요! 지난 2주 ${r.total}번 중 ${r.afternoon}번이나 그러셨어요 ☕ 이 시간엔 무카페인 차로 바꾸면 잠도 잘 올 거예요`; },
+    message(r) { return `오후 3시쯤 한 잔 더 챙기시는 패턴이에요! 지난 2주 ${r.total}번 중 ${r.afternoon}번이나 그러셨어요 ☕ 이 시간엔 무카페인 차로 바꾸면 잠도 잘 올 거예요.`; },
   },
   {
     id: 'A4', relatedCards: ['sleep'], type: 'pattern', emoji: '😴', label: '발견',
@@ -196,7 +196,7 @@ const TEMPLATES = [
       if (weAvg - wdAvg >= 1) return { diff: Math.round((weAvg - wdAvg) * 10) / 10, wdAvg: wdAvg.toFixed(1), weAvg: weAvg.toFixed(1) };
       return null;
     },
-    message(r) { return `주말마다 수면이 +${r.diff}시간이나 늘어요! 평일 ${r.wdAvg}시간에서 주말 ${r.weAvg}시간이라 평일에 좀 부족하신 듯해요 🌙 평일도 30분만 더 자보면 큰 차이가 보일 거예요`; },
+    message(r) { return `주말마다 수면이 +${r.diff}시간이나 늘어요! 평일 ${r.wdAvg}시간에서 주말 ${r.weAvg}시간이라 평일에 좀 부족하신 듯해요 🌙 평일도 30분만 더 자보면 큰 차이가 보일 거예요.`; },
   },
   {
     id: 'A6', relatedCards: ['alcohol', 'skin'], type: 'pattern', emoji: '🍺', label: '발견',
@@ -209,7 +209,7 @@ const TEMPLATES = [
       if (matches >= 2) return { count: matches };
       return null;
     },
-    message(r) { return `술 마신 다음날 트러블이 오는 패턴이에요! 벌써 ${r.count}주째 반복돼서 본인 신호인 듯해요 🍺 음주 다음날 비타민C 챙기면 영향을 줄일 수 있어요`; },
+    message(r) { return `술 마신 다음날 트러블이 오는 패턴이에요! 벌써 ${r.count}주째 반복돼서 본인 신호인 듯해요 🍺 음주 다음날 비타민C 챙기면 영향을 줄일 수 있어요.`; },
   },
   {
     id: 'A8', relatedCards: ['activity', 'condition'], type: 'pattern', emoji: '🏃', label: '발견',
@@ -224,7 +224,7 @@ const TEMPLATES = [
       if (diff >= 5) return { diff, count: exDays.length };
       return null;
     },
-    message(r) { return `운동한 날 컨디션이 +${r.diff}점이나 더 좋아요! 지난 2주 동안 운동한 ${r.count}번 모두 효과를 보셨어요 🏃 본인은 아침 운동이 잘 맞는 듯하니 루틴화해보세요`; },
+    message(r) { return `운동한 날 컨디션이 +${r.diff}점이나 더 좋아요! 지난 2주 동안 운동한 ${r.count}번 모두 효과를 보셨어요 🏃 본인은 아침 운동이 잘 맞는 듯하니 루틴화해보세요.`; },
   },
   {
     id: 'A9', relatedCards: ['caffeine', 'sleep'], type: 'pattern', emoji: '☕', label: '발견',
@@ -241,7 +241,7 @@ const TEMPLATES = [
       if (lateCafShortSleep >= 3) return { avgSleep: (shortSleepAvg.reduce((a, b) => a + b, 0) / shortSleepAvg.length).toFixed(1) };
       return null;
     },
-    message(r) { return `오후 카페인이 잠을 짧게 만드는 패턴이에요! 카페인 드신 날 평균 수면이 ${r.avgSleep}시간뿐이었어요 ☕ 4시 이후엔 디카페인으로 바꾸면 깊은 잠 가능할 거예요`; },
+    message(r) { return `오후 카페인이 잠을 짧게 만드는 패턴이에요! 카페인 드신 날 평균 수면이 ${r.avgSleep}시간뿐이었어요 ☕ 4시 이후엔 디카페인으로 바꾸면 깊은 잠 가능할 거예요.`; },
   },
   {
     id: 'A10', relatedCards: ['condition', 'meal'], type: 'pattern', emoji: '😰', label: '발견',
@@ -265,7 +265,7 @@ const TEMPLATES = [
       if (!today || today.sleep === 0 || today.sleep >= 7) return null;
       return { cafMg: yesterday.totalCafMg, sleepH: today.sleep };
     },
-    message(r) { return `어제 카페인 ${r.cafMg}mg 드시고 오늘 수면이 ${r.sleepH}시간이에요! 카페인 영향이 있는 듯해요 ☕ 오후 카페인만 줄여도 잠이 깊어질 거예요`; },
+    message(r) { return `어제 카페인 ${r.cafMg}mg 드시고 오늘 수면이 ${r.sleepH}시간이에요! 카페인 영향이 있는 듯해요 ☕ 오후 카페인만 줄여도 잠이 깊어질 거예요.`; },
   },
   {
     id: 'B2', relatedCards: ['water', 'condition'], type: 'cross_analysis', emoji: '💡', label: '통찰',
@@ -280,7 +280,7 @@ const TEMPLATES = [
       if (diff >= 3) return { diff };
       return null;
     },
-    message(r) { return `물 충분히 마신 날 컨디션이 +${r.diff}점이나 좋아져요! 본인만의 회복 신호인 듯해요 💧 수분이 본인한테 효과 큰 편이라 꾸준히 챙기면 좋아요`; },
+    message(r) { return `물 충분히 마신 날 컨디션이 +${r.diff}점이나 좋아져요! 본인만의 회복 신호인 듯해요 💧 수분이 본인한테 효과 큰 편이라 꾸준히 챙기면 좋아요.`; },
   },
   {
     id: 'B3', relatedCards: ['activity', 'sleep'], type: 'cross_analysis', emoji: '💡', label: '통찰',
@@ -295,7 +295,7 @@ const TEMPLATES = [
       if (diff >= 20) return { diff, exCount: exDays.length };
       return null;
     },
-    message(r) { return `운동한 날 잠이 평균 +${r.diff}분이나 늘어요! 지난 2주 운동 ${r.exCount}번 중 대부분 깊은 잠이 늘었어요 🏃 주 3회만 유지해도 수면 질이 계속 좋아질 거예요`; },
+    message(r) { return `운동한 날 잠이 평균 +${r.diff}분이나 늘어요! 지난 2주 운동 ${r.exCount}번 중 대부분 깊은 잠이 늘었어요 🏃 주 3회만 유지해도 수면 질이 계속 좋아질 거예요.`; },
   },
   {
     id: 'B4', relatedCards: ['meal', 'condition'], type: 'cross_analysis', emoji: '💡', label: '통찰',
@@ -306,7 +306,7 @@ const TEMPLATES = [
       if (lowProtein.length >= 2) return { count: lowProtein.length };
       return null;
     },
-    message(r) { return `단백질 부족한 날 오후 졸림이 더 심해요! 이번 주 ${r.count}번이나 그랬어요 🍱 점심 단백질 30g 정도 챙기면 오후 활력이 유지될 거예요`; },
+    message(r) { return `단백질 부족한 날 오후 졸림이 더 심해요! 이번 주 ${r.count}번이나 그랬어요 🍱 점심 단백질 30g 정도 챙기면 오후 활력이 유지될 거예요.`; },
   },
   {
     id: 'B6', relatedCards: ['alcohol', 'condition'], type: 'cross_analysis', emoji: '🍺', label: '통찰',
@@ -319,7 +319,7 @@ const TEMPLATES = [
       if (avg <= 4) return { drinks: yesterday.totalAlcohol };
       return null;
     },
-    message(r) { return `어제 술 → 오늘 컨디션이 좀 힘든 듯해요! 본인은 알코올 영향이 큰 편이세요 🍺 자기 전 물 한 잔 + 비타민C 챙기면 회복이 빨라질 거예요`; },
+    message(r) { return `어제 술 → 오늘 컨디션이 좀 힘든 듯해요! 본인은 알코올 영향이 큰 편이세요 🍺 자기 전 물 한 잔 + 비타민C 챙기면 회복이 빨라질 거예요.`; },
   },
   {
     id: 'B7', relatedCards: ['sleep', 'skin'], type: 'cross_analysis', emoji: '✨', label: '통찰',
@@ -331,7 +331,7 @@ const TEMPLATES = [
       if (recentTrouble.length >= 1) return { sleepDays: shortSleep.length };
       return null;
     },
-    message(r) { return `최근 잠이 짧으신데 피부에도 영향이 있는 듯해요! ${r.sleepDays}일 연속 수면 부족 후 트러블이 시작됐어요 🌙 7시간 이상 자보면 피부도 회복 시간을 가질 수 있어요`; },
+    message(r) { return `최근 잠이 짧으신데 피부에도 영향이 있는 듯해요! ${r.sleepDays}일 연속 수면 부족 후 트러블이 시작됐어요 🌙 7시간 이상 자보면 피부도 회복 시간을 가질 수 있어요.`; },
   },
   {
     id: 'B8', relatedCards: ['meal', 'condition'], type: 'cross_analysis', emoji: '🍱', label: '통찰',
@@ -348,7 +348,7 @@ const TEMPLATES = [
       if (matches >= 2) return { count: matches };
       return null;
     },
-    message(r) { return `늦은 저녁 식사가 다음날 아침을 무겁게 해요! 이번 주 ${r.count}번이나 반복됐어요 🍱 8시 이전 저녁 드시면 아침이 가벼워질 거예요`; },
+    message(r) { return `늦은 저녁 식사가 다음날 아침을 무겁게 해요! 이번 주 ${r.count}번이나 반복됐어요 🍱 8시 이전 저녁 드시면 아침이 가벼워질 거예요.`; },
   },
   {
     id: 'B5', relatedCards: ['caffeine', 'skin'], type: 'cross_analysis', emoji: '☕', label: '통찰',
@@ -361,7 +361,7 @@ const TEMPLATES = [
       if (matches >= 2) return { matches, total };
       return null;
     },
-    message(r) { return `카페인 200mg 이상 드신 다음날 트러블이 와요! 이번 달 ${r.total}번 중 ${r.matches}번이나 일치했어요 ☕ 200mg 이하로 유지하면 피부도 진정될 거예요`; },
+    message(r) { return `카페인 200mg 이상 드신 다음날 트러블이 와요! 이번 달 ${r.total}번 중 ${r.matches}번이나 일치했어요 ☕ 200mg 이하로 유지하면 피부도 진정될 거예요.`; },
   },
 
   // C. 변화 감지 (6개)
@@ -382,7 +382,7 @@ const TEMPLATES = [
       }
       return null;
     },
-    message(r) { return `이번 주 컨디션이 -${r.diff}점인데 변한 건 카페인이에요! 평소 ${r.prevCaf}mg에서 이번 주 ${r.curCaf}mg으로 늘었어요 ☕ 오후 시간대만이라도 줄이면 다음 주 컨디션이 회복될 거예요`; },
+    message(r) { return `이번 주 컨디션이 -${r.diff}점인데 변한 건 카페인이에요! 평소 ${r.prevCaf}mg에서 이번 주 ${r.curCaf}mg으로 늘었어요 ☕ 오후 시간대만이라도 줄이면 다음 주 컨디션이 회복될 거예요.`; },
   },
   {
     id: 'C2', relatedCards: ['sleep'], type: 'change_detection', emoji: '😴', label: '변화',
@@ -398,7 +398,7 @@ const TEMPLATES = [
       }
       return null;
     },
-    message(r) { return `최근 잠을 ${r.min}분이나 ${r.dir} 자고 계세요! 평균 ${r.pAvg}시간에서 ${r.rAvg}시간으로 변했어요 🌙 이대로 유지하면 본인 몸도 적응해서 컨디션이 더 좋아질 거예요`; },
+    message(r) { return `최근 잠을 ${r.min}분이나 ${r.dir} 자고 계세요! 평균 ${r.pAvg}시간에서 ${r.rAvg}시간으로 변했어요 🌙 이대로 유지하면 본인 몸도 적응해서 컨디션이 더 좋아질 거예요.`; },
   },
   {
     id: 'C3', relatedCards: ['skin'], type: 'change_detection', emoji: '✨', label: '변화',
@@ -408,7 +408,7 @@ const TEMPLATES = [
       if (lastHalf >= 3 && thisHalf <= lastHalf * 0.5) return { prev: lastHalf, cur: thisHalf };
       return null;
     },
-    message(r) { return `이번 달 트러블이 절반으로 줄었어요! 지난 달 ${r.prev}일에서 이번 달 ${r.cur}일이에요 🫧 뭐가 달라졌는지 발견하면 본인만의 관리법을 만들 수 있어요`; },
+    message(r) { return `이번 달 트러블이 절반으로 줄었어요! 지난 달 ${r.prev}일에서 이번 달 ${r.cur}일이에요 🫧 뭐가 달라졌는지 발견하면 본인만의 관리법을 만들 수 있어요.`; },
   },
   {
     id: 'C4', relatedCards: ['water'], type: 'change_detection', emoji: '💧', label: '변화',
@@ -421,7 +421,7 @@ const TEMPLATES = [
       if (rAvg > pAvg * 1.3 && rAvg > 0) return { prev: (pAvg / 1000).toFixed(1), cur: (rAvg / 1000).toFixed(1), pct: Math.round((rAvg / pAvg - 1) * 100) };
       return null;
     },
-    message(r) { return `수분 섭취 늘었네요. 평소 ${r.prev}L → 최근 ${r.cur}L로 +${r.pct}% 증가했어요. 이대로 유지하시면 피부 트러블 줄고 컨디션도 좋아질 수 있어요`; },
+    message(r) { return `수분 섭취 늘었네요. 평소 ${r.prev}L → 최근 ${r.cur}L로 +${r.pct}% 증가했어요. 이대로 유지하시면 피부 트러블 줄고 컨디션도 좋아질 수 있어요.`; },
   },
   {
     id: 'C5', relatedCards: ['caffeine'], type: 'change_detection', emoji: '☕', label: '변화',
@@ -435,7 +435,7 @@ const TEMPLATES = [
       }
       return null;
     },
-    message(r) { return `이번 주 카페인을 -${r.pct}%나 줄이셨네요! 평소 ${r.prev}mg에서 이번 주 ${r.cur}mg, 본인만의 변화예요 ☕ 이번 주 수면 질도 좋아지고 있을 거예요`; },
+    message(r) { return `이번 주 카페인을 -${r.pct}%나 줄이셨네요! 평소 ${r.prev}mg에서 이번 주 ${r.cur}mg, 본인만의 변화예요 ☕ 이번 주 수면 질도 좋아지고 있을 거예요.`; },
   },
   {
     id: 'C6', relatedCards: ['sleep'], type: 'change_detection', emoji: '😴', label: '변화',
@@ -448,7 +448,7 @@ const TEMPLATES = [
       if (stdDev <= 30) return { avgH: avg.toFixed(1) };
       return null;
     },
-    message(r) { return `수면 시간이 일정해지셨네요! 지난 2주 평균 ${r.avgH}시간 근처에서 잘 유지하고 계세요 🌙 이런 일관성이 컨디션 안정의 핵심이라 곧 효과를 느끼실 거예요`; },
+    message(r) { return `수면 시간이 일정해지셨네요! 지난 2주 평균 ${r.avgH}시간 근처에서 잘 유지하고 계세요 🌙 이런 일관성이 컨디션 안정의 핵심이라 곧 효과를 느끼실 거예요.`; },
   },
 
   // D. 긍정 강화 (4개)
@@ -462,7 +462,7 @@ const TEMPLATES = [
       if (streak >= 5) return { streak };
       return null;
     },
-    message(r) { return `물 ${r.streak}일 연속 목표 달성이에요! 평소보다 더 꾸준히 챙기셨네요 ✨ 이 페이스로 한 달만 유지해도 피부·컨디션 변화가 확 느껴질 거예요`; },
+    message(r) { return `물 ${r.streak}일 연속 목표 달성이에요! 평소보다 더 꾸준히 챙기셨네요 ✨ 이 페이스로 한 달만 유지해도 피부·컨디션 변화가 확 느껴질 거예요.`; },
   },
   {
     id: 'D2', relatedCards: ['supplement'], type: 'positive', emoji: '💊', label: '잘하셨어요',
@@ -475,7 +475,7 @@ const TEMPLATES = [
       if (streak >= 5) return { streak };
       return null;
     },
-    message(r) { return `영양제 ${r.streak}일 연속 챙기셨네요! 본인만의 루틴을 만드신 듯해요 ✨ 한 달 정도 더 유지하면 본인만의 효과를 발견할 수 있을 거예요`; },
+    message(r) { return `영양제 ${r.streak}일 연속 챙기셨네요! 본인만의 루틴을 만드신 듯해요 ✨ 한 달 정도 더 유지하면 본인만의 효과를 발견할 수 있을 거예요.`; },
   },
   {
     id: 'D3', relatedCards: ['skin'], type: 'positive', emoji: '✨', label: '잘하셨어요',
@@ -487,7 +487,7 @@ const TEMPLATES = [
       }
       return null;
     },
-    message(r) { return `이번 달 트러블이 줄어든 거 보이세요? 지난 달 ${r.prev}일에서 이번 달 ${r.cur}일로 -${r.pct}%나 좋아지셨어요 🫧 이 흐름 유지하면 다음 달엔 더 깨끗한 피부를 만나실 거예요`; },
+    message(r) { return `이번 달 트러블이 줄어든 거 보이세요? 지난 달 ${r.prev}일에서 이번 달 ${r.cur}일로 -${r.pct}%나 좋아지셨어요 🫧 이 흐름 유지하면 다음 달엔 더 깨끗한 피부를 만나실 거예요.`; },
   },
   {
     id: 'D4', relatedCards: ['condition'], type: 'positive', emoji: '✨', label: '잘하셨어요',
@@ -501,7 +501,7 @@ const TEMPLATES = [
       if (diff >= 5) return { diff };
       return null;
     },
-    message(r) { return `이번 달 컨디션이 +${r.diff}점이에요! 잘 챙기고 계세요 ✨ 이대로 한 달만 더 유지하면 본인만의 건강 패턴이 만들어질 거예요`; },
+    message(r) { return `이번 달 컨디션이 +${r.diff}점이에요! 잘 챙기고 계세요 ✨ 이대로 한 달만 더 유지하면 본인만의 건강 패턴이 만들어질 거예요.`; },
   },
 
   // E. 행동 제안 (4개)
@@ -518,7 +518,7 @@ const TEMPLATES = [
       }
       return null;
     },
-    message(r) { return `오늘 수분이 ${r.curL}L로 좀 적네요! 오후에 자주 그러시더라고요 💧 지금 한 잔 마시면 컨디션도 살아나고 저녁까지 가뿐할 거예요`; },
+    message(r) { return `오늘 수분이 ${r.curL}L로 좀 적네요! 오후에 자주 그러시더라고요 💧 지금 한 잔 마시면 컨디션도 살아나고 저녁까지 가뿐할 거예요.`; },
     action: { label: '물 기록하기', type: 'log_water' },
   },
   {
@@ -530,7 +530,7 @@ const TEMPLATES = [
       const cups = Math.ceil(waterNeeded / (data.waterSettings?.cupMl || 250));
       return { cafMg: today.totalCafMg, waterMl: waterNeeded, cups };
     },
-    message(r) { return `오늘 카페인 ${r.cafMg}mg 드셨네요! 카페인은 수분을 빼앗아 가서 물 ${r.cups}잔 정도 더 필요해요 ☕ 지금 한 잔 챙기면 오후 컨디션 유지에 도움될 거예요`; },
+    message(r) { return `오늘 카페인 ${r.cafMg}mg 드셨네요! 카페인은 수분을 빼앗아 가서 물 ${r.cups}잔 정도 더 필요해요 ☕ 지금 한 잔 챙기면 오후 컨디션 유지에 도움될 거예요.`; },
     action: { label: '물 기록하기', type: 'log_water' },
   },
   {
@@ -542,7 +542,7 @@ const TEMPLATES = [
       const cups = Math.ceil(waterNeeded / (data.waterSettings?.cupMl || 250));
       return { drinks: today.totalAlcohol, waterMl: waterNeeded, cups };
     },
-    message(r) { return `오늘 술 ${r.drinks}잔 드셨네요! 알코올은 수분을 빼앗아 가서 물 ${r.cups}잔 정도 더 필요해요 🍺 자기 전 물 + 비타민C 챙기면 내일 회복이 빨라질 거예요`; },
+    message(r) { return `오늘 술 ${r.drinks}잔 드셨네요! 알코올은 수분을 빼앗아 가서 물 ${r.cups}잔 정도 더 필요해요 🍺 자기 전 물 + 비타민C 챙기면 내일 회복이 빨라질 거예요.`; },
     action: { label: '물 기록하기', type: 'log_water' },
   },
   {
@@ -554,7 +554,7 @@ const TEMPLATES = [
       if (yesterday && yesterday.sleep > 0 && yesterday.sleep < 6) return { sleepH: yesterday.sleep };
       return null;
     },
-    message(r) { return `오늘은 일찍 자보세요! 어제도 ${r.sleepH}시간만 주무셨고 본인은 7시간 이상 자야 컨디션이 좋아지세요 🌙 지금 자면 내일 컨디션이 확 달라질 거예요`; },
+    message(r) { return `오늘은 일찍 자보세요! 어제도 ${r.sleepH}시간만 주무셨고 본인은 7시간 이상 자야 컨디션이 좋아지세요 🌙 지금 자면 내일 컨디션이 확 달라질 거예요.`; },
   },
 ];
 
@@ -616,7 +616,7 @@ function generateFallback(data) {
       const what = improved.length > 0 ? improved.join(' · ') + ' 챙기신 덕분인 듯해요' : '몸이 회복하고 있는 듯해요';
       return {
         id: 'fb3', type: 'fallback', emoji: '✨', label: '회복',
-        message: `어제보다 컨디션이 +${Math.round(tAvg - yAvg)}점이나 좋아졌어요! ${what} ✨ 본인 몸의 회복력이 좋은 신호니 오늘은 무리하지 마세요`,
+        message: `어제보다 컨디션이 +${Math.round(tAvg - yAvg)}점이나 좋아졌어요! ${what} ✨ 본인 몸의 회복력이 좋은 신호니 오늘은 무리하지 마세요.`,
         score: 0,
       };
     }
