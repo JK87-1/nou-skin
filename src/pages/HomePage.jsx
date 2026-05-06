@@ -75,9 +75,9 @@ function getGreeting(nickname) {
   const h = new Date().getHours();
   const name = nickname ? `, ${nickname}님` : '';
   if (h >= 5 && h < 12) return { main: `좋은 아침이에요${name} ☀`, sub: '오늘은 어떤 기분이에요?' };
-  if (h >= 12 && h < 21) return { main: `오후도 잘 지내고 계세요?${name ? ' ' + nickname + '님' : ''} ☁`, sub: '점심 후 컨디션 어때요?' };
-  if (h >= 21 && h < 24) return { main: `오늘 하루 어떠셨어요?${name ? ' ' + nickname + '님' : ''} 🌙`, sub: '함께 마무리해요 ✨' };
-  return { main: `늦게까지 깨어 있으시네요${name ? ' ' + nickname + '님' : ''} ✨`, sub: '오늘 하루 정리해볼까요?' };
+  if (h >= 12 && h < 21) return { main: `오후도 잘 보내고 있나요?${name ? ' ' + nickname + '님' : ''} ☁`, sub: '점심 후 컨디션 어때요?' };
+  if (h >= 21 && h < 24) return { main: `오늘 하루 어땠어요?${name ? ' ' + nickname + '님' : ''} 🌙`, sub: '함께 마무리해요 ✨' };
+  return { main: `늦게까지 깨어 있네요${name ? ' ' + nickname + '님' : ''} ✨`, sub: '오늘 하루 정리해볼까요?' };
 }
 
 const ENERGY_LABELS = ['매우 낮음', '낮음', '약간 낮음', '조금 부족', '보통', '괜찮음', '좋음', '활발', '높음', '활기참'];
@@ -163,7 +163,7 @@ function generateInsight(check, skinResult, nutrition, weather) {
 }
 
 function generateHeroStatus(check) {
-  if (!check) return { status: '오늘 컨디션을 체크해보세요', sub: '체크하면 AI가 원인을 분석해드려요' };
+  if (!check) return { status: '오늘 컨디션 어때요?', sub: '체크하면 AI가 원인을 분석해줘요' };
   const e = check.energy, s = check.skin, m = check.mood, g = check.gut;
   const avg = (e + s + m + g) / 4;
 
@@ -188,7 +188,7 @@ function generateHeroStatus(check) {
     sub = lowItems.length > 0 ? `${lowItems[0]}만 좀 신경 쓰면 돼요` : '무난한 하루를 보내고 있어요';
   } else {
     status = lowItems.length > 0 ? `지금 ${lowItems.slice(0, 2).join(' · ')} 느껴져요` : '컨디션이 좀 낮아요';
-    sub = '원인을 분석해서 케어 방법을 알려드릴게요';
+    sub = '원인을 분석해서 케어 방법 알려줄게요';
   }
   return { status, sub };
 }
@@ -3092,7 +3092,7 @@ function DrinkModal({ onClose, onSave }) {
           </div>
         )}
 
-        {/* 수분 보충 권장 (카페인/알콜) */}
+        {/* 수분 보충 안내 (카페인/알콜) */}
         {selected && selCount > 0 && tab !== 'noncaffeine' && (() => {
           const DRINK_ML = { americano: 350, latte: 350, cappuccino: 350, espresso: 60, cold_brew: 350, decaf: 350, green_tea: 250, matcha: 250, hojicha: 250, black_tea: 250, oolong: 250, energy_drink: 250, cola: 355, choco_latte: 350, green_tea_latte: 350, chai_latte: 350, beer: 500, makgeolli: 300, highball: 350, wine: 150, cocktail: 200, soju: 50, whiskey: 45 };
           const drinkMl = DRINK_ML[selected] || 250;
@@ -3110,7 +3110,7 @@ function DrinkModal({ onClose, onSave }) {
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 5 }}>
                 <span style={{ fontSize: 12 }}>💧</span>
-                <span style={{ fontSize: 9, fontWeight: 500, color: isAlcohol ? '#8A4A3C' : '#4A6B85' }}>수분 보충 권장{isAlcohol ? ' (꼭!)' : ''}</span>
+                <span style={{ fontSize: 9, fontWeight: 500, color: isAlcohol ? '#8A4A3C' : '#4A6B85' }}>물도 같이 챙기면 좋아요{isAlcohol ? ' 💧' : ''}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 5 }}>
                 <span style={{ fontSize: 16, fontWeight: 500, color: '#2C4A5E' }}>+{compensationMl}</span>
@@ -3982,7 +3982,7 @@ function SupplementModal({ onClose, onUpdate, onCheck }) {
         ) : (
           <div style={{ padding: '30px 0', textAlign: 'center', marginBottom: 20 }}>
             <div style={{ fontSize: 28, marginBottom: 8 }}>💊</div>
-            <div style={{ fontSize: 13, color: 'rgba(0,0,0,0.3)' }}>영양제를 등록하고 매일 체크하세요</div>
+            <div style={{ fontSize: 13, color: 'rgba(0,0,0,0.3)' }}>영양제 등록해두면 매일 체크할 수 있어요</div>
           </div>
         )}
 
