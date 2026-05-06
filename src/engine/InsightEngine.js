@@ -500,6 +500,32 @@ const TEMPLATES = [
     action: { label: '기록하기', type: 'log_water' },
   },
   {
+    id: 'E3', type: 'action', emoji: '☕', label: '제안',
+    check(data) {
+      const today = data.days[0];
+      if (!today || today.totalCafMg === 0) return null;
+      // 카페인 1mg당 약 1.5ml 수분 손실
+      const waterNeeded = Math.round(today.totalCafMg * 1.5);
+      const cups = Math.ceil(waterNeeded / (data.waterSettings?.cupMl || 250));
+      return { cafMg: today.totalCafMg, waterMl: waterNeeded, cups };
+    },
+    message(r) { return `오늘 카페인 ${r.cafMg}mg 드셨네요. 물 ${r.cups}잔(${r.waterMl}ml) 정도 더 챙기면 좋을 것 같아요`; },
+    action: { label: '물 기록하기', type: 'log_water' },
+  },
+  {
+    id: 'E4', type: 'action', emoji: '🍺', label: '제안',
+    check(data) {
+      const today = data.days[0];
+      if (!today || today.totalAlcohol === 0) return null;
+      // 알코올 1잔당 약 250ml 수분 손실
+      const waterNeeded = today.totalAlcohol * 250;
+      const cups = Math.ceil(waterNeeded / (data.waterSettings?.cupMl || 250));
+      return { drinks: today.totalAlcohol, waterMl: waterNeeded, cups };
+    },
+    message(r) { return `오늘 술 ${r.drinks}잔 드셨네요. 물 ${r.cups}잔(${r.waterMl}ml) 정도 더 마시면 내일 컨디션에 도움될 거예요`; },
+    action: { label: '물 기록하기', type: 'log_water' },
+  },
+  {
     id: 'E2', type: 'action', emoji: '🌙', label: '제안',
     check(data) {
       const h = new Date().getHours();
