@@ -824,7 +824,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
                       <div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_todayCond ? _todayCond.toFixed(1) : '0'}</span>
+                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_todayCond ? _todayCond.toFixed(1) : '—'}</span>
                           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>/10</span>
                         </div>
                         <div style={{ fontSize: 10, color: _todayCond ? (_todayCond >= 7 ? '#22C55E' : _todayCond >= 4 ? 'var(--text-muted)' : '#E05050') : 'var(--accent-primary, #89cef5)', marginTop: 4, minHeight: 14 }}>{_condLabel || (_todayCond ? '\u00A0' : '체크하기')}</div>
@@ -871,12 +871,12 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
                       <div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_todaySleep ? (_todaySleep % 1 === 0 ? _todaySleep : _todaySleep.toFixed(1)) : '0'}</span>
+                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_todaySleep ? (_todaySleep % 1 === 0 ? _todaySleep : _todaySleep.toFixed(1)) : '—'}</span>
                           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>시간</span>
                         </div>
                         <div style={{ fontSize: 10, color: _todaySleep ? (_todaySleep >= 7 ? '#22C55E' : _todaySleep >= 5 ? 'var(--text-muted)' : '#E05050') : 'var(--accent-primary, #89cef5)', marginTop: 4, minHeight: 14 }}>{_todaySleep ? (_todaySleep >= 7 ? '충분' : _todaySleep >= 5 ? '보통' : '부족') : '기록하기'}</div>
                       </div>
-                      <div style={{ display: 'flex', gap: 3, height: 44, flexShrink: 0, position: 'relative' }}>
+                      <div style={{ display: 'flex', gap: 3, height: 40, flexShrink: 0, position: 'relative' }}>
                         {_sleep7.map((s, i) => {
                           if (!s.hours) return <div key={i} style={{ width: 6, height: 6, borderRadius: 3, background: 'rgba(0,0,0,0.06)', alignSelf: 'center', marginTop: 19 }} />;
                           const barH = Math.max(8, (s.hours / 10) * 34);
@@ -917,7 +917,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
                       <div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_eaten.toLocaleString()}</span>
+                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_eaten > 0 ? _eaten.toLocaleString() : '—'}</span>
                           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>kcal</span>
                         </div>
                         <div style={{ fontSize: 10, color: _eaten > 0 ? (_eaten > _fullGoal.kcal ? '#E85B5B' : 'var(--text-muted)') : 'var(--accent-primary, #89cef5)', marginTop: 4, minHeight: 14 }}>
@@ -961,7 +961,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
                       <div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{(_waterCups * _cupMl).toLocaleString()}</span>
+                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_waterCups > 0 ? (_waterCups * _cupMl).toLocaleString() : '—'}</span>
                           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>ml</span>
                         </div>
                         <div style={{ fontSize: 10, color: _waterCups > 0 ? (_waterCups >= _waterGoal ? '#22C55E' : 'var(--text-muted)') : 'var(--accent-primary, #89cef5)', marginTop: 4, minHeight: 14 }}>{_waterCups > 0 ? (_waterCups >= _waterGoal ? '목표 달성!' : `${((_waterGoal - _waterCups) * _cupMl).toLocaleString()}ml 남음`) : '기록하기'}</div>
@@ -1013,10 +1013,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                           </>
                         ) : (
                           <>
-                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                              <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>0</span>
-                              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>kg</span>
-                            </div>
+                            <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
                             <div style={{ fontSize: 10, color: 'var(--accent-primary, #89cef5)', marginTop: 4, minHeight: 14 }}>기록하기</div>
                           </>
                         )}
@@ -1062,12 +1059,12 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
                       <div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{(_burnedFromSteps + _burnedFromExercise) > 0 ? (_burnedFromSteps + _burnedFromExercise).toLocaleString() : '0'}</span>
+                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{(_burnedFromSteps + _burnedFromExercise) > 0 ? (_burnedFromSteps + _burnedFromExercise).toLocaleString() : '—'}</span>
                           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>kcal</span>
                         </div>
                         <div style={{ fontSize: 10, color: (_burnedFromSteps + _burnedFromExercise) > 0 ? '#22C55E' : 'var(--accent-primary, #89cef5)', marginTop: 4, minHeight: 14 }}>{_todaySteps > 0 ? `${_todaySteps.toLocaleString()}걸음` : (_burnedFromExercise > 0 ? '\u00A0' : '기록하기')}</div>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 36, flexShrink: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 40, flexShrink: 0 }}>
                         {_stepBars.map((s, i) => (
                           <div key={i} style={{
                             width: 6, borderRadius: 3,
@@ -1377,7 +1374,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                       ) : (
                         <>
                           <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.5, fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_cs2.label}</div>
-                          <div style={{ fontSize: 11, color: '#6B8499', marginTop: 4 }}>{_cs2.subtitle}</div>
+                          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>{_cs2.subtitle}</div>
                         </>
                       )}
                     </div>
