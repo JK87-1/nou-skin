@@ -101,7 +101,7 @@ export default function InsightCard() {
 
         {/* 메시지 + 하트 (하트가 마지막 줄 높이에 위치) */}
         <div style={{ display: 'flex', gap: 8 }}>
-          <div style={{ flex: 1, fontSize: 14, fontWeight: 500, color: 'rgba(0,0,0,0.7)', lineHeight: 1.7 }}>
+          <div style={{ flex: 1, fontSize: 14, fontWeight: 500, color: 'rgba(0,0,0,0.6)', lineHeight: 1.7 }}>
             {main.message}
             {main.action && (
               <button onClick={handleAction} style={{
