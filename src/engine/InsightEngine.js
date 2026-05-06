@@ -8,7 +8,10 @@ const CACHE_KEY = 'lua_insight_cache';
 const FEEDBACK_KEY = 'lua_insight_feedback';
 const MIN_USER_DAYS = 7;
 const MAX_PER_DAY = 3;
-const REPEAT_COOLDOWN_DAYS = 7;
+const ACTION_COOLDOWN_DAYS = 1; // 행동 실행한 인사이트만 1일 쿨다운
+
+// 세션 내 이미 보여준 인사이트 추적 (새로고침 시 다른 것 우선)
+let sessionShownIds = [];
 
 // ===== 데이터 수집 =====
 function getDateKey(d) {
@@ -556,26 +559,21 @@ function getShownHistory() {
   try { return JSON.parse(localStorage.getItem('lua_insight_shown') || '{}'); } catch { return {}; }
 }
 
+// 행동 실행된 인사이트 마킹 (쿨다운 적용)
 export function markShown(templateId) {
   const h = getShownHistory();
   h[templateId] = new Date().toISOString();
   localStorage.setItem('lua_insight_shown', JSON.stringify(h));
+  sessionShownIds.push(templateId);
 }
 
-function wasRecentlyShown(templateId) {
+// 행동 실행한 인사이트만 쿨다운 (1일)
+function wasActedOn(templateId) {
   const h = getShownHistory();
-  const lastShown = h[templateId];
-  if (!lastShown) return false;
-  const diff = (new Date() - new Date(lastShown)) / (1000 * 60 * 60 * 24);
-  return diff < REPEAT_COOLDOWN_DAYS;
-}
-
-// 오늘 이미 표시된 인사이트인지 (같은 날 반복 방지)
-function wasShownToday(templateId) {
-  const h = getShownHistory();
-  const lastShown = h[templateId];
-  if (!lastShown) return false;
-  return lastShown.startsWith(getDateKey(new Date()));
+  const lastActed = h[templateId];
+  if (!lastActed) return false;
+  const diff = (new Date() - new Date(lastActed)) / (1000 * 60 * 60 * 24);
+  return diff < ACTION_COOLDOWN_DAYS;
 }
 
 // ===== 메인 API =====
@@ -596,7 +594,7 @@ export function generateDailyInsights() {
   // 모든 템플릿 검사
   const candidates = [];
   for (const t of TEMPLATES) {
-    if (wasRecentlyShown(t.id)) continue;
+    if (wasActedOn(t.id)) continue; // 행동 실행한 것만 쿨다운
     const result = t.check(data);
     if (result) {
       candidates.push({
@@ -611,14 +609,14 @@ export function generateDailyInsights() {
     }
   }
 
-  // 오늘 이미 표시 후 상호작용한 인사이트는 점수 대폭 하락
+  // 이번 세션에서 이미 본 인사이트는 점수 하락 → 새로고침 시 다른 것 우선
   candidates.forEach(c => {
-    if (wasShownToday(c.id)) c.score *= 0.1;
+    if (sessionShownIds.includes(c.id)) c.score *= 0.2;
   });
 
-  // 매 진입마다 다른 인사이트 → 점수에 랜덤 요소 추가
+  // 점수에 랜덤 요소 추가
   candidates.forEach(c => {
-    c.score += Math.random() * 2;
+    c.score += Math.random() * 3;
   });
 
   // 피드백 기반 조정
@@ -671,10 +669,12 @@ export function generateDailyInsights() {
     selected.push({ id: 'fallback', type: 'action', emoji: '✨', label: '', message: fallback, score: 0 });
   }
 
-  // 메인 인사이트 마킹
+  // 메인 인사이트 세션 추적 (쿨다운 X, 새로고침 시 다른 것 우선)
   if (selected.length > 0) {
     selected[0].isMain = true;
-    markShown(selected[0].id);
+    selected.forEach(s => {
+      if (!sessionShownIds.includes(s.id)) sessionShownIds.push(s.id);
+    });
   }
 
   return selected;
