@@ -4073,7 +4073,12 @@ function CaffeineEffectCheckModal({ drink, onClose, onSave }) {
   );
 }
 
-const TIMING_LABELS = { morning: '아침', lunch: '점심', evening: '저녁' };
+const SUPP_TIMING_LABELS = {
+  morning: { emoji: '🌅', label: '아침', color: '#B8865C' },
+  lunch: { emoji: '🌞', label: '점심', color: '#C8A040' },
+  evening: { emoji: '🌆', label: '저녁', color: '#8A7060' },
+  bedtime: { emoji: '🌙', label: '취침 전', color: '#7B5E9E' },
+};
 
 function SupplementModal({ onClose, onUpdate, onCheck }) {
   const swipe = useSwipeDown(onClose);
@@ -4086,6 +4091,7 @@ function SupplementModal({ onClose, onUpdate, onCheck }) {
   const handleToggle = (id) => {
     const updated = toggleSupplementCheck(id);
     setChecks(updated);
+    hapticLight();
     onCheck?.();
   };
 
@@ -4103,48 +4109,68 @@ function SupplementModal({ onClose, onUpdate, onCheck }) {
   };
 
   const doneCount = items.filter(s => checks[s.id]).length;
-  const grouped = { morning: items.filter(s => s.timing === 'morning'), lunch: items.filter(s => s.timing === 'lunch'), evening: items.filter(s => s.timing === 'evening') };
+  const grouped = {};
+  ['morning', 'lunch', 'evening', 'bedtime'].forEach(t => { grouped[t] = items.filter(s => s.timing === t); });
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
       <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0', padding: '24px 24px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
-        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24, textAlign: 'center' }}>영양제</div>
+        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8, textAlign: 'center' }}>영양제</div>
+
+        {/* 진행 상황 */}
+        {items.length > 0 && (
+          <div style={{ textAlign: 'center', marginBottom: 20 }}>
+            <span style={{ fontSize: 13, color: doneCount === items.length ? '#22C55E' : 'var(--text-muted)' }}>
+              오늘 {doneCount}/{items.length} 완료
+            </span>
+          </div>
+        )}
 
         {/* 시간대별 체크리스트 */}
         {items.length > 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 20 }}>
-            {['morning', 'lunch', 'evening'].map(timing => {
+            {['morning', 'lunch', 'evening', 'bedtime'].map(timing => {
               const group = grouped[timing];
               if (group.length === 0) return null;
+              const tl = SUPP_TIMING_LABELS[timing];
+              const groupDone = group.filter(s => checks[s.id]).length;
               return (
                 <div key={timing}>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(0,0,0,0.3)', marginBottom: 8 }}>{TIMING_LABELS[timing]}</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                    <span style={{ fontSize: 12 }}>{tl.emoji}</span>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: tl.color }}>{tl.label}</span>
+                    <span style={{ fontSize: 10, color: 'rgba(0,0,0,0.25)' }}>— {groupDone}/{group.length}</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {group.map(item => {
                       const done = !!checks[item.id];
+                      const mealLabel = item.meal === 'before' ? '식전' : item.meal === 'with' ? '식사와 함께' : item.meal === 'any' ? '' : '식후';
                       return (
                         <div key={item.id} style={{
                           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                          padding: '12px 14px', borderRadius: 14,
-                          background: done ? 'rgba(34,197,94,0.06)' : 'rgba(0,0,0,0.02)',
-                          border: done ? '1.5px solid rgba(34,197,94,0.15)' : '1.5px solid rgba(0,0,0,0.05)',
+                          padding: '10px 12px', borderRadius: 12,
+                          background: done ? 'rgba(94,157,138,0.08)' : 'rgba(0,0,0,0.02)',
+                          border: done ? '1px solid rgba(94,157,138,0.15)' : '1px solid rgba(0,0,0,0.04)',
                           transition: 'all 0.15s ease',
                         }}>
-                          <div onClick={() => handleToggle(item.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, cursor: 'pointer' }}>
+                          <div onClick={() => handleToggle(item.id)} style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, cursor: 'pointer' }}>
                             <div style={{
-                              width: 22, height: 22, borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              background: done ? '#22C55E' : 'rgba(0,0,0,0.06)', transition: 'all 0.15s ease',
+                              width: 20, height: 20, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              background: done ? '#5E9D8A' : 'rgba(0,0,0,0.06)', transition: 'all 0.15s ease',
                             }}>
-                              {done && <span style={{ color: '#fff', fontSize: 13, fontWeight: 700 }}>✓</span>}
+                              {done && <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 7" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                             </div>
                             <span style={{
-                              fontSize: 14, fontWeight: 500,
+                              fontSize: 13, fontWeight: 500,
                               color: done ? 'rgba(0,0,0,0.35)' : 'var(--text-primary)',
                               textDecoration: done ? 'line-through' : 'none',
                             }}>{item.name}</span>
                           </div>
-                          <div onClick={() => handleDelete(item.id)} style={{ fontSize: 14, color: 'rgba(0,0,0,0.15)', cursor: 'pointer', padding: '4px 8px' }}>✕</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            {mealLabel && <span style={{ fontSize: 9, color: 'rgba(0,0,0,0.25)' }}>{mealLabel}</span>}
+                            <div onClick={() => handleDelete(item.id)} style={{ fontSize: 12, color: 'rgba(0,0,0,0.12)', cursor: 'pointer', padding: '2px 4px' }}>✕</div>
+                          </div>
                         </div>
                       );
                     })}
@@ -4164,33 +4190,36 @@ function SupplementModal({ onClose, onUpdate, onCheck }) {
         {showAdd ? (
           <div style={{ padding: '16px', borderRadius: 16, background: 'rgba(0,0,0,0.02)', border: '1.5px solid rgba(0,0,0,0.05)', marginBottom: 20 }}>
             <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="영양제 이름"
-              style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.08)', background: '#fff', fontSize: 14, color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', marginBottom: 12 }} />
+              style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.08)', background: '#fff', fontSize: 14, color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', marginBottom: 12, boxSizing: 'border-box' }} />
             <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
-              {['morning', 'lunch', 'evening'].map(t => (
-                <div key={t} onClick={() => setNewTiming(t)} style={{
-                  flex: 1, padding: '8px 0', borderRadius: 10, textAlign: 'center', cursor: 'pointer',
-                  background: newTiming === t ? 'rgba(106,175,212,0.12)' : 'rgba(0,0,0,0.03)',
-                  border: newTiming === t ? '1.5px solid rgba(106,175,212,0.4)' : '1.5px solid rgba(0,0,0,0.06)',
-                  fontSize: 12, fontWeight: newTiming === t ? 600 : 500, color: newTiming === t ? '#6AAFD4' : 'rgba(0,0,0,0.4)',
-                }}>{TIMING_LABELS[t]}</div>
-              ))}
+              {['morning', 'lunch', 'evening', 'bedtime'].map(t => {
+                const tl = SUPP_TIMING_LABELS[t];
+                return (
+                  <div key={t} onClick={() => setNewTiming(t)} style={{
+                    flex: 1, padding: '8px 0', borderRadius: 10, textAlign: 'center', cursor: 'pointer',
+                    background: newTiming === t ? 'rgba(184,134,92,0.1)' : 'rgba(0,0,0,0.03)',
+                    border: newTiming === t ? '1.5px solid rgba(184,134,92,0.4)' : '1.5px solid rgba(0,0,0,0.06)',
+                    fontSize: 11, fontWeight: newTiming === t ? 600 : 500, color: newTiming === t ? '#B8865C' : 'rgba(0,0,0,0.4)',
+                  }}>{tl.label}</div>
+                );
+              })}
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={() => setShowAdd(false)} style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: 'none', background: 'rgba(0,0,0,0.04)', color: 'rgba(0,0,0,0.4)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>취소</button>
-              <button onClick={handleAdd} style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: 'none', background: '#6AAFD4', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>추가</button>
+              <button onClick={handleAdd} style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: 'none', background: '#B8865C', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>추가</button>
             </div>
           </div>
         ) : (
           <div onClick={() => setShowAdd(true)} style={{
             padding: '12px 0', borderRadius: 14, textAlign: 'center', cursor: 'pointer', marginBottom: 20,
-            border: '1.5px dashed rgba(0,0,0,0.1)', color: 'rgba(0,0,0,0.3)', fontSize: 13, fontWeight: 500,
-          }}>+ 영양제 추가</div>
+            border: '1.5px dashed rgba(184,134,92,0.2)', color: 'rgba(184,134,92,0.6)', fontSize: 13, fontWeight: 500,
+          }}>+ 일회성 영양제 추가</div>
         )}
 
         {/* 닫기 */}
         <button onClick={() => { onUpdate(); }} style={{
           width: '100%', padding: '14px 0', borderRadius: 'var(--btn-radius)',
-          border: 'none', background: 'var(--accent-primary)', color: '#fff',
+          border: 'none', background: '#B8865C', color: '#fff',
           fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
         }}>완료</button>
       </div>

@@ -1280,7 +1280,6 @@ function GoalSettingsPage({ onClose, onTabChange }) {
     {showSupplementOnboarding && <SupplementOnboardingPage
       onClose={() => setShowSupplementOnboarding(false)}
       onComplete={() => setShowSupplementOnboarding(false)}
-      onNavigateRoutine={() => { setShowSupplementOnboarding(false); onClose(); onTabChange?.('routine'); }}
     />}
     </>
   );
