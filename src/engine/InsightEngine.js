@@ -6,7 +6,7 @@
 
 const CACHE_KEY = 'lua_insight_cache';
 const FEEDBACK_KEY = 'lua_insight_feedback';
-const MIN_USER_DAYS = 7;
+const MIN_USER_DAYS = 1;
 const MAX_PER_DAY = 3;
 const ACTION_COOLDOWN_DAYS = 1; // 행동 실행한 인사이트만 1일 쿨다운
 
@@ -609,6 +609,12 @@ export function generateDailyInsights() {
     }
   }
 
+  // 세션 마킹이 전체 후보 이상이면 리셋 (순환)
+  const markedCount = candidates.filter(c => sessionShownIds.includes(c.id)).length;
+  if (markedCount >= candidates.length && candidates.length > 0) {
+    sessionShownIds = [];
+  }
+
   // 이번 세션에서 이미 본 인사이트는 점수 하락 → 새로고침 시 다른 것 우선
   candidates.forEach(c => {
     if (sessionShownIds.includes(c.id)) c.score *= 0.2;
@@ -705,6 +711,15 @@ export function getOrGenerateInsights() {
 }
 
 export function refreshInsights() {
+  // 현재 캐시된 인사이트를 세션 마킹 → 재생성 시 다른 것 우선
+  try {
+    const cache = JSON.parse(localStorage.getItem(CACHE_KEY));
+    if (cache?.insights) {
+      cache.insights.forEach(ins => {
+        if (ins.id && !sessionShownIds.includes(ins.id)) sessionShownIds.push(ins.id);
+      });
+    }
+  } catch { /* ignore */ }
   localStorage.removeItem(CACHE_KEY);
   return getOrGenerateInsights();
 }
