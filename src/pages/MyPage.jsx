@@ -504,15 +504,6 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
         );
       })()}
 
-      {/* Food Detail Modal */}
-      {selectedFood && (
-        <HistoryFoodDetailModal food={selectedFood} onClose={() => setSelectedFood(null)} onDelete={() => {
-          deleteFoodRecord(selectedFood._date, selectedFood.id);
-          setSelectedFood(null);
-          setFoodRefreshKey(k => k + 1);
-        }} />
-      )}
-
       {/* ===== 피부스캔 앨범 ===== */}
       {(albumCategory === 'skin_scan') && (() => {
         const sorted = [...records].reverse();
@@ -1035,6 +1026,15 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
       })()}
 
       </div>{/* end tab-content-panel */}
+
+      {/* Food Detail Modal — outside tab-content-panel to avoid backdrop-filter stacking context */}
+      {selectedFood && (
+        <HistoryFoodDetailModal food={selectedFood} onClose={() => setSelectedFood(null)} onDelete={() => {
+          deleteFoodRecord(selectedFood._date, selectedFood.id);
+          setSelectedFood(null);
+          setFoodRefreshKey(k => k + 1);
+        }} />
+      )}
 
       {/* Settings Drawer */}
       <SettingsPage open={showSettingsPage} onClose={() => setShowSettingsPage(false)} onCategoriesChanged={refreshCategories} onTabChange={onTabChange} />
