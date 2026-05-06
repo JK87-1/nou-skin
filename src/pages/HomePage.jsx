@@ -1995,7 +1995,7 @@ function ConditionCheckModal({ selections, sliderPcts, onSelect, onSliderChange,
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
-        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24, textAlign: 'center' }}>컨디션 체크</div>
+        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24, textAlign: 'center' }}>컨디션</div>
 
         {sliders.map((s, si) => {
           const val = selections[s.key];
@@ -2110,7 +2110,7 @@ function AddWeightModal({ onSave, onClose, latest }) {
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
-        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24, textAlign: 'center' }}>오늘 몸무게</div>
+        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24, textAlign: 'center' }}>체중</div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, marginBottom: 8 }}>
           <button onClick={() => adjust(-1)} style={btnStyle}>−1</button>
           <button onClick={() => adjust(-0.1)} style={{ ...btnStyle, width: 40, height: 40, fontSize: 18 }}>−</button>
@@ -2215,7 +2215,7 @@ function AddActivityModal({ onSave, onClose }) {
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
-        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 16, textAlign: 'center' }}>활동 기록</div>
+        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24, textAlign: 'center' }}>활동</div>
 
         {/* Tabs */}
         <div style={{ display: 'flex', gap: 6, background: 'var(--bg-input, #F2F3F5)', borderRadius: 12, padding: 4, marginBottom: 20 }}>
@@ -2379,7 +2379,7 @@ function WaterIntakeModal({ onClose, onUpdate }) {
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
-        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6, textAlign: 'center' }}>수분 섭취</div>
+        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24, textAlign: 'center' }}>수분</div>
         <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 24 }}>1잔 = {cupMl}ml</div>
 
         {/* Water bottle visualization */}
@@ -2740,10 +2740,7 @@ function SleepInputModal({ onClose, onUpdate, onDetail }) {
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 6 }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><defs><linearGradient id="moonModal" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#C8D0F0"/><stop offset="100%" stopColor="#5B6AAF"/></linearGradient></defs><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="url(#moonModal)" opacity="0.7"/></svg>
-          <span style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>수면 기록</span>
-        </div>
+        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6, textAlign: 'center' }}>수면</div>
         <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 24 }}>
           {sleepQuality ? `${sleepHours}시간 · ${sleepQuality}` : `${sleepHours}시간`}
         </div>
@@ -2918,7 +2915,7 @@ function BloodSugarModal({ onClose, onUpdate }) {
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
       <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0', padding: '24px 24px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
-        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24, textAlign: 'center' }}>🩸 혈당 기록</div>
+        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24, textAlign: 'center' }}>혈당</div>
 
         {/* 타이밍 */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
@@ -3148,7 +3145,7 @@ function DrinkModal({ onClose, onSave }) {
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
       <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '18px 18px 36px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.1)', margin: '0 auto 16px' }} />
-        <div style={{ fontSize: 16, fontWeight: 600, color: '#2C4A5E', marginBottom: 14, textAlign: 'center' }}>음료 기록</div>
+        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24, textAlign: 'center' }}>음료</div>
 
         {/* 카페인/논카페인/알콜 토글 */}
         <div style={{ display: 'flex', gap: 3, background: '#F4F4F4', borderRadius: 10, padding: 3, marginBottom: 14 }}>
@@ -4112,10 +4109,7 @@ function SupplementModal({ onClose, onUpdate, onCheck }) {
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
       <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0', padding: '24px 24px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>💊 영양제</div>
-          {items.length > 0 && <span style={{ fontSize: 13, color: doneCount === items.length ? '#22C55E' : 'rgba(0,0,0,0.3)', fontWeight: 600 }}>{doneCount}/{items.length}</span>}
-        </div>
+        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24, textAlign: 'center' }}>영양제</div>
 
         {/* 시간대별 체크리스트 */}
         {items.length > 0 ? (
@@ -4301,7 +4295,7 @@ function SkinCheckModal({ onClose, onUpdate }) {
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
       <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '20px 20px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.1)', margin: '0 auto 20px' }} />
-        <div style={{ fontSize: 17, fontWeight: 600, color: '#2C4A5E', marginBottom: 20, textAlign: 'center' }}>피부 체크</div>
+        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24, textAlign: 'center' }}>피부</div>
 
         {/* 1. 전체 컨디션 */}
         <div style={{ fontSize: 12, fontWeight: 500, color: '#4A6B85', marginBottom: 10 }}>전체 컨디션</div>
@@ -4474,8 +4468,7 @@ function CycleModal({ onClose, onUpdate }) {
           /* ===== 온보딩 ===== */
           <div>
             <div style={{ textAlign: 'center', marginBottom: 24 }}>
-              <div style={{ fontSize: 32, marginBottom: 8 }}>🌸</div>
-              <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>생리주기 설정</div>
+              <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>주기</div>
               <div style={{ fontSize: 13, color: 'rgba(0,0,0,0.4)' }}>30초면 끝나요</div>
             </div>
 
@@ -4524,7 +4517,7 @@ function CycleModal({ onClose, onUpdate }) {
           /* ===== 주기 상세 ===== */
           <div>
             <div style={{ textAlign: 'center', marginBottom: 20 }}>
-              <div style={{ fontSize: 28, marginBottom: 4 }}>🌸</div>
+              <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>주기</div>
               <div style={{ fontSize: 28, fontWeight: 500, color: '#2C4A5E', fontFamily: 'var(--font-display)', letterSpacing: -1 }}>{cycleState.label}</div>
               <div style={{ fontSize: 13, color: '#6B8499', marginTop: 4 }}>{cycleState.subtitle}</div>
             </div>

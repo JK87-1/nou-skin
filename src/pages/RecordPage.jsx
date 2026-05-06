@@ -2583,13 +2583,13 @@ export function AddFoodModal({ onAdd, onClose, initialMeal, onDetail }) {
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
 
         {/* Title + back button */}
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 20 }}>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
           {mode && (
-            <div onClick={() => { setMode(null); setAiResult(null); setPreview(null); setAnalyzing(false); }} style={{ cursor: 'pointer', marginRight: 10, color: 'var(--text-muted)', fontSize: 18 }}>
+            <div onClick={() => { setMode(null); setAiResult(null); setPreview(null); setAnalyzing(false); }} style={{ position: 'absolute', left: 0, cursor: 'pointer', color: 'var(--text-muted)', fontSize: 18 }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </div>
           )}
-          <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>식사 기록</div>
+          <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center' }}>식사</div>
         </div>
 
         {/* Meal selector */}
