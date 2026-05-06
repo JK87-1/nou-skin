@@ -110,7 +110,7 @@ export default function InsightCard() {
         {/* 하단: 새로고침 + 하트 */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginTop: 4, gap: 4 }}>
           <div onClick={handleRefresh} style={{ cursor: 'pointer', padding: '2px 4px', WebkitTapHighlightColor: 'transparent' }}>
-            <span style={{ fontSize: 18, color: 'rgba(0,0,0,0.12)' }}>↻</span>
+            <span style={{ fontSize: 20, color: 'rgba(0,0,0,0.12)' }}>↻</span>
           </div>
           <div onClick={handleLike} style={{
             cursor: 'pointer', padding: '2px 4px',
