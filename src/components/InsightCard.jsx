@@ -2,15 +2,6 @@ import { useState, useEffect } from 'react';
 import { getOrGenerateInsights, refreshInsights, markShown, getGreetingByTime, toggleLike, getLikes } from '../engine/InsightEngine';
 import { hapticLight } from '../utils/haptic';
 
-const cardStyle = {
-  background: 'rgba(255,255,255,0.2)',
-  borderRadius: 30,
-  backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-  border: '1px solid rgba(255,255,255,0.3)',
-  boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
-  padding: 20,
-};
-
 export default function InsightCard() {
   const [insights, setInsights] = useState([]);
   const [likes, setLikes] = useState(getLikes);
@@ -68,25 +59,19 @@ export default function InsightCard() {
 
   return (
     <div style={{ marginBottom: 10, opacity: refreshing ? 0.4 : 1, transition: 'opacity 0.15s' }}>
-      <div style={cardStyle}>
+      {/* 카드 자체가 말풍선 */}
+      <div style={{
+        background: 'rgba(255,255,255,0.45)',
+        backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+        borderRadius: '24px 24px 24px 6px',
+        border: '1px solid rgba(255,255,255,0.4)',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.5)',
+        padding: '18px 20px',
+      }}>
 
-        {/* 상단: 새로고침 */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
-          <div onClick={handleRefresh} style={{ cursor: 'pointer', padding: 4, WebkitTapHighlightColor: 'transparent' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b1b8ba" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M23 4v6h-6" /><path d="M1 20v-6h6" />
-              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-            </svg>
-          </div>
-        </div>
-
-        {/* 말풍선 1개 (lua 아이콘 포함) */}
-        <div style={{
-          background: 'rgba(255,255,255,0.5)', borderRadius: 20,
-          padding: '16px 18px',
-        }}>
-          {/* lua 아이콘 + 이름 + 인사 */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+        {/* lua 아이콘 + 이름 + 인사 + 새로고침 */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{
               width: 28, height: 28, borderRadius: '50%',
               background: 'linear-gradient(135deg, #B8865C, #D4B888, #E5D5B5)',
@@ -106,15 +91,21 @@ export default function InsightCard() {
               <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 6 }}>{greeting.discovery}</span>
             </div>
           </div>
-
-          {/* 메시지 본문 */}
-          <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.7 }}>
-            {main.message}
+          <div onClick={handleRefresh} style={{ cursor: 'pointer', padding: 4, WebkitTapHighlightColor: 'transparent' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b1b8ba" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M23 4v6h-6" /><path d="M1 20v-6h6" />
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+            </svg>
           </div>
         </div>
 
+        {/* 메시지 본문 */}
+        <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.7 }}>
+          {main.message}
+        </div>
+
         {/* 하단: 행동 + 하트 */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 14 }}>
           <div>
             {main.action && (
               <button onClick={handleAction} style={{
