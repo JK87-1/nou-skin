@@ -119,7 +119,7 @@ export default function InsightCard() {
             transform: isLiked ? 'scale(1.1)' : 'scale(1)',
           }}>
             <span style={{
-              fontSize: 18,
+              fontSize: 20,
               color: isLiked ? '#C97C5E' : 'rgba(0,0,0,0.12)',
               transition: 'color 0.15s',
             }}>
