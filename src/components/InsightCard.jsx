@@ -91,34 +91,32 @@ export default function InsightCard() {
               <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 6 }}>{new Date().getHours()}:{String(new Date().getMinutes()).padStart(2, '0')} 기준</span>
             </div>
           </div>
-          <div onClick={handleRefresh} style={{ cursor: 'pointer', padding: 4, WebkitTapHighlightColor: 'transparent' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b1b8ba" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M23 4v6h-6" /><path d="M1 20v-6h6" />
-              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-            </svg>
-          </div>
         </div>
 
-        {/* 메시지 + 하트 (하트가 마지막 줄 높이에 위치) */}
-        <div style={{ display: 'flex', gap: 8 }}>
-          <div style={{ flex: 1, fontSize: 14, fontWeight: 500, color: 'rgba(0,0,0,0.6)', lineHeight: 1.7 }}>
-            {main.message}
-            {main.action && (
-              <button onClick={handleAction} style={{
-                display: 'inline-block', background: 'rgba(0,0,0,0.04)', border: 'none', borderRadius: 10,
-                padding: '5px 12px', fontSize: 11, color: 'var(--text-primary)', fontWeight: 500,
-                cursor: 'pointer', fontFamily: 'inherit', marginLeft: 4, verticalAlign: 'middle',
-              }}>
-                {main.action.label}
-              </button>
-            )}
+        {/* 메시지 */}
+        <div style={{ fontSize: 14, fontWeight: 500, color: 'rgba(0,0,0,0.6)', lineHeight: 1.7 }}>
+          {main.message}
+          {main.action && (
+            <button onClick={handleAction} style={{
+              display: 'inline-block', background: 'rgba(0,0,0,0.04)', border: 'none', borderRadius: 10,
+              padding: '5px 12px', fontSize: 11, color: 'var(--text-primary)', fontWeight: 500,
+              cursor: 'pointer', fontFamily: 'inherit', marginLeft: 4, verticalAlign: 'middle',
+            }}>
+              {main.action.label}
+            </button>
+          )}
+        </div>
+
+        {/* 하단: 새로고침 + 하트 */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginTop: 4, gap: 4 }}>
+          <div onClick={handleRefresh} style={{ cursor: 'pointer', padding: '2px 4px', WebkitTapHighlightColor: 'transparent' }}>
+            <span style={{ fontSize: 18, color: 'rgba(0,0,0,0.12)' }}>↻</span>
           </div>
           <div onClick={handleLike} style={{
             cursor: 'pointer', padding: '2px 4px',
             WebkitTapHighlightColor: 'transparent',
             transition: 'transform 0.15s',
             transform: isLiked ? 'scale(1.1)' : 'scale(1)',
-            alignSelf: 'flex-end', flexShrink: 0,
           }}>
             <span style={{
               fontSize: 18,
