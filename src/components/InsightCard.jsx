@@ -9,6 +9,15 @@ const TYPE_COLORS = {
   action: '#4A6B85',
 };
 
+const cardStyle = {
+  background: 'rgba(255,255,255,0.2)',
+  borderRadius: 30,
+  backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+  border: '1px solid rgba(255,255,255,0.3)',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+  padding: 20,
+};
+
 export default function InsightCard() {
   const [insights, setInsights] = useState([]);
   const [expanded, setExpanded] = useState(false);
@@ -17,7 +26,6 @@ export default function InsightCard() {
     setInsights(getOrGenerateInsights());
   }, []);
 
-  // 데이터 변경 시 갱신
   useEffect(() => {
     const handler = () => {
       const fresh = refreshInsights();
@@ -37,43 +45,34 @@ export default function InsightCard() {
   const additional = insights.slice(1);
   const color = TYPE_COLORS[main.type] || '#4A6B85';
 
-  const now = new Date();
-  const timeStr = `오늘 ${now.getHours() < 12 ? '오전' : '오후'} ${now.getHours() % 12 || 12}:${String(now.getMinutes()).padStart(2, '0')}`;
-
   return (
-    <div style={{ marginBottom: 14 }}>
+    <div style={{ marginBottom: 10 }}>
       {/* 메인 인사이트 */}
       <div
         onClick={() => additional.length > 0 && setExpanded(!expanded)}
-        style={{
-          background: 'linear-gradient(180deg, #E8F1F7 0%, #F4F8FB 100%)',
-          borderRadius: 16, padding: 16,
-          boxShadow: '0 2px 8px rgba(74, 107, 133, 0.06)',
-          cursor: additional.length > 0 ? 'pointer' : 'default',
-        }}
+        style={{ ...cardStyle, cursor: additional.length > 0 ? 'pointer' : 'default' }}
       >
-        {/* 상단 */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ fontSize: 14 }}>{main.emoji}</span>
-            {main.label && (
-              <span style={{ fontSize: 10, fontWeight: 500, color }}>{main.label}</span>
-            )}
-          </div>
-          <span style={{ fontSize: 9, color: '#8BA6BD' }}>{timeStr}</span>
+        {/* 상단: 타입 라벨 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+          <span style={{ fontSize: 14 }}>{main.emoji}</span>
+          {main.label && (
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>{main.label}</span>
+          )}
         </div>
 
         {/* 본문 */}
-        <div style={{ fontSize: 14, color: '#2C4A5E', lineHeight: 1.5 }}>{main.message}</div>
+        <div style={{ fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.6, fontWeight: 400 }}>
+          {main.message}
+        </div>
 
         {/* 행동 버튼 */}
         {main.action && (
-          <div style={{ marginTop: 10 }}>
+          <div style={{ marginTop: 12 }}>
             <button
               onClick={(e) => { e.stopPropagation(); handleAction(main.action); }}
               style={{
-                background: '#fff', border: '0.5px solid #4A6B85', borderRadius: 8,
-                padding: '6px 10px', fontSize: 10, color: '#4A6B85', fontWeight: 500,
+                background: 'rgba(0,0,0,0.04)', border: 'none', borderRadius: 10,
+                padding: '8px 14px', fontSize: 11, color: 'var(--text-primary)', fontWeight: 500,
                 cursor: 'pointer', fontFamily: 'inherit',
               }}
             >
@@ -82,40 +81,37 @@ export default function InsightCard() {
           </div>
         )}
 
-        {/* 더보기 힌트 */}
+        {/* 더보기 */}
         {additional.length > 0 && (
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            marginTop: 10, gap: 4,
+            marginTop: 12, gap: 4,
           }}>
-            <span style={{ fontSize: 9, color: '#8BA6BD' }}>
+            <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>
               {expanded ? '접기' : `+${additional.length}개 더 보기`}
             </span>
-            <span style={{ fontSize: 8, color: '#8BA6BD', transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▼</span>
+            <span style={{ fontSize: 8, color: 'var(--text-muted)', transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▼</span>
           </div>
         )}
       </div>
 
-      {/* 추가 인사이트 (확장) */}
+      {/* 추가 인사이트 */}
       {expanded && additional.map((ins, i) => {
         const c = TYPE_COLORS[ins.type] || '#4A6B85';
         return (
-          <div key={ins.id || i} style={{
-            background: '#fff', borderRadius: 12, padding: '12px 16px',
-            marginTop: 6, border: '0.5px solid rgba(0,0,0,0.04)',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
+          <div key={ins.id || i} style={{ ...cardStyle, marginTop: 8, padding: '16px 20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
               <span style={{ fontSize: 12 }}>{ins.emoji}</span>
-              {ins.label && <span style={{ fontSize: 9, fontWeight: 500, color: c }}>{ins.label}</span>}
+              {ins.label && <span style={{ fontSize: 11, fontWeight: 600, color: '#b1b8ba' }}>{ins.label}</span>}
             </div>
-            <div style={{ fontSize: 12, color: '#2C4A5E', lineHeight: 1.5 }}>{ins.message}</div>
+            <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.5 }}>{ins.message}</div>
             {ins.action && (
               <button
                 onClick={() => handleAction(ins.action)}
                 style={{
-                  background: 'transparent', border: '0.5px solid #4A6B85', borderRadius: 6,
-                  padding: '4px 8px', fontSize: 9, color: '#4A6B85', fontWeight: 500,
-                  cursor: 'pointer', fontFamily: 'inherit', marginTop: 6,
+                  background: 'rgba(0,0,0,0.04)', border: 'none', borderRadius: 8,
+                  padding: '6px 12px', fontSize: 10, color: 'var(--text-primary)', fontWeight: 500,
+                  cursor: 'pointer', fontFamily: 'inherit', marginTop: 8,
                 }}
               >
                 {ins.action.label}
@@ -130,7 +126,6 @@ export default function InsightCard() {
 
 function handleAction(action) {
   if (action.type === 'log_water') {
-    // 물 1잔 추가
     try {
       const todayKey = new Date().toISOString().slice(0, 10);
       const all = JSON.parse(localStorage.getItem('lua_record_v2') || '{}');
