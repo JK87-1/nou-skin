@@ -88,7 +88,7 @@ export default function InsightCard() {
             </div>
             <div>
               <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>lua</span>
-              <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 6 }}>{greeting.discovery}</span>
+              <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 6 }}>{new Date().getHours()}:{String(new Date().getMinutes()).padStart(2, '0')} 기준</span>
             </div>
           </div>
           <div onClick={handleRefresh} style={{ cursor: 'pointer', padding: 4, WebkitTapHighlightColor: 'transparent' }}>
