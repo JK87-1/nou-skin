@@ -72,8 +72,8 @@ export default function InsightCard() {
         {/* lua 아이콘 + 이름 + 인사 + 새로고침 */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ position: 'relative', flexShrink: 0, width: 36, height: 36 }}>
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 2px rgba(220,160,170,0.35))' }}>
+            <div style={{ position: 'relative', flexShrink: 0, width: 20, height: 20 }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 2px rgba(220,160,170,0.35))' }}>
                 <defs><linearGradient id="luaSmile" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F8C8D0"/><stop offset="100%" stopColor="#E8A0B0"/></linearGradient></defs>
                 <circle cx="12" cy="12" r="10" fill="url(#luaSmile)" opacity="0.7"/>
                 <circle cx="9" cy="10.5" r="1.2" fill="#fff" opacity="0.9"/>
@@ -81,9 +81,9 @@ export default function InsightCard() {
                 <path d="M9.5 14.5c0 0 1 1.5 2.5 1.5s2.5-1.5 2.5-1.5" stroke="#fff" strokeWidth="1.3" strokeLinecap="round" fill="none" opacity="0.9"/>
               </svg>
               <div style={{
-                position: 'absolute', bottom: 0, right: 0,
-                width: 10, height: 10, borderRadius: '50%',
-                background: '#89cef5', border: '2px solid #fff',
+                position: 'absolute', bottom: -1, right: -1,
+                width: 7, height: 7, borderRadius: '50%',
+                background: '#89cef5', border: '1.5px solid #fff',
               }} />
             </div>
             <div>
@@ -99,30 +99,29 @@ export default function InsightCard() {
           </div>
         </div>
 
-        {/* 메시지 본문 */}
-        <div style={{ fontSize: 14, fontWeight: 500, color: 'rgba(0,0,0,0.7)', lineHeight: 1.7 }}>
-          {main.message}
-        </div>
-
-        {/* 하단: 행동 + 하트 */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginTop: 2, gap: 8 }}>
-          {main.action && (
-            <button onClick={handleAction} style={{
-              background: 'rgba(0,0,0,0.04)', border: 'none', borderRadius: 10,
-              padding: '5px 12px', fontSize: 11, color: 'var(--text-primary)', fontWeight: 500,
-              cursor: 'pointer', fontFamily: 'inherit', marginRight: 'auto',
-            }}>
-              {main.action.label}
-            </button>
-          )}
+        {/* 메시지 + 하트 (하트가 마지막 줄 높이에 위치) */}
+        <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ flex: 1, fontSize: 14, fontWeight: 500, color: 'rgba(0,0,0,0.7)', lineHeight: 1.7 }}>
+            {main.message}
+            {main.action && (
+              <button onClick={handleAction} style={{
+                display: 'inline-block', background: 'rgba(0,0,0,0.04)', border: 'none', borderRadius: 10,
+                padding: '5px 12px', fontSize: 11, color: 'var(--text-primary)', fontWeight: 500,
+                cursor: 'pointer', fontFamily: 'inherit', marginLeft: 4, verticalAlign: 'middle',
+              }}>
+                {main.action.label}
+              </button>
+            )}
+          </div>
           <div onClick={handleLike} style={{
             cursor: 'pointer', padding: '2px 4px',
             WebkitTapHighlightColor: 'transparent',
             transition: 'transform 0.15s',
             transform: isLiked ? 'scale(1.1)' : 'scale(1)',
+            alignSelf: 'flex-end', flexShrink: 0,
           }}>
             <span style={{
-              fontSize: 16,
+              fontSize: 18,
               color: isLiked ? '#C97C5E' : 'rgba(0,0,0,0.12)',
               transition: 'color 0.15s',
             }}>
