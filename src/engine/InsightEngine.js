@@ -39,6 +39,9 @@ function collectUserData(days = 30) {
   const suppItems = safeJSON('lua_supplement_items', []);
   const suppChecks = safeJSON('lua_supplement_checks', {});
   const waterSettings = { cupMl: 250, goalMl: 2000, ...safeJSON('lua_water_settings', {}) };
+  const bodyRecords = safeJSON('lua_body_records', []);
+  const weatherData = safeJSON('lua_weather_data', null);
+  const cycleData = safeJSON('lua_cycle_data', null);
 
   const today = new Date();
   const todayKey = getDateKey(today);
@@ -100,9 +103,23 @@ function collectUserData(days = 30) {
       } : null,
       skinLog,
       hasTrouble: skinLog?.signals?.some(s => ['new_trouble', 'redness', 'sensitive'].includes(s)) || false,
+      hasDry: skinLog?.signals?.includes('dry') || false,
       suppDone, suppTotal,
+      weight: bodyRecords.find(r => r.date === key)?.weight || 0,
     });
   }
+
+  // 날씨 데이터
+  data.weather = weatherData ? {
+    temp: weatherData.temp || weatherData.temperature || 0,
+    tempMax: weatherData.tempMax || 0,
+    tempMin: weatherData.tempMin || 0,
+    humidity: weatherData.humidity || 0,
+    uv: weatherData.uv || 0,
+  } : null;
+
+  // 주기 데이터
+  data.cycle = cycleData;
 
   // 사용일수 계산
   const activeDays = data.days.filter(d => d.sleep > 0 || d.waterCups > 0 || d.foodCount > 0 || d.condition).length;
@@ -555,6 +572,194 @@ const TEMPLATES = [
       return null;
     },
     message(r) { return `오늘은 일찍 자보세요! 어제도 ${r.sleepH}시간만 주무셨고 본인은 7시간 이상 자야 컨디션이 좋아지세요 🌙 지금 자면 내일 컨디션이 확 달라질 거예요.`; },
+  },
+
+  // F. 체중 활용 (3개)
+  {
+    id: 'F1', relatedCards: ['weight', 'water'], type: 'cross_analysis', emoji: '💧', label: '통찰',
+    check(data) {
+      const last14 = data.days.slice(0, 14).filter(d => d.weight > 0);
+      if (last14.length < 5) return null;
+      const waterHigh = last14.filter(d => d.waterMl >= d.waterGoalMl);
+      const waterLow = last14.filter(d => d.waterMl > 0 && d.waterMl < d.waterGoalMl * 0.5);
+      if (waterHigh.length < 2 || waterLow.length < 2) return null;
+      const hWeights = waterHigh.map(d => d.weight);
+      const lWeights = waterLow.map(d => d.weight);
+      const hStd = Math.sqrt(hWeights.reduce((s, w) => s + Math.pow(w - hWeights.reduce((a, b) => a + b, 0) / hWeights.length, 2), 0) / hWeights.length);
+      const lStd = Math.sqrt(lWeights.reduce((s, w) => s + Math.pow(w - lWeights.reduce((a, b) => a + b, 0) / lWeights.length, 2), 0) / lWeights.length);
+      if (hStd < lStd && lStd - hStd > 0.1) return {};
+      return null;
+    },
+    message() { return `물 충분히 마신 다음날 체중이 안정적이에요! 본인은 수분이 부종에 영향이 큰 편이에요 💧 꾸준히 챙기면 체중 변동도 줄어들 거예요.`; },
+  },
+  {
+    id: 'F2', relatedCards: ['weight', 'cycle'], type: 'pattern', emoji: '🌸', label: '발견',
+    check(data) {
+      if (!data.cycle) return null;
+      const last14 = data.days.slice(0, 14).filter(d => d.weight > 0);
+      if (last14.length < 5) return null;
+      // 간단화: 최근 체중 증가 + 주기 데이터 존재
+      const recent3 = last14.slice(0, 3);
+      const prev3 = last14.slice(3, 6);
+      if (recent3.length < 2 || prev3.length < 2) return null;
+      const rAvg = recent3.reduce((s, d) => s + d.weight, 0) / recent3.length;
+      const pAvg = prev3.reduce((s, d) => s + d.weight, 0) / prev3.length;
+      const diff = Math.round((rAvg - pAvg) * 10) / 10;
+      if (diff >= 0.5) return { diff };
+      return null;
+    },
+    message(r) { return `최근 체중이 +${r.diff}kg 늘었는데 주기 영향일 수 있어요! 호르몬으로 인한 자연스러운 부종이라 걱정 마세요 🌸 생리 시작하면 자연스럽게 빠질 거예요.`; },
+  },
+  {
+    id: 'F3', relatedCards: ['weight', 'meal'], type: 'cross_analysis', emoji: '🍱', label: '통찰',
+    check(data) {
+      const last14 = data.days.slice(0, 14);
+      let matches = 0;
+      for (let i = 0; i < last14.length - 1; i++) {
+        const foods = safeJSON('lua_food_records', {})[last14[i].date] || [];
+        const highSodium = foods.some(f => (f.sodium || 0) > 1000);
+        if (highSodium && last14[i + 1].weight > 0 && last14[i].weight > 0 && last14[i + 1].weight - last14[i].weight >= 0.3) {
+          matches++;
+        }
+      }
+      if (matches >= 2) return { count: matches };
+      return null;
+    },
+    message(r) { return `짠 음식 드신 다음날 체중이 늘어나는 패턴이에요! ${r.count}번이나 일치했어요 🍱 음식 후 물 한 잔 더 챙기면 부종이 빠르게 빠질 거예요.`; },
+  },
+
+  // G. 주기 활용 (4개)
+  {
+    id: 'G1', relatedCards: ['cycle', 'condition'], type: 'pattern', emoji: '🌸', label: '발견',
+    check(data) {
+      if (!data.cycle) return null;
+      // 주기 데이터 있고 컨디션 데이터 있는 날
+      const withCond = data.days.slice(0, 14).filter(d => d.condition);
+      if (withCond.length < 5) return null;
+      const avgEnergy = withCond.reduce((s, d) => s + d.condition.energy, 0) / withCond.length;
+      const lowDays = withCond.filter(d => d.condition.energy <= avgEnergy - 2);
+      if (lowDays.length >= 3) return { drop: Math.round(avgEnergy - lowDays.reduce((s, d) => s + d.condition.energy, 0) / lowDays.length) };
+      return null;
+    },
+    message(r) { return `주기에 따라 컨디션이 -${r.drop}점 차이가 나요! 호르몬 영향이 큰 듯한데 본인만의 사이클이에요 🌸 이 시기엔 일찍 자고 마그네슘 챙기면 도움이 될 거예요.`; },
+  },
+  {
+    id: 'G2', relatedCards: ['cycle', 'caffeine', 'sleep'], type: 'pattern', emoji: '☕', label: '발견',
+    check(data) {
+      if (!data.cycle) return null;
+      const last14 = data.days.slice(0, 14).filter(d => d.totalCafMg > 0 && d.sleep > 0);
+      if (last14.length < 5) return null;
+      const cafDays = last14.filter(d => d.totalCafMg > 150 && d.sleep < 6);
+      if (cafDays.length >= 3) return { count: cafDays.length };
+      return null;
+    },
+    message(r) { return `주기에 따라 카페인 영향이 더 커지시는 듯해요! 최근 ${r.count}번 카페인 많은 날 잠이 짧아졌어요 ☕ 이 시기만이라도 오후 카페인 줄여보세요.`; },
+  },
+  {
+    id: 'G3', relatedCards: ['cycle', 'meal'], type: 'pattern', emoji: '🍰', label: '발견',
+    check(data) {
+      if (!data.cycle) return null;
+      const last7 = data.days.slice(0, 7).filter(d => d.foodCount > 0);
+      const prev7 = data.days.slice(7, 14).filter(d => d.foodCount > 0);
+      if (last7.length < 3 || prev7.length < 3) return null;
+      const rKcal = last7.reduce((s, d) => s + d.totalKcal, 0) / last7.length;
+      const pKcal = prev7.reduce((s, d) => s + d.totalKcal, 0) / prev7.length;
+      if (rKcal > pKcal * 1.2 && pKcal > 0) {
+        return { pct: Math.round((rKcal / pKcal - 1) * 100) };
+      }
+      return null;
+    },
+    message(r) { return `주기에 따라 먹는 양이 평소보다 +${r.pct}% 늘었어요! 자연스러운 호르몬 영향이에요 🍰 견과류나 과일로 대체하면 컨디션이 더 좋아질 거예요.`; },
+  },
+  {
+    id: 'G4', relatedCards: ['cycle', 'sleep'], type: 'pattern', emoji: '🌙', label: '발견',
+    check(data) {
+      if (!data.cycle) return null;
+      const last7 = data.days.slice(0, 7).filter(d => d.sleep > 0);
+      const prev7 = data.days.slice(7, 14).filter(d => d.sleep > 0);
+      if (last7.length < 3 || prev7.length < 3) return null;
+      const rSleep = last7.reduce((s, d) => s + d.sleep, 0) / last7.length;
+      const pSleep = prev7.reduce((s, d) => s + d.sleep, 0) / prev7.length;
+      const diffMin = Math.round((rSleep - pSleep) * 60);
+      if (Math.abs(diffMin) >= 30) return { diff: Math.abs(diffMin), dir: diffMin < 0 ? '짧아지' : '길어지' };
+      return null;
+    },
+    message(r) { return `주기에 따라 잠이 ${r.dir}시는 패턴이에요! ${r.diff}분이나 차이가 나요 🌙 본인 몸이 호르몬에 반응하는 자연스러운 신호니 마그네슘 + 일찍 자기로 보완해보세요.`; },
+  },
+
+  // H. 날씨 활용 (4개)
+  {
+    id: 'H1', relatedCards: ['weather', 'skin'], type: 'cross_analysis', emoji: '☀️', label: '통찰',
+    check(data) {
+      if (!data.weather || data.weather.uv < 6) return null;
+      const last7 = data.days.slice(0, 7);
+      const troubleAfterUV = last7.filter(d => d.hasTrouble).length;
+      if (troubleAfterUV >= 2) return { uv: data.weather.uv, count: troubleAfterUV };
+      return null;
+    },
+    message(r) { return `자외선이 강한 날 피부 트러블이 자주 와요! 최근 7일 중 ${r.count}번 일치했어요 ☀️ 외출 후 진정 케어를 챙기면 영향을 줄일 수 있어요.`; },
+  },
+  {
+    id: 'H2', relatedCards: ['weather', 'skin', 'water'], type: 'cross_analysis', emoji: '💧', label: '통찰',
+    check(data) {
+      if (!data.weather || data.weather.humidity > 40) return null;
+      const last7 = data.days.slice(0, 7);
+      const dryDays = last7.filter(d => d.hasDry).length;
+      if (dryDays >= 2) return { humidity: data.weather.humidity };
+      return null;
+    },
+    message(r) { return `건조한 날엔 피부 컨디션이 떨어지시는 듯해요! 습도 ${r.humidity}% 미만일 때 자주 그러시더라고요 💧 이런 날엔 수분을 +200ml 더 챙기면 피부가 좋아질 거예요.`; },
+  },
+  {
+    id: 'H3', relatedCards: ['weather', 'condition'], type: 'cross_analysis', emoji: '🌡️', label: '통찰',
+    check(data) {
+      if (!data.weather) return null;
+      const tempDiff = data.weather.tempMax - data.weather.tempMin;
+      if (tempDiff < 10) return null;
+      const today = data.days[0];
+      if (!today?.condition) return null;
+      const avg = (today.condition.energy + today.condition.mood) / 2;
+      if (avg <= 5) return { diff: Math.round(tempDiff), drop: Math.round(10 - avg) };
+      return null;
+    },
+    message(r) { return `일교차가 ${r.diff}도나 큰 날이에요! 본인은 온도 변화에 민감한 편이에요 🌡️ 이런 날엔 따뜻한 차 한 잔이 컨디션 회복에 도움이 될 거예요.`; },
+  },
+  {
+    id: 'H4', relatedCards: ['weather', 'water'], type: 'action', emoji: '☀️', label: '제안',
+    check(data) {
+      if (!data.weather) return null;
+      const hot = data.weather.temp >= 28 || data.weather.uv >= 8;
+      if (!hot) return null;
+      const today = data.days[0];
+      if (!today || today.waterMl >= today.waterGoalMl) return null;
+      const curL = (today.waterMl / 1000).toFixed(1);
+      const needL = ((today.waterGoalMl + 500) / 1000).toFixed(1);
+      return { curL, needL, reason: data.weather.uv >= 8 ? '자외선이 강하고' : `${Math.round(data.weather.temp)}도라` };
+    },
+    message(r) { return `오늘 ${r.reason} 평소보다 수분이 더 필요해요! 지금 ${r.curL}L 드셨는데 ${r.needL}L가 적정이에요 💧 한 잔 더 챙기면 컨디션도 살아날 거예요.`; },
+    action: { label: '물 기록하기', type: 'log_water' },
+  },
+
+  // I. 식사 GI 영향 (1개)
+  {
+    id: 'I1', relatedCards: ['meal', 'condition'], type: 'cross_analysis', emoji: '🍚', label: '통찰',
+    check(data) {
+      const last7 = data.days.slice(0, 7).filter(d => d.foodCount > 0 && d.condition);
+      if (last7.length < 4) return null;
+      const foods = safeJSON('lua_food_records', {});
+      let highGiLow = 0;
+      for (const d of last7) {
+        const dayFoods = foods[d.date] || [];
+        const hasHighGi = dayFoods.some(f => {
+          const name = (f.name || '').toLowerCase();
+          return name.includes('흰밥') || name.includes('면') || name.includes('빵') || name.includes('떡') || name.includes('라면');
+        });
+        if (hasHighGi && d.condition.energy <= 5) highGiLow++;
+      }
+      if (highGiLow >= 2) return { count: highGiLow };
+      return null;
+    },
+    message(r) { return `고GI 음식 드신 후 컨디션이 떨어지시는 패턴이에요! 흰밥·면 위주로 드신 날 ${r.count}번이나 그랬어요 🍚 잡곡밥이나 채소 비율 늘리면 식후 활력이 유지될 거예요.`; },
   },
 ];
 
