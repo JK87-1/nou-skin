@@ -117,8 +117,8 @@ export default function SupplementOnboardingPage({ onClose, onComplete }) {
       setCurrentGoalIdx(currentGoalIdx + 1);
       return;
     }
-    if (step === 3) {
-      // 자동 배치 생성
+    if (step === 2) {
+      // 마지막 목표 완료 → 자동 배치 생성 후 시간배치 화면으로
       const sched = autoSchedule([...selectedSupps]);
       setSchedule(sched);
     }
