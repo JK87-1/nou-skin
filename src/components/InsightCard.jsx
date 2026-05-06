@@ -81,8 +81,8 @@ export default function InsightCard() {
                 <path d="M8.5 14.5c0 0 1.5 2.5 3.5 2.5s3.5-2.5 3.5-2.5" stroke="#fff" strokeWidth="1.3" strokeLinecap="round" fill="none" opacity="0.9"/>
               </svg>
               <div style={{
-                position: 'absolute', bottom: 1, right: 0,
-                width: 8, height: 8, borderRadius: '50%',
+                position: 'absolute', bottom: -2, right: -2,
+                width: 9, height: 9, borderRadius: '50%',
                 background: '#89cef5', border: '1.5px solid #fff',
               }} />
             </div>
