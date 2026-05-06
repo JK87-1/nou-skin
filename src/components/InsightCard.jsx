@@ -78,7 +78,7 @@ export default function InsightCard() {
                 <circle cx="12" cy="12" r="10" fill="url(#luaSmile)" opacity="0.7"/>
                 <circle cx="9" cy="10.5" r="1.2" fill="#fff" opacity="0.9"/>
                 <circle cx="15" cy="10.5" r="1.2" fill="#fff" opacity="0.9"/>
-                <path d="M8.5 14.5c0 0 1.5 2.5 3.5 2.5s3.5-2.5 3.5-2.5" stroke="#fff" strokeWidth="1.3" strokeLinecap="round" fill="none" opacity="0.9"/>
+                <path d="M9.5 14.5c0 0 1 1.5 2.5 1.5s2.5-1.5 2.5-1.5" stroke="#fff" strokeWidth="1.3" strokeLinecap="round" fill="none" opacity="0.9"/>
               </svg>
               <div style={{
                 position: 'absolute', bottom: 0, right: 0,
