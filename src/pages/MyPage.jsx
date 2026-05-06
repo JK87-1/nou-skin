@@ -2451,8 +2451,36 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
 }
 
 // ===== History Food Detail Modal =====
+const historyFilterIngredients = (list) => {
+  if (!list || list.length === 0) return [];
+  if (list.length < 5) return list;
+  return list.filter(ing => {
+    if ((ing.kcal || 0) >= 5) return true;
+    const amt = ing.amount || '';
+    const gMatch = amt.match(/(\d+)\s*g/);
+    const mlMatch = amt.match(/(\d+)\s*ml/);
+    if (gMatch && parseInt(gMatch[1]) >= 50) return true;
+    if (mlMatch && parseInt(mlMatch[1]) >= 100) return true;
+    return false;
+  });
+};
+
+const HISTORY_IMPACT_STYLE = {
+  '낮음': { bg: '#E8F8F0', color: '#0F6E56' },
+  '보통': { bg: '#FFF8E1', color: '#F59E0B' },
+  '높음': { bg: '#FBEAF0', color: '#993556' },
+  '좋음': { bg: '#E8F8F0', color: '#0F6E56' },
+  '주의': { bg: '#FBEAF0', color: '#993556' },
+};
+
 function HistoryFoodDetailModal({ food, onClose, onDelete }) {
   const [showConfirm, setShowConfirm] = useState(false);
+
+  const impactItems = [
+    { icon: '📈', label: '혈당 상승', value: food.bloodSugar, note: food.bloodSugarNote },
+    { icon: '😴', label: '졸림 확률', value: food.drowsiness, note: food.drowsinessNote },
+    { icon: '✨', label: '피부 영향', value: food.skinImpact, note: food.skinImpactNote },
+  ];
 
   return (
     <div onClick={onClose} style={{
@@ -2463,18 +2491,18 @@ function HistoryFoodDetailModal({ food, onClose, onDelete }) {
       <div onClick={e => e.stopPropagation()} style={{
         background: 'var(--bg-secondary, #fff)', borderRadius: '24px 24px 0 0',
         padding: '12px 20px 40px', width: '100%', maxWidth: 430,
-        maxHeight: '88vh', overflowY: 'auto',
+        maxHeight: '88vh', overflowY: 'auto', WebkitOverflowScrolling: 'touch',
       }}>
         {/* Handle bar + back/delete */}
         <div style={{ display: 'flex', justifyContent: 'center', position: 'relative', marginBottom: 28 }}>
           <div onClick={onClose} style={{
-            position: 'absolute', left: -4, top: 2,
-            width: 32, height: 32, borderRadius: '50%', cursor: 'pointer',
-            background: 'var(--bg-card-hover, #F2F3F5)',
+            position: 'absolute', left: -4, top: 0,
+            width: 36, height: 36, cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
+            WebkitTapHighlightColor: 'transparent',
           }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <path d="M15 18l-6-6 6-6" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 18l-6-6 6-6" />
             </svg>
           </div>
           <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--bg-input, #E0E0E0)', marginTop: 10 }} />
@@ -2519,44 +2547,114 @@ function HistoryFoodDetailModal({ food, onClose, onDelete }) {
           </div>
         )}
 
-        {/* Food info */}
+        {/* Photo + Name header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
           {food.photo ? (
             <FoodPhoto photo={food.photo} style={{ width: 56, height: 56, borderRadius: 14, objectFit: 'cover', flexShrink: 0 }} />
           ) : (
             <div style={{ width: 56, height: 56, borderRadius: 14, background: 'rgba(137,206,245,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>🍽️</div>
           )}
-          <div>
+          <div style={{ flex: 1 }}>
             <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)' }}>{food.name}</div>
             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{food.meal}</div>
           </div>
         </div>
 
-        {/* Nutrition */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
+        {/* Nutrition grid */}
+        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>영양 정보</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
           {[
-            { label: '칼로리', value: food.kcal, unit: 'kcal' },
-            { label: '탄수화물', value: food.carb, unit: 'g' },
-            { label: '단백질', value: food.protein, unit: 'g' },
+            { icon: '🔥', label: '칼로리', value: food.kcal, unit: 'kcal' },
+            { icon: '🥩', label: '단백질', value: food.protein, unit: 'g' },
+            { icon: '🍞', label: '탄수화물', value: food.carb, unit: 'g' },
+            { icon: '🥑', label: '지방', value: food.fat, unit: 'g' },
           ].map(n => (
-            <div key={n.label} style={{ textAlign: 'center', padding: '10px 4px', borderRadius: 12, background: 'var(--bg-card)' }}>
-              <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.value}<span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>{n.unit}</span></div>
-              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{n.label}</div>
+            <div key={n.label} style={{ textAlign: 'center', padding: '10px 4px', borderRadius: 12 }}>
+              <div style={{ fontSize: 16, marginBottom: 4 }}>{n.icon}</div>
+              <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(0,0,0,0.7)' }}>{n.label}</div>
+              <div style={{ fontSize: 9, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>{n.value}<span>{n.unit}</span></div>
             </div>
           ))}
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 8, marginBottom: 20 }}>
           {[
-            { label: '지방', value: food.fat, unit: 'g' },
-            { label: '비타민', value: food.vitamin || 0, unit: '%' },
-            { label: '미네랄', value: food.mineral || 0, unit: '%' },
+            { icon: '🥕', label: '식이섬유', value: food.fiber || 0, unit: 'g' },
+            { icon: '🥦', label: '철분', value: food.iron || 0, unit: 'mg' },
+            { icon: '🐟', label: '칼슘', value: food.calcium || 0, unit: 'mg' },
+            { icon: '🍯', label: '당류', value: food.sugar || 0, unit: 'g' },
           ].map(n => (
-            <div key={n.label} style={{ textAlign: 'center', padding: '10px 4px', borderRadius: 12, background: 'var(--bg-card)' }}>
-              <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{n.value}<span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>{n.unit}</span></div>
-              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{n.label}</div>
+            <div key={n.label} style={{ textAlign: 'center', padding: '10px 4px', borderRadius: 12 }}>
+              <div style={{ fontSize: 16, marginBottom: 4 }}>{n.icon}</div>
+              <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(0,0,0,0.7)' }}>{n.label}</div>
+              <div style={{ fontSize: 9, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>{n.value}<span>{n.unit}</span></div>
             </div>
           ))}
         </div>
+
+        {/* Ingredients breakdown */}
+        {historyFilterIngredients(food.ingredients).length > 0 && (() => {
+          const filtered = historyFilterIngredients(food.ingredients);
+          return (
+          <>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>재료 구성</div>
+            <div style={{ padding: '12px 14px', borderRadius: 14, background: 'var(--bg-card)', marginBottom: 20 }}>
+              {filtered.map((ing, i) => (
+                <div key={i} style={{
+                  padding: '8px 0', borderBottom: i < filtered.length - 1 ? '1px solid rgba(0,0,0,0.04)' : 'none',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{ing.name}</span>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent-primary)' }}>{ing.kcal}kcal</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{ing.amount}</span>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>탄<span style={{ fontWeight: 600, color: 'var(--text-secondary)', marginLeft: 2 }}>{ing.carb}g</span></span>
+                      <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>단<span style={{ fontWeight: 600, color: 'var(--text-secondary)', marginLeft: 2 }}>{ing.protein}g</span></span>
+                      <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>지<span style={{ fontWeight: 600, color: 'var(--text-secondary)', marginLeft: 2 }}>{ing.fat}g</span></span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+          );
+        })()}
+
+        {/* Impact analysis */}
+        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 10 }}>식후 영향 분석</div>
+        {(food.bloodSugar || food.drowsiness || food.skinImpact) ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+            {impactItems.filter(i => i.value).map(item => {
+              const s = HISTORY_IMPACT_STYLE[item.value] || HISTORY_IMPACT_STYLE['보통'];
+              return (
+                <div key={item.label} style={{
+                  padding: '14px 16px', borderRadius: 14,
+                  background: 'var(--bg-card)',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{item.icon} {item.label}</span>
+                    <span style={{
+                      fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 8,
+                      background: s.bg, color: s.color,
+                    }}>{item.value}</span>
+                  </div>
+                  {item.note && (
+                    <div style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{item.note}</div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div style={{
+            padding: '16px', borderRadius: 14, background: 'var(--bg-card)',
+            fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 20, lineHeight: 1.6,
+          }}>
+            이전 방식으로 기록된 식사예요.<br />새로 기록하면 혈당·졸림·피부 영향까지 분석해드려요.
+          </div>
+        )}
+
       </div>
     </div>
   );
