@@ -78,7 +78,7 @@ export default function SupplementOnboardingPage({ onClose, onComplete }) {
   const toggleGoal = (id) => {
     setGoals(prev => {
       if (prev.includes(id)) return prev.filter(g => g !== id);
-      if (prev.length >= 3) return prev;
+      if (prev.length >= 5) return prev;
       return [...prev, id];
     });
     hapticLight();
@@ -291,7 +291,7 @@ function Step2Goals({ goals, onToggle }) {
   return (
     <div>
       <div style={{ fontSize: 18, fontWeight: 500, color: '#2C4A5E', marginBottom: 4 }}>어떤 게 신경 쓰이세요?</div>
-      <div style={{ fontSize: 12, color: C.textMuted, marginBottom: 20 }}>최대 3개까지 선택</div>
+      <div style={{ fontSize: 12, color: C.textMuted, marginBottom: 20 }}>최대 5개까지 선택</div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
         {GOALS.map(g => {
@@ -323,7 +323,7 @@ function Step2Goals({ goals, onToggle }) {
 
       {goals.length > 0 && (
         <div style={{ textAlign: 'center', marginTop: 16, fontSize: 12, color: C.primary, fontWeight: 500 }}>
-          선택 {goals.length}/3
+          선택 {goals.length}/5
         </div>
       )}
     </div>
