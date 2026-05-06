@@ -590,6 +590,11 @@ export function generateDailyInsights() {
     if (wasShownToday(c.id)) c.score *= 0.1;
   });
 
+  // 매 진입마다 다른 인사이트 → 점수에 랜덤 요소 추가
+  candidates.forEach(c => {
+    c.score += Math.random() * 2;
+  });
+
   // 피드백 기반 조정
   const feedback = safeJSON(FEEDBACK_KEY, {});
   candidates.forEach(c => {
@@ -667,8 +672,7 @@ export function cacheInsights(insights) {
 }
 
 export function getOrGenerateInsights() {
-  const cached = getCachedInsights();
-  if (cached) return cached;
+  // 매번 새로 생성 (앱 재진입 시 다른 인사이트)
   const insights = generateDailyInsights();
   cacheInsights(insights);
   return insights;
