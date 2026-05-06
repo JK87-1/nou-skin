@@ -733,9 +733,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             </div>
           )}
 
-          {/* 오늘의 인사이트 */}
-          <InsightCard />
-
           {/* 오늘의 상태 */}
           <DailyInsightSlider />
 
@@ -786,6 +783,9 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
       {/* ===== 기록 뷰 (기존 카드 그리드) ===== */}
       {homeView === 'cards' && <>
+      <div style={{ padding: '0 20px', marginBottom: 4 }}>
+        <InsightCard />
+      </div>
       <style>{`
         @keyframes cardWiggle {
           0% { transform: rotate(-0.5deg); }
