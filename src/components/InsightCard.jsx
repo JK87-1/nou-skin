@@ -66,7 +66,7 @@ export default function InsightCard() {
         borderRadius: '24px 24px 24px 6px',
         border: '1px solid rgba(255,255,255,0.4)',
         boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.5)',
-        padding: '16px 18px 14px',
+        padding: '16px 18px 16px',
       }}>
 
         {/* lua 아이콘 + 이름 + 인사 + 새로고침 */}
