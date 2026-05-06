@@ -15,6 +15,7 @@ import TabBar from './components/TabBar';
 import HomePage from './pages/HomePage';
 import RecordPage from './pages/RecordPage';
 import ChangePage from './pages/ChangePage';
+import DiscoveryPage from './pages/DiscoveryPage';
 import RoutinePage from './pages/RoutinePage';
 import SkinScoreCircle from './components/SkinScoreCircle';
 import AiInsightCard from './components/AiInsightCard';
@@ -755,9 +756,7 @@ export default function App() {
       {activeTab === 'food' && <RecordPage onTabChange={switchTab} autoOpenAdd={foodAutoOpen} onMeasure={openCamera} />}
 
       {/* ===== 발견 TAB ===== */}
-      {activeTab === 'body' && (
-        <div style={{ minHeight: '100dvh' }} />
-      )}
+      {activeTab === 'body' && <DiscoveryPage />}
 
       {/* ===== ROUTINE TAB ===== */}
       {activeTab === 'routine' && (
