@@ -754,8 +754,10 @@ export default function App() {
       {/* ===== FOOD TAB ===== */}
       {activeTab === 'food' && <RecordPage onTabChange={switchTab} autoOpenAdd={foodAutoOpen} onMeasure={openCamera} />}
 
-      {/* ===== BODY TAB ===== */}
-      {activeTab === 'body' && <ChangePage onTabChange={switchTab} />}
+      {/* ===== 발견 TAB ===== */}
+      {activeTab === 'body' && (
+        <div style={{ minHeight: '100dvh' }} />
+      )}
 
       {/* ===== ROUTINE TAB ===== */}
       {activeTab === 'routine' && (

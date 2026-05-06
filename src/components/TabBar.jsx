@@ -75,7 +75,7 @@ export default function TabBar({ activeTab, onTabChange }) {
     },
     {
       key: 'body',
-      label: '돌아보기',
+      label: '발견',
       icon: (active) => {
         const c = active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)';
         return (
