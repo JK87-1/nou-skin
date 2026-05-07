@@ -78,8 +78,8 @@ export function isMeaningfulInput(dataType) {
 // ===== 디바운싱 =====
 function isDebounced(dataType) {
   const debounce = safeJSON(LLM_DEBOUNCE_KEY, {});
-  const key = dataType;
-  const lastCall = debounce[key];
+  // 모든 타입 통합 디바운스 (같은 종류만이 아니라 전체)
+  const lastCall = debounce._last;
   if (!lastCall) return false;
   const elapsed = (Date.now() - new Date(lastCall).getTime()) / (1000 * 60);
   return elapsed < CONFIG.debounceMinutes;
@@ -88,6 +88,7 @@ function isDebounced(dataType) {
 function setDebounce(dataType) {
   const debounce = safeJSON(LLM_DEBOUNCE_KEY, {});
   debounce[dataType] = new Date().toISOString();
+  debounce._last = new Date().toISOString();
   localStorage.setItem(LLM_DEBOUNCE_KEY, JSON.stringify(debounce));
 }
 
@@ -514,8 +515,13 @@ function logLLMCall(entry) {
 }
 
 // ===== 메인 진입점: 데이터 입력 시 =====
+let _llmInProgress = false;
+
 export async function onMeaningfulDataInput(dataType, justInputData = null) {
   console.log(`[LLM] 트리거: ${dataType}`);
+
+  // 0. 이미 호출 중이면 스킵
+  if (_llmInProgress) { console.log('[LLM] 이미 호출 중 → 스킵'); return null; }
 
   // 1. LLM 활성화 체크
   if (!isLLMEnabled()) { console.log('[LLM] 비활성화 상태'); return null; }
@@ -533,8 +539,9 @@ export async function onMeaningfulDataInput(dataType, justInputData = null) {
     return null;
   }
 
-  // 5. 디바운스 설정
+  // 5. 디바운스 설정 + 진행 플래그
   setDebounce(dataType);
+  _llmInProgress = true;
   console.log(`[LLM] API 호출 시작...`);
 
   // 6. 데이터 수집 + 프롬프트 빌드
@@ -576,12 +583,14 @@ export async function onMeaningfulDataInput(dataType, justInputData = null) {
     });
 
     // 12. 첫 번째 반환
+    _llmInProgress = false;
     console.log(`[LLM] 성공! ${insights.length}개 생성 (${durationMs}ms, ${result.usage?.promptTokens}+${result.usage?.outputTokens} tokens)`);
     return insights[0];
   } catch (err) {
+    _llmInProgress = false;
     console.error('[LLM] 실패:', err.message);
     logLLMCall({ type: 'error', dataType, error: err.message });
-    return null; // 템플릿 폴백
+    return null;
   }
 }
 

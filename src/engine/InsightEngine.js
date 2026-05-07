@@ -1125,31 +1125,36 @@ export function cacheInsights(insights) {
 }
 
 export function getOrGenerateInsights() {
-  // Phase 2: LLM 인사이트 우선
+  // Phase 2: LLM 전용 모드
   if (isLLMEnabled()) {
     const llmInsights = getLLMInsights();
     if (llmInsights && llmInsights.length > 0) {
-      console.log('[Insight] LLM 캐시 사용 중 (isLLM: true)');
+      console.log('[Insight] LLM 인사이트 표시 중');
       return llmInsights;
     }
+    // LLM 캐시 없으면 → 대기 메시지
+    console.log('[Insight] LLM 캐시 없음 → 대기 메시지');
+    return [{ id: 'llm_waiting', type: 'positive', emoji: '✨', label: '', message: '데이터를 입력하면 AI가 맞춤 인사이트를 만들어드려요! 식사, 수면, 컨디션 등을 기록해보세요.', isLLM: false }];
   }
-  // Phase 1 폴백: 템플릿 기반
-  console.log('[Insight] 템플릿 폴백 사용');
+  // LLM 비활성 시: 템플릿 기반
+  console.log('[Insight] 템플릿 사용 (LLM 비활성)');
   const insights = generateDailyInsights();
   cacheInsights(insights);
   return insights;
 }
 
 export function refreshInsights() {
-  // Phase 2: LLM 캐시 순환 우선
+  // Phase 2: LLM 캐시 순환
   if (isLLMEnabled()) {
     const llmInsight = onLLMRefresh();
     if (llmInsight) {
       const llmInsights = getLLMInsights();
       if (llmInsights && llmInsights.length > 0) return llmInsights;
     }
+    // LLM 캐시 없으면 현재 상태 유지
+    return getOrGenerateInsights();
   }
-  // Phase 1 폴백: 템플릿 재생성
+  // LLM 비활성 시: 템플릿 재생성
   try {
     const cache = JSON.parse(localStorage.getItem(CACHE_KEY));
     if (cache?.insights) {
