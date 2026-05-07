@@ -761,6 +761,115 @@ const TEMPLATES = [
     },
     message(r) { return `고GI 음식 드신 후 컨디션이 떨어지시는 패턴이에요! 흰밥·면 위주로 드신 날 ${r.count}번이나 그랬어요 🍚 잡곡밥이나 채소 비율 늘리면 식후 활력이 유지될 거예요.`; },
   },
+
+  // J. 오늘 데이터 즉시 인사이트 (데이터 적어도 바로 표시)
+  {
+    id: 'J1', relatedCards: ['weight'], type: 'positive', emoji: '⚖️', label: '체중',
+    check(data) {
+      const today = data.days[0];
+      if (!today || today.weight <= 0) return null;
+      const yesterday = data.days[1];
+      if (yesterday && yesterday.weight > 0) {
+        const diff = Math.round((today.weight - yesterday.weight) * 10) / 10;
+        return { weight: today.weight, diff, hasPrev: true };
+      }
+      return { weight: today.weight, diff: 0, hasPrev: false };
+    },
+    message(r) {
+      if (r.hasPrev && r.diff !== 0) {
+        const dir = r.diff > 0 ? '+' : '';
+        return `오늘 체중 ${r.weight}kg이에요! 어제보다 ${dir}${r.diff}kg ${r.diff > 0 ? '늘었는데' : '줄었는데'} 하루 변동은 자연스러운 거예요 ⚖️ 꾸준히 기록하면 본인만의 추세가 보일 거예요.`;
+      }
+      return `오늘 체중 ${r.weight}kg 기록하셨네요! ⚖️ 매일 같은 시간에 재면 더 정확한 추세를 확인할 수 있어요.`;
+    },
+  },
+  {
+    id: 'J2', relatedCards: ['meal'], type: 'positive', emoji: '🍱', label: '식사',
+    check(data) {
+      const today = data.days[0];
+      if (!today || today.foodCount === 0) return null;
+      return { count: today.foodCount, kcal: today.totalKcal, protein: today.totalProtein };
+    },
+    message(r) {
+      const parts = [`${r.count}끼`];
+      if (r.kcal > 0) parts.push(`${r.kcal}kcal`);
+      if (r.protein > 0) parts.push(`단백질 ${r.protein}g`);
+      if (r.protein >= 50) return `오늘 ${parts.join(' · ')} 기록이에요! 단백질을 잘 챙기고 계세요 💪 이 정도면 활력 유지에 충분해요.`;
+      if (r.kcal > 0) return `오늘 ${parts.join(' · ')} 드셨네요! 🍱 식사 기록이 쌓이면 본인한테 맞는 식단 패턴을 발견할 수 있어요.`;
+      return `오늘 ${r.count}끼 기록하셨네요! 🍱 뭘 드셨는지 기록해두면 나중에 컨디션과의 관계를 발견할 수 있어요.`;
+    },
+  },
+  {
+    id: 'J3', relatedCards: ['weather'], type: 'positive', emoji: '🌤️', label: '날씨',
+    check(data) {
+      if (!data.weather) return null;
+      const w = data.weather;
+      if (w.temp === 0 && w.humidity === 0) return null;
+      return { temp: Math.round(w.temp), humidity: w.humidity, uv: w.uv, tempMax: w.tempMax, tempMin: w.tempMin };
+    },
+    message(r) {
+      const diff = r.tempMax - r.tempMin;
+      if (r.uv >= 6) return `오늘 자외선 지수 ${r.uv}이에요! ☀️ 외출 시 자외선 차단 꼭 챙기시고 돌아와서 진정 케어 해주세요.`;
+      if (r.humidity < 40) return `오늘 습도 ${r.humidity}%로 건조해요! 💧 수분을 평소보다 한 잔 더 챙기면 피부도 컨디션도 좋아질 거예요.`;
+      if (diff >= 10) return `오늘 일교차가 ${Math.round(diff)}도예요! 🌡️ 큰 기온차에 본인 몸이 적응하느라 에너지를 쓰니 따뜻한 차 한 잔 챙기세요.`;
+      return `오늘 ${r.temp}도, 습도 ${r.humidity}%에요! 🌤️ 날씨 기록이 쌓이면 본인 피부와 날씨의 관계를 발견할 수 있어요.`;
+    },
+  },
+  {
+    id: 'J4', relatedCards: ['condition'], type: 'positive', emoji: '✨', label: '컨디션',
+    check(data) {
+      const today = data.days[0];
+      if (!today?.condition) return null;
+      const avg = (today.condition.energy + today.condition.mood + today.condition.skin + today.condition.gut) / 4;
+      return { avg: Math.round(avg * 10) / 10, energy: today.condition.energy, mood: today.condition.mood, skin: today.condition.skin, gut: today.condition.gut };
+    },
+    message(r) {
+      const best = [
+        { name: '에너지', val: r.energy }, { name: '기분', val: r.mood },
+        { name: '피부', val: r.skin }, { name: '소화', val: r.gut },
+      ].sort((a, b) => b.val - a.val)[0];
+      const worst = [
+        { name: '에너지', val: r.energy }, { name: '기분', val: r.mood },
+        { name: '피부', val: r.skin }, { name: '소화', val: r.gut },
+      ].sort((a, b) => a.val - b.val)[0];
+      if (r.avg >= 7) return `오늘 컨디션 ${r.avg}점으로 좋은 날이에요! 특히 ${best.name}이 ${best.val}점으로 높네요 ✨ 오늘 뭘 잘 챙겼는지 기록해두면 비결을 발견할 수 있어요.`;
+      if (r.avg <= 4) return `오늘 컨디션이 좀 힘든 날인 듯해요! ${worst.name}이 ${worst.val}점이네요 🌿 무리하지 말고 수분이랑 충분한 수면 챙기세요.`;
+      return `오늘 컨디션 ${r.avg}점이에요! ${best.name} ${best.val}점이 가장 좋네요 🌿 꾸준히 체크하면 본인만의 컨디션 패턴을 발견할 수 있어요.`;
+    },
+  },
+  {
+    id: 'J5', relatedCards: ['activity'], type: 'positive', emoji: '🏃', label: '활동',
+    check(data) {
+      const today = data.days[0];
+      if (!today) return null;
+      if (today.hasExercise) {
+        const exercises = Object.keys(today.exercise);
+        return { type: 'exercise', names: exercises.slice(0, 2).join(' · '), steps: today.steps };
+      }
+      if (today.steps >= 3000) return { type: 'steps', steps: today.steps };
+      return null;
+    },
+    message(r) {
+      if (r.type === 'exercise') {
+        const msg = `오늘 ${r.names} 하셨네요! 🏃 운동 기록이 쌓이면 컨디션과의 관계를 분석해드릴게요.`;
+        return r.steps > 0 ? `${r.steps.toLocaleString()}보 걸으시고 ${r.names}도 하셨네요! 🏃 활동적인 하루예요. 운동 후 수분 챙기면 회복이 빨라져요.` : msg;
+      }
+      return `오늘 ${r.steps.toLocaleString()}보 걸으셨네요! 🚶 ${r.steps >= 8000 ? '목표 달성이에요! 꾸준한 걷기가 컨디션에 긍정적인 영향을 줘요.' : '조금만 더 걸으면 활력이 올라갈 거예요.'}`;
+    },
+  },
+  {
+    id: 'J6', relatedCards: ['sleep'], type: 'positive', emoji: '😴', label: '수면',
+    check(data) {
+      const today = data.days[0];
+      if (!today || today.sleep <= 0) return null;
+      return { hours: today.sleep, quality: today.sleepQuality, bedtime: today.bedtime };
+    },
+    message(r) {
+      if (r.hours >= 8) return `오늘 ${r.hours}시간 푹 주무셨네요! 😴 충분한 수면이 하루 컨디션의 기반이에요. 이 리듬 유지하면 좋겠어요.`;
+      if (r.hours >= 6) return `오늘 수면 ${r.hours}시간이에요! 적당히 주무셨네요 🌙 30분만 더 자면 다음날 활력이 확 달라질 수 있어요.`;
+      return `오늘 ${r.hours}시간밖에 못 주무셨네요! 😴 수면 부족은 컨디션에 바로 영향이 와요. 오늘은 일찍 쉬어보세요.`;
+    },
+  },
 ];
 
 // ===== 점수 계산 =====
@@ -857,8 +966,17 @@ function generateFallback(data) {
   if (today.totalCafMg > 0) facts.push(`카페인 ${today.totalCafMg}mg`);
   if (today.foodCount > 0) facts.push(`식사 ${today.foodCount}끼`);
   if (today.steps > 0) facts.push(`${today.steps.toLocaleString()}보`);
+  if (today.weight > 0) facts.push(`체중 ${today.weight}kg`);
+  if (today.hasExercise) facts.push('운동 완료');
+  if (today.suppDone > 0) facts.push(`영양제 ${today.suppDone}개`);
+  if (data.weather?.temp) facts.push(`${Math.round(data.weather.temp)}도`);
 
   if (facts.length >= 2) {
+    // 매번 다른 조합을 보여주기 위해 셔플
+    for (let i = facts.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [facts[i], facts[j]] = [facts[j], facts[i]];
+    }
     const pair = facts.slice(0, 2).join(' · ');
     const normalMsgs = [
       `오늘 ${pair}이에요! 평소와 비슷한 하루 보내고 계세요 🌿 일관된 루틴이 본인 몸에 안정감을 주는 신호예요`,
