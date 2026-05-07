@@ -1,8 +1,10 @@
 /**
- * lua 인사이트 엔진 (Phase 1)
+ * lua 인사이트 엔진 (Phase 1 + Phase 2 LLM)
  * 30개 템플릿 + 트리거 + 점수 + 우선순위
+ * LLM 인사이트 통합: LLM 캐시 우선 → 템플릿 폴백
  * lua 페르소나 100% 적용
  */
+import { getCurrentLLMInsight, getLLMInsights, onLLMRefresh, onMeaningfulDataInput, isLLMEnabled } from './LLMInsightEngine';
 
 const CACHE_KEY = 'lua_insight_cache';
 const FEEDBACK_KEY = 'lua_insight_feedback';
@@ -1123,12 +1125,27 @@ export function cacheInsights(insights) {
 }
 
 export function getOrGenerateInsights() {
+  // Phase 2: LLM 인사이트 우선
+  if (isLLMEnabled()) {
+    const llmInsights = getLLMInsights();
+    if (llmInsights && llmInsights.length > 0) return llmInsights;
+  }
+  // Phase 1 폴백: 템플릿 기반
   const insights = generateDailyInsights();
   cacheInsights(insights);
   return insights;
 }
 
 export function refreshInsights() {
+  // Phase 2: LLM 캐시 순환 우선
+  if (isLLMEnabled()) {
+    const llmInsight = onLLMRefresh();
+    if (llmInsight) {
+      const llmInsights = getLLMInsights();
+      if (llmInsights && llmInsights.length > 0) return llmInsights;
+    }
+  }
+  // Phase 1 폴백: 템플릿 재생성
   try {
     const cache = JSON.parse(localStorage.getItem(CACHE_KEY));
     if (cache?.insights) {
@@ -1139,4 +1156,20 @@ export function refreshInsights() {
   } catch { /* ignore */ }
   localStorage.removeItem(CACHE_KEY);
   return getOrGenerateInsights();
+}
+
+// ===== Phase 2: LLM 트리거 (데이터 입력 시 호출) =====
+export async function triggerLLMOnDataInput(dataType, inputData = null) {
+  if (!isLLMEnabled()) return null;
+  try {
+    const result = await onMeaningfulDataInput(dataType, inputData);
+    if (result) {
+      // LLM 성공 → 이벤트 발행 (UI 갱신)
+      window.dispatchEvent(new CustomEvent('lua-llm-insight-ready', { detail: result }));
+      return result;
+    }
+  } catch (err) {
+    console.error('LLM trigger failed:', err);
+  }
+  return null;
 }

@@ -1,0 +1,650 @@
+/**
+ * lua LLM 인사이트 엔진 (Phase 2)
+ *
+ * 핵심 동작:
+ * 1. 의미 있는 데이터 입력 → 디바운싱 + 한도 체크
+ * 2. LLM 호출 (10개 생성) → 검증 → 캐시
+ * 3. 새로고침 = 캐시 순환 (LLM 호출 X)
+ * 4. 한도 초과/실패 → 템플릿 폴백
+ */
+
+// ===== 상수 =====
+const LLM_CACHE_KEY = 'lua_llm_insight_cache';
+const LLM_USAGE_KEY = 'lua_llm_daily_usage';
+const LLM_DEBOUNCE_KEY = 'lua_llm_debounce';
+const LLM_CALL_LOG_KEY = 'lua_llm_call_log';
+const LLM_ENABLED_KEY = 'lua_llm_enabled';
+
+const CONFIG = {
+  dailyLLMCallLimit: 10,
+  insightsPerCall: 10,
+  debounceMinutes: 5,
+  maxRetries: 2,
+  meaningfulInputTypes: [
+    'meal_logged', 'drink_caffeine', 'drink_alcohol', 'drink_noncaffeine',
+    'exercise_logged', 'supplement_completed', 'sleep_logged',
+    'condition_logged', 'cycle_event',
+  ],
+  insightDistribution: {
+    just_input_focused: 1,
+    cross_analysis: 2,
+    pattern_discovery: 4,
+    change_detection: 2,
+    positive_or_action: 1,
+  },
+  diversity: {
+    minDifferentCards: 5,
+    noConsecutiveSameCard: true,
+    maxSameType: 3,
+  },
+  validation: {
+    minSentences: 3,
+    maxEmoji: 2,
+    maxMessageLength: 200,
+    minMessageLength: 40,
+  },
+  contextSize: {
+    previousCallsCount: 3,
+    recentDays: 7,
+    baselineDays: 30,
+  },
+};
+
+// ===== 유틸 =====
+function safeJSON(key, fallback) {
+  try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); } catch { return fallback; }
+}
+
+function getDateKey(d = new Date()) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function getTodayKey() { return getDateKey(); }
+
+// ===== LLM 활성화 체크 =====
+export function isLLMEnabled() {
+  // Phase 2: 사용자 30일 이상 + localStorage 플래그
+  const usage = safeJSON(LLM_ENABLED_KEY, null);
+  if (usage === false) return false;
+  // 기본 활성화 (배포 후 Remote Config으로 전환 가능)
+  return true;
+}
+
+// ===== 의미 있는 입력 판단 =====
+export function isMeaningfulInput(dataType) {
+  return CONFIG.meaningfulInputTypes.includes(dataType);
+}
+
+// ===== 디바운싱 =====
+function isDebounced(dataType) {
+  const debounce = safeJSON(LLM_DEBOUNCE_KEY, {});
+  const key = dataType;
+  const lastCall = debounce[key];
+  if (!lastCall) return false;
+  const elapsed = (Date.now() - new Date(lastCall).getTime()) / (1000 * 60);
+  return elapsed < CONFIG.debounceMinutes;
+}
+
+function setDebounce(dataType) {
+  const debounce = safeJSON(LLM_DEBOUNCE_KEY, {});
+  debounce[dataType] = new Date().toISOString();
+  localStorage.setItem(LLM_DEBOUNCE_KEY, JSON.stringify(debounce));
+}
+
+// ===== 일일 한도 =====
+function getDailyUsage() {
+  const usage = safeJSON(LLM_USAGE_KEY, { date: '', count: 0 });
+  if (usage.date !== getTodayKey()) {
+    return { date: getTodayKey(), count: 0, triggers: {}, fallbackCount: 0, refreshCount: 0 };
+  }
+  return usage;
+}
+
+function incrementDailyUsage(dataType) {
+  const usage = getDailyUsage();
+  usage.count++;
+  usage.triggers = usage.triggers || {};
+  usage.triggers[dataType] = (usage.triggers[dataType] || 0) + 1;
+  localStorage.setItem(LLM_USAGE_KEY, JSON.stringify(usage));
+}
+
+function incrementRefreshCount() {
+  const usage = getDailyUsage();
+  usage.refreshCount = (usage.refreshCount || 0) + 1;
+  localStorage.setItem(LLM_USAGE_KEY, JSON.stringify(usage));
+}
+
+function isAtDailyLimit() {
+  return getDailyUsage().count >= CONFIG.dailyLLMCallLimit;
+}
+
+// ===== 사용자 데이터 수집 (컨텍스트 빌더) =====
+function collectUserData(days = 30) {
+  const records = safeJSON('lua_record_v2', {});
+  const foods = safeJSON('lua_food_records', {});
+  const checks = safeJSON('nou_condition_checks', []);
+  const drinks = safeJSON('lua_drink_records', {});
+  const suppItems = safeJSON('lua_supplement_items', []);
+  const suppChecks = safeJSON('lua_supplement_checks', {});
+  const waterSettings = { cupMl: 250, goalMl: 2000, ...safeJSON('lua_water_settings', {}) };
+  const bodyRecords = safeJSON('lua_body_records', []);
+  const weatherData = safeJSON('lua_weather_data', null);
+  const cycleData = safeJSON('lua_cycle_data', null);
+
+  const today = new Date();
+  const data = { days: [], waterSettings, suppItems };
+
+  for (let i = 0; i < days; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const key = getDateKey(d);
+    const rec = records[key] || {};
+    const dayFoods = (foods[key] || []).filter(f => !f.name?.startsWith('물 '));
+    const dayDrinks = drinks[key] || {};
+    const dayChecks = checks.filter(c => c.date === key || (c.timestamp && c.timestamp.startsWith(key)));
+    const latestCheck = dayChecks.length > 0 ? dayChecks[dayChecks.length - 1] : null;
+    const daySupp = suppChecks[key] || {};
+
+    const caffeineItems = dayDrinks.caffeine || [];
+    const alcoholItems = dayDrinks.alcohol || [];
+    const nonCafItems = dayDrinks.noncaffeine || [];
+    const mgMap = { espresso: 150, americano: 150, latte: 150, drip: 130, coldbrew: 200, decaf: 5, matcha: 70, green_tea: 30, black_tea: 50, energy_drink: 160, choco_latte: 30, green_tea_latte: 80, chai_latte: 50 };
+    const totalCafMg = caffeineItems.reduce((s, d) => s + (mgMap[d.key] || 100) * (d.count || 0), 0);
+    const totalAlcohol = alcoholItems.reduce((s, d) => s + (d.count || 0), 0);
+    const totalKcal = dayFoods.reduce((s, f) => s + (f.kcal || 0), 0);
+    const totalProtein = dayFoods.reduce((s, f) => s + (f.protein || 0), 0);
+    const waterCups = rec.water?.cups || 0;
+    const waterMl = waterCups * waterSettings.cupMl;
+    const suppDone = suppItems.filter(s => daySupp[s.id]).length;
+
+    data.days.push({
+      date: key,
+      dayOfWeek: d.getDay(),
+      sleep: rec.sleep?.hours || 0,
+      sleepQuality: rec.sleep?.quality || null,
+      bedtime: rec.sleep?.bedtime || null,
+      waterCups, waterMl, waterGoalMl: waterSettings.goalMl,
+      steps: rec.steps || 0,
+      exercise: rec.exercise?.log || {},
+      hasExercise: Object.keys(rec.exercise?.log || {}).length > 0,
+      totalKcal, totalProtein, foodCount: dayFoods.length,
+      foods: dayFoods.slice(0, 5).map(f => f.name || '').filter(Boolean),
+      caffeineItems, totalCafMg, alcoholItems, totalAlcohol,
+      nonCafItems,
+      condition: latestCheck ? {
+        energy: latestCheck.energy || latestCheck['에너지'] || 0,
+        mood: latestCheck.mood || latestCheck['기분'] || 0,
+        skin: latestCheck.skin || latestCheck['피부'] || 0,
+        gut: latestCheck.gut || latestCheck['소화'] || 0,
+      } : null,
+      suppDone, suppTotal: suppItems.length,
+      weight: bodyRecords.find(r => r.date === key)?.weight || 0,
+    });
+  }
+
+  data.weather = weatherData ? {
+    temp: weatherData.temp || weatherData.temperature || 0,
+    humidity: weatherData.humidity || 0,
+    uv: weatherData.uv || 0,
+  } : null;
+  data.cycle = cycleData;
+
+  const activeDays = data.days.filter(d => d.sleep > 0 || d.waterCups > 0 || d.foodCount > 0 || d.condition).length;
+  data.activeDays = activeDays;
+
+  return data;
+}
+
+// ===== 컨텍스트 → 텍스트 변환 =====
+function buildLLMContext(userData, triggerType, justInputData) {
+  const today = userData.days[0] || {};
+  const recent7 = userData.days.slice(0, 7);
+  const recent30 = userData.days.slice(0, 30);
+  const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
+
+  let ctx = '';
+
+  // 1. 방금 입력 (가장 중요)
+  ctx += `## ⭐ 방금 입력 (${triggerType})\n`;
+  if (justInputData) {
+    ctx += JSON.stringify(justInputData, null, 0).slice(0, 200) + '\n';
+  }
+  ctx += '\n';
+
+  // 2. 오늘 누적
+  ctx += `## 오늘 (${today.date})\n`;
+  if (today.sleep > 0) ctx += `수면: ${today.sleep}시간${today.bedtime ? ` (취침 ${today.bedtime})` : ''}\n`;
+  if (today.waterMl > 0) ctx += `수분: ${today.waterMl}ml / 목표 ${today.waterGoalMl}ml (${today.waterCups}잔)\n`;
+  if (today.foodCount > 0) ctx += `식사: ${today.foodCount}끼${today.totalKcal > 0 ? ` ${today.totalKcal}kcal` : ''}${today.totalProtein > 0 ? ` 단백질${today.totalProtein}g` : ''}${today.foods?.length > 0 ? ` [${today.foods.join(', ')}]` : ''}\n`;
+  if (today.totalCafMg > 0) ctx += `카페인: ${today.totalCafMg}mg\n`;
+  if (today.totalAlcohol > 0) ctx += `알코올: ${today.totalAlcohol}잔\n`;
+  if (today.condition) ctx += `컨디션: 에너지${today.condition.energy} 기분${today.condition.mood} 피부${today.condition.skin} 소화${today.condition.gut}\n`;
+  if (today.hasExercise) ctx += `운동: ${Object.keys(today.exercise).join(', ')}\n`;
+  if (today.suppDone > 0) ctx += `영양제: ${today.suppDone}/${today.suppTotal}\n`;
+  if (today.weight > 0) ctx += `체중: ${today.weight}kg\n`;
+  if (today.steps > 0) ctx += `걸음: ${today.steps}보\n`;
+  ctx += '\n';
+
+  // 3. 최근 7일 요약
+  ctx += `## 최근 7일 요약\n`;
+  const sleepDays = recent7.filter(d => d.sleep > 0);
+  if (sleepDays.length > 0) {
+    const avgSleep = (sleepDays.reduce((s, d) => s + d.sleep, 0) / sleepDays.length).toFixed(1);
+    ctx += `평균 수면: ${avgSleep}시간 (${sleepDays.length}일 기록)\n`;
+  }
+  const waterDays = recent7.filter(d => d.waterMl > 0);
+  if (waterDays.length > 0) {
+    const avgWater = Math.round(waterDays.reduce((s, d) => s + d.waterMl, 0) / waterDays.length);
+    ctx += `평균 수분: ${avgWater}ml\n`;
+  }
+  const cafDays = recent7.filter(d => d.totalCafMg > 0);
+  if (cafDays.length > 0) {
+    const avgCaf = Math.round(cafDays.reduce((s, d) => s + d.totalCafMg, 0) / cafDays.length);
+    ctx += `평균 카페인: ${avgCaf}mg (${cafDays.length}일)\n`;
+  }
+  const condDays = recent7.filter(d => d.condition);
+  if (condDays.length > 0) {
+    const avgEnergy = (condDays.reduce((s, d) => s + d.condition.energy, 0) / condDays.length).toFixed(1);
+    const avgMood = (condDays.reduce((s, d) => s + d.condition.mood, 0) / condDays.length).toFixed(1);
+    ctx += `평균 컨디션: 에너지${avgEnergy} 기분${avgMood}\n`;
+  }
+  ctx += '\n';
+
+  // 4. 30일 트렌드 (간략)
+  const prev7 = userData.days.slice(7, 14);
+  const prevSleep = prev7.filter(d => d.sleep > 0);
+  const recentSleep = sleepDays;
+  if (prevSleep.length >= 3 && recentSleep.length >= 3) {
+    const rAvg = recentSleep.reduce((s, d) => s + d.sleep, 0) / recentSleep.length;
+    const pAvg = prevSleep.reduce((s, d) => s + d.sleep, 0) / prevSleep.length;
+    const diff = Math.round((rAvg - pAvg) * 10) / 10;
+    if (Math.abs(diff) >= 0.3) ctx += `수면 추세: ${diff > 0 ? '+' : ''}${diff}시간 (전주 대비)\n`;
+  }
+
+  // 5. 날씨
+  if (userData.weather) {
+    ctx += `\n## 날씨\n온도: ${Math.round(userData.weather.temp)}도, 습도: ${userData.weather.humidity}%, UV: ${userData.weather.uv}\n`;
+  }
+
+  // 6. 주기
+  if (userData.cycle) {
+    ctx += `\n## 주기 데이터\n있음\n`;
+  }
+
+  // 7. 사용일수
+  ctx += `\n## 사용자 정보\n사용 ${userData.activeDays}일째\n`;
+
+  return ctx;
+}
+
+// ===== 이전 인사이트 요약 (중복 회피) =====
+function getPreviousInsightSummaries() {
+  const cache = safeJSON(LLM_CACHE_KEY, null);
+  if (!cache?.insights || cache.insights.length === 0) return '이전 인사이트 없음';
+
+  const summaries = cache.insights.slice(0, 10).map((ins, i) =>
+    `${i + 1}. [${ins.type}] ${ins.primaryCard}: ${(ins.message || '').slice(0, 50)}`
+  ).join('\n');
+
+  return summaries;
+}
+
+// ===== 작업 지시 빌더 =====
+function buildTaskInstruction(triggerType) {
+  const dist = CONFIG.insightDistribution;
+  return `정확히 10개의 인사이트를 JSON 배열로 생성하세요.
+
+분포:
+- just_input_focused: ${dist.just_input_focused}개 (방금 입력 "${triggerType}" 관련)
+- cross_analysis: ${dist.cross_analysis}개 (다른 카드와 교차 분석)
+- pattern_discovery: ${dist.pattern_discovery}개 (시간·요일·주기 패턴)
+- change_detection: ${dist.change_detection}개 (최근 변화 감지)
+- positive_or_action: ${dist.positive_or_action}개 (긍정 강화 또는 행동 제안)
+
+다양성:
+- 최소 5개 다른 카드(water, caffeine, sleep, meal, condition, skin, exercise, supplement, alcohol, weight, weather, cycle) 활용
+- 연속으로 같은 카드 X
+- 같은 타입 최대 3개
+
+각 인사이트 형식:
+{
+  "type": "just_input_focused|cross_analysis|pattern_discovery|change_detection|positive|action",
+  "primary_card": "카드명",
+  "related_cards": ["관련카드1"],
+  "message": "정확히 3문장. 관찰 + 근거 + 함의 구조. 40-200자.",
+  "emoji": "이모지1개"
+}
+
+⚠️ 필수:
+- 각 메시지 정확히 3문장 (~어요/~예요/~거예요 어미)
+- 격식체(~합니다) 사용 금지
+- 의료 단언(치료/예방/진단) 금지 → "~할 수 있어요" 추측 톤
+- 이모지 메시지 내 0-2개
+- "예상치 못한 발견" 최소 2개 포함
+
+JSON 배열만 출력하세요. 다른 텍스트 없이.`;
+}
+
+// ===== 시스템 프롬프트 =====
+function getSystemPrompt() {
+  return `당신은 'lua'입니다. 건강 기록 앱에서 사용자의 데이터를 분석해 인사이트를 전달하는 따뜻한 친구예요.
+
+## 페르소나
+- 톤: 카페에서 친한 친구가 내 건강 걱정해주는 느낌
+- 어미: ~어요, ~예요, ~거예요, ~네요 (친근 존댓말)
+- 금지: ~합니다, ~해야 합니다, ~권장됩니다 (격식체)
+- 금지: 치료, 예방, 진단, 완치 (의료 단언)
+- 대안: "~할 수 있어요", "~인 듯해요", "~도움이 될 거예요"
+
+## 인사이트 구조
+각 메시지는 정확히 3문장:
+1. 관찰: "~하시네요!" / "~패턴이에요!"
+2. 근거: 데이터 기반 수치/비교
+3. 함의: 실행 가능한 제안 또는 격려
+
+## 핵심 차별화
+- "예상치 못한 발견": 사용자가 모르던 패턴, 다차원 결합
+- 흔한 일반론 X → 본인 데이터에서만 나오는 개인화된 발견
+- 시간 패턴, 요일 패턴, 교차 영향 발견
+
+## 출력 형식
+JSON 배열만 출력. 다른 텍스트 없이.
+각 요소: { type, primary_card, related_cards, message, emoji }`;
+}
+
+// ===== 검증 =====
+function validateInsights(insights) {
+  if (!Array.isArray(insights) || insights.length !== CONFIG.insightsPerCall) return { valid: false, failure: 'wrong_count' };
+
+  for (const ins of insights) {
+    if (!ins.message || typeof ins.message !== 'string') return { valid: false, failure: 'missing_message' };
+
+    // 3문장 체크
+    const sentenceCount = (ins.message.match(/[.?!]/g) || []).length;
+    if (sentenceCount < 3) return { valid: false, failure: 'too_few_sentences' };
+
+    // 친근 어미 체크
+    const friendlyEndings = /[네어]요!?|예요!?|거예요|있어요|드릴게요|보세요|줄게요/;
+    if (!friendlyEndings.test(ins.message)) return { valid: false, failure: 'formal_tone' };
+
+    // 격식체 금지
+    if (/합니다\.|해야 합니다|권장됩니다|확인되었습니다/.test(ins.message)) return { valid: false, failure: 'formal_tone' };
+
+    // 의료 단언 금지
+    if (/치료|예방|진단|완치/.test(ins.message)) return { valid: false, failure: 'medical_assertion' };
+
+    // 이모지 0-2개
+    const emojiCount = (ins.message.match(/\p{Emoji_Presentation}/gu) || []).length;
+    if (emojiCount > 2) return { valid: false, failure: 'too_many_emojis' };
+
+    // 메시지 길이
+    if (ins.message.length < CONFIG.validation.minMessageLength || ins.message.length > CONFIG.validation.maxMessageLength) {
+      return { valid: false, failure: 'message_length' };
+    }
+  }
+
+  // 다양성 체크
+  const uniqueCards = new Set(insights.flatMap(i => [i.primary_card, ...(i.related_cards || [])]));
+  if (uniqueCards.size < CONFIG.diversity.minDifferentCards) return { valid: false, failure: 'low_diversity' };
+
+  return { valid: true };
+}
+
+// ===== 재시도 강화 프롬프트 =====
+function getRetryInstruction(failure) {
+  const instructions = {
+    too_few_sentences: '각 메시지를 정확히 3문장으로 작성하세요. 관찰 + 근거 + 함의 구조 필수.',
+    formal_tone: '격식체(~합니다) 사용 금지. 친구 카톡 톤(~어요!) 필수.',
+    medical_assertion: '의료 단언(치료, 예방) 사용 금지. "~할 수 있어요" 추측 톤만 사용.',
+    too_many_emojis: '이모지를 메시지당 0-2개만 사용하세요.',
+    low_diversity: '다른 카드 5개 이상 활용 필수. 같은 카드 연속 X.',
+    message_length: '각 메시지 40-200자 이내로 작성하세요.',
+    wrong_count: '정확히 10개의 인사이트를 생성하세요.',
+  };
+  return instructions[failure] || '메시지 형식, 톤, 다양성을 다시 확인하세요.';
+}
+
+// ===== LLM API 호출 =====
+async function callLLMAPI(system, user) {
+  const response = await fetch('/api/insight-llm', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ system, user }),
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error || `API ${response.status}`);
+  }
+
+  return response.json();
+}
+
+// ===== LLM 호출 + 재시도 =====
+async function callLLMWithRetry(system, userPrompt, attempt = 0) {
+  const result = await callLLMAPI(system, userPrompt);
+  const insights = result.insights;
+  const validation = validateInsights(insights);
+
+  if (validation.valid) {
+    return { insights, usage: result.usage };
+  }
+
+  if (attempt < CONFIG.maxRetries) {
+    const retryInstruction = getRetryInstruction(validation.failure);
+    const enhancedPrompt = userPrompt + `\n\n⚠️ 이전 응답이 검증 실패했습니다. 수정 필요:\n${retryInstruction}`;
+    return callLLMWithRetry(system, enhancedPrompt, attempt + 1);
+  }
+
+  // 검증 실패해도 기본 구조가 있으면 사용 (완벽하지 않아도)
+  if (Array.isArray(insights) && insights.length > 0) {
+    return { insights: insights.slice(0, 10), usage: result.usage, validationFailed: true };
+  }
+
+  throw new Error('Validation failed after retries');
+}
+
+// ===== 프롬프트 빌더 =====
+function buildFinalPrompt(userData, triggerType, justInputData) {
+  const system = getSystemPrompt();
+  const userContext = buildLLMContext(userData, triggerType, justInputData);
+  const previousInsights = getPreviousInsightSummaries();
+  const taskInstruction = buildTaskInstruction(triggerType);
+
+  const userPrompt = `# 사용자 데이터
+
+${userContext}
+
+# 이전 인사이트 (중복 회피)
+
+${previousInsights}
+
+# 작업
+
+${taskInstruction}`;
+
+  return { system, user: userPrompt };
+}
+
+// ===== 캐시 관리 =====
+function getLLMCache() {
+  return safeJSON(LLM_CACHE_KEY, null);
+}
+
+function saveLLMCache(cache) {
+  localStorage.setItem(LLM_CACHE_KEY, JSON.stringify(cache));
+}
+
+function formatInsight(raw, index, triggerType) {
+  return {
+    id: `llm_${Date.now()}_${index}`,
+    type: raw.type || 'pattern',
+    primaryCard: raw.primary_card || 'condition',
+    relatedCards: raw.related_cards || [],
+    message: raw.message || '',
+    emoji: raw.emoji || '✨',
+    label: getLabel(raw.type),
+    triggeredBy: triggerType,
+    generatedAt: new Date().toISOString(),
+    viewCount: 0,
+    isLiked: false,
+    isLLM: true,
+  };
+}
+
+function getLabel(type) {
+  const labels = {
+    just_input_focused: '방금 입력',
+    cross_analysis: '통찰',
+    pattern_discovery: '발견',
+    change_detection: '변화',
+    positive: '잘하셨어요',
+    action: '제안',
+  };
+  return labels[type] || '발견';
+}
+
+// ===== 호출 로그 =====
+function logLLMCall(entry) {
+  const logs = safeJSON(LLM_CALL_LOG_KEY, []);
+  logs.push({ ...entry, timestamp: new Date().toISOString() });
+  // 최근 100개만 유지
+  if (logs.length > 100) logs.splice(0, logs.length - 100);
+  localStorage.setItem(LLM_CALL_LOG_KEY, JSON.stringify(logs));
+}
+
+// ===== 메인 진입점: 데이터 입력 시 =====
+export async function onMeaningfulDataInput(dataType, justInputData = null) {
+  // 1. LLM 활성화 체크
+  if (!isLLMEnabled()) return null;
+
+  // 2. 의미 있는 입력 확인
+  if (!isMeaningfulInput(dataType)) return null;
+
+  // 3. 디바운싱
+  if (isDebounced(dataType)) return null;
+
+  // 4. 한도 체크
+  if (isAtDailyLimit()) {
+    logLLMCall({ type: 'limit_reached', dataType });
+    return null; // 템플릿 폴백은 InsightEngine에서 처리
+  }
+
+  // 5. 디바운스 설정
+  setDebounce(dataType);
+
+  // 6. 데이터 수집 + 프롬프트 빌드
+  const userData = collectUserData(CONFIG.contextSize.baselineDays);
+  const prompts = buildFinalPrompt(userData, dataType, justInputData);
+
+  // 7. LLM 호출
+  try {
+    const startTime = Date.now();
+    const result = await callLLMWithRetry(prompts.system, prompts.user);
+    const durationMs = Date.now() - startTime;
+
+    // 8. 인사이트 포맷팅
+    const insights = result.insights.map((raw, i) => formatInsight(raw, i, dataType));
+
+    // 9. 캐시 저장
+    const cache = {
+      userId: 'local',
+      generatedAt: new Date().toISOString(),
+      date: getTodayKey(),
+      triggeredBy: dataType,
+      insights,
+      currentIndex: 0,
+    };
+    saveLLMCache(cache);
+
+    // 10. 사용량 증가
+    incrementDailyUsage(dataType);
+
+    // 11. 로그
+    logLLMCall({
+      type: 'success',
+      dataType,
+      durationMs,
+      promptTokens: result.usage?.promptTokens,
+      outputTokens: result.usage?.outputTokens,
+      validationFailed: result.validationFailed || false,
+      insightCount: insights.length,
+    });
+
+    // 12. 첫 번째 반환
+    return insights[0];
+  } catch (err) {
+    console.error('LLM insight generation failed:', err);
+    logLLMCall({ type: 'error', dataType, error: err.message });
+    return null; // 템플릿 폴백
+  }
+}
+
+// ===== 새로고침 (캐시 순환) =====
+export function onLLMRefresh() {
+  const cache = getLLMCache();
+  if (!cache?.insights || cache.insights.length === 0) return null;
+
+  // 오늘 캐시가 아니면 무효
+  if (cache.date !== getTodayKey()) return null;
+
+  const nextIndex = (cache.currentIndex + 1) % cache.insights.length;
+  cache.currentIndex = nextIndex;
+  cache.insights[nextIndex].viewCount = (cache.insights[nextIndex].viewCount || 0) + 1;
+  saveLLMCache(cache);
+  incrementRefreshCount();
+
+  return cache.insights[nextIndex];
+}
+
+// ===== 현재 LLM 인사이트 가져오기 =====
+export function getCurrentLLMInsight() {
+  const cache = getLLMCache();
+  if (!cache?.insights || cache.insights.length === 0) return null;
+  if (cache.date !== getTodayKey()) return null;
+  return cache.insights[cache.currentIndex || 0];
+}
+
+// ===== LLM 인사이트 전체 (DiscoveryPage용) =====
+export function getLLMInsights() {
+  const cache = getLLMCache();
+  if (!cache?.insights || cache.insights.length === 0) return null;
+  if (cache.date !== getTodayKey()) return null;
+
+  const idx = cache.currentIndex || 0;
+  // 현재 인덱스부터 3개 반환
+  const result = [];
+  for (let i = 0; i < 3 && i < cache.insights.length; i++) {
+    result.push(cache.insights[(idx + i) % cache.insights.length]);
+  }
+  return result;
+}
+
+// ===== 일일 사용량 정보 =====
+export function getLLMUsageInfo() {
+  const usage = getDailyUsage();
+  return {
+    callCount: usage.count,
+    limit: CONFIG.dailyLLMCallLimit,
+    remaining: Math.max(0, CONFIG.dailyLLMCallLimit - usage.count),
+    refreshCount: usage.refreshCount || 0,
+    isAtLimit: usage.count >= CONFIG.dailyLLMCallLimit,
+  };
+}
+
+// ===== 데이터 입력 이벤트 매핑 =====
+export function mapEventToDataType(eventName, eventData) {
+  const mapping = {
+    'lua-food-logged': 'meal_logged',
+    'lua-drink-caffeine': 'drink_caffeine',
+    'lua-drink-alcohol': 'drink_alcohol',
+    'lua-drink-noncaffeine': 'drink_noncaffeine',
+    'lua-exercise-logged': 'exercise_logged',
+    'lua-supplement-completed': 'supplement_completed',
+    'lua-sleep-updated': 'sleep_logged',
+    'lua-condition-logged': 'condition_logged',
+    'lua-cycle-event': 'cycle_event',
+    'lua-record-updated': null, // 범용 이벤트 - 세부 타입 확인 필요
+  };
+  return mapping[eventName] || null;
+}

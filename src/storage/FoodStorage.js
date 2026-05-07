@@ -18,6 +18,7 @@ export function saveFoodRecord(dateStr, record) {
   record.id = Date.now();
   all[dateStr].push(record);
   localStorage.setItem(RECORDS_KEY, JSON.stringify(all));
+  try { window.dispatchEvent(new CustomEvent('lua-food-logged', { detail: record })); } catch {}
   return record;
 }
 

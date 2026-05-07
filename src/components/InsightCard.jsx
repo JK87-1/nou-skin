@@ -1,22 +1,32 @@
 import { useState, useEffect } from 'react';
-import { getOrGenerateInsights, refreshInsights, markShown, getGreetingByTime, toggleLike, getLikes } from '../engine/InsightEngine';
+import { getOrGenerateInsights, refreshInsights, markShown, getGreetingByTime, toggleLike, getLikes, triggerLLMOnDataInput } from '../engine/InsightEngine';
 import { hapticLight } from '../utils/haptic';
 
 export default function InsightCard() {
   const [insights, setInsights] = useState([]);
   const [likes, setLikes] = useState(getLikes);
   const [refreshing, setRefreshing] = useState(false);
+  const [llmLoading, setLlmLoading] = useState(false);
 
   useEffect(() => { setInsights(getOrGenerateInsights()); }, []);
 
   useEffect(() => {
-    const handler = () => setInsights(refreshInsights());
-    window.addEventListener('lua-record-updated', handler);
-    window.addEventListener('lua-sleep-updated', handler);
-    return () => {
-      window.removeEventListener('lua-record-updated', handler);
-      window.removeEventListener('lua-sleep-updated', handler);
+    const triggerAndRefresh = (dataType) => {
+      setInsights(refreshInsights());
+      setLlmLoading(true);
+      triggerLLMOnDataInput(dataType).finally(() => setLlmLoading(false));
     };
+    const handlers = {
+      'lua-record-updated': () => triggerAndRefresh('meal_logged'),
+      'lua-sleep-updated': () => triggerAndRefresh('sleep_logged'),
+      'lua-food-logged': () => triggerAndRefresh('meal_logged'),
+      'lua-drink-logged': (e) => triggerAndRefresh(e.detail?.type || 'drink_caffeine'),
+      'lua-condition-logged': () => triggerAndRefresh('condition_logged'),
+      'lua-supplement-completed': () => triggerAndRefresh('supplement_completed'),
+      'lua-llm-insight-ready': () => setInsights(getOrGenerateInsights()),
+    };
+    Object.entries(handlers).forEach(([evt, fn]) => window.addEventListener(evt, fn));
+    return () => Object.entries(handlers).forEach(([evt, fn]) => window.removeEventListener(evt, fn));
   }, []);
 
   if (insights.length === 0) return null;

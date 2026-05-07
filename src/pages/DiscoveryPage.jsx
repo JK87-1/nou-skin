@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getOrGenerateInsights, refreshInsights, markShown } from '../engine/InsightEngine';
+import { getOrGenerateInsights, refreshInsights, markShown, triggerLLMOnDataInput } from '../engine/InsightEngine';
 import { getRecords } from '../storage/SkinStorage';
 import { getEnabledCategories, getCategoryColor } from '../storage/ProfileStorage';
 import { getConditionChecks, getEnergySubChecks, getMoodSubChecks, getSkinSubChecks } from '../storage/ConditionStorage';
@@ -136,13 +136,21 @@ export default function DiscoveryPage() {
   }, []);
 
   useEffect(() => {
-    const handler = () => setInsights(refreshInsights());
-    window.addEventListener('lua-record-updated', handler);
-    window.addEventListener('lua-sleep-updated', handler);
-    return () => {
-      window.removeEventListener('lua-record-updated', handler);
-      window.removeEventListener('lua-sleep-updated', handler);
+    const triggerAndRefresh = (dataType) => {
+      setInsights(refreshInsights());
+      triggerLLMOnDataInput(dataType);
     };
+    const handlers = {
+      'lua-record-updated': () => triggerAndRefresh('meal_logged'),
+      'lua-sleep-updated': () => triggerAndRefresh('sleep_logged'),
+      'lua-food-logged': () => triggerAndRefresh('meal_logged'),
+      'lua-drink-logged': (e) => triggerAndRefresh(e.detail?.type || 'drink_caffeine'),
+      'lua-condition-logged': () => triggerAndRefresh('condition_logged'),
+      'lua-supplement-completed': () => triggerAndRefresh('supplement_completed'),
+      'lua-llm-insight-ready': () => setInsights(getOrGenerateInsights()),
+    };
+    Object.entries(handlers).forEach(([evt, fn]) => window.addEventListener(evt, fn));
+    return () => Object.entries(handlers).forEach(([evt, fn]) => window.removeEventListener(evt, fn));
   }, []);
 
   const todayDate = new Date();

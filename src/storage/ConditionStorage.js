@@ -31,6 +31,7 @@ export function saveConditionCheck(check) {
   // 최근 100개만 유지
   const trimmed = checks.slice(-100);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
+  try { window.dispatchEvent(new CustomEvent('lua-condition-logged', { detail: trimmed[trimmed.length - 1] })); } catch {}
   return trimmed[trimmed.length - 1];
 }
 

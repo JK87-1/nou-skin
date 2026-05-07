@@ -49,6 +49,9 @@ export function toggleSupplementCheck(id, dateStr) {
     if (!all[date]) all[date] = {};
     all[date][id] = !all[date][id];
     localStorage.setItem(CHECKS_KEY, JSON.stringify(all));
+    if (all[date][id]) {
+      try { window.dispatchEvent(new CustomEvent('lua-supplement-completed', { detail: { id, date } })); } catch {}
+    }
     return all[date];
   } catch { return {}; }
 }

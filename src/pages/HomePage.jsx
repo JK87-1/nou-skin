@@ -3017,6 +3017,8 @@ function DrinkModal({ onClose, onSave }) {
       else { updatedRecords.alcohol = records.alcohol.map(d => ({ ...d, drunkAt: d.drunkAt || drunkAt })); }
       all[todayKey] = updatedRecords;
       localStorage.setItem('lua_drink_records', JSON.stringify(all));
+      const drinkType = tab === 'caffeine' ? 'drink_caffeine' : tab === 'alcohol' ? 'drink_alcohol' : 'drink_noncaffeine';
+      window.dispatchEvent(new CustomEvent('lua-drink-logged', { detail: { type: drinkType, tab } }));
     } catch {}
 
     if (tab === 'caffeine' && cafMg > 30) {
