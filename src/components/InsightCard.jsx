@@ -99,6 +99,7 @@ export default function InsightCard() {
             </div>
             <div>
               <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>lua</span>
+              {main.isLLM && <span style={{ fontSize: 8, color: '#B8865C', marginLeft: 4, padding: '1px 4px', background: 'rgba(184,134,92,0.1)', borderRadius: 4, verticalAlign: 'middle' }}>AI</span>}
               <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 6 }}>{new Date().getHours()}:{String(new Date().getMinutes()).padStart(2, '0')} 기준</span>
             </div>
           </div>

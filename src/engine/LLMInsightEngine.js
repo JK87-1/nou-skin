@@ -515,23 +515,27 @@ function logLLMCall(entry) {
 
 // ===== 메인 진입점: 데이터 입력 시 =====
 export async function onMeaningfulDataInput(dataType, justInputData = null) {
+  console.log(`[LLM] 트리거: ${dataType}`);
+
   // 1. LLM 활성화 체크
-  if (!isLLMEnabled()) return null;
+  if (!isLLMEnabled()) { console.log('[LLM] 비활성화 상태'); return null; }
 
   // 2. 의미 있는 입력 확인
-  if (!isMeaningfulInput(dataType)) return null;
+  if (!isMeaningfulInput(dataType)) { console.log(`[LLM] 의미 없는 입력: ${dataType}`); return null; }
 
   // 3. 디바운싱
-  if (isDebounced(dataType)) return null;
+  if (isDebounced(dataType)) { console.log(`[LLM] 디바운싱됨 (5분 내 중복)`); return null; }
 
   // 4. 한도 체크
   if (isAtDailyLimit()) {
+    console.log(`[LLM] 일일 한도 도달 (${CONFIG.dailyLLMCallLimit}회)`);
     logLLMCall({ type: 'limit_reached', dataType });
-    return null; // 템플릿 폴백은 InsightEngine에서 처리
+    return null;
   }
 
   // 5. 디바운스 설정
   setDebounce(dataType);
+  console.log(`[LLM] API 호출 시작...`);
 
   // 6. 데이터 수집 + 프롬프트 빌드
   const userData = collectUserData(CONFIG.contextSize.baselineDays);
@@ -572,9 +576,10 @@ export async function onMeaningfulDataInput(dataType, justInputData = null) {
     });
 
     // 12. 첫 번째 반환
+    console.log(`[LLM] 성공! ${insights.length}개 생성 (${durationMs}ms, ${result.usage?.promptTokens}+${result.usage?.outputTokens} tokens)`);
     return insights[0];
   } catch (err) {
-    console.error('LLM insight generation failed:', err);
+    console.error('[LLM] 실패:', err.message);
     logLLMCall({ type: 'error', dataType, error: err.message });
     return null; // 템플릿 폴백
   }

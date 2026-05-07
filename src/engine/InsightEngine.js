@@ -1128,9 +1128,13 @@ export function getOrGenerateInsights() {
   // Phase 2: LLM 인사이트 우선
   if (isLLMEnabled()) {
     const llmInsights = getLLMInsights();
-    if (llmInsights && llmInsights.length > 0) return llmInsights;
+    if (llmInsights && llmInsights.length > 0) {
+      console.log('[Insight] LLM 캐시 사용 중 (isLLM: true)');
+      return llmInsights;
+    }
   }
   // Phase 1 폴백: 템플릿 기반
+  console.log('[Insight] 템플릿 폴백 사용');
   const insights = generateDailyInsights();
   cacheInsights(insights);
   return insights;
