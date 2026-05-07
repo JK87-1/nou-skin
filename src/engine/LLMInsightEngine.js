@@ -512,7 +512,7 @@ function getRetryInstruction(failure) {
 
 // ===== LLM API 호출 =====
 async function callLLMAPI(system, user) {
-  const response = await fetch('/api/insight-llm', {
+  const response = await fetch(`${window.location.origin}/api/insight-llm`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ system, user }),
