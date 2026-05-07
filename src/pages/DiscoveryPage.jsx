@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getOrGenerateInsights, refreshInsights, markShown, triggerLLMOnDataInput } from '../engine/InsightEngine';
+import { generateInsightsNow, hasLLMCacheToday } from '../engine/LLMInsightEngine';
 import { getRecords } from '../storage/SkinStorage';
 import { getEnabledCategories, getCategoryColor } from '../storage/ProfileStorage';
 import { getConditionChecks, getEnergySubChecks, getMoodSubChecks, getSkinSubChecks } from '../storage/ConditionStorage';
@@ -133,6 +134,11 @@ export default function DiscoveryPage() {
 
   useEffect(() => {
     setInsights(getOrGenerateInsights());
+    if (!hasLLMCacheToday()) {
+      generateInsightsNow().then(result => {
+        if (result) setInsights(getOrGenerateInsights());
+      });
+    }
   }, []);
 
   useEffect(() => {

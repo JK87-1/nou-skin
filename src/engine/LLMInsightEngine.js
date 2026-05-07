@@ -646,19 +646,49 @@ export function getLLMUsageInfo() {
   };
 }
 
-// ===== 데이터 입력 이벤트 매핑 =====
-export function mapEventToDataType(eventName, eventData) {
-  const mapping = {
-    'lua-food-logged': 'meal_logged',
-    'lua-drink-caffeine': 'drink_caffeine',
-    'lua-drink-alcohol': 'drink_alcohol',
-    'lua-drink-noncaffeine': 'drink_noncaffeine',
-    'lua-exercise-logged': 'exercise_logged',
-    'lua-supplement-completed': 'supplement_completed',
-    'lua-sleep-updated': 'sleep_logged',
-    'lua-condition-logged': 'condition_logged',
-    'lua-cycle-event': 'cycle_event',
-    'lua-record-updated': null, // 범용 이벤트 - 세부 타입 확인 필요
-  };
-  return mapping[eventName] || null;
+// ===== 기존 데이터로 즉시 LLM 생성 (페이지 로드 / 새로고침 시) =====
+export async function generateInsightsNow() {
+  if (!isLLMEnabled()) return null;
+  if (_llmInProgress) { console.log('[LLM] 이미 호출 중'); return null; }
+  if (isAtDailyLimit()) { console.log('[LLM] 일일 한도 도달'); return null; }
+
+  _llmInProgress = true;
+  console.log('[LLM] 즉시 생성 시작...');
+
+  const userData = collectUserData(CONFIG.contextSize.baselineDays);
+  const prompts = buildFinalPrompt(userData, 'page_load', null);
+
+  try {
+    const startTime = Date.now();
+    const result = await callLLMWithRetry(prompts.system, prompts.user);
+    const durationMs = Date.now() - startTime;
+    const insights = result.insights.map((raw, i) => formatInsight(raw, i, 'page_load'));
+
+    saveLLMCache({
+      userId: 'local',
+      generatedAt: new Date().toISOString(),
+      date: getTodayKey(),
+      triggeredBy: 'page_load',
+      insights,
+      currentIndex: 0,
+    });
+
+    incrementDailyUsage('page_load');
+    logLLMCall({ type: 'success', dataType: 'page_load', durationMs, insightCount: insights.length });
+
+    _llmInProgress = false;
+    console.log(`[LLM] 즉시 생성 성공! ${insights.length}개 (${durationMs}ms)`);
+    return insights[0];
+  } catch (err) {
+    _llmInProgress = false;
+    console.error('[LLM] 즉시 생성 실패:', err.message);
+    logLLMCall({ type: 'error', dataType: 'page_load', error: err.message });
+    return null;
+  }
+}
+
+// ===== 오늘 LLM 캐시 있는지 =====
+export function hasLLMCacheToday() {
+  const cache = getLLMCache();
+  return cache?.date === getTodayKey() && cache?.insights?.length > 0;
 }

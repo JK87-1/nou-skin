@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getOrGenerateInsights, refreshInsights, markShown, getGreetingByTime, toggleLike, getLikes, triggerLLMOnDataInput } from '../engine/InsightEngine';
+import { generateInsightsNow, hasLLMCacheToday } from '../engine/LLMInsightEngine';
 import { hapticLight } from '../utils/haptic';
 
 export default function InsightCard() {
@@ -8,7 +9,17 @@ export default function InsightCard() {
   const [refreshing, setRefreshing] = useState(false);
   const [llmLoading, setLlmLoading] = useState(false);
 
-  useEffect(() => { setInsights(getOrGenerateInsights()); }, []);
+  // 페이지 로드 시: LLM 캐시 없으면 즉시 생성
+  useEffect(() => {
+    setInsights(getOrGenerateInsights());
+    if (!hasLLMCacheToday()) {
+      setLlmLoading(true);
+      generateInsightsNow().then(result => {
+        if (result) setInsights(getOrGenerateInsights());
+        setLlmLoading(false);
+      });
+    }
+  }, []);
 
   useEffect(() => {
     const triggerAndRefresh = (dataType) => {
@@ -39,8 +50,20 @@ export default function InsightCard() {
   const handleRefresh = (e) => {
     e.stopPropagation();
     setRefreshing(true);
-    setTimeout(() => { setInsights(refreshInsights()); setRefreshing(false); }, 150);
     hapticLight();
+    const updated = refreshInsights();
+    setInsights(updated);
+    // LLM 캐시 다 돌았거나 없으면 새로 생성
+    if (!hasLLMCacheToday()) {
+      setLlmLoading(true);
+      generateInsightsNow().then(result => {
+        if (result) setInsights(getOrGenerateInsights());
+        setLlmLoading(false);
+        setRefreshing(false);
+      });
+    } else {
+      setTimeout(() => setRefreshing(false), 150);
+    }
   };
 
   const handleLike = (e) => {

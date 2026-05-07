@@ -4,7 +4,7 @@
  * LLM 인사이트 통합: LLM 캐시 우선 → 템플릿 폴백
  * lua 페르소나 100% 적용
  */
-import { getCurrentLLMInsight, getLLMInsights, onLLMRefresh, onMeaningfulDataInput, isLLMEnabled } from './LLMInsightEngine';
+import { getCurrentLLMInsight, getLLMInsights, onLLMRefresh, onMeaningfulDataInput, isLLMEnabled, generateInsightsNow, hasLLMCacheToday } from './LLMInsightEngine';
 
 const CACHE_KEY = 'lua_insight_cache';
 const FEEDBACK_KEY = 'lua_insight_feedback';
