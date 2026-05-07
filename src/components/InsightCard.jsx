@@ -23,6 +23,7 @@ export default function InsightCard() {
       'lua-drink-logged': (e) => triggerAndRefresh(e.detail?.type || 'drink_caffeine'),
       'lua-condition-logged': () => triggerAndRefresh('condition_logged'),
       'lua-supplement-completed': () => triggerAndRefresh('supplement_completed'),
+      'lua-skin-logged': () => triggerAndRefresh('condition_logged'),
       'lua-llm-insight-ready': () => setInsights(getOrGenerateInsights()),
     };
     Object.entries(handlers).forEach(([evt, fn]) => window.addEventListener(evt, fn));

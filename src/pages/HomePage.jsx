@@ -1325,13 +1325,15 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
 
               if (cardId === 'skin_check') {
                 const _skinLog = (() => { try { const logs = JSON.parse(localStorage.getItem('lua_skin_check_logs') || '{}'); return logs[_todayKey] || null; } catch { return null; } })();
-                const _skinScore = _skinLog ? calculateSkinScore(_skinLog) : null;
-                const _skinState = _skinScore !== null ? getScoreState(_skinScore) : 'unchecked';
+                // Phase 2: 10점 직접 점수 우선, 없으면 기존 100점 호환
+                const _skinScore = _skinLog?.score || (_skinLog ? calculateSkinScore(_skinLog) : null);
+                const _is10pt = !!_skinLog?.score;
+                const _skinState = _skinScore !== null ? (_is10pt ? (_skinScore >= 7 ? 'good' : _skinScore >= 4 ? 'signals' : 'needs_care') : getScoreState(_skinScore)) : 'unchecked';
                 const _yesterdayLog = (() => { try { const logs = JSON.parse(localStorage.getItem('lua_skin_check_logs') || '{}'); const yd = new Date(Date.now() - 86400000).toISOString().slice(0, 10); return logs[yd] || null; } catch { return null; } })();
-                const _yesterdayScore = _yesterdayLog ? calculateSkinScore(_yesterdayLog) : null;
+                const _yesterdayScore = _yesterdayLog?.score || (_yesterdayLog ? calculateSkinScore(_yesterdayLog) : null);
                 const _delta = (_skinScore !== null && _yesterdayScore !== null) ? _skinScore - _yesterdayScore : null;
-                const _dots = _skinScore !== null ? getDotColors(_skinScore, _skinLog?.signals || []) : [];
-                const _topSignals = _skinLog?.signals?.length > 0 ? getTopImpactSignals(_skinLog.signals).replace('이 영향을 주고 있어요', '') : '';
+                const _signalCount = (_skinLog?.signals || []).length;
+                const _scoreColor = _is10pt ? (_skinScore >= 8 ? '#5E9D8A' : _skinScore >= 6 ? '#8A9EAD' : _skinScore >= 4 ? '#C9A065' : '#C97C5E') : 'var(--text-primary)';
                 return editWrap('피부', (
                   <div onClick={() => handleCardTap('skin_check', () => setShowSkinCheckModal(true))} style={{ ..._cs, cursor: 'pointer', padding: '20px', position: 'relative', animation: tappedCard === 'skin_check' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 0, flex: '0 0 auto' }}>
@@ -1344,19 +1346,16 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
                       {_skinScore !== null ? (
                         <div>
                           <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                            <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_skinScore}</span>
-                            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>점</span>
+                            <span style={{ fontSize: 26, fontWeight: 600, color: _scoreColor, fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_skinScore}</span>
+                            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{_is10pt ? '/10' : '점'}</span>
                           </div>
                           {_delta !== null ? (
-                            <div style={{ fontSize: 10, color: _delta >= 0 ? '#5E9D8A' : _delta >= -5 ? '#B8865C' : '#C97C5E', marginTop: 4 }}>
-                              {_delta >= 0 ? '↑' : '↓'} 어제 {_delta >= 0 ? '+' : ''}{_delta}
+                            <div style={{ fontSize: 10, color: _delta > 0 ? '#5E9D8A' : _delta < 0 ? '#C97C5E' : '#8A9EAD', marginTop: 4 }}>
+                              {_delta > 0 ? '↑' : _delta < 0 ? '↓' : '→'} 어제 {_delta > 0 ? '+' : ''}{_delta}
                             </div>
-                          ) : _topSignals ? (
-                            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>{_topSignals}</div>
+                          ) : _signalCount > 0 ? (
+                            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>신호 {_signalCount}개</div>
                           ) : null}
-                          <div style={{ position: 'absolute', right: 14, bottom: 14, display: 'flex', gap: 3 }}>
-                            {_dots.map((c, i) => <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: c }} />)}
-                          </div>
                         </div>
                       ) : (
                         <div>
@@ -4137,208 +4136,327 @@ function SupplementModal({ onClose, onUpdate, onCheck }) {
   );
 }
 
-const SKIN_SIGNALS = [
-  { key: 'new_trouble', icon: '🔴', label: '새 트러블', group: 'trouble' },
-  { key: 'dry', icon: '🌵', label: '건조함', group: 'dry' },
-  { key: 'oily', icon: '💧', label: '번들거림', group: 'neutral' },
-  { key: 'puffy', icon: '🎈', label: '붓기', group: 'neutral' },
-  { key: 'redness', icon: '🌡️', label: '홍조·열감', group: 'neutral' },
-  { key: 'sensitive', icon: '😰', label: '예민함', group: 'neutral' },
-  { key: 'dull', icon: '😴', label: '칙칙함', group: 'neutral' },
+// ===== 피부 자가 체크 모달 (Phase 2) =====
+const SCORE_GUIDES = [
+  { score: 10, label: '완벽', desc: '빛나고 균일한 피부', color: '#D4A76A' },
+  { score: 9, label: '매우 좋음', desc: '트러블 없고 매끄러움', color: '#C9A065' },
+  { score: 8, label: '좋음', desc: '전반적으로 안정적', color: '#5E9D8A' },
+  { score: 7, label: '괜찮음', desc: '약간 신경쓰이지만 양호', color: '#5E9D8A' },
+  { score: 6, label: '평소', desc: '본인 평균 수준', color: '#8A9EAD' },
+  { score: 5, label: '보통', desc: '한두 가지 문제 있음', color: '#8A9EAD' },
+  { score: 4, label: '약간 안 좋음', desc: '여러 신호 보임', color: '#C9A065' },
+  { score: 3, label: '안 좋음', desc: '트러블 + 컨디션 하락', color: '#C97C5E' },
+  { score: 2, label: '많이 안 좋음', desc: '여러 부위 트러블', color: '#C97C5E' },
+  { score: 1, label: '매우 안 좋음', desc: '심한 트러블이나 염증', color: '#B85C5C' },
 ];
 
-const SKIN_LOCATIONS = [
-  { key: 'forehead', label: '이마' },
-  { key: 'cheek', label: '볼' },
-  { key: 'chin', label: '턱' },
-  { key: 'nose', label: '코' },
-  { key: 'all_over', label: '전체' },
+const FACE_ZONES = [
+  { key: 'tZone', label: '이마 (T존)', desc: '이마, 코, 코 주변' },
+  { key: 'uZone', label: '볼·광대 (U존)', desc: '양쪽 볼, 광대뼈' },
+  { key: 'mouthArea', label: '입 주변', desc: '입 가장자리, 인중' },
+  { key: 'jawNeck', label: '턱·목', desc: '턱선, 목 부위' },
 ];
 
-const CONDITION_OPTIONS = [
-  { key: 'bad', emoji: '😟', label: '안 좋음' },
-  { key: 'normal', emoji: '😐', label: '평소' },
-  { key: 'okay', emoji: '🙂', label: '괜찮음' },
-  { key: 'glowing', emoji: '✨', label: '빛남' },
+const SIGNAL_CATEGORIES = [
+  { key: 'oilTexture', name: '유분·결', icon: '💧', signals: ['번들거림', '건조함', '결 거칠음', '피지 분비 증가'] },
+  { key: 'troubles', name: '트러블', icon: '🔴', signals: ['새 여드름', '화이트헤드', '블랙헤드', '염증성 트러블'] },
+  { key: 'colorTone', name: '색조·톤', icon: '🎨', signals: ['칙칙함', '붉어짐', '색소 불균일', '다크서클'] },
+  { key: 'irritation', name: '자극·민감', icon: '🌡️', signals: ['가려움', '따끔거림', '홍조·열감', '예민함'] },
+  { key: 'other', name: '기타', icon: '✨', signals: ['붓기', '모공 도드라짐', '각질'] },
 ];
+
+function calculateAutoScore(selectedZones, selectedSignals) {
+  let score = 7;
+  const serious = ['새 여드름', '염증성 트러블', '홍조·열감'];
+  const mild = ['건조함', '번들거림', '칙칙함'];
+  for (const z of selectedZones) {
+    const sev = z.severity || 1;
+    score -= sev === 3 ? 1.5 : sev === 2 ? 1 : 0.5;
+  }
+  for (const sig of selectedSignals) {
+    if (serious.includes(sig)) score -= 1;
+    else if (mild.includes(sig)) score -= 0.3;
+    else score -= 0.5;
+  }
+  return Math.max(1, Math.min(10, Math.round(score)));
+}
 
 function SkinCheckModal({ onClose, onUpdate }) {
   const swipe = useSwipeDown(onClose);
   const todayKey = new Date().toISOString().slice(0, 10);
-  const existingLog = (() => { try { const logs = JSON.parse(localStorage.getItem('lua_skin_check_logs') || '{}'); return logs[todayKey] || null; } catch { return null; } })();
+  const existingLog = (() => { try { return JSON.parse(localStorage.getItem('lua_skin_check_logs') || '{}')[todayKey] || null; } catch { return null; } })();
 
-  const [condition, setCondition] = useState(existingLog?.overallCondition || null);
-  const [signals, setSignals] = useState(existingLog?.signals || []);
-  const [locations, setLocations] = useState(existingLog?.locations || []);
-
-  // 어제 점수
-  const yesterdayScore = (() => { try { const logs = JSON.parse(localStorage.getItem('lua_skin_check_logs') || '{}'); const yd = new Date(Date.now() - 86400000).toISOString().slice(0, 10); const yl = logs[yd]; return yl ? calculateSkinScore(yl) : null; } catch { return null; } })();
-
-  // 실시간 점수 계산
-  const currentInput = { overallCondition: condition, signals, locations };
-  const score = condition ? calculateSkinScore(currentInput) : null;
-  const delta = (score !== null && yesterdayScore !== null) ? score - yesterdayScore : null;
-  const impactText = getTopImpactSignals(signals);
-
-  const toggleSignal = (key) => {
-    setSignals(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
-  };
-
-  const toggleLocation = (key) => {
-    if (key === 'all_over') {
-      setLocations(['all_over']);
-    } else {
-      setLocations(prev => {
-        const without = prev.filter(k => k !== 'all_over');
-        return without.includes(key) ? without.filter(k => k !== key) : [...without, key];
-      });
-    }
-  };
-
-  const handleSave = () => {
-    if (!condition) return;
+  // 어제 + 7일 데이터
+  const comparison = useMemo(() => {
     try {
       const logs = JSON.parse(localStorage.getItem('lua_skin_check_logs') || '{}');
-      logs[todayKey] = { overallCondition: condition, signals, locations, createdAt: new Date().toISOString() };
+      const ydKey = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+      const yesterdayLog = logs[ydKey];
+      const yesterdayScore = yesterdayLog?.score || null;
+      const weekScores = [];
+      for (let i = 1; i <= 7; i++) {
+        const dk = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+        if (logs[dk]?.score) weekScores.push(logs[dk].score);
+      }
+      const weekAvg = weekScores.length >= 2 ? Math.round(weekScores.reduce((a, b) => a + b, 0) / weekScores.length * 10) / 10 : null;
+      const weekMin = weekScores.length >= 2 ? Math.min(...weekScores) : null;
+      const weekMax = weekScores.length >= 2 ? Math.max(...weekScores) : null;
+      return { yesterdayScore, weekAvg, weekMin, weekMax, weekDays: weekScores.length };
+    } catch { return { yesterdayScore: null, weekAvg: null, weekMin: null, weekMax: null, weekDays: 0 }; }
+  }, []);
+
+  const defaultScore = existingLog?.score || comparison.yesterdayScore || 7;
+  const [score, setScore] = useState(defaultScore);
+  const [zones, setZones] = useState(existingLog?.zones || []);
+  const [selectedSignals, setSelectedSignals] = useState(existingLog?.signals || []);
+  const [memo, setMemo] = useState(existingLog?.memo || '');
+  const [openCategory, setOpenCategory] = useState('oilTexture');
+  const [showAutoHint, setShowAutoHint] = useState(false);
+  const sliderRef = useRef(null);
+
+  const guide = SCORE_GUIDES.find(g => g.score === score) || SCORE_GUIDES[3];
+
+  // 자동 점수 계산
+  const autoScore = useMemo(() => {
+    if (zones.length === 0 && selectedSignals.length === 0) return null;
+    return calculateAutoScore(zones, selectedSignals);
+  }, [zones, selectedSignals]);
+
+  useEffect(() => {
+    if (autoScore !== null && Math.abs(autoScore - score) >= 2) setShowAutoHint(true);
+    else setShowAutoHint(false);
+  }, [autoScore, score]);
+
+  // 슬라이더 터치/마우스 핸들러
+  const handleSliderInteraction = useCallback((clientX) => {
+    const el = sliderRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    const val = Math.max(1, Math.min(10, Math.round(pct * 9 + 1)));
+    setScore(val);
+    hapticLight();
+  }, []);
+
+  const onSliderTouch = useCallback((e) => { e.preventDefault(); handleSliderInteraction(e.touches[0].clientX); }, [handleSliderInteraction]);
+  const onSliderMouse = useCallback((e) => { if (e.buttons === 1) handleSliderInteraction(e.clientX); }, [handleSliderInteraction]);
+
+  // 부위 토글
+  const toggleZone = (zoneKey) => {
+    setZones(prev => {
+      const exists = prev.find(z => z.zone === zoneKey);
+      if (exists) return prev.filter(z => z.zone !== zoneKey);
+      return [...prev, { zone: zoneKey, signals: [], severity: 1 }];
+    });
+  };
+
+  // 신호 토글
+  const toggleSignal = (sig) => {
+    setSelectedSignals(prev => prev.includes(sig) ? prev.filter(s => s !== sig) : [...prev, sig]);
+  };
+
+  // 카테고리별 선택 수
+  const getCatCount = (cat) => cat.signals.filter(s => selectedSignals.includes(s)).length;
+
+  // 저장
+  const handleSave = () => {
+    try {
+      const logs = JSON.parse(localStorage.getItem('lua_skin_check_logs') || '{}');
+      const logData = {
+        score,
+        autoCalculatedScore: autoScore,
+        zones,
+        signals: selectedSignals,
+        memo: memo.trim() || undefined,
+        createdAt: new Date().toISOString(),
+        source: 'user',
+        // 기존 호환
+        overallCondition: score >= 8 ? 'glowing' : score >= 6 ? 'okay' : score >= 4 ? 'normal' : 'bad',
+        locations: zones.map(z => z.zone === 'tZone' ? 'forehead' : z.zone === 'uZone' ? 'cheek' : z.zone === 'jawNeck' ? 'chin' : 'nose'),
+      };
+      logs[todayKey] = logData;
       localStorage.setItem('lua_skin_check_logs', JSON.stringify(logs));
-      // 기존 호환: nou_skin_sub_checks에도 저장
-      saveSkinSubCheck({ tags: signals });
+      // 기존 호환
+      const legacySignals = selectedSignals.map(s => {
+        if (s.includes('여드름') || s.includes('트러블')) return 'new_trouble';
+        if (s.includes('건조')) return 'dry';
+        if (s.includes('번들')) return 'oily';
+        if (s.includes('붓기')) return 'puffy';
+        if (s.includes('홍조') || s.includes('붉어')) return 'redness';
+        if (s.includes('예민') || s.includes('가려') || s.includes('따끔')) return 'sensitive';
+        if (s.includes('칙칙')) return 'dull';
+        return null;
+      }).filter(Boolean);
+      saveSkinSubCheck({ tags: [...new Set(legacySignals)] });
+      window.dispatchEvent(new CustomEvent('lua-skin-logged', { detail: logData }));
     } catch {}
     onUpdate();
   };
 
-  const getSignalChipStyle = (sig, active) => {
-    if (!active) return { background: '#F4F4F4', border: '0.5px solid transparent', color: '#2C4A5E' };
-    if (sig.group === 'trouble') return { background: 'rgba(217, 124, 94, 0.25)', border: '0.5px solid rgba(217, 124, 94, 0.4)', color: '#8A4A3C' };
-    if (sig.group === 'dry') return { background: 'rgba(184, 134, 92, 0.25)', border: '0.5px solid rgba(184, 134, 92, 0.4)', color: '#6B4A2A' };
-    return { background: 'rgba(184, 134, 92, 0.18)', border: '0.5px solid rgba(184, 134, 92, 0.3)', color: '#6B4A2A' };
-  };
-
-  // 권장 관리 메시지
-  const getCareMessage = () => {
-    if (score === null) return null;
-    if (score >= 75) return { type: 'good', text: '오늘 컨디션 좋아요. 이 흐름 그대로 유지해보세요 ✨' };
-    const recs = [];
-    if (signals.includes('dry')) recs.push({ icon: '💧', text: '수분 마스크 또는 보습 한 번 더' });
-    if (signals.includes('new_trouble')) recs.push({ icon: '🧴', text: '진정 토너 사용' });
-    if (signals.includes('redness') || signals.includes('sensitive')) recs.push({ icon: '🌡️', text: '미온수 세안, 자극 줄이기' });
-    if (signals.includes('dull')) recs.push({ icon: '🛌', text: '충분한 휴식' });
-    if (signals.includes('oily')) recs.push({ icon: '💧', text: '시카 토너 또는 가벼운 수분' });
-    if (recs.length === 0) recs.push({ icon: '💧', text: '수분 한 번 더' }, { icon: '🛌', text: '충분한 휴식' });
-    return { type: 'care', items: recs.slice(0, 3) };
-  };
-
-  const care = getCareMessage();
+  const sliderPct = ((score - 1) / 9) * 100;
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
       <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '20px 20px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
-        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.1)', margin: '0 auto 20px' }} />
-        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24, textAlign: 'center' }}>피부</div>
-
-        {/* 1. 전체 컨디션 */}
-        <div style={{ fontSize: 12, fontWeight: 500, color: '#4A6B85', marginBottom: 10 }}>전체 컨디션</div>
-        <div style={{ display: 'flex', gap: 6, marginBottom: 22 }}>
-          {CONDITION_OPTIONS.map(opt => {
-            const active = condition === opt.key;
-            return (
-              <div key={opt.key} onClick={() => setCondition(opt.key)} style={{
-                flex: 1, padding: '12px 4px', borderRadius: 12, textAlign: 'center', cursor: 'pointer',
-                background: active ? '#FAF1E0' : '#F4F4F4',
-                border: active ? '0.5px solid #B8865C' : '0.5px solid transparent',
-                transition: 'all 0.15s ease',
-              }}>
-                <div style={{ fontSize: 18 }}>{opt.emoji}</div>
-                <div style={{ fontSize: 9, color: active ? '#6B4A2A' : '#6B8499', fontWeight: active ? 500 : 400, marginTop: 4 }}>{opt.label}</div>
-              </div>
-            );
-          })}
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.1)', margin: '0 auto 16px' }} />
+        <div style={{ textAlign: 'center', marginBottom: 20 }}>
+          <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)' }}>피부</div>
+          <div style={{ fontSize: 12, color: '#8A9EAD', marginTop: 2 }}>{new Date().getMonth() + 1}월 {new Date().getDate()}일 {new Date().getHours()}:{String(new Date().getMinutes()).padStart(2, '0')}</div>
         </div>
 
-        {/* 2. 신호 칩 */}
-        <div style={{ fontSize: 12, fontWeight: 500, color: '#4A6B85', marginBottom: 10 }}>눈에 띄는 신호 (있으면 탭)</div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
-          {SKIN_SIGNALS.map(sig => {
-            const active = signals.includes(sig.key);
-            const chipStyle = getSignalChipStyle(sig, active);
-            return (
-              <div key={sig.key} onClick={() => toggleSignal(sig.key)} style={{
-                padding: '7px 10px', borderRadius: 14, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 4,
-                background: chipStyle.background, border: chipStyle.border,
-                transition: 'all 0.15s ease',
-              }}>
-                <span style={{ fontSize: 11 }}>{sig.icon}</span>
-                <span style={{ fontSize: 10, fontWeight: active ? 500 : 400, color: chipStyle.color }}>{sig.label}</span>
-              </div>
-            );
-          })}
+        {/* [1] 점수 슬라이더 */}
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 14 }}>
+            <span style={{ fontSize: 24, fontWeight: 500, color: guide.color }}>{score}</span>
+            <span style={{ fontSize: 13, color: '#8A9EAD' }}>/10</span>
+          </div>
+          <div ref={sliderRef}
+            onTouchStart={onSliderTouch} onTouchMove={onSliderTouch}
+            onMouseDown={onSliderMouse} onMouseMove={onSliderMouse}
+            style={{ position: 'relative', height: 32, cursor: 'pointer', touchAction: 'none', userSelect: 'none' }}>
+            <div style={{ position: 'absolute', top: 13, left: 0, right: 0, height: 6, borderRadius: 3, background: '#F0F0F0' }} />
+            <div style={{ position: 'absolute', top: 13, left: 0, width: `${sliderPct}%`, height: 6, borderRadius: 3, background: guide.color, transition: 'width 0.05s' }} />
+            <div style={{ position: 'absolute', top: 7, left: `${sliderPct}%`, transform: 'translateX(-50%)', width: 18, height: 18, borderRadius: '50%', background: '#fff', border: `2px solid ${guide.color}`, boxShadow: '0 1px 4px rgba(0,0,0,0.15)', transition: 'left 0.05s' }} />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+            <span style={{ fontSize: 10, color: '#B0B8C0' }}>1</span>
+            <span style={{ fontSize: 10, color: '#B0B8C0' }}>10</span>
+          </div>
+          <div style={{ background: `${guide.color}12`, borderRadius: 10, padding: '8px 12px', marginTop: 8 }}>
+            <span style={{ fontSize: 11, fontWeight: 500, color: guide.color }}>{guide.label}</span>
+            <span style={{ fontSize: 11, color: '#6B8499', marginLeft: 6 }}>{guide.desc}</span>
+          </div>
         </div>
 
-        {/* 3. 신호 위치 (신호 1개 이상 선택 시) */}
-        {signals.length > 0 && (
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 12, fontWeight: 500, color: '#4A6B85', marginBottom: 10 }}>신호 위치 (선택)</div>
-            <div style={{ display: 'flex', gap: 6 }}>
-              {SKIN_LOCATIONS.map(loc => {
-                const active = locations.includes(loc.key);
-                return (
-                  <div key={loc.key} onClick={() => toggleLocation(loc.key)} style={{
-                    flex: 1, padding: 8, borderRadius: 10, textAlign: 'center', cursor: 'pointer',
-                    background: active ? '#FAF1E0' : '#F4F4F4',
-                    border: active ? '0.5px solid #B8865C' : '0.5px solid transparent',
-                    fontSize: 10, color: active ? '#6B4A2A' : '#6B8499', fontWeight: active ? 500 : 400,
-                    transition: 'all 0.15s ease',
-                  }}>{loc.label}</div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* 4. 자동 계산 점수 카드 */}
-        {score !== null && (
-          <div style={{ background: '#FFF8F0', borderRadius: 14, padding: 14, border: '0.5px solid rgba(184, 134, 92, 0.2)', marginBottom: 14 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-              <span style={{ fontSize: 9, color: '#8A5A3C', letterSpacing: 0.3 }}>📊 오늘 피부 점수</span>
-              <span style={{ fontSize: 9, color: '#B8865C' }}>자동 계산</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-              <span style={{ fontSize: 24, fontWeight: 500, color: '#2C4A5E' }}>{score}</span>
-              {delta !== null && (
-                <span style={{ fontSize: 11, color: delta >= 0 ? '#5E9D8A' : delta >= -5 ? '#B8865C' : '#C97C5E' }}>
-                  {delta >= 0 ? '↑' : '↓'} 어제 {yesterdayScore}
-                </span>
-              )}
-            </div>
-            {impactText && <div style={{ fontSize: 10, color: '#6B8499', marginTop: 4 }}>{impactText}</div>}
-          </div>
-        )}
-
-        {/* 5. 권장 관리 */}
-        {care && care.type === 'good' && (
-          <div style={{ background: '#FAF8F4', borderRadius: 14, padding: 12, marginBottom: 16 }}>
-            <div style={{ fontSize: 11, color: '#4A3A2E', lineHeight: 1.5 }}>{care.text}</div>
-          </div>
-        )}
-        {care && care.type === 'care' && (
-          <div style={{ background: '#FAF1E0', borderRadius: 14, padding: 14, marginBottom: 16 }}>
-            <div style={{ fontSize: 9, color: '#8A5A3C', letterSpacing: 0.3, marginBottom: 8, fontWeight: 500 }}>🌿 오늘 권장 관리</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {care.items.map((item, i) => (
-                <div key={i} style={{ background: 'white', borderRadius: 8, padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 12 }}>{item.icon}</span>
-                  <span style={{ fontSize: 10, color: '#4A3A2E' }}>{item.text}</span>
+        {/* [2] 부위별 체크 */}
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ fontSize: 14, fontWeight: 500, color: '#2C4A5E', marginBottom: 4 }}>부위별로 어때요?</div>
+          <div style={{ fontSize: 11, color: '#8A9EAD', marginBottom: 10 }}>신경쓰이는 부위만 탭하세요</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            {FACE_ZONES.map(z => {
+              const active = zones.some(zz => zz.zone === z.key);
+              return (
+                <div key={z.key} onClick={() => toggleZone(z.key)} style={{
+                  padding: '10px 12px', borderRadius: 12, cursor: 'pointer',
+                  background: active ? 'rgba(184, 134, 92, 0.08)' : '#FAFAFA',
+                  border: active ? '0.5px solid rgba(184, 134, 92, 0.3)' : '0.5px solid #ECECEC',
+                  transition: 'all 0.15s',
+                }}>
+                  <div style={{ fontSize: 12, fontWeight: active ? 500 : 400, color: active ? '#6B4A2A' : '#2C4A5E' }}>{z.label}</div>
+                  <div style={{ fontSize: 10, color: '#8A9EAD', marginTop: 2 }}>{active ? '선택됨' : z.desc}</div>
                 </div>
-              ))}
+              );
+            })}
+          </div>
+        </div>
+
+        {/* [3] 눈에 띄는 신호 (카테고리) */}
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ fontSize: 14, fontWeight: 500, color: '#2C4A5E', marginBottom: 4 }}>눈에 띄는 신호</div>
+          <div style={{ fontSize: 11, color: '#8A9EAD', marginBottom: 10 }}>카테고리별로 정리됐어요</div>
+          {SIGNAL_CATEGORIES.map(cat => {
+            const isOpen = openCategory === cat.key;
+            const count = getCatCount(cat);
+            return (
+              <div key={cat.key} style={{ marginBottom: 6 }}>
+                <div onClick={() => setOpenCategory(isOpen ? null : cat.key)} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '10px 12px', borderRadius: 10, cursor: 'pointer',
+                  background: count > 0 ? 'rgba(184, 134, 92, 0.06)' : '#FAFAFA',
+                  border: count > 0 ? '0.5px solid rgba(184, 134, 92, 0.2)' : '0.5px solid #ECECEC',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 13 }}>{cat.icon}</span>
+                    <span style={{ fontSize: 12, fontWeight: 500, color: '#2C4A5E' }}>{cat.name}</span>
+                    {count > 0 && <span style={{ fontSize: 10, color: '#B8865C', fontWeight: 500 }}>({count})</span>}
+                  </div>
+                  <span style={{ fontSize: 10, color: '#B0B8C0', transform: isOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}>▶</span>
+                </div>
+                {isOpen && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, padding: '8px 4px' }}>
+                    {cat.signals.map(sig => {
+                      const active = selectedSignals.includes(sig);
+                      return (
+                        <div key={sig} onClick={() => toggleSignal(sig)} style={{
+                          padding: '6px 10px', borderRadius: 14, cursor: 'pointer', fontSize: 11,
+                          background: active ? 'rgba(184, 134, 92, 0.15)' : 'transparent',
+                          border: active ? 'none' : '0.5px solid #ECECEC',
+                          color: active ? '#6B4A2A' : '#6B8499', fontWeight: active ? 500 : 400,
+                          transition: 'all 0.15s',
+                        }}>{sig}</div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* [4] 메모 */}
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ fontSize: 14, fontWeight: 500, color: '#2C4A5E', marginBottom: 4 }}>오늘 특이사항 (선택)</div>
+          <div style={{ fontSize: 11, color: '#8A9EAD', marginBottom: 8 }}>새 화장품, 외출, 스트레스 등</div>
+          <textarea value={memo} onChange={e => setMemo(e.target.value.slice(0, 200))} placeholder="예: 새 토너 시도, 야외 활동 2시간" style={{
+            width: '100%', minHeight: 56, padding: '10px 12px', borderRadius: 12, border: '0.5px solid #ECECEC',
+            background: '#FAFAFA', fontSize: 12, color: '#2C4A5E', fontFamily: 'inherit', resize: 'none', outline: 'none', boxSizing: 'border-box',
+          }} />
+          {memo.length > 0 && <div style={{ fontSize: 10, color: '#B0B8C0', textAlign: 'right', marginTop: 2 }}>{memo.length}/200</div>}
+        </div>
+
+        {/* [5] 자동 점수 제안 */}
+        {showAutoHint && autoScore !== null && (
+          <div style={{ background: '#FFF8F0', borderRadius: 12, padding: '10px 14px', border: '0.5px solid rgba(184, 134, 92, 0.2)', marginBottom: 16 }}>
+            <div style={{ fontSize: 11, color: '#6B4A2A', lineHeight: 1.5 }}>
+              신호들로 보면 <strong>{autoScore}점</strong> 정도가 맞을 수 있어요. 직접 점수가 더 정확하다면 그대로 두셔도 좋아요
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+              <button onClick={() => { setScore(autoScore); setShowAutoHint(false); }} style={{
+                padding: '6px 12px', borderRadius: 8, border: 'none', background: '#B8865C', color: '#fff',
+                fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+              }}>{autoScore}점으로 조정</button>
+              <button onClick={() => setShowAutoHint(false)} style={{
+                padding: '6px 12px', borderRadius: 8, border: '0.5px solid #ddd', background: '#fff', color: '#6B8499',
+                fontSize: 11, cursor: 'pointer', fontFamily: 'inherit',
+              }}>유지</button>
             </div>
           </div>
         )}
 
-        {/* 버튼 */}
+        {/* [6] 어제·평균 비교 */}
+        <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
+          <div style={{ flex: 1, background: '#FAFAFA', borderRadius: 12, padding: '10px 12px' }}>
+            <div style={{ fontSize: 11, color: '#8A9EAD', marginBottom: 4 }}>어제 → 오늘</div>
+            {comparison.yesterdayScore !== null ? (
+              <>
+                <div style={{ fontSize: 14, fontWeight: 500, color: '#2C4A5E' }}>
+                  {comparison.yesterdayScore} → {score}
+                </div>
+                <div style={{ fontSize: 11, color: score > comparison.yesterdayScore ? '#5E9D8A' : score < comparison.yesterdayScore ? '#C97C5E' : '#8A9EAD', marginTop: 2 }}>
+                  {score > comparison.yesterdayScore ? `↑ +${score - comparison.yesterdayScore}점` : score < comparison.yesterdayScore ? `↓ ${score - comparison.yesterdayScore}점` : '동일'}
+                </div>
+              </>
+            ) : (
+              <div style={{ fontSize: 12, color: '#B0B8C0' }}>첫 기록이에요!</div>
+            )}
+          </div>
+          <div style={{ flex: 1, background: '#FAFAFA', borderRadius: 12, padding: '10px 12px' }}>
+            <div style={{ fontSize: 11, color: '#8A9EAD', marginBottom: 4 }}>7일 평균</div>
+            {comparison.weekAvg !== null ? (
+              <>
+                <div style={{ fontSize: 14, fontWeight: 500, color: '#2C4A5E' }}>{comparison.weekAvg}</div>
+                <div style={{ fontSize: 11, color: '#8A9EAD', marginTop: 2 }}>{comparison.weekMin}-{comparison.weekMax} 범위</div>
+              </>
+            ) : (
+              <div style={{ fontSize: 12, color: '#B0B8C0' }}>더 기록하면 평균 보여드릴게요</div>
+            )}
+          </div>
+        </div>
+
+        {/* [7] 버튼 */}
         <div style={{ display: 'flex', gap: 10 }}>
           <button onClick={onClose} style={{ flex: 1, padding: '11px 0', borderRadius: 12, border: 'none', background: '#F4F4F4', color: '#6B8499', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>취소</button>
-          <button onClick={handleSave} disabled={!condition} style={{ flex: 1.5, padding: '11px 0', borderRadius: 12, border: 'none', background: condition ? '#B8865C' : '#ddd', color: condition ? '#fff' : '#999', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s' }}>저장</button>
+          <button onClick={handleSave} style={{ flex: 1.5, padding: '11px 0', borderRadius: 12, border: 'none', background: '#B8865C', color: '#fff', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>저장</button>
         </div>
       </div>
     </div>
