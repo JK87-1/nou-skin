@@ -93,38 +93,35 @@ export default function InsightCard() {
           </div>
         </div>
 
-        {/* 메시지 (전체 폭 사용) */}
-        <div style={{ position: 'relative' }}>
-          <div style={{ fontSize: 14, fontWeight: 500, color: 'rgba(0,0,0,0.6)', lineHeight: 1.7 }}>
-            {main.message}
-            {main.action && (
-              <button onClick={handleAction} style={{
-                display: 'inline-block', background: 'rgba(0,0,0,0.04)', border: 'none', borderRadius: 10,
-                padding: '5px 12px', fontSize: 11, color: 'var(--text-primary)', fontWeight: 500,
-                cursor: 'pointer', fontFamily: 'inherit', marginLeft: 4, verticalAlign: 'middle',
-              }}>
-                {main.action.label}
-              </button>
-            )}
-          </div>
-          {/* 버튼: 우하단 고정, 마지막 줄 높이 */}
-          <div style={{ position: 'absolute', right: 0, bottom: 0, display: 'flex', gap: 12 }}>
-            <div onClick={handleRefresh} style={{ cursor: 'pointer', WebkitTapHighlightColor: 'transparent', display: 'flex' }}>
+        {/* 메시지 + 인라인 버튼 */}
+        <div style={{ fontSize: 14, fontWeight: 500, color: 'rgba(0,0,0,0.6)', lineHeight: 1.7 }}>
+          {main.message}
+          {main.action && (
+            <button onClick={handleAction} style={{
+              display: 'inline-block', background: 'rgba(0,0,0,0.04)', border: 'none', borderRadius: 10,
+              padding: '5px 12px', fontSize: 11, color: 'var(--text-primary)', fontWeight: 500,
+              cursor: 'pointer', fontFamily: 'inherit', marginLeft: 4, verticalAlign: 'middle',
+            }}>
+              {main.action.label}
+            </button>
+          )}
+          <span style={{ display: 'inline-flex', gap: 12, marginLeft: 8, verticalAlign: 'middle' }}>
+            <span onClick={handleRefresh} style={{ cursor: 'pointer', WebkitTapHighlightColor: 'transparent', display: 'inline-flex' }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M23 4v6h-6" /><path d="M1 20v-6h6" />
                 <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
               </svg>
-            </div>
-            <div onClick={handleLike} style={{
-              cursor: 'pointer', WebkitTapHighlightColor: 'transparent', display: 'flex',
+            </span>
+            <span onClick={handleLike} style={{
+              cursor: 'pointer', WebkitTapHighlightColor: 'transparent', display: 'inline-flex',
               transition: 'transform 0.15s',
               transform: isLiked ? 'scale(1.1)' : 'scale(1)',
             }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill={isLiked ? '#E8A0B0' : 'none'} stroke={isLiked ? '#E8A0B0' : '#ccc'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transition: 'all 0.15s' }}>
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
               </svg>
-            </div>
-          </div>
+            </span>
+          </span>
         </div>
 
       </div>
