@@ -806,11 +806,14 @@ function generateFallback(data) {
 
   // Fallback 4: 데이터 부족
   if (data.activeDays < 7) {
-    return {
-      id: fbId, type: 'fallback', emoji: '✨', label: '',
-      message: `더 기록해주시면 본인만의 패턴 발견을 도와드릴게요! 현재 ${data.activeDays}일 기록 중이에요 📝 30일 차에는 본인만의 영향 요인 분석도 보여드릴 수 있어요.`,
-      score: 0,
-    };
+    const msgs = [
+      `더 기록해주시면 본인만의 패턴 발견을 도와드릴게요! 현재 ${data.activeDays}일 기록 중이에요 📝 30일 차에는 본인만의 영향 요인 분석도 보여드릴 수 있어요.`,
+      `기록이 쌓일수록 더 정확한 인사이트를 드릴 수 있어요! 현재 ${data.activeDays}일차 📝 오늘 컨디션이나 수분부터 기록해보세요.`,
+      `아직 ${data.activeDays}일 기록이에요! 매일 조금씩 기록하면 본인만의 건강 패턴이 보이기 시작해요 🌱 작은 기록이 큰 발견으로 이어져요.`,
+    ];
+    const msg = msgs[fallbackRotation % msgs.length];
+    fallbackRotation++;
+    return { id: fbId, type: 'fallback', emoji: '✨', label: '', message: msg, score: 0 };
   }
 
   // Fallback 3: 회복 중인 날
@@ -856,23 +859,35 @@ function generateFallback(data) {
   if (today.steps > 0) facts.push(`${today.steps.toLocaleString()}보`);
 
   if (facts.length >= 2) {
-    return {
-      id: fbId, type: 'fallback', emoji: '✨', label: '',
-      message: `오늘 ${facts.slice(0, 2).join(' · ')}이에요! 평소와 비슷한 하루 보내고 계세요 🌿 일관된 루틴이 본인 몸에 안정감을 주는 신호예요`,
-      score: 0,
-    };
+    const pair = facts.slice(0, 2).join(' · ');
+    const normalMsgs = [
+      `오늘 ${pair}이에요! 평소와 비슷한 하루 보내고 계세요 🌿 일관된 루틴이 본인 몸에 안정감을 주는 신호예요`,
+      `${pair} 기록이 보여요! 꾸준히 챙기고 계시네요 ✨ 이런 루틴이 쌓이면 건강 변화를 느끼실 거예요`,
+      `오늘도 ${pair} 체크 완료! 매일 기록하는 것 자체가 건강 관리의 시작이에요 🌱`,
+    ];
+    const msg = normalMsgs[fallbackRotation % normalMsgs.length];
+    fallbackRotation++;
+    return { id: fbId, type: 'fallback', emoji: '✨', label: '', message: msg, score: 0 };
   }
 
   // 최종 Fallback: 시간대별 다양한 메시지 순환
   const h = new Date().getHours();
-  const timeMessages = [
+  const allMessages = [
     h < 12 ? `좋은 아침이에요! 오늘 컨디션이나 수분부터 기록해보세요 📝 기록이 쌓일수록 본인만의 패턴을 발견할 수 있어요.`
     : h < 18 ? `오후도 잘 보내고 계세요! 지금까지 뭘 먹고 마셨는지 기록해두면 나중에 재밌는 패턴이 보일 거예요 📝`
     : `수고하셨어요! 오늘 하루 어땠는지 기록 남겨두시면 본인만의 건강 패턴을 만들어드릴게요 🌙`,
+    h < 12 ? `아직 오전이에요! 오늘 첫 수분 기록부터 시작해볼까요? 💧 작은 기록이 큰 변화를 만들어요.`
+    : h < 18 ? `지금 잠깐 컨디션 체크 해보세요! 본인 몸의 신호를 알아가는 첫 걸음이에요 🌱`
+    : `하루를 마무리하며 오늘의 컨디션을 남겨보세요 🌙 내일의 본인에게 보내는 메모가 될 거예요.`,
+    h < 12 ? `오늘은 어떤 하루가 될까요? 먼저 컨디션 체크부터 해보세요 ☀️ 매일 기록하면 놀라운 패턴이 보여요.`
+    : h < 18 ? `오후에는 수분 섭취가 줄어들기 쉬워요! 물 한 잔 마시고 기록해보세요 💧`
+    : `오늘 하루 수고하셨어요! 내일 더 좋은 하루를 위해 오늘의 기록을 남겨보세요 ✨`,
   ];
+  const msg = allMessages[fallbackRotation % allMessages.length];
+  fallbackRotation++;
   return {
     id: fbId, type: 'fallback', emoji: '✨', label: '',
-    message: timeMessages[0],
+    message: msg,
     score: 0,
   };
 }
@@ -897,10 +912,6 @@ export function generateDailyInsights() {
     }
   }
 
-  // 세션 순환
-  const markedCount = candidates.filter(c => sessionShownIds.includes(c.id)).length;
-  if (markedCount >= candidates.length && candidates.length > 0) sessionShownIds = [];
-
   // 세션에서 이미 본 인사이트 점수 하락 + 카드 다양성
   const sessionShownCards = [];
   sessionShownIds.forEach(id => {
@@ -908,14 +919,24 @@ export function generateDailyInsights() {
     if (t?.relatedCards) sessionShownCards.push(...t.relatedCards);
   });
 
+  // 아직 안 본 인사이트가 있으면 본 것 점수를 크게 떨어뜨림
+  const unseenExists = candidates.some(c => !sessionShownIds.includes(c.id));
   candidates.forEach(c => {
-    if (sessionShownIds.includes(c.id)) c.score *= 0.2;
-    // 같은 카드 데이터 인사이트는 점수 하락 (카드 다양성)
+    if (sessionShownIds.includes(c.id)) {
+      c.score *= unseenExists ? 0.05 : 0.3;
+    }
     const overlap = c.relatedCards.filter(card => sessionShownCards.includes(card));
     if (overlap.length > 0) c.score *= 0.5;
   });
 
-  candidates.forEach(c => { c.score += Math.random() * 5; });
+  // 모든 candidates를 이미 본 경우 → fallback 섞어서 다양성 확보
+  if (candidates.length > 0 && !unseenExists) {
+    const fb = generateFallback(data);
+    candidates.push({ ...fb, score: candidates[0].score + 10 }); // fallback 우선
+  }
+
+  // 랜덤 셔플로 같은 점수대 인사이트 순서 변경
+  candidates.forEach(c => { c.score += Math.random() * c.score * 0.5; });
 
   const feedback = safeJSON(FEEDBACK_KEY, {});
   candidates.forEach(c => {
@@ -957,6 +978,12 @@ export function generateDailyInsights() {
   if (selected.length > 0) {
     selected[0].isMain = true;
     selected.forEach(s => { if (!sessionShownIds.includes(s.id)) sessionShownIds.push(s.id); });
+  }
+
+  // 세션 순환: 모든 candidates를 다 봤으면 리셋
+  if (candidates.length > 0) {
+    const unseenCount = candidates.filter(c => !sessionShownIds.includes(c.id)).length;
+    if (unseenCount === 0) sessionShownIds = [];
   }
 
   return selected;

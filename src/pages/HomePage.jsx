@@ -283,21 +283,121 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   });
   const [editMode, setEditMode] = useState(false);
   const [userProfile, setUserProfile] = useState(getProfile);
+  const [dragState, setDragState] = useState({ dragging: false, cardId: null, startIdx: -1, overIdx: -1, x: 0, y: 0, offsetX: 0, offsetY: 0 });
+  const gridRef = useRef(null);
+  const longPressTimer = useRef(null);
+  const cardRectsRef = useRef([]);
 
   const saveCardOrder = useCallback((order) => {
     setCardOrder(order);
     localStorage.setItem('lua_home_card_order', JSON.stringify(order));
   }, []);
 
-  const moveCard = useCallback((fromIdx, toIdx) => {
-    setCardOrder(prev => {
-      const next = [...prev];
-      const [moved] = next.splice(fromIdx, 1);
-      next.splice(toIdx, 0, moved);
-      localStorage.setItem('lua_home_card_order', JSON.stringify(next));
-      return next;
-    });
+  // 드래그 중 카드 위치 계산
+  const getDropIndex = useCallback((x, y) => {
+    const rects = cardRectsRef.current;
+    for (let i = 0; i < rects.length; i++) {
+      const r = rects[i];
+      if (!r) continue;
+      if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return i;
+    }
+    // 가장 가까운 카드 찾기
+    let closest = -1, minDist = Infinity;
+    for (let i = 0; i < rects.length; i++) {
+      const r = rects[i];
+      if (!r) continue;
+      const cx = (r.left + r.right) / 2, cy = (r.top + r.bottom) / 2;
+      const dist = Math.hypot(x - cx, y - cy);
+      if (dist < minDist) { minDist = dist; closest = i; }
+    }
+    return closest;
   }, []);
+
+  // 롱프레스 시작 → 편집 모드 + 드래그 시작
+  const handleLongPressStart = useCallback((e, cardId, cardIdx) => {
+    if (editMode && e.type === 'touchstart') {
+      // 이미 편집 모드면 바로 드래그 시작
+      const touch = e.touches[0];
+      const el = e.currentTarget;
+      const rect = el.getBoundingClientRect();
+      // 카드 위치 캐시
+      if (gridRef.current) {
+        const cards = gridRef.current.children;
+        cardRectsRef.current = Array.from(cards).map(c => c.getBoundingClientRect());
+      }
+      setDragState({ dragging: true, cardId, startIdx: cardIdx, overIdx: cardIdx, x: touch.clientX, y: touch.clientY, offsetX: touch.clientX - rect.left, offsetY: touch.clientY - rect.top });
+      return;
+    }
+    const startTouch = e.touches?.[0];
+    const startX = startTouch?.clientX || 0;
+    const startY = startTouch?.clientY || 0;
+    // 움직이면 롱프레스 취소
+    const cancelOnMove = (ev) => {
+      const t = ev.touches[0];
+      if (Math.abs(t.clientX - startX) > 10 || Math.abs(t.clientY - startY) > 10) {
+        clearTimeout(longPressTimer.current);
+        longPressTimer.current = null;
+        document.removeEventListener('touchmove', cancelOnMove);
+      }
+    };
+    document.addEventListener('touchmove', cancelOnMove, { passive: true });
+    longPressTimer.current = setTimeout(() => {
+      document.removeEventListener('touchmove', cancelOnMove);
+      hapticLight();
+      if (navigator.vibrate) navigator.vibrate(20);
+      setEditMode(true);
+      if (startTouch && gridRef.current) {
+        const el = e.currentTarget || e.target.closest('[data-card-id]');
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          const cards = gridRef.current.children;
+          cardRectsRef.current = Array.from(cards).map(c => c.getBoundingClientRect());
+          setDragState({ dragging: true, cardId, startIdx: cardIdx, overIdx: cardIdx, x: startTouch.clientX, y: startTouch.clientY, offsetX: startTouch.clientX - rect.left, offsetY: startTouch.clientY - rect.top });
+        }
+      }
+    }, 500);
+  }, [editMode]);
+
+  const handleLongPressEnd = useCallback(() => {
+    if (longPressTimer.current) { clearTimeout(longPressTimer.current); longPressTimer.current = null; }
+  }, []);
+
+  const handleDragEnd = useCallback(() => {
+    handleLongPressEnd();
+    if (!dragState.dragging) return;
+    const { startIdx, overIdx } = dragState;
+    if (startIdx !== overIdx && overIdx >= 0) {
+      setCardOrder(prev => {
+        const next = [...prev];
+        const [moved] = next.splice(startIdx, 1);
+        next.splice(overIdx, 0, moved);
+        localStorage.setItem('lua_home_card_order', JSON.stringify(next));
+        return next;
+      });
+      hapticLight();
+    }
+    setDragState({ dragging: false, cardId: null, startIdx: -1, overIdx: -1, x: 0, y: 0, offsetX: 0, offsetY: 0 });
+  }, [dragState, handleLongPressEnd]);
+
+  // 드래그 중 전역 touch 이벤트
+  useEffect(() => {
+    if (!dragState.dragging) return;
+    const onMove = (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      const overIdx = getDropIndex(touch.clientX, touch.clientY);
+      setDragState(prev => ({ ...prev, x: touch.clientX, y: touch.clientY, overIdx: overIdx >= 0 ? overIdx : prev.overIdx }));
+    };
+    const onEnd = () => handleDragEnd();
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend', onEnd);
+    document.addEventListener('touchcancel', onEnd);
+    return () => {
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onEnd);
+      document.removeEventListener('touchcancel', onEnd);
+    };
+  }, [dragState.dragging, getDropIndex, handleDragEnd]);
 
   // Condition check state
   const latestCheck = getLatestCheck();
@@ -546,17 +646,11 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             </svg>
           </div>
           <img src="/luasky.svg" alt="lua" style={{ height: 30, objectFit: 'contain', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }} />
-          {homeView === 'cards' ? (
-            <div onClick={() => setEditMode(e => !e)} style={{
+          {homeView === 'cards' && editMode ? (
+            <div onClick={() => setEditMode(false)} style={{
               cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1,
             }}>
-              {editMode ? (
-                <span style={{ fontSize: 14, fontWeight: 600, color: '#4DB8A0' }}>완료</span>
-              ) : (
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.8)" strokeWidth="1.6" strokeLinecap="round">
-                  <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" />
-                </svg>
-              )}
+              <span style={{ fontSize: 14, fontWeight: 600, color: '#4DB8A0' }}>완료</span>
             </div>
           ) : <div style={{ width: 24 }} />}
         </div>
@@ -608,9 +702,11 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
       </div>
       <style>{`
         @keyframes cardWiggle {
-          0% { transform: rotate(-0.5deg); }
-          50% { transform: rotate(0.5deg); }
-          100% { transform: rotate(-0.5deg); }
+          0% { transform: rotate(-0.8deg) scale(1); }
+          25% { transform: rotate(0.8deg) scale(1.01); }
+          50% { transform: rotate(-0.6deg) scale(1); }
+          75% { transform: rotate(0.6deg) scale(0.99); }
+          100% { transform: rotate(-0.8deg) scale(1); }
         }
         @keyframes cardTap {
           0% { transform: scale(1); }
@@ -740,52 +836,34 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               ))}
             </div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 15, margin: '0 18px' }}>
+          <div ref={gridRef} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 15, margin: '0 18px', position: 'relative' }}>
             {cardOrder.map((cardId, cardIdx) => {
-              const isFirst = cardIdx === 0;
-              const isLast = cardIdx === cardOrder.length - 1;
-              const arrowBtn = (dir) => {
-                const isLeft = dir === 'left';
-                return (
-                  <div
-                    onClick={(e) => { e.stopPropagation(); moveCard(cardIdx, isLeft ? cardIdx - 1 : cardIdx + 1); }}
-                    style={{
-                      width: 28, height: 28, borderRadius: '50%',
-                      background: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
-                    }}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      {isLeft ? <path d="M15 18l-6-6 6-6"/> : <path d="M9 6l6 6-6 6"/>}
-                    </svg>
-                  </div>
-                );
-              };
+              const isDragging = dragState.dragging && dragState.cardId === cardId;
+              const isDropTarget = dragState.dragging && dragState.overIdx === cardIdx && dragState.cardId !== cardId;
               const editWrap = (label, content) => (
                 <div
                   key={cardId}
+                  data-card-id={cardId}
+                  onTouchStart={(e) => handleLongPressStart(e, cardId, cardIdx)}
+                  onTouchEnd={handleLongPressEnd}
+                  onTouchCancel={handleLongPressEnd}
                   style={{
-                    animation: isEditing ? 'cardWiggle 0.3s ease-in-out infinite' : 'none',
+                    animation: isEditing && !isDragging ? `cardWiggle ${0.25 + (cardIdx % 3) * 0.05}s ease-in-out infinite` : 'none',
+                    animationDelay: `${(cardIdx * 0.06)}s`,
                     position: 'relative',
+                    opacity: isDragging ? 0.3 : 1,
+                    transform: isDropTarget ? 'scale(0.95)' : 'none',
+                    transition: isDragging ? 'none' : 'transform 0.2s ease, opacity 0.2s ease',
+                    zIndex: isDragging ? 0 : 1,
                   }}
                 >
-                  {isEditing && (
+                  {isDropTarget && (
                     <div style={{
-                      position: 'absolute', top: 6, left: 0, right: 0, zIndex: 10,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-                    }}>
-                      {!isFirst && arrowBtn('left')}
-                      <div style={{
-                        background: 'rgba(0,0,0,0.6)', borderRadius: 12, padding: '4px 14px',
-                        display: 'flex', alignItems: 'center', gap: 6,
-                      }}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round">
-                          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-                        </svg>
-                        <span style={{ fontSize: 11, color: '#fff', fontWeight: 500 }}>{label}</span>
-                      </div>
-                      {!isLast && arrowBtn('right')}
-                    </div>
+                      position: 'absolute', inset: 0, borderRadius: 30,
+                      border: '2px dashed rgba(137,206,245,0.6)',
+                      background: 'rgba(137,206,245,0.08)',
+                      zIndex: 10, pointerEvents: 'none',
+                    }} />
                   )}
                   {content}
                 </div>
@@ -1378,6 +1456,36 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
               return null;
             })}
           </div>
+          {/* 드래그 중인 카드 플로팅 미리보기 */}
+          {dragState.dragging && (() => {
+            const dragIdx = cardOrder.indexOf(dragState.cardId);
+            const rect = cardRectsRef.current?.[dragIdx];
+            if (!rect) return null;
+            const cardLabel = CARD_REGISTRY.find(c => c.id === dragState.cardId)?.label || '';
+            return (
+              <div style={{
+                position: 'fixed',
+                left: dragState.x - dragState.offsetX,
+                top: dragState.y - dragState.offsetY,
+                width: rect.width, height: rect.height,
+                zIndex: 9999, pointerEvents: 'none',
+                transform: 'scale(1.05)',
+                transition: 'transform 0.1s ease',
+              }}>
+                <div style={{
+                  width: '100%', height: '100%',
+                  background: 'rgba(255,255,255,0.6)',
+                  backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+                  borderRadius: 30,
+                  border: '1.5px solid rgba(255,255,255,0.5)',
+                  boxShadow: '0 20px 50px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', opacity: 0.7 }}>{cardLabel}</span>
+                </div>
+              </div>
+            );
+          })()}
           </>
         );
       })()}
