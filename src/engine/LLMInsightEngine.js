@@ -196,84 +196,189 @@ function collectUserData(days = 30) {
   return data;
 }
 
-// ===== 컨텍스트 → 텍스트 변환 =====
+// ===== 컨텍스트 → 텍스트 변환 (전체 데이터) =====
 function buildLLMContext(userData, triggerType, justInputData) {
-  const today = userData.days[0] || {};
-  const recent7 = userData.days.slice(0, 7);
-  const recent30 = userData.days.slice(0, 30);
   const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
-
   let ctx = '';
 
-  // 1. 방금 입력 (가장 중요)
-  ctx += `## ⭐ 방금 입력 (${triggerType})\n`;
-  if (justInputData) {
-    ctx += JSON.stringify(justInputData, null, 0).slice(0, 200) + '\n';
-  }
+  // ===== 사용자 프로필 =====
+  const profile = safeJSON('nou_profile', {});
+  ctx += `## 사용자 프로필\n`;
+  if (profile.nickname) ctx += `이름: ${profile.nickname}\n`;
+  if (profile.birthYear) ctx += `출생: ${profile.birthYear}년\n`;
+  if (profile.gender) ctx += `성별: ${profile.gender}\n`;
+  if (profile.skinType) ctx += `피부타입: ${profile.skinType}\n`;
+  if (profile.skinConcerns?.length) ctx += `피부고민: ${profile.skinConcerns.join(', ')}\n`;
+  if (profile.sensitivity) ctx += `민감도: ${profile.sensitivity}\n`;
+  const bodyProfile = safeJSON('lua_body_profile', {});
+  if (bodyProfile.height) ctx += `키: ${bodyProfile.height}cm\n`;
+  ctx += `사용 ${userData.activeDays}일째\n\n`;
+
+  // ===== 트리거 =====
+  ctx += `## ⭐ 트리거: ${triggerType}\n`;
+  if (justInputData) ctx += JSON.stringify(justInputData, null, 0).slice(0, 300) + '\n';
   ctx += '\n';
 
-  // 2. 오늘 누적
-  ctx += `## 오늘 (${today.date})\n`;
-  if (today.sleep > 0) ctx += `수면: ${today.sleep}시간${today.bedtime ? ` (취침 ${today.bedtime})` : ''}\n`;
-  if (today.waterMl > 0) ctx += `수분: ${today.waterMl}ml / 목표 ${today.waterGoalMl}ml (${today.waterCups}잔)\n`;
-  if (today.foodCount > 0) ctx += `식사: ${today.foodCount}끼${today.totalKcal > 0 ? ` ${today.totalKcal}kcal` : ''}${today.totalProtein > 0 ? ` 단백질${today.totalProtein}g` : ''}${today.foods?.length > 0 ? ` [${today.foods.join(', ')}]` : ''}\n`;
-  if (today.totalCafMg > 0) ctx += `카페인: ${today.totalCafMg}mg\n`;
-  if (today.totalAlcohol > 0) ctx += `알코올: ${today.totalAlcohol}잔\n`;
-  if (today.condition) ctx += `컨디션: 에너지${today.condition.energy} 기분${today.condition.mood} 피부${today.condition.skin} 소화${today.condition.gut}\n`;
-  if (today.hasExercise) ctx += `운동: ${Object.keys(today.exercise).join(', ')}\n`;
-  if (today.suppDone > 0) ctx += `영양제: ${today.suppDone}/${today.suppTotal}\n`;
-  if (today.weight > 0) ctx += `체중: ${today.weight}kg\n`;
-  if (today.steps > 0) ctx += `걸음: ${today.steps}보\n`;
-  ctx += '\n';
+  // ===== 오늘 + 어제 상세 데이터 =====
+  const detailDays = userData.days.slice(0, 2);
+  const foods = safeJSON('lua_food_records', {});
+  const drinks = safeJSON('lua_drink_records', {});
+  const skinLogs = safeJSON('lua_skin_check_logs', {});
+  const moodSubs = safeJSON('nou_mood_sub_checks', []);
+  const energySubs = safeJSON('nou_energy_sub_checks', []);
+  const skinSubs = safeJSON('nou_skin_sub_checks', []);
+  const bloodSugar = safeJSON('nou_blood_sugar_checks', []);
 
-  // 3. 최근 7일 요약
+  detailDays.forEach((day, idx) => {
+    const label = idx === 0 ? '오늘' : '어제';
+    ctx += `## ${label} (${day.date} ${DAY_NAMES[day.dayOfWeek]}요일)\n`;
+
+    // 수면
+    if (day.sleep > 0) {
+      ctx += `수면: ${day.sleep}시간`;
+      if (day.sleepQuality) ctx += ` (${day.sleepQuality})`;
+      if (day.bedtime) ctx += ` 취침${day.bedtime}`;
+      ctx += '\n';
+    }
+
+    // 식사 (상세)
+    const dayFoods = (foods[day.date] || []).filter(f => !f.name?.startsWith('물 '));
+    if (dayFoods.length > 0) {
+      ctx += `식사 (${dayFoods.length}끼, ${day.totalKcal}kcal):\n`;
+      dayFoods.forEach(f => {
+        let line = `  - ${f.meal || ''} ${f.name || ''}`;
+        if (f.kcal) line += ` ${f.kcal}kcal`;
+        if (f.protein) line += ` 단백질${f.protein}g`;
+        if (f.carb) line += ` 탄수${f.carb}g`;
+        if (f.fat) line += ` 지방${f.fat}g`;
+        if (f.fiber) line += ` 식이섬유${f.fiber}g`;
+        if (f.sugar) line += ` 당류${f.sugar}g`;
+        if (f.ingredients?.length) line += ` [${f.ingredients.slice(0, 5).join(',')}]`;
+        ctx += line + '\n';
+        if (f.bloodSugar) ctx += `    혈당영향: ${f.bloodSugar}${f.bloodSugarNote ? ` - ${f.bloodSugarNote.slice(0, 60)}` : ''}\n`;
+        if (f.drowsiness) ctx += `    식곤증: ${f.drowsiness}${f.drowsinessNote ? ` - ${f.drowsinessNote.slice(0, 60)}` : ''}\n`;
+        if (f.skinImpact) ctx += `    피부영향: ${f.skinImpact}${f.skinImpactNote ? ` - ${f.skinImpactNote.slice(0, 60)}` : ''}\n`;
+      });
+    }
+
+    // 음료 (상세)
+    const dayDrinks = drinks[day.date] || {};
+    const cafItems = dayDrinks.caffeine || [];
+    const alcItems = dayDrinks.alcohol || [];
+    const ncItems = dayDrinks.noncaffeine || [];
+    if (cafItems.length > 0) {
+      ctx += `카페인 (총${day.totalCafMg}mg): ${cafItems.map(d => `${d.name || d.key}${d.count > 1 ? 'x' + d.count : ''}${d.drunkAt ? ' ' + d.drunkAt.slice(11, 16) : ''}`).join(', ')}\n`;
+    }
+    if (alcItems.length > 0) {
+      ctx += `알코올 (${day.totalAlcohol}잔): ${alcItems.map(d => `${d.name || d.key}${d.count > 1 ? 'x' + d.count : ''}${d.drunkAt ? ' ' + d.drunkAt.slice(11, 16) : ''}`).join(', ')}\n`;
+    }
+    if (ncItems.length > 0) {
+      ctx += `기타음료: ${ncItems.map(d => `${d.name || d.key}${d.count > 1 ? 'x' + d.count : ''}${d.intents?.length ? '(' + d.intents.join(',') + ')' : ''}`).join(', ')}\n`;
+    }
+
+    // 수분
+    if (day.waterMl > 0) ctx += `수분: ${day.waterMl}ml / 목표${day.waterGoalMl}ml (${day.waterCups}잔)\n`;
+
+    // 컨디션 (상세)
+    if (day.condition) {
+      ctx += `컨디션: 에너지${day.condition.energy}/10 기분${day.condition.mood}/10 피부${day.condition.skin}/10 소화${day.condition.gut}/10\n`;
+      const daySub = energySubs.find(s => s.date === day.date);
+      if (daySub) ctx += `  활력${daySub.vitality || ''} 집중${daySub.focus || ''}\n`;
+      const moodSub = moodSubs.find(s => s.date === day.date);
+      if (moodSub?.stress) ctx += `  스트레스: ${moodSub.stress}\n`;
+      if (moodSub?.emotions) ctx += `  감정: ${JSON.stringify(moodSub.emotions).slice(0, 100)}\n`;
+    }
+
+    // 피부 체크 (상세)
+    const skinLog = skinLogs[day.date];
+    if (skinLog) {
+      if (skinLog.score) ctx += `피부점수: ${skinLog.score}/10\n`;
+      if (skinLog.zones?.length) ctx += `피부부위: ${skinLog.zones.map(z => `${z.zone}(심각도${z.severity})`).join(', ')}\n`;
+      if (skinLog.signals?.length) ctx += `피부신호: ${skinLog.signals.join(', ')}\n`;
+      if (skinLog.memo) ctx += `피부메모: ${skinLog.memo}\n`;
+    }
+
+    // 운동
+    if (day.hasExercise) {
+      ctx += `운동: ${Object.entries(day.exercise).map(([k, v]) => `${k} ${v}분`).join(', ')}\n`;
+    }
+    if (day.steps > 0) ctx += `걸음: ${day.steps.toLocaleString()}보\n`;
+
+    // 영양제
+    if (day.suppDone > 0) ctx += `영양제: ${day.suppDone}/${day.suppTotal}개 완료\n`;
+
+    // 체중
+    if (day.weight > 0) ctx += `체중: ${day.weight}kg\n`;
+
+    // 혈당
+    const dayBS = bloodSugar.filter(b => b.date === day.date);
+    if (dayBS.length > 0) ctx += `혈당: ${dayBS.map(b => `${b.value}(${b.timing})`).join(', ')}\n`;
+
+    ctx += '\n';
+  });
+
+  // ===== 최근 7일 요약 =====
+  const recent7 = userData.days.slice(0, 7);
   ctx += `## 최근 7일 요약\n`;
   const sleepDays = recent7.filter(d => d.sleep > 0);
-  if (sleepDays.length > 0) {
-    const avgSleep = (sleepDays.reduce((s, d) => s + d.sleep, 0) / sleepDays.length).toFixed(1);
-    ctx += `평균 수면: ${avgSleep}시간 (${sleepDays.length}일 기록)\n`;
-  }
+  if (sleepDays.length > 0) ctx += `수면: 평균${(sleepDays.reduce((s, d) => s + d.sleep, 0) / sleepDays.length).toFixed(1)}시간 (${sleepDays.length}일)\n`;
   const waterDays = recent7.filter(d => d.waterMl > 0);
-  if (waterDays.length > 0) {
-    const avgWater = Math.round(waterDays.reduce((s, d) => s + d.waterMl, 0) / waterDays.length);
-    ctx += `평균 수분: ${avgWater}ml\n`;
-  }
+  if (waterDays.length > 0) ctx += `수분: 평균${Math.round(waterDays.reduce((s, d) => s + d.waterMl, 0) / waterDays.length)}ml\n`;
   const cafDays = recent7.filter(d => d.totalCafMg > 0);
-  if (cafDays.length > 0) {
-    const avgCaf = Math.round(cafDays.reduce((s, d) => s + d.totalCafMg, 0) / cafDays.length);
-    ctx += `평균 카페인: ${avgCaf}mg (${cafDays.length}일)\n`;
-  }
+  if (cafDays.length > 0) ctx += `카페인: 평균${Math.round(cafDays.reduce((s, d) => s + d.totalCafMg, 0) / cafDays.length)}mg\n`;
   const condDays = recent7.filter(d => d.condition);
   if (condDays.length > 0) {
-    const avgEnergy = (condDays.reduce((s, d) => s + d.condition.energy, 0) / condDays.length).toFixed(1);
-    const avgMood = (condDays.reduce((s, d) => s + d.condition.mood, 0) / condDays.length).toFixed(1);
-    ctx += `평균 컨디션: 에너지${avgEnergy} 기분${avgMood}\n`;
+    ctx += `컨디션: 에너지${(condDays.reduce((s, d) => s + d.condition.energy, 0) / condDays.length).toFixed(1)} 기분${(condDays.reduce((s, d) => s + d.condition.mood, 0) / condDays.length).toFixed(1)}\n`;
   }
+  // 7일 각 날짜 한 줄 요약
+  recent7.slice(2).forEach(d => {
+    const parts = [];
+    if (d.sleep > 0) parts.push(`수면${d.sleep}h`);
+    if (d.totalKcal > 0) parts.push(`${d.totalKcal}kcal`);
+    if (d.totalCafMg > 0) parts.push(`카페인${d.totalCafMg}mg`);
+    if (d.condition) parts.push(`에너지${d.condition.energy}`);
+    if (d.weight > 0) parts.push(`${d.weight}kg`);
+    if (parts.length > 0) ctx += `${d.date}: ${parts.join(' ')}\n`;
+  });
   ctx += '\n';
 
-  // 4. 30일 트렌드 (간략)
-  const prev7 = userData.days.slice(7, 14);
-  const prevSleep = prev7.filter(d => d.sleep > 0);
-  const recentSleep = sleepDays;
-  if (prevSleep.length >= 3 && recentSleep.length >= 3) {
-    const rAvg = recentSleep.reduce((s, d) => s + d.sleep, 0) / recentSleep.length;
-    const pAvg = prevSleep.reduce((s, d) => s + d.sleep, 0) / prevSleep.length;
-    const diff = Math.round((rAvg - pAvg) * 10) / 10;
-    if (Math.abs(diff) >= 0.3) ctx += `수면 추세: ${diff > 0 ? '+' : ''}${diff}시간 (전주 대비)\n`;
+  // ===== 날씨 =====
+  const weather = safeJSON('lua_weather_data', null);
+  if (weather) {
+    const w = weather.data || weather;
+    ctx += `## 날씨\n`;
+    if (w.temp || w.temperature) ctx += `온도: ${Math.round(w.temp || w.temperature)}도`;
+    if (w.tempMax) ctx += ` (최고${Math.round(w.tempMax)}·최저${Math.round(w.tempMin || 0)})`;
+    ctx += '\n';
+    if (w.humidity) ctx += `습도: ${w.humidity}%\n`;
+    if (w.uv) ctx += `자외선: ${w.uv}\n`;
+    if (w.condition) ctx += `상태: ${w.condition}\n`;
+    ctx += '\n';
   }
 
-  // 5. 날씨
-  if (userData.weather) {
-    ctx += `\n## 날씨\n온도: ${Math.round(userData.weather.temp)}도, 습도: ${userData.weather.humidity}%, UV: ${userData.weather.uv}\n`;
-  }
-
-  // 6. 주기
+  // ===== 주기 =====
   if (userData.cycle) {
-    ctx += `\n## 주기 데이터\n있음\n`;
+    ctx += `## 주기\n`;
+    ctx += `마지막 시작: ${userData.cycle.lastPeriodStart || '?'}\n`;
+    ctx += `평균 주기: ${userData.cycle.averageCycleLength || 28}일\n`;
+    ctx += `평균 기간: ${userData.cycle.averagePeriodLength || 5}일\n\n`;
   }
 
-  // 7. 사용일수
-  ctx += `\n## 사용자 정보\n사용 ${userData.activeDays}일째\n`;
+  // ===== 영양제 목록 =====
+  const suppItems = safeJSON('lua_supplement_items', []);
+  if (suppItems.length > 0) {
+    ctx += `## 복용 영양제\n${suppItems.map(s => `${s.name}(${s.timing})`).join(', ')}\n\n`;
+  }
+
+  // ===== 최근 피부 분석 (AI) =====
+  const skinRecords = safeJSON('nou_skin_records', []);
+  const latestSkin = skinRecords[skinRecords.length - 1];
+  if (latestSkin) {
+    ctx += `## 최근 피부 AI분석 (${latestSkin.date})\n`;
+    ctx += `종합${latestSkin.overallScore} 수분${latestSkin.moisture} 피부나이${latestSkin.skinAge} 트러블${latestSkin.troubleCount}\n`;
+    if (latestSkin.aiNotes) ctx += `AI소견: ${latestSkin.aiNotes.slice(0, 150)}\n`;
+    ctx += '\n';
+  }
 
   return ctx;
 }
