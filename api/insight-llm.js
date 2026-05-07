@@ -1,6 +1,6 @@
-// Vercel Serverless Function: Claude Haiku LLM insight generation proxy
+// Vercel Serverless Function: OpenAI GPT-4.1-nano insight generation proxy
 // POST /api/insight-llm
-// Body: { system, user } → Claude API → 10 insights JSON
+// Body: { system, user } → OpenAI API → 10 insights JSON
 
 const RATE_LIMIT = new Map();
 const MAX_REQUESTS_PER_DAY = 100; // per IP (server-side safety net)
@@ -25,8 +25,8 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured' });
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: 'OPENAI_API_KEY not configured' });
 
   const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'unknown';
   if (!checkRateLimit(ip)) return res.status(429).json({ error: 'Rate limit exceeded' });
@@ -37,36 +37,37 @@ export default async function handler(req, res) {
   try {
     const startTime = Date.now();
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
+        'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: 'gpt-4.1-nano',
         max_tokens: 2500,
         temperature: 0.7,
-        system,
-        messages: [{ role: 'user', content: user }],
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: user },
+        ],
       }),
     });
 
     if (!response.ok) {
       const errText = await response.text();
-      console.error('Claude API error:', response.status, errText);
+      console.error('OpenAI API error:', response.status, errText);
       return res.status(502).json({ error: 'LLM API error', status: response.status });
     }
 
     const data = await response.json();
-    const text = data.content?.[0]?.text || '';
+    const text = data.choices?.[0]?.message?.content || '';
     const durationMs = Date.now() - startTime;
 
     // Extract token usage
     const usage = {
-      promptTokens: data.usage?.input_tokens || 0,
-      outputTokens: data.usage?.output_tokens || 0,
+      promptTokens: data.usage?.prompt_tokens || 0,
+      outputTokens: data.usage?.completion_tokens || 0,
       durationMs,
     };
 
