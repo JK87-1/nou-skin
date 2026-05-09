@@ -427,7 +427,7 @@ function buildTaskInstruction(triggerType) {
 - 격식체(~합니다) 사용 금지
 - 의료 단언(치료/예방/진단) 금지 → "~할 수 있어요" 추측 톤
 - 이모지 메시지 내 0-2개
-- "예상치 못한 발견" 최소 2개 포함
+- 개인화된 패턴 발견 최소 2개 포함 (단, 메시지 안에 "예상치 못한 발견"이라는 표현 사용 금지)
 
 ⚠️ 데이터 정확성 (위반 시 전체 무효):
 - "오늘" 데이터를 언급할 때만 "오늘", "어제" 데이터를 언급할 때만 "어제"라고 쓰세요. 날짜 라벨을 절대 바꾸지 마세요.
@@ -455,8 +455,9 @@ function getSystemPrompt() {
 3. 함의: 실행 가능한 제안 또는 격려
 
 ## 핵심 차별화
-- "예상치 못한 발견": 사용자가 모르던 패턴, 다차원 결합
+- 사용자가 모르던 패턴, 다차원 결합을 발견하세요
 - 흔한 일반론 X → 본인 데이터에서만 나오는 개인화된 발견
+- 메시지 안에 "예상치 못한 발견" 같은 메타 표현을 절대 쓰지 마세요. 발견 내용을 직접 말하세요.
 - 시간 패턴, 요일 패턴, 교차 영향 발견
 
 ## ⚠️ 데이터 정확성 (최우선 규칙)
@@ -603,12 +604,14 @@ function saveLLMCache(cache) {
 }
 
 function formatInsight(raw, index, triggerType) {
+  // "예상치 못한 발견인데" 등 메타 표현 제거
+  let msg = (raw.message || '').replace(/예상치 못한 발견인데,?\s*/g, '').replace(/예상치 못한 발견이에요[!.]?\s*/g, '');
   return {
     id: `llm_${Date.now()}_${index}`,
     type: raw.type || 'pattern',
     primaryCard: raw.primary_card || 'condition',
     relatedCards: raw.related_cards || [],
-    message: raw.message || '',
+    message: msg,
     emoji: raw.emoji || '✨',
     label: getLabel(raw.type),
     triggeredBy: triggerType,
