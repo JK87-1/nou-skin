@@ -2,8 +2,8 @@
 
 :root {
   /* Surfaces */
-  --bg-primary: #06080F;
-  --bg-secondary: #0A1020;
+  --bg-primary: #08102e;
+  --bg-secondary: #111a50;
   --bg-card: rgba(255,255,255,0.04);
   --bg-card-hover: rgba(255,255,255,0.06);
   --bg-card-solid: #111118;
