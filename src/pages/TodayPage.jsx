@@ -167,10 +167,8 @@ export default function TodayPage() {
       {/* 1. Sticky 헤더 */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 10,
-        background: 'var(--card-bg)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-        borderRadius: '0 0 16px 16px', padding: '16px 16px 14px',
-        border: 'var(--card-border)', borderTop: 'none',
-        boxShadow: 'var(--card-shadow)',
+        backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+        padding: '16px 16px 14px',
       }}>
         {/* 날짜 네비 */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
