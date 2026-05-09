@@ -1306,7 +1306,7 @@ function JournalTab({ nickname }) {
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{now.getMonth() + 1}월 · {thisMonthEntries.length}편의 저널</div>
             {thisMonthEntries.length > 0 && (
-              <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.5, marginTop: 6, fontFamily: 'serif' }}>
+              <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.5, marginTop: 6, fontFamily: "'Noto Sans KR', 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif" }}>
                 "{thisMonthEntries[0].content.slice(0, 40)}{thisMonthEntries[0].content.length > 40 ? '...' : ''}"
               </div>
             )}
@@ -1360,7 +1360,7 @@ function JournalTab({ nickname }) {
                 </div>
               )}
             </div>
-            <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.7, fontFamily: 'serif' }}>{entry.content}</div>
+            <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.7, fontFamily: "'Noto Sans KR', 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif" }}>{entry.content}</div>
             {(entry.mood_tags?.length > 0 || chips.length > 0) && (
               <div style={{ display: 'flex', gap: 4, marginTop: 10, flexWrap: 'wrap' }}>
                 {(entry.mood_tags || []).map((tag, i) => (
@@ -1470,7 +1470,7 @@ function JournalWriteScreen({ onSave, onClose, initialPrompt, editEntry }) {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {defaultPrompts.map((p, i) => (
-                <div key={i} onClick={() => setPrompt(p)} style={{ background: 'var(--surface-light, rgba(255,255,255,0.08))', padding: '10px 12px', borderRadius: 10, fontSize: 12, color: 'var(--text-primary)', lineHeight: 1.5, fontFamily: 'serif', cursor: 'pointer' }}>{p}</div>
+                <div key={i} onClick={() => setPrompt(p)} style={{ background: 'var(--surface-light, rgba(255,255,255,0.08))', padding: '10px 12px', borderRadius: 10, fontSize: 12, color: 'var(--text-primary)', lineHeight: 1.5, fontFamily: "'Noto Sans KR', 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif", cursor: 'pointer' }}>{p}</div>
               ))}
               <div onClick={() => setPrompt(' ')} style={{ padding: '8px 12px', fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', cursor: 'pointer' }}>자유롭게 쓰기 →</div>
             </div>
@@ -1480,10 +1480,10 @@ function JournalWriteScreen({ onSave, onClose, initialPrompt, editEntry }) {
         {/* A-4 글 작성 */}
         <div style={{ background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: 12, padding: 16, marginBottom: 12, minHeight: 180, border: 'var(--card-border)' }}>
           {prompt && prompt.trim() && (
-            <div style={{ fontSize: 11, color: 'var(--text-dim)', fontStyle: 'italic', fontFamily: 'serif', marginBottom: 8, paddingBottom: 8, borderBottom: '0.5px solid var(--border-light)' }}>"{prompt}"</div>
+            <div style={{ fontSize: 11, color: 'var(--text-dim)', fontStyle: 'italic', fontFamily: "'Noto Sans KR', 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif", marginBottom: 8, paddingBottom: 8, borderBottom: '0.5px solid var(--border-light)' }}>"{prompt}"</div>
           )}
           <textarea value={content} onChange={e => setContent(e.target.value)} placeholder="여기에 마음을 적어주세요..." autoFocus
-            style={{ width: '100%', minHeight: 100, border: 'none', outline: 'none', resize: 'none', background: 'transparent', fontSize: 14, lineHeight: 1.7, color: 'var(--text-primary)', fontFamily: 'serif' }} />
+            style={{ width: '100%', minHeight: 100, border: 'none', outline: 'none', resize: 'none', background: 'transparent', fontSize: 14, lineHeight: 1.7, color: 'var(--text-primary)', fontFamily: "'Noto Sans KR', 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif" }} />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, paddingTop: 10, borderTop: '0.5px solid var(--border-light)' }}>
             <div style={{ display: 'flex', gap: 12 }}>
               <IconPhoto size={16} color="var(--text-muted)" style={{ cursor: 'pointer' }} />
@@ -1594,9 +1594,9 @@ function JournalDetailScreen({ entry, entries, onClose, onEdit, onDelete }) {
         {/* B-3 본문 */}
         <div style={{ background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: 12, padding: '20px 18px', marginBottom: 12, border: 'var(--card-border)' }}>
           {entry.prompt && entry.prompt.trim() && (
-            <div style={{ fontSize: 11, color: 'var(--text-dim)', fontStyle: 'italic', fontFamily: 'serif', marginBottom: 12, paddingBottom: 10, borderBottom: '0.5px solid var(--border-light)' }}>"{entry.prompt}"</div>
+            <div style={{ fontSize: 11, color: 'var(--text-dim)', fontStyle: 'italic', fontFamily: "'Noto Sans KR', 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif", marginBottom: 12, paddingBottom: 10, borderBottom: '0.5px solid var(--border-light)' }}>"{entry.prompt}"</div>
           )}
-          <div style={{ fontSize: 15, color: 'var(--text-primary)', lineHeight: 1.9, fontFamily: 'serif', whiteSpace: 'pre-wrap' }}>{entry.content}</div>
+          <div style={{ fontSize: 15, color: 'var(--text-primary)', lineHeight: 1.9, fontFamily: "'Noto Sans KR', 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif", whiteSpace: 'pre-wrap' }}>{entry.content}</div>
         </div>
 
         {/* B-4 그날의 데이터 */}
@@ -1664,7 +1664,7 @@ function JournalDetailScreen({ entry, entries, onClose, onEdit, onDelete }) {
                     <span style={{ fontSize: 9, color: 'var(--text-dim)' }}>{DAY_NAMES_J[ned.getDay()].slice(0, 1)}</span>
                   </div>
                   <div style={{ flex: 1, paddingLeft: 10, borderLeft: '0.5px solid var(--border-light)' }}>
-                    <div style={{ fontSize: 11, color: 'var(--text-primary)', lineHeight: 1.5, fontFamily: 'serif', marginBottom: 3 }}>{ne.content.slice(0, 50)}{ne.content.length > 50 ? '...' : ''}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-primary)', lineHeight: 1.5, fontFamily: "'Noto Sans KR', 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif", marginBottom: 3 }}>{ne.content.slice(0, 50)}{ne.content.length > 50 ? '...' : ''}</div>
                     <div style={{ fontSize: 9, color: 'var(--text-dim)' }}>{neCond ? `컨디션 ${neCond.avg.toFixed(1)}` : ''} · {getRelativeTime(ne.date)}</div>
                   </div>
                 </div>
@@ -1844,7 +1844,7 @@ function JourneyTab({ daysTogether }) {
         <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>
           {chapters.length >= 2 ? `${chapters.length}개월 전과 지금` : '지금까지의 기록'}
         </div>
-        <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'serif', lineHeight: 1.5, marginBottom: 14 }}>
+        <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', fontFamily: "'Noto Sans KR', 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif", lineHeight: 1.5, marginBottom: 14 }}>
           "{bigPictureMsg}"
         </div>
         {startScore > 0 && currentScore > 0 && (
@@ -1897,7 +1897,7 @@ function JourneyTab({ daysTogether }) {
               </div>
 
               {/* 한 줄 */}
-              <div style={{ fontSize: 12, color: 'var(--text-primary)', lineHeight: 1.6, fontFamily: 'serif', marginBottom: 12 }}>"{ch.quote}"</div>
+              <div style={{ fontSize: 12, color: 'var(--text-primary)', lineHeight: 1.6, fontFamily: "'Noto Sans KR', 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif", marginBottom: 12 }}>"{ch.quote}"</div>
 
               {/* 지표 3개 */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: ch.milestones.length > 0 ? 12 : 0 }}>
