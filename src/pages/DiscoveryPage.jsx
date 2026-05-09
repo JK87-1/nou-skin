@@ -21,16 +21,8 @@ const glass = {
   boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
 };
 
-// ===== 색상 시스템 (그라데이션은 유지하되 앱 톤에 맞게 연하게) =====
+// ===== 색상 시스템 =====
 const COLORS = {
-  hero: { gradient: 'linear-gradient(135deg, rgba(74,107,133,0.35) 0%, rgba(107,132,153,0.25) 100%)' },
-  condition: { gradient: 'linear-gradient(135deg, rgba(255,232,176,0.4) 0%, rgba(252,246,224,0.3) 100%)' },
-  sleep: { gradient: 'linear-gradient(135deg, rgba(200,218,232,0.4) 0%, rgba(229,238,245,0.3) 100%)' },
-  activity: { gradient: 'linear-gradient(135deg, rgba(200,232,212,0.4) 0%, rgba(224,242,229,0.3) 100%)' },
-  skin: { gradient: 'linear-gradient(135deg, rgba(255,212,212,0.4) 0%, rgba(255,235,235,0.3) 100%)' },
-  discovery: { gradient: 'linear-gradient(135deg, rgba(252,246,224,0.35) 0%, rgba(255,248,224,0.25) 100%)' },
-  trend: { gradient: 'linear-gradient(135deg, rgba(44,74,94,0.85) 0%, rgba(74,107,133,0.85) 100%)' },
-  recommendation: { gradient: 'linear-gradient(135deg, rgba(255,235,224,0.35) 0%, rgba(255,244,237,0.25) 100%)' },
   bar: ['#4A6B85', '#B8865C', '#5e9d8a', '#C97C5E', '#E5E5E0'],
 };
 
@@ -97,7 +89,6 @@ function Section1Hero({ hero }) {
         onClick={() => { setTapped(true); setTimeout(() => setTapped(false), 200); }}
         style={{
           ...glass,
-          background: COLORS.hero.gradient,
           padding: 20, color: 'var(--text-primary)', position: 'relative', overflow: 'hidden',
           transform: tapped ? 'scale(1.02)' : 'scale(1)',
           transition: 'transform 0.2s ease-out',
@@ -137,7 +128,6 @@ function Section2Metrics({ metrics }) {
 function MetricCard({ metric, delay }) {
   const style = useReveal(delay);
   const [tapped, setTapped] = useState(false);
-  const colors = COLORS[metric.id] || COLORS.condition;
   const changeColor = metric.change?.direction === 'up' ? '#5e9d8a' : metric.change?.direction === 'down' ? '#C97C5E' : 'var(--text-muted)';
   const changeArrow = metric.change?.direction === 'up' ? '↑' : metric.change?.direction === 'down' ? '↓' : '→';
 
@@ -153,7 +143,6 @@ function MetricCard({ metric, delay }) {
       onClick={() => { setTapped(true); setTimeout(() => setTapped(false), 300); }}
       style={{
         ...glass,
-        background: colors.gradient,
         aspectRatio: '1', borderRadius: 24, padding: 16,
         display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
         transform: tapped ? 'scale(1.05)' : 'scale(1)',
@@ -244,7 +233,7 @@ function Section4Discoveries({ discoveries }) {
 
   return (
     <div style={{ padding: '10px 20px 0', ...style }}>
-      <div style={{ ...glass, background: COLORS.discovery.gradient, padding: 18 }}>
+      <div style={{ ...glass, padding: 18 }}>
         {/* 헤더 */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
           <span style={{ fontSize: 14 }}>🔍</span>
@@ -305,11 +294,11 @@ function Section5Trend({ trend }) {
 
   return (
     <div style={{ padding: '10px 20px 0', ...style }}>
-      <div style={{ ...glass, background: COLORS.trend.gradient, padding: 18, color: 'white' }}>
+      <div style={{ ...glass, padding: 18 }}>
         {/* 헤더 */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
           <span style={{ fontSize: 14 }}>📈</span>
-          <span style={{ fontSize: 13, fontWeight: 600 }}>4주 트렌드 — {trend.trendDescription}</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>4주 트렌드 — {trend.trendDescription}</span>
         </div>
 
         {/* 막대 차트 */}
@@ -320,14 +309,14 @@ function Section5Trend({ trend }) {
             return (
               <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, height: '100%', justifyContent: 'flex-end' }}>
                 {w.value > 0 && (
-                  <span style={{ fontSize: 9, color: isCurrent ? '#FFE8B0' : 'rgba(255,255,255,0.6)' }}>
+                  <span style={{ fontSize: 9, color: isCurrent ? 'var(--accent-primary)' : 'var(--text-muted)' }}>
                     {w.value}
                   </span>
                 )}
                 <div style={{
                   width: '100%',
                   height: barsGrown ? `${Math.max(heightPct, 8)}%` : '4%',
-                  background: isCurrent ? 'linear-gradient(180deg, #FFE8B0, #FCF6E0)' : 'rgba(255,255,255,0.25)',
+                  background: isCurrent ? 'var(--accent-primary)' : 'rgba(255,255,255,0.15)',
                   borderRadius: '6px 6px 0 0',
                   transition: `height 0.6s ease ${i * 0.1}s`,
                 }} />
@@ -339,14 +328,14 @@ function Section5Trend({ trend }) {
         {/* 라벨 */}
         <div style={{ display: 'flex', gap: 8 }}>
           {trend.weeks.map((w, i) => (
-            <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: 9, color: w.isCurrent ? '#FFE8B0' : 'rgba(255,255,255,0.6)', fontWeight: w.isCurrent ? 600 : 400 }}>
+            <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: 9, color: w.isCurrent ? 'var(--accent-primary)' : 'var(--text-muted)', fontWeight: w.isCurrent ? 600 : 400 }}>
               {w.label}
             </div>
           ))}
         </div>
 
         {/* 캡션 */}
-        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.8)', marginTop: 10 }}>
+        <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 10 }}>
           {trend.caption}
         </div>
       </div>
@@ -364,7 +353,7 @@ function Section6Recommendations({ recommendations }) {
 
   return (
     <div style={{ padding: '10px 20px 0', ...style }}>
-      <div style={{ ...glass, background: COLORS.recommendation.gradient, padding: 18 }}>
+      <div style={{ ...glass, padding: 18 }}>
         {/* 헤더 */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
           <span style={{ fontSize: 14 }}>🎯</span>
@@ -379,9 +368,8 @@ function Section6Recommendations({ recommendations }) {
         }}>
           {recommendations.map((rec, i) => (
             <div key={i} style={{
-              flexShrink: 0, width: 140, background: 'rgba(255,255,255,0.3)', borderRadius: 20, padding: 14,
-              border: '1px solid rgba(255,255,255,0.25)', scrollSnapAlign: 'start',
-              backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+              flexShrink: 0, width: 140, background: 'rgba(255,255,255,0.15)', borderRadius: 20, padding: 14,
+              border: '1px solid rgba(255,255,255,0.2)', scrollSnapAlign: 'start',
             }}>
               <div style={{ fontSize: 10, color: 'var(--accent-primary)', fontWeight: 600, marginBottom: 6 }}>
                 {RANK_BADGES[rec.rank] || `${rec.rank}순위`}
