@@ -108,8 +108,11 @@ export default function TabBar({ activeTab, onTabChange }) {
         const c = active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)';
         return (
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="11.5" fill={c} />
-            <path d="M7.5 12.5l3 3L17 9" stroke={active ? '#fff' : '#e8e8e8'} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+            <mask id={`check-mask-${active ? 'a' : 'i'}`}>
+              <rect width="24" height="24" fill="white" />
+              <path d="M7.5 12.5l3 3L17 9" stroke="black" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+            </mask>
+            <circle cx="12" cy="12" r="11.5" fill={c} mask={`url(#check-mask-${active ? 'a' : 'i'})`} />
           </svg>
         );
       },
