@@ -397,7 +397,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
         const profileImg = getProfile().profileImage;
         const avatarSrc = profileImg || (latestRecord ? (thumbs[String(latestRecord.id)] || thumbs[latestRecord.date]) : null);
         const tabs = [
-          { key: 'album', icon: <img src="/album.svg" alt="앨범" style={{ width: 20, height: 20, opacity: 0.3 }} />, label: '앨범', count: photoCount },
+          { key: 'album', icon: <img src="/album.svg" alt="앨범" style={{ width: 18, height: 18, opacity: 0.3 }} />, label: '앨범', count: photoCount },
           { key: 'journal', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><mask id="journal-m"><rect width="24" height="24" fill="white"/><rect x="8" y="6" width="2" height="12" rx="1" fill="black"/><rect x="12" y="6" width="2" height="8" rx="1" fill="black"/></mask><rect x="3" y="1" width="18" height="22" rx="2.5" fill="var(--text-muted)" mask="url(#journal-m)"/></svg>, label: '저널', count: journalCount },
           { key: 'journey', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><mask id="journey-m"><rect width="24" height="24" fill="white"/><path d="M8.5 7.5L11 10l5-5" stroke="black" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"/></mask><path d="M4 15s1.5-1.5 5-1.5 5.5 3 9 3 4.5-1.5 4.5-1.5V3.5S21 5 17.5 5 12 2 8.5 2 4 3.5 4 3.5z" fill="var(--text-muted)" mask="url(#journey-m)"/><line x1="4" y1="15" x2="4" y2="22" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round"/></svg>, label: '여정', count: `${monthsTogether}개월` },
         ];
