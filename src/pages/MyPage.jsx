@@ -464,18 +464,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
       {profileTab === 'journal' && <JournalTab nickname={getProfile().nickname} />}
 
       {/* ===== 여정 탭 ===== */}
-      {profileTab === 'journey' && (
-        <div style={{ padding: '20px 18px' }}>
-          <div style={{ textAlign: 'center', padding: '40px 0' }}>
-            <div style={{ fontSize: 24, marginBottom: 8 }}>🛤</div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>lua와 {monthsTogether}개월째</div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>
-              총 {daysTogether}일 · 기록 {photoCount + journalCount}회
-              {streakDays >= 2 && ` · ${streakDays}일 연속`}
-            </div>
-          </div>
-        </div>
-      )}
+      {profileTab === 'journey' && <JourneyTab daysTogether={daysTogether} />}
 
       {/* ===== Photo Album Tabs ===== */}
       {profileTab === 'album' && <><div style={{ padding: '16px 10px 0' }}>
@@ -1708,6 +1697,242 @@ function JournalDetailScreen({ entry, entries, onClose, onEdit, onDelete }) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ===== JOURNEY TAB =====
+import { IconArrowRight, IconTrophy, IconTrendingUp, IconFlag, IconCamera } from '@tabler/icons-react';
+
+function JourneyTab({ daysTogether }) {
+  // 월별 데이터 수집
+  const buildMonthlyChapters = () => {
+    const recs = (() => { try { return JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); } catch { return {}; } })();
+    const foods = (() => { try { return JSON.parse(localStorage.getItem('lua_food_records') || '{}'); } catch { return {}; } })();
+    const checks = (() => { try { return JSON.parse(localStorage.getItem('nou_condition_checks') || '[]'); } catch { return []; } })();
+    const drinks = (() => { try { return JSON.parse(localStorage.getItem('lua_drink_records') || '{}'); } catch { return {}; } })();
+    const journals = getJournalEntries();
+
+    // 모든 날짜 수집
+    const allDates = [...new Set([...Object.keys(recs), ...Object.keys(foods), ...checks.map(c => c.date).filter(Boolean)])].sort();
+    if (allDates.length === 0) return { chapters: [], startScore: 0, currentScore: 0 };
+
+    const firstDate = allDates[0];
+    const firstMonth = firstDate.slice(0, 7);
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    // 월 목록 생성 (현재 → 시작)
+    const monthList = [];
+    let d = new Date(now.getFullYear(), now.getMonth(), 1);
+    const firstD = new Date(firstDate);
+    while (d >= new Date(firstD.getFullYear(), firstD.getMonth(), 1)) {
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      monthList.push(key);
+      d.setMonth(d.getMonth() - 1);
+    }
+
+    const chapters = monthList.map((monthKey, idx) => {
+      const [y, m] = monthKey.split('-').map(Number);
+      const daysInMonth = new Date(y, m, 0).getDate();
+      const monthDates = allDates.filter(d => d.startsWith(monthKey));
+      const daysRecorded = new Set(monthDates).size;
+
+      // 컨디션 평균
+      const monthChecks = checks.filter(c => (c.date || '').startsWith(monthKey));
+      const condScores = monthChecks.map(c => {
+        const e = c.energy || c.에너지 || 0, mo = c.mood || c.기분 || 0, s = c.skin || c.피부 || 0, g = c.gut || c.소화 || 0;
+        return (e + mo + s + g) / 4;
+      }).filter(v => v > 0);
+      const avgCond = condScores.length > 0 ? (condScores.reduce((a, b) => a + b, 0) / condScores.length) : 0;
+
+      // 수면 평균
+      const sleepVals = monthDates.map(d => recs[d]?.sleep?.hours).filter(h => h > 0);
+      const avgSleep = sleepVals.length > 0 ? (sleepVals.reduce((a, b) => a + b, 0) / sleepVals.length) : 0;
+
+      // 전월 컨디션 (변화량 계산용)
+      let prevCond = null;
+      if (idx < monthList.length - 1) {
+        const prevKey = monthList[idx + 1];
+        const prevChecks = checks.filter(c => (c.date || '').startsWith(prevKey));
+        const prevScores = prevChecks.map(c => ((c.energy || c.에너지 || 0) + (c.mood || c.기분 || 0) + (c.skin || c.피부 || 0) + (c.gut || c.소화 || 0)) / 4).filter(v => v > 0);
+        prevCond = prevScores.length > 0 ? prevScores.reduce((a, b) => a + b, 0) / prevScores.length : null;
+      }
+
+      const isStart = monthKey === firstMonth;
+      const isCurrent = monthKey === currentMonth;
+      const status = isCurrent ? 'current' : isStart ? 'start' : 'past';
+
+      // 마일스톤 생성
+      const milestones = [];
+      if (isStart) {
+        const fd = new Date(firstDate);
+        milestones.push({ type: 'start', icon: 'flag', text: `lua와의 첫 만남 · ${fd.getMonth() + 1}월 ${fd.getDate()}일`, primary: true });
+      }
+      if (prevCond !== null && avgCond > 0 && avgCond - prevCond >= 0.3) {
+        milestones.push({ type: 'improvement', icon: 'trending', text: `컨디션 +${(avgCond - prevCond).toFixed(1)} 상승`, primary: milestones.length === 0 });
+      }
+      // 연속 기록 체크 (해당 월)
+      const sortedDates = [...new Set(monthDates)].sort();
+      let maxStreak = 0, streak = 1;
+      for (let i = 1; i < sortedDates.length; i++) {
+        if ((new Date(sortedDates[i]) - new Date(sortedDates[i - 1])) / 86400000 === 1) { streak++; maxStreak = Math.max(maxStreak, streak); }
+        else streak = 1;
+      }
+      maxStreak = Math.max(maxStreak, streak);
+      if (maxStreak >= 7) milestones.push({ type: 'achievement', icon: 'trophy', text: `${maxStreak}일 연속 기록 달성`, primary: milestones.length === 0 });
+
+      // 그달의 한 줄 (간단 생성)
+      let quote = '';
+      if (isCurrent) {
+        if (avgCond >= 7) quote = '좋은 흐름을 이어가고 있는 달';
+        else if (avgSleep >= 7) quote = '잠을 잘 자는 법을 배워가고 있는 달';
+        else quote = '꾸준히 기록하며 나를 알아가는 달';
+      } else if (isStart) {
+        quote = '내 몸을 처음 들여다본 달';
+      } else {
+        if (avgCond >= 7) quote = '컨디션이 안정되기 시작한 달';
+        else quote = '기록의 리듬을 찾아가던 달';
+      }
+
+      return { monthKey, year: y, month: m, status, daysRecorded, daysInMonth, avgCond, avgSleep, condChange: prevCond !== null && avgCond > 0 ? avgCond - prevCond : null, milestones, quote };
+    });
+
+    const startChapter = chapters[chapters.length - 1];
+    const currentChapter = chapters[0];
+
+    return {
+      chapters,
+      startScore: startChapter?.avgCond || 0,
+      currentScore: currentChapter?.avgCond || 0,
+      startMonth: startChapter?.month || 1,
+      currentMonth: currentChapter?.month || now.getMonth() + 1,
+    };
+  };
+
+  const { chapters, startScore, currentScore, startMonth, currentMonth: curMonth } = buildMonthlyChapters();
+  const scoreChange = currentScore - startScore;
+
+  // 큰 그림 메시지
+  const bigPictureMsg = scoreChange > 0.5 ? '매일이 비슷해 보이지만, 천천히 좋아지고 있어요'
+    : scoreChange < -0.5 ? '쉬어가는 시간도 여정의 일부예요'
+    : '꾸준히 기록하는 것 자체가 변화의 시작이에요';
+
+  const DOT_COLORS = { current: '#042C53', past: '#B5D4F4', start: '#DCEEFB' };
+  const MILESTONE_ICONS = {
+    trophy: <IconTrophy size={11} color="#BA7517" />,
+    trending: <IconTrendingUp size={11} color="#639922" />,
+    bulb: <IconBulb size={11} color="#BA7517" />,
+    camera: <IconCamera size={11} color="var(--text-muted)" />,
+    flag: <IconFlag size={11} color="#534AB7" />,
+  };
+
+  if (chapters.length === 0) {
+    return (
+      <div style={{ padding: '40px 18px', textAlign: 'center' }}>
+        <div style={{ fontSize: 24, marginBottom: 8 }}>🛤</div>
+        <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>여정이 시작되면 여기에 표시돼요</div>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>기록을 시작하면 당신만의 여정이 만들어져요</div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ padding: '0 16px 20px' }}>
+      {/* 3. 큰 그림 카드 */}
+      <div style={{ background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: 'var(--card-border)', borderRadius: 12, padding: 16, marginBottom: 12, textAlign: 'center' }}>
+        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>
+          {chapters.length >= 2 ? `${chapters.length}개월 전과 지금` : '지금까지의 기록'}
+        </div>
+        <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'serif', lineHeight: 1.5, marginBottom: 14 }}>
+          "{bigPictureMsg}"
+        </div>
+        {startScore > 0 && currentScore > 0 && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 12, alignItems: 'center' }}>
+            <div>
+              <div style={{ fontSize: 9, color: 'var(--text-dim)' }}>{startMonth}월 시작</div>
+              <div style={{ fontSize: 18, fontWeight: 500, color: 'var(--text-muted)' }}>{startScore.toFixed(1)}</div>
+              <div style={{ fontSize: 9, color: 'var(--text-dim)' }}>평균 컨디션</div>
+            </div>
+            <IconArrowRight size={16} color="var(--text-muted)" />
+            <div>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>{curMonth}월 지금</div>
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 4 }}>
+                <span style={{ fontSize: 18, fontWeight: 500, color: 'var(--text-primary)' }}>{currentScore.toFixed(1)}</span>
+                {scoreChange !== 0 && <span style={{ fontSize: 10, color: scoreChange > 0 ? '#639922' : '#A32D2D' }}>{scoreChange > 0 ? '↑' : '↓'}{Math.abs(scoreChange).toFixed(1)}</span>}
+              </div>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>평균 컨디션</div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 4. 연도 구분선 */}
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
+        <span style={{ fontSize: 9, color: 'var(--text-primary)', background: 'var(--card-bg)', padding: '4px 12px', borderRadius: 12, border: 'var(--card-border)' }}>{new Date().getFullYear()}년</span>
+      </div>
+
+      {/* 5. 월별 챕터 타임라인 */}
+      <div style={{ position: 'relative', paddingLeft: 20, paddingBottom: 20 }}>
+        {/* 세로선 */}
+        <div style={{ position: 'absolute', left: 8, top: 8, bottom: 0, width: 1, background: 'linear-gradient(180deg, #B5D4F4 0%, #B5D4F4 70%, transparent 100%)' }} />
+
+        {chapters.map((ch, i) => (
+          <div key={ch.monthKey} style={{ position: 'relative', marginBottom: i < chapters.length - 1 ? 14 : 0 }}>
+            {/* 점 */}
+            <div style={{ position: 'absolute', left: -16, top: 4, width: 10, height: 10, background: DOT_COLORS[ch.status], borderRadius: '50%', border: '2px solid var(--bg-primary, #fff)', zIndex: 1 }} />
+
+            {/* 카드 */}
+            <div style={{ background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: 'var(--card-border)', borderRadius: 12, padding: 16 }}>
+              {/* 헤더 */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>{ch.month}월</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+                    {ch.status === 'current' ? `현재 · ${daysTogether}일째` : ch.status === 'start' ? `시작 · ${ch.daysRecorded}일간 기록` : `${ch.daysRecorded}일간 기록`}
+                  </div>
+                </div>
+                {ch.status === 'current' && <span style={{ background: 'rgba(250,238,218,0.3)', color: 'var(--text-muted)', fontSize: 9, padding: '3px 8px', borderRadius: 8 }}>진행 중</span>}
+                {ch.status === 'start' && <span style={{ background: 'rgba(238,237,254,0.3)', color: 'var(--text-muted)', fontSize: 9, padding: '3px 8px', borderRadius: 8 }}>시작</span>}
+              </div>
+
+              {/* 한 줄 */}
+              <div style={{ fontSize: 12, color: 'var(--text-primary)', lineHeight: 1.6, fontFamily: 'serif', marginBottom: 12 }}>"{ch.quote}"</div>
+
+              {/* 지표 3개 */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: ch.milestones.length > 0 ? 12 : 0 }}>
+                {[
+                  { label: '컨디션', value: ch.avgCond > 0 ? ch.avgCond.toFixed(1) : '—', change: ch.condChange },
+                  { label: '수면', value: ch.avgSleep > 0 ? `${ch.avgSleep.toFixed(1)}h` : '—' },
+                  { label: '기록일', value: ch.daysRecorded },
+                ].map(met => (
+                  <div key={met.label} style={{ background: 'var(--surface-light, rgba(255,255,255,0.08))', borderRadius: 8, padding: '8px 6px', textAlign: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 2 }}>
+                      <span style={{ fontSize: 14, fontWeight: 500, color: ch.status === 'start' ? 'var(--text-muted)' : 'var(--text-primary)' }}>{met.value}</span>
+                      {met.change != null && met.change !== 0 && (
+                        <span style={{ fontSize: 9, color: met.change > 0 ? '#639922' : '#A32D2D' }}>{met.change > 0 ? '↑' : '↓'}</span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: 9, color: ch.status === 'start' ? 'var(--text-dim)' : 'var(--text-muted)' }}>{met.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* 마일스톤 */}
+              {ch.milestones.length > 0 && (
+                <div style={{ borderTop: '0.5px solid var(--border-light)', paddingTop: 10 }}>
+                  {ch.milestones.map((ms, j) => (
+                    <div key={j} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: j < ch.milestones.length - 1 ? 4 : 0 }}>
+                      {MILESTONE_ICONS[ms.icon] || <IconFlag size={11} color="var(--text-muted)" />}
+                      <span style={{ fontSize: 10, color: 'var(--text-primary)', fontWeight: ms.primary ? 500 : 400 }}>{ms.text}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
