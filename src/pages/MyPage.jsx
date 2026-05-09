@@ -406,7 +406,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
             {/* 2-1. 가로 배치: 아바타 + 진입카드 3개 */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
               {/* 프로필 사진 */}
-              <div style={{ width: 64, height: 64, borderRadius: '50%', overflow: 'hidden', background: 'rgba(255,255,255,0.15)', flexShrink: 0, border: '2px solid rgba(255,255,255,0.1)' }}>
+              <div style={{ width: 86, height: 86, borderRadius: '50%', overflow: 'hidden', background: 'rgba(255,255,255,0.15)', flexShrink: 0, border: '2px solid rgba(255,255,255,0.1)' }}>
                 {avatarSrc ? (
                   <img src={avatarSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
