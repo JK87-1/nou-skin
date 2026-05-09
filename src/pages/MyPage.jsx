@@ -1246,10 +1246,7 @@ function JournalTab({ nickname }) {
           <circle cx="32" cy="54" r="0.7" fill="var(--text-muted)" opacity="0.3" />
         </svg>
 
-        <div style={{ fontSize: 17, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.2, marginBottom: 10 }}>오늘의 한 줄</div>
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: 24 }}>
-          스치는 생각도, 짧은 단상도<br />모두 {nickname || '나'}님의 결이 돼요
-        </div>
+        <div style={{ fontSize: 17, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.2, marginBottom: 24 }}>오늘의 한 줄</div>
 
         {/* 가이드 프롬프트 */}
         <div style={{ maxWidth: 280, margin: '0 auto 22px', display: 'flex', flexDirection: 'column', gap: 8 }}>
