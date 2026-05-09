@@ -1,399 +1,498 @@
-import { useState, useEffect } from 'react';
-import { getOrGenerateInsights, refreshInsights, markShown, triggerLLMOnDataInput } from '../engine/InsightEngine';
-import { generateInsightsNow, hasLLMCacheToday } from '../engine/LLMInsightEngine';
-import { getRecords } from '../storage/SkinStorage';
-import { getEnabledCategories, getCategoryColor } from '../storage/ProfileStorage';
-import { getConditionChecks, getEnergySubChecks, getMoodSubChecks, getSkinSubChecks } from '../storage/ConditionStorage';
+import { useState, useEffect, useRef } from 'react';
+import { getOrGenerateDiscoverPage, refreshDiscoverPage, getWeekRange, formatWeekLabel, getActiveDays, getDiscoverHistory } from '../engine/DiscoverEngine';
 
-const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
-
-const TYPE_COLORS = {
-  pattern: '#B8865C',
-  cross_analysis: '#5E9D8A',
-  change_detection: '#C97C5E',
-  positive: '#5E9D8A',
-  action: '#4A6B85',
-};
-
-const cardStyle = {
-  background: 'rgba(255,255,255,0.2)',
-  borderRadius: 30,
-  backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-  border: '1px solid rgba(255,255,255,0.3)',
-  boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
-  padding: 20,
-};
-
-function getDateKey(d) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-
-function getActiveDays() {
-  try {
-    const records = JSON.parse(localStorage.getItem('lua_record_v2') || '{}');
-    const foods = JSON.parse(localStorage.getItem('lua_food_records') || '{}');
-    const checks = JSON.parse(localStorage.getItem('nou_condition_checks') || '[]');
-    const checkDates = new Set(checks.map(c => c.date || (c.timestamp && c.timestamp.slice(0, 10))).filter(Boolean));
-    const allDates = new Set([...Object.keys(records), ...Object.keys(foods), ...checkDates]);
-    return allDates.size;
-  } catch { return 0; }
-}
-
-function getConditionSummary() {
-  const checks = getEnergySubChecks();
-  const moods = getMoodSubChecks();
-  const last30 = [];
-  for (let i = 0; i < 30; i++) {
-    const d = new Date(); d.setDate(d.getDate() - i);
-    last30.push(getDateKey(d));
-  }
-  const energyVals = [];
-  const moodVals = [];
-  last30.forEach(dk => {
-    const e = checks.find(c => c.date === dk);
-    if (e?.vitality) energyVals.push(e.vitality);
-    const m = moods.find(c => c.date === dk);
-    if (m?.stress) moodVals.push(m.stress);
-  });
-  const avgEnergy = energyVals.length > 0 ? (energyVals.reduce((a, b) => a + b, 0) / energyVals.length).toFixed(1) : null;
-  const recentEnergy = energyVals.length >= 2 ? energyVals[0] - energyVals[energyVals.length - 1] : null;
-
-  // 가장 큰 영향 요인 추정
-  let topFactor = { name: '수면', percentage: 45, emoji: '😴' };
-  try {
-    const records = JSON.parse(localStorage.getItem('lua_record_v2') || '{}');
-    const sleepDays = last30.filter(dk => records[dk]?.sleep?.hours > 0).length;
-    const waterDays = last30.filter(dk => (records[dk]?.water?.cups || 0) > 0).length;
-    if (waterDays > sleepDays) topFactor = { name: '수분', percentage: 40, emoji: '💧' };
-  } catch {}
-
-  return { avg: avgEnergy, trend: recentEnergy > 0 ? 'up' : recentEnergy < 0 ? 'down' : 'stable', trendValue: recentEnergy, topFactor, dataCount: energyVals.length };
-}
-
-function getSkinSummary() {
-  const skinSubs = getSkinSubChecks();
-  const last30 = [];
-  for (let i = 0; i < 30; i++) {
-    const d = new Date(); d.setDate(d.getDate() - i);
-    last30.push(getDateKey(d));
-  }
-  const tagFreq = {};
-  let troubleCount = 0;
-  skinSubs.filter(s => last30.includes(s.date)).forEach(s => {
-    (s.tags || []).forEach(t => { tagFreq[t] = (tagFreq[t] || 0) + 1; });
-    if ((s.tags || []).includes('트러블')) troubleCount++;
-  });
-  const topTag = Object.entries(tagFreq).sort((a, b) => b[1] - a[1])[0];
-  const SKIN_TAG_ICONS = { '촉촉': '💧', '건조': '🏜', '맑음': '✨', '트러블': '🔴', '칙칙': '🟡', '탄력': '🌊', '번들': '🌊', '예민': '😤' };
-
-  let topFactor = { name: '수면', percentage: 50, emoji: '😴' };
-  if (troubleCount >= 3) topFactor = { name: '식단', percentage: 40, emoji: '🍽' };
-
+// ===== 페이지 진입 애니메이션 =====
+function useReveal(delay = 0) {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setVisible(true), delay * 1000); return () => clearTimeout(t); }, []);
   return {
-    troubleRate: skinSubs.length > 0 ? Math.round((troubleCount / skinSubs.length) * 100) : null,
-    topTag: topTag ? { name: topTag[0], icon: SKIN_TAG_ICONS[topTag[0]] || '📊', count: topTag[1] } : null,
-    topFactor,
-    dataCount: skinSubs.filter(s => last30.includes(s.date)).length,
+    opacity: visible ? 1 : 0,
+    transform: visible ? 'translateY(0)' : 'translateY(16px)',
+    transition: `opacity 0.4s ease ${delay}s, transform 0.4s ease ${delay}s`,
   };
 }
 
-function getSleepSummary() {
-  const last30 = [];
-  for (let i = 0; i < 30; i++) {
-    const d = new Date(); d.setDate(d.getDate() - i);
-    last30.push(getDateKey(d));
-  }
-  try {
-    const records = JSON.parse(localStorage.getItem('lua_record_v2') || '{}');
-    const sleepHours = last30.map(dk => records[dk]?.sleep?.hours).filter(h => h > 0);
-    const avg = sleepHours.length > 0 ? (sleepHours.reduce((a, b) => a + b, 0) / sleepHours.length).toFixed(1) : null;
-    const recent = sleepHours.slice(0, 7);
-    const older = sleepHours.slice(7, 14);
-    const recentAvg = recent.length > 0 ? recent.reduce((a, b) => a + b, 0) / recent.length : 0;
-    const olderAvg = older.length > 0 ? older.reduce((a, b) => a + b, 0) / older.length : 0;
-    const trend = recentAvg > olderAvg ? 'up' : recentAvg < olderAvg ? 'down' : 'stable';
-
-    // 카페인 영향 추정
-    let topFactor = { name: '취침 시간', percentage: 35, emoji: '🕐' };
-    try {
-      const drinks = JSON.parse(localStorage.getItem('lua_drink_records') || '{}');
-      const cafDays = last30.filter(dk => (drinks[dk]?.caffeine || []).length > 0).length;
-      if (cafDays > 10) topFactor = { name: '카페인', percentage: 35, emoji: '☕' };
-    } catch {}
-
-    return { avg, trend, trendValue: Math.round((recentAvg - olderAvg) * 10) / 10, topFactor, dataCount: sleepHours.length };
-  } catch { return { avg: null, trend: 'stable', trendValue: 0, topFactor: { name: '취침 시간', percentage: 35, emoji: '🕐' }, dataCount: 0 }; }
-}
+// ===== 색상 시스템 =====
+const COLORS = {
+  hero: { gradient: 'linear-gradient(135deg, #4A6B85 0%, #6B8499 100%)' },
+  condition: { gradient: 'linear-gradient(135deg, #FFE8B0 0%, #FCF6E0 100%)', dark: '#6b4a2a', muted: '#a08c6b' },
+  sleep: { gradient: 'linear-gradient(135deg, #C8DAE8 0%, #E5EEF5 100%)', dark: '#2c4a5e', muted: '#6b8499' },
+  activity: { gradient: 'linear-gradient(135deg, #C8E8D4 0%, #E0F2E5 100%)', dark: '#2c5e3a', muted: '#6b9080' },
+  skin: { gradient: 'linear-gradient(135deg, #FFD4D4 0%, #FFEBEB 100%)', dark: '#7a3a3a', muted: '#a86b6b' },
+  discovery: { gradient: 'linear-gradient(135deg, #FCF6E0 0%, #FFF8E0 100%)' },
+  trend: { gradient: 'linear-gradient(135deg, #2c4a5e 0%, #4A6B85 100%)' },
+  recommendation: { gradient: 'linear-gradient(135deg, #FFEBE0 0%, #FFF4ED 100%)' },
+  bar: ['#4A6B85', '#B8865C', '#5e9d8a', '#C97C5E', '#E5E5E0'],
+};
 
 export default function DiscoveryPage() {
-  const [insights, setInsights] = useState([]);
+  const [page, setPage] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    getOrGenerateDiscoverPage().then(data => {
+      setPage(data);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, []);
+
   const activeDays = getActiveDays();
-  const condSummary = getConditionSummary();
-  const skinSummary = getSkinSummary();
-  const sleepSummary = getSleepSummary();
 
-  useEffect(() => {
-    setInsights(getOrGenerateInsights());
-    if (!hasLLMCacheToday()) {
-      generateInsightsNow().then(result => {
-        if (result) setInsights(getOrGenerateInsights());
-      });
-    }
-  }, []);
+  // 로딩
+  if (loading) return <SkeletonPage />;
 
-  useEffect(() => {
-    const triggerAndRefresh = (dataType) => {
-      setInsights(refreshInsights());
-      triggerLLMOnDataInput(dataType);
-    };
-    const handlers = {
-      'lua-record-updated': () => triggerAndRefresh('meal_logged'),
-      'lua-sleep-updated': () => triggerAndRefresh('sleep_logged'),
-      'lua-food-logged': () => triggerAndRefresh('meal_logged'),
-      'lua-drink-logged': (e) => triggerAndRefresh(e.detail?.type || 'drink_caffeine'),
-      'lua-condition-logged': () => triggerAndRefresh('condition_logged'),
-      'lua-supplement-completed': () => triggerAndRefresh('supplement_completed'),
-      'lua-skin-logged': () => triggerAndRefresh('condition_logged'),
-      'lua-llm-insight-ready': () => setInsights(getOrGenerateInsights()),
-    };
-    Object.entries(handlers).forEach(([evt, fn]) => window.addEventListener(evt, fn));
-    return () => Object.entries(handlers).forEach(([evt, fn]) => window.removeEventListener(evt, fn));
-  }, []);
-
-  const todayDate = new Date();
-  const dateStr = `${todayDate.getFullYear()}년 ${todayDate.getMonth() + 1}월 ${todayDate.getDate()}일`;
-  const DAY_NAMES = ['일요일','월요일','화요일','수요일','목요일','금요일','토요일'];
+  // 7일 미만
+  if (!page || page.status === 'insufficient_data') {
+    return <InsufficientDataPage activeDays={activeDays} />;
+  }
 
   return (
-    <div style={{ minHeight: '100dvh', paddingBottom: 100 }}>
-      {/* === 헤더 === */}
-      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 20px) 20px 0' }}>
-        <div style={{ ...fadeUp(0.03) }}>
-          <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>발견</div>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{dateStr} {DAY_NAMES[todayDate.getDay()]}</div>
-        </div>
-      </div>
+    <div style={{ minHeight: '100dvh', paddingBottom: 100, background: 'linear-gradient(180deg, #E8F1F7 0%, #F4F8FB 100%)' }}>
+      {/* 헤더 */}
+      <Header weekLabel={page.weekLabel} weekNumber={page.weekNumber} />
 
-      {/* === 신규 사용자 (7일 미만) === */}
-      {activeDays < 7 && (
-        <div style={{ padding: '24px 20px' }}>
-          <div style={{ ...cardStyle, textAlign: 'center', ...fadeUp(0.08) }}>
-            <div style={{ fontSize: 36, marginBottom: 12 }}>✨</div>
-            <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>당신의 패턴을 함께 찾아갈게요</div>
-            <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 16 }}>
-              매일 기록을 쌓으면 나만의 패턴과 인사이트를 발견할 수 있어요
-            </div>
-            {/* 진행률 */}
-            <div style={{ marginBottom: 8 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>기록 진행률</span>
-                <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent-primary)' }}>{activeDays}/7일</span>
-              </div>
-              <div style={{ height: 6, borderRadius: 3, background: 'rgba(0,0,0,0.06)', overflow: 'hidden' }}>
-                <div style={{ height: '100%', borderRadius: 3, background: 'var(--accent-primary)', width: `${Math.min((activeDays / 7) * 100, 100)}%`, transition: 'width 0.5s ease' }} />
-              </div>
-            </div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-              {7 - activeDays}일 더 기록하면 첫 번째 발견을 보여드릴게요
-            </div>
-          </div>
-        </div>
-      )}
+      {/* 섹션 1: 히어로 */}
+      <Section1Hero hero={page.hero} />
 
-      {/* === 오늘의 발견 (7일 이상) === */}
-      {activeDays >= 7 && (
-        <div style={{ padding: '20px 20px 0' }}>
-          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10, ...fadeUp(0.06) }}>오늘의 발견</div>
-          {insights.length > 0 ? (() => {
-            const main = insights[0];
-            const additional = insights.slice(1);
-            return (
-              <div style={{ ...fadeUp(0.1) }}>
-                {/* 메인 인사이트 */}
-                <div style={{ ...cardStyle, marginBottom: 8 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{ fontSize: 14 }}>{main.emoji}</span>
-                      {main.label && <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>{main.label}</span>}
-                    </div>
-                    <div onClick={() => setInsights(refreshInsights())} style={{ cursor: 'pointer', padding: 4, WebkitTapHighlightColor: 'transparent' }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b1b8ba" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M23 4v6h-6" /><path d="M1 20v-6h6" />
-                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div style={{ fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.6 }}>{main.message}</div>
-                  {main.action && (
-                    <button onClick={() => { markShown(main.id); setInsights(refreshInsights()); }}
-                      style={{ background: 'rgba(0,0,0,0.04)', border: 'none', borderRadius: 10, padding: '8px 14px', fontSize: 11, color: 'var(--text-primary)', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', marginTop: 12 }}>
-                      {main.action.label}
-                    </button>
-                  )}
-                </div>
+      {/* 섹션 2: 2열 그리드 */}
+      <Section2Metrics metrics={page.metrics} />
 
-                {/* 추가 인사이트 */}
-                {additional.map((ins, i) => (
-                  <div key={ins.id || i} style={{ ...cardStyle, marginBottom: 8, padding: '16px 20px', ...fadeUp(0.12 + i * 0.03) }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                      <span style={{ fontSize: 12 }}>{ins.emoji}</span>
-                      {ins.label && <span style={{ fontSize: 11, fontWeight: 600, color: '#b1b8ba' }}>{ins.label}</span>}
-                    </div>
-                    <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.5 }}>{ins.message}</div>
-                  </div>
-                ))}
-              </div>
-            );
-          })() : (
-            <div style={{ ...cardStyle, textAlign: 'center', ...fadeUp(0.1) }}>
-              <div style={{ fontSize: 24, marginBottom: 8 }}>🌿</div>
-              <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>이번 주는 잘 보내고 계시네요</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>새로운 패턴이 발견되면 알려드릴게요</div>
-            </div>
-          )}
-        </div>
-      )}
+      {/* 섹션 3: 영향 요인 */}
+      {page.influenceFactors && <Section3Factors factors={page.influenceFactors} />}
 
-      {/* === 영향 요인 분석 미리보기 (7일 이상) === */}
-      {activeDays >= 7 && (
-        <div style={{ padding: '24px 20px 0' }}>
-          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10, ...fadeUp(0.18) }}>영향 요인</div>
+      {/* 섹션 4: 발견 3가지 */}
+      {page.discoveries?.length > 0 && <Section4Discoveries discoveries={page.discoveries} />}
 
-          {/* 컨디션 카드 */}
-          <ImpactPreviewCard
-            delay={0.2}
-            icon="⚡"
-            title="컨디션"
-            color={getCategoryColor('condition') || '#F5C870'}
-            locked={activeDays < 30}
-            activeDays={activeDays}
-            mainValue={condSummary.avg ? `${condSummary.avg}` : '—'}
-            mainUnit="/10"
-            mainLabel="평균 활력"
-            topFactor={condSummary.topFactor}
-            trend={condSummary.trend}
-            trendValue={condSummary.trendValue}
-            dataCount={condSummary.dataCount}
-          />
+      {/* 섹션 5: 4주 트렌드 */}
+      <Section5Trend trend={page.trend} />
 
-          {/* 피부 카드 */}
-          <ImpactPreviewCard
-            delay={0.23}
-            icon="✨"
-            title="피부"
-            color={getCategoryColor('skin') || '#D8A0E0'}
-            locked={activeDays < 30}
-            activeDays={activeDays}
-            mainValue={skinSummary.topTag ? skinSummary.topTag.icon : '—'}
-            mainUnit=""
-            mainLabel={skinSummary.topTag ? `"${skinSummary.topTag.name}" ${skinSummary.topTag.count}회 기록` : '데이터 수집 중'}
-            topFactor={skinSummary.topFactor}
-            trend={skinSummary.troubleRate != null ? (skinSummary.troubleRate > 30 ? 'up' : 'stable') : 'stable'}
-            trendValue={skinSummary.troubleRate != null ? `트러블 ${skinSummary.troubleRate}%` : null}
-            dataCount={skinSummary.dataCount}
-          />
+      {/* 섹션 6: 추천 행동 */}
+      {page.recommendations?.length > 0 && <Section6Recommendations recommendations={page.recommendations} />}
 
-          {/* 수면 카드 */}
-          <ImpactPreviewCard
-            delay={0.26}
-            icon="😴"
-            title="수면"
-            color={getCategoryColor('sleep') || '#9AAFD4'}
-            locked={activeDays < 30}
-            activeDays={activeDays}
-            mainValue={sleepSummary.avg || '—'}
-            mainUnit={sleepSummary.avg ? '시간' : ''}
-            mainLabel="평균 수면"
-            topFactor={sleepSummary.topFactor}
-            trend={sleepSummary.trend}
-            trendValue={sleepSummary.trendValue}
-            dataCount={sleepSummary.dataCount}
-          />
-        </div>
-      )}
-
-      {/* === 학습 중 안내 (7-29일) === */}
-      {activeDays >= 7 && activeDays < 30 && (
-        <div style={{ padding: '20px 20px 0', ...fadeUp(0.3) }}>
-          <div style={{ ...cardStyle, padding: '16px 20px', textAlign: 'center' }}>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>
-              📊 {30 - activeDays}일 더 기록하면 영향 요인 상세 분석을 볼 수 있어요
-            </div>
-            <div style={{ height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.06)', overflow: 'hidden', marginTop: 10 }}>
-              <div style={{ height: '100%', borderRadius: 2, background: 'var(--accent-primary)', width: `${Math.min((activeDays / 30) * 100, 100)}%`, transition: 'width 0.5s ease' }} />
-            </div>
-            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 6 }}>{activeDays}/30일</div>
-          </div>
-        </div>
-      )}
+      {/* 섹션 7: 더 알아내려면 */}
+      <Section7More hint={page.moreHint} />
     </div>
   );
 }
 
-// === 영향 요인 미리보기 카드 ===
-function ImpactPreviewCard({ delay, icon, title, color, locked, activeDays, mainValue, mainUnit, mainLabel, topFactor, trend, trendValue, dataCount }) {
-  const trendIcon = trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→';
-  const trendColor = trend === 'up' ? '#4A9A7A' : trend === 'down' ? '#C4580A' : '#9ABBC8';
+// ===== 헤더 =====
+function Header({ weekLabel, weekNumber }) {
+  const style = useReveal(0);
+  return (
+    <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', ...style }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: '#2c4a5e' }}>발견</div>
+          <div style={{ fontSize: 10, color: '#6b8499', marginTop: 2 }}>{weekLabel} (이번 주)</div>
+        </div>
+        <div style={{ fontSize: 9, color: '#8ba6bd', padding: '4px 8px', background: 'rgba(255,255,255,0.6)', borderRadius: 100 }}>
+          {weekNumber}번째 발견
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== 섹션 1: 히어로 =====
+function Section1Hero({ hero }) {
+  const style = useReveal(0.1);
+  const [tapped, setTapped] = useState(false);
 
   return (
-    <div style={{ ...cardStyle, marginBottom: 10, ...fadeUp(delay) }}>
-      {/* 헤더 */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 3, height: 14, borderRadius: 2, background: color }} />
-          <span style={{ fontSize: 15 }}>{icon}</span>
-          <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{title}</span>
+    <div style={{ padding: '14px 20px 0', ...style }}>
+      <div
+        onClick={() => { setTapped(true); setTimeout(() => setTapped(false), 200); }}
+        style={{
+          background: COLORS.hero.gradient,
+          borderRadius: 20, padding: 18, color: 'white', position: 'relative', overflow: 'hidden',
+          transform: tapped ? 'scale(1.02)' : 'scale(1)',
+          transition: 'transform 0.2s ease-out',
+        }}
+      >
+        {/* 장식 원 */}
+        <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, background: 'rgba(255,255,255,0.1)', borderRadius: '50%' }} />
+        <div style={{ position: 'absolute', bottom: -30, right: 30, width: 60, height: 60, background: 'rgba(255,255,255,0.08)', borderRadius: '50%' }} />
+
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.7)', marginBottom: 6 }}>✨ 이번 주 발견</div>
+          <div style={{ fontSize: 16, fontWeight: 600, lineHeight: 1.3, marginBottom: 8, whiteSpace: 'pre-line' }}>
+            {hero?.headline || '이번 주도\n잘 보내고 계세요'}
+          </div>
+          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.85)', lineHeight: 1.5 }}>
+            {hero?.summary || '데이터를 분석 중이에요'}
+          </div>
         </div>
-        {!locked && dataCount > 0 && (
-          <span style={{ fontSize: 11, color: '#9ABBC8' }}>자세히 보기 ›</span>
+      </div>
+    </div>
+  );
+}
+
+// ===== 섹션 2: 2열 그리드 =====
+function Section2Metrics({ metrics }) {
+  if (!metrics || metrics.length === 0) return null;
+
+  return (
+    <div style={{ padding: '12px 20px 0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+      {metrics.map((m, i) => (
+        <MetricCard key={m.id} metric={m} delay={0.2 + i * 0.1} />
+      ))}
+    </div>
+  );
+}
+
+function MetricCard({ metric, delay }) {
+  const style = useReveal(delay);
+  const [tapped, setTapped] = useState(false);
+  const colors = COLORS[metric.id] || COLORS.condition;
+  const changeColor = metric.change?.direction === 'up' ? '#5e9d8a' : metric.change?.direction === 'down' ? '#C97C5E' : '#8ba6bd';
+  const changeArrow = metric.change?.direction === 'up' ? '↑' : metric.change?.direction === 'down' ? '↓' : '→';
+
+  let displayValue = metric.value;
+  let displayUnit = metric.unit;
+  if (metric.id === 'activity' && metric.value >= 1000) {
+    displayValue = (metric.value / 1000).toFixed(1) + 'k';
+    displayUnit = '보';
+  }
+
+  return (
+    <div
+      onClick={() => { setTapped(true); setTimeout(() => setTapped(false), 300); }}
+      style={{
+        aspectRatio: '1', background: colors.gradient, borderRadius: 16, padding: 14,
+        display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+        transform: tapped ? 'scale(1.05)' : 'scale(1)',
+        transition: 'transform 0.3s ease-out',
+        ...style,
+      }}
+    >
+      <div>
+        <div style={{ fontSize: 14 }}>{metric.icon}</div>
+        <div style={{ fontSize: 9, color: colors.dark, marginTop: 4, fontWeight: 500 }}>{metric.label}</div>
+      </div>
+      <div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 2 }}>
+          <span style={{ fontSize: 22, fontWeight: 700, color: colors.dark }}>{displayValue || '—'}</span>
+          <span style={{ fontSize: 11, color: colors.muted }}>{displayUnit}</span>
+        </div>
+        {metric.change && metric.change.value !== 0 && (
+          <div style={{ fontSize: 9, fontWeight: 500, color: changeColor, marginTop: 2 }}>
+            {changeArrow} {metric.change.value > 0 ? '+' : ''}{metric.change.value} {metric.change.label}
+          </div>
         )}
       </div>
+    </div>
+  );
+}
 
-      {dataCount === 0 ? (
-        <div style={{ textAlign: 'center', padding: '12px 0' }}>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>아직 {title} 데이터가 없어요</div>
-        </div>
-      ) : (
-        <>
-          {/* 메인 수치 + 영향 요인 */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
-                <span style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{mainValue}</span>
-                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{mainUnit}</span>
-              </div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{mainLabel}</div>
-            </div>
+// ===== 섹션 3: 영향 요인 =====
+function Section3Factors({ factors }) {
+  const style = useReveal(0.4);
 
-            {/* 영향 요인 */}
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end' }}>
-                <span style={{ fontSize: 14 }}>{topFactor.emoji}</span>
-                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{topFactor.name}</span>
-                {!locked && <span style={{ fontSize: 11, fontWeight: 600, color }}>{topFactor.percentage}%</span>}
-              </div>
-              {locked ? (
-                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>30일 후 분석 가능</div>
-              ) : (
-                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>가장 큰 영향</div>
-              )}
+  if (!factors?.factors?.length) return null;
+
+  const topFactor = factors.topFactor || factors.factors[0];
+
+  return (
+    <div style={{ padding: '12px 20px 0', ...style }}>
+      <div style={{ background: 'white', borderRadius: 16, padding: 14 }}>
+        {/* 헤더 */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+          <div>
+            <div style={{ fontSize: 9, color: '#6b8499' }}>컨디션 영향 요인</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: '#2c4a5e', marginTop: 2 }}>
+              {topFactor.emoji} {topFactor.name}이 가장 커요
             </div>
           </div>
+          <div style={{ fontSize: 9, padding: '3px 8px', background: '#F4F8FB', borderRadius: 100, color: '#6b8499' }}>
+            탑 {Math.min(factors.factors.filter(f => f.name !== '기타').length, 3)}
+          </div>
+        </div>
 
-          {/* 트렌드 */}
-          {trendValue != null && typeof trendValue === 'number' && trendValue !== 0 && (
-            <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
-              <span style={{ fontSize: 11, color: trendColor, fontWeight: 500 }}>{trendIcon}</span>
-              <span style={{ fontSize: 11, color: trendColor }}>
-                지난주 대비 {trendValue > 0 ? '+' : ''}{trendValue}
+        {/* 막대 그래프 */}
+        <div style={{ display: 'flex', gap: 3, height: 14, borderRadius: 100, overflow: 'hidden', marginBottom: 10 }}>
+          {factors.factors.map((f, i) => (
+            <div key={f.name} style={{
+              flex: f.percentage,
+              background: f.color || COLORS.bar[i],
+              borderRadius: i === 0 ? '100px 0 0 100px' : i === factors.factors.length - 1 ? '0 100px 100px 0' : 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'flex 0.6s ease',
+            }}>
+              {f.percentage > 15 && (
+                <span style={{ fontSize: 8, color: 'white', fontWeight: 500 }}>{f.percentage}%</span>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* 범례 */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 4 }}>
+          {factors.factors.map((f, i) => (
+            <div key={f.name} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <div style={{ width: 6, height: 6, borderRadius: 2, background: f.color || COLORS.bar[i] }} />
+              <span style={{ fontSize: 9, color: '#6b8499' }}>
+                {f.emoji && <span style={{ marginRight: 2 }}>{f.emoji}</span>}
+                {f.name}
               </span>
             </div>
-          )}
-          {trendValue != null && typeof trendValue === 'string' && (
-            <div style={{ marginTop: 10, fontSize: 11, color: 'var(--text-muted)' }}>{trendValue}</div>
-          )}
-        </>
-      )}
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== 섹션 4: 발견 3가지 =====
+function Section4Discoveries({ discoveries }) {
+  const style = useReveal(0.5);
+
+  return (
+    <div style={{ padding: '12px 20px 0', ...style }}>
+      <div style={{ background: COLORS.discovery.gradient, borderRadius: 16, padding: 14 }}>
+        {/* 헤더 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+          <span style={{ fontSize: 14 }}>🔍</span>
+          <span style={{ fontSize: 11, fontWeight: 600, color: '#6b4a2a' }}>본인만의 발견 {discoveries.length}가지</span>
+        </div>
+
+        {/* 카드 */}
+        {discoveries.map((d, i) => (
+          <DiscoveryCard key={i} discovery={d} index={i} delay={0.5 + i * 0.1} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DiscoveryCard({ discovery, index }) {
+  const num = String(index + 1).padStart(2, '0');
+
+  // **강조** 처리
+  const renderMessage = (msg) => {
+    if (!msg) return null;
+    const parts = msg.split(/\*\*(.*?)\*\*/g);
+    return parts.map((part, i) =>
+      i % 2 === 1
+        ? <strong key={i} style={{ color: '#6b4a2a', fontWeight: 600 }}>{part}</strong>
+        : <span key={i}>{part}</span>
+    );
+  };
+
+  return (
+    <div style={{
+      background: 'white', borderRadius: 10, padding: 10, marginBottom: index < 2 ? 6 : 0,
+      display: 'flex', alignItems: 'flex-start', gap: 8,
+    }}>
+      <span style={{ fontSize: 10, color: '#6b4a2a', fontWeight: 600, minWidth: 18, lineHeight: '18px' }}>{num}</span>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 10, color: '#2c4a5e', lineHeight: 1.5 }}>
+          {renderMessage(discovery.message)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== 섹션 5: 4주 트렌드 =====
+function Section5Trend({ trend }) {
+  const style = useReveal(0.7);
+  const [barsGrown, setBarsGrown] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setBarsGrown(true), 800);
+    return () => clearTimeout(t);
+  }, []);
+
+  if (!trend?.weeks) return null;
+
+  const maxVal = Math.max(...trend.weeks.map(w => w.value), 1);
+
+  return (
+    <div style={{ padding: '12px 20px 0', ...style }}>
+      <div style={{ background: COLORS.trend.gradient, borderRadius: 16, padding: 14, color: 'white' }}>
+        {/* 헤더 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+          <span style={{ fontSize: 14 }}>📈</span>
+          <span style={{ fontSize: 11, fontWeight: 600 }}>4주 트렌드 — {trend.trendDescription}</span>
+        </div>
+
+        {/* 막대 차트 */}
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 60, marginBottom: 8 }}>
+          {trend.weeks.map((w, i) => {
+            const heightPct = maxVal > 0 ? (w.value / maxVal) * 100 : 10;
+            const isCurrent = w.isCurrent;
+            return (
+              <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, height: '100%', justifyContent: 'flex-end' }}>
+                {w.value > 0 && (
+                  <span style={{ fontSize: 8, color: isCurrent ? '#FFE8B0' : 'rgba(255,255,255,0.6)' }}>
+                    {w.value}
+                  </span>
+                )}
+                <div style={{
+                  width: '100%',
+                  height: barsGrown ? `${Math.max(heightPct, 8)}%` : '4%',
+                  background: isCurrent ? 'linear-gradient(180deg, #FFE8B0, #FCF6E0)' : 'rgba(255,255,255,0.3)',
+                  borderRadius: '4px 4px 0 0',
+                  transition: `height 0.6s ease ${i * 0.1}s`,
+                }} />
+              </div>
+            );
+          })}
+        </div>
+
+        {/* 라벨 */}
+        <div style={{ display: 'flex', gap: 6 }}>
+          {trend.weeks.map((w, i) => (
+            <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: 8, color: w.isCurrent ? '#FFE8B0' : 'rgba(255,255,255,0.6)', fontWeight: w.isCurrent ? 500 : 400 }}>
+              {w.label}
+            </div>
+          ))}
+        </div>
+
+        {/* 캡션 */}
+        <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.85)', marginTop: 8 }}>
+          {trend.caption}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== 섹션 6: 추천 행동 =====
+function Section6Recommendations({ recommendations }) {
+  const style = useReveal(0.9);
+  const scrollRef = useRef(null);
+
+  const RANK_BADGES = { 1: '⭐ 가장 효과', 2: '2순위', 3: '3순위' };
+  const CATEGORY_ICONS = { activity: '🏃', sleep: '😴', caffeine: '☕', water: '💧', meal: '🍽', supplement: '💊', condition: '⚡' };
+
+  return (
+    <div style={{ padding: '12px 20px 0', ...style }}>
+      <div style={{ background: COLORS.recommendation.gradient, borderRadius: 16, padding: 14 }}>
+        {/* 헤더 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+          <span style={{ fontSize: 14 }}>🎯</span>
+          <span style={{ fontSize: 11, fontWeight: 600, color: '#7a3a1d' }}>이번 주 추천 행동</span>
+        </div>
+
+        {/* 가로 스크롤 */}
+        <div ref={scrollRef} style={{
+          display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4,
+          scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch',
+          msOverflowStyle: 'none', scrollbarWidth: 'none',
+        }}>
+          {recommendations.map((rec, i) => (
+            <div key={i} style={{
+              flexShrink: 0, width: 130, background: 'white', borderRadius: 12, padding: 10,
+              border: '0.5px solid #FFC8A8', scrollSnapAlign: 'start',
+            }}>
+              <div style={{ fontSize: 9, color: '#7a3a1d', fontWeight: 600, marginBottom: 4 }}>
+                {RANK_BADGES[rec.rank] || `${rec.rank}순위`}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
+                <span style={{ fontSize: 12 }}>{CATEGORY_ICONS[rec.category] || '🎯'}</span>
+                <span style={{ fontSize: 11, color: '#2c4a5e', fontWeight: 500 }}>{rec.title}</span>
+              </div>
+              <div style={{ fontSize: 9, color: '#6b8499', lineHeight: 1.4 }}>
+                {rec.description}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== 섹션 7: 더 알아내려면 =====
+function Section7More({ hint }) {
+  const style = useReveal(1.0);
+
+  if (!hint) return null;
+
+  return (
+    <div style={{ padding: '12px 20px 0', ...style }}>
+      <div style={{
+        background: 'white', borderRadius: 16, padding: 12,
+        display: 'flex', alignItems: 'center', gap: 10,
+      }}>
+        <span style={{ fontSize: 24 }}>💡</span>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 10, color: '#2c4a5e', fontWeight: 500 }}>{hint.title}</div>
+          <div style={{ fontSize: 9, color: '#6b8499', marginTop: 2 }}>{hint.description}</div>
+        </div>
+        <span style={{ fontSize: 10, color: '#4A6B85', fontWeight: 500 }}>→</span>
+      </div>
+    </div>
+  );
+}
+
+// ===== 데이터 부족 페이지 =====
+function InsufficientDataPage({ activeDays }) {
+  return (
+    <div style={{ minHeight: '100dvh', paddingBottom: 100, background: 'linear-gradient(180deg, #E8F1F7 0%, #F4F8FB 100%)' }}>
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0' }}>
+        <div style={{ fontSize: 22, fontWeight: 700, color: '#2c4a5e' }}>발견</div>
+        <div style={{ fontSize: 10, color: '#6b8499', marginTop: 2 }}>매주 새로운 발견을 보여드려요</div>
+      </div>
+      <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+        <div style={{ background: 'white', borderRadius: 20, padding: 30 }}>
+          <div style={{ fontSize: 36, marginBottom: 12 }}>✨</div>
+          <div style={{ fontSize: 16, fontWeight: 600, color: '#2c4a5e', marginBottom: 8 }}>당신의 패턴을 함께 찾아갈게요</div>
+          <div style={{ fontSize: 13, color: '#6b8499', lineHeight: 1.6, marginBottom: 20 }}>
+            매일 기록을 쌓으면 나만의 패턴과 인사이트를 발견할 수 있어요
+          </div>
+          <div style={{ marginBottom: 8 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+              <span style={{ fontSize: 11, color: '#6b8499' }}>기록 진행률</span>
+              <span style={{ fontSize: 11, fontWeight: 600, color: '#4A6B85' }}>{activeDays}/7일</span>
+            </div>
+            <div style={{ height: 6, borderRadius: 3, background: 'rgba(0,0,0,0.06)', overflow: 'hidden' }}>
+              <div style={{ height: '100%', borderRadius: 3, background: 'linear-gradient(90deg, #4A6B85, #6B8499)', width: `${Math.min((activeDays / 7) * 100, 100)}%`, transition: 'width 0.5s ease' }} />
+            </div>
+          </div>
+          <div style={{ fontSize: 11, color: '#8ba6bd' }}>
+            {7 - activeDays}일 더 기록하면 첫 번째 발견을 보여드릴게요
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== 스켈레톤 로딩 =====
+function SkeletonPage() {
+  const shimmer = {
+    background: 'linear-gradient(90deg, #e8eef3 25%, #f0f4f8 50%, #e8eef3 75%)',
+    backgroundSize: '200% 100%',
+    animation: 'shimmer 1.5s infinite',
+    borderRadius: 12,
+  };
+
+  return (
+    <div style={{ minHeight: '100dvh', paddingBottom: 100, background: 'linear-gradient(180deg, #E8F1F7 0%, #F4F8FB 100%)' }}>
+      <style>{`@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0' }}>
+        <div style={{ ...shimmer, width: 60, height: 24, marginBottom: 6 }} />
+        <div style={{ ...shimmer, width: 120, height: 12 }} />
+      </div>
+      <div style={{ padding: '14px 20px 0' }}>
+        <div style={{ ...shimmer, height: 120, borderRadius: 20 }} />
+      </div>
+      <div style={{ padding: '12px 20px 0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+        <div style={{ ...shimmer, aspectRatio: '1', borderRadius: 16 }} />
+        <div style={{ ...shimmer, aspectRatio: '1', borderRadius: 16 }} />
+      </div>
+      <div style={{ padding: '12px 20px 0' }}>
+        <div style={{ ...shimmer, height: 100, borderRadius: 16 }} />
+      </div>
+      <div style={{ padding: '12px 20px 0' }}>
+        <div style={{ ...shimmer, height: 140, borderRadius: 16 }} />
+      </div>
+      <div style={{ padding: '12px 20px 0' }}>
+        <div style={{ ...shimmer, height: 100, borderRadius: 16 }} />
+      </div>
     </div>
   );
 }
