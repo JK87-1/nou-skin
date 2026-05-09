@@ -1141,71 +1141,116 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
 }
 
 // ===== JOURNAL TAB =====
+import { IconX, IconChevronLeft, IconDots, IconSparkles, IconBulb, IconPhoto, IconMicrophone, IconMoodSmile, IconMoon, IconChartDots, IconHistory, IconEdit, IconShare, IconDownload, IconTrash, IconFeather } from '@tabler/icons-react';
+
 const JOURNAL_KEY = 'lua_journal_entries';
+const JOURNAL_DRAFT_KEY = 'lua_journal_draft';
+const MOOD_TAGS = ['편안함', '설렘', '피곤함', '평온', '활력', '차분함'];
 
 function getJournalEntries() {
   try { return JSON.parse(localStorage.getItem(JOURNAL_KEY) || '[]'); } catch { return []; }
 }
-
 function saveJournalEntry(entry) {
   const entries = getJournalEntries();
-  entries.unshift(entry);
+  const idx = entries.findIndex(e => e.id === entry.id);
+  if (idx >= 0) entries[idx] = entry; else entries.unshift(entry);
+  localStorage.setItem(JOURNAL_KEY, JSON.stringify(entries));
+  return entries;
+}
+function deleteJournalEntry(id) {
+  const entries = getJournalEntries().filter(e => e.id !== id);
   localStorage.setItem(JOURNAL_KEY, JSON.stringify(entries));
   return entries;
 }
 
+function getConditionForDate(dateStr) {
+  try {
+    const checks = JSON.parse(localStorage.getItem('nou_condition_checks') || '[]');
+    const c = checks.filter(c => (c.date || (c.timestamp && c.timestamp.slice(0, 10))) === dateStr).pop();
+    if (!c) return null;
+    const energy = c.energy || c.에너지 || 0, mood = c.mood || c.기분 || 0, skin = c.skin || c.피부 || 0, gut = c.gut || c.소화 || 0;
+    return { avg: (energy + mood + skin + gut) / 4, energy, mood, skin, gut };
+  } catch { return null; }
+}
+
+function getDayRecord(dateStr) {
+  try {
+    const recs = JSON.parse(localStorage.getItem('lua_record_v2') || '{}');
+    const rec = recs[dateStr] || {};
+    const drinks = JSON.parse(localStorage.getItem('lua_drink_records') || '{}');
+    const cafItems = drinks[dateStr]?.caffeine || [];
+    const cafMg = cafItems.reduce((s, d) => {
+      const mgMap = { espresso: 150, americano: 150, latte: 150, drip: 130, coldbrew: 200, matcha: 70, green_tea: 30, black_tea: 50, energy_drink: 160 };
+      return s + (mgMap[d.key] || 100) * (d.count || 0);
+    }, 0);
+    return { sleep: rec.sleep?.hours || 0, cafMg, steps: rec.steps || 0 };
+  } catch { return { sleep: 0, cafMg: 0, steps: 0 }; }
+}
+
+function getDayChips(dateStr) {
+  const d = getDayRecord(dateStr);
+  const chips = [];
+  if (d.sleep > 0) chips.push(`수면 ${d.sleep}h`);
+  if (d.cafMg > 0) chips.push(`카페인 ${d.cafMg}mg`);
+  if (d.steps > 0) chips.push(`${d.steps.toLocaleString()}보`);
+  return chips.slice(0, 2);
+}
+
+function getRelativeTime(dateStr) {
+  const today = new Date().toISOString().slice(0, 10);
+  if (dateStr === today) return '오늘';
+  const diff = Math.ceil((new Date(today) - new Date(dateStr)) / 86400000);
+  if (diff === 1) return '어제';
+  if (diff <= 7) return `${diff}일 전`;
+  if (diff <= 30) return `${Math.ceil(diff / 7)}주 전`;
+  return `${Math.ceil(diff / 30)}달 전`;
+}
+
+function getSeasonLabel(dateStr) {
+  const diff = Math.ceil((new Date() - new Date(dateStr)) / 86400000);
+  const m = new Date(dateStr).getMonth() + 1;
+  const season = m <= 2 || m === 12 ? '겨울' : m <= 5 ? '봄' : m <= 8 ? '여름' : '가을';
+  if (diff <= 7) return '이번 주';
+  if (diff <= 30) return `${Math.ceil(diff / 7)}주 전`;
+  if (diff <= 365) return season;
+  return `작년 ${season}`;
+}
+
+function getLuaMessage(dateStr) {
+  const cond = getConditionForDate(dateStr);
+  const rec = getDayRecord(dateStr);
+  if (cond && cond.avg >= 7) return `컨디션 ${cond.avg.toFixed(1)}, 좋은 하루였네요. 오늘의 어떤 점이 좋았나요?`;
+  if (cond && cond.avg < 5) return '오늘은 좀 힘드셨나요? 무슨 일이 있었는지 들려주세요';
+  if (rec.cafMg > 300) return '오늘 카페인이 평소보다 많았네요. 어떤 일이 있었어요?';
+  if (cond) return `컨디션 ${cond.avg.toFixed(1)}점인 하루, 어떤 색이었나요?`;
+  return '오늘은 어떤 색이었나요?';
+}
+
+const DAY_NAMES_J = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+
 function JournalTab({ nickname }) {
   const [entries, setEntries] = useState(() => getJournalEntries());
   const [showWrite, setShowWrite] = useState(false);
+  const [showDetail, setShowDetail] = useState(null);
+  const [editEntry, setEditEntry] = useState(null);
   const [selectedPrompt, setSelectedPrompt] = useState('');
   const [filterMonth, setFilterMonth] = useState('all');
   const [showCount, setShowCount] = useState(10);
 
-  const DAY_NAMES = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
-
-  // 컨디션 데이터 매핑
-  const getConditionForDate = (dateStr) => {
-    try {
-      const checks = JSON.parse(localStorage.getItem('nou_condition_checks') || '[]');
-      const c = checks.filter(c => (c.date || (c.timestamp && c.timestamp.slice(0, 10))) === dateStr).pop();
-      if (!c) return null;
-      const energy = c.energy || c.에너지 || 0;
-      const mood = c.mood || c.기분 || 0;
-      const skin = c.skin || c.피부 || 0;
-      const gut = c.gut || c.소화 || 0;
-      return { avg: ((energy + mood + skin + gut) / 4), energy, mood, skin, gut };
-    } catch { return null; }
+  const handleSave = (entry) => {
+    const updated = saveJournalEntry(entry);
+    setEntries(updated);
+    setShowWrite(false);
+    setEditEntry(null);
+    localStorage.removeItem(JOURNAL_DRAFT_KEY);
   };
 
-  // 그날 기록 데이터
-  const getDayData = (dateStr) => {
-    try {
-      const recs = JSON.parse(localStorage.getItem('lua_record_v2') || '{}');
-      const rec = recs[dateStr] || {};
-      const chips = [];
-      if (rec.sleep?.hours > 0) chips.push(`수면 ${rec.sleep.hours}h`);
-      const drinks = JSON.parse(localStorage.getItem('lua_drink_records') || '{}');
-      const cafItems = drinks[dateStr]?.caffeine || [];
-      const cafMg = cafItems.reduce((s, d) => {
-        const mgMap = { espresso: 150, americano: 150, latte: 150, drip: 130, coldbrew: 200, matcha: 70, green_tea: 30, black_tea: 50, energy_drink: 160 };
-        return s + (mgMap[d.key] || 100) * (d.count || 0);
-      }, 0);
-      if (cafMg > 0) chips.push(`카페인 ${cafMg}mg`);
-      if (rec.steps > 0) chips.push(`${rec.steps.toLocaleString()}보`);
-      return chips.slice(0, 2);
-    } catch { return []; }
+  const handleDelete = (id) => {
+    const updated = deleteJournalEntry(id);
+    setEntries(updated);
+    setShowDetail(null);
   };
 
-  // 상대 시간
-  const getRelativeTime = (dateStr) => {
-    const today = new Date().toISOString().slice(0, 10);
-    if (dateStr === today) return '오늘';
-    const diff = Math.ceil((new Date(today) - new Date(dateStr)) / 86400000);
-    if (diff === 1) return '어제';
-    return `${diff}일 전`;
-  };
-
-  // 월 필터 목록
   const months = (() => {
     const set = new Set(entries.map(e => e.date.slice(0, 7)));
     return [...set].sort().reverse();
@@ -1215,27 +1260,11 @@ function JournalTab({ nickname }) {
   const visible = filtered.slice(0, showCount);
   const hasMore = filtered.length > showCount;
 
-  // 작성 완료 핸들러
-  const handleSave = (content, prompt) => {
-    const today = new Date().toISOString().slice(0, 10);
-    const entry = {
-      id: `j_${Date.now()}`,
-      date: today,
-      content,
-      prompt: prompt || '',
-      created_at: new Date().toISOString(),
-    };
-    const updated = saveJournalEntry(entry);
-    setEntries(updated);
-    setShowWrite(false);
-  };
-
   // 빈 상태 (케이스 A)
   if (entries.length === 0 && !showWrite) {
-    const prompts = ['지금 마음에 떠오르는 것', '오늘의 작은 발견', '몸이 보낸 신호', '그냥, 빈 페이지에서 시작'];
+    const prompts = ['지금 마음에 떠오르는 것', '오늘의 작은 발견', '몸이 보낸 신호'];
     return (
       <div style={{ padding: '28px 20px 20px', textAlign: 'center' }}>
-        {/* 별자리 점 */}
         <svg width="64" height="64" viewBox="0 0 64 64" style={{ marginBottom: 22 }}>
           <circle cx="32" cy="32" r="3" fill="var(--text-muted)" opacity="0.9" />
           <circle cx="14" cy="20" r="1" fill="var(--text-muted)" opacity="0.4" />
@@ -1245,47 +1274,35 @@ function JournalTab({ nickname }) {
           <circle cx="32" cy="10" r="0.7" fill="var(--text-muted)" opacity="0.3" />
           <circle cx="32" cy="54" r="0.7" fill="var(--text-muted)" opacity="0.3" />
         </svg>
-
         <div style={{ fontSize: 17, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.2, marginBottom: 24 }}>오늘의 한 줄</div>
-
-        {/* 가이드 프롬프트 */}
         <div style={{ maxWidth: 280, margin: '0 auto 22px', display: 'flex', flexDirection: 'column', gap: 8 }}>
           {prompts.map((p, i) => (
             <div key={i} onClick={() => { setSelectedPrompt(p); setShowWrite(true); }}
-              style={{
-                background: i === 3 ? 'var(--card-bg)' : 'var(--card-bg)',
-                padding: '12px 16px', borderRadius: 10,
-                fontSize: 12, color: i === 3 ? 'var(--text-muted)' : 'var(--text-primary)',
-                textAlign: 'left', lineHeight: 1.5, cursor: 'pointer',
-                border: 'var(--card-border)',
-                WebkitTapHighlightColor: 'transparent',
-              }}>
+              style={{ background: 'var(--card-bg)', padding: '12px 16px', borderRadius: 10, fontSize: 12, color: 'var(--text-primary)', textAlign: 'left', lineHeight: 1.5, cursor: 'pointer', border: 'var(--card-border)', WebkitTapHighlightColor: 'transparent' }}>
               {p}
             </div>
           ))}
+          <div onClick={() => { setSelectedPrompt(''); setShowWrite(true); }}
+            style={{ padding: '8px 12px', fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', cursor: 'pointer' }}>
+            자유롭게 쓰기 →
+          </div>
         </div>
-
-        {/* CTA */}
         <button onClick={() => setShowWrite(true)} style={{
           background: 'var(--text-primary)', color: 'var(--bg-primary, #fff)', border: 'none',
           fontSize: 13, fontWeight: 500, padding: '13px 28px', borderRadius: 12,
           letterSpacing: -0.2, cursor: 'pointer', fontFamily: 'inherit',
           display: 'inline-flex', alignItems: 'center', gap: 8,
         }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M20.24 12.24a6 6 0 00-8.49-8.49L5 10.5V19h8.5z" /><line x1="16" y1="8" x2="2" y2="22" /><line x1="17.5" y1="15" x2="9" y2="15" />
-          </svg>
+          <IconFeather size={14} />
           한 줄 남기기
         </button>
-
-        <div style={{ marginTop: 16, fontSize: 10, color: 'var(--text-dim)', lineHeight: 1.5 }}>한 단어여도 충분해요</div>
-
-        {showWrite && <JournalWriteModal prompt={selectedPrompt} onSave={handleSave} onClose={() => setShowWrite(false)} />}
+        <div style={{ marginTop: 16, fontSize: 10, color: 'var(--text-dim)' }}>한 단어여도 충분해요</div>
+        {showWrite && <JournalWriteScreen onSave={handleSave} onClose={() => setShowWrite(false)} initialPrompt={selectedPrompt} />}
       </div>
     );
   }
 
-  // 케이스 B: 저널 있음
+  // 케이스 B
   const now = new Date();
   const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   const thisMonthEntries = entries.filter(e => e.date.slice(0, 7) === thisMonth);
@@ -1300,7 +1317,7 @@ function JournalTab({ nickname }) {
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{now.getMonth() + 1}월 · {thisMonthEntries.length}편의 저널</div>
             {thisMonthEntries.length > 0 && (
-              <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.5, marginTop: 6 }}>
+              <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.5, marginTop: 6, fontFamily: 'serif' }}>
                 "{thisMonthEntries[0].content.slice(0, 40)}{thisMonthEntries[0].content.length > 40 ? '...' : ''}"
               </div>
             )}
@@ -1315,140 +1332,382 @@ function JournalTab({ nickname }) {
       </div>
 
       {/* 월별 필터 */}
-      <div style={{ display: 'flex', gap: 6, marginBottom: 12, overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
-        <div onClick={() => setFilterMonth('all')} style={{
-          fontSize: 11, padding: '6px 14px', borderRadius: 14, whiteSpace: 'nowrap', cursor: 'pointer',
-          background: filterMonth === 'all' ? 'var(--text-primary)' : 'var(--card-bg)',
-          color: filterMonth === 'all' ? 'var(--bg-primary, #fff)' : 'var(--text-muted)',
-          border: filterMonth === 'all' ? 'none' : 'var(--card-border)',
-        }}>전체</div>
-        {months.map(m => {
-          const [y, mo] = m.split('-');
-          return (
-            <div key={m} onClick={() => setFilterMonth(m)} style={{
-              fontSize: 11, padding: '6px 14px', borderRadius: 14, whiteSpace: 'nowrap', cursor: 'pointer',
-              background: filterMonth === m ? 'var(--text-primary)' : 'var(--card-bg)',
-              color: filterMonth === m ? 'var(--bg-primary, #fff)' : 'var(--text-muted)',
-              border: filterMonth === m ? 'none' : 'var(--card-border)',
-            }}>{parseInt(mo)}월</div>
-          );
-        })}
+      <div style={{ display: 'flex', gap: 6, marginBottom: 12, overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        {[{ key: 'all', label: '전체' }, ...months.map(m => ({ key: m, label: `${parseInt(m.split('-')[1])}월` }))].map(m => (
+          <div key={m.key} onClick={() => setFilterMonth(m.key)} style={{
+            fontSize: 11, padding: '6px 14px', borderRadius: 14, whiteSpace: 'nowrap', cursor: 'pointer',
+            background: filterMonth === m.key ? 'var(--text-primary)' : 'var(--card-bg)',
+            color: filterMonth === m.key ? 'var(--bg-primary, #fff)' : 'var(--text-muted)',
+            border: filterMonth === m.key ? 'none' : 'var(--card-border)',
+          }}>{m.label}</div>
+        ))}
       </div>
 
       {/* 저널 카드 리스트 */}
       {visible.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
           <div style={{ fontSize: 13 }}>이 달엔 아직 결이 없어요</div>
-          <button onClick={() => setShowWrite(true)} style={{
-            marginTop: 12, background: 'var(--text-primary)', color: 'var(--bg-primary, #fff)', border: 'none',
-            fontSize: 12, fontWeight: 500, padding: '10px 20px', borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit',
-          }}>한 줄 남기기</button>
+          <button onClick={() => setShowWrite(true)} style={{ marginTop: 12, background: 'var(--text-primary)', color: 'var(--bg-primary, #fff)', border: 'none', fontSize: 12, fontWeight: 500, padding: '10px 20px', borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit' }}>한 줄 남기기</button>
         </div>
-      ) : (
-        visible.map(entry => {
-          const dt = new Date(entry.date + 'T00:00:00');
-          const cond = getConditionForDate(entry.date);
-          const chips = getDayData(entry.date);
-          const condColor = cond ? (cond.avg >= 7 ? '#639922' : cond.avg >= 5 ? '#FAC775' : '#E05050') : null;
-          return (
-            <div key={entry.id} style={{
-              background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-              border: 'var(--card-border)', borderRadius: 12, padding: 16, marginBottom: 8,
-            }}>
-              {/* 상단: 날짜 + 컨디션 */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                <div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 500 }}>{dt.getMonth() + 1}월 {dt.getDate()}일 {DAY_NAMES[dt.getDay()]}</div>
-                  <div style={{ fontSize: 9, color: 'var(--text-dim)', marginTop: 1 }}>{getRelativeTime(entry.date)}</div>
-                </div>
-                {cond && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>{cond.avg.toFixed(1)}</span>
-                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: condColor }} />
-                  </div>
-                )}
+      ) : visible.map(entry => {
+        const dt = new Date(entry.date + 'T00:00:00');
+        const cond = getConditionForDate(entry.date);
+        const chips = getDayChips(entry.date);
+        const condColor = cond ? (cond.avg >= 7 ? '#639922' : cond.avg >= 5 ? '#FAC775' : '#E05050') : null;
+        return (
+          <div key={entry.id} onClick={() => setShowDetail(entry)} style={{
+            background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+            border: 'var(--card-border)', borderRadius: 12, padding: 16, marginBottom: 8, cursor: 'pointer',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 500 }}>{dt.getMonth() + 1}월 {dt.getDate()}일 {DAY_NAMES_J[dt.getDay()]}</div>
+                <div style={{ fontSize: 9, color: 'var(--text-dim)', marginTop: 1 }}>{getRelativeTime(entry.date)}</div>
               </div>
-              {/* 본문 */}
-              <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.7 }}>{entry.content}</div>
-              {/* 데이터 칩 */}
-              {chips.length > 0 && (
-                <div style={{ display: 'flex', gap: 4, marginTop: 10 }}>
-                  {chips.map((chip, i) => (
-                    <span key={i} style={{ fontSize: 9, color: 'var(--text-muted)', background: 'var(--surface-medium, rgba(255,255,255,0.1))', padding: '3px 8px', borderRadius: 8 }}>{chip}</span>
-                  ))}
+              {cond && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>{cond.avg.toFixed(1)}</span>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: condColor }} />
                 </div>
               )}
             </div>
-          );
-        })
-      )}
+            <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.7, fontFamily: 'serif' }}>{entry.content}</div>
+            {(entry.mood_tags?.length > 0 || chips.length > 0) && (
+              <div style={{ display: 'flex', gap: 4, marginTop: 10, flexWrap: 'wrap' }}>
+                {(entry.mood_tags || []).map((tag, i) => (
+                  <span key={`m${i}`} style={{ fontSize: 9, color: 'var(--text-primary)', background: 'var(--surface-light, rgba(255,255,255,0.08))', padding: '3px 8px', borderRadius: 8 }}>{tag}</span>
+                ))}
+                {chips.map((chip, i) => (
+                  <span key={`c${i}`} style={{ fontSize: 9, color: 'var(--text-muted)', background: 'var(--surface-medium, rgba(255,255,255,0.06))', padding: '3px 8px', borderRadius: 8 }}>{chip}</span>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
 
-      {/* 더 보기 */}
       {hasMore && (
         <div onClick={() => setShowCount(s => s + 10)} style={{ textAlign: 'center', padding: 16, fontSize: 11, color: 'var(--text-muted)', cursor: 'pointer' }}>
           더 보기 ({filtered.length - showCount}편) ↓
         </div>
       )}
 
-      {/* FAB: 한 줄 남기기 */}
+      {/* FAB */}
       <div onClick={() => { setSelectedPrompt(''); setShowWrite(true); }} style={{
         position: 'fixed', bottom: 90, right: 20, zIndex: 100,
         width: 48, height: 48, borderRadius: '50%',
         background: 'var(--text-primary)', color: 'var(--bg-primary, #fff)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         cursor: 'pointer', boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
-        WebkitTapHighlightColor: 'transparent',
       }}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 5v14M5 12h14" />
-        </svg>
+        <IconFeather size={20} />
       </div>
 
-      {showWrite && <JournalWriteModal prompt={selectedPrompt} onSave={handleSave} onClose={() => setShowWrite(false)} />}
+      {showWrite && <JournalWriteScreen onSave={handleSave} onClose={() => setShowWrite(false)} initialPrompt={selectedPrompt} editEntry={editEntry} />}
+      {showDetail && <JournalDetailScreen entry={showDetail} entries={entries} onClose={() => setShowDetail(null)} onEdit={(e) => { setEditEntry(e); setShowDetail(null); setShowWrite(true); }} onDelete={handleDelete} />}
     </div>
   );
 }
 
-// ===== 저널 작성 모달 =====
-function JournalWriteModal({ prompt, onSave, onClose }) {
-  const [content, setContent] = useState('');
+// ===== 화면 A: 저널 작성 =====
+function JournalWriteScreen({ onSave, onClose, initialPrompt, editEntry }) {
+  const [content, setContent] = useState(editEntry?.content || '');
+  const [prompt, setPrompt] = useState(editEntry?.prompt || initialPrompt || '');
+  const [moodTags, setMoodTags] = useState(editEntry?.mood_tags || []);
+  const [showData, setShowData] = useState(true);
+  const today = new Date();
+  const dateStr = editEntry?.date || today.toISOString().slice(0, 10);
+  const dt = new Date(dateStr + 'T00:00:00');
+  const cond = getConditionForDate(dateStr);
+  const rec = getDayRecord(dateStr);
+  const luaMsg = getLuaMessage(dateStr);
+
+  // 임시 저장
+  useEffect(() => {
+    if (editEntry) return;
+    const draft = (() => { try { return JSON.parse(localStorage.getItem(JOURNAL_DRAFT_KEY)); } catch { return null; } })();
+    if (draft?.content && !content) setContent(draft.content);
+  }, []);
+  useEffect(() => {
+    if (editEntry) return;
+    const t = setTimeout(() => { if (content) localStorage.setItem(JOURNAL_DRAFT_KEY, JSON.stringify({ content, prompt, moodTags })); }, 1000);
+    return () => clearTimeout(t);
+  }, [content, prompt, moodTags]);
+
+  const handleSave = () => {
+    if (!content.trim()) return;
+    onSave({
+      id: editEntry?.id || `j_${Date.now()}`,
+      date: dateStr,
+      content: content.trim(),
+      prompt: prompt || '',
+      mood_tags: moodTags,
+      created_at: editEntry?.created_at || new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+  };
+
+  const defaultPrompts = ['오늘 가장 기억에 남는 순간은 뭐였나요?', '몸이 가장 편했던 순간은 언제였나요?', '내일은 어떤 하루를 보내고 싶나요?'];
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 2003,
-      background: 'var(--page-gradient, linear-gradient(to bottom, #ace2fc, #ffffff))',
-      display: 'flex', flexDirection: 'column',
-      animation: 'breatheIn 0.3s ease both',
-    }}>
-      {/* 헤더 */}
-      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div onClick={onClose} style={{ fontSize: 14, color: 'var(--text-muted)', cursor: 'pointer', padding: 4 }}>취소</div>
-        <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>한 줄 남기기</span>
-        <div onClick={() => { if (content.trim()) onSave(content.trim(), prompt); }} style={{
-          fontSize: 14, fontWeight: 600, cursor: 'pointer', padding: 4,
-          color: content.trim() ? 'var(--accent-primary)' : 'var(--text-dim)',
-        }}>완료</div>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 2003, background: 'var(--page-gradient, linear-gradient(to bottom, #ace2fc, #ffffff))', display: 'flex', flexDirection: 'column', overflowY: 'auto', WebkitOverflowScrolling: 'touch', animation: 'breatheIn 0.3s ease both' }}>
+      {/* A-1 헤더 */}
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 12px) 16px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div onClick={onClose} style={{ width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <IconX size={20} color="var(--text-muted)" />
+        </div>
+        <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{dt.getMonth() + 1}월 {dt.getDate()}일 {DAY_NAMES_J[dt.getDay()]}</span>
+        <div onClick={handleSave} style={{ padding: '6px 12px', cursor: 'pointer' }}>
+          <span style={{ fontSize: 11, fontWeight: 500, color: content.trim() ? 'var(--accent-primary)' : 'var(--text-dim)' }}>저장</span>
+        </div>
       </div>
 
-      {/* 프롬프트 표시 */}
-      {prompt && (
-        <div style={{ padding: '12px 24px 0', fontSize: 11, color: 'var(--text-muted)' }}>{prompt}</div>
+      <div style={{ padding: '0 16px', flex: 1 }}>
+        {/* A-2 lua 한마디 */}
+        <div style={{ background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: 12, padding: 16, marginBottom: 12, border: 'var(--card-border)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+            <IconSparkles size={14} color="var(--accent-primary)" />
+            <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-primary)' }}>오늘의 lua 한마디</span>
+          </div>
+          <div style={{ fontSize: 12, color: 'var(--text-primary)', lineHeight: 1.5 }}>{luaMsg}</div>
+        </div>
+
+        {/* A-3 프롬프트 카드 */}
+        {!prompt && (
+          <div style={{ background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: 12, padding: 16, marginBottom: 12, border: 'var(--card-border)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+              <IconBulb size={12} color="var(--text-muted)" />
+              <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>이런 질문은 어때요</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {defaultPrompts.map((p, i) => (
+                <div key={i} onClick={() => setPrompt(p)} style={{ background: 'var(--surface-light, rgba(255,255,255,0.08))', padding: '10px 12px', borderRadius: 10, fontSize: 12, color: 'var(--text-primary)', lineHeight: 1.5, fontFamily: 'serif', cursor: 'pointer' }}>{p}</div>
+              ))}
+              <div onClick={() => setPrompt(' ')} style={{ padding: '8px 12px', fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', cursor: 'pointer' }}>자유롭게 쓰기 →</div>
+            </div>
+          </div>
+        )}
+
+        {/* A-4 글 작성 */}
+        <div style={{ background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: 12, padding: 16, marginBottom: 12, minHeight: 180, border: 'var(--card-border)' }}>
+          {prompt && prompt.trim() && (
+            <div style={{ fontSize: 11, color: 'var(--text-dim)', fontStyle: 'italic', fontFamily: 'serif', marginBottom: 8, paddingBottom: 8, borderBottom: '0.5px solid var(--border-light)' }}>"{prompt}"</div>
+          )}
+          <textarea value={content} onChange={e => setContent(e.target.value)} placeholder="여기에 마음을 적어주세요..." autoFocus
+            style={{ width: '100%', minHeight: 100, border: 'none', outline: 'none', resize: 'none', background: 'transparent', fontSize: 14, lineHeight: 1.7, color: 'var(--text-primary)', fontFamily: 'serif' }} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, paddingTop: 10, borderTop: '0.5px solid var(--border-light)' }}>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <IconPhoto size={16} color="var(--text-muted)" style={{ cursor: 'pointer' }} />
+              <IconMicrophone size={16} color="var(--text-muted)" style={{ cursor: 'pointer' }} />
+              <IconMoodSmile size={16} color="var(--text-muted)" style={{ cursor: 'pointer' }} />
+            </div>
+            <span style={{ fontSize: 10, color: 'var(--text-dim)' }}>{content.length} / 자유</span>
+          </div>
+        </div>
+
+        {/* A-5 무드 태그 */}
+        <div style={{ background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: 12, padding: '14px 16px', marginBottom: 12, border: 'var(--card-border)' }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 10 }}>오늘 어떤 기분이었어요?</div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {MOOD_TAGS.map(tag => {
+              const sel = moodTags.includes(tag);
+              return (
+                <div key={tag} onClick={() => setMoodTags(sel ? moodTags.filter(t => t !== tag) : [...moodTags, tag])}
+                  style={{ background: sel ? 'var(--surface-light)' : 'transparent', border: sel ? 'none' : '0.5px solid var(--border-light)', padding: '6px 12px', borderRadius: 14, fontSize: 11, color: sel ? 'var(--text-primary)' : 'var(--text-muted)', cursor: 'pointer' }}>
+                  {tag}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* A-6 오늘의 데이터 */}
+        {showData && (
+          <div style={{ background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: 12, padding: '14px 16px', marginBottom: 20, border: 'var(--card-border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>오늘의 데이터</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+              {[
+                { label: '컨디션', value: cond ? cond.avg.toFixed(1) : '—' },
+                { label: '수면', value: rec.sleep > 0 ? `${rec.sleep}h` : '—' },
+                { label: '카페인', value: rec.cafMg > 0 ? `${rec.cafMg}mg` : '—' },
+              ].map(d => (
+                <div key={d.label} style={{ background: 'var(--surface-light, rgba(255,255,255,0.08))', padding: 8, borderRadius: 8, textAlign: 'center' }}>
+                  <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>{d.label}</div>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{d.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ===== 화면 B: 저널 상세 =====
+function JournalDetailScreen({ entry, entries, onClose, onEdit, onDelete }) {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const dt = new Date(entry.date + 'T00:00:00');
+  const cond = getConditionForDate(entry.date);
+  const rec = getDayRecord(entry.date);
+  const condColor = cond ? (cond.avg >= 7 ? '#639922' : cond.avg >= 5 ? '#FAC775' : '#E05050') : null;
+  const createdAt = entry.created_at ? new Date(entry.created_at) : null;
+  const timeStr = createdAt ? `${createdAt.getHours() >= 21 ? '밤' : createdAt.getHours() >= 18 ? '저녁' : createdAt.getHours() >= 12 ? '오후' : '오전'} ${createdAt.getHours() > 12 ? createdAt.getHours() - 12 : createdAt.getHours()}시 ${createdAt.getMinutes()}분에 작성` : '';
+
+  // 이 시기의 다른 흔적
+  const nearbyEntries = entries.filter(e => e.id !== entry.id && Math.abs((new Date(e.date) - new Date(entry.date)) / 86400000) <= 7).slice(0, 3);
+
+  // 이날의 사진
+  const dayPhotos = (() => {
+    try {
+      const foods = JSON.parse(localStorage.getItem('lua_food_records') || '{}');
+      return (foods[entry.date] || []).filter(f => f.photo && !f.name?.startsWith('물 ')).map(f => ({ url: f.photo, caption: f.meal || '' })).slice(0, 6);
+    } catch { return []; }
+  })();
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 2003, background: 'var(--page-gradient, linear-gradient(to bottom, #ace2fc, #ffffff))', overflowY: 'auto', WebkitOverflowScrolling: 'touch', animation: 'breatheIn 0.3s ease both' }}>
+      {/* B-1 헤더 */}
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 12px) 16px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div onClick={onClose} style={{ width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <IconChevronLeft size={20} color="var(--text-muted)" />
+        </div>
+        <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>저널</span>
+        <div onClick={() => setShowMenu(!showMenu)} style={{ width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}>
+          <IconDots size={18} color="var(--text-muted)" />
+        </div>
+      </div>
+
+      <div style={{ padding: '0 16px', paddingBottom: 40 }}>
+        {/* B-2 시간 헤더 */}
+        <div style={{ background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: 12, padding: '18px 16px', marginBottom: 12, border: 'var(--card-border)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+            <IconMoon size={11} color="var(--text-muted)" />
+            <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{getRelativeTime(entry.date)} · {getSeasonLabel(entry.date)}</span>
+          </div>
+          <div style={{ fontSize: 18, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 2 }}>{dt.getMonth() + 1}월 {dt.getDate()}일 {DAY_NAMES_J[dt.getDay()]}</div>
+          {timeStr && <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{timeStr}</div>}
+          {entry.mood_tags?.length > 0 && (
+            <div style={{ display: 'flex', gap: 6, marginTop: 12 }}>
+              {entry.mood_tags.map((tag, i) => (
+                <span key={i} style={{ background: 'var(--surface-light, rgba(255,255,255,0.15))', padding: '4px 10px', borderRadius: 12, fontSize: 11, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  {condColor && <span style={{ width: 6, height: 6, borderRadius: '50%', background: condColor }} />}
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* B-3 본문 */}
+        <div style={{ background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: 12, padding: '20px 18px', marginBottom: 12, border: 'var(--card-border)' }}>
+          {entry.prompt && entry.prompt.trim() && (
+            <div style={{ fontSize: 11, color: 'var(--text-dim)', fontStyle: 'italic', fontFamily: 'serif', marginBottom: 12, paddingBottom: 10, borderBottom: '0.5px solid var(--border-light)' }}>"{entry.prompt}"</div>
+          )}
+          <div style={{ fontSize: 15, color: 'var(--text-primary)', lineHeight: 1.9, fontFamily: 'serif', whiteSpace: 'pre-wrap' }}>{entry.content}</div>
+        </div>
+
+        {/* B-4 그날의 데이터 */}
+        {(cond || rec.sleep > 0 || rec.cafMg > 0 || rec.steps > 0) && (
+          <div style={{ background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: 12, padding: 16, marginBottom: 12, border: 'var(--card-border)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+              <IconChartDots size={13} color="var(--text-muted)" />
+              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>이 글을 쓰던 날</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginBottom: 10 }}>
+              {[
+                cond && { label: '컨디션', value: cond.avg.toFixed(1), ctx: cond.avg >= 7 ? '좋은 날' : '보통' },
+                rec.sleep > 0 && { label: '수면', value: `${rec.sleep}h`, ctx: rec.sleep >= 7 ? '충분' : '부족' },
+                rec.cafMg > 0 && { label: '카페인', value: `${rec.cafMg}mg`, ctx: `아메리카노 ${Math.round(rec.cafMg / 150)}잔` },
+                rec.steps > 0 && { label: '활동', value: rec.steps.toLocaleString(), ctx: `걸음` },
+              ].filter(Boolean).map(d => (
+                <div key={d.label} style={{ background: 'var(--surface-light, rgba(255,255,255,0.08))', padding: 10, borderRadius: 8 }}>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 2 }}>{d.label}</div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                    <span style={{ fontSize: 18, fontWeight: 500, color: 'var(--text-primary)' }}>{d.value}</span>
+                    <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>{d.ctx}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* B-5 이날의 사진 */}
+        {dayPhotos.length > 0 && (
+          <div style={{ background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: 12, padding: 16, marginBottom: 12, border: 'var(--card-border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <IconPhoto size={13} color="var(--text-muted)" />
+                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>이날의 사진</span>
+              </div>
+              <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{dayPhotos.length}장</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4 }}>
+              {dayPhotos.map((p, i) => (
+                <div key={i} style={{ aspectRatio: '1', borderRadius: 6, overflow: 'hidden', position: 'relative' }}>
+                  <img src={p.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  {p.caption && <span style={{ position: 'absolute', bottom: 4, left: 4, background: 'rgba(0,0,0,0.4)', color: '#fff', fontSize: 8, padding: '1px 4px', borderRadius: 3 }}>{p.caption}</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* B-6 다른 흔적 */}
+        {nearbyEntries.length > 0 && (
+          <div style={{ background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: 12, padding: 16, marginBottom: 12, border: 'var(--card-border)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+              <IconHistory size={13} color="var(--text-muted)" />
+              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>이 시기의 다른 흔적들</span>
+            </div>
+            {nearbyEntries.map((ne, i) => {
+              const ned = new Date(ne.date + 'T00:00:00');
+              const neCond = getConditionForDate(ne.date);
+              return (
+                <div key={ne.id} style={{ display: 'flex', gap: 10, padding: '10px 0', borderBottom: i < nearbyEntries.length - 1 ? '0.5px solid var(--border-light)' : 'none' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 40 }}>
+                    <span style={{ fontSize: 9, color: 'var(--text-dim)' }}>{ned.getMonth() + 1}월</span>
+                    <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>{ned.getDate()}</span>
+                    <span style={{ fontSize: 9, color: 'var(--text-dim)' }}>{DAY_NAMES_J[ned.getDay()].slice(0, 1)}</span>
+                  </div>
+                  <div style={{ flex: 1, paddingLeft: 10, borderLeft: '0.5px solid var(--border-light)' }}>
+                    <div style={{ fontSize: 11, color: 'var(--text-primary)', lineHeight: 1.5, fontFamily: 'serif', marginBottom: 3 }}>{ne.content.slice(0, 50)}{ne.content.length > 50 ? '...' : ''}</div>
+                    <div style={{ fontSize: 9, color: 'var(--text-dim)' }}>{neCond ? `컨디션 ${neCond.avg.toFixed(1)}` : ''} · {getRelativeTime(ne.date)}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* B-7 액션 바 */}
+        <div style={{ background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: 12, padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: 'var(--card-border)' }}>
+          <div style={{ display: 'flex', gap: 16 }}>
+            <IconEdit size={16} color="var(--text-muted)" style={{ cursor: 'pointer' }} onClick={() => onEdit(entry)} />
+            <IconShare size={16} color="var(--text-muted)" style={{ cursor: 'pointer' }} />
+            <IconDownload size={16} color="var(--text-muted)" style={{ cursor: 'pointer' }} />
+          </div>
+          <IconTrash size={16} color="var(--text-dim)" style={{ cursor: 'pointer' }} onClick={() => setShowDeleteConfirm(true)} />
+        </div>
+      </div>
+
+      {/* 삭제 확인 */}
+      {showDeleteConfirm && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: 'var(--bg-primary, #fff)', borderRadius: 16, padding: '24px 20px', width: 280, textAlign: 'center' }}>
+            <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 8 }}>이 저널을 삭제할까요?</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 20 }}>삭제 후 복구할 수 없어요.</div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => setShowDeleteConfirm(false)} style={{ flex: 1, padding: '10px', borderRadius: 10, border: 'none', background: 'var(--surface-light, #f0f0f0)', fontSize: 13, color: 'var(--text-primary)', cursor: 'pointer', fontFamily: 'inherit' }}>취소</button>
+              <button onClick={() => onDelete(entry.id)} style={{ flex: 1, padding: '10px', borderRadius: 10, border: 'none', background: '#E05050', fontSize: 13, color: '#fff', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>삭제</button>
+            </div>
+          </div>
+        </div>
       )}
-
-      {/* 입력 */}
-      <div style={{ flex: 1, padding: '20px 24px' }}>
-        <textarea
-          value={content}
-          onChange={e => setContent(e.target.value)}
-          placeholder="오늘 하루, 한 줄로 남겨보세요"
-          autoFocus
-          style={{
-            width: '100%', height: '100%', border: 'none', outline: 'none', resize: 'none',
-            background: 'transparent', fontSize: 15, color: 'var(--text-primary)',
-            lineHeight: 1.8, fontFamily: 'inherit', letterSpacing: -0.2,
-          }}
-        />
-      </div>
     </div>
   );
 }

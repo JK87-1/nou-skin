@@ -25,6 +25,7 @@
     "@capacitor/splash-screen": "^8.0.1",
     "@capacitor/status-bar": "^8.0.2",
     "@mediapipe/tasks-vision": "^0.10.32",
+    "@tabler/icons-react": "^3.44.0",
     "@upstash/redis": "^1.36.3",
     "@vladmandic/face-api": "^1.7.15",
     "puppeteer": "^24.37.5",
