@@ -853,12 +853,11 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
           const met = ALL_EXERCISES.find(e => e.name === name)?.met || 4.0;
           return sum + Math.round(met * _curWeight * (mins / 60));
         }, 0);
-        const _isDark = colorMode === 'dark';
         const _cs = {
-          background: _isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.2)', borderRadius: 30,
+          background: 'var(--card-bg)', borderRadius: 30,
           backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-          border: _isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(255,255,255,0.3)',
-          boxShadow: _isDark ? 'none' : '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+          border: 'var(--card-border)',
+          boxShadow: 'var(--card-shadow)',
           minHeight: 140, display: 'flex', flexDirection: 'column',
         };
 

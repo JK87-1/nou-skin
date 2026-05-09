@@ -90,9 +90,9 @@
   --context-bg: rgba(240,144,112,0.06);
   --context-border: 1px solid rgba(240,144,112,0.1);
   --page-gradient: linear-gradient(180deg, #0a1222 0%, #8d97ce 100%);
-  --card-bg: rgba(255,255,255,0.05);
-  --card-border: 1px solid rgba(255,255,255,0.08);
-  --card-shadow: none;
+  --card-bg: rgba(255,255,255,0.1);
+  --card-border: 1px solid rgba(255,255,255,0.15);
+  --card-shadow: 0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.1);
 }
 
 [data-theme="light"] {
