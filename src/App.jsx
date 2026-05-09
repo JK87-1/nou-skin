@@ -93,8 +93,8 @@ export default function App() {
     const html = document.documentElement;
     const body = document.body;
     if (colorMode === 'dark') {
-      html.style.backgroundColor = '#1b2aab';
-      body.style.background = 'linear-gradient(180deg, #08102e 0%, #1b2aab 100%)';
+      html.style.backgroundColor = '#8090B0';
+      body.style.background = 'linear-gradient(180deg, #141828 0%, #8090B0 100%)';
       body.style.backgroundAttachment = 'fixed';
       body.style.minHeight = '100dvh';
       body.style.color = '#f0f0f5';
@@ -106,7 +106,7 @@ export default function App() {
       body.style.color = '#191F28';
     }
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.content = colorMode === 'light' ? '#ace2fc' : '#08102e';
+    if (meta) meta.content = colorMode === 'light' ? '#ace2fc' : '#141828';
   }, [colorMode]);
 
   const setColorMode = useCallback((mode) => {
