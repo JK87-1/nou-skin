@@ -2507,7 +2507,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
       {showRecordSettings && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 2002,
-          background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
+          background: 'var(--page-gradient, linear-gradient(to bottom, #ace2fc, #ffffff))',
           display: 'flex', flexDirection: 'column',
         }}>
           <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>

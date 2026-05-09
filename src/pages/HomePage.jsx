@@ -1987,7 +1987,7 @@ function WeatherFullModal({ onClose }) {
   return (
     <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} style={{
       position: 'fixed', inset: 0, zIndex: 1200,
-      background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
+      background: 'var(--page-gradient, linear-gradient(to bottom, #ace2fc, #ffffff))',
       overflowY: 'auto', WebkitOverflowScrolling: 'touch',
     }}>
       <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>

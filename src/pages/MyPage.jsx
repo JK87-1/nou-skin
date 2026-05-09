@@ -1080,7 +1080,7 @@ function SettingsPage({ open, onClose, onCategoriesChanged, onTabChange, colorMo
       <div style={{
         position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 2001,
         width: '100%',
-        background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
+        background: 'var(--page-gradient, linear-gradient(to bottom, #ace2fc, #ffffff))',
         transform: open ? 'translateX(0)' : 'translateX(100%)',
         transition: 'transform 0.3s ease',
         display: 'flex', flexDirection: 'column',
@@ -1148,7 +1148,7 @@ function DisplaySettingsPage({ onClose, colorMode, setColorMode }) {
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 2002,
-      background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
+      background: 'var(--page-gradient, linear-gradient(to bottom, #ace2fc, #ffffff))',
       display: 'flex', flexDirection: 'column',
       overflowY: 'auto', WebkitOverflowScrolling: 'touch',
     }}>
@@ -1228,7 +1228,7 @@ function GoalSettingsPage({ onClose, onTabChange }) {
     <>
     <div style={{
       position: 'fixed', inset: 0, zIndex: 2002,
-      background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
+      background: 'var(--page-gradient, linear-gradient(to bottom, #ace2fc, #ffffff))',
       display: 'flex', flexDirection: 'column',
       overflowY: 'auto', WebkitOverflowScrolling: 'touch',
     }}>
@@ -1512,7 +1512,7 @@ function CategorySettingsPage({ onClose, onSave }) {
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 2002,
-      background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
+      background: 'var(--page-gradient, linear-gradient(to bottom, #ace2fc, #ffffff))',
       display: 'flex', flexDirection: 'column',
       animation: 'slideInRight 0.3s ease',
       overflowY: 'auto',
@@ -1812,7 +1812,7 @@ function ProfileSettingsPage({ onClose }) {
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 2002,
-      background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
+      background: 'var(--page-gradient, linear-gradient(to bottom, #ace2fc, #ffffff))',
       overflowY: 'auto', WebkitOverflowScrolling: 'touch',
     }}>
       {/* Header */}
