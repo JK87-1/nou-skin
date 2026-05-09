@@ -734,7 +734,7 @@ export default function App() {
 
       {/* ===== HOME TAB (new dashboard) ===== */}
       {activeTab === 'home' && (
-        <HomePage onMeasure={openCamera} onTabChange={switchTab} onOpenRoutine={() => switchTab('routine')} />
+        <HomePage onMeasure={openCamera} onTabChange={switchTab} onOpenRoutine={() => switchTab('routine')} colorMode={colorMode} />
       )}
 
       {/* ===== DETAIL PAGE ===== */}

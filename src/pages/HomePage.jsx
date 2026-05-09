@@ -205,7 +205,7 @@ function generateAction(check) {
   return '지금 → 현재 루틴 유지 추천 →';
 }
 
-export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
+export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorMode }) {
   const [profile] = useState(getProfile);
   const latest = getLatestRecord();
   const weather = getWeatherData();
