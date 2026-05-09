@@ -905,27 +905,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
 
         return (
           <>
-          {/* 오늘의 진행률 */}
-          <div style={{ margin: '0 22px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ fontSize: 12, color: _recordedItems.length === 6 ? '#22C55E' : 'rgba(0,0,0,0.45)', fontWeight: 500 }}>
-              {_recordedItems.length === 6
-                ? '오늘 기록 완료!'
-                : _missingItems.length <= 2
-                  ? `${_missingItems.join(' · ')} 미입력`
-                  : `${_recordedItems.length}/6 기록 완료`}
-            </div>
-            <div style={{ display: 'flex', gap: 3 }}>
-              {[...Array(6)].map((_, i) => (
-                <div key={i} style={{
-                  width: i < _recordedItems.length ? 14 : 6, height: 4, borderRadius: 2,
-                  background: i < _recordedItems.length
-                    ? (_recordedItems.length === 6 ? '#22C55E' : 'rgba(0,0,0,0.25)')
-                    : 'rgba(0,0,0,0.08)',
-                  transition: 'all 0.3s ease',
-                }} />
-              ))}
-            </div>
-          </div>
           <div ref={gridRef} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 15, margin: '0 18px', position: 'relative' }}>
             {cardOrder.map((cardId, cardIdx) => {
               const isDragging = dragState.dragging && dragState.cardId === cardId;
@@ -1575,6 +1554,29 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
               </div>
             );
           })()}
+
+          {/* 오늘의 진행률 (하단) */}
+          <div style={{ margin: '14px 22px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ fontSize: 12, color: _recordedItems.length === 6 ? '#22C55E' : 'rgba(0,0,0,0.45)', fontWeight: 500 }}>
+              {_recordedItems.length === 6
+                ? '오늘 기록 완료!'
+                : _missingItems.length <= 2
+                  ? `${_missingItems.join(' · ')} 미입력`
+                  : `${_recordedItems.length}/6 기록 완료`}
+            </div>
+            <div style={{ display: 'flex', gap: 3 }}>
+              {[...Array(6)].map((_, i) => (
+                <div key={i} style={{
+                  width: i < _recordedItems.length ? 14 : 6, height: 4, borderRadius: 2,
+                  background: i < _recordedItems.length
+                    ? (_recordedItems.length === 6 ? '#22C55E' : 'rgba(0,0,0,0.25)')
+                    : 'rgba(0,0,0,0.08)',
+                  transition: 'all 0.3s ease',
+                }} />
+              ))}
+            </div>
+          </div>
+
           </>
         );
       })()}
