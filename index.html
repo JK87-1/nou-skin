@@ -46,7 +46,7 @@
       min-height: 100%;
     }
     html[data-theme="dark"], html[data-theme="dark"] body {
-      background-color: #000000;
+      background-color: #0a1222;
       color: #f0f0f5;
     }
     #root { min-height: 100dvh; position: relative; z-index: 1; }
@@ -57,7 +57,7 @@
       background: linear-gradient(to bottom, #ace2fc, #ffffff);
       pointer-events: none;
     }
-    html[data-theme="dark"] #gradient-bg { background: #000000; }
+    html[data-theme="dark"] #gradient-bg { background: linear-gradient(180deg, #0a1222 0%, #8d97ce 100%); }
   </style>
 </head>
 <body>
@@ -88,10 +88,10 @@
         // theme-color stays #ffffff during splash, App.jsx sets it to #ace2fc after splash ends
       } else {
         document.documentElement.setAttribute('data-theme', 'dark');
-        document.documentElement.style.backgroundColor = '#000000';
-        document.body.style.backgroundColor = '#000000';
+        document.documentElement.style.backgroundColor = '#0a1222';
+        document.body.style.backgroundColor = 'transparent';
         document.body.style.color = '#f0f0f5';
-        document.querySelector('meta[name="theme-color"]').content = '#000000';
+        document.querySelector('meta[name="theme-color"]').content = '#0a1222';
       }
     } catch(e) {
       document.documentElement.setAttribute('data-theme', 'light');
