@@ -236,6 +236,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
   const [showWaterModal, setShowWaterModal] = useState(false);
   const [showSleepModal, setShowSleepModal] = useState(false);
   const [homeView, setHomeView] = useState('cards'); // 'cards' | 'briefing'
+  const [heroVersion, setHeroVersion] = useState('v2'); // 'v1' | 'v2'
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [showDatePicker, setShowDatePicker] = useState(false);
   const isToday = selectedDate === new Date().toISOString().slice(0, 10);
@@ -634,6 +635,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
     }}>
 
       {/* ===== 1. 히어로 영역 ===== */}
+      {heroVersion === 'v1' ? (
       <div style={{
         padding: '28px 22px 24px',
         position: 'relative',
@@ -686,6 +688,129 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine }) {
             </div>
           );
         })()}
+      </div>
+      ) : (
+      /* ===== v2 히어로 영역 ===== */
+      <div style={{ padding: '28px 22px 20px', position: 'relative' }}>
+        {/* 상단 row */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, position: 'relative' }}>
+          <div onClick={() => setShowWeather(true)} style={{ cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1 }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.8)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
+            </svg>
+          </div>
+          <img src="/luasky.svg" alt="lua" style={{ height: 30, objectFit: 'contain', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }} />
+          {homeView === 'cards' && editMode ? (
+            <div onClick={() => setEditMode(false)} style={{ cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1 }}>
+              <span style={{ fontSize: 14, fontWeight: 600, color: '#4DB8A0' }}>완료</span>
+            </div>
+          ) : (
+            <div onClick={() => onTabChange?.('album')} style={{ cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1 }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="8" r="4.5" fill="rgba(0,0,0,0.6)" />
+                <path d="M4 20c0-3.5 3.5-6 8-6s8 2.5 8 6" fill="rgba(0,0,0,0.6)" />
+              </svg>
+            </div>
+          )}
+        </div>
+
+        {/* 날짜 */}
+        {(() => {
+          const _selDate = new Date(selectedDate + 'T00:00:00');
+          const days = ['일','월','화','수','목','금','토'];
+          const dateStr = `${_selDate.getMonth()+1}월 ${_selDate.getDate()}일 ${days[_selDate.getDay()]}요일`;
+          return (
+            <div onClick={() => setShowDatePicker(true)} style={{ fontSize: 13, fontWeight: 500, color: 'rgba(0,0,0,0.35)', cursor: 'pointer', WebkitTapHighlightColor: 'transparent', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+              {dateStr}
+              {!isToday && <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--accent-primary, #89cef5)', padding: '2px 8px', borderRadius: 8, background: 'rgba(137,206,245,0.1)' }}>과거</span>}
+              <span style={{ fontSize: 10, color: 'rgba(0,0,0,0.12)' }}>▼</span>
+            </div>
+          );
+        })()}
+
+        {/* 인사말 */}
+        {(() => {
+          const greeting = getGreeting(profile.nickname);
+          return (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 22, fontWeight: 700, color: '#0D3028', lineHeight: 1.35, letterSpacing: -0.3 }}>{greeting.main}</div>
+              <div style={{ fontSize: 14, color: 'rgba(0,0,0,0.4)', marginTop: 4 }}>{greeting.sub}</div>
+            </div>
+          );
+        })()}
+
+        {/* 오늘 요약 수치 */}
+        {(() => {
+          const _todayKey = selectedDate;
+          const _allV2 = (() => { try { return JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); } catch { return {}; } })();
+          const _todayRec = _allV2[_todayKey] || {};
+          const _allChecks = (() => { try { return JSON.parse(localStorage.getItem('nou_condition_checks') || '[]'); } catch { return []; } })();
+          const _dayChecks = _allChecks.filter(c => (c.date || c.timestamp?.slice(0, 10)) === _todayKey);
+          const _lastCheck = _dayChecks.length > 0 ? _dayChecks[_dayChecks.length - 1] : null;
+          const _condAvg = _lastCheck ? ((_lastCheck.energy || 5) + (_lastCheck.mood || 5)) / 2 : null;
+          const _todaySleep = _todayRec.sleep?.hours || null;
+          const _todayNut = getTodayNutrition();
+          const _eaten = Math.round(_todayNut.kcal || 0);
+
+          const summaryItems = [];
+          if (_condAvg !== null) summaryItems.push({ label: '컨디션', value: _condAvg.toFixed(1), color: _condAvg >= 7 ? '#22C55E' : _condAvg >= 4 ? '#E8A135' : '#E05050' });
+          else summaryItems.push({ label: '컨디션', value: '미입력', color: 'var(--accent-primary, #89cef5)', tap: () => setShowConditionModal(true) });
+
+          if (_todaySleep) summaryItems.push({ label: '수면', value: `${_todaySleep % 1 === 0 ? _todaySleep : _todaySleep.toFixed(1)}h`, color: _todaySleep >= 7 ? '#22C55E' : _todaySleep >= 5 ? '#E8A135' : '#E05050' });
+          else summaryItems.push({ label: '수면', value: '미입력', color: 'var(--accent-primary, #89cef5)', tap: () => setShowSleepModal(true) });
+
+          if (_eaten > 0) summaryItems.push({ label: '식사', value: `${_eaten.toLocaleString()}kcal`, color: 'var(--text-muted)' });
+          else summaryItems.push({ label: '식사', value: '미입력', color: 'var(--accent-primary, #89cef5)', tap: () => setShowFoodModal(true) });
+
+          return (
+            <div style={{
+              display: 'flex', gap: 6, flexWrap: 'wrap',
+            }}>
+              {summaryItems.map((item, i) => (
+                <div key={i} onClick={item.tap} style={{
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  padding: '5px 10px', borderRadius: 20,
+                  background: 'rgba(255,255,255,0.4)',
+                  backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+                  border: '1px solid rgba(255,255,255,0.5)',
+                  cursor: item.tap ? 'pointer' : 'default',
+                  WebkitTapHighlightColor: 'transparent',
+                }}>
+                  <span style={{ fontSize: 11, color: 'rgba(0,0,0,0.35)', fontWeight: 500 }}>{item.label}</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: item.color }}>{item.value}</span>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
+
+        {/* 기록/오늘 토글 */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 18 }}>
+          <div style={{ width: 1 }} />
+          <div onClick={() => { setHomeView(v => v === 'briefing' ? 'cards' : 'briefing'); if (homeView === 'cards') setEditMode(false); }}
+            style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 20, background: 'rgba(0,0,0,0.04)', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>
+            <span style={{ fontSize: 11, fontWeight: 500, color: homeView === 'cards' ? 'var(--text-primary, #111)' : 'rgba(0,0,0,0.3)' }}>기록</span>
+            <div style={{ width: 28, height: 16, borderRadius: 8, background: homeView === 'briefing' ? 'var(--accent-primary, #89cef5)' : 'rgba(0,0,0,0.12)', position: 'relative', transition: 'background 0.2s ease' }}>
+              <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#fff', position: 'absolute', top: 2, left: homeView === 'briefing' ? 14 : 2, transition: 'left 0.2s ease', boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }} />
+            </div>
+            <span style={{ fontSize: 11, fontWeight: 500, color: homeView === 'briefing' ? 'var(--text-primary, #111)' : 'rgba(0,0,0,0.3)' }}>오늘</span>
+          </div>
+        </div>
+      </div>
+      )}
+
+      {/* v1/v2 전환 토글 (테스트용) */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
+        <div style={{ display: 'flex', borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
+          {['v1', 'v2'].map(v => (
+            <div key={v} onClick={() => setHeroVersion(v)} style={{
+              padding: '4px 14px', fontSize: 11, fontWeight: 600, cursor: 'pointer',
+              background: heroVersion === v ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.5)',
+              color: heroVersion === v ? '#fff' : 'rgba(0,0,0,0.4)',
+              WebkitTapHighlightColor: 'transparent',
+            }}>{v}</div>
+          ))}
+        </div>
       </div>
 
       {/* ===== 오늘 뷰 ===== */}
