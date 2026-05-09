@@ -229,9 +229,10 @@ function buildLLMContext(userData, triggerType, justInputData) {
   const skinSubs = safeJSON('nou_skin_sub_checks', []);
   const bloodSugar = safeJSON('nou_blood_sugar_checks', []);
 
+  ctx += `⚠️ 아래 "오늘" 데이터는 반드시 "오늘"로, "어제" 데이터는 반드시 "어제"로 언급하세요.\n\n`;
   detailDays.forEach((day, idx) => {
     const label = idx === 0 ? '오늘' : '어제';
-    ctx += `## ${label} (${day.date} ${DAY_NAMES[day.dayOfWeek]}요일)\n`;
+    ctx += `## ${label} (${day.date} ${DAY_NAMES[day.dayOfWeek]}요일) — 이 섹션의 데이터를 언급할 때 "${label}"이라고만 쓰세요\n`;
 
     // 수면
     if (day.sleep > 0) {
@@ -428,6 +429,11 @@ function buildTaskInstruction(triggerType) {
 - 이모지 메시지 내 0-2개
 - "예상치 못한 발견" 최소 2개 포함
 
+⚠️ 데이터 정확성 (위반 시 전체 무효):
+- "오늘" 데이터를 언급할 때만 "오늘", "어제" 데이터를 언급할 때만 "어제"라고 쓰세요. 날짜 라벨을 절대 바꾸지 마세요.
+- 식사 칼로리(kcal)는 식사 카드에만, 걸음수(보)는 활동 카드에만 사용하세요. 수치와 카드를 절대 혼동하지 마세요.
+- 컨텍스트에 없는 수치를 만들어내지 마세요.
+
 JSON 배열만 출력하세요. 다른 텍스트 없이.`;
 }
 
@@ -452,6 +458,12 @@ function getSystemPrompt() {
 - "예상치 못한 발견": 사용자가 모르던 패턴, 다차원 결합
 - 흔한 일반론 X → 본인 데이터에서만 나오는 개인화된 발견
 - 시간 패턴, 요일 패턴, 교차 영향 발견
+
+## ⚠️ 데이터 정확성 (최우선 규칙)
+- "오늘" 섹션의 데이터만 "오늘"이라고 말하세요. "어제" 섹션의 데이터는 반드시 "어제"라고 말하세요. 날짜를 절대 혼동하지 마세요.
+- 각 수치는 해당 카드에만 귀속시키세요. 예: 식사 칼로리(kcal)를 걸음수(보)로 해석하거나, 수면 시간을 운동 시간으로 바꿔 말하는 것은 금지입니다.
+- 데이터에 없는 수치를 만들어내지 마세요. 컨텍스트에 명시된 숫자만 사용하세요.
+- 카드 종류별 단위: 식사=kcal/g, 걸음=보, 수면=시간, 수분=ml/잔, 카페인=mg, 체중=kg
 
 ## 출력 형식
 JSON 배열만 출력. 다른 텍스트 없이.
@@ -489,6 +501,14 @@ function validateInsights(insights) {
     }
   }
 
+  // 데이터 혼동 체크: 식사 카드에서 '보' 단위 사용 or 활동 카드에서 'kcal' 단위 사용
+  for (const ins of insights) {
+    const card = ins.primary_card || '';
+    const msg = ins.message || '';
+    if (card === 'meal' && /\d{3,}보/.test(msg)) return { valid: false, failure: 'data_mismatch' };
+    if (card === 'activity' && /\d{3,}kcal/.test(msg)) return { valid: false, failure: 'data_mismatch' };
+  }
+
   // 다양성 체크
   const uniqueCards = new Set(insights.flatMap(i => [i.primary_card, ...(i.related_cards || [])]));
   if (uniqueCards.size < CONFIG.diversity.minDifferentCards) return { valid: false, failure: 'low_diversity' };
@@ -506,6 +526,7 @@ function getRetryInstruction(failure) {
     low_diversity: '다른 카드 5개 이상 활용 필수. 같은 카드 연속 X.',
     message_length: '각 메시지 40-200자 이내로 작성하세요.',
     wrong_count: '정확히 10개의 인사이트를 생성하세요.',
+    data_mismatch: '수치와 카드가 혼동되었습니다. 식사 칼로리(kcal)를 걸음수(보)로 쓰거나 반대로 쓰지 마세요. 각 수치는 해당 카드의 올바른 단위로만 사용하세요.',
   };
   return instructions[failure] || '메시지 형식, 톤, 다양성을 다시 확인하세요.';
 }
