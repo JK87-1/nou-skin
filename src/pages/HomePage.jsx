@@ -648,7 +648,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
             </svg>
           </div>
           <img src="/luasky.svg" alt="lua" style={{ height: 30, objectFit: 'contain', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }} />
-          {homeView === 'cards' && editMode ? (
+          {editMode ? (
             <div onClick={() => setEditMode(false)} style={{
               cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1,
             }}>
@@ -683,14 +683,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
                   {!isToday && <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--accent-primary, #89cef5)', padding: '2px 8px', borderRadius: 8, background: 'rgba(137,206,245,0.1)' }}>과거</span>}
                   <span style={{ fontSize: 10, color: 'rgba(0,0,0,0.15)' }}>▼</span>
                 </div>
-                <div onClick={() => { setHomeView(v => v === 'briefing' ? 'cards' : 'briefing'); if (homeView === 'cards') setEditMode(false); }}
-                  style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 20, background: _isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.04)', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>
-                  <span style={{ fontSize: 11, fontWeight: 500, color: homeView === 'cards' ? (_isDark ? '#fff' : 'var(--text-primary, #111)') : txtS }}>기록</span>
-                  <div style={{ width: 28, height: 16, borderRadius: 8, background: homeView === 'briefing' ? 'var(--accent-primary, #89cef5)' : (_isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.12)'), position: 'relative', transition: 'background 0.2s ease' }}>
-                    <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#fff', position: 'absolute', top: 2, left: homeView === 'briefing' ? 14 : 2, transition: 'left 0.2s ease', boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }} />
-                  </div>
-                  <span style={{ fontSize: 11, fontWeight: 500, color: homeView === 'briefing' ? (_isDark ? '#fff' : 'var(--text-primary, #111)') : txtS }}>오늘</span>
-                </div>
               </div>
             </div>
           );
@@ -707,7 +699,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
             </svg>
           </div>
           <img src="/luasky.svg" alt="lua" style={{ height: 30, objectFit: 'contain', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }} />
-          {homeView === 'cards' && editMode ? (
+          {editMode ? (
             <div onClick={() => setEditMode(false)} style={{ cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1 }}>
               <span style={{ fontSize: 14, fontWeight: 600, color: '#4DB8A0' }}>완료</span>
             </div>
@@ -793,16 +785,8 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
       </div>
       )}
 
-
-      {/* ===== 오늘 뷰 ===== */}
-      {homeView === 'briefing' && (
-        <div style={{ padding: '40px 24px', textAlign: 'center' }}>
-          <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>준비 중이에요</div>
-        </div>
-      )}
-
-      {/* ===== 기록 뷰 (기존 카드 그리드) ===== */}
-      {homeView === 'cards' && <>
+      {/* ===== 카드 그리드 ===== */}
+      {<>
       <div style={{ padding: '0 20px', marginBottom: 4 }}>
         <InsightCard />
       </div>
