@@ -438,8 +438,8 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
             </div>
             {/* 3. 통합 텍스트 영역 */}
             <div style={{ paddingTop: 4 }}>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>lua와 함께한지 {daysTogether}일째 🌙</div>
-              <div style={{ fontSize: 11, color: 'var(--text-primary)', marginTop: 6 }}>{shiningMsg}</div>
+              <div style={{ fontSize: 14, color: 'var(--text-muted)' }}>lua와 함께한지 {daysTogether}일째 🌙</div>
+              <div style={{ fontSize: 12, color: 'var(--text-primary)', marginTop: 6 }}>{shiningMsg}</div>
             </div>
           </div>
         );
