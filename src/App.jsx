@@ -93,7 +93,7 @@ export default function App() {
     const html = document.documentElement;
     const body = document.body;
     if (colorMode === 'dark') {
-      html.style.backgroundColor = '#08102e';
+      html.style.backgroundColor = '#1b2aab';
       body.style.background = 'linear-gradient(180deg, #08102e 0%, #1b2aab 100%)';
       body.style.backgroundAttachment = 'fixed';
       body.style.minHeight = '100dvh';
