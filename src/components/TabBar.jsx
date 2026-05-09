@@ -88,7 +88,7 @@ export default function TabBar({ activeTab, onTabChange }) {
     },
     {
       key: 'food',
-      label: '오늘',
+      label: '기록',
       icon: (active) => {
         const c = active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)';
         return (
