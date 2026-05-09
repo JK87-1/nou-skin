@@ -748,7 +748,7 @@ export default function App() {
 
       {/* ===== ALBUM TAB (gallery + insights merged) ===== */}
       {activeTab === 'album' && (
-        <MyPage onBack={goToLanding} onMeasure={openCamera} onOpenConsult={() => switchTab('home')} onTabChange={switchTab} initialMode={historyInitMode} />
+        <MyPage onBack={goToLanding} onMeasure={openCamera} onOpenConsult={() => switchTab('home')} onTabChange={switchTab} initialMode={historyInitMode} colorMode={colorMode} setColorMode={setColorMode} />
       )}
 
 

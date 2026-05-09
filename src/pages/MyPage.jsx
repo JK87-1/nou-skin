@@ -197,7 +197,7 @@ function ChangeIndicator({ diff, unit = '점', inverse = false, size = 'normal' 
 }
 
 // ===== MAIN HISTORY PAGE =====
-export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, initialMode, galleryOnly }) {
+export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, initialMode, galleryOnly, colorMode, setColorMode }) {
   const [mode, setMode] = useState(initialMode || 'gallery');
   const PHOTO_CATS = [
     { key: 'all', label: '전체' },
@@ -1037,16 +1037,17 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
       )}
 
       {/* Settings Drawer */}
-      <SettingsPage open={showSettingsPage} onClose={() => setShowSettingsPage(false)} onCategoriesChanged={refreshCategories} onTabChange={onTabChange} />
+      <SettingsPage open={showSettingsPage} onClose={() => setShowSettingsPage(false)} onCategoriesChanged={refreshCategories} onTabChange={onTabChange} colorMode={colorMode} setColorMode={setColorMode} />
     </div>
   );
 }
 
 // ===== SETTINGS PAGE =====
-function SettingsPage({ open, onClose, onCategoriesChanged, onTabChange }) {
+function SettingsPage({ open, onClose, onCategoriesChanged, onTabChange, colorMode, setColorMode }) {
   const [showProfilePage, setShowProfilePage] = useState(false);
   const [showCategoryPage, setShowCategoryPage] = useState(false);
   const [showGoalPage, setShowGoalPage] = useState(false);
+  const [showDisplayPage, setShowDisplayPage] = useState(false);
 
   const menuSections = [
     {
@@ -1059,8 +1060,8 @@ function SettingsPage({ open, onClose, onCategoriesChanged, onTabChange }) {
     {
       title: '앱 설정',
       items: [
+        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>, label: '화면 모드', action: () => setShowDisplayPage(true), right: <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{colorMode === 'dark' ? '다크' : '라이트'}</span> },
         { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>, label: '카테고리', action: () => setShowCategoryPage(true) },
-        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>, label: '화면' },
         { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>, label: '데이터' },
       ],
     },
@@ -1115,6 +1116,7 @@ function SettingsPage({ open, onClose, onCategoriesChanged, onTabChange }) {
                 }}>
                   {item.icon}
                   <span style={{ fontSize: 15, fontWeight: 500, flex: 1 }}>{item.label}</span>
+                  {item.right || null}
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.6)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M9 6l6 6-6 6" />
                   </svg>
@@ -1131,7 +1133,77 @@ function SettingsPage({ open, onClose, onCategoriesChanged, onTabChange }) {
       {showProfilePage && <ProfileSettingsPage onClose={() => setShowProfilePage(false)} />}
       {showCategoryPage && <CategorySettingsPage onClose={() => setShowCategoryPage(false)} onSave={onCategoriesChanged} />}
       {showGoalPage && <GoalSettingsPage onClose={() => setShowGoalPage(false)} onTabChange={onTabChange} />}
+      {showDisplayPage && <DisplaySettingsPage onClose={() => setShowDisplayPage(false)} colorMode={colorMode} setColorMode={setColorMode} />}
     </>
+  );
+}
+
+// ===== DISPLAY SETTINGS PAGE =====
+function DisplaySettingsPage({ onClose, colorMode, setColorMode }) {
+  const modes = [
+    { key: 'light', label: '라이트 모드', icon: '☀️', desc: '밝은 배경' },
+    { key: 'dark', label: '다크 모드', icon: '🌙', desc: '어두운 배경' },
+  ];
+
+  return (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 2002,
+      background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
+      display: 'flex', flexDirection: 'column',
+      overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+    }}>
+      {/* 헤더 */}
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+        <div onClick={onClose} style={{
+          width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1,
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </div>
+        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>화면 모드</span>
+      </div>
+
+      {/* 모드 선택 */}
+      <div style={{ padding: '24px 20px' }}>
+        <div style={{ display: 'flex', gap: 12 }}>
+          {modes.map(m => {
+            const selected = colorMode === m.key;
+            return (
+              <div
+                key={m.key}
+                onClick={() => setColorMode(m.key)}
+                style={{
+                  flex: 1, padding: '20px 14px', borderRadius: 20, cursor: 'pointer',
+                  background: selected ? (m.key === 'dark' ? '#1a1a24' : '#fff') : 'rgba(255,255,255,0.4)',
+                  border: selected ? '2px solid var(--accent-primary)' : '2px solid transparent',
+                  textAlign: 'center',
+                  transition: 'all 0.2s ease',
+                  WebkitTapHighlightColor: 'transparent',
+                  boxShadow: selected ? '0 4px 16px rgba(0,0,0,0.08)' : 'none',
+                }}
+              >
+                <div style={{ fontSize: 32, marginBottom: 10 }}>{m.icon}</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: selected ? (m.key === 'dark' ? '#f0f0f5' : '#191F28') : '#6b7684', marginBottom: 4 }}>
+                  {m.label}
+                </div>
+                <div style={{ fontSize: 11, color: selected ? (m.key === 'dark' ? '#8888a0' : '#8B95A1') : '#B0B8C1' }}>
+                  {m.desc}
+                </div>
+                {selected && (
+                  <div style={{ marginTop: 10 }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
   );
 }
 
