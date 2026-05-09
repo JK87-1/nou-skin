@@ -304,7 +304,7 @@
   max-width: 430px;
   margin: 0 auto;
   min-height: 100dvh;
-  background: var(--bg-primary);
+  background: transparent;
   position: relative;
   overflow-x: hidden;
 }
