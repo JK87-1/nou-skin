@@ -461,49 +461,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
       )}
 
       {/* ===== 저널 탭 ===== */}
-      {profileTab === 'journal' && (
-        <div style={{ padding: '20px 18px' }}>
-          {journalCount === 0 ? (
-            <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
-              <div style={{ fontSize: 24, marginBottom: 8 }}>📖</div>
-              <div style={{ fontSize: 14, fontWeight: 600 }}>저널 기록이 없어요</div>
-              <div style={{ fontSize: 12, marginTop: 6 }}>매일 컨디션을 체크하면 저널이 쌓여요</div>
-            </div>
-          ) : (
-            <div>
-              {(() => {
-                try {
-                  const checks = JSON.parse(localStorage.getItem('nou_condition_checks') || '[]');
-                  const byDate = {};
-                  checks.forEach(c => {
-                    const d = c.date || (c.timestamp && c.timestamp.slice(0, 10));
-                    if (d && !byDate[d]) byDate[d] = c;
-                  });
-                  const dates = Object.keys(byDate).sort().reverse().slice(0, 30);
-                  return dates.map(d => {
-                    const c = byDate[d];
-                    const energy = c.energy || c.에너지 || 0;
-                    const mood = c.mood || c.기분 || 0;
-                    const skin = c.skin || c.피부 || 0;
-                    const gut = c.gut || c.소화 || 0;
-                    const avg = ((energy + mood + skin + gut) / 4).toFixed(1);
-                    const dt = new Date(d);
-                    return (
-                      <div key={d} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: '1px solid var(--border-light)' }}>
-                        <div style={{ fontSize: 11, color: 'var(--text-muted)', minWidth: 50 }}>{dt.getMonth() + 1}/{dt.getDate()}</div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500 }}>컨디션 {avg}점</div>
-                          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>에너지 {energy} · 기분 {mood} · 피부 {skin} · 소화 {gut}</div>
-                        </div>
-                      </div>
-                    );
-                  });
-                } catch { return null; }
-              })()}
-            </div>
-          )}
-        </div>
-      )}
+      {profileTab === 'journal' && <JournalTab nickname={getProfile().nickname} />}
 
       {/* ===== 여정 탭 ===== */}
       {profileTab === 'journey' && (
@@ -1178,6 +1136,322 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
 
       {/* Settings Drawer */}
       <SettingsPage open={showSettingsPage} onClose={() => setShowSettingsPage(false)} onCategoriesChanged={refreshCategories} onTabChange={onTabChange} colorMode={colorMode} setColorMode={setColorMode} />
+    </div>
+  );
+}
+
+// ===== JOURNAL TAB =====
+const JOURNAL_KEY = 'lua_journal_entries';
+
+function getJournalEntries() {
+  try { return JSON.parse(localStorage.getItem(JOURNAL_KEY) || '[]'); } catch { return []; }
+}
+
+function saveJournalEntry(entry) {
+  const entries = getJournalEntries();
+  entries.unshift(entry);
+  localStorage.setItem(JOURNAL_KEY, JSON.stringify(entries));
+  return entries;
+}
+
+function JournalTab({ nickname }) {
+  const [entries, setEntries] = useState(() => getJournalEntries());
+  const [showWrite, setShowWrite] = useState(false);
+  const [selectedPrompt, setSelectedPrompt] = useState('');
+  const [filterMonth, setFilterMonth] = useState('all');
+  const [showCount, setShowCount] = useState(10);
+
+  const DAY_NAMES = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+
+  // 컨디션 데이터 매핑
+  const getConditionForDate = (dateStr) => {
+    try {
+      const checks = JSON.parse(localStorage.getItem('nou_condition_checks') || '[]');
+      const c = checks.filter(c => (c.date || (c.timestamp && c.timestamp.slice(0, 10))) === dateStr).pop();
+      if (!c) return null;
+      const energy = c.energy || c.에너지 || 0;
+      const mood = c.mood || c.기분 || 0;
+      const skin = c.skin || c.피부 || 0;
+      const gut = c.gut || c.소화 || 0;
+      return { avg: ((energy + mood + skin + gut) / 4), energy, mood, skin, gut };
+    } catch { return null; }
+  };
+
+  // 그날 기록 데이터
+  const getDayData = (dateStr) => {
+    try {
+      const recs = JSON.parse(localStorage.getItem('lua_record_v2') || '{}');
+      const rec = recs[dateStr] || {};
+      const chips = [];
+      if (rec.sleep?.hours > 0) chips.push(`수면 ${rec.sleep.hours}h`);
+      const drinks = JSON.parse(localStorage.getItem('lua_drink_records') || '{}');
+      const cafItems = drinks[dateStr]?.caffeine || [];
+      const cafMg = cafItems.reduce((s, d) => {
+        const mgMap = { espresso: 150, americano: 150, latte: 150, drip: 130, coldbrew: 200, matcha: 70, green_tea: 30, black_tea: 50, energy_drink: 160 };
+        return s + (mgMap[d.key] || 100) * (d.count || 0);
+      }, 0);
+      if (cafMg > 0) chips.push(`카페인 ${cafMg}mg`);
+      if (rec.steps > 0) chips.push(`${rec.steps.toLocaleString()}보`);
+      return chips.slice(0, 2);
+    } catch { return []; }
+  };
+
+  // 상대 시간
+  const getRelativeTime = (dateStr) => {
+    const today = new Date().toISOString().slice(0, 10);
+    if (dateStr === today) return '오늘';
+    const diff = Math.ceil((new Date(today) - new Date(dateStr)) / 86400000);
+    if (diff === 1) return '어제';
+    return `${diff}일 전`;
+  };
+
+  // 월 필터 목록
+  const months = (() => {
+    const set = new Set(entries.map(e => e.date.slice(0, 7)));
+    return [...set].sort().reverse();
+  })();
+
+  const filtered = filterMonth === 'all' ? entries : entries.filter(e => e.date.slice(0, 7) === filterMonth);
+  const visible = filtered.slice(0, showCount);
+  const hasMore = filtered.length > showCount;
+
+  // 작성 완료 핸들러
+  const handleSave = (content, prompt) => {
+    const today = new Date().toISOString().slice(0, 10);
+    const entry = {
+      id: `j_${Date.now()}`,
+      date: today,
+      content,
+      prompt: prompt || '',
+      created_at: new Date().toISOString(),
+    };
+    const updated = saveJournalEntry(entry);
+    setEntries(updated);
+    setShowWrite(false);
+  };
+
+  // 빈 상태 (케이스 A)
+  if (entries.length === 0 && !showWrite) {
+    const prompts = ['지금 마음에 떠오르는 것', '오늘의 작은 발견', '몸이 보낸 신호', '그냥, 빈 페이지에서 시작'];
+    return (
+      <div style={{ padding: '28px 20px 20px', textAlign: 'center' }}>
+        {/* 별자리 점 */}
+        <svg width="64" height="64" viewBox="0 0 64 64" style={{ marginBottom: 22 }}>
+          <circle cx="32" cy="32" r="3" fill="var(--text-muted)" opacity="0.9" />
+          <circle cx="14" cy="20" r="1" fill="var(--text-muted)" opacity="0.4" />
+          <circle cx="50" cy="22" r="1.2" fill="var(--text-muted)" opacity="0.45" />
+          <circle cx="46" cy="46" r="0.9" fill="var(--text-muted)" opacity="0.35" />
+          <circle cx="18" cy="48" r="1" fill="var(--text-muted)" opacity="0.4" />
+          <circle cx="32" cy="10" r="0.7" fill="var(--text-muted)" opacity="0.3" />
+          <circle cx="32" cy="54" r="0.7" fill="var(--text-muted)" opacity="0.3" />
+        </svg>
+
+        <div style={{ fontSize: 17, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.2, marginBottom: 10 }}>오늘의 한 줄</div>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: 24 }}>
+          스치는 생각도, 짧은 단상도<br />모두 {nickname || '나'}님의 결이 돼요
+        </div>
+
+        {/* 가이드 프롬프트 */}
+        <div style={{ maxWidth: 280, margin: '0 auto 22px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {prompts.map((p, i) => (
+            <div key={i} onClick={() => { setSelectedPrompt(p); setShowWrite(true); }}
+              style={{
+                background: i === 3 ? 'var(--card-bg)' : 'var(--card-bg)',
+                padding: '12px 16px', borderRadius: 10,
+                fontSize: 12, color: i === 3 ? 'var(--text-muted)' : 'var(--text-primary)',
+                textAlign: 'left', lineHeight: 1.5, cursor: 'pointer',
+                border: 'var(--card-border)',
+                WebkitTapHighlightColor: 'transparent',
+              }}>
+              {p}
+            </div>
+          ))}
+        </div>
+
+        {/* CTA */}
+        <button onClick={() => setShowWrite(true)} style={{
+          background: 'var(--text-primary)', color: 'var(--bg-primary, #fff)', border: 'none',
+          fontSize: 13, fontWeight: 500, padding: '13px 28px', borderRadius: 12,
+          letterSpacing: -0.2, cursor: 'pointer', fontFamily: 'inherit',
+          display: 'inline-flex', alignItems: 'center', gap: 8,
+        }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20.24 12.24a6 6 0 00-8.49-8.49L5 10.5V19h8.5z" /><line x1="16" y1="8" x2="2" y2="22" /><line x1="17.5" y1="15" x2="9" y2="15" />
+          </svg>
+          한 줄 남기기
+        </button>
+
+        <div style={{ marginTop: 16, fontSize: 10, color: 'var(--text-dim)', lineHeight: 1.5 }}>한 단어여도 충분해요</div>
+
+        {showWrite && <JournalWriteModal prompt={selectedPrompt} onSave={handleSave} onClose={() => setShowWrite(false)} />}
+      </div>
+    );
+  }
+
+  // 케이스 B: 저널 있음
+  const now = new Date();
+  const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const thisMonthEntries = entries.filter(e => e.date.slice(0, 7) === thisMonth);
+  const thisMonthCond = thisMonthEntries.map(e => getConditionForDate(e.date)).filter(Boolean);
+  const avgCond = thisMonthCond.length > 0 ? (thisMonthCond.reduce((s, c) => s + c.avg, 0) / thisMonthCond.length).toFixed(1) : null;
+
+  return (
+    <div style={{ padding: '0 18px 20px' }}>
+      {/* 이번 달 커버 */}
+      <div style={{ background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: 'var(--card-border)', borderRadius: 12, padding: '14px 16px', marginBottom: 12 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{now.getMonth() + 1}월 · {thisMonthEntries.length}편의 저널</div>
+            {thisMonthEntries.length > 0 && (
+              <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.5, marginTop: 6 }}>
+                "{thisMonthEntries[0].content.slice(0, 40)}{thisMonthEntries[0].content.length > 40 ? '...' : ''}"
+              </div>
+            )}
+          </div>
+          {avgCond && (
+            <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 12 }}>
+              <div style={{ fontSize: 18, fontWeight: 500, color: 'var(--text-primary)' }}>{avgCond}</div>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>평균 컨디션</div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 월별 필터 */}
+      <div style={{ display: 'flex', gap: 6, marginBottom: 12, overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
+        <div onClick={() => setFilterMonth('all')} style={{
+          fontSize: 11, padding: '6px 14px', borderRadius: 14, whiteSpace: 'nowrap', cursor: 'pointer',
+          background: filterMonth === 'all' ? 'var(--text-primary)' : 'var(--card-bg)',
+          color: filterMonth === 'all' ? 'var(--bg-primary, #fff)' : 'var(--text-muted)',
+          border: filterMonth === 'all' ? 'none' : 'var(--card-border)',
+        }}>전체</div>
+        {months.map(m => {
+          const [y, mo] = m.split('-');
+          return (
+            <div key={m} onClick={() => setFilterMonth(m)} style={{
+              fontSize: 11, padding: '6px 14px', borderRadius: 14, whiteSpace: 'nowrap', cursor: 'pointer',
+              background: filterMonth === m ? 'var(--text-primary)' : 'var(--card-bg)',
+              color: filterMonth === m ? 'var(--bg-primary, #fff)' : 'var(--text-muted)',
+              border: filterMonth === m ? 'none' : 'var(--card-border)',
+            }}>{parseInt(mo)}월</div>
+          );
+        })}
+      </div>
+
+      {/* 저널 카드 리스트 */}
+      {visible.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+          <div style={{ fontSize: 13 }}>이 달엔 아직 결이 없어요</div>
+          <button onClick={() => setShowWrite(true)} style={{
+            marginTop: 12, background: 'var(--text-primary)', color: 'var(--bg-primary, #fff)', border: 'none',
+            fontSize: 12, fontWeight: 500, padding: '10px 20px', borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit',
+          }}>한 줄 남기기</button>
+        </div>
+      ) : (
+        visible.map(entry => {
+          const dt = new Date(entry.date + 'T00:00:00');
+          const cond = getConditionForDate(entry.date);
+          const chips = getDayData(entry.date);
+          const condColor = cond ? (cond.avg >= 7 ? '#639922' : cond.avg >= 5 ? '#FAC775' : '#E05050') : null;
+          return (
+            <div key={entry.id} style={{
+              background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+              border: 'var(--card-border)', borderRadius: 12, padding: 16, marginBottom: 8,
+            }}>
+              {/* 상단: 날짜 + 컨디션 */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 500 }}>{dt.getMonth() + 1}월 {dt.getDate()}일 {DAY_NAMES[dt.getDay()]}</div>
+                  <div style={{ fontSize: 9, color: 'var(--text-dim)', marginTop: 1 }}>{getRelativeTime(entry.date)}</div>
+                </div>
+                {cond && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>{cond.avg.toFixed(1)}</span>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: condColor }} />
+                  </div>
+                )}
+              </div>
+              {/* 본문 */}
+              <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.7 }}>{entry.content}</div>
+              {/* 데이터 칩 */}
+              {chips.length > 0 && (
+                <div style={{ display: 'flex', gap: 4, marginTop: 10 }}>
+                  {chips.map((chip, i) => (
+                    <span key={i} style={{ fontSize: 9, color: 'var(--text-muted)', background: 'var(--surface-medium, rgba(255,255,255,0.1))', padding: '3px 8px', borderRadius: 8 }}>{chip}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })
+      )}
+
+      {/* 더 보기 */}
+      {hasMore && (
+        <div onClick={() => setShowCount(s => s + 10)} style={{ textAlign: 'center', padding: 16, fontSize: 11, color: 'var(--text-muted)', cursor: 'pointer' }}>
+          더 보기 ({filtered.length - showCount}편) ↓
+        </div>
+      )}
+
+      {/* FAB: 한 줄 남기기 */}
+      <div onClick={() => { setSelectedPrompt(''); setShowWrite(true); }} style={{
+        position: 'fixed', bottom: 90, right: 20, zIndex: 100,
+        width: 48, height: 48, borderRadius: '50%',
+        background: 'var(--text-primary)', color: 'var(--bg-primary, #fff)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        cursor: 'pointer', boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+        WebkitTapHighlightColor: 'transparent',
+      }}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+      </div>
+
+      {showWrite && <JournalWriteModal prompt={selectedPrompt} onSave={handleSave} onClose={() => setShowWrite(false)} />}
+    </div>
+  );
+}
+
+// ===== 저널 작성 모달 =====
+function JournalWriteModal({ prompt, onSave, onClose }) {
+  const [content, setContent] = useState('');
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 2003,
+      background: 'var(--page-gradient, linear-gradient(to bottom, #ace2fc, #ffffff))',
+      display: 'flex', flexDirection: 'column',
+      animation: 'breatheIn 0.3s ease both',
+    }}>
+      {/* 헤더 */}
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div onClick={onClose} style={{ fontSize: 14, color: 'var(--text-muted)', cursor: 'pointer', padding: 4 }}>취소</div>
+        <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>한 줄 남기기</span>
+        <div onClick={() => { if (content.trim()) onSave(content.trim(), prompt); }} style={{
+          fontSize: 14, fontWeight: 600, cursor: 'pointer', padding: 4,
+          color: content.trim() ? 'var(--accent-primary)' : 'var(--text-dim)',
+        }}>완료</div>
+      </div>
+
+      {/* 프롬프트 표시 */}
+      {prompt && (
+        <div style={{ padding: '12px 24px 0', fontSize: 11, color: 'var(--text-muted)' }}>{prompt}</div>
+      )}
+
+      {/* 입력 */}
+      <div style={{ flex: 1, padding: '20px 24px' }}>
+        <textarea
+          value={content}
+          onChange={e => setContent(e.target.value)}
+          placeholder="오늘 하루, 한 줄로 남겨보세요"
+          autoFocus
+          style={{
+            width: '100%', height: '100%', border: 'none', outline: 'none', resize: 'none',
+            background: 'transparent', fontSize: 15, color: 'var(--text-primary)',
+            lineHeight: 1.8, fontFamily: 'inherit', letterSpacing: -0.2,
+          }}
+        />
+      </div>
     </div>
   );
 }
