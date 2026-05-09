@@ -14,11 +14,11 @@ function useReveal(delay = 0) {
 
 // ===== 공통 글라스 카드 스타일 =====
 const glass = {
-  background: 'rgba(255,255,255,0.2)',
+  background: 'var(--card-bg)',
   backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
   borderRadius: 30,
-  border: '1px solid rgba(255,255,255,0.3)',
-  boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+  border: 'var(--card-border)',
+  boxShadow: 'var(--card-shadow)',
 };
 
 // ===== 색상 시스템 =====

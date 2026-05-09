@@ -90,6 +90,9 @@
   --context-bg: rgba(240,144,112,0.06);
   --context-border: 1px solid rgba(240,144,112,0.1);
   --page-gradient: linear-gradient(180deg, #0a1222 0%, #8d97ce 100%);
+  --card-bg: rgba(255,255,255,0.05);
+  --card-border: 1px solid rgba(255,255,255,0.08);
+  --card-shadow: none;
 }
 
 [data-theme="light"] {
@@ -177,6 +180,9 @@
   --context-bg: rgba(240,144,112,0.04);
   --context-border: 1px solid rgba(240,144,112,0.06);
   --page-gradient: linear-gradient(to bottom, #ace2fc, #ffffff);
+  --card-bg: rgba(255,255,255,0.45);
+  --card-border: 1px solid rgba(255,255,255,0.4);
+  --card-shadow: 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.5);
 }
 
 /* Scroll reveal animations */

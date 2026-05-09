@@ -95,11 +95,11 @@ export default function InsightCard() {
     <div style={{ marginBottom: 10, opacity: refreshing ? 0.4 : 1, transition: 'opacity 0.15s' }}>
       {/* 카드 자체가 말풍선 */}
       <div style={{
-        background: 'rgba(255,255,255,0.45)',
+        background: 'var(--card-bg)',
         backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
         borderRadius: '24px 24px 24px 6px',
-        border: '1px solid rgba(255,255,255,0.4)',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.5)',
+        border: 'var(--card-border)',
+        boxShadow: 'var(--card-shadow)',
         padding: '16px 18px 20px',
       }}>
 
