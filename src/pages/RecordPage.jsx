@@ -865,29 +865,6 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
         );
         return (
           <div style={{ padding: '8px 14px 0' }}>
-            {/* Summary Bar */}
-            <div style={{
-              background: 'transparent', borderRadius: 14, padding: '10px 13px',
-              border: 'none', marginBottom: 10,
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              ...fadeUp(0.03),
-            }}>
-              {[
-                { icon: '🍽', value: todayMeals.length > 0 ? `${todayMeals.length}끼` : '—', label: '식단' },
-                { icon: '🏃', value: selectedExercise || '—', label: '운동' },
-                { icon: '😴', value: `${sleepHours}h`, label: '수면' },
-                { icon: '💧', value: waterCount > 0 ? `${waterCount}잔` : '—', label: '수분' },
-              ].map((item, idx) => (
-                <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
-                  {idx > 0 && <div style={{ width: 0.5, height: 28, background: 'rgba(100,180,220,.2)', marginRight: 0 }} />}
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: 50 }}>
-                    <span style={{ fontSize: 14 }}>{item.icon}</span>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: '#1A3A4A', marginTop: 1 }}>{item.value}</span>
-                    <span style={{ fontSize: 9, color: '#7AAABB' }}>{item.label}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
 
             {/* Food + Water Card */}
             <div style={{ ...allCardStyle, padding: '18px 15px', ...fadeUp(0.1) }}>
