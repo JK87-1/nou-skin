@@ -402,7 +402,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
           { key: 'journey', icon: '🛤', label: '여정', count: `${monthsTogether}개월` },
         ];
         return (
-          <div style={{ margin: '0 16px 12px', padding: 18, borderRadius: 12, background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: 'var(--card-border)', boxShadow: 'var(--card-shadow)' }}>
+          <div style={{ margin: '0 16px 12px', padding: '0 2px' }}>
             {/* 2-1. 가로 배치: 아바타 + 진입카드 3개 */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
               {/* 프로필 사진 */}
@@ -424,7 +424,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
                   return (
                     <div key={t.key} onClick={() => setProfileTab(t.key)}
                       style={{
-                        background: active ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.08)',
+                        background: 'transparent',
                         borderRadius: 10, padding: '10px 4px', textAlign: 'center', cursor: 'pointer',
                         transition: 'background 0.2s ease', WebkitTapHighlightColor: 'transparent',
                       }}>
