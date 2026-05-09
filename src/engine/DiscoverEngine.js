@@ -432,7 +432,7 @@ async function callDiscoverLLM(weekData, prevWeekData, trend, factors) {
   const taskInstruction = getTaskInstruction();
   const userPrompt = `# 사용자 데이터\n\n${userContext}\n\n# 작업\n\n${taskInstruction}`;
 
-  const response = await fetch(`${window.location.origin}/api/discover-llm`, {
+  const response = await fetch(`${window.location.origin}/api/insight-llm`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ system, user: userPrompt }),
@@ -440,7 +440,7 @@ async function callDiscoverLLM(weekData, prevWeekData, trend, factors) {
 
   if (!response.ok) throw new Error(`API ${response.status}`);
   const data = await response.json();
-  return data.result;
+  return data.result || data.insights;
 }
 
 // ===== Fallback 템플릿 =====

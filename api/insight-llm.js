@@ -71,24 +71,24 @@ export default async function handler(req, res) {
       durationMs,
     };
 
-    // Parse JSON array from response
-    const jsonMatch = text.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) {
-      return res.status(502).json({ error: 'No JSON array in LLM response', raw: text.slice(0, 500) });
-    }
+    // Parse JSON array or object from response
+    const arrayMatch = text.match(/\[[\s\S]*\]/);
+    const objectMatch = text.match(/\{[\s\S]*\}/);
 
-    let insights;
+    let parsed;
     try {
-      insights = JSON.parse(jsonMatch[0]);
+      if (arrayMatch) parsed = JSON.parse(arrayMatch[0]);
+      else if (objectMatch) parsed = JSON.parse(objectMatch[0]);
+      else return res.status(502).json({ error: 'No JSON in LLM response', raw: text.slice(0, 500) });
     } catch (e) {
       return res.status(502).json({ error: 'JSON parse failed', raw: text.slice(0, 500) });
     }
 
-    if (!Array.isArray(insights) || insights.length === 0) {
-      return res.status(502).json({ error: 'Invalid insights array' });
+    // Return as insights (array) or result (object)
+    if (Array.isArray(parsed)) {
+      return res.status(200).json({ insights: parsed, usage });
     }
-
-    return res.status(200).json({ insights, usage });
+    return res.status(200).json({ result: parsed, insights: parsed, usage });
   } catch (err) {
     console.error('insight-llm error:', err);
     return res.status(500).json({ error: err.message || 'Internal error' });
