@@ -397,9 +397,9 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
         const profileImg = getProfile().profileImage;
         const avatarSrc = profileImg || (latestRecord ? (thumbs[String(latestRecord.id)] || thumbs[latestRecord.date]) : null);
         const tabs = [
-          { key: 'album', icon: '📷', label: '앨범', count: photoCount },
-          { key: 'journal', icon: '📖', label: '저널', count: journalCount },
-          { key: 'journey', icon: '🛤', label: '여정', count: `${monthsTogether}개월` },
+          { key: 'album', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 15l5-5c1-1 2-1 3 0l5 5"/><path d="M14 13l2-2c1-1 2-1 3 0l2 2"/><circle cx="8.5" cy="8.5" r="1.5"/></svg>, label: '앨범', count: photoCount },
+          { key: 'journal', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/><line x1="12" y1="6" x2="12" y2="18"/></svg>, label: '저널', count: journalCount },
+          { key: 'journey', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>, label: '여정', count: `${monthsTogether}개월` },
         ];
         return (
           <div style={{ margin: '0 16px 12px', padding: '0 2px' }}>
@@ -428,7 +428,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
                         borderRadius: 10, padding: '10px 4px', textAlign: 'center', cursor: 'pointer',
                         transition: 'background 0.2s ease', WebkitTapHighlightColor: 'transparent',
                       }}>
-                      <div style={{ fontSize: 18 }}>{t.icon}</div>
+                      <div style={{ display: 'flex', justifyContent: 'center' }}>{t.icon}</div>
                       <div style={{ fontSize: 11, marginTop: 4, color: active ? 'var(--text-primary)' : 'var(--text-muted)', fontWeight: active ? 500 : 400 }}>{t.label}</div>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>{t.count}</div>
                     </div>
