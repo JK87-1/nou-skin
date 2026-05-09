@@ -93,15 +93,17 @@ export default function App() {
     const html = document.documentElement;
     const body = document.body;
     if (colorMode === 'dark') {
-      html.style.backgroundColor = '#8d97ce';
-      body.style.background = 'linear-gradient(180deg, #0a1222 0%, #8d97ce 100%)';
-      body.style.backgroundAttachment = 'fixed';
+      html.style.background = 'linear-gradient(180deg, #0a1222 0%, #8d97ce 100%) no-repeat fixed';
+      html.style.backgroundColor = '#0a1222';
+      html.style.minHeight = '100%';
+      body.style.background = 'transparent';
       body.style.minHeight = '100dvh';
       body.style.color = '#f0f0f5';
     } else {
+      html.style.background = '';
       html.style.backgroundColor = '#ace2fc';
+      html.style.minHeight = '';
       body.style.background = 'transparent';
-      body.style.backgroundAttachment = '';
       body.style.minHeight = '';
       body.style.color = '#191F28';
     }
