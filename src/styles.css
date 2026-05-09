@@ -93,6 +93,9 @@
   --card-bg: rgba(255,255,255,0.1);
   --card-border: 1px solid rgba(255,255,255,0.15);
   --card-shadow: 0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.1);
+  --surface-light: rgba(255,255,255,0.08);
+  --surface-medium: rgba(255,255,255,0.06);
+  --surface-border: 0.5px solid rgba(255,255,255,0.1);
 }
 
 [data-theme="light"] {
@@ -183,6 +186,9 @@
   --card-bg: rgba(255,255,255,0.45);
   --card-border: 1px solid rgba(255,255,255,0.4);
   --card-shadow: 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.5);
+  --surface-light: rgba(255,255,255,0.5);
+  --surface-medium: rgba(255,255,255,0.72);
+  --surface-border: 0.5px solid rgba(100,180,220,0.2);
 }
 
 /* Scroll reveal animations */

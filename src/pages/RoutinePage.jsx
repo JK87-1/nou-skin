@@ -1330,7 +1330,7 @@ function RoutineManagement({ enabledCats, initialTab, onBack }) {
         style={{
           display: 'flex', alignItems: 'center', gap: 10,
           padding: '7px 12px', marginBottom: 4,
-          background: isDragOver ? 'rgba(100,180,220,.08)' : 'rgba(255,255,255,.72)',
+          background: isDragOver ? 'rgba(100,180,220,.08)' : 'var(--surface-medium)',
           borderRadius: 13,
           border: isDragOver ? '1.5px solid #60AADD' : '0.5px solid rgba(255,255,255,.95)',
           opacity: isDragging ? 0.5 : isActive ? 1 : 0.5,

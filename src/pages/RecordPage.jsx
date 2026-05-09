@@ -429,16 +429,16 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
         </div>
       </div>
       <div style={{ padding: '10px 18px 0', display: 'flex', alignItems: 'center', gap: 6 }}>
-        <div onClick={goPrevDate} style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'rgba(255,255,255,.5)', border: '0.5px solid rgba(100,180,220,.2)' }}>
+        <div onClick={goPrevDate} style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'var(--surface-light)', border: 'var(--surface-border)' }}>
           <span style={{ fontSize: 13, color: '#3A8AAA', fontWeight: 600 }}>‹</span>
         </div>
         <div onClick={() => setShowCal(!showCal)} style={{
-          flex: 1, background: 'rgba(255,255,255,.5)', border: '0.5px solid rgba(100,180,220,.2)',
+          flex: 1, background: 'var(--surface-light)', border: 'var(--surface-border)',
           borderRadius: 99, padding: '6px 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, cursor: 'pointer',
         }}>
           <span style={{ fontSize: 11, color: '#2A6A8A', fontWeight: 500 }}>{dateLabelFull}</span>
         </div>
-        <div onClick={goNextDate} style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isToday ? 'default' : 'pointer', background: 'rgba(255,255,255,.5)', border: '0.5px solid rgba(100,180,220,.2)', opacity: isToday ? 0.3 : 1 }}>
+        <div onClick={goNextDate} style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isToday ? 'default' : 'pointer', background: 'var(--surface-light)', border: 'var(--surface-border)', opacity: isToday ? 0.3 : 1 }}>
           <span style={{ fontSize: 13, color: '#3A8AAA', fontWeight: 600 }}>›</span>
         </div>
         <div style={{ display: 'flex', background: 'rgba(255,255,255,.5)', borderRadius: 8, border: '0.5px solid rgba(100,180,220,.2)', overflow: 'hidden', flexShrink: 0 }}>
@@ -466,7 +466,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
         for (let d = 1; d <= daysInMonth; d++) cells.push(d);
         return (
           <div style={{
-            background: 'rgba(255,255,255,.95)', borderRadius: 16, margin: '0 14px 8px',
+            background: 'var(--surface-medium)', borderRadius: 16, margin: '0 14px 8px',
             padding: '12px 14px', border: '0.5px solid rgba(100,180,220,.2)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -551,7 +551,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
         const suppItems = [...getRoutineItems('food'), ...getRoutineItems('skin'), ...getRoutineItems('body'), ...getRoutineItems('mood')];
         const totalSupp = suppItems.length;
 
-        const flowCardStyle = { background: 'rgba(255,255,255,0.2)', borderRadius: 30, padding: '20px', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)', marginBottom: 10 };
+        const flowCardStyle = { background: 'var(--card-bg)', borderRadius: 30, padding: '20px', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: 'var(--card-border)', boxShadow: 'var(--card-shadow)', marginBottom: 10 };
         const FLOW_ICONS = { '식사 칼로리': '🍎', '수분': '💧', '걸음수': '🔥', '운동': '🏃', '수면': '🌙', '식단 앨범': '📸', '영양제 루틴 달성률': '💊' };
         const flowCardHeader = (color, title, status) => (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -852,7 +852,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
       {foodTab === 'all' && (() => {
         const todayMeals = foods.filter(f => !f.name?.startsWith('물 '));
         const totalKcal = Math.round(nutrition.kcal || 0);
-        const allCardStyle = { background: 'rgba(255,255,255,0.2)', borderRadius: 30, padding: '20px', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)', marginBottom: 10 };
+        const allCardStyle = { background: 'var(--card-bg)', borderRadius: 30, padding: '20px', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: 'var(--card-border)', boxShadow: 'var(--card-shadow)', marginBottom: 10 };
         const ALL_ICONS = { '식사': '🍎', '수분': '💧', '걸음수': '🔥', '운동': '🏃', '수면': '🌙', '명상': '🧘' };
         const allCardHeader = (color, title, _icon, status, statusColor = '#5AAABB') => (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -1300,7 +1300,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
             {(
               <button onClick={saveV2} style={{
                 width: '100%', padding: 12, borderRadius: 14,
-                background: 'rgba(255,255,255,.65)', border: '1px solid rgba(100,180,220,.25)',
+                background: 'var(--surface-light)', border: '1px solid rgba(100,180,220,.25)',
                 color: '#3A8AAA', fontSize: 12, fontWeight: 500,
                 cursor: 'pointer', marginBottom: 10,
                 fontFamily: 'inherit',
@@ -1317,7 +1317,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
       {/* Sleep content */}
       {foodTab === 'sleep' && (
         <div style={{ padding: '8px 14px 0' }}>
-          <div style={{ background: 'rgba(255,255,255,.72)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)', ...fadeUp(0.05) }}>
+          <div style={{ background: 'var(--surface-medium)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)', ...fadeUp(0.05) }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('sleep') }} />
@@ -1452,7 +1452,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
         return (
         <div style={{ padding: '8px 14px 0' }}>
           {/* 걸음수 카드 */}
-          <div style={{ background: 'rgba(255,255,255,.72)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)', ...fadeUp(0.05) }}>
+          <div style={{ background: 'var(--surface-medium)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)', ...fadeUp(0.05) }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('activity') }} />
@@ -1529,7 +1529,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
           </div>
 
           {/* 운동 카드 */}
-          <div style={{ background: 'rgba(255,255,255,.72)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)', marginTop: 10, ...fadeUp(0.1) }}>
+          <div style={{ background: 'var(--surface-medium)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)', marginTop: 10, ...fadeUp(0.1) }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('activity') }} />
@@ -1638,7 +1638,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
         const donePills = suppItems.filter(it => suppChecks[it.id]).length;
         const pillPct = totalPills > 0 ? Math.round((donePills / totalPills) * 100) : 0;
         const undone = suppItems.filter(it => !suppChecks[it.id]);
-        const cardStyle = { background: 'rgba(255,255,255,.72)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)', marginBottom: 10 };
+        const cardStyle = { background: 'var(--surface-medium)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)', marginBottom: 10 };
 
         // Skincare
         const mornProds = skincareProducts.filter(p => p.timeSlot === 'morning' || p.timeSlot === 'both');
@@ -2266,7 +2266,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
       {/* Water Card (in food tab) */}
       <div style={{ padding: '8px 14px 0' }}>
-        <div style={{ background: 'rgba(255,255,255,.72)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)', ...fadeUp(0.3) }}>
+        <div style={{ background: 'var(--surface-medium)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)', ...fadeUp(0.3) }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{ width: 3, height: 14, borderRadius: 2, background: getCategoryColor('food') }} />
@@ -2372,7 +2372,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
       {/* === 컨디션 탭 (활력 + 집중력 + 감정 + 스트레스) === */}
       {(foodTab === 'condition') && (() => {
-        const condCardStyle = { background: 'rgba(255,255,255,.72)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)', marginBottom: 10 };
+        const condCardStyle = { background: 'var(--surface-medium)', borderRadius: 16, padding: '14px 15px', border: '0.5px solid rgba(255,255,255,.95)', marginBottom: 10 };
         const EMOTIONS = [
           { key: '평온', icon: '😌' }, { key: '행복', icon: '😊' }, { key: '우울', icon: '😔' }, { key: '짜증', icon: '😤' },
           { key: '불안', icon: '😰' }, { key: '피곤', icon: '🥱' }, { key: '설렘', icon: '🥰' }, { key: '무감각', icon: '😶' },
