@@ -74,6 +74,24 @@ export default function TabBar({ activeTab, onTabChange }) {
       },
     },
     {
+      key: 'today',
+      label: '오늘',
+      icon: (active) => {
+        const c = active ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.3)';
+        return (
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <mask id={`clock-mask-${active ? 'a' : 'i'}`}>
+              <rect width="24" height="24" fill="white" />
+              <line x1="12" y1="12" x2="12" y2="6.5" stroke="black" strokeWidth="2.2" strokeLinecap="round" />
+              <line x1="12" y1="12" x2="16.5" y2="14" stroke="black" strokeWidth="2.2" strokeLinecap="round" />
+              <circle cx="12" cy="12" r="1.5" fill="black" />
+            </mask>
+            <circle cx="12" cy="12" r="11.5" fill={c} mask={`url(#clock-mask-${active ? 'a' : 'i'})`} />
+          </svg>
+        );
+      },
+    },
+    {
       key: 'body',
       label: '발견',
       icon: (active) => {

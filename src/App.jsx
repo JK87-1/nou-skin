@@ -16,6 +16,7 @@ import HomePage from './pages/HomePage';
 import RecordPage from './pages/RecordPage';
 import ChangePage from './pages/ChangePage';
 import DiscoveryPage from './pages/DiscoveryPage';
+import TodayPage from './pages/TodayPage';
 import RoutinePage from './pages/RoutinePage';
 import SkinScoreCircle from './components/SkinScoreCircle';
 import AiInsightCard from './components/AiInsightCard';
@@ -760,6 +761,9 @@ export default function App() {
 
       {/* ===== FOOD TAB ===== */}
       {activeTab === 'food' && <RecordPage onTabChange={switchTab} autoOpenAdd={foodAutoOpen} onMeasure={openCamera} />}
+
+      {/* ===== 오늘 TAB ===== */}
+      {activeTab === 'today' && <TodayPage />}
 
       {/* ===== 발견 TAB ===== */}
       {activeTab === 'body' && <DiscoveryPage />}
