@@ -300,69 +300,149 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
     setTimeout(() => getAllThumbnailsAsync().then(setThumbs), 300);
   };
 
+  const [profileTab, setProfileTab] = useState('album');
+
+  // 사진 수 계산
+  const photoCount = (() => {
+    let count = 0;
+    const allFoods = getFoodRecords();
+    Object.values(allFoods).forEach(foods => { count += foods.filter(f => f.photo && !f.name?.startsWith('물 ')).length; });
+    count += records.filter(r => thumbs[String(r.id)] || thumbs[r.date]).length;
+    const skinSubs = getSkinSubChecks();
+    count += skinSubs.filter(s => s.photos?.face).length;
+    const eyeBodyAll = getEyeBodyChecks();
+    count += eyeBodyAll.filter(eb => eb.photos && Object.values(eb.photos).some(Boolean)).length;
+    return count;
+  })();
+
+  // 저널 수 (컨디션 체크 일수)
+  const journalCount = (() => {
+    try {
+      const checks = JSON.parse(localStorage.getItem('nou_condition_checks') || '[]');
+      const dates = new Set(checks.map(c => c.date || (c.timestamp && c.timestamp.slice(0, 10))).filter(Boolean));
+      return dates.size;
+    } catch { return 0; }
+  })();
+
+  // 함께한 일수
+  const daysTogether = (() => {
+    try {
+      const recs = JSON.parse(localStorage.getItem('lua_record_v2') || '{}');
+      const foods = JSON.parse(localStorage.getItem('lua_food_records') || '{}');
+      const checks = JSON.parse(localStorage.getItem('nou_condition_checks') || '[]');
+      const allDates = [...Object.keys(recs), ...Object.keys(foods), ...checks.map(c => c.date).filter(Boolean)].filter(Boolean).sort();
+      if (allDates.length === 0) return 1;
+      const first = new Date(allDates[0]);
+      const today = new Date();
+      return Math.max(1, Math.ceil((today - first) / 86400000) + 1);
+    } catch { return 1; }
+  })();
+
+  // 함께한 개월수
+  const monthsTogether = Math.max(1, Math.ceil(daysTogether / 30));
+
+  // 연속 기록일수
+  const streakDays = (() => {
+    try {
+      const recs = JSON.parse(localStorage.getItem('lua_record_v2') || '{}');
+      const foods = JSON.parse(localStorage.getItem('lua_food_records') || '{}');
+      const checks = JSON.parse(localStorage.getItem('nou_condition_checks') || '[]');
+      const checkDates = new Set(checks.map(c => c.date).filter(Boolean));
+      const allDates = [...new Set([...Object.keys(recs), ...Object.keys(foods), ...checkDates])].sort().reverse();
+      if (allDates.length === 0) return 0;
+      const today = new Date().toISOString().slice(0, 10);
+      if (allDates[0] !== today) return 0;
+      let count = 1;
+      for (let i = 0; i < allDates.length - 1; i++) {
+        const d1 = new Date(allDates[i]), d2 = new Date(allDates[i + 1]);
+        if ((d1 - d2) / 86400000 === 1) count++;
+        else break;
+      }
+      return count;
+    } catch { return 0; }
+  })();
+
+  // 빛나는 모습 메시지
+  const shiningMsg = (() => {
+    const parts = [];
+    if (streakDays >= 2) parts.push(`${streakDays}일 연속 기록 중`);
+    if (journalCount >= 7) parts.push(`이번 달 컨디션 체크 ${journalCount}회`);
+    if (parts.length === 0) parts.push('꾸준한 기록이 빛나는 변화를 만들어요');
+    return parts.join(' · ');
+  })();
+
   return (
     <div style={{ minHeight: '100dvh', paddingBottom: 40 }}>
 
-      {/* Profile Header — Instagram style */}
+      {/* 1. 최상단 바 */}
+      {(() => {
+        const profileData = getProfile();
+        return (
+          <div style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ width: 24 }} />
+            <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>{profileData.nickname || 'MY'}</span>
+            <div onClick={() => setShowSettingsPage(true)} style={{ cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+              </svg>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* 2. 프로필 영역 */}
       {(() => {
         const latestRecord = records.length > 0 ? records[records.length - 1] : null;
         const profileImg = getProfile().profileImage;
         const avatarSrc = profileImg || (latestRecord ? (thumbs[String(latestRecord.id)] || thumbs[latestRecord.date]) : null);
-        const profileData = getProfile();
-        const uniqueDays = new Set(records.map(r => r.date)).size;
-        const streak = (() => {
-          const dates = [...new Set(records.map(r => r.date))].sort().reverse();
-          if (dates.length === 0) return 0;
-          let count = 1;
-          for (let i = 0; i < dates.length - 1; i++) {
-            const d1 = new Date(dates[i]), d2 = new Date(dates[i + 1]);
-            if ((d1 - d2) / 86400000 === 1) count++;
-            else break;
-          }
-          return count;
-        })();
-        return <>
-          {/* Top bar: 아이콘 */}
-          <div style={{ padding: '12px 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <div onClick={() => {
-                if ((albumCategory === 'all' || albumCategory === 'food') && onTabChange) onTabChange('food', { openAdd: true });
-                else onMeasure();
-              }} style={{ width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 5v14M5 12h14" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" />
-                </svg>
+        const tabs = [
+          { key: 'album', icon: '📷', label: '앨범', count: photoCount },
+          { key: 'journal', icon: '📖', label: '저널', count: journalCount },
+          { key: 'journey', icon: '🛤', label: '여정', count: `${monthsTogether}개월` },
+        ];
+        return (
+          <div style={{ margin: '0 16px 12px', padding: 18, borderRadius: 12, background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: 'var(--card-border)', boxShadow: 'var(--card-shadow)' }}>
+            {/* 2-1. 가로 배치: 아바타 + 진입카드 3개 */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+              {/* 프로필 사진 */}
+              <div style={{ width: 64, height: 64, borderRadius: '50%', overflow: 'hidden', background: 'rgba(255,255,255,0.15)', flexShrink: 0, border: '2px solid rgba(255,255,255,0.1)' }}>
+                {avatarSrc ? (
+                  <img src={avatarSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
+                      <circle cx="12" cy="10" r="4" /><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" strokeLinecap="round" />
+                    </svg>
+                  </div>
+                )}
               </div>
-              <div onClick={() => setShowSettingsPage(true)} style={{ width: 34, height: 34, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="3" />
-                  <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
-                </svg>
+              {/* 진입 카드 3개 */}
+              <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
+                {tabs.map(t => {
+                  const active = profileTab === t.key;
+                  return (
+                    <div key={t.key} onClick={() => setProfileTab(t.key)}
+                      style={{
+                        background: active ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.08)',
+                        borderRadius: 10, padding: '10px 4px', textAlign: 'center', cursor: 'pointer',
+                        transition: 'background 0.2s ease', WebkitTapHighlightColor: 'transparent',
+                      }}>
+                      <div style={{ fontSize: 18 }}>{t.icon}</div>
+                      <div style={{ fontSize: 11, marginTop: 4, color: active ? 'var(--text-primary)' : 'var(--text-muted)', fontWeight: active ? 500 : 400 }}>{t.label}</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>{t.count}</div>
+                    </div>
+                  );
+                })}
               </div>
+            </div>
+            {/* 3. 통합 텍스트 영역 */}
+            <div style={{ paddingTop: 4 }}>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>lua와 함께한지 {daysTogether}일째 🌙</div>
+              <div style={{ fontSize: 11, color: 'var(--text-primary)', marginTop: 6 }}>{shiningMsg}</div>
             </div>
           </div>
-
-          {/* Avatar + Name/Bio row */}
-          <div style={{ padding: '16px 18px 0', display: 'flex', alignItems: 'center', gap: 16 }}>
-            {/* Avatar */}
-            <div style={{ width: 80, height: 80, borderRadius: '50%', overflow: 'hidden', background: 'var(--bg-secondary)', flexShrink: 0, border: '2.5px solid rgba(0,0,0,0.08)' }}>
-              {avatarSrc ? (
-                <img src={avatarSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              ) : (
-                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
-                    <circle cx="12" cy="10" r="4" /><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" strokeLinecap="round" />
-                  </svg>
-                </div>
-              )}
-            </div>
-            {/* Name + Bio */}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>{profileData.nickname || 'MY'}</div>
-              <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5, wordBreak: 'break-word' }}>{profileData.bio || '프로필에 자기소개를 입력해보세요'}</div>
-            </div>
-          </div>
-        </>;
+        );
       })()}
 
       {/* Record Detail Modal */}
@@ -380,8 +460,67 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
         />
       )}
 
+      {/* ===== 저널 탭 ===== */}
+      {profileTab === 'journal' && (
+        <div style={{ padding: '20px 18px' }}>
+          {journalCount === 0 ? (
+            <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
+              <div style={{ fontSize: 24, marginBottom: 8 }}>📖</div>
+              <div style={{ fontSize: 14, fontWeight: 600 }}>저널 기록이 없어요</div>
+              <div style={{ fontSize: 12, marginTop: 6 }}>매일 컨디션을 체크하면 저널이 쌓여요</div>
+            </div>
+          ) : (
+            <div>
+              {(() => {
+                try {
+                  const checks = JSON.parse(localStorage.getItem('nou_condition_checks') || '[]');
+                  const byDate = {};
+                  checks.forEach(c => {
+                    const d = c.date || (c.timestamp && c.timestamp.slice(0, 10));
+                    if (d && !byDate[d]) byDate[d] = c;
+                  });
+                  const dates = Object.keys(byDate).sort().reverse().slice(0, 30);
+                  return dates.map(d => {
+                    const c = byDate[d];
+                    const energy = c.energy || c.에너지 || 0;
+                    const mood = c.mood || c.기분 || 0;
+                    const skin = c.skin || c.피부 || 0;
+                    const gut = c.gut || c.소화 || 0;
+                    const avg = ((energy + mood + skin + gut) / 4).toFixed(1);
+                    const dt = new Date(d);
+                    return (
+                      <div key={d} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: '1px solid var(--border-light)' }}>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', minWidth: 50 }}>{dt.getMonth() + 1}/{dt.getDate()}</div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500 }}>컨디션 {avg}점</div>
+                          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>에너지 {energy} · 기분 {mood} · 피부 {skin} · 소화 {gut}</div>
+                        </div>
+                      </div>
+                    );
+                  });
+                } catch { return null; }
+              })()}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ===== 여정 탭 ===== */}
+      {profileTab === 'journey' && (
+        <div style={{ padding: '20px 18px' }}>
+          <div style={{ textAlign: 'center', padding: '40px 0' }}>
+            <div style={{ fontSize: 24, marginBottom: 8 }}>🛤</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>lua와 {monthsTogether}개월째</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>
+              총 {daysTogether}일 · 기록 {photoCount + journalCount}회
+              {streakDays >= 2 && ` · ${streakDays}일 연속`}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ===== Photo Album Tabs ===== */}
-      <div style={{ padding: '16px 10px 0' }}>
+      {profileTab === 'album' && <><div style={{ padding: '16px 10px 0' }}>
         {(() => {
           const idx = PHOTO_CATS.findIndex(t => t.key === albumCategory);
           const pos = idx === 0 ? 'first' : idx === PHOTO_CATS.length - 1 ? 'last' : 'mid';
@@ -1026,6 +1165,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
       })()}
 
       </div>{/* end tab-content-panel */}
+      </>}{/* end profileTab === album */}
 
       {/* Food Detail Modal — outside tab-content-panel to avoid backdrop-filter stacking context */}
       {selectedFood && (
