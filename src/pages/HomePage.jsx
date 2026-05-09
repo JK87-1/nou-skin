@@ -654,7 +654,14 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
             }}>
               <span style={{ fontSize: 14, fontWeight: 600, color: '#4DB8A0' }}>완료</span>
             </div>
-          ) : <div style={{ width: 24 }} />}
+          ) : (
+            <div onClick={() => setHeroVersion('v2')} style={{
+              width: 28, height: 16, borderRadius: 8, background: 'rgba(0,0,0,0.12)',
+              position: 'relative', cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1,
+            }}>
+              <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#fff', position: 'absolute', top: 2, left: 2, boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }} />
+            </div>
+          )}
         </div>
 
         {/* 날짜 + 인사 */}
@@ -705,11 +712,11 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
               <span style={{ fontSize: 14, fontWeight: 600, color: '#4DB8A0' }}>완료</span>
             </div>
           ) : (
-            <div onClick={() => onTabChange?.('album')} style={{ cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1 }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="8" r="4.5" fill="rgba(0,0,0,0.6)" />
-                <path d="M4 20c0-3.5 3.5-6 8-6s8 2.5 8 6" fill="rgba(0,0,0,0.6)" />
-              </svg>
+            <div onClick={() => setHeroVersion('v1')} style={{
+              width: 28, height: 16, borderRadius: 8, background: 'var(--accent-primary, #89cef5)',
+              position: 'relative', cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1,
+            }}>
+              <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#fff', position: 'absolute', top: 2, left: 14, boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }} />
             </div>
           )}
         </div>
@@ -786,19 +793,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
       </div>
       )}
 
-      {/* v1/v2 전환 토글 (테스트용) */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
-        <div style={{ display: 'flex', borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
-          {['v1', 'v2'].map(v => (
-            <div key={v} onClick={() => setHeroVersion(v)} style={{
-              padding: '4px 14px', fontSize: 11, fontWeight: 600, cursor: 'pointer',
-              background: heroVersion === v ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.5)',
-              color: heroVersion === v ? '#fff' : 'rgba(0,0,0,0.4)',
-              WebkitTapHighlightColor: 'transparent',
-            }}>{v}</div>
-          ))}
-        </div>
-      </div>
 
       {/* ===== 오늘 뷰 ===== */}
       {homeView === 'briefing' && (
