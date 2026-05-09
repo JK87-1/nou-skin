@@ -93,16 +93,20 @@ export default function App() {
     const html = document.documentElement;
     const body = document.body;
     if (colorMode === 'dark') {
-      html.style.backgroundColor = '#000000';
-      body.style.backgroundColor = '#000000';
+      html.style.backgroundColor = '#06080F';
+      body.style.background = 'linear-gradient(180deg, #06080F 0%, #0C1A2E 100%)';
+      body.style.backgroundAttachment = 'fixed';
+      body.style.minHeight = '100dvh';
       body.style.color = '#f0f0f5';
     } else {
       html.style.backgroundColor = '#ace2fc';
-      body.style.backgroundColor = 'transparent';
+      body.style.background = 'transparent';
+      body.style.backgroundAttachment = '';
+      body.style.minHeight = '';
       body.style.color = '#191F28';
     }
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.content = colorMode === 'light' ? '#ace2fc' : '#000000'; // theme-color stays sky for status bar
+    if (meta) meta.content = colorMode === 'light' ? '#ace2fc' : '#06080F';
   }, [colorMode]);
 
   const setColorMode = useCallback((mode) => {
