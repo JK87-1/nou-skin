@@ -1,418 +1,452 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { getOrGenerateDiscoverPage, refreshDiscoverPage, getWeekRange, formatWeekLabel, getActiveDays, getDiscoverHistory } from '../engine/DiscoverEngine';
+import { IconShare, IconGridPattern, IconSparkles, IconTrendingUp, IconBulb, IconMoodSmile, IconMoon, IconDroplet, IconCoffee, IconApple, IconScale, IconArrowsShuffle, IconVs, IconArrowRight, IconChartBar, IconCalendarStats, IconHeart } from '@tabler/icons-react';
+import { getProfile } from '../storage/ProfileStorage';
 
-// ===== 페이지 진입 애니메이션 =====
+// ===== 애니메이션 =====
 function useReveal(delay = 0) {
   const [visible, setVisible] = useState(false);
   useEffect(() => { const t = setTimeout(() => setVisible(true), delay * 1000); return () => clearTimeout(t); }, []);
-  return {
-    opacity: visible ? 1 : 0,
-    transform: visible ? 'translateY(0)' : 'translateY(16px)',
-    transition: `opacity 0.4s ease ${delay}s, transform 0.4s ease ${delay}s`,
-  };
+  return { opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(16px)', transition: `opacity 0.4s ease ${delay}s, transform 0.4s ease ${delay}s` };
 }
 
-// ===== 공통 글라스 카드 스타일 =====
-const glass = {
-  background: 'var(--card-bg)',
-  backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-  borderRadius: 30,
-  border: 'var(--card-border)',
-  boxShadow: 'var(--card-shadow)',
-};
+// ===== 카테고리 색상 =====
+const CAT_DOTS = { all: '#042C53', condition: '#534AB7', sleep: '#378ADD', skin: '#ED93B1', caffeine: '#BA7517', meal: '#639922' };
+const FOLDER_TABS = [
+  { key: 'all', label: '전체' },
+  { key: 'condition', label: '컨디션' },
+  { key: 'sleep', label: '수면' },
+  { key: 'skin', label: '피부' },
+];
 
-// ===== 색상 시스템 =====
-const COLORS = {
-  bar: ['#4A6B85', '#B8865C', '#5e9d8a', '#C97C5E', '#E5E5E0'],
-};
+// ===== 통계 카테고리 =====
+const STAT_CATS = [
+  { key: 'condition', Icon: IconMoodSmile, color: '#534AB7', label: '컨디션' },
+  { key: 'water', Icon: IconDroplet, color: '#378ADD', label: '수분' },
+  { key: 'caffeine', Icon: IconCoffee, color: '#BA7517', label: '카페인' },
+  { key: 'meal', Icon: IconApple, color: '#639922', label: '식사' },
+  { key: 'sleep', Icon: IconMoon, color: '#534AB7', label: '수면' },
+  { key: 'weight', Icon: IconScale, color: '#8B95A1', label: '체중' },
+];
 
 export default function DiscoveryPage() {
   const [page, setPage] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [mode, setMode] = useState('insight');
+  const [activeCat, setActiveCat] = useState('all');
 
   useEffect(() => {
     setLoading(true);
-    getOrGenerateDiscoverPage().then(data => {
-      setPage(data);
-      setLoading(false);
-    }).catch(() => setLoading(false));
+    getOrGenerateDiscoverPage().then(data => { setPage(data); setLoading(false); }).catch(() => setLoading(false));
   }, []);
 
   const activeDays = getActiveDays();
+  const profile = getProfile();
+  const nickname = profile.nickname || '';
 
   if (loading) return <SkeletonPage />;
+  if (!page || page.status === 'insufficient_data') return <InsufficientDataPage activeDays={activeDays} />;
 
-  if (!page || page.status === 'insufficient_data') {
-    return <InsufficientDataPage activeDays={activeDays} />;
-  }
+  // 월간 통계 데이터
+  const monthlyStats = useMemo(() => {
+    try {
+      const now = new Date();
+      const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const lastMonth = now.getMonth() === 0 ? `${now.getFullYear() - 1}-12` : `${now.getFullYear()}-${String(now.getMonth()).padStart(2, '0')}`;
+      const recs = JSON.parse(localStorage.getItem('lua_record_v2') || '{}');
+      const checks = JSON.parse(localStorage.getItem('nou_condition_checks') || '[]');
+      const drinks = JSON.parse(localStorage.getItem('lua_drink_records') || '{}');
+      const body = JSON.parse(localStorage.getItem('lua_body_records') || '[]');
+
+      const getMonthAvg = (month, field) => {
+        const vals = [];
+        Object.keys(recs).filter(k => k.startsWith(month)).forEach(k => { if (recs[k]?.[field]) vals.push(typeof recs[k][field] === 'object' ? recs[k][field].hours || 0 : recs[k][field]); });
+        return vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
+      };
+      const getCondAvg = (month) => {
+        const vals = checks.filter(c => (c.date || '').startsWith(month)).map(c => ((c.energy || c.에너지 || 0) + (c.mood || c.기분 || 0) + (c.skin || c.피부 || 0) + (c.gut || c.소화 || 0)) / 4).filter(v => v > 0);
+        return vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
+      };
+      const getWaterAvg = (month) => {
+        const vals = Object.keys(recs).filter(k => k.startsWith(month)).map(k => (recs[k]?.water?.cups || 0) * 250).filter(v => v > 0);
+        return vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
+      };
+      const getCafAvg = (month) => {
+        const vals = Object.keys(drinks).filter(k => k.startsWith(month)).map(k => {
+          return (drinks[k]?.caffeine || []).reduce((s, d) => s + (({ espresso: 150, americano: 150, latte: 150, drip: 130, coldbrew: 200, matcha: 70, green_tea: 30, black_tea: 50, energy_drink: 160 })[d.key] || 100) * (d.count || 0), 0);
+        }).filter(v => v > 0);
+        return vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
+      };
+
+      const thisCond = getCondAvg(thisMonth); const lastCond = getCondAvg(lastMonth);
+      const thisSleep = getMonthAvg(thisMonth, 'sleep'); const lastSleep = getMonthAvg(lastMonth, 'sleep');
+      const daysRecorded = new Set(Object.keys(recs).filter(k => k.startsWith(thisMonth))).size;
+      const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      const latestWeight = body.length > 0 ? body[body.length - 1] : null;
+      const firstWeight = body.filter(b => b.date?.startsWith(thisMonth))[0];
+      const weightChange = latestWeight && firstWeight ? latestWeight.weight - firstWeight.weight : null;
+
+      return {
+        avgCond: thisCond, condChange: lastCond > 0 ? thisCond - lastCond : null,
+        avgSleep: thisSleep, sleepChange: lastSleep > 0 ? thisSleep - lastSleep : null,
+        daysRecorded, daysInMonth, weightChange,
+        catAvgs: {
+          condition: { avg: thisCond > 0 ? thisCond.toFixed(1) : '—', label: `평균 ${thisCond > 0 ? thisCond.toFixed(1) : '—'}` },
+          water: { avg: getWaterAvg(thisMonth), label: `평균 ${getWaterAvg(thisMonth) > 0 ? (getWaterAvg(thisMonth) / 1000).toFixed(2) + 'L' : '—'}` },
+          caffeine: { avg: getCafAvg(thisMonth), label: `평균 ${getCafAvg(thisMonth) > 0 ? Math.round(getCafAvg(thisMonth)) + 'mg' : '—'}` },
+          meal: { avg: 0, label: `기록 ${daysRecorded}일` },
+          sleep: { avg: thisSleep, label: `평균 ${thisSleep > 0 ? thisSleep.toFixed(1) + 'h' : '—'}` },
+          weight: { avg: latestWeight?.weight || 0, label: latestWeight ? `${latestWeight.weight}kg` : '—' },
+        },
+        month: now.getMonth() + 1,
+        warmMsg: thisCond > lastCond && thisSleep > lastSleep ? '지난 달보다 컨디션과 수면이 좋아졌어요. 꾸준히 기록해주신 덕분이에요'
+          : thisCond > lastCond ? '컨디션이 좋아지고 있어요. 이 흐름을 이어가세요'
+          : '꾸준한 기록이 변화의 시작이에요. 함께 해줘서 고마워요',
+      };
+    } catch { return null; }
+  }, []);
+
+  const insightCount = (page.discoveries?.length || 0) + (page.recommendations?.length || 0);
 
   return (
     <div style={{ minHeight: '100dvh', paddingBottom: 100 }}>
-      <Header weekLabel={page.weekLabel} weekNumber={page.weekNumber} />
-      <Section1Hero hero={page.hero} />
-      <Section2Metrics metrics={page.metrics} />
-      {page.influenceFactors && <Section3Factors factors={page.influenceFactors} />}
-      {page.discoveries?.length > 0 && <Section4Discoveries discoveries={page.discoveries} />}
-      <Section5Trend trend={page.trend} />
-      {page.recommendations?.length > 0 && <Section6Recommendations recommendations={page.recommendations} />}
-      <Section7More hint={page.moreHint} />
-    </div>
-  );
-}
 
-// ===== 헤더 =====
-function Header({ weekLabel, weekNumber }) {
-  const style = useReveal(0);
-  return (
-    <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 20px) 20px 0', ...style }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <div>
-          <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)' }}>발견</div>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{weekLabel} (이번 주)</div>
+      {/* 1. 그라데이션 헤더 */}
+      <div style={{ background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: 12, padding: '16px 16px', margin: '12px 16px', border: 'var(--card-border)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{page.weekLabel} 리포트</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <IconShare size={14} color="var(--text-muted)" style={{ cursor: 'pointer' }} />
+            {['insight', 'stats'].map(m => (
+              <span key={m} onClick={() => setMode(m)} style={{
+                fontSize: 10, cursor: 'pointer', paddingBottom: 2,
+                color: mode === m ? 'var(--text-primary)' : 'var(--text-dim)',
+                fontWeight: mode === m ? 500 : 400,
+                borderBottom: mode === m ? '1px solid var(--text-primary)' : '1px solid transparent',
+                transition: 'all 0.2s ease',
+              }}>{m === 'insight' ? '인사이트' : '통계'}</span>
+            ))}
+          </div>
         </div>
-        <div style={{ fontSize: 10, color: 'var(--text-muted)', padding: '4px 10px', background: 'rgba(255,255,255,0.15)', borderRadius: 100, backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}>
-          {weekNumber}번째 발견
+        <div style={{ fontSize: 18, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.2, marginBottom: 4 }}>
+          {nickname ? `${nickname}님의 패턴을 발견했어요` : '이번 주 패턴을 발견했어요'}
+        </div>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+          {insightCount > 0 ? `${insightCount}개의 새로운 인사이트` : ''}{page.weekNumber ? ` · ${page.weekNumber}번째 발견` : ''}
+        </div>
+      </div>
+
+      {/* 2. 폴더 탭 */}
+      <div style={{ padding: '0 16px' }}>
+        <div style={{ display: 'flex', paddingLeft: 4, marginBottom: -2, position: 'relative', zIndex: 2 }}>
+          {FOLDER_TABS.map((tab, i) => {
+            const active = activeCat === tab.key;
+            return (
+              <div key={tab.key} onClick={() => setActiveCat(tab.key)} style={{
+                padding: '7px 12px 9px', borderRadius: '10px 10px 0 0',
+                background: active ? 'var(--card-bg)' : 'rgba(255,255,255,0.04)',
+                backdropFilter: active ? 'blur(16px)' : 'none', WebkitBackdropFilter: active ? 'blur(16px)' : 'none',
+                color: active ? 'var(--text-primary)' : 'var(--text-muted)',
+                fontWeight: active ? 500 : 400, fontSize: 11,
+                display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer',
+                marginLeft: i > 0 ? 2 : 0, transition: 'background 0.2s ease',
+              }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: CAT_DOTS[tab.key] }} />
+                {tab.label}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* 본문 영역 */}
+        <div style={{ background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: '0 12px 12px 12px', padding: 14, border: 'var(--card-border)', position: 'relative', zIndex: 1 }}>
+
+          {/* ===== 인사이트 모드 ===== */}
+          {mode === 'insight' && <>
+            {/* 히어로 */}
+            <HeroCard hero={page.hero} />
+            {/* 2열 지표 */}
+            <MetricsGrid metrics={page.metrics} />
+            {/* 영향 요인 */}
+            {page.influenceFactors && <FactorsCard factors={page.influenceFactors} onStatsClick={() => setMode('stats')} />}
+            {/* 발견 3가지 */}
+            {page.discoveries?.length > 0 && <DiscoveriesCard discoveries={page.discoveries} />}
+            {/* 4주 트렌드 */}
+            {page.trend && <TrendCard trend={page.trend} />}
+            {/* 추천 행동 */}
+            {page.recommendations?.length > 0 && <RecommendationsCard recommendations={page.recommendations} />}
+            {/* 더 알아내려면 */}
+            {page.moreHint && <MoreHintCard hint={page.moreHint} />}
+          </>}
+
+          {/* ===== 통계 모드 ===== */}
+          {mode === 'stats' && <>
+            <StatsCategoryGrid catAvgs={monthlyStats?.catAvgs} />
+            {monthlyStats && <MonthlyChangeCard stats={monthlyStats} />}
+            <CompareCard />
+          </>}
         </div>
       </div>
     </div>
   );
 }
 
-// ===== 섹션 1: 히어로 =====
-function Section1Hero({ hero }) {
-  const style = useReveal(0.1);
+// ===== 인사이트 섹션 컴포넌트 =====
+
+function HeroCard({ hero }) {
   const [tapped, setTapped] = useState(false);
-
   return (
-    <div style={{ padding: '14px 20px 0', ...style }}>
-      <div
-        onClick={() => { setTapped(true); setTimeout(() => setTapped(false), 200); }}
-        style={{
-          ...glass,
-          padding: 20, color: 'var(--text-primary)', position: 'relative', overflow: 'hidden',
-          transform: tapped ? 'scale(1.02)' : 'scale(1)',
-          transition: 'transform 0.2s ease-out',
-        }}
-      >
-        {/* 장식 원 */}
-        <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, background: 'rgba(255,255,255,0.08)', borderRadius: '50%' }} />
-        <div style={{ position: 'absolute', bottom: -30, right: 30, width: 60, height: 60, background: 'rgba(255,255,255,0.06)', borderRadius: '50%' }} />
-
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 8 }}>✨ 이번 주 발견</div>
-          <div style={{ fontSize: 17, fontWeight: 600, lineHeight: 1.4, marginBottom: 8, whiteSpace: 'pre-line', color: 'var(--text-primary)' }}>
-            {hero?.headline || '이번 주도\n잘 보내고 계세요'}
-          </div>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-            {hero?.summary || '데이터를 분석 중이에요'}
-          </div>
+    <div onClick={() => { setTapped(true); setTimeout(() => setTapped(false), 200); }}
+      style={{ background: 'rgba(255,255,255,0.5)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', borderRadius: 12, padding: '18px 16px', marginBottom: 12, position: 'relative', overflow: 'hidden', transform: tapped ? 'scale(1.02)' : 'scale(1)', transition: 'transform 0.2s ease-out', cursor: 'pointer' }}>
+      <div style={{ position: 'absolute', top: -20, right: -20, width: 80, height: 80, background: 'rgba(83,74,183,0.08)', borderRadius: '50%' }} />
+      <div style={{ position: 'absolute', bottom: -30, right: 10, width: 60, height: 60, background: 'rgba(55,138,221,0.08)', borderRadius: '50%' }} />
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <div style={{ fontSize: 17, fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: 8, whiteSpace: 'pre-line', letterSpacing: -0.2 }}>
+          {hero?.headline || '이번 주도\n잘 보내고 계세요'}
         </div>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>{hero?.summary || ''}</div>
       </div>
     </div>
   );
 }
 
-// ===== 섹션 2: 2열 그리드 =====
-function Section2Metrics({ metrics }) {
-  if (!metrics || metrics.length === 0) return null;
-
+function MetricsGrid({ metrics }) {
+  if (!metrics?.length) return null;
   return (
-    <div style={{ padding: '10px 20px 0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-      {metrics.map((m, i) => (
-        <MetricCard key={m.id} metric={m} delay={0.2 + i * 0.1} />
-      ))}
-    </div>
-  );
-}
-
-function MetricCard({ metric, delay }) {
-  const style = useReveal(delay);
-  const [tapped, setTapped] = useState(false);
-  const changeColor = metric.change?.direction === 'up' ? '#5e9d8a' : metric.change?.direction === 'down' ? '#C97C5E' : 'var(--text-muted)';
-  const changeArrow = metric.change?.direction === 'up' ? '↑' : metric.change?.direction === 'down' ? '↓' : '→';
-
-  let displayValue = metric.value;
-  let displayUnit = metric.unit;
-  if (metric.id === 'activity' && metric.value >= 1000) {
-    displayValue = (metric.value / 1000).toFixed(1) + 'k';
-    displayUnit = '보';
-  }
-
-  return (
-    <div
-      onClick={() => { setTapped(true); setTimeout(() => setTapped(false), 300); }}
-      style={{
-        ...glass,
-        aspectRatio: '1', borderRadius: 24, padding: 16,
-        display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-        transform: tapped ? 'scale(1.05)' : 'scale(1)',
-        transition: 'transform 0.3s ease-out',
-        ...style,
-      }}
-    >
-      <div>
-        <div style={{ fontSize: 16 }}>{metric.icon}</div>
-        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, fontWeight: 500 }}>{metric.label}</div>
-      </div>
-      <div>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
-          <span style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{displayValue || '—'}</span>
-          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{displayUnit}</span>
-        </div>
-        {metric.change && metric.change.value !== 0 && (
-          <div style={{ fontSize: 10, fontWeight: 500, color: changeColor, marginTop: 3 }}>
-            {changeArrow} {metric.change.value > 0 ? '+' : ''}{metric.change.value} {metric.change.label}
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
+      {metrics.map(m => {
+        const changeColor = m.change?.direction === 'up' ? '#639922' : m.change?.direction === 'down' ? '#A32D2D' : 'var(--text-muted)';
+        const arrow = m.change?.direction === 'up' ? '↑' : m.change?.direction === 'down' ? '↓' : '';
+        let val = m.value;
+        if (m.id === 'activity' && m.value >= 1000) val = (m.value / 1000).toFixed(1) + 'k';
+        return (
+          <div key={m.id} style={{ background: 'white', borderRadius: 12, padding: 14, aspectRatio: '1', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ fontSize: 18 }}>{m.icon}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>{m.label}</div>
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
+                <span style={{ fontSize: 22, fontWeight: 500, color: 'var(--text-primary)' }}>{val || '—'}</span>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{m.unit}</span>
+              </div>
+              {m.change?.value !== 0 && <div style={{ fontSize: 10, color: changeColor, marginTop: 3 }}>{arrow} {m.change?.value > 0 ? '+' : ''}{m.change?.value} {m.change?.label}</div>}
+            </div>
           </div>
-        )}
-      </div>
+        );
+      })}
     </div>
   );
 }
 
-// ===== 섹션 3: 영향 요인 =====
-function Section3Factors({ factors }) {
-  const style = useReveal(0.4);
-
+function FactorsCard({ factors, onStatsClick }) {
   if (!factors?.factors?.length) return null;
-
   const topFactor = factors.topFactor || factors.factors[0];
-
   return (
-    <div style={{ padding: '10px 20px 0', ...style }}>
-      <div style={{ ...glass, padding: 18 }}>
-        {/* 헤더 */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-          <div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>컨디션 영향 요인</div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginTop: 3 }}>
-              {topFactor.emoji} {topFactor.name}이 가장 커요
-            </div>
-          </div>
-          <div style={{ fontSize: 10, padding: '4px 10px', background: 'rgba(255,255,255,0.15)', borderRadius: 100, color: 'var(--text-muted)' }}>
-            탑 {Math.min(factors.factors.filter(f => f.name !== '기타').length, 3)}
-          </div>
+    <div style={{ background: 'white', borderRadius: 12, padding: 14, marginBottom: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <IconGridPattern size={13} color="#534AB7" />
+          <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-primary)' }}>컨디션 영향 요인</span>
         </div>
-
-        {/* 막대 그래프 */}
-        <div style={{ display: 'flex', gap: 3, height: 14, borderRadius: 100, overflow: 'hidden', marginBottom: 12 }}>
-          {factors.factors.map((f, i) => (
-            <div key={f.name} style={{
-              flex: f.percentage,
-              background: f.color || COLORS.bar[i],
-              borderRadius: i === 0 ? '100px 0 0 100px' : i === factors.factors.length - 1 ? '0 100px 100px 0' : 0,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transition: 'flex 0.6s ease',
-            }}>
-              {f.percentage > 15 && (
-                <span style={{ fontSize: 8, color: 'white', fontWeight: 500 }}>{f.percentage}%</span>
-              )}
+        <span style={{ background: '#FAEEDA', color: '#854F0B', fontSize: 9, padding: '2px 7px', borderRadius: 6 }}>탑 {factors.factors.filter(f => f.name !== '기타').length}</span>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 }}>
+        {factors.factors.filter(f => f.name !== '기타').map((f, i) => {
+          const isNeg = f.percentage < 0;
+          const pct = Math.abs(f.percentage);
+          return (
+            <div key={f.name} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: 10, minWidth: 44, color: 'var(--text-muted)' }}>{f.emoji} {f.name}</span>
+              <div style={{ flex: 1, height: 12, background: isNeg ? '#FCEBEB' : '#F0F7FE', borderRadius: 6, overflow: 'hidden', display: 'flex', justifyContent: isNeg ? 'flex-end' : 'flex-start' }}>
+                <div style={{ width: `${Math.max(pct, 8)}%`, height: '100%', background: isNeg ? '#E24B4A' : '#378ADD', borderRadius: 6, transition: 'width 0.6s ease' }} />
+              </div>
+              <span style={{ fontSize: 9, fontWeight: 500, minWidth: 28, textAlign: 'right', color: isNeg ? '#A32D2D' : '#185FA5' }}>{isNeg ? '-' : '+'}{pct}%</span>
             </div>
-          ))}
-        </div>
-
-        {/* 범례 */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
-          {factors.factors.map((f, i) => (
-            <div key={f.name} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <div style={{ width: 7, height: 7, borderRadius: 2, background: f.color || COLORS.bar[i] }} />
-              <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>
-                {f.emoji && <span style={{ marginRight: 2 }}>{f.emoji}</span>}
-                {f.name}
-              </span>
-            </div>
-          ))}
-        </div>
+          );
+        })}
+      </div>
+      <div onClick={onStatsClick} style={{ paddingTop: 8, borderTop: '0.5px solid var(--border-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, cursor: 'pointer' }}>
+        <IconChartBar size={11} color="#185FA5" />
+        <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>영향 요인 통계 자세히 보기 →</span>
       </div>
     </div>
   );
 }
 
-// ===== 섹션 4: 발견 3가지 =====
-function Section4Discoveries({ discoveries }) {
-  const style = useReveal(0.5);
-
+function DiscoveriesCard({ discoveries }) {
   return (
-    <div style={{ padding: '10px 20px 0', ...style }}>
-      <div style={{ ...glass, padding: 18 }}>
-        {/* 헤더 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-          <span style={{ fontSize: 14 }}>🔍</span>
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>본인만의 발견 {discoveries.length}가지</span>
-        </div>
+    <div style={{ background: 'white', borderRadius: 12, padding: 14, marginBottom: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+        <IconSparkles size={13} color="#534AB7" />
+        <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-primary)' }}>본인만의 발견</span>
+      </div>
+      {discoveries.map((d, i) => {
+        const num = String(i + 1).padStart(2, '0');
+        const parts = (d.message || '').split(/\*\*(.*?)\*\*/g);
+        return (
+          <div key={i} style={{ display: 'flex', gap: 8, marginBottom: i < discoveries.length - 1 ? 8 : 0 }}>
+            <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#042C53', color: '#fff', fontSize: 9, fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{num}</div>
+            <div style={{ fontSize: 11, color: 'var(--text-primary)', lineHeight: 1.5 }}>
+              {parts.map((p, j) => j % 2 === 1 ? <strong key={j} style={{ color: 'var(--accent-primary)' }}>{p}</strong> : <span key={j}>{p}</span>)}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
-        {/* 카드 */}
-        {discoveries.map((d, i) => (
-          <DiscoveryCard key={i} discovery={d} index={i} />
+function TrendCard({ trend }) {
+  const [grown, setGrown] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setGrown(true), 400); return () => clearTimeout(t); }, []);
+  if (!trend?.weeks) return null;
+  const maxVal = Math.max(...trend.weeks.map(w => w.value), 1);
+  return (
+    <div style={{ background: 'white', borderRadius: 12, padding: 14, marginBottom: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+        <IconTrendingUp size={13} color="#639922" />
+        <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-primary)' }}>4주 트렌드 — {trend.trendDescription}</span>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: 50, gap: 6, marginBottom: 6 }}>
+        {trend.weeks.map((w, i) => {
+          const pct = maxVal > 0 ? (w.value / maxVal) * 100 : 10;
+          return (
+            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, height: '100%', justifyContent: 'flex-end' }}>
+              <div style={{ width: '100%', height: grown ? `${Math.max(pct, 8)}%` : '4%', background: w.isCurrent ? '#378ADD' : '#B5D4F4', opacity: w.isCurrent ? 1 : 0.5, borderRadius: '3px 3px 0 0', transition: `height 0.6s ease ${i * 0.1}s` }} />
+              <span style={{ fontSize: 8, color: w.isCurrent ? '#185FA5' : 'var(--text-dim)', fontWeight: w.isCurrent ? 500 : 400 }}>{w.label}</span>
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ fontSize: 10, color: 'var(--text-muted)', textAlign: 'center' }}>{trend.caption}</div>
+    </div>
+  );
+}
+
+function RecommendationsCard({ recommendations }) {
+  const RANK = { 1: { bg: '#FAEEDA', label: '⭐ 가장 효과', labelColor: '#854F0B', titleColor: '#412402', descColor: '#854F0B' }, 2: { bg: '#F0F7FE', labelColor: '#185FA5', titleColor: '#042C53', descColor: '#185FA5' }, 3: { bg: '#F0F7FE', labelColor: '#185FA5', titleColor: '#042C53', descColor: '#185FA5' } };
+  return (
+    <div style={{ background: 'white', borderRadius: 12, padding: 14, marginBottom: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+        <IconBulb size={13} color="#BA7517" />
+        <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-primary)' }}>추천 행동</span>
+      </div>
+      <div style={{ display: 'flex', gap: 8, overflowX: 'auto', scrollSnapType: 'x mandatory', scrollbarWidth: 'none', msOverflowStyle: 'none', paddingBottom: 4 }}>
+        {recommendations.map((rec, i) => {
+          const r = RANK[rec.rank] || RANK[3];
+          return (
+            <div key={i} style={{ minWidth: 160, borderRadius: 10, padding: 12, scrollSnapAlign: 'start', flexShrink: 0, background: r.bg }}>
+              <div style={{ fontSize: 9, fontWeight: 500, color: r.labelColor, marginBottom: 6 }}>{rec.rank === 1 ? '⭐ 가장 효과' : `${rec.rank}순위`}</div>
+              <div style={{ fontSize: 12, fontWeight: 500, color: r.titleColor, lineHeight: 1.4, marginBottom: 4 }}>{rec.title}</div>
+              <div style={{ fontSize: 10, color: r.descColor, lineHeight: 1.4 }}>{rec.description}</div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function MoreHintCard({ hint }) {
+  return (
+    <div style={{ background: '#F0F7FE', borderRadius: 12, padding: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <IconBulb size={16} color="#BA7517" />
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-primary)' }}>{hint.title}</div>
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{hint.description}</div>
+        </div>
+      </div>
+      <IconArrowRight size={14} color="var(--text-muted)" />
+    </div>
+  );
+}
+
+// ===== 통계 모드 컴포넌트 =====
+
+function StatsCategoryGrid({ catAvgs }) {
+  return (
+    <div style={{ background: 'white', borderRadius: 12, padding: 16, marginBottom: 12 }}>
+      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 10 }}>어떤 지표를 자세히 볼까요?</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+        {STAT_CATS.map(cat => (
+          <div key={cat.key} style={{ background: '#F0F7FE', borderRadius: 10, padding: '14px 8px', textAlign: 'center', cursor: 'pointer' }}>
+            <cat.Icon size={22} color={cat.color} />
+            <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-primary)', marginTop: 6 }}>{cat.label}</div>
+            <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 1 }}>{catAvgs?.[cat.key]?.label || '—'}</div>
+          </div>
         ))}
       </div>
     </div>
   );
 }
 
-function DiscoveryCard({ discovery, index }) {
-  const num = String(index + 1).padStart(2, '0');
-
-  const renderMessage = (msg) => {
-    if (!msg) return null;
-    const parts = msg.split(/\*\*(.*?)\*\*/g);
-    return parts.map((part, i) =>
-      i % 2 === 1
-        ? <strong key={i} style={{ color: 'var(--accent-primary)', fontWeight: 600 }}>{part}</strong>
-        : <span key={i}>{part}</span>
-    );
+function MonthlyChangeCard({ stats }) {
+  const changeEl = (val, change) => {
+    if (change == null || change === 0) return null;
+    return <span style={{ fontSize: 10, color: change > 0 ? '#639922' : '#A32D2D', marginLeft: 4 }}>{change > 0 ? '↑' : '↓'} {change > 0 ? '+' : ''}{change.toFixed(1)}</span>;
   };
-
   return (
-    <div style={{
-      background: 'rgba(255,255,255,0.25)', borderRadius: 16, padding: 12, marginBottom: index < 2 ? 8 : 0,
-      display: 'flex', alignItems: 'flex-start', gap: 10,
-      border: '1px solid rgba(255,255,255,0.2)',
-    }}>
-      <span style={{ fontSize: 11, color: 'var(--accent-primary)', fontWeight: 700, minWidth: 20, lineHeight: '20px', fontFamily: 'var(--font-display)' }}>{num}</span>
-      <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 12, color: 'var(--text-primary)', lineHeight: 1.6 }}>
-          {renderMessage(discovery.message)}
+    <div style={{ background: 'white', borderRadius: 12, padding: 16, marginBottom: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <IconCalendarStats size={14} color="#534AB7" />
+          <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-primary)' }}>이번 달 변화</span>
         </div>
+        <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{stats.month}월</span>
       </div>
-    </div>
-  );
-}
-
-// ===== 섹션 5: 4주 트렌드 =====
-function Section5Trend({ trend }) {
-  const style = useReveal(0.7);
-  const [barsGrown, setBarsGrown] = useState(false);
-
-  useEffect(() => {
-    const t = setTimeout(() => setBarsGrown(true), 800);
-    return () => clearTimeout(t);
-  }, []);
-
-  if (!trend?.weeks) return null;
-
-  const maxVal = Math.max(...trend.weeks.map(w => w.value), 1);
-
-  return (
-    <div style={{ padding: '10px 20px 0', ...style }}>
-      <div style={{ ...glass, padding: 18 }}>
-        {/* 헤더 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-          <span style={{ fontSize: 14 }}>📈</span>
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>4주 트렌드 — {trend.trendDescription}</span>
-        </div>
-
-        {/* 막대 차트 */}
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 60, marginBottom: 10 }}>
-          {trend.weeks.map((w, i) => {
-            const heightPct = maxVal > 0 ? (w.value / maxVal) * 100 : 10;
-            const isCurrent = w.isCurrent;
-            return (
-              <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, height: '100%', justifyContent: 'flex-end' }}>
-                {w.value > 0 && (
-                  <span style={{ fontSize: 9, color: isCurrent ? 'var(--accent-primary)' : 'var(--text-muted)' }}>
-                    {w.value}
-                  </span>
-                )}
-                <div style={{
-                  width: '100%',
-                  height: barsGrown ? `${Math.max(heightPct, 8)}%` : '4%',
-                  background: isCurrent ? 'var(--accent-primary)' : 'rgba(255,255,255,0.15)',
-                  borderRadius: '6px 6px 0 0',
-                  transition: `height 0.6s ease ${i * 0.1}s`,
-                }} />
-              </div>
-            );
-          })}
-        </div>
-
-        {/* 라벨 */}
-        <div style={{ display: 'flex', gap: 8 }}>
-          {trend.weeks.map((w, i) => (
-            <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: 9, color: w.isCurrent ? 'var(--accent-primary)' : 'var(--text-muted)', fontWeight: w.isCurrent ? 600 : 400 }}>
-              {w.label}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
+        {[
+          { label: '평균 컨디션', val: stats.avgCond > 0 ? stats.avgCond.toFixed(1) : '—', change: stats.condChange },
+          { label: '평균 수면', val: stats.avgSleep > 0 ? stats.avgSleep.toFixed(1) + 'h' : '—', change: stats.sleepChange },
+          { label: '기록 일수', val: `${stats.daysRecorded}일`, change: null },
+          { label: '체중 변화', val: stats.weightChange != null ? `${stats.weightChange > 0 ? '+' : ''}${stats.weightChange.toFixed(1)}kg` : '—', change: null },
+        ].map(m => (
+          <div key={m.label} style={{ background: '#F0F7FE', borderRadius: 8, padding: 10 }}>
+            <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{m.label}</div>
+            <div style={{ display: 'flex', alignItems: 'baseline' }}>
+              <span style={{ fontSize: 18, fontWeight: 500, color: 'var(--text-primary)' }}>{m.val}</span>
+              {changeEl(m.val, m.change)}
             </div>
-          ))}
-        </div>
-
-        {/* 캡션 */}
-        <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 10 }}>
-          {trend.caption}
-        </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ background: '#F0F7FE', borderRadius: 8, padding: 10, fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+        {stats.warmMsg} <IconHeart size={12} color="var(--text-muted)" style={{ verticalAlign: -1 }} />
       </div>
     </div>
   );
 }
 
-// ===== 섹션 6: 추천 행동 =====
-function Section6Recommendations({ recommendations }) {
-  const style = useReveal(0.9);
-  const scrollRef = useRef(null);
-
-  const RANK_BADGES = { 1: '⭐ 가장 효과', 2: '2순위', 3: '3순위' };
-  const CATEGORY_ICONS = { activity: '🏃', sleep: '😴', caffeine: '☕', water: '💧', meal: '🍽', supplement: '💊', condition: '⚡' };
-
+function CompareCard() {
   return (
-    <div style={{ padding: '10px 20px 0', ...style }}>
-      <div style={{ ...glass, padding: 18 }}>
-        {/* 헤더 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-          <span style={{ fontSize: 14 }}>🎯</span>
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>이번 주 추천 행동</span>
+    <div style={{ background: 'white', borderRadius: 12, padding: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <IconArrowsShuffle size={14} color="#534AB7" />
+          <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-primary)' }}>두 지표 비교하기</span>
         </div>
-
-        {/* 가로 스크롤 */}
-        <div ref={scrollRef} style={{
-          display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4,
-          scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch',
-          msOverflowStyle: 'none', scrollbarWidth: 'none',
-        }}>
-          {recommendations.map((rec, i) => (
-            <div key={i} style={{
-              flexShrink: 0, width: 140, background: 'rgba(255,255,255,0.15)', borderRadius: 20, padding: 14,
-              border: '1px solid rgba(255,255,255,0.2)', scrollSnapAlign: 'start',
-            }}>
-              <div style={{ fontSize: 10, color: 'var(--accent-primary)', fontWeight: 600, marginBottom: 6 }}>
-                {RANK_BADGES[rec.rank] || `${rec.rank}순위`}
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
-                <span style={{ fontSize: 14 }}>{CATEGORY_ICONS[rec.category] || '🎯'}</span>
-                <span style={{ fontSize: 12, color: 'var(--text-primary)', fontWeight: 500 }}>{rec.title}</span>
-              </div>
-              <div style={{ fontSize: 10, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                {rec.description}
-              </div>
-            </div>
-          ))}
+        <span style={{ background: '#FAEEDA', color: '#854F0B', fontSize: 9, padding: '3px 8px', borderRadius: 8 }}>NEW</span>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+        <div style={{ flex: 1, background: '#F0F7FE', padding: '8px 12px', borderRadius: 8, textAlign: 'center' }}>
+          <div style={{ fontSize: 9, color: 'var(--text-dim)' }}>기준</div>
+          <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-primary)' }}>수면시간</div>
+        </div>
+        <IconVs size={14} color="var(--text-dim)" />
+        <div style={{ flex: 1, background: '#F0F7FE', padding: '8px 12px', borderRadius: 8, textAlign: 'center' }}>
+          <div style={{ fontSize: 9, color: 'var(--text-dim)' }}>비교</div>
+          <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-primary)' }}>컨디션</div>
         </div>
       </div>
+      <div style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', padding: 8, cursor: 'pointer' }}>두 지표의 관계를 그래프로 보기 →</div>
     </div>
   );
 }
 
-// ===== 섹션 7: 더 알아내려면 =====
-function Section7More({ hint }) {
-  const style = useReveal(1.0);
+// ===== 엣지케이스 =====
 
-  if (!hint) return null;
-
-  return (
-    <div style={{ padding: '10px 20px 0', ...style }}>
-      <div style={{
-        ...glass, padding: 14,
-        display: 'flex', alignItems: 'center', gap: 12,
-      }}>
-        <span style={{ fontSize: 24 }}>💡</span>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 12, color: 'var(--text-primary)', fontWeight: 500 }}>{hint.title}</div>
-          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 3 }}>{hint.description}</div>
-        </div>
-        <span style={{ fontSize: 12, color: 'var(--accent-primary)', fontWeight: 500 }}>→</span>
-      </div>
-    </div>
-  );
-}
-
-// ===== 데이터 부족 페이지 =====
 function InsufficientDataPage({ activeDays }) {
   return (
     <div style={{ minHeight: '100dvh', paddingBottom: 100 }}>
@@ -421,12 +455,10 @@ function InsufficientDataPage({ activeDays }) {
         <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>매주 새로운 발견을 보여드려요</div>
       </div>
       <div style={{ padding: '40px 20px', textAlign: 'center' }}>
-        <div style={{ ...glass, padding: 30 }}>
+        <div style={{ background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: 'var(--card-border)', borderRadius: 30, padding: 30 }}>
           <div style={{ fontSize: 36, marginBottom: 12 }}>✨</div>
           <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>당신의 패턴을 함께 찾아갈게요</div>
-          <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 20 }}>
-            매일 기록을 쌓으면 나만의 패턴과 인사이트를 발견할 수 있어요
-          </div>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 20 }}>매일 기록을 쌓으면 나만의 패턴과 인사이트를 발견할 수 있어요</div>
           <div style={{ marginBottom: 8 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
               <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>기록 진행률</span>
@@ -436,47 +468,20 @@ function InsufficientDataPage({ activeDays }) {
               <div style={{ height: '100%', borderRadius: 3, background: 'var(--accent-primary)', width: `${Math.min((activeDays / 7) * 100, 100)}%`, transition: 'width 0.5s ease' }} />
             </div>
           </div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-            {7 - activeDays}일 더 기록하면 첫 번째 발견을 보여드릴게요
-          </div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{7 - activeDays}일 더 기록하면 첫 번째 발견을 보여드릴게요</div>
         </div>
       </div>
     </div>
   );
 }
 
-// ===== 스켈레톤 로딩 =====
 function SkeletonPage() {
-  const shimmer = {
-    background: 'linear-gradient(90deg, rgba(255,255,255,0.1) 25%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0.1) 75%)',
-    backgroundSize: '200% 100%',
-    animation: 'shimmer 1.5s infinite',
-    borderRadius: 30,
-  };
-
+  const sh = { background: 'linear-gradient(90deg, rgba(255,255,255,0.1) 25%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0.1) 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite', borderRadius: 12 };
   return (
     <div style={{ minHeight: '100dvh', paddingBottom: 100 }}>
       <style>{`@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
-      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 20px) 20px 0' }}>
-        <div style={{ ...shimmer, width: 60, height: 26, marginBottom: 6, borderRadius: 8 }} />
-        <div style={{ ...shimmer, width: 120, height: 14, borderRadius: 6 }} />
-      </div>
-      <div style={{ padding: '14px 20px 0' }}>
-        <div style={{ ...shimmer, height: 130 }} />
-      </div>
-      <div style={{ padding: '10px 20px 0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        <div style={{ ...shimmer, aspectRatio: '1', borderRadius: 24 }} />
-        <div style={{ ...shimmer, aspectRatio: '1', borderRadius: 24 }} />
-      </div>
-      <div style={{ padding: '10px 20px 0' }}>
-        <div style={{ ...shimmer, height: 110 }} />
-      </div>
-      <div style={{ padding: '10px 20px 0' }}>
-        <div style={{ ...shimmer, height: 150 }} />
-      </div>
-      <div style={{ padding: '10px 20px 0' }}>
-        <div style={{ ...shimmer, height: 110 }} />
-      </div>
+      <div style={{ padding: '12px 16px' }}><div style={{ ...sh, height: 100 }} /></div>
+      <div style={{ padding: '0 16px' }}><div style={{ ...sh, height: 40, marginBottom: 8 }} /><div style={{ ...sh, height: 400 }} /></div>
     </div>
   );
 }
