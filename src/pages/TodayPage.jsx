@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { IconChevronLeft, IconCalendar, IconSparkles, IconTrendingUp, IconClock, IconMoon, IconDroplet, IconCoffee, IconApple, IconFlame, IconMoodSmile, IconPlus, IconChartBar } from '@tabler/icons-react';
+import { IconChevronLeft, IconChevronRight, IconSparkles, IconTrendingUp, IconClock, IconMoon, IconDroplet, IconCoffee, IconApple, IconFlame, IconMoodSmile, IconPlus, IconChartBar } from '@tabler/icons-react';
 import { getProfile } from '../storage/ProfileStorage';
 import { getTodayFoods, getFoodRecords } from '../storage/FoodStorage';
 
@@ -179,8 +179,9 @@ export default function TodayPage() {
             <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{dateLabel}</div>
             <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>{relativeLabel}</div>
           </div>
-          <div style={{ width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-            <IconCalendar size={18} color="var(--text-muted)" />
+          <div onClick={() => { if (!isToday) { const d = new Date(selectedDate + 'T00:00:00'); d.setDate(d.getDate() + 1); setSelectedDate(getDateKey(d)); } }}
+            style={{ width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isToday ? 'default' : 'pointer', opacity: isToday ? 0.3 : 1 }}>
+            <IconChevronRight size={20} color="var(--text-muted)" />
           </div>
         </div>
 
