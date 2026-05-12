@@ -2317,6 +2317,8 @@ function AddActivityModal({ onSave, onClose }) {
   const [steps, setSteps] = useState('');
   const [selectedEx, setSelectedEx] = useState(null);
   const [minutes, setMinutes] = useState('30');
+  const [timeMode, setTimeMode] = useState('now'); // 'now' | '30min' | 'custom'
+  const [customTime, setCustomTime] = useState('');
   const curWeight = getLatestWeight()?.weight || 55;
 
   const stepsCalorie = steps ? Math.round(Number(steps) * 0.0005 * curWeight) : 0;
@@ -2324,18 +2326,26 @@ function AddActivityModal({ onSave, onClose }) {
     ? Math.round(selectedEx.met * curWeight * (Number(minutes) / 60))
     : 0;
 
+  const getLoggedAt = () => {
+    const now = new Date();
+    if (timeMode === '30min') return new Date(now.getTime() - 30 * 60 * 1000).toISOString();
+    if (timeMode === 'custom' && customTime) { const [h, m] = customTime.split(':').map(Number); const d = new Date(now); d.setHours(h, m, 0, 0); return d.toISOString(); }
+    return now.toISOString();
+  };
+
   const handleSave = () => {
     const todayKey = new Date().toISOString().slice(0, 10);
     const all = JSON.parse(localStorage.getItem('lua_record_v2') || '{}');
     const today = all[todayKey] || { date: todayKey };
+    const loggedAt = getLoggedAt();
 
     if (tab === 'walk' && steps) {
       today.steps = Number(steps);
-      today.stepsLoggedAt = new Date().toISOString();
+      today.stepsLoggedAt = loggedAt;
     } else if (tab === 'exercise' && selectedEx && minutes) {
       const log = today.exercise?.log || {};
       log[selectedEx.name] = (log[selectedEx.name] || 0) + Number(minutes);
-      today.exercise = { ...today.exercise, log, loggedAt: new Date().toISOString() };
+      today.exercise = { ...today.exercise, log, loggedAt };
     } else {
       return;
     }
@@ -2447,7 +2457,37 @@ function AddActivityModal({ onSave, onClose }) {
           </div>
         )}
 
-        <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
+        {/* 시간 선택 */}
+        <div style={{ marginTop: 16, marginBottom: 16 }}>
+          <div style={{ fontSize: 10, fontWeight: 500, color: '#4A6B85', marginBottom: 6 }}>언제 했어요?</div>
+          <div style={{ display: 'flex', gap: 4 }}>
+            {(() => {
+              const now = new Date();
+              const thirtyAgo = new Date(now.getTime() - 30 * 60 * 1000);
+              const fmt = (d) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+              return [
+                { key: 'now', label: '방금', sub: fmt(now) },
+                { key: '30min', label: '30분 전', sub: fmt(thirtyAgo) },
+                { key: 'custom', label: '시간 선택', sub: '' },
+              ].map(opt => (
+                <div key={opt.key} onClick={() => setTimeMode(opt.key)} style={{
+                  flex: 1, padding: '7px 4px', borderRadius: 9, textAlign: 'center', cursor: 'pointer',
+                  background: timeMode === opt.key ? '#FFF3E0' : '#F4F4F4',
+                  border: timeMode === opt.key ? '0.5px solid var(--accent-primary)' : '0.5px solid transparent',
+                }}>
+                  <div style={{ fontSize: 9, fontWeight: 500, color: timeMode === opt.key ? '#6B4A2A' : '#6B8499' }}>{opt.label}</div>
+                  {opt.sub && <div style={{ fontSize: 7, color: '#8A5A3C', marginTop: 1 }}>{opt.sub}</div>}
+                  {opt.key === 'custom' && timeMode === 'custom' && (
+                    <input type="time" value={customTime} onChange={e => setCustomTime(e.target.value)}
+                      style={{ fontSize: 8, border: 'none', background: 'transparent', width: '100%', textAlign: 'center', outline: 'none', color: '#8A5A3C', marginTop: 2 }} />
+                  )}
+                </div>
+              ));
+            })()}
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: 10 }}>
           <button onClick={onClose} style={{
             flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
             border: 'none', background: 'var(--bg-input, #F2F3F5)',
