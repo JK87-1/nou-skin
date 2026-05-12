@@ -2522,6 +2522,8 @@ function WaterIntakeModal({ onClose, onUpdate }) {
   const [cups, setCups] = useState(todayRec.water?.cups || 0);
   const [ripple, setRipple] = useState(false);
   const [splash, setSplash] = useState(false);
+  const nowHHMM = () => { const d = new Date(); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; };
+  const [time, setTime] = useState(nowHHMM);
 
   const fillPct = Math.min(cups / totalCups, 1);
   const currentMl = cups * cupMl;
@@ -2539,10 +2541,10 @@ function WaterIntakeModal({ onClose, onUpdate }) {
     // save
     const all = getAll();
     const rec = all[todayKey] || { date: todayKey };
-    const now = new Date().toISOString();
+    const loggedAt = `${todayKey}T${time}:00`;
     const intakes = rec.water?.intakes || [];
-    intakes.push({ cups: 1, loggedAt: now });
-    rec.water = { cups: next, loggedAt: now, intakes };
+    intakes.push({ cups: 1, loggedAt });
+    rec.water = { cups: next, loggedAt, intakes };
     all[todayKey] = rec;
     localStorage.setItem('lua_record_v2', JSON.stringify(all));
   };
@@ -2573,7 +2575,20 @@ function WaterIntakeModal({ onClose, onUpdate }) {
       }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
         <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24, textAlign: 'center' }}>수분</div>
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 24 }}>1잔 = {cupMl}ml</div>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 16 }}>1잔 = {cupMl}ml</div>
+
+        {/* Time picker */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 24 }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ opacity: 0.5 }}>
+            <circle cx="12" cy="12" r="9" stroke="var(--text-muted)" strokeWidth="2"/>
+            <path d="M12 7v5l3 3" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+          <input type="time" value={time} onChange={e => setTime(e.target.value)} style={{
+            border: 'none', background: 'var(--bg-input, #F2F3F5)', borderRadius: 10,
+            padding: '6px 12px', fontSize: 14, color: 'var(--text-primary)',
+            fontFamily: 'inherit', outline: 'none', textAlign: 'center',
+          }} />
+        </div>
 
         {/* Water bottle visualization */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 28 }}>
