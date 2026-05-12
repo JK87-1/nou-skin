@@ -409,15 +409,6 @@ export default function TodayPage() {
         </div>
       </div>
 
-      {/* FAB */}
-      <div style={{
-        position: 'fixed', bottom: 90, right: 20, zIndex: 50,
-        width: 48, height: 48, borderRadius: '50%',
-        background: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.3)', cursor: 'pointer',
-      }}>
-        <IconPlus size={22} color="var(--bg-primary, #fff)" />
-      </div>
     </div>
   );
 }
