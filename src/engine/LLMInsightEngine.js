@@ -14,6 +14,7 @@ const LLM_USAGE_KEY = 'lua_llm_daily_usage';
 const LLM_DEBOUNCE_KEY = 'lua_llm_debounce';
 const LLM_CALL_LOG_KEY = 'lua_llm_call_log';
 const LLM_ENABLED_KEY = 'lua_llm_enabled';
+const LLM_PROMPT_VERSION = 2; // 프롬프트 변경 시 증가 → 캐시 무효화
 
 const CONFIG = {
   dailyLLMCallLimit: 10,
@@ -648,10 +649,17 @@ ${taskInstruction}`;
 
 // ===== 캐시 관리 =====
 function getLLMCache() {
-  return safeJSON(LLM_CACHE_KEY, null);
+  const cache = safeJSON(LLM_CACHE_KEY, null);
+  // 프롬프트 버전이 다르면 캐시 무효화
+  if (cache && cache.promptVersion !== LLM_PROMPT_VERSION) {
+    localStorage.removeItem(LLM_CACHE_KEY);
+    return null;
+  }
+  return cache;
 }
 
 function saveLLMCache(cache) {
+  cache.promptVersion = LLM_PROMPT_VERSION;
   localStorage.setItem(LLM_CACHE_KEY, JSON.stringify(cache));
 }
 
