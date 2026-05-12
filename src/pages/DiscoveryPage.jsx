@@ -44,10 +44,7 @@ export default function DiscoveryPage() {
   const profile = getProfile();
   const nickname = profile.nickname || '';
 
-  if (loading) return <SkeletonPage />;
-  if (!page || page.status === 'insufficient_data') return <InsufficientDataPage activeDays={activeDays} />;
-
-  // 월간 통계 데이터
+  // 월간 통계 데이터 (hooks는 early return 전에 호출해야 함)
   const monthlyStats = useMemo(() => {
     try {
       const now = new Date();
@@ -106,6 +103,9 @@ export default function DiscoveryPage() {
     } catch { return null; }
   }, []);
 
+  if (loading) return <SkeletonPage />;
+  if (!page || page.status === 'insufficient_data') return <InsufficientDataPage activeDays={activeDays} />;
+
   const insightCount = (page.discoveries?.length || 0) + (page.recommendations?.length || 0);
 
   return (
@@ -115,18 +115,7 @@ export default function DiscoveryPage() {
       <div style={{ background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: 12, padding: '16px 16px', margin: '12px 16px', border: 'var(--card-border)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
           <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{page.weekLabel} 리포트</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <IconShare size={14} color="var(--text-muted)" style={{ cursor: 'pointer' }} />
-            {['insight', 'stats'].map(m => (
-              <span key={m} onClick={() => setMode(m)} style={{
-                fontSize: 10, cursor: 'pointer', paddingBottom: 2,
-                color: mode === m ? 'var(--text-primary)' : 'var(--text-dim)',
-                fontWeight: mode === m ? 500 : 400,
-                borderBottom: mode === m ? '1px solid var(--text-primary)' : '1px solid transparent',
-                transition: 'all 0.2s ease',
-              }}>{m === 'insight' ? '인사이트' : '통계'}</span>
-            ))}
-          </div>
+          <IconShare size={14} color="var(--text-muted)" style={{ cursor: 'pointer' }} />
         </div>
         <div style={{ fontSize: 18, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.2, marginBottom: 4 }}>
           {nickname ? `${nickname}님의 패턴을 발견했어요` : '이번 주 패턴을 발견했어요'}
@@ -136,57 +125,74 @@ export default function DiscoveryPage() {
         </div>
       </div>
 
-      {/* 2. 폴더 탭 */}
-      <div style={{ padding: '0 16px' }}>
-        <div style={{ display: 'flex', paddingLeft: 4, marginBottom: -2, position: 'relative', zIndex: 2 }}>
-          {FOLDER_TABS.map((tab, i) => {
-            const active = activeCat === tab.key;
-            return (
-              <div key={tab.key} onClick={() => setActiveCat(tab.key)} style={{
-                padding: '7px 12px 9px', borderRadius: '10px 10px 0 0',
-                background: active ? 'var(--card-bg)' : 'rgba(255,255,255,0.04)',
-                backdropFilter: active ? 'blur(16px)' : 'none', WebkitBackdropFilter: active ? 'blur(16px)' : 'none',
-                color: active ? 'var(--text-primary)' : 'var(--text-muted)',
-                fontWeight: active ? 500 : 400, fontSize: 11,
-                display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer',
-                marginLeft: i > 0 ? 2 : 0, transition: 'background 0.2s ease',
-              }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: CAT_DOTS[tab.key] }} />
-                {tab.label}
+      {/* 2. 세그먼트 탭 (인사이트/통계) */}
+      {(() => {
+        const modeTabs = [{ key: 'insight', label: '인사이트' }, { key: 'stats', label: '통계' }];
+        const modeIdx = modeTabs.findIndex(t => t.key === mode);
+        const modePos = modeIdx === 0 ? 'first' : modeIdx === modeTabs.length - 1 ? 'last' : 'mid';
+        return (
+          <>
+            <div style={{ padding: '12px 10px 0' }}>
+              <div className="segment-control" data-active={modePos}>
+                {modeTabs.map(tab => (
+                  <button key={tab.key} className={`segment-btn${mode === tab.key ? ' active' : ''}`}
+                    onClick={() => setMode(tab.key)}>
+                    {tab.label}
+                  </button>
+                ))}
               </div>
-            );
-          })}
-        </div>
+            </div>
+            <div className="tab-content-panel" data-active={modePos}>
+              <div style={{ padding: '0 14px' }}>
 
-        {/* 본문 영역 */}
-        <div style={{ background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: '0 12px 12px 12px', padding: 14, border: 'var(--card-border)', position: 'relative', zIndex: 1 }}>
+                {/* ===== 인사이트 모드 ===== */}
+                {mode === 'insight' && (() => {
+                  const catIdx = FOLDER_TABS.findIndex(t => t.key === activeCat);
+                  const catPos = catIdx === 0 ? 'first' : catIdx === FOLDER_TABS.length - 1 ? 'last' : 'mid';
+                  return <>
+                    {/* 카테고리 세그먼트 */}
+                    <div style={{ padding: '12px 0 0' }}>
+                      <div className="segment-control" data-active={catPos}>
+                        {FOLDER_TABS.map(tab => (
+                          <button key={tab.key} className={`segment-btn${activeCat === tab.key ? ' active' : ''}`}
+                            onClick={() => setActiveCat(tab.key)}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                              <span style={{ width: 6, height: 6, borderRadius: '50%', background: CAT_DOTS[tab.key] }} />
+                              {tab.label}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    {/* 히어로 */}
+                    <HeroCard hero={page.hero} />
+                    {/* 2열 지표 */}
+                    <MetricsGrid metrics={page.metrics} />
+                    {/* 영향 요인 */}
+                    {page.influenceFactors && <FactorsCard factors={page.influenceFactors} onStatsClick={() => setMode('stats')} />}
+                    {/* 발견 3가지 */}
+                    {page.discoveries?.length > 0 && <DiscoveriesCard discoveries={page.discoveries} />}
+                    {/* 4주 트렌드 */}
+                    {page.trend && <TrendCard trend={page.trend} />}
+                    {/* 추천 행동 */}
+                    {page.recommendations?.length > 0 && <RecommendationsCard recommendations={page.recommendations} />}
+                    {/* 더 알아내려면 */}
+                    {page.moreHint && <MoreHintCard hint={page.moreHint} />}
+                  </>;
+                })()}
 
-          {/* ===== 인사이트 모드 ===== */}
-          {mode === 'insight' && <>
-            {/* 히어로 */}
-            <HeroCard hero={page.hero} />
-            {/* 2열 지표 */}
-            <MetricsGrid metrics={page.metrics} />
-            {/* 영향 요인 */}
-            {page.influenceFactors && <FactorsCard factors={page.influenceFactors} onStatsClick={() => setMode('stats')} />}
-            {/* 발견 3가지 */}
-            {page.discoveries?.length > 0 && <DiscoveriesCard discoveries={page.discoveries} />}
-            {/* 4주 트렌드 */}
-            {page.trend && <TrendCard trend={page.trend} />}
-            {/* 추천 행동 */}
-            {page.recommendations?.length > 0 && <RecommendationsCard recommendations={page.recommendations} />}
-            {/* 더 알아내려면 */}
-            {page.moreHint && <MoreHintCard hint={page.moreHint} />}
-          </>}
+                {/* ===== 통계 모드 ===== */}
+                {mode === 'stats' && <>
+                  <StatsCategoryGrid catAvgs={monthlyStats?.catAvgs} />
+                  {monthlyStats && <MonthlyChangeCard stats={monthlyStats} />}
+                  <CompareCard />
+                </>}
 
-          {/* ===== 통계 모드 ===== */}
-          {mode === 'stats' && <>
-            <StatsCategoryGrid catAvgs={monthlyStats?.catAvgs} />
-            {monthlyStats && <MonthlyChangeCard stats={monthlyStats} />}
-            <CompareCard />
-          </>}
-        </div>
-      </div>
+              </div>
+            </div>
+          </>
+        );
+      })()}
     </div>
   );
 }
@@ -198,8 +204,6 @@ function HeroCard({ hero }) {
   return (
     <div onClick={() => { setTapped(true); setTimeout(() => setTapped(false), 200); }}
       style={{ background: 'rgba(255,255,255,0.5)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', borderRadius: 12, padding: '18px 16px', marginBottom: 12, position: 'relative', overflow: 'hidden', transform: tapped ? 'scale(1.02)' : 'scale(1)', transition: 'transform 0.2s ease-out', cursor: 'pointer' }}>
-      <div style={{ position: 'absolute', top: -20, right: -20, width: 80, height: 80, background: 'rgba(83,74,183,0.08)', borderRadius: '50%' }} />
-      <div style={{ position: 'absolute', bottom: -30, right: 10, width: 60, height: 60, background: 'rgba(55,138,221,0.08)', borderRadius: '50%' }} />
       <div style={{ position: 'relative', zIndex: 1 }}>
         <div style={{ fontSize: 17, fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: 8, whiteSpace: 'pre-line', letterSpacing: -0.2 }}>
           {hero?.headline || '이번 주도\n잘 보내고 계세요'}

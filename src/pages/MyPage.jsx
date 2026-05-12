@@ -3160,7 +3160,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
         {/* Hero: skinAge + overallScore */}
         <div style={{ display: 'flex', gap: 10, marginBottom: 16, animation: 'fadeUp 0.3s ease 0.1s both' }}>
           <div style={{
-            flex: 1, background: 'var(--bg-card)', borderRadius: 20, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+            flex: 1, background: 'var(--bg-card)', borderRadius: 20, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
             border: '1px solid var(--border-light)', padding: '16px 14px', textAlign: 'center',
           }}>
             <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>피부나이</div>
@@ -3170,7 +3170,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
             </div>
           </div>
           <div style={{
-            flex: 1, background: 'var(--bg-card)', borderRadius: 20, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+            flex: 1, background: 'var(--bg-card)', borderRadius: 20, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
             border: '1px solid var(--border-light)', padding: '16px 14px', textAlign: 'center',
           }}>
             <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>종합 점수</div>
@@ -3197,7 +3197,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
         {/* 피부 타입 정보 */}
         <div style={{
           animation: 'fadeUp 0.3s ease 0.2s both',
-          background: 'var(--bg-card)', borderRadius: 22, padding: '16px 18px', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+          background: 'var(--bg-card)', borderRadius: 22, padding: '16px 18px', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
           border: '1px solid var(--border-subtle)', marginBottom: 12,
           boxShadow: 'none',
         }}>
@@ -3271,7 +3271,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
           return (
             <div style={{
               animation: 'fadeUp 0.3s ease 0.3s both',
-              background: 'var(--bg-card)', borderRadius: 22, padding: '16px 18px', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+              background: 'var(--bg-card)', borderRadius: 22, padding: '16px 18px', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
               border: '1px solid var(--border-subtle)', marginBottom: 12,
               boxShadow: 'none',
             }}>
@@ -3298,7 +3298,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
         {record.advice && (
           <div style={{
             animation: 'fadeUp 0.3s ease 0.4s both',
-            background: 'var(--bg-card)', borderRadius: 22, padding: '16px 18px', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+            background: 'var(--bg-card)', borderRadius: 22, padding: '16px 18px', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
             border: '1px solid var(--border-subtle)', marginBottom: 12,
             boxShadow: 'none',
           }}>
