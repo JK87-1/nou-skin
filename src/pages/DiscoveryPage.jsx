@@ -233,14 +233,14 @@ function MetricsGrid({ metrics }) {
         let val = m.value;
         if (m.id === 'activity' && m.value >= 1000) val = (m.value / 1000).toFixed(1) + 'k';
         return (
-          <div key={m.id} style={{ ..._dcs, padding: 16, aspectRatio: '1', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-            <div>
-              <div style={{ fontSize: 18 }}>{m.icon}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>{m.label}</div>
+          <div key={m.id} style={{ ..._dcs, padding: '14px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 100 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ fontSize: 16 }}>{m.icon}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{m.label}</div>
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
-                <span style={{ fontSize: 22, fontWeight: 500, color: 'var(--text-primary)' }}>{val || '—'}</span>
+                <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{val || '—'}</span>
                 <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{m.unit}</span>
               </div>
               {m.change?.value !== 0 && <div style={{ fontSize: 10, color: changeColor, marginTop: 3 }}>{arrow} {m.change?.value > 0 ? '+' : ''}{m.change?.value} {m.change?.label}</div>}
