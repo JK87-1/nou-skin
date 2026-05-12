@@ -2688,8 +2688,20 @@ export function AddFoodModal({ onAdd, onClose, initialMeal, onDetail }) {
   const handleSubmit = async () => {
     if (!aiResult) return;
     const photoId = await saveThumbToDB();
+    // 식사 시간 계산
+    const now = new Date();
+    let loggedAt;
+    if (mealTimeMode === '1hour') {
+      loggedAt = new Date(now.getTime() - 3600000).toISOString();
+    } else if (mealTimeMode === 'custom' && customMealTime) {
+      const [h, m] = customMealTime.split(':').map(Number);
+      const d = new Date(now); d.setHours(h, m, 0, 0);
+      loggedAt = d.toISOString();
+    } else {
+      loggedAt = now.toISOString();
+    }
     onAdd({
-      name: aiResult.name, meal, photo: photoId,
+      name: aiResult.name, meal, photo: photoId, loggedAt,
       kcal: aiResult.kcal || 0,
       carb: aiResult.carb || 0,
       protein: aiResult.protein || 0,
