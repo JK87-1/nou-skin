@@ -305,30 +305,12 @@ export default function TodayPage() {
           ) : (
             timeline.map((item, i) => {
               const { Icon, color } = CAT_ICONS[item.category] || { Icon: IconClock, color: 'var(--text-muted)' };
-              const isEditing = editingId === item.id;
               return (
-                <div key={item.id} style={{
+                <div key={item.id} onClick={() => { setEditingId(item.id); setEditTime(item.time); }} style={{
                   display: 'flex', gap: 12, padding: '8px 0 8px 14px', marginBottom: 4,
-                  borderLeft: `2px solid ${color}30`,
+                  borderLeft: `2px solid ${color}30`, cursor: 'pointer',
                 }}>
-                  {isEditing ? (
-                    <input type="time" autoFocus value={editTime} onChange={e => setEditTime(e.target.value)}
-                      onBlur={() => {
-                        if (editTime && editTime !== item.time) {
-                          saveTimelineTime(selectedDate, item, editTime);
-                          setVer(v => v + 1);
-                        }
-                        setEditingId(null);
-                      }}
-                      onKeyDown={e => { if (e.key === 'Enter') e.target.blur(); }}
-                      style={{ width: 50, minWidth: 50, fontSize: 11, fontWeight: 600, color, border: `1.5px solid ${color}`, borderRadius: 8, background: `${color}08`, padding: '2px 4px', outline: 'none', textAlign: 'center', fontFamily: 'inherit' }}
-                    />
-                  ) : (
-                    <span onClick={() => { setEditingId(item.id); setEditTime(item.time); }}
-                      style={{ fontSize: 11, color: 'rgba(0,0,0,0.3)', minWidth: 38, fontWeight: 500, cursor: 'pointer', borderBottom: '1px dashed rgba(0,0,0,0.15)', paddingBottom: 1 }}>
-                      {item.time}
-                    </span>
-                  )}
+                  <span style={{ fontSize: 11, color: 'rgba(0,0,0,0.3)', minWidth: 38, fontWeight: 500 }}>{item.time}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                     <div style={{ width: 24, height: 24, borderRadius: 8, background: `${color}12`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <Icon size={13} color={color} />
@@ -409,6 +391,63 @@ export default function TodayPage() {
         </div>
       </div>
 
+      {/* 시간 수정 모달 */}
+      {editingId && (() => {
+        const item = timeline.find(t => t.id === editingId);
+        if (!item) return null;
+        const { Icon, color } = CAT_ICONS[item.category] || { Icon: IconClock, color: 'var(--text-muted)' };
+        return (
+          <div onClick={() => setEditingId(null)} style={{
+            position: 'fixed', inset: 0, zIndex: 1100,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+          }}>
+            <div onClick={e => e.stopPropagation()} style={{
+              background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
+              padding: '24px 24px 40px', width: '100%', maxWidth: 420,
+            }}>
+              <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 10, background: `${color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Icon size={16} color={color} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{item.content}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>시간 수정</div>
+                </div>
+              </div>
+              <input type="time" autoFocus value={editTime} onChange={e => setEditTime(e.target.value)}
+                style={{
+                  width: '100%', padding: '14px', borderRadius: 14, border: '1.5px solid rgba(0,0,0,0.08)',
+                  background: 'var(--bg-input, #F2F3F5)', fontSize: 24, fontWeight: 600,
+                  color: 'var(--text-primary)', textAlign: 'center', outline: 'none', fontFamily: 'inherit',
+                  boxSizing: 'border-box',
+                }}
+              />
+              <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
+                <button onClick={() => setEditingId(null)} style={{
+                  flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius, 14px)',
+                  border: 'none', background: 'var(--bg-input, #F2F3F5)',
+                  color: 'var(--text-muted)', fontSize: 14, fontWeight: 600,
+                  cursor: 'pointer', fontFamily: 'inherit',
+                }}>취소</button>
+                <button onClick={() => {
+                  if (editTime && editTime !== item.time) {
+                    saveTimelineTime(selectedDate, item, editTime);
+                    setVer(v => v + 1);
+                  }
+                  setEditingId(null);
+                }} style={{
+                  flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius, 14px)',
+                  border: 'none', background: 'var(--accent-primary)',
+                  color: '#fff', fontSize: 14, fontWeight: 600,
+                  cursor: 'pointer', fontFamily: 'inherit',
+                }}>저장</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
