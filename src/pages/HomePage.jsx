@@ -643,9 +643,17 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
             </svg>
           </div>
           <img src="/luasky.svg" alt="lua" style={{ height: 30, objectFit: 'contain', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }} />
-          {editMode && (
+          {editMode ? (
             <div onClick={() => setEditMode(false)} style={{ cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1 }}>
               <span style={{ fontSize: 14, fontWeight: 600, color: '#4DB8A0' }}>완료</span>
+            </div>
+          ) : (
+            <div onClick={() => {/* TODO: 메뉴 */}} style={{ cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1 }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.8)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="4" y1="7" x2="20" y2="7" />
+                <line x1="4" y1="12" x2="20" y2="12" />
+                <line x1="4" y1="17" x2="20" y2="17" />
+              </svg>
             </div>
           )}
         </div>
