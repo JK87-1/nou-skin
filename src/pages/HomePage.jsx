@@ -236,7 +236,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
   const [showWaterModal, setShowWaterModal] = useState(false);
   const [showSleepModal, setShowSleepModal] = useState(false);
   const [homeView, setHomeView] = useState('cards'); // 'cards' | 'briefing'
-  const [heroVersion, setHeroVersion] = useState('v2'); // 'v1' | 'v2'
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [showDatePicker, setShowDatePicker] = useState(false);
   const isToday = selectedDate === new Date().toISOString().slice(0, 10);
@@ -634,62 +633,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
       minHeight: '100dvh', paddingBottom: 90,
     }}>
 
-      {/* ===== 1. 히어로 영역 ===== */}
-      {heroVersion === 'v1' ? (
-      <div style={{
-        padding: '28px 22px 24px',
-        position: 'relative',
-      }}>
-        {/* 상단 row */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40, position: 'relative' }}>
-          <div onClick={() => setShowWeather(true)} style={{ cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1 }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.8)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
-            </svg>
-          </div>
-          <img src="/luasky.svg" alt="lua" style={{ height: 30, objectFit: 'contain', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }} />
-          {editMode ? (
-            <div onClick={() => setEditMode(false)} style={{
-              cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1,
-            }}>
-              <span style={{ fontSize: 14, fontWeight: 600, color: '#4DB8A0' }}>완료</span>
-            </div>
-          ) : (
-            <div onClick={() => setHeroVersion('v2')} style={{
-              width: 28, height: 16, borderRadius: 8, background: 'rgba(0,0,0,0.12)',
-              position: 'relative', cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1,
-            }}>
-              <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#fff', position: 'absolute', top: 2, left: 2, boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }} />
-            </div>
-          )}
-        </div>
-
-        {/* 날짜 + 인사 */}
-        {(() => {
-          const _selDate = new Date(selectedDate + 'T00:00:00');
-          const days = ['일','월','화','수','목','금','토'];
-          const dateStr = `${_selDate.getFullYear()}. ${String(_selDate.getMonth()+1).padStart(2,'0')}. ${String(_selDate.getDate()).padStart(2,'0')}  ${days[_selDate.getDay()]}요일`;
-          const _tm = getTimeMode();
-          const _isDark = _tm === 'evening' && homeView === 'briefing';
-          const greeting = getGreeting(profile.nickname);
-          const txtP = _isDark ? '#fff' : '#0D3028';
-          const txtH = _isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.35)';
-          const txtS = _isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.3)';
-          return (
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                <div onClick={() => setShowDatePicker(true)} style={{ fontSize: 14, fontWeight: 500, color: txtH, cursor: 'pointer', WebkitTapHighlightColor: 'transparent', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  {dateStr}
-                  {!isToday && <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--accent-primary, #89cef5)', padding: '2px 8px', borderRadius: 8, background: 'rgba(137,206,245,0.1)' }}>과거</span>}
-                  <span style={{ fontSize: 10, color: 'rgba(0,0,0,0.15)' }}>▼</span>
-                </div>
-              </div>
-            </div>
-          );
-        })()}
-      </div>
-      ) : (
-      /* ===== v2 히어로 영역 ===== */
+      {/* ===== 히어로 영역 ===== */}
       <div style={{ padding: '28px 22px 20px', position: 'relative' }}>
         {/* 상단 row */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, position: 'relative' }}>
@@ -699,16 +643,9 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
             </svg>
           </div>
           <img src="/luasky.svg" alt="lua" style={{ height: 30, objectFit: 'contain', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }} />
-          {editMode ? (
+          {editMode && (
             <div onClick={() => setEditMode(false)} style={{ cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1 }}>
               <span style={{ fontSize: 14, fontWeight: 600, color: '#4DB8A0' }}>완료</span>
-            </div>
-          ) : (
-            <div onClick={() => setHeroVersion('v1')} style={{
-              width: 28, height: 16, borderRadius: 8, background: 'var(--accent-primary, #89cef5)',
-              position: 'relative', cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1,
-            }}>
-              <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#fff', position: 'absolute', top: 2, left: 14, boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }} />
             </div>
           )}
         </div>
@@ -783,7 +720,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
           );
         })()}
       </div>
-      )}
 
       {/* ===== 카드 그리드 ===== */}
       {<>
