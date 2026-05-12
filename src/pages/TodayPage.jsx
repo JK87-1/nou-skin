@@ -73,8 +73,17 @@ function buildTimeline(dateStr, data) {
 
   // 수분
   if (data.waterCups > 0) {
-    const wt = data.rec.water?.loggedAt ? data.rec.water.loggedAt.slice(11, 16) : '09:00';
-    items.push({ id: 'w1', time: wt, category: 'water', content: `물 ${data.waterMl}ml (${data.waterCups}잔)`, sortTime: `${dateStr}T${wt}` });
+    const intakes = data.rec.water?.intakes;
+    if (intakes && intakes.length > 0) {
+      intakes.forEach((intake, i) => {
+        const wt = intake.loggedAt ? intake.loggedAt.slice(11, 16) : '09:00';
+        const c = intake.cups || 1;
+        items.push({ id: `w${i}`, time: wt, category: 'water', content: `물 ${c * 250}ml (${c}잔)`, sortTime: `${dateStr}T${wt}`, intakeIndex: i });
+      });
+    } else {
+      const wt = data.rec.water?.loggedAt ? data.rec.water.loggedAt.slice(11, 16) : '09:00';
+      items.push({ id: 'w1', time: wt, category: 'water', content: `물 ${data.waterMl}ml (${data.waterCups}잔)`, sortTime: `${dateStr}T${wt}` });
+    }
   }
 
   // 카페인
@@ -183,7 +192,11 @@ function saveTimelineTime(dateStr, item, newTime) {
       const all = JSON.parse(localStorage.getItem('lua_record_v2') || '{}');
       const rec = all[dateStr] || {};
       if (!rec.water) rec.water = {};
-      rec.water.loggedAt = `${dateStr}T${newTime}:00`;
+      if (rec.water.intakes && item.intakeIndex != null) {
+        rec.water.intakes[item.intakeIndex].loggedAt = `${dateStr}T${newTime}:00`;
+      } else {
+        rec.water.loggedAt = `${dateStr}T${newTime}:00`;
+      }
       all[dateStr] = rec;
       localStorage.setItem('lua_record_v2', JSON.stringify(all));
     }

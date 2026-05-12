@@ -2539,7 +2539,10 @@ function WaterIntakeModal({ onClose, onUpdate }) {
     // save
     const all = getAll();
     const rec = all[todayKey] || { date: todayKey };
-    rec.water = { ...(rec.water || {}), cups: next, loggedAt: new Date().toISOString() };
+    const now = new Date().toISOString();
+    const intakes = rec.water?.intakes || [];
+    intakes.push({ cups: 1, loggedAt: now });
+    rec.water = { cups: next, loggedAt: now, intakes };
     all[todayKey] = rec;
     localStorage.setItem('lua_record_v2', JSON.stringify(all));
   };
@@ -2551,7 +2554,9 @@ function WaterIntakeModal({ onClose, onUpdate }) {
     hapticLight();
     const all = getAll();
     const rec = all[todayKey] || { date: todayKey };
-    rec.water = { ...(rec.water || {}), cups: next, loggedAt: new Date().toISOString() };
+    const intakes = rec.water?.intakes || [];
+    if (intakes.length > 0) intakes.pop();
+    rec.water = { cups: next, loggedAt: new Date().toISOString(), intakes };
     all[todayKey] = rec;
     localStorage.setItem('lua_record_v2', JSON.stringify(all));
   };
