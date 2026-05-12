@@ -282,6 +282,11 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
     } catch { return DEFAULT_CARD_ORDER; }
   });
   const [editMode, setEditMode] = useState(false);
+  const [showCardSettings, setShowCardSettings] = useState(false);
+  const [hiddenCards, setHiddenCards] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('lua_home_hidden_cards') || '[]'); } catch { return []; }
+  });
+  const saveHiddenCards = (next) => { setHiddenCards(next); localStorage.setItem('lua_home_hidden_cards', JSON.stringify(next)); };
   const [userProfile, setUserProfile] = useState(getProfile);
   const [dragState, setDragState] = useState({ dragging: false, cardId: null, startIdx: -1, overIdx: -1, x: 0, y: 0, offsetX: 0, offsetY: 0 });
   const gridRef = useRef(null);
@@ -648,7 +653,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
               <span style={{ fontSize: 14, fontWeight: 600, color: '#4DB8A0' }}>완료</span>
             </div>
           ) : (
-            <div onClick={() => {/* TODO: 메뉴 */}} style={{ cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1 }}>
+            <div onClick={() => setShowCardSettings(true)} style={{ cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1 }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.8)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="4" y1="7" x2="20" y2="7" />
                 <line x1="4" y1="12" x2="20" y2="12" />
@@ -850,7 +855,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
         return (
           <>
           <div ref={gridRef} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 15, margin: '0 18px', position: 'relative' }}>
-            {cardOrder.map((cardId, cardIdx) => {
+            {cardOrder.filter(id => !hiddenCards.includes(id)).map((cardId, cardIdx) => {
               const isDragging = dragState.dragging && dragState.cardId === cardId;
               const isDropTarget = dragState.dragging && dragState.overIdx === cardIdx && dragState.cardId !== cardId;
               const editWrap = (label, content) => (
@@ -1844,6 +1849,20 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
         <CycleModal onClose={() => setShowCycleModal(false)} onUpdate={() => { setShowCycleModal(false); setWeightRefreshKey(k => k + 1); }} />
       )}
 
+      {showCardSettings && (
+        <HomeCardSettings
+          cardOrder={cardOrder}
+          hiddenCards={hiddenCards}
+          registry={CARD_REGISTRY}
+          onReorder={saveCardOrder}
+          onToggle={(id) => {
+            const next = hiddenCards.includes(id) ? hiddenCards.filter(h => h !== id) : [...hiddenCards, id];
+            saveHiddenCards(next);
+          }}
+          onClose={() => setShowCardSettings(false)}
+        />
+      )}
+
       {/* 날짜 선택 모달 */}
       {showDatePicker && (
         <div onClick={() => setShowDatePicker(false)} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
@@ -2105,6 +2124,181 @@ function getHomeExercises() {
     const ids = JSON.parse(localStorage.getItem('lua_exercise_settings')) || ['walk', 'weight', 'run', 'cycle', 'yoga', 'swim'];
     return ids.map(id => ALL_EXERCISES.find(e => e.id === id)).filter(Boolean);
   } catch { return ALL_EXERCISES.slice(0, 6); }
+}
+
+// ===== 홈 카드 설정 페이지 =====
+function HomeCardSettings({ cardOrder, hiddenCards, registry, onReorder, onToggle, onClose }) {
+  const [order, setOrder] = useState([...cardOrder]);
+  const [dragFrom, setDragFrom] = useState(null);
+  const [dragTo, setDragTo] = useState(null);
+  const [dragOffsetY, setDragOffsetY] = useState(0);
+  const dragStartY = useRef(0);
+  const dragFromRef = useRef(null);
+  const dragToRef = useRef(null);
+  const didDragRef = useRef(false);
+  const itemRefs = useRef({});
+
+  const CARD_ICONS = {
+    condition: '😊', activity: '🔥', food: '🍎', water: '💧', weight: '⚖️',
+    sleep: '🌙', blood_sugar: '🩸', drink: '☕', supplement: '💊', skin_check: '✨', weather: '🌤', cycle: '🩷',
+  };
+
+  const findOverIdx = (y) => {
+    for (let i = 0; i < order.length; i++) {
+      const ref = itemRefs.current[order[i]];
+      if (!ref || i === dragFromRef.current) continue;
+      const rect = ref.getBoundingClientRect();
+      if (y >= rect.top && y <= rect.bottom) return i;
+    }
+    return null;
+  };
+
+  const startDrag = (idx, y) => {
+    dragStartY.current = y;
+    dragFromRef.current = idx;
+    dragToRef.current = null;
+    didDragRef.current = false;
+    setDragFrom(idx);
+    setDragTo(null);
+    setDragOffsetY(0);
+  };
+
+  const moveDrag = (y) => {
+    if (dragFromRef.current === null) return;
+    if (Math.abs(y - dragStartY.current) > 3) didDragRef.current = true;
+    setDragOffsetY(y - dragStartY.current);
+    const over = findOverIdx(y);
+    if (over !== null) { dragToRef.current = over; setDragTo(over); }
+  };
+
+  const endDrag = () => {
+    const from = dragFromRef.current;
+    const to = dragToRef.current;
+    dragFromRef.current = null;
+    dragToRef.current = null;
+    setDragFrom(null); setDragTo(null); setDragOffsetY(0);
+    if (from !== null && to !== null && from !== to) {
+      const next = [...order];
+      const [item] = next.splice(from, 1);
+      next.splice(to, 0, item);
+      setOrder(next);
+      onReorder(next);
+    }
+  };
+
+  const bindDragHandle = (el, idx) => {
+    if (!el) return;
+    el.ontouchstart = (e) => { e.stopPropagation(); startDrag(idx, e.touches[0].clientY); };
+    el.ontouchmove = (e) => { e.preventDefault(); e.stopPropagation(); moveDrag(e.touches[0].clientY); };
+    el.ontouchend = (e) => { e.stopPropagation(); endDrag(); };
+    el.onmousedown = (e) => {
+      e.stopPropagation(); e.preventDefault();
+      startDrag(idx, e.clientY);
+      const onMove = (ev) => { ev.preventDefault(); moveDrag(ev.clientY); };
+      const onUp = () => { endDrag(); window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
+    };
+  };
+
+  const enabledCount = order.filter(id => !hiddenCards.includes(id)).length;
+
+  return (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 2002,
+      background: 'var(--page-gradient, linear-gradient(to bottom, #ace2fc, #ffffff))',
+      display: 'flex', flexDirection: 'column',
+      animation: 'slideInRight 0.3s ease',
+      overflowY: 'auto',
+    }}>
+      <style>{`@keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }`}</style>
+      {/* Header */}
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+        <div onClick={onClose} style={{
+          width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1,
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+        </div>
+        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 15, fontWeight: 500, color: '#1A3A4A' }}>홈 카드 설정</span>
+      </div>
+
+      <div style={{ padding: '20px 20px 16px' }}>
+        <div style={{ fontSize: 12, color: '#9ABBC8', marginBottom: 4 }}>드래그하여 순서를 변경하고, 토글로 카드를 숨길 수 있어요</div>
+      </div>
+
+      {/* Card list */}
+      <div style={{ padding: '0 20px', flex: 1, paddingBottom: 120 }}>
+        {order.map((cardId, idx) => {
+          const card = registry.find(c => c.id === cardId);
+          if (!card) return null;
+          const isHidden = hiddenCards.includes(cardId);
+          const isDragged = dragFrom === idx;
+          const ITEM_H = 58;
+          let shiftY = 0;
+          if (dragFrom !== null && dragTo !== null && !isDragged && dragFrom !== dragTo) {
+            if (dragFrom < dragTo) {
+              if (idx > dragFrom && idx <= dragTo) shiftY = -ITEM_H;
+            } else {
+              if (idx >= dragTo && idx < dragFrom) shiftY = ITEM_H;
+            }
+          }
+          return (
+            <div key={cardId} ref={el => itemRefs.current[cardId] = el} style={{
+              marginBottom: 10,
+              position: 'relative', zIndex: isDragged ? 100 : 1,
+              transform: isDragged ? `translateY(${dragOffsetY}px) scale(1.02)` : shiftY ? `translateY(${shiftY}px)` : 'none',
+              transition: isDragged ? 'box-shadow 0.1s ease' : 'transform 0.2s cubic-bezier(0.2,0,0,1)',
+              boxShadow: isDragged ? '0 8px 24px rgba(0,0,0,0.12)' : 'none',
+              borderRadius: 14,
+            }}>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '12px 14px',
+                background: 'rgba(255,255,255,0.6)',
+                borderRadius: 14,
+                border: '0.5px solid rgba(255,255,255,0.95)',
+                boxShadow: isDragged ? 'none' : '0 1px 4px rgba(0,0,0,0.03)',
+                opacity: isHidden ? 0.45 : 1,
+                transition: 'opacity 0.2s ease',
+              }}>
+                <svg
+                  ref={el => bindDragHandle(el, idx)}
+                  onClick={e => e.stopPropagation()}
+                  width="22" height="22" viewBox="0 0 24 24" fill="none"
+                  style={{ cursor: 'grab', flexShrink: 0, touchAction: 'none', userSelect: 'none', padding: '4px 2px', WebkitTapHighlightColor: 'transparent', outline: 'none' }}
+                >
+                  <line x1="5" y1="9" x2="19" y2="9" stroke="rgba(0,0,0,0.2)" strokeWidth="2" strokeLinecap="round" />
+                  <line x1="5" y1="15" x2="19" y2="15" stroke="rgba(0,0,0,0.2)" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+                <span style={{ fontSize: 18, width: 28, textAlign: 'center', flexShrink: 0 }}>{CARD_ICONS[cardId] || '📋'}</span>
+                <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: '#1A3A4A' }}>{card.label}</span>
+                <div style={{ width: 40, display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
+                  <div onClick={() => {
+                    if (!isHidden && enabledCount <= 1) return;
+                    onToggle(cardId);
+                  }} style={{
+                    width: 36, height: 18, borderRadius: 10,
+                    background: !isHidden ? 'linear-gradient(120deg, #90CCE8, #60AADD)' : 'rgba(180,200,210,.3)',
+                    position: 'relative', cursor: 'pointer',
+                    transition: 'background 0.2s ease',
+                  }}>
+                    <div style={{
+                      width: 14, height: 14, borderRadius: '50%', background: '#fff',
+                      position: 'absolute', top: 2,
+                      left: !isHidden ? 20 : 2,
+                      transition: 'left 0.2s ease',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                    }} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 function AddActivityModal({ onSave, onClose }) {
