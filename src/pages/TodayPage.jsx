@@ -58,7 +58,8 @@ function buildTimeline(dateStr, data) {
 
   // 수분
   if (data.waterCups > 0) {
-    items.push({ id: 'w1', time: '09:00', category: 'water', content: `물 ${data.waterMl}ml (${data.waterCups}잔)`, sortTime: `${dateStr}T09:00` });
+    const wt = data.rec.water?.loggedAt ? data.rec.water.loggedAt.slice(11, 16) : '09:00';
+    items.push({ id: 'w1', time: wt, category: 'water', content: `물 ${data.waterMl}ml (${data.waterCups}잔)`, sortTime: `${dateStr}T${wt}` });
   }
 
   // 카페인
@@ -69,13 +70,15 @@ function buildTimeline(dateStr, data) {
 
   // 식사
   data.dayFoods.forEach((f, i) => {
-    const mealTime = f.meal === '아침' ? '08:00' : f.meal === '점심' ? '12:30' : f.meal === '저녁' ? '19:00' : `${12 + i}:00`;
+    const defaultTime = f.meal === '아침' ? '08:00' : f.meal === '점심' ? '12:30' : f.meal === '저녁' ? '19:00' : `${12 + i}:00`;
+    const mealTime = f.loggedAt ? f.loggedAt.slice(11, 16) : defaultTime;
     items.push({ id: `m${i}`, time: mealTime, category: 'meal', content: `${f.meal || '식사'} · ${f.name || ''} ${f.kcal ? f.kcal + 'kcal' : ''}`.trim(), sortTime: `${dateStr}T${mealTime}` });
   });
 
   // 활동
   if (data.steps > 0) {
-    items.push({ id: 'a1', time: '18:00', category: 'activity', content: `${data.steps.toLocaleString()}보 걸음`, sortTime: `${dateStr}T18:00` });
+    const at = data.rec.stepsLoggedAt ? data.rec.stepsLoggedAt.slice(11, 16) : '18:00';
+    items.push({ id: 'a1', time: at, category: 'activity', content: `${data.steps.toLocaleString()}보 걸음`, sortTime: `${dateStr}T${at}` });
   }
 
   // 컨디션
@@ -117,9 +120,67 @@ function getRelativeDate(dateStr) {
   return `${diff}일 전`;
 }
 
+// 타임라인 시간 수정 → localStorage 반영
+function saveTimelineTime(dateStr, item, newTime) {
+  try {
+    if (item.category === 'sleep') {
+      const all = JSON.parse(localStorage.getItem('lua_record_v2') || '{}');
+      const rec = all[dateStr] || {};
+      if (rec.sleep) {
+        rec.sleep.bedtime = `${dateStr}T${newTime}:00`;
+        all[dateStr] = rec;
+        localStorage.setItem('lua_record_v2', JSON.stringify(all));
+      }
+    } else if (item.category === 'caffeine') {
+      const all = JSON.parse(localStorage.getItem('lua_drink_records') || '{}');
+      const dayRec = all[dateStr] || {};
+      const idx = parseInt(item.id.replace('c', ''));
+      if (dayRec.caffeine?.[idx]) {
+        dayRec.caffeine[idx].drunkAt = `${dateStr}T${newTime}:00`;
+        all[dateStr] = dayRec;
+        localStorage.setItem('lua_drink_records', JSON.stringify(all));
+      }
+    } else if (item.category === 'meal') {
+      const all = JSON.parse(localStorage.getItem('lua_food_records') || '{}');
+      const dayFoods = (all[dateStr] || []).filter(f => !f.name?.startsWith('물 '));
+      const idx = parseInt(item.id.replace('m', ''));
+      if (dayFoods[idx]) {
+        dayFoods[idx].loggedAt = `${dateStr}T${newTime}:00`;
+        all[dateStr] = all[dateStr].map(f => f.name?.startsWith('물 ') ? f : null).filter(Boolean);
+        dayFoods.forEach(f => all[dateStr].push(f));
+        localStorage.setItem('lua_food_records', JSON.stringify(all));
+      }
+    } else if (item.category === 'condition') {
+      const checks = JSON.parse(localStorage.getItem('nou_condition_checks') || '[]');
+      const dayChecks = checks.filter(c => (c.date || (c.timestamp && c.timestamp.slice(0, 10))) === dateStr);
+      if (dayChecks.length > 0) {
+        const last = dayChecks[dayChecks.length - 1];
+        last.timestamp = `${dateStr}T${newTime}:00`;
+        localStorage.setItem('nou_condition_checks', JSON.stringify(checks));
+      }
+    } else if (item.category === 'activity') {
+      const all = JSON.parse(localStorage.getItem('lua_record_v2') || '{}');
+      const rec = all[dateStr] || {};
+      rec.stepsLoggedAt = `${dateStr}T${newTime}:00`;
+      all[dateStr] = rec;
+      localStorage.setItem('lua_record_v2', JSON.stringify(all));
+    } else if (item.category === 'water') {
+      const all = JSON.parse(localStorage.getItem('lua_record_v2') || '{}');
+      const rec = all[dateStr] || {};
+      if (!rec.water) rec.water = {};
+      rec.water.loggedAt = `${dateStr}T${newTime}:00`;
+      all[dateStr] = rec;
+      localStorage.setItem('lua_record_v2', JSON.stringify(all));
+    }
+  } catch (e) { console.warn('[Timeline] save time failed:', e); }
+}
+
 export default function TodayPage() {
   const [selectedDate, setSelectedDate] = useState(() => getDateKey(new Date()));
   const [trendMetric, setTrendMetric] = useState('water');
+  const [editingId, setEditingId] = useState(null);
+  const [editTime, setEditTime] = useState('');
+  const [ver, setVer] = useState(0); // force re-render after time edit
   const todayStr = getDateKey(new Date());
   const isToday = selectedDate === todayStr;
 
@@ -127,7 +188,7 @@ export default function TodayPage() {
   const dateLabel = `${dt.getMonth() + 1}월 ${dt.getDate()}일 ${DAY_NAMES[dt.getDay()]}`;
   const relativeLabel = getRelativeDate(selectedDate);
 
-  const data = useMemo(() => getDayData(selectedDate), [selectedDate]);
+  const data = useMemo(() => getDayData(selectedDate), [selectedDate, ver]);
   const timeline = useMemo(() => buildTimeline(selectedDate, data), [selectedDate, data]);
   const trend = useMemo(() => getWeeklyTrend(trendMetric, todayStr), [trendMetric, todayStr]);
 
@@ -244,12 +305,30 @@ export default function TodayPage() {
           ) : (
             timeline.map((item, i) => {
               const { Icon, color } = CAT_ICONS[item.category] || { Icon: IconClock, color: 'var(--text-muted)' };
+              const isEditing = editingId === item.id;
               return (
                 <div key={item.id} style={{
                   display: 'flex', gap: 12, padding: '8px 0 8px 14px', marginBottom: 4,
                   borderLeft: `2px solid ${color}30`,
                 }}>
-                  <span style={{ fontSize: 11, color: 'rgba(0,0,0,0.3)', minWidth: 38, fontWeight: 500 }}>{item.time}</span>
+                  {isEditing ? (
+                    <input type="time" autoFocus value={editTime} onChange={e => setEditTime(e.target.value)}
+                      onBlur={() => {
+                        if (editTime && editTime !== item.time) {
+                          saveTimelineTime(selectedDate, item, editTime);
+                          setVer(v => v + 1);
+                        }
+                        setEditingId(null);
+                      }}
+                      onKeyDown={e => { if (e.key === 'Enter') e.target.blur(); }}
+                      style={{ width: 50, minWidth: 50, fontSize: 11, fontWeight: 600, color, border: `1.5px solid ${color}`, borderRadius: 8, background: `${color}08`, padding: '2px 4px', outline: 'none', textAlign: 'center', fontFamily: 'inherit' }}
+                    />
+                  ) : (
+                    <span onClick={() => { setEditingId(item.id); setEditTime(item.time); }}
+                      style={{ fontSize: 11, color: 'rgba(0,0,0,0.3)', minWidth: 38, fontWeight: 500, cursor: 'pointer', borderBottom: '1px dashed rgba(0,0,0,0.15)', paddingBottom: 1 }}>
+                      {item.time}
+                    </span>
+                  )}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                     <div style={{ width: 24, height: 24, borderRadius: 8, background: `${color}12`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <Icon size={13} color={color} />
