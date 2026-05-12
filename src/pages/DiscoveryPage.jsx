@@ -111,17 +111,26 @@ export default function DiscoveryPage() {
   return (
     <div style={{ minHeight: '100dvh', paddingBottom: 100 }}>
 
-      {/* 1. 그라데이션 헤더 */}
-      <div style={{ background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRadius: 12, padding: '16px 16px', margin: '12px 16px', border: 'var(--card-border)' }}>
+      {/* 1. 헤더 */}
+      <div style={{ padding: '16px 20px 0' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{page.weekLabel} 리포트</div>
+          <div style={{ fontSize: 13, fontWeight: 500, color: 'rgba(0,0,0,0.35)' }}>{page.weekLabel} 리포트</div>
           <IconShare size={14} color="var(--text-muted)" style={{ cursor: 'pointer' }} />
         </div>
-        <div style={{ fontSize: 18, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.2, marginBottom: 4 }}>
-          {nickname ? `${nickname}님의 패턴을 발견했어요` : '이번 주 패턴을 발견했어요'}
+        <div style={{ fontSize: 22, fontWeight: 700, color: '#0D3028', letterSpacing: -0.3, marginBottom: 4, lineHeight: 1.35 }}>
+          {nickname ? `${nickname}님의 패턴을\n발견했어요` : '이번 주 패턴을\n발견했어요'}
         </div>
-        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-          {insightCount > 0 ? `${insightCount}개의 새로운 인사이트` : ''}{page.weekNumber ? ` · ${page.weekNumber}번째 발견` : ''}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {insightCount > 0 && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', padding: '5px 10px', borderRadius: 20, background: 'rgba(255,255,255,0.4)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.5)', fontSize: 11, color: 'rgba(0,0,0,0.35)', fontWeight: 500 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent-primary)', marginRight: 4 }}>{insightCount}개</span> 인사이트
+            </span>
+          )}
+          {page.weekNumber && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', padding: '5px 10px', borderRadius: 20, background: 'rgba(255,255,255,0.4)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.5)', fontSize: 11, color: 'rgba(0,0,0,0.35)', fontWeight: 500 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#534AB7', marginRight: 4 }}>{page.weekNumber}번째</span> 발견
+            </span>
+          )}
         </div>
       </div>
 
@@ -199,17 +208,17 @@ export default function DiscoveryPage() {
 
 // ===== 인사이트 섹션 컴포넌트 =====
 
+const _dcs = { background: 'var(--card-bg)', borderRadius: 30, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: 'var(--card-border)', boxShadow: 'var(--card-shadow)' };
+
 function HeroCard({ hero }) {
   const [tapped, setTapped] = useState(false);
   return (
     <div onClick={() => { setTapped(true); setTimeout(() => setTapped(false), 200); }}
-      style={{ background: 'rgba(255,255,255,0.5)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', borderRadius: 12, padding: '18px 16px', marginBottom: 12, position: 'relative', overflow: 'hidden', transform: tapped ? 'scale(1.02)' : 'scale(1)', transition: 'transform 0.2s ease-out', cursor: 'pointer' }}>
-      <div style={{ position: 'relative', zIndex: 1 }}>
-        <div style={{ fontSize: 17, fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: 8, whiteSpace: 'pre-line', letterSpacing: -0.2 }}>
-          {hero?.headline || '이번 주도\n잘 보내고 계세요'}
-        </div>
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>{hero?.summary || ''}</div>
+      style={{ ..._dcs, padding: '20px', marginBottom: 15, overflow: 'hidden', transform: tapped ? 'scale(1.02)' : 'scale(1)', transition: 'transform 0.2s ease-out', cursor: 'pointer' }}>
+      <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: 8, whiteSpace: 'pre-line', letterSpacing: -0.2 }}>
+        {hero?.headline || '이번 주도\n잘 보내고 계세요'}
       </div>
+      <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>{hero?.summary || ''}</div>
     </div>
   );
 }
@@ -217,14 +226,14 @@ function HeroCard({ hero }) {
 function MetricsGrid({ metrics }) {
   if (!metrics?.length) return null;
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 15, marginBottom: 15 }}>
       {metrics.map(m => {
         const changeColor = m.change?.direction === 'up' ? '#639922' : m.change?.direction === 'down' ? '#A32D2D' : 'var(--text-muted)';
         const arrow = m.change?.direction === 'up' ? '↑' : m.change?.direction === 'down' ? '↓' : '';
         let val = m.value;
         if (m.id === 'activity' && m.value >= 1000) val = (m.value / 1000).toFixed(1) + 'k';
         return (
-          <div key={m.id} style={{ background: 'white', borderRadius: 12, padding: 14, aspectRatio: '1', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div key={m.id} style={{ ..._dcs, padding: 16, aspectRatio: '1', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <div>
               <div style={{ fontSize: 18 }}>{m.icon}</div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>{m.label}</div>
@@ -247,11 +256,11 @@ function FactorsCard({ factors, onStatsClick }) {
   if (!factors?.factors?.length) return null;
   const topFactor = factors.topFactor || factors.factors[0];
   return (
-    <div style={{ background: 'white', borderRadius: 12, padding: 14, marginBottom: 12 }}>
+    <div style={{ ..._dcs, padding: '18px 20px', marginBottom: 15 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <IconGridPattern size={13} color="#534AB7" />
-          <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-primary)' }}>컨디션 영향 요인</span>
+          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>컨디션 영향 요인</span>
         </div>
         <span style={{ background: '#FAEEDA', color: '#854F0B', fontSize: 9, padding: '2px 7px', borderRadius: 6 }}>탑 {factors.factors.filter(f => f.name !== '기타').length}</span>
       </div>
@@ -280,10 +289,10 @@ function FactorsCard({ factors, onStatsClick }) {
 
 function DiscoveriesCard({ discoveries }) {
   return (
-    <div style={{ background: 'white', borderRadius: 12, padding: 14, marginBottom: 12 }}>
+    <div style={{ ..._dcs, padding: '18px 20px', marginBottom: 15 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
         <IconSparkles size={13} color="#534AB7" />
-        <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-primary)' }}>본인만의 발견</span>
+        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>본인만의 발견</span>
       </div>
       {discoveries.map((d, i) => {
         const num = String(i + 1).padStart(2, '0');
@@ -307,10 +316,10 @@ function TrendCard({ trend }) {
   if (!trend?.weeks) return null;
   const maxVal = Math.max(...trend.weeks.map(w => w.value), 1);
   return (
-    <div style={{ background: 'white', borderRadius: 12, padding: 14, marginBottom: 12 }}>
+    <div style={{ ..._dcs, padding: '18px 20px', marginBottom: 15 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
         <IconTrendingUp size={13} color="#639922" />
-        <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-primary)' }}>4주 트렌드 — {trend.trendDescription}</span>
+        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>4주 트렌드 — {trend.trendDescription}</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: 50, gap: 6, marginBottom: 6 }}>
         {trend.weeks.map((w, i) => {
@@ -331,10 +340,10 @@ function TrendCard({ trend }) {
 function RecommendationsCard({ recommendations }) {
   const RANK = { 1: { bg: '#FAEEDA', label: '⭐ 가장 효과', labelColor: '#854F0B', titleColor: '#412402', descColor: '#854F0B' }, 2: { bg: '#F0F7FE', labelColor: '#185FA5', titleColor: '#042C53', descColor: '#185FA5' }, 3: { bg: '#F0F7FE', labelColor: '#185FA5', titleColor: '#042C53', descColor: '#185FA5' } };
   return (
-    <div style={{ background: 'white', borderRadius: 12, padding: 14, marginBottom: 12 }}>
+    <div style={{ ..._dcs, padding: '18px 20px', marginBottom: 15 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
         <IconBulb size={13} color="#BA7517" />
-        <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-primary)' }}>추천 행동</span>
+        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>추천 행동</span>
       </div>
       <div style={{ display: 'flex', gap: 8, overflowX: 'auto', scrollSnapType: 'x mandatory', scrollbarWidth: 'none', msOverflowStyle: 'none', paddingBottom: 4 }}>
         {recommendations.map((rec, i) => {
@@ -354,12 +363,12 @@ function RecommendationsCard({ recommendations }) {
 
 function MoreHintCard({ hint }) {
   return (
-    <div style={{ background: '#F0F7FE', borderRadius: 12, padding: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div style={{ ..._dcs, padding: '18px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <IconBulb size={16} color="#BA7517" />
         <div>
-          <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-primary)' }}>{hint.title}</div>
-          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{hint.description}</div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{hint.title}</div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{hint.description}</div>
         </div>
       </div>
       <IconArrowRight size={14} color="var(--text-muted)" />
@@ -371,11 +380,11 @@ function MoreHintCard({ hint }) {
 
 function StatsCategoryGrid({ catAvgs }) {
   return (
-    <div style={{ background: 'white', borderRadius: 12, padding: 16, marginBottom: 12 }}>
-      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 10 }}>어떤 지표를 자세히 볼까요?</div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+    <div style={{ ..._dcs, padding: '18px 20px', marginBottom: 15 }}>
+      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12 }}>어떤 지표를 자세히 볼까요?</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
         {STAT_CATS.map(cat => (
-          <div key={cat.key} style={{ background: '#F0F7FE', borderRadius: 10, padding: '14px 8px', textAlign: 'center', cursor: 'pointer' }}>
+          <div key={cat.key} style={{ background: 'rgba(0,0,0,0.03)', borderRadius: 16, padding: '14px 8px', textAlign: 'center', cursor: 'pointer' }}>
             <cat.Icon size={22} color={cat.color} />
             <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-primary)', marginTop: 6 }}>{cat.label}</div>
             <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 1 }}>{catAvgs?.[cat.key]?.label || '—'}</div>
@@ -392,22 +401,22 @@ function MonthlyChangeCard({ stats }) {
     return <span style={{ fontSize: 10, color: change > 0 ? '#639922' : '#A32D2D', marginLeft: 4 }}>{change > 0 ? '↑' : '↓'} {change > 0 ? '+' : ''}{change.toFixed(1)}</span>;
   };
   return (
-    <div style={{ background: 'white', borderRadius: 12, padding: 16, marginBottom: 12 }}>
+    <div style={{ ..._dcs, padding: '18px 20px', marginBottom: 15 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <IconCalendarStats size={14} color="#534AB7" />
-          <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-primary)' }}>이번 달 변화</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>이번 달 변화</span>
         </div>
         <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{stats.month}월</span>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
         {[
           { label: '평균 컨디션', val: stats.avgCond > 0 ? stats.avgCond.toFixed(1) : '—', change: stats.condChange },
           { label: '평균 수면', val: stats.avgSleep > 0 ? stats.avgSleep.toFixed(1) + 'h' : '—', change: stats.sleepChange },
           { label: '기록 일수', val: `${stats.daysRecorded}일`, change: null },
           { label: '체중 변화', val: stats.weightChange != null ? `${stats.weightChange > 0 ? '+' : ''}${stats.weightChange.toFixed(1)}kg` : '—', change: null },
         ].map(m => (
-          <div key={m.label} style={{ background: '#F0F7FE', borderRadius: 8, padding: 10 }}>
+          <div key={m.label} style={{ background: 'rgba(0,0,0,0.03)', borderRadius: 16, padding: 12 }}>
             <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{m.label}</div>
             <div style={{ display: 'flex', alignItems: 'baseline' }}>
               <span style={{ fontSize: 18, fontWeight: 500, color: 'var(--text-primary)' }}>{m.val}</span>
@@ -416,7 +425,7 @@ function MonthlyChangeCard({ stats }) {
           </div>
         ))}
       </div>
-      <div style={{ background: '#F0F7FE', borderRadius: 8, padding: 10, fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+      <div style={{ background: 'rgba(0,0,0,0.03)', borderRadius: 16, padding: 12, fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>
         {stats.warmMsg} <IconHeart size={12} color="var(--text-muted)" style={{ verticalAlign: -1 }} />
       </div>
     </div>
@@ -425,21 +434,21 @@ function MonthlyChangeCard({ stats }) {
 
 function CompareCard() {
   return (
-    <div style={{ background: 'white', borderRadius: 12, padding: 16 }}>
+    <div style={{ ..._dcs, padding: '18px 20px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <IconArrowsShuffle size={14} color="#534AB7" />
-          <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-primary)' }}>두 지표 비교하기</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>두 지표 비교하기</span>
         </div>
         <span style={{ background: '#FAEEDA', color: '#854F0B', fontSize: 9, padding: '3px 8px', borderRadius: 8 }}>NEW</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-        <div style={{ flex: 1, background: '#F0F7FE', padding: '8px 12px', borderRadius: 8, textAlign: 'center' }}>
+        <div style={{ flex: 1, background: 'rgba(0,0,0,0.03)', padding: '8px 12px', borderRadius: 12, textAlign: 'center' }}>
           <div style={{ fontSize: 9, color: 'var(--text-dim)' }}>기준</div>
           <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-primary)' }}>수면시간</div>
         </div>
         <IconVs size={14} color="var(--text-dim)" />
-        <div style={{ flex: 1, background: '#F0F7FE', padding: '8px 12px', borderRadius: 8, textAlign: 'center' }}>
+        <div style={{ flex: 1, background: 'rgba(0,0,0,0.03)', padding: '8px 12px', borderRadius: 12, textAlign: 'center' }}>
           <div style={{ fontSize: 9, color: 'var(--text-dim)' }}>비교</div>
           <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-primary)' }}>컨디션</div>
         </div>
@@ -454,12 +463,12 @@ function CompareCard() {
 function InsufficientDataPage({ activeDays }) {
   return (
     <div style={{ minHeight: '100dvh', paddingBottom: 100 }}>
-      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 20px) 20px 0' }}>
-        <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)' }}>발견</div>
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>매주 새로운 발견을 보여드려요</div>
+      <div style={{ padding: '16px 20px 0' }}>
+        <div style={{ fontSize: 22, fontWeight: 700, color: '#0D3028', letterSpacing: -0.3 }}>발견</div>
+        <div style={{ fontSize: 13, color: 'rgba(0,0,0,0.35)', marginTop: 2 }}>매주 새로운 발견을 보여드려요</div>
       </div>
-      <div style={{ padding: '40px 20px', textAlign: 'center' }}>
-        <div style={{ background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: 'var(--card-border)', borderRadius: 30, padding: 30 }}>
+      <div style={{ padding: '40px 18px', textAlign: 'center' }}>
+        <div style={{ ..._dcs, padding: 30 }}>
           <div style={{ fontSize: 36, marginBottom: 12 }}>✨</div>
           <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>당신의 패턴을 함께 찾아갈게요</div>
           <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 20 }}>매일 기록을 쌓으면 나만의 패턴과 인사이트를 발견할 수 있어요</div>
