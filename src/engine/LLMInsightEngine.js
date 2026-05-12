@@ -229,10 +229,17 @@ function buildLLMContext(userData, triggerType, justInputData) {
   const skinSubs = safeJSON('nou_skin_sub_checks', []);
   const bloodSugar = safeJSON('nou_blood_sugar_checks', []);
 
-  ctx += `⚠️ 아래 "오늘" 데이터는 반드시 "오늘"로, "어제" 데이터는 반드시 "어제"로 언급하세요.\n\n`;
+  ctx += `⚠️ 아래 "오늘" 데이터는 반드시 "오늘"로, "어제" 데이터는 반드시 "어제"로 언급하세요.\n`;
+  ctx += `⚠️ 데이터가 없는 날은 해당 항목을 언급하지 마세요. 기록이 없으면 추측하거나 만들어내지 마세요.\n\n`;
   detailDays.forEach((day, idx) => {
     const label = idx === 0 ? '오늘' : '어제';
+    // 해당 날짜에 기록된 데이터가 하나도 없으면 명시
+    const hasAnyData = day.sleep > 0 || day.foodCount > 0 || day.totalCafMg > 0 || day.totalAlcohol > 0 || day.waterMl > 0 || day.condition || day.hasExercise || day.steps > 0 || day.suppDone > 0 || day.weight > 0;
     ctx += `## ${label} (${day.date} ${DAY_NAMES[day.dayOfWeek]}요일) — 이 섹션의 데이터를 언급할 때 "${label}"이라고만 쓰세요\n`;
+    if (!hasAnyData) {
+      ctx += `(기록 없음 — 이 날에 대한 인사이트를 생성하지 마세요)\n\n`;
+      return;
+    }
 
     // 수면
     if (day.sleep > 0) {
@@ -359,16 +366,55 @@ function buildLLMContext(userData, triggerType, justInputData) {
 
   // ===== 주기 =====
   if (userData.cycle) {
-    ctx += `## 주기\n`;
-    ctx += `마지막 시작: ${userData.cycle.lastPeriodStart || '?'}\n`;
-    ctx += `평균 주기: ${userData.cycle.averageCycleLength || 28}일\n`;
-    ctx += `평균 기간: ${userData.cycle.averagePeriodLength || 5}일\n\n`;
+    const cycleLen = userData.cycle.averageCycleLength || 28;
+    const periodLen = userData.cycle.averagePeriodLength || 5;
+    const lastStart = userData.cycle.lastPeriodStart;
+    ctx += `## 생리주기\n`;
+    ctx += `마지막 시작: ${lastStart || '?'}\n`;
+    ctx += `설정된 주기: ${cycleLen}일 / 기간: ${periodLen}일\n`;
+    // 기록 횟수가 1회면 "평균"이 아님을 명시
+    const cycleHistory = userData.cycle.history || [];
+    if (cycleHistory.length <= 1) {
+      ctx += `(주기 기록이 ${cycleHistory.length}회뿐이라 "평균"이라고 표현하지 마세요. "설정된 주기" 정도로 말해주세요)\n`;
+    }
+    // 예상일 vs 실제 차이
+    if (lastStart) {
+      const daysSince = Math.floor((new Date() - new Date(lastStart)) / (1000 * 60 * 60 * 24));
+      const daysUntilNext = cycleLen - daysSince;
+      if (daysUntilNext > 0) {
+        ctx += `현재 주기 ${daysSince}일째, 다음 예정일까지 약 ${daysUntilNext}일\n`;
+      } else {
+        ctx += `현재 주기 ${daysSince}일째, 예정일보다 ${Math.abs(daysUntilNext)}일 지남\n`;
+      }
+    }
+    ctx += `⚠️ 생리주기는 사용자가 의도적으로 "지키는" 것이 아닙니다. "주기를 잘 지키고 있다"는 표현 대신 "주기가 잘 유지되고 있다" 등 자연스러운 표현을 사용하세요.\n`;
+    ctx += '\n';
   }
 
-  // ===== 영양제 목록 =====
+  // ===== 영양제 목록 + 실제 복용 현황 =====
   const suppItems = safeJSON('lua_supplement_items', []);
   if (suppItems.length > 0) {
-    ctx += `## 복용 영양제\n${suppItems.map(s => `${s.name}(${s.timing})`).join(', ')}\n\n`;
+    const suppChecksAll = safeJSON('lua_supplement_checks', {});
+    ctx += `## 복용 영양제\n`;
+    ctx += `등록된 영양제: ${suppItems.map(s => `${s.name}(${s.timing})`).join(', ')}\n`;
+    // 최근 7일 실제 복용 체크 현황
+    const recent7supp = userData.days.slice(0, 7);
+    const suppStreaks = {};
+    suppItems.forEach(s => {
+      let streak = 0;
+      for (const d of recent7supp) {
+        const dayCheck = suppChecksAll[d.date] || {};
+        if (dayCheck[s.id]) streak++; else break;
+      }
+      suppStreaks[s.name] = streak;
+    });
+    const checkedAny = Object.values(suppStreaks).some(v => v > 0);
+    if (checkedAny) {
+      ctx += `최근 복용 현황: ${Object.entries(suppStreaks).map(([name, streak]) => `${name} ${streak > 0 ? streak + '일 연속' : '미복용'}`).join(', ')}\n`;
+    } else {
+      ctx += `최근 7일간 복용 체크 기록 없음 — "꾸준히 복용 중" 등의 표현을 사용하지 마세요\n`;
+    }
+    ctx += '\n';
   }
 
   // ===== 최근 피부 분석 (AI) =====
@@ -431,8 +477,11 @@ function buildTaskInstruction(triggerType) {
 
 ⚠️ 데이터 정확성 (위반 시 전체 무효):
 - "오늘" 데이터를 언급할 때만 "오늘", "어제" 데이터를 언급할 때만 "어제"라고 쓰세요. 날짜 라벨을 절대 바꾸지 마세요.
+- "(기록 없음)"으로 표시된 날에 대해서는 어떤 인사이트도 생성하지 마세요.
 - 식사 칼로리(kcal)는 식사 카드에만, 걸음수(보)는 활동 카드에만 사용하세요. 수치와 카드를 절대 혼동하지 마세요.
 - 컨텍스트에 없는 수치를 만들어내지 마세요.
+- 영양제 "등록"과 "복용 체크"는 다릅니다. 복용 체크가 없으면 복용 중이라고 하지 마세요.
+- 생리주기는 "지키는" 것이 아닙니다. "주기가 유지되고 있다" 등 자연스러운 표현을 쓰세요.
 
 JSON 배열만 출력하세요. 다른 텍스트 없이.`;
 }
@@ -460,11 +509,14 @@ function getSystemPrompt() {
 - 메시지 안에 "예상치 못한 발견" 같은 메타 표현을 절대 쓰지 마세요. 발견 내용을 직접 말하세요.
 - 시간 패턴, 요일 패턴, 교차 영향 발견
 
-## ⚠️ 데이터 정확성 (최우선 규칙)
+## ⚠️ 데이터 정확성 (최우선 규칙 — 위반 시 전체 무효)
 - "오늘" 섹션의 데이터만 "오늘"이라고 말하세요. "어제" 섹션의 데이터는 반드시 "어제"라고 말하세요. 날짜를 절대 혼동하지 마세요.
+- "(기록 없음)"으로 표시된 날에 대해서는 어떤 인사이트도 생성하지 마세요. 기록이 없는 항목을 추측하거나 만들어내는 것은 금지입니다.
 - 각 수치는 해당 카드에만 귀속시키세요. 예: 식사 칼로리(kcal)를 걸음수(보)로 해석하거나, 수면 시간을 운동 시간으로 바꿔 말하는 것은 금지입니다.
 - 데이터에 없는 수치를 만들어내지 마세요. 컨텍스트에 명시된 숫자만 사용하세요.
 - 카드 종류별 단위: 식사=kcal/g, 걸음=보, 수면=시간, 수분=ml/잔, 카페인=mg, 체중=kg
+- 영양제: "등록"과 "복용"은 다릅니다. 복용 체크 기록이 없으면 "꾸준히 복용 중"이라고 말하지 마세요.
+- 생리주기: 사용자가 의도적으로 "지키는" 것이 아닙니다. "주기를 잘 지키고 있다" 대신 "주기가 잘 유지되고 있다" 등 자연스러운 표현을 쓰세요.
 
 ## 출력 형식
 JSON 배열만 출력. 다른 텍스트 없이.
