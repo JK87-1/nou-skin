@@ -161,57 +161,66 @@ export default function TodayPage() {
   const trendAvgStr = trendMetric === 'water' ? `${Math.round(trend.avg).toLocaleString()}ml` : trendMetric === 'condition' ? `${trend.avg.toFixed(1)}점` : `${trend.avg.toFixed(1)}h`;
   const trendTodayStr = trendMetric === 'water' ? `${Math.round(trend.todayVal).toLocaleString()}ml` : trendMetric === 'condition' ? `${trend.todayVal.toFixed(1)}점` : `${trend.todayVal.toFixed(1)}h`;
 
+  // 홈 카드 공통 스타일
+  const _cs = {
+    background: 'var(--card-bg)', borderRadius: 30,
+    backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+    border: 'var(--card-border)', boxShadow: 'var(--card-shadow)',
+  };
+
   return (
     <div style={{ minHeight: '100dvh', paddingBottom: 100 }}>
 
-      {/* 1. Sticky 헤더 */}
-      <div style={{
-        position: 'sticky', top: 0, zIndex: 10,
-        backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-        padding: '16px 16px 14px',
-      }}>
+      {/* 1. 헤더 */}
+      <div style={{ padding: '16px 20px 0' }}>
         {/* 날짜 네비 */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-          <div onClick={goPrev} style={{ width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-            <IconChevronLeft size={20} color="var(--text-muted)" />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <div onClick={goPrev} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', borderRadius: 12, background: 'rgba(0,0,0,0.03)' }}>
+            <IconChevronLeft size={18} color="var(--text-muted)" />
           </div>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{dateLabel}</div>
-            <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>{relativeLabel}</div>
+            <div style={{ fontSize: 13, fontWeight: 500, color: 'rgba(0,0,0,0.35)' }}>{dateLabel}</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: '#0D3028', letterSpacing: -0.3 }}>{relativeLabel}</div>
           </div>
           <div onClick={() => { if (!isToday) { const d = new Date(selectedDate + 'T00:00:00'); d.setDate(d.getDate() + 1); setSelectedDate(getDateKey(d)); } }}
-            style={{ width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isToday ? 'default' : 'pointer', opacity: isToday ? 0.3 : 1 }}>
-            <IconChevronRight size={20} color="var(--text-muted)" />
+            style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isToday ? 'default' : 'pointer', opacity: isToday ? 0.3 : 1, borderRadius: 12, background: 'rgba(0,0,0,0.03)' }}>
+            <IconChevronRight size={18} color="var(--text-muted)" />
           </div>
         </div>
 
-        {/* 미니 스탯 4개 */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
+        {/* 미니 스탯 pill badges */}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
           {[
-            { label: '컨디션', value: data.condAvg ? data.condAvg.toFixed(1) : '—' },
-            { label: '수분', value: data.waterMl > 0 ? `${(data.waterMl / 1000).toFixed(1)}L` : '—' },
-            { label: '활동', value: data.steps > 0 ? Math.round(data.steps / 1000) + 'k' : '—' },
-            { label: '수면', value: data.sleep > 0 ? `${data.sleep}h` : '—' },
+            { label: '컨디션', value: data.condAvg ? data.condAvg.toFixed(1) : '—', color: data.condAvg ? (data.condAvg >= 7 ? '#22C55E' : data.condAvg >= 4 ? '#E8A135' : '#E05050') : 'var(--text-muted)' },
+            { label: '수분', value: data.waterMl > 0 ? `${(data.waterMl / 1000).toFixed(1)}L` : '—', color: data.waterMl > 0 ? '#378ADD' : 'var(--text-muted)' },
+            { label: '활동', value: data.steps > 0 ? Math.round(data.steps / 1000) + 'k' : '—', color: data.steps > 0 ? '#D85A30' : 'var(--text-muted)' },
+            { label: '수면', value: data.sleep > 0 ? `${data.sleep}h` : '—', color: data.sleep > 0 ? (data.sleep >= 7 ? '#22C55E' : data.sleep >= 5 ? '#E8A135' : '#E05050') : 'var(--text-muted)' },
           ].map(s => (
-            <div key={s.label} style={{ background: 'var(--surface-light, rgba(255,255,255,0.08))', padding: '8px 4px', borderRadius: 8, textAlign: 'center' }}>
-              <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{s.label}</div>
-              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{s.value}</div>
+            <div key={s.label} style={{
+              display: 'flex', alignItems: 'center', gap: 4,
+              padding: '5px 10px', borderRadius: 20,
+              background: 'rgba(255,255,255,0.4)',
+              backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255,255,255,0.5)',
+            }}>
+              <span style={{ fontSize: 11, color: 'rgba(0,0,0,0.35)', fontWeight: 500 }}>{s.label}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: s.color }}>{s.value}</span>
             </div>
           ))}
         </div>
       </div>
 
-      <div style={{ padding: '12px 16px 0' }}>
+      <div style={{ padding: '12px 18px 0' }}>
 
         {/* 2. AI 분석 카드 */}
         {(aiPrimary || aiSecondary) && (
-          <div style={{ background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: 'var(--card-border)', borderRadius: 12, padding: 14, marginBottom: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <div style={{ ..._cs, padding: '18px 20px', marginBottom: 15 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
               <IconSparkles size={16} color="var(--accent-primary)" />
-              <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-primary)' }}>lua의 오늘 분석</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>lua의 오늘 분석</span>
             </div>
-            {aiPrimary && <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.5, marginBottom: aiSecondary ? 8 : 0 }}>{aiPrimary}</div>}
-            {aiPrimary && aiSecondary && <div style={{ borderTop: '0.5px solid var(--border-light)', paddingTop: 8 }} />}
+            {aiPrimary && <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.6, marginBottom: aiSecondary ? 10 : 0 }}>{aiPrimary}</div>}
+            {aiPrimary && aiSecondary && <div style={{ borderTop: '0.5px solid rgba(0,0,0,0.05)', paddingTop: 10 }} />}
             {aiSecondary && (
               <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5, display: 'flex', alignItems: 'center' }}>
                 {aiSecondary}
@@ -222,14 +231,14 @@ export default function TodayPage() {
         )}
 
         {/* 3. 타임라인 */}
-        <div style={{ background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: 'var(--card-border)', borderRadius: 12, padding: 16, marginBottom: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+        <div style={{ ..._cs, padding: '20px', marginBottom: 15 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
             <IconClock size={14} color="var(--text-muted)" />
-            <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-primary)' }}>타임라인</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>타임라인</span>
           </div>
 
           {timeline.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--text-muted)', fontSize: 13 }}>
+            <div style={{ textAlign: 'center', padding: '28px 0', color: 'var(--text-muted)', fontSize: 13 }}>
               아직 기록이 없어요
             </div>
           ) : (
@@ -237,13 +246,15 @@ export default function TodayPage() {
               const { Icon, color } = CAT_ICONS[item.category] || { Icon: IconClock, color: 'var(--text-muted)' };
               return (
                 <div key={item.id} style={{
-                  display: 'flex', gap: 10, paddingLeft: 12, padding: '6px 0 6px 12px', marginBottom: 8,
-                  borderLeft: '2px solid #B5D4F4', cursor: 'pointer',
+                  display: 'flex', gap: 12, padding: '8px 0 8px 14px', marginBottom: 4,
+                  borderLeft: `2px solid ${color}30`,
                 }}>
-                  <span style={{ fontSize: 11, color: 'var(--text-muted)', minWidth: 38 }}>{item.time}</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <Icon size={13} color={color} />
-                    <span style={{ fontSize: 12, color: 'var(--text-primary)' }}>{item.content}</span>
+                  <span style={{ fontSize: 11, color: 'rgba(0,0,0,0.3)', minWidth: 38, fontWeight: 500 }}>{item.time}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <div style={{ width: 24, height: 24, borderRadius: 8, background: `${color}12`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Icon size={13} color={color} />
+                    </div>
+                    <span style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500 }}>{item.content}</span>
                   </div>
                 </div>
               );
@@ -253,26 +264,28 @@ export default function TodayPage() {
           {/* 현재 시각 슬롯 */}
           {isToday && (
             <div style={{
-              display: 'flex', gap: 10, alignItems: 'center',
-              background: 'var(--surface-light, rgba(255,255,255,0.08))', borderLeft: '2px solid var(--accent-primary)',
-              borderRadius: 6, padding: '8px 10px', marginTop: 4,
+              display: 'flex', gap: 12, alignItems: 'center',
+              background: 'rgba(137,206,245,0.06)', borderLeft: '2px solid var(--accent-primary)',
+              borderRadius: '0 12px 12px 0', padding: '10px 12px', marginTop: 6,
               cursor: 'pointer',
             }}>
-              <span style={{ fontSize: 11, color: 'var(--accent-primary)', fontWeight: 500, minWidth: 38 }}>{nowHH}:{nowMM}</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <IconPlus size={13} color="var(--accent-primary)" />
-                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>지금 무엇을 했나요?</span>
+              <span style={{ fontSize: 11, color: 'var(--accent-primary)', fontWeight: 600, minWidth: 38 }}>{nowHH}:{nowMM}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                <div style={{ width: 24, height: 24, borderRadius: 8, background: 'rgba(137,206,245,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <IconPlus size={13} color="var(--accent-primary)" />
+                </div>
+                <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 500 }}>지금 무엇을 했나요?</span>
               </div>
             </div>
           )}
         </div>
 
         {/* 4. 7일 추세 */}
-        <div style={{ background: 'var(--card-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: 'var(--card-border)', borderRadius: 12, padding: 14 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+        <div style={{ ..._cs, padding: '18px 20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <IconChartBar size={14} color="var(--text-muted)" />
-              <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-primary)' }}>최근 7일 추세</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>최근 7일 추세</span>
             </div>
             <div style={{ display: 'flex', gap: 4 }}>
               {[
@@ -281,10 +294,11 @@ export default function TodayPage() {
                 { key: 'sleep', label: '수면' },
               ].map(c => (
                 <div key={c.key} onClick={() => setTrendMetric(c.key)} style={{
-                  fontSize: 10, padding: '3px 8px', borderRadius: 8, cursor: 'pointer',
-                  background: trendMetric === c.key ? 'var(--surface-light, rgba(255,255,255,0.15))' : 'transparent',
+                  fontSize: 10, padding: '4px 10px', borderRadius: 20, cursor: 'pointer',
+                  background: trendMetric === c.key ? 'rgba(255,255,255,0.5)' : 'transparent',
                   color: trendMetric === c.key ? 'var(--text-primary)' : 'var(--text-muted)',
-                  border: trendMetric === c.key ? 'none' : '0.5px solid var(--border-light)',
+                  fontWeight: trendMetric === c.key ? 600 : 400,
+                  border: trendMetric === c.key ? '1px solid rgba(255,255,255,0.5)' : '1px solid transparent',
                 }}>{c.label}</div>
               ))}
             </div>
@@ -294,36 +308,26 @@ export default function TodayPage() {
           {(() => {
             const maxVal = Math.max(...trend.values.map(v => v.value), 1);
             return (
-              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: 70, padding: '0 4px', marginBottom: 8, gap: 6 }}>
+              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: 80, padding: '0 4px', marginBottom: 10, gap: 8 }}>
                 {trend.values.map((v, i) => (
                   <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, height: '100%', justifyContent: 'flex-end' }}>
                     <div style={{
-                      width: '100%', borderRadius: '4px 4px 0 0',
+                      width: '100%', borderRadius: 6,
                       height: v.value > 0 ? `${Math.max((v.value / maxVal) * 100, 8)}%` : '4%',
-                      background: v.isToday ? 'var(--accent-primary)' : 'rgba(255,255,255,0.15)',
+                      background: v.isToday ? 'var(--accent-primary)' : 'rgba(0,0,0,0.05)',
                       transition: 'height 0.3s ease',
                     }} />
-                    <span style={{ fontSize: 9, color: v.isToday ? 'var(--accent-primary)' : 'var(--text-dim)', fontWeight: v.isToday ? 500 : 400 }}>{v.dayLabel}</span>
+                    <span style={{ fontSize: 9, color: v.isToday ? 'var(--accent-primary)' : 'rgba(0,0,0,0.25)', fontWeight: v.isToday ? 600 : 400 }}>{v.dayLabel}</span>
                   </div>
                 ))}
               </div>
             );
           })()}
 
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center' }}>
+          <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.3)', textAlign: 'center', fontWeight: 500 }}>
             평균 {trendAvgStr} · 오늘 {trendTodayStr}
           </div>
         </div>
-      </div>
-
-      {/* 5. FAB */}
-      <div style={{
-        position: 'fixed', bottom: 90, right: 20, zIndex: 50,
-        width: 48, height: 48, borderRadius: '50%',
-        background: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.3)', cursor: 'pointer',
-      }}>
-        <IconPlus size={22} color="var(--bg-primary, #fff)" />
       </div>
     </div>
   );
