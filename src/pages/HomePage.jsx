@@ -2183,10 +2183,11 @@ function AddActivityModal({ onSave, onClose }) {
 
     if (tab === 'walk' && steps) {
       today.steps = Number(steps);
+      today.stepsLoggedAt = new Date().toISOString();
     } else if (tab === 'exercise' && selectedEx && minutes) {
       const log = today.exercise?.log || {};
       log[selectedEx.name] = (log[selectedEx.name] || 0) + Number(minutes);
-      today.exercise = { ...today.exercise, log };
+      today.exercise = { ...today.exercise, log, loggedAt: new Date().toISOString() };
     } else {
       return;
     }
@@ -2350,7 +2351,7 @@ function WaterIntakeModal({ onClose, onUpdate }) {
     // save
     const all = getAll();
     const rec = all[todayKey] || { date: todayKey };
-    rec.water = { cups: next };
+    rec.water = { ...(rec.water || {}), cups: next, loggedAt: new Date().toISOString() };
     all[todayKey] = rec;
     localStorage.setItem('lua_record_v2', JSON.stringify(all));
   };
@@ -2362,7 +2363,7 @@ function WaterIntakeModal({ onClose, onUpdate }) {
     hapticLight();
     const all = getAll();
     const rec = all[todayKey] || { date: todayKey };
-    rec.water = { cups: next };
+    rec.water = { ...(rec.water || {}), cups: next, loggedAt: new Date().toISOString() };
     all[todayKey] = rec;
     localStorage.setItem('lua_record_v2', JSON.stringify(all));
   };
@@ -2721,7 +2722,11 @@ function SleepInputModal({ onClose, onUpdate, onDetail }) {
   const handleSave = () => {
     const all = getAll();
     const rec = all[todayKey] || { date: todayKey };
-    rec.sleep = { hours: sleepHours, quality: sleepQuality, bedtime: sleepBedtime, wakeTime: sleepWakeTime };
+    rec.sleep = {
+      hours: sleepHours, quality: sleepQuality,
+      bedtime: sleepBedtime ? (sleepBedtime.includes('T') ? sleepBedtime : `${todayKey}T${sleepBedtime}:00`) : null,
+      wakeTime: sleepWakeTime ? (sleepWakeTime.includes('T') ? sleepWakeTime : `${todayKey}T${sleepWakeTime}:00`) : null,
+    };
     all[todayKey] = rec;
     localStorage.setItem('lua_record_v2', JSON.stringify(all));
     hapticLight();

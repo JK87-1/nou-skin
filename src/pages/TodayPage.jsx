@@ -64,8 +64,11 @@ function buildTimeline(dateStr, data) {
 
   // 수면 (기상)
   if (data.sleep > 0) {
-    const bedtime = data.rec.sleep?.bedtime;
-    items.push({ id: 's1', time: bedtime ? bedtime.slice(11, 16) : '07:00', category: 'sleep', content: `기상 · 수면 ${data.sleep}h`, sortTime: bedtime || `${dateStr}T07:00` });
+    const raw = data.rec.sleep?.bedtime;
+    // HH:MM (5자) 또는 YYYY-MM-DDTHH:MM 형식 모두 지원
+    const bt = raw ? (raw.length <= 5 ? raw : raw.slice(11, 16)) : null;
+    const sortBt = raw ? (raw.includes('T') ? raw : `${dateStr}T${raw}:00`) : `${dateStr}T07:00`;
+    items.push({ id: 's1', time: bt || '07:00', category: 'sleep', content: `기상 · 수면 ${data.sleep}h`, sortTime: sortBt });
   }
 
   // 수분
