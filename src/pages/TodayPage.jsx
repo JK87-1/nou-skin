@@ -419,34 +419,39 @@ export default function TodayPage() {
         return (
           <div onClick={() => setEditingId(null)} style={{
             position: 'fixed', inset: 0, zIndex: 1100,
-            background: 'rgba(0,0,0,0.5)',
-            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.45)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '20px',
           }}>
             <div onClick={e => e.stopPropagation()} style={{
-              background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
-              padding: '24px 24px 40px', width: '100%', maxWidth: 420,
+              background: 'var(--bg-modal, #fff)', borderRadius: 24,
+              padding: '28px 24px 24px', width: '100%', maxWidth: 320,
+              boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
             }}>
-              <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-                <div style={{ width: 32, height: 32, borderRadius: 10, background: `${color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Icon size={16} color={color} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 12, background: `${color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Icon size={18} color={color} />
                 </div>
-                <div>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{item.content}</div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.content}</div>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>시간 수정</div>
                 </div>
               </div>
-              <input type="time" autoFocus value={editTime} onChange={e => setEditTime(e.target.value)}
-                style={{
-                  width: '100%', padding: '14px', borderRadius: 14, border: '1.5px solid rgba(0,0,0,0.08)',
-                  background: 'var(--bg-input, #F2F3F5)', fontSize: 24, fontWeight: 600,
-                  color: 'var(--text-primary)', textAlign: 'center', outline: 'none', fontFamily: 'inherit',
-                  boxSizing: 'border-box',
-                }}
-              />
-              <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+                <input type="time" autoFocus value={editTime} onChange={e => setEditTime(e.target.value)}
+                  style={{
+                    width: '100%', maxWidth: 200, padding: '12px 16px', borderRadius: 14,
+                    border: '1.5px solid rgba(0,0,0,0.08)',
+                    background: 'var(--bg-input, #F2F3F5)', fontSize: 28, fontWeight: 600,
+                    color: 'var(--text-primary)', textAlign: 'center', outline: 'none',
+                    fontFamily: 'inherit', boxSizing: 'border-box',
+                    WebkitAppearance: 'none', appearance: 'none',
+                  }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: 10 }}>
                 <button onClick={() => setEditingId(null)} style={{
-                  flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius, 14px)',
+                  flex: 1, padding: '13px 0', borderRadius: 14,
                   border: 'none', background: 'var(--bg-input, #F2F3F5)',
                   color: 'var(--text-muted)', fontSize: 14, fontWeight: 600,
                   cursor: 'pointer', fontFamily: 'inherit',
@@ -458,7 +463,7 @@ export default function TodayPage() {
                   }
                   setEditingId(null);
                 }} style={{
-                  flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius, 14px)',
+                  flex: 1, padding: '13px 0', borderRadius: 14,
                   border: 'none', background: 'var(--accent-primary)',
                   color: '#fff', fontSize: 14, fontWeight: 600,
                   cursor: 'pointer', fontFamily: 'inherit',
