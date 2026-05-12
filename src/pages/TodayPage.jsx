@@ -2,6 +2,18 @@ import { useState, useMemo, useEffect } from 'react';
 import { IconChevronLeft, IconChevronRight, IconSparkles, IconTrendingUp, IconClock, IconMoon, IconDroplet, IconCoffee, IconApple, IconFlame, IconMoodSmile, IconPlus, IconChartBar } from '@tabler/icons-react';
 import { getProfile } from '../storage/ProfileStorage';
 import { getTodayFoods, getFoodRecords } from '../storage/FoodStorage';
+import { getPhotoDB } from '../storage/PhotoDB';
+
+function FoodPhoto({ photo, style }) {
+  const [src, setSrc] = useState(null);
+  useEffect(() => {
+    if (!photo) return;
+    if (photo.startsWith('data:')) { setSrc(photo); return; }
+    getPhotoDB(photo).then(url => { if (url) setSrc(url); });
+  }, [photo]);
+  if (!src) return null;
+  return <img src={src} alt="" style={style} />;
+}
 
 const DAY_NAMES = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
 const CAT_ICONS = {
@@ -72,7 +84,7 @@ function buildTimeline(dateStr, data) {
   data.dayFoods.forEach((f, i) => {
     const defaultTime = f.meal === '아침' ? '08:00' : f.meal === '점심' ? '12:30' : f.meal === '저녁' ? '19:00' : `${12 + i}:00`;
     const mealTime = f.loggedAt ? f.loggedAt.slice(11, 16) : defaultTime;
-    items.push({ id: `m${i}`, time: mealTime, category: 'meal', content: `${f.meal || '식사'} · ${f.name || ''} ${f.kcal ? f.kcal + 'kcal' : ''}`.trim(), sortTime: `${dateStr}T${mealTime}` });
+    items.push({ id: `m${i}`, time: mealTime, category: 'meal', content: `${f.meal || '식사'} · ${f.name || ''} ${f.kcal ? f.kcal + 'kcal' : ''}`.trim(), sortTime: `${dateStr}T${mealTime}`, photo: f.photo || null });
   });
 
   // 활동
@@ -311,11 +323,16 @@ export default function TodayPage() {
                   borderLeft: `2px solid ${color}30`, cursor: 'pointer',
                 }}>
                   <span style={{ fontSize: 11, color: 'rgba(0,0,0,0.3)', minWidth: 38, fontWeight: 500 }}>{item.time}</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                    <div style={{ width: 24, height: 24, borderRadius: 8, background: `${color}12`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 7, flex: 1 }}>
+                    <div style={{ width: 24, height: 24, borderRadius: 8, background: `${color}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <Icon size={13} color={color} />
                     </div>
-                    <span style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500 }}>{item.content}</span>
+                    <span style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500, flex: 1 }}>{item.content}</span>
+                    {item.photo && (
+                      <div style={{ width: 36, height: 36, borderRadius: 10, overflow: 'hidden', flexShrink: 0 }}>
+                        <FoodPhoto photo={item.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                    )}
                   </div>
                 </div>
               );
