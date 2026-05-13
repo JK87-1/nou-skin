@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { getOrGenerateDiscoverPage, refreshDiscoverPage, getWeekRange, formatWeekLabel, getActiveDays, getDiscoverHistory } from '../engine/DiscoverEngine';
 import { IconShare, IconGridPattern, IconSparkles, IconTrendingUp, IconBulb, IconMoodSmile, IconMoon, IconDroplet, IconCoffee, IconApple, IconScale, IconArrowsShuffle, IconVs, IconArrowRight, IconChartBar, IconCalendarStats, IconHeart } from '@tabler/icons-react';
 import { getProfile } from '../storage/ProfileStorage';
+import GuidePopup from '../components/GuidePopup';
+import { hapticLight } from '../utils/haptic';
 
 // ===== 애니메이션 =====
 function useReveal(delay = 0) {
@@ -34,6 +36,7 @@ export default function DiscoveryPage() {
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState('insight');
   const [activeCat, setActiveCat] = useState('all');
+  const [guideCategory, setGuideCategory] = useState(null);
 
   useEffect(() => {
     setLoading(true);
@@ -187,6 +190,8 @@ export default function DiscoveryPage() {
                     {page.recommendations?.length > 0 && <RecommendationsCard recommendations={page.recommendations} />}
                     {/* 더 알아내려면 */}
                     {page.moreHint && <MoreHintCard hint={page.moreHint} />}
+                    {/* 다음 단계 제안 (가이드 연동) */}
+                    <NextStepGuides onOpenGuide={(cat) => setGuideCategory(cat)} />
                   </>;
                 })()}
 
@@ -202,6 +207,7 @@ export default function DiscoveryPage() {
           </>
         );
       })()}
+      <GuidePopup category={guideCategory} isOpen={!!guideCategory} onClose={() => setGuideCategory(null)} />
     </div>
   );
 }
@@ -483,6 +489,100 @@ function InsufficientDataPage({ activeDays }) {
           </div>
           <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{7 - activeDays}일 더 기록하면 첫 번째 발견을 보여드릴게요</div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== 다음 단계 제안 (가이드 연동) =====
+function _ld(d = new Date()) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function getGuideTriggers() {
+  const suggestions = [];
+  try {
+    const recs = JSON.parse(localStorage.getItem('lua_record_v2') || '{}');
+    const drinks = JSON.parse(localStorage.getItem('lua_drink_records') || '{}');
+    const checks = JSON.parse(localStorage.getItem('nou_condition_checks') || '[]');
+    const wSettings = { cupMl: 250, goalMl: 2000, ...JSON.parse(localStorage.getItem('lua_water_settings') || '{}') };
+    const mgMap = { espresso: 150, americano: 150, latte: 150, drip: 130, coldbrew: 200, matcha: 70, green_tea: 30, black_tea: 50, energy_drink: 160, decaf: 5, choco_latte: 30, green_tea_latte: 80, chai_latte: 50 };
+
+    const days7 = [];
+    for (let i = 0; i < 7; i++) { const d = new Date(); d.setDate(d.getDate() - i); days7.push(_ld(d)); }
+
+    // 데이터 수집
+    const waterMls = days7.map(k => (recs[k]?.water?.cups || 0) * wSettings.cupMl);
+    const cafMgs = days7.map(k => (drinks[k]?.caffeine || []).reduce((s, d) => s + (mgMap[d.key] || 100) * (d.count || 0), 0));
+    const sleepHrs = days7.map(k => recs[k]?.sleep?.hours || 0);
+    const condScores = days7.map(k => {
+      const dc = checks.filter(c => (c.date || c.timestamp?.slice(0, 10)) === k);
+      if (dc.length === 0) return 0;
+      const last = dc[dc.length - 1];
+      return last.energy || 5;
+    });
+
+    const validWater = waterMls.filter(v => v > 0);
+    const validCaf = cafMgs.filter(v => v > 0);
+    const validSleep = sleepHrs.filter(v => v > 0);
+    const validCond = condScores.filter(v => v > 0);
+
+    // 수분: 평균이 권장량 60% 이하
+    if (validWater.length >= 3) {
+      const avg = validWater.reduce((a, b) => a + b, 0) / validWater.length;
+      if (avg <= wSettings.goalMl * 0.6) {
+        suggestions.push({ category: 'water', title: '수분 섭취가 부족한 패턴이에요', desc: '5가지 수분 원칙을 한 번 확인해보세요', color: '#378ADD' });
+      }
+    }
+
+    // 카페인: 평균 200mg 초과
+    if (validCaf.length >= 3) {
+      const avg = validCaf.reduce((a, b) => a + b, 0) / validCaf.length;
+      if (avg > 200) {
+        suggestions.push({ category: 'caffeine', title: '카페인이 컨디션에 영향을 주고 있어요', desc: '카페인 가이드를 함께 살펴봐요', color: '#BA7517' });
+      }
+    }
+
+    // 수면: 평균 6시간 미만
+    if (validSleep.length >= 3) {
+      const avg = validSleep.reduce((a, b) => a + b, 0) / validSleep.length;
+      if (avg < 6) {
+        suggestions.push({ category: 'sleep', title: '수면 시간이 부족해 보여요', desc: '수면 가이드를 확인해보세요', color: '#534AB7' });
+      }
+    }
+
+    // 컨디션: 평균 5점 미만
+    if (validCond.length >= 3) {
+      const avg = validCond.reduce((a, b) => a + b, 0) / validCond.length;
+      if (avg < 5) {
+        suggestions.push({ category: 'condition', title: '컨디션이 불안정한 구간이에요', desc: '컨디션 관리 가이드를 확인해보세요', color: '#534AB7' });
+      }
+    }
+  } catch { /* */ }
+  return suggestions;
+}
+
+function NextStepGuides({ onOpenGuide }) {
+  const triggers = useMemo(() => getGuideTriggers(), []);
+  if (triggers.length === 0) return null;
+
+  return (
+    <div style={{ ..._dcs, padding: '18px 20px', marginBottom: 15 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+        <IconBulb size={13} color="#534AB7" />
+        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>다음 단계 제안</span>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {triggers.map((t, i) => (
+          <div
+            key={i}
+            onClick={() => { hapticLight(); onOpenGuide(t.category); }}
+            style={{ borderLeft: `2px solid ${t.color}`, paddingLeft: 12, cursor: 'pointer' }}
+          >
+            <div style={{ fontSize: 12, fontWeight: 500, color: '#042C53', marginBottom: 4 }}>{t.title}</div>
+            <div style={{ fontSize: 11, color: 'var(--color-text-secondary, var(--text-muted))', lineHeight: 1.4 }}>{t.desc}</div>
+          </div>
+        ))}
       </div>
     </div>
   );
