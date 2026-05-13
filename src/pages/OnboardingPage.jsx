@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { saveProfile } from '../storage/ProfileStorage';
+import { saveProfile, getDeviceId } from '../storage/ProfileStorage';
+import { trackUserSignedUp, identifyUser } from '../analytics/amplitude';
 
 const ONBOARDING_KEY = 'lua_onboarding_done';
 export function isOnboardingDone() {
@@ -137,7 +138,13 @@ export default function OnboardingPage({ onComplete }) {
       onboardingMood: mood,
       onboardingHydration: hydra,
     });
+    const signupDate = new Date().toISOString();
+    try { localStorage.setItem('lua_signup_date', signupDate); } catch {}
     localStorage.setItem(ONBOARDING_KEY, 'true');
+    try {
+      identifyUser(getDeviceId(), { signup_date: signupDate });
+      trackUserSignedUp('onboarding');
+    } catch {}
     onComplete();
   };
 

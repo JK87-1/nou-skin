@@ -5,6 +5,9 @@ import './styles.css';
 import { registerSW } from 'virtual:pwa-register';
 import { createAutoBackup } from './storage/AutoBackup';
 import { Capacitor } from '@capacitor/core';
+import { initAnalytics } from './analytics/amplitude';
+
+initAnalytics();
 
 // Capacitor 네이티브 플랫폼에서는 PWA 서비스워커 불필요
 const isNative = Capacitor.isNativePlatform();

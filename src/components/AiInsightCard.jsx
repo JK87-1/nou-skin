@@ -2,13 +2,24 @@
  * 오늘의 피부 이야기 — AI 인사이트 카드 (홈 탭 하단)
  * 최근 분석 결과 기반 맞춤 조언
  */
+import { useEffect, useRef } from 'react';
 import { getLatestRecord, getChanges } from '../storage/SkinStorage';
+import { trackInsightViewed } from '../analytics/amplitude';
 
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
 export default function AiInsightCard() {
   const latest = getLatestRecord();
   const changes = getChanges();
+  const trackedRef = useRef(false);
+
+  // 카드가 실제로 렌더링되는 경우에만 1회 이벤트 발생
+  useEffect(() => {
+    if (!latest || trackedRef.current) return;
+    trackedRef.current = true;
+    const briefingType = changes ? 'change_summary' : 'first_measurement';
+    trackInsightViewed(briefingType);
+  }, [latest, changes]);
 
   if (!latest) return null;
 

@@ -12,6 +12,7 @@
     "cap:android": "vite build && npx cap sync android && npx cap open android"
   },
   "dependencies": {
+    "@amplitude/analytics-browser": "^2.42.2",
     "@capacitor/android": "^8.3.1",
     "@capacitor/camera": "^8.1.0",
     "@capacitor/cli": "^8.3.1",

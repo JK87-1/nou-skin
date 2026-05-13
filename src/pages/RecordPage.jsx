@@ -8,6 +8,7 @@ import { getRoutineItems, getChecks } from '../storage/RoutineCheckStorage';
 import { getSupplementItems, addSupplementItem, deleteSupplementItem, getSupplementChecks, toggleSupplementCheck } from '../storage/SupplementStorage';
 import { getProducts, saveProduct, deleteProduct, getTrackerChecks, toggleTrackerCheck, getProductsForMode, TRACKER_CATEGORIES } from '../storage/TrackerStorage';
 import { getTodayEnergySubCheck, saveEnergySubCheck, getTodayMoodSubCheck, saveMoodSubCheck, getTodaySkinSubCheck, saveSkinSubCheck, getEnergySubChecks, getMoodSubChecks, getSkinSubChecks } from '../storage/ConditionStorage';
+import { trackRecordCreatedWithFirstCheck } from '../analytics/amplitude';
 
 function _localDate(d = new Date()) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -243,27 +244,33 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
     const newFocus = key === 'focus' ? v : (cur.focus ?? null);
     const saved = saveEnergySubCheck(newVitality, newFocus);
     setEnergySub(saved);
+    if (v !== null) trackRecordCreatedWithFirstCheck('condition_energy', true);
   }, [energySub]);
   const [moodSub, setMoodSub] = useState(() => getTodayMoodSubCheck());
   const handleMoodEmotion = useCallback((emoji) => {
     const cur = moodSub || {};
     const emotions = cur.emotions || [];
-    const next = emotions.includes(emoji) ? emotions.filter(e => e !== emoji) : [...emotions, emoji];
+    const isAdding = !emotions.includes(emoji);
+    const next = isAdding ? [...emotions, emoji] : emotions.filter(e => e !== emoji);
     const saved = saveMoodSubCheck(next, cur.stress ?? null);
     setMoodSub(saved);
+    if (isAdding) trackRecordCreatedWithFirstCheck('condition_mood', true);
   }, [moodSub]);
   const handleMoodStress = useCallback((value) => {
     const cur = moodSub || {};
     const saved = saveMoodSubCheck(cur.emotions || [], value);
     setMoodSub(saved);
+    if (value !== null && value !== undefined) trackRecordCreatedWithFirstCheck('condition_stress', true);
   }, [moodSub]);
   const [skinSub, setSkinSub] = useState(() => getTodaySkinSubCheck());
   const handleSkinTag = useCallback((tag) => {
     const cur = skinSub || {};
     const tags = cur.tags || [];
-    const next = tags.includes(tag) ? tags.filter(t => t !== tag) : [...tags, tag];
+    const isAdding = !tags.includes(tag);
+    const next = isAdding ? [...tags, tag] : tags.filter(t => t !== tag);
     const saved = saveSkinSubCheck({ ...cur, tags: next });
     setSkinSub(saved);
+    if (isAdding) trackRecordCreatedWithFirstCheck('skin', true);
   }, [skinSub]);
 
   const loadV2Data = useCallback((dateKey) => {
@@ -341,6 +348,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
 
   const handleAddFood = useCallback((food) => {
     saveFoodRecord(selectedDate, food);
+    trackRecordCreatedWithFirstCheck('food', Boolean(food?.name));
     refresh();
     setShowAdd(false);
     setAddMeal(null);
@@ -2476,6 +2484,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
             const w = parseFloat(bodyWeight);
             if (w && w >= 20 && w <= 300) {
               saveBodyRecord(w);
+              trackRecordCreatedWithFirstCheck('body_weight', true);
               setShowBodyAdd(false);
               setBodyWeight('');
             }
@@ -3918,6 +3927,7 @@ function BodyInsightsSection() {
     const w = parseFloat(newWeight);
     if (!w || w < 20 || w > 300) return;
     saveBodyRecord(w);
+    trackRecordCreatedWithFirstCheck('body_weight', true);
     setRecords(getBodyRecords());
     setShowAddWeight(false);
     setNewWeight('');

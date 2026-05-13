@@ -26,6 +26,7 @@ import { CATEGORY_META, getProductsByCategory, getWeakestCategories, calcMatchSc
 import { getRecommendedTreatments, TREATMENT_CATEGORIES } from './data/TreatmentData';
 import { syncSkinDataToServer } from './utils/pushNotification';
 import { getProfile, saveProfile, getDeviceId } from './storage/ProfileStorage';
+import { identifyUser, trackRecordCreatedWithFirstCheck } from './analytics/amplitude';
 import GoalProgressCard from './components/GoalProgressCard';
 import SkinWeather from './components/SkinWeather';
 import WeatherChip from './components/WeatherChip';
@@ -174,6 +175,16 @@ export default function App() {
   useEffect(() => {
     // Capacitor 네이티브 초기화
     import('./native/capacitor-init.js').then(m => m.initNative());
+    // Amplitude identify: deviceId 를 user_id 로 사용 (가입/로그인 시스템 부재 — 디바이스 단위 추적)
+    try {
+      const prof = getProfile();
+      identifyUser(getDeviceId(), {
+        signup_date: localStorage.getItem('lua_signup_date') || null,
+        skin_type: prof.skinType || null,
+        gender: prof.gender || null,
+        birth_year: prof.birthYear || null,
+      });
+    } catch {}
     refreshLandingData();
     // Migrate localStorage thumbnails to IndexedDB (one-time)
     migrateFromLocalStorage();
@@ -428,6 +439,7 @@ export default function App() {
 
       // Save record FIRST so getChanges() compares current vs previous correctly
       const recordId = saveRecord(finalScores);
+      trackRecordCreatedWithFirstCheck('skin_scan', true);
 
       // Generate advice with correct post-save changes
       const currentChanges = getChanges();
@@ -511,6 +523,7 @@ export default function App() {
 
         // Save record FIRST so getChanges() compares current vs previous correctly
         const recordId = saveRecord(scores);
+        trackRecordCreatedWithFirstCheck('skin_scan', true);
 
         // Generate advice with correct post-save changes
         scores.advice = generateSmartAdvice(scores, getChanges());
