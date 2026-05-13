@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { hapticLight } from '../utils/haptic';
 import GuidePopup, { GuideButton } from '../components/GuidePopup';
 import InsightCard from '../components/InsightCard';
@@ -30,37 +30,55 @@ function useSwipeDown(onClose) {
   const currentY = useRef(0);
   const dragging = useRef(false);
   const elRef = useRef(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
-  const onTouchStart = useCallback((e) => {
+  useEffect(() => {
     const el = elRef.current;
-    if (el && el.scrollTop > 0) return;
-    startY.current = e.touches[0].clientY;
-    currentY.current = 0;
-    dragging.current = true;
+    if (!el) return;
+
+    const handleTouchStart = (e) => {
+      if (el.scrollTop > 0) return;
+      startY.current = e.touches[0].clientY;
+      currentY.current = 0;
+      dragging.current = true;
+    };
+
+    const handleTouchMove = (e) => {
+      if (!dragging.current) return;
+      const dy = e.touches[0].clientY - startY.current;
+      if (dy < 0) { currentY.current = 0; el.style.transform = ''; return; }
+      e.preventDefault();
+      currentY.current = dy;
+      el.style.transform = `translateY(${dy}px)`;
+    };
+
+    const handleTouchEnd = () => {
+      if (!dragging.current) return;
+      dragging.current = false;
+      if (currentY.current > 120) {
+        el.style.transition = 'transform 0.25s ease';
+        el.style.transform = 'translateY(100%)';
+        setTimeout(() => onCloseRef.current(), 200);
+      } else {
+        el.style.transition = 'transform 0.2s ease';
+        el.style.transform = '';
+        setTimeout(() => { el.style.transition = ''; }, 200);
+      }
+    };
+
+    el.addEventListener('touchstart', handleTouchStart, { passive: true });
+    el.addEventListener('touchmove', handleTouchMove, { passive: false });
+    el.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+    return () => {
+      el.removeEventListener('touchstart', handleTouchStart);
+      el.removeEventListener('touchmove', handleTouchMove);
+      el.removeEventListener('touchend', handleTouchEnd);
+    };
   }, []);
 
-  const onTouchMove = useCallback((e) => {
-    if (!dragging.current) return;
-    const dy = e.touches[0].clientY - startY.current;
-    if (dy < 0) { currentY.current = 0; if (elRef.current) elRef.current.style.transform = ''; return; }
-    currentY.current = dy;
-    if (elRef.current) elRef.current.style.transform = `translateY(${dy}px)`;
-  }, []);
-
-  const onTouchEnd = useCallback(() => {
-    if (!dragging.current) return;
-    dragging.current = false;
-    if (currentY.current > 120) {
-      if (elRef.current) elRef.current.style.transition = 'transform 0.25s ease';
-      if (elRef.current) elRef.current.style.transform = 'translateY(100%)';
-      setTimeout(() => onClose(), 200);
-    } else {
-      if (elRef.current) { elRef.current.style.transition = 'transform 0.2s ease'; elRef.current.style.transform = ''; }
-      setTimeout(() => { if (elRef.current) elRef.current.style.transition = ''; }, 200);
-    }
-  }, [onClose]);
-
-  return { elRef, onTouchStart, onTouchMove, onTouchEnd };
+  return { elRef };
 }
 
 function getTimeMode() {
@@ -1927,7 +1945,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
 function WeatherFullModal({ onClose }) {
   const swipe = useSwipeDown(onClose);
   return (
-    <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} style={{
+    <div ref={swipe.elRef} style={{
       position: 'fixed', inset: 0, zIndex: 1200,
       background: 'var(--page-gradient, linear-gradient(to bottom, #ace2fc, #ffffff))',
       overflowY: 'auto', WebkitOverflowScrolling: 'touch',
@@ -1964,7 +1982,7 @@ function ConditionCheckModal({ selections, sliderPcts, onSelect, onSliderChange,
       background: 'rgba(0,0,0,0.5)',
       display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
     }}>
-      <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} onClick={e => e.stopPropagation()} style={{
+      <div ref={swipe.elRef} onClick={e => e.stopPropagation()} style={{
         background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
@@ -2082,7 +2100,7 @@ function AddWeightModal({ onSave, onClose, latest }) {
       background: 'rgba(0,0,0,0.5)',
       display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
     }}>
-      <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} onClick={e => e.stopPropagation()} style={{
+      <div ref={swipe.elRef} onClick={e => e.stopPropagation()} style={{
         background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
@@ -2383,7 +2401,7 @@ function AddActivityModal({ onSave, onClose }) {
       background: 'rgba(0,0,0,0.5)',
       display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
     }}>
-      <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} onClick={e => e.stopPropagation()} style={{
+      <div ref={swipe.elRef} onClick={e => e.stopPropagation()} style={{
         background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
@@ -2584,7 +2602,7 @@ function WaterIntakeModal({ onClose, onUpdate, onGuide }) {
       background: 'rgba(0,0,0,0.5)',
       display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
     }}>
-      <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} onClick={e => e.stopPropagation()} style={{
+      <div ref={swipe.elRef} onClick={e => e.stopPropagation()} style={{
         background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
@@ -2965,7 +2983,7 @@ function SleepInputModal({ onClose, onUpdate, onDetail, onGuide }) {
       background: 'rgba(0,0,0,0.5)',
       display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
     }}>
-      <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} onClick={e => e.stopPropagation()} style={{
+      <div ref={swipe.elRef} onClick={e => e.stopPropagation()} style={{
         background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
@@ -3146,7 +3164,7 @@ function BloodSugarModal({ onClose, onUpdate }) {
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-      <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0', padding: '24px 24px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
+      <div ref={swipe.elRef} onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0', padding: '24px 24px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
         <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24, textAlign: 'center' }}>혈당</div>
 
@@ -3378,7 +3396,7 @@ function DrinkModal({ onClose, onSave, onGuide }) {
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-      <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '18px 18px 36px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
+      <div ref={swipe.elRef} onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '18px 18px 36px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.1)', margin: '0 auto 16px' }} />
         <div style={{ position: 'relative', marginBottom: 24 }}>
           <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center' }}>음료</div>
@@ -4352,7 +4370,7 @@ function SupplementModal({ onClose, onUpdate, onCheck }) {
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-      <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0', padding: '24px 24px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
+      <div ref={swipe.elRef} onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0', padding: '24px 24px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
         <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8, textAlign: 'center' }}>영양제</div>
 
@@ -4626,7 +4644,7 @@ function SkinCheckModal({ onClose, onUpdate }) {
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-      <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '20px 20px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
+      <div ref={swipe.elRef} onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '20px 20px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.1)', margin: '0 auto 16px' }} />
         <div style={{ textAlign: 'center', marginBottom: 20 }}>
           <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)' }}>피부</div>
@@ -4847,7 +4865,7 @@ function CycleModal({ onClose, onUpdate }) {
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-      <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0', padding: '24px 24px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
+      <div ref={swipe.elRef} onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0', padding: '24px 24px 40px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
 
         {isUnset ? (
