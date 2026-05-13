@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { hapticLight } from '../utils/haptic';
 import GuidePopup, { GuideButton } from '../components/GuidePopup';
 import InsightCard from '../components/InsightCard';
