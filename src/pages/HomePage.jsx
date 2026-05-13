@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { hapticLight } from '../utils/haptic';
-import GuidePopup, { GuideButton } from '../components/GuidePopup';
+import { GuideButton, GuideView } from '../components/GuidePopup';
 import InsightCard from '../components/InsightCard';
 import SkinWeather from '../components/SkinWeather';
 import { getLatestRecord } from '../storage/SkinStorage';
@@ -258,7 +258,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
   const [showCycleModal, setShowCycleModal] = useState(false);
   const [showWaterModal, setShowWaterModal] = useState(false);
   const [showSleepModal, setShowSleepModal] = useState(false);
-  const [guideCategory, setGuideCategory] = useState(null);
   const [homeView, setHomeView] = useState('cards'); // 'cards' | 'briefing'
   const [selectedDate, setSelectedDate] = useState(() => _localDate());
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -1553,7 +1552,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
           </>
         );
       })()}
-
       </>}
 
       {/* DailyInsightSlider moved to briefing view */}
@@ -1715,7 +1713,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
         <WaterIntakeModal
           onClose={() => setShowWaterModal(false)}
           onUpdate={() => { setShowWaterModal(false); setWeightRefreshKey(k => k + 1); }}
-          onGuide={() => { setShowWaterModal(false); setGuideCategory('water'); }}
         />
       )}
 
@@ -1834,7 +1831,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
           }}
           onClose={() => setShowFoodModal(false)}
           onDetail={(food) => { setShowFoodModal(false); setDetailPage({ type: 'meal', data: food }); }}
-          onGuide={() => { setShowFoodModal(false); setGuideCategory('meal'); }}
         />
       )}
 
@@ -1847,7 +1843,6 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
           onUpdate={() => { handleUpdate(); setShowConditionModal(false); }}
           onClose={() => setShowConditionModal(false)}
           onDetail={(data) => { setShowConditionModal(false); setDetailPage({ type: 'condition', data }); }}
-          onGuide={() => { setShowConditionModal(false); setGuideCategory('condition'); }}
         />
       )}
 
@@ -1856,7 +1851,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
       )}
 
       {showDrinkModal && (
-        <DrinkModal onClose={() => setShowDrinkModal(false)} onSave={(drinkInfo) => { setShowDrinkModal(false); setWeightRefreshKey(k => k + 1); if (drinkInfo) { setEffectCheckDrink(drinkInfo); setShowEffectCheckModal(true); } }} onGuide={() => { setShowDrinkModal(false); setGuideCategory('caffeine'); }} />
+        <DrinkModal onClose={() => setShowDrinkModal(false)} onSave={(drinkInfo) => { setShowDrinkModal(false); setWeightRefreshKey(k => k + 1); if (drinkInfo) { setEffectCheckDrink(drinkInfo); setShowEffectCheckModal(true); } }} />
       )}
 
       {showEffectCheckModal && effectCheckDrink && (
@@ -1924,11 +1919,8 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
           onClose={() => setShowSleepModal(false)}
           onUpdate={() => { setShowSleepModal(false); setWeightRefreshKey(k => k + 1); }}
           onDetail={(data) => { setShowSleepModal(false); setDetailPage({ type: 'sleep', data }); }}
-          onGuide={() => { setShowSleepModal(false); setGuideCategory('sleep'); }}
         />
       )}
-
-      <GuidePopup category={guideCategory} isOpen={!!guideCategory} onClose={() => setGuideCategory(null)} />
 
     </div>
   );
@@ -1967,8 +1959,9 @@ function WeatherFullModal({ onClose }) {
   );
 }
 
-function ConditionCheckModal({ selections, sliderPcts, onSelect, onSliderChange, onUpdate, onClose, onDetail, onGuide }) {
+function ConditionCheckModal({ selections, sliderPcts, onSelect, onSliderChange, onUpdate, onClose, onDetail }) {
   const swipe = useSwipeDown(onClose);
+  const [showGuide, setShowGuide] = useState(false);
   const sliders = [
     { key: 'mood', label: '기분', rgb: [245,194,203], labels: MOOD_LABELS,
       icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(212,112,126,0.3))' }}><defs><linearGradient id="heartM" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F0B8C0"/><stop offset="100%" stopColor="#D4707E"/></linearGradient></defs><path d="M12 4.5C10 2 6.5 1.5 4.5 4c-2 2.5-1.5 6 1 8.5L12 20l6.5-7.5c2.5-2.5 3-6 1-8.5C17.5 1.5 14 2 12 4.5z" fill="url(#heartM)" opacity="0.6"/></svg> },
@@ -1987,9 +1980,13 @@ function ConditionCheckModal({ selections, sliderPcts, onSelect, onSliderChange,
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
+
+        {showGuide ? (
+          <GuideView category="condition" onBack={() => setShowGuide(false)} />
+        ) : <>
         <div style={{ position: 'relative', marginBottom: 24 }}>
           <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center' }}>컨디션</div>
-          {onGuide && <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }}><GuideButton category="condition" onClick={onGuide} /></div>}
+          <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }}><GuideButton category="condition" onClick={() => setShowGuide(true)} /></div>
         </div>
 
         {sliders.map((s, si) => {
@@ -2079,6 +2076,7 @@ function ConditionCheckModal({ selections, sliderPcts, onSelect, onSliderChange,
             cursor: 'pointer', fontFamily: 'inherit',
           }}>업데이트</button>
         </div>
+        </>}
       </div>
     </div>
   );
@@ -2540,8 +2538,9 @@ function AddActivityModal({ onSave, onClose }) {
 }
 
 // ===== Water Intake Modal =====
-function WaterIntakeModal({ onClose, onUpdate, onGuide }) {
+function WaterIntakeModal({ onClose, onUpdate }) {
   const swipe = useSwipeDown(onClose);
+  const [showGuide, setShowGuide] = useState(false);
   const todayKey = _localDate();
   const getAll = () => { try { return JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); } catch { return {}; } };
   const getSettings = () => { try { return { cupMl: 250, goalMl: 2000, ...JSON.parse(localStorage.getItem('lua_water_settings') || '{}') }; } catch { return { cupMl: 250, goalMl: 2000 }; } };
@@ -2607,9 +2606,13 @@ function WaterIntakeModal({ onClose, onUpdate, onGuide }) {
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
+
+        {showGuide ? (
+          <GuideView category="water" onBack={() => setShowGuide(false)} />
+        ) : <>
         <div style={{ position: 'relative', marginBottom: 24 }}>
           <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center' }}>수분</div>
-          {onGuide && <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }}><GuideButton category="water" onClick={onGuide} /></div>}
+          <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }}><GuideButton category="water" onClick={() => setShowGuide(true)} /></div>
         </div>
         <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 16 }}>1잔 = {cupMl}ml</div>
 
@@ -2747,6 +2750,7 @@ function WaterIntakeModal({ onClose, onUpdate, onGuide }) {
             100% { transform: scale(0.3) translateY(-25px); opacity: 0; }
           }
         `}</style>
+        </>}
       </div>
     </div>
   );
@@ -2939,8 +2943,9 @@ function AccountPage({ profile, onUpdate, onClose }) {
 // ===== Sleep Input Modal =====
 const SLEEP_QUALITIES = ['깊은 수면', '보통', '얕은 수면'];
 
-function SleepInputModal({ onClose, onUpdate, onDetail, onGuide }) {
+function SleepInputModal({ onClose, onUpdate, onDetail }) {
   const swipe = useSwipeDown(onClose);
+  const [showGuide, setShowGuide] = useState(false);
   const todayKey = _localDate();
   const getAll = () => { try { return JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); } catch { return {}; } };
 
@@ -2988,9 +2993,13 @@ function SleepInputModal({ onClose, onUpdate, onDetail, onGuide }) {
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
+
+        {showGuide ? (
+          <GuideView category="sleep" onBack={() => setShowGuide(false)} />
+        ) : <>
         <div style={{ position: 'relative', marginBottom: 6 }}>
           <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center' }}>수면</div>
-          {onGuide && <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }}><GuideButton category="sleep" onClick={onGuide} /></div>}
+          <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }}><GuideButton category="sleep" onClick={() => setShowGuide(true)} /></div>
         </div>
         <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 24 }}>
           {sleepQuality ? `${sleepHours}시간 · ${sleepQuality}` : `${sleepHours}시간`}
@@ -3124,6 +3133,7 @@ function SleepInputModal({ onClose, onUpdate, onDetail, onGuide }) {
             cursor: 'pointer', fontFamily: 'inherit',
           }}>저장</button>
         </div>
+        </>}
       </div>
     </div>
   );
@@ -3308,8 +3318,9 @@ const ALCOHOL_ITEMS = [
   { key: 'whiskey', name: '위스키', icon: '🥃', ml: 45 },
 ];
 
-function DrinkModal({ onClose, onSave, onGuide }) {
+function DrinkModal({ onClose, onSave }) {
   const swipe = useSwipeDown(onClose);
+  const [showGuide, setShowGuide] = useState(false);
   const todayKey = _localDate();
   const [tab, setTab] = useState('caffeine');
   const [drinkCategory, setDrinkCategory] = useState('coffee');
@@ -3398,9 +3409,13 @@ function DrinkModal({ onClose, onSave, onGuide }) {
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
       <div ref={swipe.elRef} onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '18px 18px 36px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.1)', margin: '0 auto 16px' }} />
+
+        {showGuide ? (
+          <GuideView category="caffeine" onBack={() => setShowGuide(false)} />
+        ) : <>
         <div style={{ position: 'relative', marginBottom: 24 }}>
           <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center' }}>음료</div>
-          {onGuide && <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }}><GuideButton category="caffeine" onClick={onGuide} /></div>}
+          <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }}><GuideButton category="caffeine" onClick={() => setShowGuide(true)} /></div>
         </div>
 
         {/* 카페인/논카페인/알콜 토글 */}
@@ -3614,6 +3629,7 @@ function DrinkModal({ onClose, onSave, onGuide }) {
           <button onClick={onClose} style={{ flex: 1, padding: '9px', borderRadius: 10, border: 'none', background: '#F4F4F4', color: '#6B8499', fontSize: 10, cursor: 'pointer', fontFamily: 'inherit' }}>취소</button>
           <button onClick={handleSave} disabled={!selected || selCount === 0} style={{ flex: 1.5, padding: '9px', borderRadius: 10, border: 'none', background: (selected && selCount > 0) ? '#B8865C' : '#F4F4F4', color: (selected && selCount > 0) ? '#fff' : '#8BA6BD', fontSize: 10, fontWeight: 500, cursor: (selected && selCount > 0) ? 'pointer' : 'default', fontFamily: 'inherit', transition: 'all 0.15s' }}>저장</button>
         </div>
+        </>}
       </div>
     </div>
   );

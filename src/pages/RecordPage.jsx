@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
-import { GuideButton } from '../components/GuidePopup';
+import { GuideButton, GuideView } from '../components/GuidePopup';
 import { getTodayFoods, getTodayNutrition, getFoodRecords, getNutritionForDate, getTimeAdjustedGoal, getFoodGoal, saveFoodRecord, deleteFoodRecord } from '../storage/FoodStorage';
 import { getRecords, getChanges, getTotalChanges, getAllThumbnailsAsync } from '../storage/SkinStorage';
 import { getBodyRecords, getLatestWeight, getStartWeight, getBodyGoal, getBodyProfile, calcBMI, saveBodyRecord, deleteBodyRecord } from '../storage/BodyStorage';
@@ -2608,7 +2608,8 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
   );
 }
 
-export function AddFoodModal({ onAdd, onClose, initialMeal, onDetail, onGuide }) {
+export function AddFoodModal({ onAdd, onClose, initialMeal, onDetail }) {
+  const [showGuide, setShowGuide] = useState(false);
   const swipeStartY = useRef(0);
   const swipeDY = useRef(0);
   const swiping = useRef(false);
@@ -2905,6 +2906,9 @@ export function AddFoodModal({ onAdd, onClose, initialMeal, onDetail, onGuide })
       }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
 
+        {showGuide ? (
+          <GuideView category="meal" onBack={() => setShowGuide(false)} />
+        ) : <>
         {/* Title + back button */}
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
           {mode && (
@@ -2913,7 +2917,7 @@ export function AddFoodModal({ onAdd, onClose, initialMeal, onDetail, onGuide })
             </div>
           )}
           <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center' }}>식사</div>
-          {onGuide && <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }}><GuideButton category="meal" onClick={onGuide} /></div>}
+          <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }}><GuideButton category="meal" onClick={() => setShowGuide(true)} /></div>
         </div>
 
         {/* Meal selector */}
@@ -3301,6 +3305,7 @@ export function AddFoodModal({ onAdd, onClose, initialMeal, onDetail, onGuide })
           setPreview(cropped);
           setCropSrc(null);
         }} onCancel={() => setCropSrc(null)} />}
+      </>}
       </div>
     </div>
   );
