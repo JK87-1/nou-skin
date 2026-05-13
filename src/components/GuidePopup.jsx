@@ -194,19 +194,17 @@ export function GuideButton({ category, onClick }) {
         e.stopPropagation();
       }}
       style={{
-        display: 'flex', alignItems: 'center', gap: 3,
-        padding: '4px 9px', background: data.btnBg, borderRadius: 10,
+        display: 'flex', alignItems: 'center', gap: 2,
+        padding: '2px 6px', background: data.btnBg, borderRadius: 7,
         cursor: 'pointer', transition: 'background 0.2s ease',
-        minWidth: 44, minHeight: 44,
-        justifyContent: 'center',
         position: 'relative', zIndex: 2,
       }}
       onPointerDown={(e) => { e.stopPropagation(); e.currentTarget.style.background = data.btnBg.replace('0.08', '0.12'); }}
       onPointerUp={(e) => { e.currentTarget.style.background = data.btnBg; }}
       onPointerLeave={(e) => { e.currentTarget.style.background = data.btnBg; }}
     >
-      <IconBook size={10} color={data.btnColor} stroke={1.5} />
-      <span style={{ fontSize: 9, color: data.btnColor, fontWeight: 500, letterSpacing: 0.2 }}>guide</span>
+      <IconBook size={8} color={data.btnColor} stroke={1.5} />
+      <span style={{ fontSize: 8, color: data.btnColor, fontWeight: 500, letterSpacing: 0.2, lineHeight: 1 }}>guide</span>
     </div>
   );
 }
