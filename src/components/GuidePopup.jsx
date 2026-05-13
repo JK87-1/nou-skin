@@ -98,10 +98,8 @@ export default function GuidePopup({ category, isOpen, onClose }) {
     <div
       onClick={onClose}
       style={{
-        position: 'fixed', inset: 0, background: 'rgba(4, 44, 83, 0.3)',
-        backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
-        zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '0 28px',
+        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+        zIndex: 1200, display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
         animation: 'guideOverlayIn 0.2s ease',
       }}
     >
@@ -109,39 +107,43 @@ export default function GuidePopup({ category, isOpen, onClose }) {
         ref={popupRef}
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: '100%', maxWidth: 340, background: 'white', borderRadius: 16,
-          padding: '22px 20px', boxShadow: '0 4px 16px rgba(4, 44, 83, 0.08)',
-          animation: 'guidePopupIn 0.2s ease',
-          maxHeight: '80vh', overflowY: 'auto',
+          width: '100%', maxWidth: 420, background: 'var(--bg-modal, #fff)',
+          borderRadius: '24px 24px 0 0',
+          padding: '24px 24px 40px',
+          animation: 'guideSheetIn 0.25s ease',
+          maxHeight: '85dvh', overflowY: 'auto', WebkitOverflowScrolling: 'touch',
         }}
       >
+        {/* 드래그 핸들 */}
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim, #ccc)', margin: '0 auto 20px', opacity: 0.3 }} />
+
         {/* 헤더 */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Icon size={16} color={data.color} stroke={1.5} />
-            <span style={{ fontSize: 13, fontWeight: 500, color: '#042C53', letterSpacing: -0.2 }}>{data.title}</span>
+            <Icon size={18} color={data.color} stroke={1.5} />
+            <span style={{ fontSize: 15, fontWeight: 600, color: '#042C53', letterSpacing: -0.2 }}>{data.title}</span>
           </div>
           <div
             onClick={onClose}
             style={{ width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginRight: -12 }}
           >
-            <IconX size={16} color="var(--color-text-secondary, #999)" stroke={1.5} />
+            <IconX size={18} color="var(--color-text-secondary, #999)" stroke={1.5} />
           </div>
         </div>
 
         {/* 인트로 */}
-        <div style={{ marginBottom: 16 }}>
+        <div style={{ marginBottom: 24 }}>
           <IntroText text={data.intro} />
         </div>
 
         {/* 5가지 원칙 */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
           {data.principles.map((p) => (
-            <div key={p.number} style={{ display: 'flex', gap: 12 }}>
-              <span style={{ fontSize: 10, fontWeight: 500, color: '#534AB7', minWidth: 16, paddingTop: 1 }}>{p.number}</span>
+            <div key={p.number} style={{ display: 'flex', gap: 14 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#534AB7', minWidth: 20, paddingTop: 1 }}>{p.number}</span>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 12, color: '#042C53', fontWeight: 500, lineHeight: 1.4, marginBottom: 3 }}>{p.title}</div>
-                <div style={{ fontSize: 10, color: '#185FA5', lineHeight: 1.5 }}>{p.desc}</div>
+                <div style={{ fontSize: 14, color: '#042C53', fontWeight: 600, lineHeight: 1.4, marginBottom: 4 }}>{p.title}</div>
+                <div style={{ fontSize: 12, color: '#185FA5', lineHeight: 1.5 }}>{p.desc}</div>
               </div>
             </div>
           ))}
@@ -150,12 +152,12 @@ export default function GuidePopup({ category, isOpen, onClose }) {
         {/* 요약 정보 */}
         {summary && (
           <div style={{
-            background: '#F0F7FE', borderRadius: 10, padding: 12, marginTop: 18,
+            background: '#F0F7FE', borderRadius: 12, padding: '14px 16px', marginTop: 28,
           }}>
-            <div style={{ fontSize: 10, color: 'var(--color-text-secondary, #999)', marginBottom: 4 }}>{summary.label}</div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-              <span style={{ fontSize: 16, fontWeight: 500, color: '#042C53' }}>{summary.mainValue}</span>
-              {summary.subInfo && <span style={{ fontSize: 10, color: '#185FA5' }}>{summary.subInfo}</span>}
+            <div style={{ fontSize: 11, color: 'var(--color-text-secondary, #999)', marginBottom: 6 }}>{summary.label}</div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+              <span style={{ fontSize: 22, fontWeight: 600, color: '#042C53' }}>{summary.mainValue}</span>
+              {summary.subInfo && <span style={{ fontSize: 12, color: '#185FA5' }}>{summary.subInfo}</span>}
             </div>
           </div>
         )}
@@ -166,9 +168,9 @@ export default function GuidePopup({ category, isOpen, onClose }) {
           from { opacity: 0; }
           to { opacity: 1; }
         }
-        @keyframes guidePopupIn {
-          from { opacity: 0; transform: scale(0.95); }
-          to { opacity: 1; transform: scale(1); }
+        @keyframes guideSheetIn {
+          from { transform: translateY(100%); }
+          to { transform: translateY(0); }
         }
       `}</style>
     </div>
