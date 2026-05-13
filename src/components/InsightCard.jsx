@@ -3,6 +3,10 @@ import { getOrGenerateInsights, refreshInsights, markShown, getGreetingByTime, t
 import { generateInsightsNow, hasLLMCacheToday } from '../engine/LLMInsightEngine';
 import { hapticLight } from '../utils/haptic';
 
+function _localDate(d = new Date()) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 export default function InsightCard() {
   const [insights, setInsights] = useState([]);
   const [likes, setLikes] = useState(getLikes);
@@ -78,7 +82,7 @@ export default function InsightCard() {
     markShown(main.id);
     if (main.action.type === 'log_water') {
       try {
-        const todayKey = new Date().toISOString().slice(0, 10);
+        const todayKey = _localDate();
         const all = JSON.parse(localStorage.getItem('lua_record_v2') || '{}');
         const today = all[todayKey] || { date: todayKey };
         today.water = today.water || { cups: 0 };

@@ -3,6 +3,10 @@
  * 접두사: lua_food_
  */
 
+function _localDate(d = new Date()) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 const RECORDS_KEY = 'lua_food_records';
 const GOAL_KEY = 'lua_food_goal';
 
@@ -32,7 +36,7 @@ export function deleteFoodRecord(dateStr, id) {
 }
 
 export function getTodayFoods() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = _localDate();
   return getFoodRecords(today);
 }
 

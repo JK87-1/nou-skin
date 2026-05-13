@@ -36,6 +36,10 @@ import DietOnboardingPage from './DietOnboardingPage';
 import SupplementOnboardingPage from './SupplementOnboardingPage';
 import { getPhotoDB } from '../storage/PhotoDB';
 
+function _localDate(d = new Date()) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 // 식단 사진: IndexedDB photoId면 로드, 기존 base64면 그대로 표시
 function FoodPhoto({ photo, style, alt = '' }) {
   const [src, setSrc] = useState(null);
@@ -350,7 +354,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
       const checkDates = new Set(checks.map(c => c.date).filter(Boolean));
       const allDates = [...new Set([...Object.keys(recs), ...Object.keys(foods), ...checkDates])].sort().reverse();
       if (allDates.length === 0) return 0;
-      const today = new Date().toISOString().slice(0, 10);
+      const today = _localDate();
       if (allDates[0] !== today) return 0;
       let count = 1;
       for (let i = 0; i < allDates.length - 1; i++) {
@@ -1186,7 +1190,7 @@ function getDayChips(dateStr) {
 }
 
 function getRelativeTime(dateStr) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = _localDate();
   if (dateStr === today) return '오늘';
   const diff = Math.ceil((new Date(today) - new Date(dateStr)) / 86400000);
   if (diff === 1) return '어제';
@@ -1405,7 +1409,7 @@ function JournalWriteScreen({ onSave, onClose, initialPrompt, editEntry }) {
   const [moodTags, setMoodTags] = useState(editEntry?.mood_tags || []);
   const [showData, setShowData] = useState(true);
   const today = new Date();
-  const dateStr = editEntry?.date || today.toISOString().slice(0, 10);
+  const dateStr = editEntry?.date || _localDate(today);
   const dt = new Date(dateStr + 'T00:00:00');
   const cond = getConditionForDate(dateStr);
   const rec = getDayRecord(dateStr);

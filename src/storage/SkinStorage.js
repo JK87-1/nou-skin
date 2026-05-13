@@ -16,8 +16,7 @@ const THUMB_KEY = 'nou_skin_thumbs';
 const COMPARISON_KEY = 'nou_comparison_photos';
 const MAX_RECORDS = 200; // 하루 3회 × 60일 ≈ 180
 
-function getLocalDateStr() {
-  const d = new Date();
+function getLocalDateStr(d = new Date()) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
@@ -309,7 +308,7 @@ export function getStableSkinAge() {
   const now = new Date();
   const sevenDaysAgo = new Date(now);
   sevenDaysAgo.setDate(now.getDate() - 7);
-  const cutoff = sevenDaysAgo.toISOString().slice(0, 10);
+  const cutoff = getLocalDateStr(sevenDaysAgo);
 
   // 최근 7일 기록 필터링
   const recentRecords = records.filter(r => r.date >= cutoff);

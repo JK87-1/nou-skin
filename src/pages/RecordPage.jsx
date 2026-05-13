@@ -9,6 +9,10 @@ import { getSupplementItems, addSupplementItem, deleteSupplementItem, getSupplem
 import { getProducts, saveProduct, deleteProduct, getTrackerChecks, toggleTrackerCheck, getProductsForMode, TRACKER_CATEGORIES } from '../storage/TrackerStorage';
 import { getTodayEnergySubCheck, saveEnergySubCheck, getTodayMoodSubCheck, saveMoodSubCheck, getTodaySkinSubCheck, saveSkinSubCheck, getEnergySubChecks, getMoodSubChecks, getSkinSubChecks } from '../storage/ConditionStorage';
 
+function _localDate(d = new Date()) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 const fadeUp = (delay = 0) => ({ animation: `breatheIn 0.5s ease ${delay}s both` });
 
 const RECORD_V2_KEY = 'lua_record_v2';
@@ -3950,7 +3954,7 @@ function BodyInsightsSection() {
   const today = new Date();
   const daysAgo = (n) => {
     const d = new Date(today); d.setDate(d.getDate() - n);
-    return d.toISOString().slice(0, 10);
+    return _localDate(d);
   };
   const recordsByDate = Object.fromEntries(records.map(r => [r.date, r.weight]));
   const allDates = records.map(r => r.date).sort();
@@ -4066,7 +4070,7 @@ function BodyInsightsSection() {
         <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>최근 기록</div>
         {recent.map(r => {
           const d = new Date(r.date);
-          const isToday = r.date === new Date().toISOString().slice(0, 10);
+          const isToday = r.date === _localDate();
           return (
             <div key={r.date} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0', borderBottom: '0.5px solid #f5f5f5' }}>
               <span style={{ fontSize: 12, color: isToday ? 'var(--accent-primary)' : 'var(--text-secondary)', fontWeight: isToday ? 600 : 400 }}>

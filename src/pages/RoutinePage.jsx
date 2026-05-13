@@ -18,6 +18,10 @@ import {
   computeAllCorrelations, compressProductThumb,
 } from '../storage/TrackerStorage';
 
+function _localDate(d = new Date()) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 // 네이버 쇼핑에서 제품 누끼 이미지 + 정확한 브랜드명 검색
 async function fetchProductInfo(brand, name) {
   try {
@@ -1727,7 +1731,7 @@ function RoutineAddEditSheet({ enabledCats, defaultCategory, editData, onSave, o
 
 function RoutineChecklist({ mode, enabledCats, selectedDate }) {
   const isAll = mode === 'all';
-  const today = new Date().toISOString().slice(0, 10);
+  const today = _localDate();
   const dateStr = selectedDate || today;
   const isToday = dateStr === today;
   const catKey = isAll ? null : mode; // skin | food | body | face

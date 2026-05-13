@@ -20,6 +20,10 @@ import {
 } from '../storage/ConditionStorage';
 import { getSupplementItems, getSupplementChecks, toggleSupplementCheck, addSupplementItem, deleteSupplementItem } from '../storage/SupplementStorage';
 
+function _localDate(d = new Date()) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 function useSwipeDown(onClose) {
   const startY = useRef(0);
   const currentY = useRef(0);
@@ -236,9 +240,9 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
   const [showWaterModal, setShowWaterModal] = useState(false);
   const [showSleepModal, setShowSleepModal] = useState(false);
   const [homeView, setHomeView] = useState('cards'); // 'cards' | 'briefing'
-  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [selectedDate, setSelectedDate] = useState(() => _localDate());
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const isToday = selectedDate === new Date().toISOString().slice(0, 10);
+  const isToday = selectedDate === _localDate();
   const [dataRefreshKey, setWeightRefreshKey] = useState(0);
   const [tappedCard, setTappedCard] = useState(null);
   const handleCardTap = (cardName, callback) => {
@@ -426,14 +430,14 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
   const [bodyBriefing, setBodyBriefing] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem('lua_body_briefing') || '{}');
-      if (saved.date === new Date().toISOString().slice(0, 10)) return saved.text || '';
+      if (saved.date === _localDate()) return saved.text || '';
     } catch {}
     return '';
   });
   const [briefingTime, setBriefingTime] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem('lua_body_briefing') || '{}');
-      if (saved.date === new Date().toISOString().slice(0, 10)) return saved.time || '';
+      if (saved.date === _localDate()) return saved.time || '';
     } catch {}
     return '';
   });
@@ -500,7 +504,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
   // 기록 데이터 변경 시 상단 브리핑 자동 호출
   useEffect(() => {
     const now = new Date();
-    const todayKey = now.toISOString().slice(0, 10);
+    const todayKey = _localDate(now);
     const dayRec = (() => { try { return (JSON.parse(localStorage.getItem('lua_record_v2') || '{}'))[todayKey] || {}; } catch { return {}; } })();
     const foods = getTodayFoods().filter(f => !f.name?.startsWith('물 '));
     const todayNut = getTodayNutrition();
@@ -562,7 +566,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
     const foods = getTodayFoods().filter(f => !f.name?.startsWith('물 '));
     const todayNut = getTodayNutrition();
     // 수분/걸음수/운동/수면 from day record
-    const todayKey = now.toISOString().slice(0, 10);
+    const todayKey = _localDate(now);
     const dayRec = (() => { try { return (JSON.parse(localStorage.getItem('lua_record_v2') || '{}'))[todayKey] || {}; } catch { return {}; } })();
     // 영양제
     const suppItems = getSupplementItems();
@@ -602,7 +606,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
           const time = now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: true });
           setBodyBriefing(data.briefing);
           setBriefingTime(time);
-          localStorage.setItem('lua_body_briefing', JSON.stringify({ date: now.toISOString().slice(0, 10), text: data.briefing, time }));
+          localStorage.setItem('lua_body_briefing', JSON.stringify({ date: _localDate(now), text: data.briefing, time }));
         } else {
           setBriefingFailed(true);
         }
@@ -1347,7 +1351,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
                 const _skinScore = _skinLog?.score || (_skinLog ? calculateSkinScore(_skinLog) : null);
                 const _is10pt = !!_skinLog?.score;
                 const _skinState = _skinScore !== null ? (_is10pt ? (_skinScore >= 7 ? 'good' : _skinScore >= 4 ? 'signals' : 'needs_care') : getScoreState(_skinScore)) : 'unchecked';
-                const _yesterdayLog = (() => { try { const logs = JSON.parse(localStorage.getItem('lua_skin_check_logs') || '{}'); const yd = new Date(Date.now() - 86400000).toISOString().slice(0, 10); return logs[yd] || null; } catch { return null; } })();
+                const _yesterdayLog = (() => { try { const logs = JSON.parse(localStorage.getItem('lua_skin_check_logs') || '{}'); const yd = (() => { const _d = new Date(); _d.setDate(_d.getDate() - 1); return _localDate(_d); })(); return logs[yd] || null; } catch { return null; } })();
                 const _yesterdayScore = _yesterdayLog?.score || (_yesterdayLog ? calculateSkinScore(_yesterdayLog) : null);
                 const _delta = (_skinScore !== null && _yesterdayScore !== null) ? _skinScore - _yesterdayScore : null;
                 const _signalCount = (_skinLog?.signals || []).length;
@@ -1802,7 +1806,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
       {showFoodModal && (
         <AddFoodModal
           onAdd={(food) => {
-            const today = new Date().toISOString().slice(0, 10);
+            const today = _localDate();
             saveFoodRecord(today, food);
             setShowFoodModal(false);
             setWeightRefreshKey(k => k + 1);
@@ -1869,11 +1873,11 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
           <div onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0', padding: '24px 24px 40px', width: '100%', maxWidth: 420 }}>
             <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
             <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 20, textAlign: 'center' }}>날짜 선택</div>
-            <input type="date" value={selectedDate} max={new Date().toISOString().slice(0, 10)}
+            <input type="date" value={selectedDate} max={_localDate()}
               onChange={e => { setSelectedDate(e.target.value); setShowDatePicker(false); setWeightRefreshKey(k => k + 1); }}
               style={{ width: '100%', padding: '16px', borderRadius: 14, border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.02)', fontSize: 18, color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', textAlign: 'center' }} />
             {!isToday && (
-              <button onClick={() => { setSelectedDate(new Date().toISOString().slice(0, 10)); setShowDatePicker(false); setWeightRefreshKey(k => k + 1); }}
+              <button onClick={() => { setSelectedDate(_localDate()); setShowDatePicker(false); setWeightRefreshKey(k => k + 1); }}
                 style={{ width: '100%', marginTop: 12, padding: '14px 0', borderRadius: 'var(--btn-radius)', border: 'none', background: 'var(--accent-primary)', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>오늘로 돌아가기</button>
             )}
             <button onClick={() => setShowDatePicker(false)}
@@ -1884,7 +1888,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
 
       {/* 과거 날짜일 때 하단 플로팅 "오늘로" 버튼 */}
       {!isToday && !showDatePicker && (
-        <div onClick={() => { setSelectedDate(new Date().toISOString().slice(0, 10)); setWeightRefreshKey(k => k + 1); }}
+        <div onClick={() => { setSelectedDate(_localDate()); setWeightRefreshKey(k => k + 1); }}
           style={{ position: 'fixed', bottom: 90, left: '50%', transform: 'translateX(-50%)', zIndex: 100,
             padding: '10px 20px', borderRadius: 99, background: 'var(--accent-primary)', color: '#fff',
             fontSize: 13, fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
@@ -2334,7 +2338,7 @@ function AddActivityModal({ onSave, onClose }) {
   };
 
   const handleSave = () => {
-    const todayKey = new Date().toISOString().slice(0, 10);
+    const todayKey = _localDate();
     const all = JSON.parse(localStorage.getItem('lua_record_v2') || '{}');
     const today = all[todayKey] || { date: todayKey };
     const loggedAt = getLoggedAt();
@@ -2509,7 +2513,7 @@ function AddActivityModal({ onSave, onClose }) {
 // ===== Water Intake Modal =====
 function WaterIntakeModal({ onClose, onUpdate }) {
   const swipe = useSwipeDown(onClose);
-  const todayKey = new Date().toISOString().slice(0, 10);
+  const todayKey = _localDate();
   const getAll = () => { try { return JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); } catch { return {}; } };
   const getSettings = () => { try { return { cupMl: 250, goalMl: 2000, ...JSON.parse(localStorage.getItem('lua_water_settings') || '{}') }; } catch { return { cupMl: 250, goalMl: 2000 }; } };
 
@@ -2905,7 +2909,7 @@ const SLEEP_QUALITIES = ['깊은 수면', '보통', '얕은 수면'];
 
 function SleepInputModal({ onClose, onUpdate, onDetail }) {
   const swipe = useSwipeDown(onClose);
-  const todayKey = new Date().toISOString().slice(0, 10);
+  const todayKey = _localDate();
   const getAll = () => { try { return JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); } catch { return {}; } };
 
   const allData = getAll();
@@ -3271,7 +3275,7 @@ const ALCOHOL_ITEMS = [
 
 function DrinkModal({ onClose, onSave }) {
   const swipe = useSwipeDown(onClose);
-  const todayKey = new Date().toISOString().slice(0, 10);
+  const todayKey = _localDate();
   const [tab, setTab] = useState('caffeine');
   const [drinkCategory, setDrinkCategory] = useState('coffee');
   const [ncCategory, setNcCategory] = useState('herb');
@@ -3579,7 +3583,7 @@ function DrinkModal({ onClose, onSave }) {
 
 // 상세 페이지 공통 컴포넌트
 function CardDetailPage({ type, data, onClose }) {
-  const todayKey = new Date().toISOString().slice(0, 10);
+  const todayKey = _localDate();
   const todayLabel = (() => {
     const d = new Date();
     const days = ['일', '월', '화', '수', '목', '금', '토'];
@@ -3600,14 +3604,14 @@ function CardDetailPage({ type, data, onClose }) {
     // 최근 7일 평균
     const last7 = [];
     for (let i = 1; i <= 7; i++) {
-      const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+      const d = (() => { const _d = new Date(); _d.setDate(_d.getDate() - i); return _localDate(_d); })();
       const rec = allData[d]?.sleep;
       if (rec?.hours) last7.push(rec.hours);
     }
     const avg7 = last7.length > 0 ? (last7.reduce((a, b) => a + b, 0) / last7.length).toFixed(1) : null;
 
     // 카페인 데이터 (어제)
-    const yesterdayKey = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    const yesterdayKey = (() => { const _d = new Date(); _d.setDate(_d.getDate() - 1); return _localDate(_d); })();
     const cafData = (() => { try { const all = JSON.parse(localStorage.getItem('lua_drink_records') || '{}'); return all[yesterdayKey] || { caffeine: [] }; } catch { return { caffeine: [] }; } })();
     const cafMg = cafData.caffeine.reduce((s, d) => { const item = CAFFEINE_ITEMS.find(c => c.key === d.key); return s + (item?.mg || 0) * (d.count || 0); }, 0);
     const lastCafTime = cafData.caffeine.length > 0 ? cafData.caffeine[cafData.caffeine.length - 1]?.drunkAt : null;
@@ -3692,7 +3696,7 @@ function CardDetailPage({ type, data, onClose }) {
     // 최근 7일 점수
     const last7scores = [];
     for (let i = 1; i <= 7; i++) {
-      const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+      const d = (() => { const _d = new Date(); _d.setDate(_d.getDate() - i); return _localDate(_d); })();
       const dayChecks = allChecks.filter(c => c.date === d);
       const last = dayChecks[dayChecks.length - 1];
       if (last) last7scores.push(Math.round((last.mood + last.energy) / 2 * 10));
@@ -4488,19 +4492,19 @@ function calculateAutoScore(selectedZones, selectedSignals) {
 
 function SkinCheckModal({ onClose, onUpdate }) {
   const swipe = useSwipeDown(onClose);
-  const todayKey = new Date().toISOString().slice(0, 10);
+  const todayKey = _localDate();
   const existingLog = (() => { try { return JSON.parse(localStorage.getItem('lua_skin_check_logs') || '{}')[todayKey] || null; } catch { return null; } })();
 
   // 어제 + 7일 데이터
   const comparison = useMemo(() => {
     try {
       const logs = JSON.parse(localStorage.getItem('lua_skin_check_logs') || '{}');
-      const ydKey = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+      const ydKey = (() => { const _d = new Date(); _d.setDate(_d.getDate() - 1); return _localDate(_d); })();
       const yesterdayLog = logs[ydKey];
       const yesterdayScore = yesterdayLog?.score || null;
       const weekScores = [];
       for (let i = 1; i <= 7; i++) {
-        const dk = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+        const dk = (() => { const _d = new Date(); _d.setDate(_d.getDate() - i); return _localDate(_d); })();
         if (logs[dk]?.score) weekScores.push(logs[dk].score);
       }
       const weekAvg = weekScores.length >= 2 ? Math.round(weekScores.reduce((a, b) => a + b, 0) / weekScores.length * 10) / 10 : null;

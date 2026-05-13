@@ -3,6 +3,10 @@
  * 접두사: lua_body_
  */
 
+function _localDate(d = new Date()) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 const RECORDS_KEY = 'lua_body_records';
 const GOAL_KEY = 'lua_body_goal';
 const PROFILE_KEY = 'lua_body_profile';
@@ -13,7 +17,7 @@ export function getBodyRecords() {
 
 export function saveBodyRecord(weight) {
   const records = getBodyRecords();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = _localDate();
   const existing = records.findIndex(r => r.date === today);
   if (existing >= 0) {
     records[existing].weight = weight;

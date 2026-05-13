@@ -1,6 +1,11 @@
 /**
  * 실시간 컨디션 체크 데이터 관리
  */
+
+function _localDate(d = new Date()) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 const STORAGE_KEY = 'nou_condition_checks';
 
 export function getConditionChecks() {
@@ -8,7 +13,7 @@ export function getConditionChecks() {
 }
 
 export function getTodayChecks() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = _localDate();
   return getConditionChecks().filter(c => c.timestamp.slice(0, 10) === today);
 }
 
@@ -43,13 +48,13 @@ export function getMoodSubChecks() {
 }
 
 export function getTodayMoodSubCheck() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = _localDate();
   return getMoodSubChecks().find(c => c.date === today) || null;
 }
 
 export function saveMoodSubCheck(emotions, stress) {
   const checks = getMoodSubChecks();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = _localDate();
   const idx = checks.findIndex(c => c.date === today);
   const entry = { date: today, emotions, stress, timestamp: new Date().toISOString() };
   if (idx >= 0) checks[idx] = entry;
@@ -67,13 +72,13 @@ export function getSkinSubChecks() {
 }
 
 export function getTodaySkinSubCheck() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = _localDate();
   return getSkinSubChecks().find(c => c.date === today) || null;
 }
 
 export function saveSkinSubCheck(data) {
   const checks = getSkinSubChecks();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = _localDate();
   const idx = checks.findIndex(c => c.date === today);
   const entry = { date: today, ...data, timestamp: new Date().toISOString() };
   if (idx >= 0) checks[idx] = { ...checks[idx], ...entry };
@@ -91,13 +96,13 @@ export function getBloodSugarChecks() {
 }
 
 export function getTodayBloodSugar() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = _localDate();
   return getBloodSugarChecks().find(c => c.date === today) || null;
 }
 
 export function saveBloodSugar(value, timing) {
   const checks = getBloodSugarChecks();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = _localDate();
   const idx = checks.findIndex(c => c.date === today);
   const entry = { date: today, value, timing, timestamp: new Date().toISOString() };
   if (idx >= 0) checks[idx] = entry;
@@ -115,13 +120,13 @@ export function getEyeBodyChecks() {
 }
 
 export function getTodayEyeBody() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = _localDate();
   return getEyeBodyChecks().find(c => c.date === today) || null;
 }
 
 export function saveEyeBody(photos) {
   const checks = getEyeBodyChecks();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = _localDate();
   const idx = checks.findIndex(c => c.date === today);
   const entry = { date: today, photos, timestamp: new Date().toISOString() };
   if (idx >= 0) checks[idx] = entry;
@@ -139,14 +144,14 @@ export function getEnergySubChecks() {
 }
 
 export function getTodayEnergySubCheck() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = _localDate();
   const checks = getEnergySubChecks();
   return checks.find(c => c.date === today) || null;
 }
 
 export function saveEnergySubCheck(vitality, focus) {
   const checks = getEnergySubChecks();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = _localDate();
   const idx = checks.findIndex(c => c.date === today);
   const entry = { date: today, vitality, focus, timestamp: new Date().toISOString() };
   if (idx >= 0) checks[idx] = entry;

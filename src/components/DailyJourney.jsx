@@ -6,6 +6,10 @@
 import { useState, useEffect } from 'react';
 import { getRecords, getAllThumbnailsAsync, getTodayRecord } from '../storage/SkinStorage';
 
+function _localDate(d = new Date()) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 export default function DailyJourney({ onTodayTap, onPastTap }) {
   const [thumbs, setThumbs] = useState({});
   const records = getRecords();
@@ -21,7 +25,7 @@ export default function DailyJourney({ onTodayTap, onPastTap }) {
   for (let i = 6; i >= 0; i--) {
     const d = new Date(today);
     d.setDate(today.getDate() - i);
-    const key = d.toISOString().slice(0, 10);
+    const key = _localDate(d);
     const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
     // 다중 측정 시 최신 기록 사용
     const record = records.filter(r => r.date === key).pop() || null;

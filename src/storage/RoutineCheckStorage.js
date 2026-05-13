@@ -3,6 +3,10 @@
  * 카테고리별(skin/food/body/face) 루틴 항목 + 일별 체크
  */
 
+function _localDate(d = new Date()) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 const ITEMS_KEY = 'lua_routine_items';
 const CHECKS_KEY = 'lua_routine_checks';
 
@@ -57,7 +61,7 @@ export function toggleCheck(category, dateStr, itemId) {
 }
 
 export function getTodayProgress(category) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = _localDate();
   const items = getRoutineItems(category);
   const checks = getChecks(category, today);
   const total = items.length;
@@ -83,7 +87,7 @@ export function getStreak(category, itemId) {
   let streak = 0;
   const d = new Date();
   for (let i = 0; i < 365; i++) {
-    const dateStr = d.toISOString().slice(0, 10);
+    const dateStr = _localDate(d);
     const key = `${category}_${dateStr}`;
     if (allChecks[key]?.[itemId]) {
       streak++;
@@ -114,7 +118,7 @@ export function saveRoutineOrder(category, orderedItems) {
 
 export function getWeeklyRoutineStatus() {
   const today = new Date();
-  const todayStr = today.toISOString().slice(0, 10);
+  const todayStr = _localDate(today);
   const dayOfWeek = today.getDay();
   const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
   const labels = ['월', '화', '수', '목', '금', '토', '일'];
@@ -125,7 +129,7 @@ export function getWeeklyRoutineStatus() {
   return labels.map((label, i) => {
     const d = new Date(today);
     d.setDate(today.getDate() + mondayOffset + i);
-    const dateStr = d.toISOString().slice(0, 10);
+    const dateStr = _localDate(d);
     const isToday = dateStr === todayStr;
 
     let totalAll = 0, doneAll = 0;
