@@ -76,7 +76,7 @@ export default function AiInsightCard() {
     <div style={{
       padding: '20px',
       borderRadius: 16,
-      background: '#FFFFFF',
+      background: 'var(--bg-card, #FFFFFF)',
       boxShadow: 'none',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -103,8 +103,8 @@ export default function AiInsightCard() {
           </svg>
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 13, color: '#8B95A1' }}>AI 인사이트</div>
-          <div style={{ fontSize: 14, color: '#4E5968', marginTop: 4, lineHeight: 1.5 }}>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>AI 인사이트</div>
+          <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 4, lineHeight: 1.5 }}>
             {insight}
             {sub && <span style={{ fontWeight: 600, color: 'var(--accent-primary)' }}> {sub}</span>}
           </div>
