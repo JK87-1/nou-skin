@@ -62,13 +62,20 @@ function getDayData(dateStr) {
 function buildTimeline(dateStr, data) {
   const items = [];
 
-  // 수면 (기상)
+  // 수면 (취침 + 기상)
   if (data.sleep > 0) {
-    const raw = data.rec.sleep?.bedtime;
-    // HH:MM (5자) 또는 YYYY-MM-DDTHH:MM 형식 모두 지원
-    const bt = raw ? (raw.length <= 5 ? raw : raw.slice(11, 16)) : null;
-    const sortBt = raw ? (raw.includes('T') ? raw : `${dateStr}T${raw}:00`) : `${dateStr}T07:00`;
-    items.push({ id: 's1', time: bt || '07:00', category: 'sleep', content: `기상 · 수면 ${data.sleep}h`, sortTime: sortBt });
+    const rawBed = data.rec.sleep?.bedtime;
+    const rawWake = data.rec.sleep?.wakeTime;
+    // 취침 시간
+    if (rawBed) {
+      const bt = rawBed.length <= 5 ? rawBed : rawBed.slice(11, 16);
+      const sortBt = rawBed.includes('T') ? rawBed : `${dateStr}T${rawBed}:00`;
+      items.push({ id: 's0', time: bt, category: 'sleep', content: `취침 · 수면 ${data.sleep}h`, sortTime: sortBt });
+    }
+    // 기상 시간
+    const wt = rawWake ? (rawWake.length <= 5 ? rawWake : rawWake.slice(11, 16)) : null;
+    const sortWt = rawWake ? (rawWake.includes('T') ? rawWake : `${dateStr}T${rawWake}:00`) : `${dateStr}T07:00`;
+    items.push({ id: 's1', time: wt || '07:00', category: 'sleep', content: `기상 · 수면 ${data.sleep}h`, sortTime: sortWt });
   }
 
   // 수분
@@ -151,7 +158,11 @@ function saveTimelineTime(dateStr, item, newTime) {
       const all = JSON.parse(localStorage.getItem('lua_record_v2') || '{}');
       const rec = all[dateStr] || {};
       if (rec.sleep) {
-        rec.sleep.bedtime = `${dateStr}T${newTime}:00`;
+        if (item.id === 's0') {
+          rec.sleep.bedtime = `${dateStr}T${newTime}:00`;
+        } else {
+          rec.sleep.wakeTime = `${dateStr}T${newTime}:00`;
+        }
         all[dateStr] = rec;
         localStorage.setItem('lua_record_v2', JSON.stringify(all));
       }
