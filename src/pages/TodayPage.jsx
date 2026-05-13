@@ -62,17 +62,9 @@ function getDayData(dateStr) {
 function buildTimeline(dateStr, data) {
   const items = [];
 
-  // 수면 (취침 + 기상)
+  // 수면 (기상만 표시)
   if (data.sleep > 0) {
-    const rawBed = data.rec.sleep?.bedtime;
     const rawWake = data.rec.sleep?.wakeTime;
-    // 취침 시간
-    if (rawBed) {
-      const bt = rawBed.length <= 5 ? rawBed : rawBed.slice(11, 16);
-      const sortBt = rawBed.includes('T') ? rawBed : `${dateStr}T${rawBed}:00`;
-      items.push({ id: 's0', time: bt, category: 'sleep', content: `취침 · 수면 ${data.sleep}h`, sortTime: sortBt });
-    }
-    // 기상 시간
     const wt = rawWake ? (rawWake.length <= 5 ? rawWake : rawWake.slice(11, 16)) : null;
     const sortWt = rawWake ? (rawWake.includes('T') ? rawWake : `${dateStr}T${rawWake}:00`) : `${dateStr}T07:00`;
     items.push({ id: 's1', time: wt || '07:00', category: 'sleep', content: `기상 · 수면 ${data.sleep}h`, sortTime: sortWt });
