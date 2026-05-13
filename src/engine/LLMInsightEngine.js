@@ -8,6 +8,8 @@
  * 4. 한도 초과/실패 → 템플릿 폴백
  */
 
+import { CAFFEINE_MG } from '../data/caffeineMap';
+
 // ===== 상수 =====
 const LLM_CACHE_KEY = 'lua_llm_insight_cache';
 const LLM_USAGE_KEY = 'lua_llm_daily_usage';
@@ -150,8 +152,7 @@ function collectUserData(days = 30) {
     const caffeineItems = dayDrinks.caffeine || [];
     const alcoholItems = dayDrinks.alcohol || [];
     const nonCafItems = dayDrinks.noncaffeine || [];
-    const mgMap = { espresso: 150, americano: 150, latte: 150, drip: 130, coldbrew: 200, decaf: 5, matcha: 70, green_tea: 30, black_tea: 50, energy_drink: 160, choco_latte: 30, green_tea_latte: 80, chai_latte: 50 };
-    const totalCafMg = caffeineItems.reduce((s, d) => s + (mgMap[d.key] || 100) * (d.count || 0), 0);
+    const totalCafMg = caffeineItems.reduce((s, d) => s + (CAFFEINE_MG[d.key] || 100) * (d.count || 0), 0);
     const totalAlcohol = alcoholItems.reduce((s, d) => s + (d.count || 0), 0);
     const totalKcal = dayFoods.reduce((s, f) => s + (f.kcal || 0), 0);
     const totalProtein = dayFoods.reduce((s, f) => s + (f.protein || 0), 0);

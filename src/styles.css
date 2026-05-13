@@ -21,6 +21,8 @@
   --text-secondary: #e0e0e8;
   --text-muted: #8888a0;
   --text-dim: #555568;
+  --color-text-secondary: #8888a0;
+  --color-text-tertiary: #555568;
   /* Shadows */
   --shadow-card: none;
   --shadow-elevated: none;
@@ -119,6 +121,8 @@
   --text-muted: #8B95A1;
   --text-dim: #B0B8C1;
   --text-disabled: #D1D6DB;
+  --color-text-secondary: #8B95A1;
+  --color-text-tertiary: #B0B8C1;
   /* Shadows — Toss/Karrot soft */
   --shadow-card: none;
   --shadow-elevated: none;

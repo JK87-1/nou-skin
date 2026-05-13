@@ -204,7 +204,7 @@ export default function ChangePage({ onTabChange }) {
     const fromStr = getDateKey(v2From);
     const toStr = getDateKey(v2To);
     return checks.filter(c => {
-      const d = c.timestamp.slice(0, 10);
+      const d = c.date || c.timestamp?.slice(0, 10) || '';
       return d >= fromStr && d <= toStr;
     });
   }, [v2From, v2To]);
@@ -670,9 +670,9 @@ export default function ChangePage({ onTabChange }) {
 
             // Mood sub data per day
             const moodSubAll = getMoodSubChecks();
-            const moodByDay = days7.map(dk => { const m = moodSubAll.find(c => c.date === dk); return m?.emotions?.length > 0 ? conditionChecks.filter(c => c.timestamp.slice(0, 10) === dk && c.mood != null).map(c => c.mood).pop() ?? 3 : null; });
+            const moodByDay = days7.map(dk => { const m = moodSubAll.find(c => c.date === dk); return m?.emotions?.length > 0 ? conditionChecks.filter(c => (c.date || c.timestamp?.slice(0, 10)) === dk && c.mood != null).map(c => c.mood).pop() ?? 3 : null; });
             const stressByDay = days7.map(dk => { const m = moodSubAll.find(c => c.date === dk); return m?.stress ?? null; });
-            const validMood = conditionChecks.filter(c => c.mood != null && days7.includes(c.timestamp.slice(0, 10)));
+            const validMood = conditionChecks.filter(c => c.mood != null && days7.includes(c.date || c.timestamp?.slice(0, 10)));
             const avgMood = validMood.length > 0 ? (validMood.reduce((a, b) => a + b.mood, 0) / validMood.length).toFixed(1) : '—';
 
             // Emotion frequency
@@ -796,7 +796,7 @@ export default function ChangePage({ onTabChange }) {
             {showAll && (() => {
               const allChecks = getConditionChecks();
               const byDate = {};
-              allChecks.forEach(c => { const d = c.timestamp.slice(0, 10); if (!byDate[d]) byDate[d] = []; byDate[d].push(c); });
+              allChecks.forEach(c => { const d = c.date || c.timestamp?.slice(0, 10) || ''; if (!byDate[d]) byDate[d] = []; byDate[d].push(c); });
               const dates = Object.keys(byDate).sort().reverse().slice(0, 14);
               const chartDates = [...dates].reverse();
               const dailyAvg = chartDates.map(d => {
@@ -844,7 +844,7 @@ export default function ChangePage({ onTabChange }) {
             {showConditionHistory && (() => {
               const allChecks = getConditionChecks();
               const byDate = {};
-              allChecks.forEach(c => { const d = c.timestamp.slice(0, 10); if (!byDate[d]) byDate[d] = []; byDate[d].push(c); });
+              allChecks.forEach(c => { const d = c.date || c.timestamp?.slice(0, 10) || ''; if (!byDate[d]) byDate[d] = []; byDate[d].push(c); });
               const dates = Object.keys(byDate).sort().reverse().slice(0, 30);
               return (
                 <div onClick={() => setShowConditionHistory(false)} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
@@ -902,7 +902,7 @@ export default function ChangePage({ onTabChange }) {
                 </div>
                 <span style={{ fontSize: 11, color: '#7AAABB' }}>평균 {avgMood} / 5</span>
               </div>
-              <DualLineChart data1={days7.map((dk, i) => { const c = conditionChecks.filter(c => c.timestamp.slice(0, 10) === dk && c.mood != null); return c.length > 0 ? c[c.length - 1].mood : null; })} data2={stressByDay} color1="#E8A88A" color2="#D4A030" label1="기분" label2="스트레스" />
+              <DualLineChart data1={days7.map((dk, i) => { const c = conditionChecks.filter(c => (c.date || c.timestamp?.slice(0, 10)) === dk && c.mood != null); return c.length > 0 ? c[c.length - 1].mood : null; })} data2={stressByDay} color1="#E8A88A" color2="#D4A030" label1="기분" label2="스트레스" />
               {topEmotions.length > 0 && <>
                 <div style={{ fontSize: 12, color: '#7AAABB', marginTop: 10, marginBottom: 6 }}>이번 주 자주 느낀 감정</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>

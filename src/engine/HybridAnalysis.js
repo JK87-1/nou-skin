@@ -259,8 +259,10 @@ export async function callVisionAI(base64Image, landmarks) {
       console.log('Different person detected — raw scores used, saved as secondary baseline');
     } else {
       // Same primary person: drift primary baseline (only once per day)
-      const baselineDate = new Date(baseline.timestamp).toISOString().slice(0, 10);
-      const todayDate = new Date().toISOString().slice(0, 10);
+      const _bd = new Date(baseline.timestamp);
+      const baselineDate = `${_bd.getFullYear()}-${String(_bd.getMonth() + 1).padStart(2, '0')}-${String(_bd.getDate()).padStart(2, '0')}`;
+      const _td = new Date();
+      const todayDate = `${_td.getFullYear()}-${String(_td.getMonth() + 1).padStart(2, '0')}-${String(_td.getDate()).padStart(2, '0')}`;
       if (baselineDate !== todayDate) {
         // New day: drift baseline toward current scores
         const drifted = driftBaseline(baseline.result, parsed);

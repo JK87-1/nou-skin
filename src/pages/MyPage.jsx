@@ -31,6 +31,7 @@ import { ChartIcon, CameraIcon, MicroscopeIcon, SparkleIcon, DiamondIcon, Drople
 import EternalPearl from '../components/icons/EternalPearl';
 import { getDefaultTheme } from '../data/BadgeData';
 import { getFoodRecords, deleteFoodRecord } from '../storage/FoodStorage';
+import { CAFFEINE_MG } from '../data/caffeineMap';
 import { getBodyRecords } from '../storage/BodyStorage';
 import DietOnboardingPage from './DietOnboardingPage';
 import SupplementOnboardingPage from './SupplementOnboardingPage';
@@ -1173,8 +1174,7 @@ function getDayRecord(dateStr) {
     const drinks = JSON.parse(localStorage.getItem('lua_drink_records') || '{}');
     const cafItems = drinks[dateStr]?.caffeine || [];
     const cafMg = cafItems.reduce((s, d) => {
-      const mgMap = { espresso: 150, americano: 150, latte: 150, drip: 130, coldbrew: 200, matcha: 70, green_tea: 30, black_tea: 50, energy_drink: 160 };
-      return s + (mgMap[d.key] || 100) * (d.count || 0);
+      return s + (CAFFEINE_MG[d.key] || 100) * (d.count || 0);
     }, 0);
     return { sleep: rec.sleep?.hours || 0, cafMg, steps: rec.steps || 0 };
   } catch { return { sleep: 0, cafMg: 0, steps: 0 }; }

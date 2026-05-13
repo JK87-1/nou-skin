@@ -6,7 +6,9 @@
 const GROUPABLE = new Set(['water', 'caffeine', 'meal']);
 
 function timeToMin(hhmm) {
+  if (!hhmm || typeof hhmm !== 'string') return 0;
   const [h, m] = hhmm.split(':').map(Number);
+  if (isNaN(h) || isNaN(m)) return 0;
   return h * 60 + m;
 }
 

@@ -6,6 +6,7 @@ import { getPhotoDB } from '../storage/PhotoDB';
 import { groupTimelineItems, getGroupSummary, getGroupCountLabel, getItemBrief } from '../utils/timelineGrouping';
 import { generateWaterAnalysis } from '../utils/waterRecommendation';
 import { hapticLight } from '../utils/haptic';
+import { CAFFEINE_MG } from '../data/caffeineMap';
 
 function FoodPhoto({ photo, style }) {
   const [src, setSrc] = useState(null);
@@ -43,8 +44,7 @@ function getDayData(dateStr) {
 
     const cafItems = drinks[dateStr]?.caffeine || [];
     const cafMg = cafItems.reduce((s, d) => {
-      const mgMap = { espresso: 150, americano: 150, latte: 150, drip: 130, coldbrew: 200, matcha: 70, green_tea: 30, black_tea: 50, energy_drink: 160 };
-      return s + (mgMap[d.key] || 100) * (d.count || 0);
+      return s + (CAFFEINE_MG[d.key] || 100) * (d.count || 0);
     }, 0);
 
     const dayChecks = checks.filter(c => (c.date || (c.timestamp && c.timestamp.slice(0, 10))) === dateStr);
@@ -91,7 +91,7 @@ function buildTimeline(dateStr, data) {
   // 카페인
   data.cafItems.forEach((d, i) => {
     const t = d.drunkAt ? d.drunkAt.slice(11, 16) : `${String(9 + i).padStart(2, '0')}:30`;
-    items.push({ id: `c${i}`, time: t, category: 'caffeine', content: `${d.name || d.key} · 카페인 ${(({ espresso: 150, americano: 150, latte: 150, drip: 130, coldbrew: 200, matcha: 70, green_tea: 30, black_tea: 50, energy_drink: 160 })[d.key] || 100) * (d.count || 1)}mg`, sortTime: `${dateStr}T${t}` });
+    items.push({ id: `c${i}`, time: t, category: 'caffeine', content: `${d.name || d.key} · 카페인 ${(CAFFEINE_MG[d.key] || 100) * (d.count || 1)}mg`, sortTime: `${dateStr}T${t}` });
   });
 
   // 식사
@@ -242,11 +242,17 @@ export default function TodayPage() {
   const waterAnalysis = useMemo(() => isToday && data.waterMl > 0 ? generateWaterAnalysis(data.waterMl) : null, [data.waterMl, isToday]);
 
   const aiPrimary = (() => {
-    // 시간대별 수분 분석 우선
+    // 시간대별 수분 분석 우선 (오늘만)
     if (waterAnalysis?.message) return waterAnalysis.message;
-    if (data.cafMg > 300) return `카페인이 ${data.cafMg}mg으로 평소보다 많아요. 수분을 더 챙기면 좋을 듯해요.`;
-    if (data.condAvg && data.condAvg < 5) return `오늘 컨디션이 ${data.condAvg.toFixed(1)}점이에요. 무리하지 말고 쉬어가세요.`;
-    if (data.totalKcal > 0) return `오늘 ${data.totalKcal}kcal를 섭취했어요. 균형 잡힌 하루를 보내고 있네요.`;
+    if (data.cafMg > 300) return isToday
+      ? `카페인이 ${data.cafMg}mg으로 평소보다 많아요. 수분을 더 챙기면 좋을 듯해요.`
+      : `카페인이 ${data.cafMg}mg으로 평소보다 많았어요.`;
+    if (data.condAvg && data.condAvg < 5) return isToday
+      ? `오늘 컨디션이 ${data.condAvg.toFixed(1)}점이에요. 무리하지 말고 쉬어가세요.`
+      : `컨디션이 ${data.condAvg.toFixed(1)}점이었어요.`;
+    if (data.totalKcal > 0) return isToday
+      ? `오늘 ${data.totalKcal}kcal를 섭취했어요. 균형 잡힌 하루를 보내고 있네요.`
+      : `${data.totalKcal}kcal를 섭취한 하루였어요.`;
     return null;
   })();
   const aiSecondary = (() => {

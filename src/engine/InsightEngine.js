@@ -5,6 +5,7 @@
  * lua 페르소나 100% 적용
  */
 import { getCurrentLLMInsight, getLLMInsights, onLLMRefresh, onMeaningfulDataInput, isLLMEnabled, generateInsightsNow, hasLLMCacheToday } from './LLMInsightEngine';
+import { CAFFEINE_MG } from '../data/caffeineMap';
 
 const CACHE_KEY = 'lua_insight_cache';
 const FEEDBACK_KEY = 'lua_insight_feedback';
@@ -65,8 +66,7 @@ function collectUserData(days = 30) {
     const caffeineItems = dayDrinks.caffeine || [];
     const alcoholItems = dayDrinks.alcohol || [];
     const totalCafMg = caffeineItems.reduce((s, d) => {
-      const mgMap = { espresso: 150, americano: 150, latte: 150, drip: 130, coldbrew: 200, decaf: 5, matcha: 70, green_tea: 30, black_tea: 50, energy_drink: 160, choco_latte: 30, green_tea_latte: 80, chai_latte: 50 };
-      return s + (mgMap[d.key] || 100) * (d.count || 0);
+      return s + (CAFFEINE_MG[d.key] || 100) * (d.count || 0);
     }, 0);
     const totalAlcohol = alcoholItems.reduce((s, d) => s + (d.count || 0), 0);
 
@@ -293,8 +293,8 @@ const TEMPLATES = [
       const waterHigh = last14.filter(d => d.waterMl >= d.waterGoalMl && d.condition);
       const waterLow = last14.filter(d => d.waterMl > 0 && d.waterMl < d.waterGoalMl * 0.5 && d.condition);
       if (waterHigh.length < 3 || waterLow.length < 2) return null;
-      const highAvg = waterHigh.reduce((s, d) => s + (d.condition.energy + d.condition.mood) / 2, 0) / waterHigh.length;
-      const lowAvg = waterLow.reduce((s, d) => s + (d.condition.energy + d.condition.mood) / 2, 0) / waterLow.length;
+      const highAvg = waterHigh.length > 0 ? waterHigh.reduce((s, d) => s + (d.condition.energy + d.condition.mood) / 2, 0) / waterHigh.length : 0;
+      const lowAvg = waterLow.length > 0 ? waterLow.reduce((s, d) => s + (d.condition.energy + d.condition.mood) / 2, 0) / waterLow.length : 0;
       const diff = Math.round(highAvg - lowAvg);
       if (diff >= 3) return { diff };
       return null;

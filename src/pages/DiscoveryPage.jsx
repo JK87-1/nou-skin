@@ -4,6 +4,7 @@ import { IconShare, IconGridPattern, IconSparkles, IconTrendingUp, IconBulb, Ico
 import { getProfile } from '../storage/ProfileStorage';
 import GuidePopup from '../components/GuidePopup';
 import { hapticLight } from '../utils/haptic';
+import { CAFFEINE_MG } from '../data/caffeineMap';
 
 // ===== 애니메이션 =====
 function useReveal(delay = 0) {
@@ -73,7 +74,7 @@ export default function DiscoveryPage() {
       };
       const getCafAvg = (month) => {
         const vals = Object.keys(drinks).filter(k => k.startsWith(month)).map(k => {
-          return (drinks[k]?.caffeine || []).reduce((s, d) => s + (({ espresso: 150, americano: 150, latte: 150, drip: 130, coldbrew: 200, matcha: 70, green_tea: 30, black_tea: 50, energy_drink: 160 })[d.key] || 100) * (d.count || 0), 0);
+          return (drinks[k]?.caffeine || []).reduce((s, d) => s + (CAFFEINE_MG[d.key] || 100) * (d.count || 0), 0);
         }).filter(v => v > 0);
         return vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
       };
@@ -506,7 +507,7 @@ function getGuideTriggers() {
     const drinks = JSON.parse(localStorage.getItem('lua_drink_records') || '{}');
     const checks = JSON.parse(localStorage.getItem('nou_condition_checks') || '[]');
     const wSettings = { cupMl: 250, goalMl: 2000, ...JSON.parse(localStorage.getItem('lua_water_settings') || '{}') };
-    const mgMap = { espresso: 150, americano: 150, latte: 150, drip: 130, coldbrew: 200, matcha: 70, green_tea: 30, black_tea: 50, energy_drink: 160, decaf: 5, choco_latte: 30, green_tea_latte: 80, chai_latte: 50 };
+    const mgMap = CAFFEINE_MG;
 
     const days7 = [];
     for (let i = 0; i < 7; i++) { const d = new Date(); d.setDate(d.getDate() - i); days7.push(_ld(d)); }

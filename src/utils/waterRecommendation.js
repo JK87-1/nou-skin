@@ -3,7 +3,9 @@
  */
 
 function parseTime(hhmm) {
+  if (!hhmm || typeof hhmm !== 'string') return 0;
   const [h, m] = hhmm.split(':').map(Number);
+  if (isNaN(h) || isNaN(m)) return 0;
   return h * 60 + m; // 분 단위
 }
 
@@ -14,7 +16,10 @@ function clamp(val, min, max) { return Math.max(min, Math.min(max, val)); }
 // 시간대별 권장량 계산
 export function calculateHourlyRecommendation(wakeTime = '07:00', sleepTime = '23:00', dailyGoal = 2000) {
   const wake = parseTime(wakeTime);
-  const cutoff = parseTime(sleepTime) - 120; // 취침 2시간 전
+  let sleepMin = parseTime(sleepTime);
+  // 자정 넘김 처리: 취침이 기상보다 이르면 다음 날로 간주
+  if (sleepMin <= wake) sleepMin += 24 * 60;
+  const cutoff = sleepMin - 120; // 취침 2시간 전
   const totalMin = cutoff - wake;
   if (totalMin <= 0) return null;
 

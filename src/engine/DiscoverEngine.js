@@ -8,6 +8,8 @@
  * 4. Fallback: 템플릿 기반 생성
  */
 
+import { CAFFEINE_MG } from '../data/caffeineMap';
+
 const DISCOVER_CACHE_KEY = 'lua_discover_cache';
 const DISCOVER_HISTORY_KEY = 'lua_discover_history_count';
 
@@ -62,8 +64,7 @@ function collectWeekData(weekStart, weekEnd) {
 
     const caffeineItems = dayDrinks.caffeine || [];
     const totalCafMg = caffeineItems.reduce((s, item) => {
-      const mgMap = { espresso: 150, americano: 150, latte: 150, drip: 130, coldbrew: 200, decaf: 5, matcha: 70, green_tea: 30, black_tea: 50, energy_drink: 160 };
-      return s + (mgMap[item.key] || 100) * (item.count || 0);
+      return s + (CAFFEINE_MG[item.key] || 100) * (item.count || 0);
     }, 0);
 
     const totalKcal = dayFoods.reduce((s, f) => s + (f.kcal || 0), 0);
