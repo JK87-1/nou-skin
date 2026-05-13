@@ -2662,7 +2662,17 @@ function WaterIntakeModal({ onClose, onUpdate }) {
           }}>+</button>
         </div>
 
-        {/* 닫기 */}
+        {/* 시간 */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 20 }}>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>기록 시간</span>
+          <input type="time" value={time} onChange={e => setTime(e.target.value)} style={{
+            border: 'none', background: 'var(--bg-input, #F2F3F5)', borderRadius: 8,
+            padding: '4px 8px', fontSize: 12, color: 'var(--text-primary)',
+            fontFamily: 'inherit', outline: 'none', textAlign: 'center',
+          }} />
+        </div>
+
+        {/* 완료 */}
         <button onClick={onUpdate} style={{
           width: '100%', padding: '14px 0', borderRadius: 'var(--btn-radius)',
           border: 'none', background: goalReached ? '#22C55E' : 'var(--accent-primary)',
