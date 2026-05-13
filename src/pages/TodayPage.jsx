@@ -1,8 +1,11 @@
 import { useState, useMemo, useEffect } from 'react';
-import { IconChevronLeft, IconChevronRight, IconSparkles, IconTrendingUp, IconClock, IconMoon, IconDroplet, IconCoffee, IconApple, IconFlame, IconMoodSmile, IconPlus, IconChartBar } from '@tabler/icons-react';
+import { IconChevronLeft, IconChevronRight, IconSparkles, IconTrendingUp, IconClock, IconMoon, IconDroplet, IconCoffee, IconApple, IconFlame, IconMoodSmile, IconPlus, IconChartBar, IconChevronDown } from '@tabler/icons-react';
 import { getProfile } from '../storage/ProfileStorage';
 import { getTodayFoods, getFoodRecords } from '../storage/FoodStorage';
 import { getPhotoDB } from '../storage/PhotoDB';
+import { groupTimelineItems, getGroupSummary, getGroupCountLabel, getItemBrief } from '../utils/timelineGrouping';
+import { generateWaterAnalysis } from '../utils/waterRecommendation';
+import { hapticLight } from '../utils/haptic';
 
 function FoodPhoto({ photo, style }) {
   const [src, setSrc] = useState(null);
@@ -212,6 +215,7 @@ export default function TodayPage() {
   const [editingId, setEditingId] = useState(null);
   const [editTime, setEditTime] = useState('');
   const [ver, setVer] = useState(0); // force re-render after time edit
+  const [expandedGroup, setExpandedGroup] = useState(null);
   const todayStr = getDateKey(new Date());
   const isToday = selectedDate === todayStr;
 
@@ -221,6 +225,7 @@ export default function TodayPage() {
 
   const data = useMemo(() => getDayData(selectedDate), [selectedDate, ver]);
   const timeline = useMemo(() => buildTimeline(selectedDate, data), [selectedDate, data]);
+  const groupedTimeline = useMemo(() => groupTimelineItems(timeline), [timeline]);
   const trend = useMemo(() => getWeeklyTrend(trendMetric, todayStr), [trendMetric, todayStr]);
 
   const goPrev = () => {
@@ -233,15 +238,20 @@ export default function TodayPage() {
   const nowHH = String(new Date().getHours()).padStart(2, '0');
   const nowMM = String(new Date().getMinutes()).padStart(2, '0');
 
-  // AI 분석 메시지
+  // AI 분석 메시지 (시간대별 수분 분석 포함)
+  const waterAnalysis = useMemo(() => isToday && data.waterMl > 0 ? generateWaterAnalysis(data.waterMl) : null, [data.waterMl, isToday]);
+
   const aiPrimary = (() => {
-    if (data.waterMl > 0 && data.waterMl < 1000) return `오늘 수분 섭취가 ${data.waterMl}ml로 아직 부족해요. 한 잔 더 챙겨보세요.`;
+    // 시간대별 수분 분석 우선
+    if (waterAnalysis?.message) return waterAnalysis.message;
     if (data.cafMg > 300) return `카페인이 ${data.cafMg}mg으로 평소보다 많아요. 수분을 더 챙기면 좋을 듯해요.`;
     if (data.condAvg && data.condAvg < 5) return `오늘 컨디션이 ${data.condAvg.toFixed(1)}점이에요. 무리하지 말고 쉬어가세요.`;
     if (data.totalKcal > 0) return `오늘 ${data.totalKcal}kcal를 섭취했어요. 균형 잡힌 하루를 보내고 있네요.`;
     return null;
   })();
   const aiSecondary = (() => {
+    // 수분 분석 보조 정보
+    if (waterAnalysis) return `현재 ${data.waterMl.toLocaleString()}ml · 이 시간 권장 약 ${waterAnalysis.idealMl.toLocaleString()}ml`;
     if (data.condAvg && data.condAvg >= 7) return `컨디션 ${data.condAvg.toFixed(1)}점은 좋은 상태예요`;
     if (data.sleep >= 7) return `수면 ${data.sleep}시간은 충분한 휴식이에요`;
     if (data.waterMl >= 1500) return `수분 ${(data.waterMl / 1000).toFixed(1)}L, 잘 챙기고 있어요`;
@@ -329,30 +339,81 @@ export default function TodayPage() {
             <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>타임라인</span>
           </div>
 
-          {timeline.length === 0 ? (
+          {groupedTimeline.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '28px 0', color: 'var(--text-muted)', fontSize: 13 }}>
               아직 기록이 없어요
             </div>
           ) : (
-            timeline.map((item, i) => {
-              const { Icon, color } = CAT_ICONS[item.category] || { Icon: IconClock, color: 'var(--text-muted)' };
-              return (
-                <div key={item.id} onClick={() => { setEditingId(item.id); setEditTime(item.time); }} style={{
-                  display: 'flex', gap: 12, padding: '8px 0 8px 14px', marginBottom: 4,
-                  borderLeft: `2px solid ${color}30`, cursor: 'pointer',
-                }}>
-                  <span style={{ fontSize: 11, color: 'rgba(0,0,0,0.3)', minWidth: 38, fontWeight: 500 }}>{item.time}</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 7, flex: 1 }}>
-                    <div style={{ width: 24, height: 24, borderRadius: 8, background: `${color}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <Icon size={13} color={color} />
-                    </div>
-                    <span style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500, flex: 1 }}>{item.content}</span>
-                    {item.photo && (
-                      <div style={{ width: 36, height: 36, borderRadius: 10, overflow: 'hidden', flexShrink: 0 }}>
-                        <FoodPhoto photo={item.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            groupedTimeline.map((group, gi) => {
+              const { Icon, color } = CAT_ICONS[group.category] || { Icon: IconClock, color: 'var(--text-muted)' };
+              const isMulti = group.count >= 2;
+              const isExpanded = expandedGroup === gi;
+
+              if (!isMulti) {
+                // 단일 항목 — 기존과 동일
+                const item = group.items[0];
+                return (
+                  <div key={item.id} onClick={() => { setEditingId(item.id); setEditTime(item.time); }} style={{
+                    display: 'flex', gap: 12, padding: '8px 0 8px 14px', marginBottom: 4,
+                    borderLeft: `2px solid ${color}30`, cursor: 'pointer',
+                  }}>
+                    <span style={{ fontSize: 11, color: 'rgba(0,0,0,0.3)', minWidth: 38, fontWeight: 500 }}>{item.time}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 7, flex: 1 }}>
+                      <div style={{ width: 24, height: 24, borderRadius: 8, background: `${color}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Icon size={13} color={color} />
                       </div>
-                    )}
+                      <span style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500, flex: 1 }}>{item.content}</span>
+                      {item.photo && (
+                        <div style={{ width: 36, height: 36, borderRadius: 10, overflow: 'hidden', flexShrink: 0 }}>
+                          <FoodPhoto photo={item.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                      )}
+                    </div>
                   </div>
+                );
+              }
+
+              // 다중 항목 그룹
+              return (
+                <div key={`g${gi}`} style={{ borderLeft: `2px solid ${color}30`, marginBottom: 4 }}>
+                  {/* 그룹 헤더 */}
+                  <div onClick={() => { hapticLight(); setExpandedGroup(isExpanded ? null : gi); }} style={{
+                    display: 'flex', gap: 12, padding: '8px 0 8px 14px', cursor: 'pointer',
+                    minHeight: 44, alignItems: 'center',
+                  }}>
+                    <span style={{ fontSize: 11, color: 'rgba(0,0,0,0.3)', minWidth: 38, fontWeight: 500 }}>{group.lastTime}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 7, flex: 1 }}>
+                      <div style={{ width: 24, height: 24, borderRadius: 8, background: `${color}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Icon size={13} color={color} />
+                      </div>
+                      <span style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500 }}>{getGroupSummary(group)}</span>
+                      <span style={{
+                        fontSize: 10, color: 'var(--color-text-tertiary, rgba(0,0,0,0.3))',
+                        background: '#F0F7FE', padding: '2px 6px', borderRadius: 6, marginLeft: 4,
+                      }}>{getGroupCountLabel(group)}</span>
+                    </div>
+                    <IconChevronDown size={12} color="var(--color-text-tertiary, rgba(0,0,0,0.3))"
+                      style={{ flexShrink: 0, transition: 'transform 0.2s ease', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+                  </div>
+
+                  {/* 펼침 상태 - 개별 항목 */}
+                  {isExpanded && (
+                    <div style={{ paddingLeft: 20, paddingBottom: 4 }}>
+                      {group.items.map((item) => (
+                        <div key={item.id} onClick={() => { setEditingId(item.id); setEditTime(item.time); }}
+                          style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '3px 0', cursor: 'pointer', minHeight: 28 }}>
+                          <span style={{ fontSize: 10, color: 'var(--color-text-secondary, rgba(0,0,0,0.4))', minWidth: 38 }}>{item.time}</span>
+                          <span style={{ fontSize: 2, color: 'var(--color-text-tertiary, rgba(0,0,0,0.2))' }}>·</span>
+                          <span style={{ fontSize: 10, color: 'var(--color-text-secondary, rgba(0,0,0,0.4))' }}>{getItemBrief(item)}</span>
+                          {item.photo && (
+                            <div style={{ width: 24, height: 24, borderRadius: 6, overflow: 'hidden', flexShrink: 0, marginLeft: 'auto' }}>
+                              <FoodPhoto photo={item.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               );
             })
