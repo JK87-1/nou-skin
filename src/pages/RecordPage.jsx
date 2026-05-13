@@ -2912,10 +2912,8 @@ export function AddFoodModal({ onAdd, onClose, initialMeal, onDetail, onGuide })
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </div>
           )}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            <span style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>식사</span>
-            {onGuide && <GuideButton category="meal" onClick={onGuide} />}
-          </div>
+          <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center' }}>식사</div>
+          {onGuide && <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }}><GuideButton category="meal" onClick={onGuide} /></div>}
         </div>
 
         {/* Meal selector */}

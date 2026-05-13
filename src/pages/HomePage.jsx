@@ -1969,9 +1969,9 @@ function ConditionCheckModal({ selections, sliderPcts, onSelect, onSliderChange,
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 24 }}>
-          <span style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>컨디션</span>
-          {onGuide && <GuideButton category="condition" onClick={onGuide} />}
+        <div style={{ position: 'relative', marginBottom: 24 }}>
+          <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center' }}>컨디션</div>
+          {onGuide && <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }}><GuideButton category="condition" onClick={onGuide} /></div>}
         </div>
 
         {sliders.map((s, si) => {
@@ -2589,9 +2589,9 @@ function WaterIntakeModal({ onClose, onUpdate, onGuide }) {
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 24 }}>
-          <span style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>수분</span>
-          {onGuide && <GuideButton category="water" onClick={onGuide} />}
+        <div style={{ position: 'relative', marginBottom: 24 }}>
+          <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center' }}>수분</div>
+          {onGuide && <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }}><GuideButton category="water" onClick={onGuide} /></div>}
         </div>
         <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 16 }}>1잔 = {cupMl}ml</div>
 
@@ -2970,9 +2970,9 @@ function SleepInputModal({ onClose, onUpdate, onDetail, onGuide }) {
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 6 }}>
-          <span style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>수면</span>
-          {onGuide && <GuideButton category="sleep" onClick={onGuide} />}
+        <div style={{ position: 'relative', marginBottom: 6 }}>
+          <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center' }}>수면</div>
+          {onGuide && <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }}><GuideButton category="sleep" onClick={onGuide} /></div>}
         </div>
         <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 24 }}>
           {sleepQuality ? `${sleepHours}시간 · ${sleepQuality}` : `${sleepHours}시간`}
@@ -3380,9 +3380,9 @@ function DrinkModal({ onClose, onSave, onGuide }) {
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
       <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '18px 18px 36px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.1)', margin: '0 auto 16px' }} />
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 24 }}>
-          <span style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>음료</span>
-          {onGuide && <GuideButton category="caffeine" onClick={onGuide} />}
+        <div style={{ position: 'relative', marginBottom: 24 }}>
+          <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center' }}>음료</div>
+          {onGuide && <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }}><GuideButton category="caffeine" onClick={onGuide} /></div>}
         </div>
 
         {/* 카페인/논카페인/알콜 토글 */}
