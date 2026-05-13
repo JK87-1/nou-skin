@@ -247,9 +247,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
   const isToday = selectedDate === _localDate();
   const [dataRefreshKey, setWeightRefreshKey] = useState(0);
   const [tappedCard, setTappedCard] = useState(null);
-  const handleCardTap = (cardName, callback, e) => {
-    // guide 버튼 클릭이면 카드 탭 무시
-    if (e?.target?.closest?.('[data-guide-btn]')) return;
+  const handleCardTap = (cardName, callback) => {
     setTappedCard(cardName);
     hapticLight();
     if (navigator.vibrate) navigator.vibrate(8);
@@ -897,13 +895,12 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
 
               if (cardId === 'condition') {
                 return editWrap('컨디션', (
-                  <div onClick={(e) => handleCardTap('condition', () => setShowConditionModal(true), e)} style={{ ..._cs, cursor: 'pointer', padding: '20px', animation: tappedCard === 'condition' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
+                  <div onClick={() => handleCardTap('condition', () => setShowConditionModal(true))} style={{ ..._cs, cursor: 'pointer', padding: '20px', animation: tappedCard === 'condition' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 0, flex: '0 0 auto' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(240,208,96,0.3))' }}><defs><linearGradient id="starCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#FFE066"/><stop offset="100%" stopColor="#E8B800"/></linearGradient></defs><path d="M10.48,23.25c-.15.41-.5.71-.86.75-.27.03-.78-.29-.9-.59l-1.53-4.02c-.48-1.26-1.41-2.1-2.67-2.58l-3.91-1.48c-.29-.11-.59-.51-.6-.76-.01-.39.23-.79.6-.93l3.9-1.49c1.27-.48,2.19-1.31,2.68-2.59l1.57-4.14c.08-.2.52-.44.74-.46.24-.02.77.21.86.46l1.57,4.14c.5,1.32,1.47,2.15,2.78,2.63l3.7,1.37c.31.11.66.55.67.83.02.42-.29.82-.68.97l-3.8,1.44c-1.26.48-2.2,1.32-2.67,2.58l-1.45,3.86z" fill="url(#starCard)" opacity="0.8"/><path d="M21.48,6.29c-1.03.59-.9,2.91-2.01,2.98-1.23.08-.99-1.68-1.94-2.78-.77-.88-2.68-.63-2.74-1.78-.07-1.27,2.01-1.1,2.74-1.91.87-.95.73-2.72,1.78-2.8,1.29-.1.98,1.81,1.95,2.77.87.86,2.67.71,2.73,1.8.07,1.08-1.29,1.02-2.51,1.72z" fill="url(#starCard)" opacity="0.8"/></svg>
                         <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>컨디션</span>
                       </div>
-                      <GuideButton category="condition" onClick={() => setGuideCategory('condition')} />
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
                       <div>
@@ -945,13 +942,12 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
 
               if (cardId === 'sleep') {
                 return editWrap('수면', (
-                  <div onClick={(e) => handleCardTap('sleep', () => setShowSleepModal(true), e)} style={{ ..._cs, cursor: 'pointer', padding: '20px', animation: tappedCard === 'sleep' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
+                  <div onClick={() => handleCardTap('sleep', () => setShowSleepModal(true))} style={{ ..._cs, cursor: 'pointer', padding: '20px', animation: tappedCard === 'sleep' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 0, flex: '0 0 auto' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(91,106,175,0.3))' }}><defs><linearGradient id="moonCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#C8D0F0"/><stop offset="100%" stopColor="#5B6AAF"/></linearGradient></defs><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="url(#moonCard)" opacity="0.6"/></svg>
                         <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>수면</span>
                       </div>
-                      <GuideButton category="sleep" onClick={() => setGuideCategory('sleep')} />
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
                       <div>
@@ -992,13 +988,12 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
 
               if (cardId === 'food') {
                 return editWrap('식사', (
-                  <div onClick={(e) => { e.stopPropagation(); handleCardTap('food', () => setShowFoodModal(true), e); }} style={{ ..._cs, cursor: 'pointer', padding: '20px', animation: tappedCard === 'food' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
+                  <div onClick={(e) => { e.stopPropagation(); handleCardTap('food', () => setShowFoodModal(true)); }} style={{ ..._cs, cursor: 'pointer', padding: '20px', animation: tappedCard === 'food' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 0, flex: '0 0 auto' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <svg width="16" height="16" viewBox="0 0 1254 1254" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(123,198,123,0.3))' }}><defs><linearGradient id="appleCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#A8E6A3"/><stop offset="100%" stopColor="#7BC67B"/></linearGradient></defs><path d="M852.51,1114.52C822.56,1133.36,790.72,1145.62,755.49,1148.31C718.9,1151.11,684.66,1142.94,652.14,1126.65C645.15,1123.15,638.33,1119.22,631.86,1114.87C628.65,1112.72,626.65,1113.54,623.94,1115.2C596.76,1131.87,567.54,1143,535.83,1147.21C491.83,1153.05,450.67,1143.99,411.83,1123.23C369.95,1100.84,336.1,1069,306.69,1032.31C243.86,953.89,200.68,865.58,176.61,768.11C162.75,711.98,159.24,654.92,166.15,597.45C172.23,546.91,187.01,499.36,216.16,456.92C248.57,409.71,292.47,378.61,347.36,363.01C391.12,350.57,435.67,348.92,480.62,354.47C518.12,359.11,554.54,368.34,590.23,380.63C592.44,381.39,594.82,381.67,596.97,382.14C598.41,359.44,599.8,337.56,601.19,315.63C590.93,317.2,580.22,319.19,569.43,320.44C526.57,325.37,485.28,320.34,446.56,300.15C418.24,285.37,395.38,264.25,376.51,238.74C348.56,200.95,330.22,158.8,320.39,112.9C320.08,111.43,319.84,109.95,319.62,108.47C317.74,95.9,321.66,89.96,334.08,88.2C347.93,86.24,361.84,84.4,375.79,83.56C419.19,80.94,462.16,83.39,503.56,98.09C553.43,115.79,593.86,145.54,620.07,192.46C625.39,201.98,629.27,212.29,633.88,222.38C636.78,217.79,639.84,212.77,643.09,207.87C661.04,180.78,683.41,157.84,709.46,138.56C726.51,125.95,748.78,135.42,751.3,156.2C752.54,166.47,747.98,174.47,739.69,180.66C720.61,194.88,703.83,211.44,689.71,230.67C669.45,258.27,657.8,289.38,653.28,323.02C650.87,340.97,650.42,359.18,649.28,377.29C648.95,382.59,649.99,383.17,655.09,381.34C690.88,368.52,727.35,358.25,764.96,352.44C818.12,344.21,870.99,344.39,922.73,361.04C987.39,381.84,1032.33,424.8,1060.25,486.13C1080.83,531.32,1087.87,579.32,1088.93,628.47C1090.56,703.51,1074.69,775.27,1047.53,844.76C1022.21,909.55,989.75,970.49,946.75,1025.43C919.92,1059.72,889.78,1090.66,852.51,1114.52z" fill="url(#appleCard)" opacity="0.6"/></svg>
                         <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>식사</span>
                       </div>
-                      <GuideButton category="meal" onClick={() => setGuideCategory('meal')} />
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
                       <div>
@@ -1037,13 +1032,12 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
 
               if (cardId === 'water') {
                 return editWrap('수분', (
-                  <div onClick={(e) => handleCardTap('water', () => setShowWaterModal(true), e)} style={{ ..._cs, cursor: 'pointer', padding: '20px', animation: tappedCard === 'water' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
+                  <div onClick={() => handleCardTap('water', () => setShowWaterModal(true))} style={{ ..._cs, cursor: 'pointer', padding: '20px', animation: tappedCard === 'water' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 0, flex: '0 0 auto' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(91,163,212,0.3))' }}><defs><linearGradient id="dropCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#B8E0F5"/><stop offset="100%" stopColor="#5BA3D4"/></linearGradient></defs><path d="M12 2.5c0 0-7.5 8-7.5 13a7.5 7.5 0 0015 0c0-5-7.5-13-7.5-13z" fill="url(#dropCard)" opacity="0.6"/></svg>
                         <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>수분</span>
                       </div>
-                      <GuideButton category="water" onClick={() => setGuideCategory('water')} />
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
                       <div>
@@ -1225,13 +1219,12 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
                 const _userWeight = getLatestWeight()?.weight || 0;
                 const _cafState = calculateCaffeineState(_cafMg, _userWeight);
                 return editWrap('음료', (
-                  <div onClick={(e) => handleCardTap('drink', () => setShowDrinkModal(true), e)} style={{ ..._cs, cursor: 'pointer', padding: '20px', animation: tappedCard === 'drink' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
+                  <div onClick={() => handleCardTap('drink', () => setShowDrinkModal(true))} style={{ ..._cs, cursor: 'pointer', padding: '20px', animation: tappedCard === 'drink' ? 'cardTap 0.3s ease' : 'none', pointerEvents: isEditing ? 'none' : 'auto' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 0, flex: '0 0 auto' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <img src="/cup.svg" width="16" height="16" alt="" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(160,120,80,0.3))' }} />
                         <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>음료</span>
                       </div>
-                      <GuideButton category="caffeine" onClick={() => setGuideCategory('caffeine')} />
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
                       {_hasData ? (
@@ -1704,6 +1697,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
         <WaterIntakeModal
           onClose={() => setShowWaterModal(false)}
           onUpdate={() => { setShowWaterModal(false); setWeightRefreshKey(k => k + 1); }}
+          onGuide={() => setGuideCategory('water')}
         />
       )}
 
@@ -1822,6 +1816,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
           }}
           onClose={() => setShowFoodModal(false)}
           onDetail={(food) => { setShowFoodModal(false); setDetailPage({ type: 'meal', data: food }); }}
+          onGuide={() => setGuideCategory('meal')}
         />
       )}
 
@@ -1834,6 +1829,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
           onUpdate={() => { handleUpdate(); setShowConditionModal(false); }}
           onClose={() => setShowConditionModal(false)}
           onDetail={(data) => { setShowConditionModal(false); setDetailPage({ type: 'condition', data }); }}
+          onGuide={() => setGuideCategory('condition')}
         />
       )}
 
@@ -1842,7 +1838,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
       )}
 
       {showDrinkModal && (
-        <DrinkModal onClose={() => setShowDrinkModal(false)} onSave={(drinkInfo) => { setShowDrinkModal(false); setWeightRefreshKey(k => k + 1); if (drinkInfo) { setEffectCheckDrink(drinkInfo); setShowEffectCheckModal(true); } }} />
+        <DrinkModal onClose={() => setShowDrinkModal(false)} onSave={(drinkInfo) => { setShowDrinkModal(false); setWeightRefreshKey(k => k + 1); if (drinkInfo) { setEffectCheckDrink(drinkInfo); setShowEffectCheckModal(true); } }} onGuide={() => setGuideCategory('caffeine')} />
       )}
 
       {showEffectCheckModal && effectCheckDrink && (
@@ -1910,6 +1906,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
           onClose={() => setShowSleepModal(false)}
           onUpdate={() => { setShowSleepModal(false); setWeightRefreshKey(k => k + 1); }}
           onDetail={(data) => { setShowSleepModal(false); setDetailPage({ type: 'sleep', data }); }}
+          onGuide={() => setGuideCategory('sleep')}
         />
       )}
 
@@ -1952,7 +1949,7 @@ function WeatherFullModal({ onClose }) {
   );
 }
 
-function ConditionCheckModal({ selections, sliderPcts, onSelect, onSliderChange, onUpdate, onClose, onDetail }) {
+function ConditionCheckModal({ selections, sliderPcts, onSelect, onSliderChange, onUpdate, onClose, onDetail, onGuide }) {
   const swipe = useSwipeDown(onClose);
   const sliders = [
     { key: 'mood', label: '기분', rgb: [245,194,203], labels: MOOD_LABELS,
@@ -1972,7 +1969,10 @@ function ConditionCheckModal({ selections, sliderPcts, onSelect, onSliderChange,
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
-        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24, textAlign: 'center' }}>컨디션</div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 24 }}>
+          <span style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>컨디션</span>
+          {onGuide && <GuideButton category="condition" onClick={onGuide} />}
+        </div>
 
         {sliders.map((s, si) => {
           const val = selections[s.key];
@@ -2522,7 +2522,7 @@ function AddActivityModal({ onSave, onClose }) {
 }
 
 // ===== Water Intake Modal =====
-function WaterIntakeModal({ onClose, onUpdate }) {
+function WaterIntakeModal({ onClose, onUpdate, onGuide }) {
   const swipe = useSwipeDown(onClose);
   const todayKey = _localDate();
   const getAll = () => { try { return JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); } catch { return {}; } };
@@ -2589,7 +2589,10 @@ function WaterIntakeModal({ onClose, onUpdate }) {
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
-        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24, textAlign: 'center' }}>수분</div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 24 }}>
+          <span style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>수분</span>
+          {onGuide && <GuideButton category="water" onClick={onGuide} />}
+        </div>
         <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 16 }}>1잔 = {cupMl}ml</div>
 
         {/* Time picker */}
@@ -2918,7 +2921,7 @@ function AccountPage({ profile, onUpdate, onClose }) {
 // ===== Sleep Input Modal =====
 const SLEEP_QUALITIES = ['깊은 수면', '보통', '얕은 수면'];
 
-function SleepInputModal({ onClose, onUpdate, onDetail }) {
+function SleepInputModal({ onClose, onUpdate, onDetail, onGuide }) {
   const swipe = useSwipeDown(onClose);
   const todayKey = _localDate();
   const getAll = () => { try { return JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); } catch { return {}; } };
@@ -2967,7 +2970,10 @@ function SleepInputModal({ onClose, onUpdate, onDetail }) {
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
-        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6, textAlign: 'center' }}>수면</div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 6 }}>
+          <span style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>수면</span>
+          {onGuide && <GuideButton category="sleep" onClick={onGuide} />}
+        </div>
         <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 24 }}>
           {sleepQuality ? `${sleepHours}시간 · ${sleepQuality}` : `${sleepHours}시간`}
         </div>
@@ -3284,7 +3290,7 @@ const ALCOHOL_ITEMS = [
   { key: 'whiskey', name: '위스키', icon: '🥃', ml: 45 },
 ];
 
-function DrinkModal({ onClose, onSave }) {
+function DrinkModal({ onClose, onSave, onGuide }) {
   const swipe = useSwipeDown(onClose);
   const todayKey = _localDate();
   const [tab, setTab] = useState('caffeine');
@@ -3374,7 +3380,10 @@ function DrinkModal({ onClose, onSave }) {
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
       <div ref={swipe.elRef} onTouchStart={swipe.onTouchStart} onTouchMove={swipe.onTouchMove} onTouchEnd={swipe.onTouchEnd} onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: '24px 24px 0 0', padding: '18px 18px 36px', width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto' }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.1)', margin: '0 auto 16px' }} />
-        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 24, textAlign: 'center' }}>음료</div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 24 }}>
+          <span style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>음료</span>
+          {onGuide && <GuideButton category="caffeine" onClick={onGuide} />}
+        </div>
 
         {/* 카페인/논카페인/알콜 토글 */}
         <div style={{ display: 'flex', gap: 3, background: '#F4F4F4', borderRadius: 10, padding: 3, marginBottom: 14 }}>

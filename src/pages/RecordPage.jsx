@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { GuideButton } from '../components/GuidePopup';
 import { getTodayFoods, getTodayNutrition, getFoodRecords, getNutritionForDate, getTimeAdjustedGoal, getFoodGoal, saveFoodRecord, deleteFoodRecord } from '../storage/FoodStorage';
 import { getRecords, getChanges, getTotalChanges, getAllThumbnailsAsync } from '../storage/SkinStorage';
 import { getBodyRecords, getLatestWeight, getStartWeight, getBodyGoal, getBodyProfile, calcBMI, saveBodyRecord, deleteBodyRecord } from '../storage/BodyStorage';
@@ -2607,7 +2608,7 @@ export default function RecordPage({ onTabChange, autoOpenAdd, onMeasure }) {
   );
 }
 
-export function AddFoodModal({ onAdd, onClose, initialMeal, onDetail }) {
+export function AddFoodModal({ onAdd, onClose, initialMeal, onDetail, onGuide }) {
   const swipeStartY = useRef(0);
   const swipeDY = useRef(0);
   const swiping = useRef(false);
@@ -2911,7 +2912,10 @@ export function AddFoodModal({ onAdd, onClose, initialMeal, onDetail }) {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </div>
           )}
-          <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center' }}>식사</div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <span style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>식사</span>
+            {onGuide && <GuideButton category="meal" onClick={onGuide} />}
+          </div>
         </div>
 
         {/* Meal selector */}
