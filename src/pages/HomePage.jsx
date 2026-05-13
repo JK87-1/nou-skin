@@ -2615,18 +2615,28 @@ function WaterIntakeModal({ onClose, onUpdate }) {
           <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }}><GuideButton category="water" onClick={() => setShowGuide(true)} /></div>
         </div>
 
-        {/* ml + 목표 */}
-        <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <div>
-            <span style={{ fontSize: 36, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{currentMl.toLocaleString()}</span>
+        {/* 물병 + ml */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 24 }}>
+          <div style={{ position: 'relative', width: 120, height: 160 }}>
+            <svg width="120" height="160" viewBox="0 0 120 160">
+              <defs>
+                <clipPath id="bottleClip"><path d="M42 12 Q42 4 50 4 L70 4 Q78 4 78 12 L78 24 Q96 32 96 48 L96 140 Q96 152 84 152 L36 152 Q24 152 24 140 L24 48 Q24 32 42 24 Z" /></clipPath>
+                <linearGradient id="waterFillGrad" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stopColor="#4A9BD9" /><stop offset="100%" stopColor="#89CEF5" /></linearGradient>
+              </defs>
+              <path d="M42 12 Q42 4 50 4 L70 4 Q78 4 78 12 L78 24 Q96 32 96 48 L96 140 Q96 152 84 152 L36 152 Q24 152 24 140 L24 48 Q24 32 42 24 Z" fill="none" stroke="rgba(91,163,212,0.3)" strokeWidth="2" />
+              <g clipPath="url(#bottleClip)">
+                <rect x="20" y={152 - (fillPct * 148)} width="80" height={fillPct * 148} fill="url(#waterFillGrad)" opacity="0.7" style={{ transition: 'y 0.5s ease, height 0.5s ease' }} />
+                {fillPct > 0 && <path d={`M20 ${152 - fillPct * 148} Q40 ${152 - fillPct * 148 - 3} 60 ${152 - fillPct * 148} Q80 ${152 - fillPct * 148 + 3} 100 ${152 - fillPct * 148} L100 152 L20 152 Z`} fill="url(#waterFillGrad)" opacity="0.5" />}
+              </g>
+              <text x="60" y="100" textAnchor="middle" fontSize="14" fontWeight="600" fill={fillPct > 0.5 ? '#fff' : 'var(--text-muted)'} fontFamily="var(--font-display)">{Math.round(fillPct * 100)}%</text>
+            </svg>
+          </div>
+          <div style={{ marginTop: 12, textAlign: 'center' }}>
+            <span style={{ fontSize: 32, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{currentMl.toLocaleString()}</span>
             <span style={{ fontSize: 14, color: 'var(--text-muted)', marginLeft: 4 }}>ml</span>
           </div>
-          <div style={{ fontSize: 12, color: goalReached ? '#22C55E' : 'var(--text-muted)', marginTop: 6, fontWeight: goalReached ? 600 : 400 }}>
+          <div style={{ fontSize: 12, color: goalReached ? '#22C55E' : 'var(--text-muted)', marginTop: 4, fontWeight: goalReached ? 600 : 400 }}>
             {goalReached ? '목표 달성!' : `목표 ${goalMl.toLocaleString()}ml · ${(goalMl - currentMl).toLocaleString()}ml 남음`}
-          </div>
-          {/* 프로그레스 바 */}
-          <div style={{ width: '100%', height: 6, borderRadius: 3, background: 'rgba(91,163,212,0.12)', marginTop: 12 }}>
-            <div style={{ width: `${Math.min(fillPct * 100, 100)}%`, height: '100%', borderRadius: 3, background: goalReached ? '#22C55E' : '#5BA3D4', transition: 'width 0.4s ease' }} />
           </div>
         </div>
 

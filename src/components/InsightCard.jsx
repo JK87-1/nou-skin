@@ -45,7 +45,38 @@ export default function InsightCard() {
     return () => Object.entries(handlers).forEach(([evt, fn]) => window.removeEventListener(evt, fn));
   }, []);
 
-  if (insights.length === 0) return null;
+  if (insights.length === 0 && !llmLoading) return null;
+
+  if (insights.length === 0 && llmLoading) {
+    return (
+      <div style={{ marginBottom: 10 }}>
+        <div style={{
+          background: 'var(--card-bg)',
+          backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          borderRadius: '24px 24px 24px 6px',
+          border: 'var(--card-border)',
+          boxShadow: 'var(--card-shadow)',
+          padding: '16px 18px 20px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <div style={{ position: 'relative', flexShrink: 0, width: 20, height: 20 }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 2px rgba(220,160,170,0.35))' }}>
+                <defs><linearGradient id="luaSmileL" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F8C8D0"/><stop offset="100%" stopColor="#E8A0B0"/></linearGradient></defs>
+                <circle cx="12" cy="12" r="10" fill="url(#luaSmileL)" opacity="0.7"/>
+                <circle cx="9" cy="10.5" r="1.2" fill="#fff" opacity="0.9"/>
+                <circle cx="15" cy="10.5" r="1.2" fill="#fff" opacity="0.9"/>
+                <path d="M9.5 14.5c0 0 1 1.5 2.5 1.5s2.5-1.5 2.5-1.5" stroke="#fff" strokeWidth="1.3" strokeLinecap="round" fill="none" opacity="0.9"/>
+              </svg>
+            </div>
+            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>lua</span>
+          </div>
+          <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-muted)', lineHeight: 1.7 }}>
+            오늘의 인사이트를 준비하고 있어요<span style={{ animation: 'pulse 1.5s infinite' }}>...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const main = insights[0];
   const greeting = getGreetingByTime();
@@ -121,7 +152,7 @@ export default function InsightCard() {
               <div style={{
                 position: 'absolute', bottom: -1, right: -1,
                 width: 7, height: 7, borderRadius: '50%',
-                background: '#89cef5', border: '1.5px solid #fff',
+                background: 'var(--accent-primary)', border: '1.5px solid #fff',
               }} />
             </div>
             <div>
