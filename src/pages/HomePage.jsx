@@ -1715,7 +1715,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
         <WaterIntakeModal
           onClose={() => setShowWaterModal(false)}
           onUpdate={() => { setShowWaterModal(false); setWeightRefreshKey(k => k + 1); }}
-          onGuide={() => setGuideCategory('water')}
+          onGuide={() => { setShowWaterModal(false); setGuideCategory('water'); }}
         />
       )}
 
@@ -1834,7 +1834,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
           }}
           onClose={() => setShowFoodModal(false)}
           onDetail={(food) => { setShowFoodModal(false); setDetailPage({ type: 'meal', data: food }); }}
-          onGuide={() => setGuideCategory('meal')}
+          onGuide={() => { setShowFoodModal(false); setGuideCategory('meal'); }}
         />
       )}
 
@@ -1847,7 +1847,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
           onUpdate={() => { handleUpdate(); setShowConditionModal(false); }}
           onClose={() => setShowConditionModal(false)}
           onDetail={(data) => { setShowConditionModal(false); setDetailPage({ type: 'condition', data }); }}
-          onGuide={() => setGuideCategory('condition')}
+          onGuide={() => { setShowConditionModal(false); setGuideCategory('condition'); }}
         />
       )}
 
@@ -1856,7 +1856,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
       )}
 
       {showDrinkModal && (
-        <DrinkModal onClose={() => setShowDrinkModal(false)} onSave={(drinkInfo) => { setShowDrinkModal(false); setWeightRefreshKey(k => k + 1); if (drinkInfo) { setEffectCheckDrink(drinkInfo); setShowEffectCheckModal(true); } }} onGuide={() => setGuideCategory('caffeine')} />
+        <DrinkModal onClose={() => setShowDrinkModal(false)} onSave={(drinkInfo) => { setShowDrinkModal(false); setWeightRefreshKey(k => k + 1); if (drinkInfo) { setEffectCheckDrink(drinkInfo); setShowEffectCheckModal(true); } }} onGuide={() => { setShowDrinkModal(false); setGuideCategory('caffeine'); }} />
       )}
 
       {showEffectCheckModal && effectCheckDrink && (
@@ -1924,7 +1924,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
           onClose={() => setShowSleepModal(false)}
           onUpdate={() => { setShowSleepModal(false); setWeightRefreshKey(k => k + 1); }}
           onDetail={(data) => { setShowSleepModal(false); setDetailPage({ type: 'sleep', data }); }}
-          onGuide={() => setGuideCategory('sleep')}
+          onGuide={() => { setShowSleepModal(false); setGuideCategory('sleep'); }}
         />
       )}
 
