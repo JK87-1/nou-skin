@@ -182,11 +182,16 @@ export function GuideButton({ category, onClick }) {
 
   return (
     <div
+      data-guide-btn="true"
       onClick={(e) => {
         e.stopPropagation();
+        e.nativeEvent?.stopImmediatePropagation?.();
         hapticLight();
         if (navigator.vibrate) navigator.vibrate(8);
         onClick?.();
+      }}
+      onTouchEnd={(e) => {
+        e.stopPropagation();
       }}
       style={{
         display: 'flex', alignItems: 'center', gap: 3,
@@ -194,8 +199,9 @@ export function GuideButton({ category, onClick }) {
         cursor: 'pointer', transition: 'background 0.2s ease',
         minWidth: 44, minHeight: 44,
         justifyContent: 'center',
+        position: 'relative', zIndex: 2,
       }}
-      onPointerDown={(e) => { e.currentTarget.style.background = data.btnBg.replace('0.08', '0.12'); }}
+      onPointerDown={(e) => { e.stopPropagation(); e.currentTarget.style.background = data.btnBg.replace('0.08', '0.12'); }}
       onPointerUp={(e) => { e.currentTarget.style.background = data.btnBg; }}
       onPointerLeave={(e) => { e.currentTarget.style.background = data.btnBg; }}
     >
