@@ -118,31 +118,6 @@ export async function updateReminderTime(reminderTime, nickname) {
   return false;
 }
 
-/**
- * 아침/저녁 슬롯 부분 업데이트(PUT). 인자는 모두 optional.
- * { morningEnabled, morningTime, eveningEnabled, eveningTime, nickname }
- */
-export async function updateReminderSlots(opts = {}) {
-  if (!isPushSupported()) return false;
-  const registration = await navigator.serviceWorker.ready;
-  const subscription = await registration.pushManager.getSubscription();
-  if (!subscription) return false;
-
-  const body = { endpoint: subscription.endpoint };
-  if (opts.morningEnabled !== undefined) body.morningEnabled = opts.morningEnabled;
-  if (opts.morningTime !== undefined) body.morningTime = opts.morningTime;
-  if (opts.eveningEnabled !== undefined) body.eveningEnabled = opts.eveningEnabled;
-  if (opts.eveningTime !== undefined) body.eveningTime = opts.eveningTime;
-  if (opts.nickname !== undefined) body.nickname = opts.nickname;
-
-  const response = await fetch('/api/push-subscribe', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  return response.ok;
-}
-
 /** 현재 PushManager 구독이 있는지 확인 (UI 토글 초기값용). */
 export async function getCurrentSubscription() {
   if (!isPushSupported()) return null;

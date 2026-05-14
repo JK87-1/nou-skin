@@ -54,13 +54,7 @@ export default function PushPermissionPrompt({ source = 'onboarding', onClose })
         return;
       }
       const prof = (() => { try { return getProfile() || {}; } catch { return {}; } })();
-      await saveSubscriptionToServer(sub, {
-        morningEnabled: true,
-        morningTime: '09:00',
-        eveningEnabled: true,
-        eveningTime: '21:00',
-        nickname: prof.nickname || '',
-      });
+      await saveSubscriptionToServer(sub, { nickname: prof.nickname || '' });
       trackPushPermissionGranted(source);
       markPromptShown();
       setBusy(false);
@@ -159,7 +153,7 @@ function DefaultPermissionContent({ busy, onEnable, onLater }) {
         매일의 변화를 놓치지 않도록
       </h3>
       <p style={{ fontSize: 14, lineHeight: 1.55, color: 'var(--text-secondary, #c8c8d4)', margin: '0 0 18px' }}>
-        아침 9시와 저녁 9시에 짧은 알림을 보내드려요.
+        매일 저녁 9시에 짧은 알림을 보내드려요.
         30초만 기록해도 피부 패턴이 또렷이 보이기 시작해요.
       </p>
       <div style={{ display: 'flex', gap: 10 }}>

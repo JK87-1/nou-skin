@@ -39,7 +39,7 @@ import { getPhotoDB } from '../storage/PhotoDB';
 import {
   isPushSupported, isIOS, isStandalone, getPermissionState,
   subscribeToPush, unsubscribeFromPush, saveSubscriptionToServer,
-  updateReminderSlots, getCurrentSubscription,
+  getCurrentSubscription,
 } from '../utils/pushNotification';
 import {
   trackPushPermissionGranted, trackPushPermissionDenied,
@@ -2054,14 +2054,9 @@ function NotificationSettingsPage({ onClose }) {
   const iosNeedsStandalone = isIOS() && !isStandalone();
   const [permission, setPermission] = useState(() => getPermissionState());
   const [subscribed, setSubscribed] = useState(false);
-  const [morningEnabled, setMorningEnabled] = useState(true);
-  const [morningTime, setMorningTime] = useState('09:00');
-  const [eveningEnabled, setEveningEnabled] = useState(true);
-  const [eveningTime, setEveningTime] = useState('21:00');
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState('');
 
-  // 초기 구독 상태 로드
   useEffect(() => {
     (async () => {
       const sub = await getCurrentSubscription();
@@ -2072,22 +2067,6 @@ function NotificationSettingsPage({ onClose }) {
   function flashToast(msg) {
     setToast(msg);
     setTimeout(() => setToast(''), 1800);
-  }
-
-  async function pushSlots(next) {
-    // 서버 PUT, 실패 시 false 반환
-    const merged = {
-      morningEnabled: next.morningEnabled ?? morningEnabled,
-      morningTime: next.morningTime ?? morningTime,
-      eveningEnabled: next.eveningEnabled ?? eveningEnabled,
-      eveningTime: next.eveningTime ?? eveningTime,
-    };
-    try {
-      const ok = await updateReminderSlots(merged);
-      if (!ok) flashToast('저장 실패. 다시 시도해주세요.');
-    } catch {
-      flashToast('저장 실패. 다시 시도해주세요.');
-    }
   }
 
   async function handleMasterToggle(nextOn) {
@@ -2104,10 +2083,7 @@ function NotificationSettingsPage({ onClose }) {
           return;
         }
         const prof = (() => { try { return getProfile() || {}; } catch { return {}; } })();
-        await saveSubscriptionToServer(sub, {
-          morningEnabled, morningTime, eveningEnabled, eveningTime,
-          nickname: prof.nickname || '',
-        });
+        await saveSubscriptionToServer(sub, { nickname: prof.nickname || '' });
         trackPushPermissionGranted('mypage');
         setPermission('granted');
         setSubscribed(true);
@@ -2173,74 +2149,17 @@ function NotificationSettingsPage({ onClose }) {
 
         {supported && !iosNeedsStandalone && (
           <>
-            {/* 마스터 토글 */}
             <SlotRow
               label="알림 받기"
               desc={
                 permission === 'denied'
                   ? '브라우저 알림 권한이 차단되어 있어요. 설정에서 허용해주세요.'
-                  : '아침/저녁 정해진 시간에 기록 알림을 보내요'
+                  : '매일 저녁 9시(KST)에 기록 알림을 보내드려요'
               }
               checked={masterOn}
               disabled={busy || permission === 'denied'}
               onChange={handleMasterToggle}
             />
-
-            <div style={{ height: 16 }} />
-
-            {/* 슬롯 토글 */}
-            <div style={{
-              background: 'var(--bg-card, rgba(255,255,255,0.6))',
-              borderRadius: 16, overflow: 'hidden',
-              opacity: masterOn ? 1 : 0.45,
-              pointerEvents: masterOn ? 'auto' : 'none',
-            }}>
-              <SlotRow
-                inline
-                label="아침 알림"
-                checked={morningEnabled}
-                onChange={(v) => { setMorningEnabled(v); pushSlots({ morningEnabled: v }); }}
-                right={
-                  <input
-                    type="time"
-                    value={morningTime}
-                    onChange={(e) => { setMorningTime(e.target.value); pushSlots({ morningTime: e.target.value }); }}
-                    disabled={!morningEnabled}
-                    style={{
-                      fontSize: 14, padding: '6px 8px', borderRadius: 8,
-                      border: '1px solid var(--border-subtle, rgba(0,0,0,0.08))',
-                      background: 'transparent', color: 'var(--text-primary)',
-                      fontFamily: 'inherit',
-                    }}
-                  />
-                }
-              />
-              <div style={{ height: 1, background: 'var(--border-subtle, rgba(0,0,0,0.06))', margin: '0 16px' }} />
-              <SlotRow
-                inline
-                label="저녁 알림"
-                checked={eveningEnabled}
-                onChange={(v) => { setEveningEnabled(v); pushSlots({ eveningEnabled: v }); }}
-                right={
-                  <input
-                    type="time"
-                    value={eveningTime}
-                    onChange={(e) => { setEveningTime(e.target.value); pushSlots({ eveningTime: e.target.value }); }}
-                    disabled={!eveningEnabled}
-                    style={{
-                      fontSize: 14, padding: '6px 8px', borderRadius: 8,
-                      border: '1px solid var(--border-subtle, rgba(0,0,0,0.08))',
-                      background: 'transparent', color: 'var(--text-primary)',
-                      fontFamily: 'inherit',
-                    }}
-                  />
-                }
-              />
-            </div>
-
-            <p style={{ fontSize: 11, color: 'var(--text-dim, #8B95A1)', margin: '12px 4px 0', lineHeight: 1.5 }}>
-              알림은 매시 정각 단위로 발송돼요. 분 단위는 가장 가까운 정시로 반영됩니다.
-            </p>
           </>
         )}
       </div>
