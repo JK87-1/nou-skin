@@ -482,9 +482,16 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
         const raw = localStorage.getItem('lua_caffeine_effect_scheduled');
         if (!raw) return;
         const scheduled = JSON.parse(raw);
-        if (new Date() >= new Date(scheduled.fireAt)) {
+        const now = new Date();
+        const drunkAt = scheduled.drunkAt ? new Date(scheduled.drunkAt) : new Date(new Date(scheduled.fireAt).getTime() - 60 * 60 * 1000);
+        const hoursSinceDrunk = (now.getTime() - drunkAt.getTime()) / (1000 * 60 * 60);
+        if (hoursSinceDrunk >= 5) {
+          localStorage.removeItem('lua_caffeine_effect_scheduled');
+          return;
+        }
+        if (now >= new Date(scheduled.fireAt)) {
           setEffectCheckDrink({
-            drunkAt: new Date(new Date(scheduled.fireAt).getTime() - 60 * 60 * 1000).toISOString(),
+            drunkAt: drunkAt.toISOString(),
             drinkName: scheduled.drinkName,
             amount: scheduled.amount,
             caffeineMg: 0,
@@ -3308,7 +3315,9 @@ function DrinkModal({ onClose, onSave }) {
       const drunkAtDate = getDrunkAt();
       const now = new Date();
       const minutesAgo = (now.getTime() - drunkAtDate.getTime()) / (1000 * 60);
-      if (minutesAgo >= 60) {
+      if (minutesAgo >= 300) {
+        // 5시간 이상 지났으면 효과 체크 모달 표시하지 않음
+      } else if (minutesAgo >= 60) {
         const latestDrink = records.caffeine[records.caffeine.length - 1];
         onSave({ drunkAt: drunkAtDate, drinkName: latestDrink?.name || '카페인', amount: cafTotal, caffeineMg: cafMg });
         return;
@@ -4077,6 +4086,7 @@ function scheduleCaffeineEffectNotification(delayMs, drinkName, amount) {
   // localStorage에 예약 저장 (앱 재진입 시 체크용)
   const scheduled = {
     fireAt: new Date(Date.now() + delayMs).toISOString(),
+    drunkAt: new Date(Date.now() - (60 * 60 * 1000 - delayMs)).toISOString(),
     drinkName,
     amount,
   };
