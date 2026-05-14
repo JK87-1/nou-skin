@@ -3291,7 +3291,7 @@ function DrinkModal({ onClose, onSave }) {
   const getDrunkAt = () => {
     const now = new Date();
     if (drunkTimeMode === '30min') return new Date(now.getTime() - 30 * 60 * 1000);
-    if (drunkTimeMode === 'custom' && customTime) { const [h, m] = customTime.split(':').map(Number); const d = new Date(now); d.setHours(h, m, 0, 0); return d; }
+    if (drunkTimeMode === 'custom' && customTime) { const [h, m] = customTime.split(':').map(Number); const d = new Date(now); d.setHours(h, m, 0, 0); if (d > now) d.setDate(d.getDate() - 1); return d; }
     return now;
   };
   const formatTime = (date) => `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
