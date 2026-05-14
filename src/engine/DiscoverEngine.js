@@ -9,6 +9,7 @@
  */
 
 import { CAFFEINE_MG } from '../data/caffeineMap';
+function _localDate(d = new Date()) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
 
 const DISCOVER_CACHE_KEY = 'lua_discover_cache';
 const DISCOVER_HISTORY_KEY = 'lua_discover_history_count';
@@ -525,7 +526,7 @@ export function getActiveDays() {
     const records = safeJSON('lua_record_v2', {});
     const foods = safeJSON('lua_food_records', {});
     const checks = safeJSON('nou_condition_checks', []);
-    const checkDates = new Set(checks.map(c => c.date || (c.timestamp && c.timestamp.slice(0, 10))).filter(Boolean));
+    const checkDates = new Set(checks.map(c => c.date || ((c.timestamp && _localDate(new Date(c.timestamp))))).filter(Boolean));
     return new Set([...Object.keys(records), ...Object.keys(foods), ...checkDates]).size;
   } catch { return 0; }
 }

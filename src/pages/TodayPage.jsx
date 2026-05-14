@@ -7,6 +7,7 @@ import { groupTimelineItems, getGroupSummary, getGroupCountLabel, getItemBrief }
 import { generateWaterAnalysis } from '../utils/waterRecommendation';
 import { hapticLight } from '../utils/haptic';
 import { CAFFEINE_MG } from '../data/caffeineMap';
+function _localDate(d = new Date()) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
 
 function FoodPhoto({ photo, style }) {
   const [src, setSrc] = useState(null);
@@ -47,7 +48,7 @@ function getDayData(dateStr) {
       return s + (CAFFEINE_MG[d.key] || 100) * (d.count || 0);
     }, 0);
 
-    const dayChecks = checks.filter(c => (c.date || (c.timestamp && c.timestamp.slice(0, 10))) === dateStr);
+    const dayChecks = checks.filter(c => (c.date || (c.timestamp && _localDate(new Date(c.timestamp)))) === dateStr);
     const lastCheck = dayChecks.length > 0 ? dayChecks[dayChecks.length - 1] : null;
     const condAvg = lastCheck ? ((lastCheck.energy || lastCheck.에너지 || 0) + (lastCheck.mood || lastCheck.기분 || 0) + (lastCheck.skin || lastCheck.피부 || 0) + (lastCheck.gut || lastCheck.소화 || 0)) / 4 : null;
 
@@ -182,7 +183,7 @@ function saveTimelineTime(dateStr, item, newTime) {
       }
     } else if (item.category === 'condition') {
       const checks = JSON.parse(localStorage.getItem('nou_condition_checks') || '[]');
-      const dayChecks = checks.filter(c => (c.date || (c.timestamp && c.timestamp.slice(0, 10))) === dateStr);
+      const dayChecks = checks.filter(c => (c.date || (c.timestamp && _localDate(new Date(c.timestamp)))) === dateStr);
       if (dayChecks.length > 0) {
         const last = dayChecks[dayChecks.length - 1];
         last.timestamp = `${dateStr}T${newTime}:00`;

@@ -14,7 +14,7 @@ export function getConditionChecks() {
 
 export function getTodayChecks() {
   const today = _localDate();
-  return getConditionChecks().filter(c => (c.date || c.timestamp?.slice(0, 10)) === today);
+  return getConditionChecks().filter(c => (c.date || (c.timestamp && _localDate(new Date(c.timestamp)))) === today);
 }
 
 export function getLatestCheck() {
@@ -25,6 +25,7 @@ export function getLatestCheck() {
 export function saveConditionCheck(check) {
   const checks = getConditionChecks();
   checks.push({
+    date: _localDate(),
     timestamp: new Date().toISOString(),
     energy: check.energy,
     skin: check.skin,

@@ -2711,6 +2711,7 @@ export function AddFoodModal({ onAdd, onClose, initialMeal, onDetail }) {
     } else if (mealTimeMode === 'custom' && customMealTime) {
       const [h, m] = customMealTime.split(':').map(Number);
       const d = new Date(now); d.setHours(h, m, 0, 0);
+      if (d > now) d.setDate(d.getDate() - 1);
       loggedAt = d.toISOString();
     } else {
       loggedAt = now.toISOString();

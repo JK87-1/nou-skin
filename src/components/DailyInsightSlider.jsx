@@ -31,7 +31,7 @@ function gatherData() {
     data.today.mealCount = todayFoods.length;
     data.today.calories = todayFoods.reduce((s, f) => s + (f.calories || f.kcal || 0), 0);
 
-    const todayChecks = allChecks.filter(c => (c.date || c.timestamp?.slice(0, 10)) === todayKey);
+    const todayChecks = allChecks.filter(c => (c.date || (c.timestamp && getLocalDateKey(new Date(c.timestamp)))) === todayKey);
     if (todayChecks.length > 0) {
       const last = todayChecks[todayChecks.length - 1];
       data.today.energy = last.energy || 5;
@@ -49,7 +49,7 @@ function gatherData() {
       if (dayRec.steps > 0) data.recent.stepDays.push(dayRec.steps);
       const dayFoods = (allFoods[key] || []).filter(f => !f.name?.startsWith('물 '));
       if (dayFoods.length > 0) data.recent.calDays.push(dayFoods.reduce((s, f) => s + (f.calories || f.kcal || 0), 0));
-      const dayChecks = allChecks.filter(c => (c.date || c.timestamp?.slice(0, 10)) === key);
+      const dayChecks = allChecks.filter(c => (c.date || (c.timestamp && getLocalDateKey(new Date(c.timestamp)))) === key);
       if (dayChecks.length > 0) {
         const l = dayChecks[dayChecks.length - 1];
         data.recent.condDays.push({ energy: l.energy || 5, mood: l.mood || 5 });
@@ -190,7 +190,7 @@ function gatherYesterdayData() {
       if (todayRec.sleep?.hours) data.sleep = `${todayRec.sleep.hours}시간${todayRec.sleep.quality ? ' (' + todayRec.sleep.quality + ')' : ''}`;
     }
     const allChecks = JSON.parse(localStorage.getItem('nou_condition_checks') || '[]');
-    const yChecks = allChecks.filter(c => (c.date || c.timestamp?.slice(0, 10)) === yKey);
+    const yChecks = allChecks.filter(c => (c.date || (c.timestamp && getLocalDateKey(new Date(c.timestamp)))) === yKey);
     if (yChecks.length > 0) {
       const last = yChecks[yChecks.length - 1];
       const eLabels = ['', '매우 낮음', '낮음', '약간 낮음', '조금 부족', '보통', '괜찮음', '좋음', '활발', '높음', '활기참'];
@@ -219,7 +219,7 @@ function gatherWeekData() {
       if (dayRec.water?.cups > 0) { totalWater += dayRec.water.cups; waterDays++; }
       const dayFoods = (allFoods[key] || []).filter(f => !f.name?.startsWith('물 '));
       if (dayFoods.length > 0) { totalCal += dayFoods.reduce((s, f) => s + (f.calories || f.kcal || 0), 0); calDays++; }
-      const dayChecks = allChecks.filter(c => (c.date || c.timestamp?.slice(0, 10)) === key);
+      const dayChecks = allChecks.filter(c => (c.date || (c.timestamp && getLocalDateKey(new Date(c.timestamp)))) === key);
       if (dayChecks.length > 0) { const l = dayChecks[dayChecks.length - 1]; totalEnergy += l.energy || 3; totalMood += l.mood || 3; checkDays++; }
     }
     if (sleepDays > 0) week.avgSleep = `${(totalSleep / sleepDays).toFixed(1)}시간`;

@@ -6,6 +6,8 @@ import GuidePopup from '../components/GuidePopup';
 import { hapticLight } from '../utils/haptic';
 import { CAFFEINE_MG } from '../data/caffeineMap';
 
+function _localDate(d = new Date()) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+
 // ===== 애니메이션 =====
 function useReveal(delay = 0) {
   const [visible, setVisible] = useState(false);
@@ -517,7 +519,7 @@ function getGuideTriggers() {
     const cafMgs = days7.map(k => (drinks[k]?.caffeine || []).reduce((s, d) => s + (mgMap[d.key] || 100) * (d.count || 0), 0));
     const sleepHrs = days7.map(k => recs[k]?.sleep?.hours || 0);
     const condScores = days7.map(k => {
-      const dc = checks.filter(c => (c.date || c.timestamp?.slice(0, 10)) === k);
+      const dc = checks.filter(c => (c.date || (c.timestamp && _localDate(new Date(c.timestamp)))) === k);
       if (dc.length === 0) return 0;
       const last = dc[dc.length - 1];
       return last.energy || 5;

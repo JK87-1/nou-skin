@@ -324,7 +324,7 @@ export default function MyPage({ onBack, onMeasure, onOpenConsult, onTabChange, 
   const journalCount = (() => {
     try {
       const checks = JSON.parse(localStorage.getItem('nou_condition_checks') || '[]');
-      const dates = new Set(checks.map(c => c.date || (c.timestamp && c.timestamp.slice(0, 10))).filter(Boolean));
+      const dates = new Set(checks.map(c => c.date || ((c.timestamp && _localDate(new Date(c.timestamp))))).filter(Boolean));
       return dates.size;
     } catch { return 0; }
   })();
@@ -1160,7 +1160,7 @@ function deleteJournalEntry(id) {
 function getConditionForDate(dateStr) {
   try {
     const checks = JSON.parse(localStorage.getItem('nou_condition_checks') || '[]');
-    const c = checks.filter(c => (c.date || (c.timestamp && c.timestamp.slice(0, 10))) === dateStr).pop();
+    const c = checks.filter(c => (c.date || ((c.timestamp && _localDate(new Date(c.timestamp))))) === dateStr).pop();
     if (!c) return null;
     const energy = c.energy || c.에너지 || 0, mood = c.mood || c.기분 || 0, skin = c.skin || c.피부 || 0, gut = c.gut || c.소화 || 0;
     return { avg: (energy + mood + skin + gut) / 4, energy, mood, skin, gut };

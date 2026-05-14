@@ -724,7 +724,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
           const _allV2 = (() => { try { return JSON.parse(localStorage.getItem('lua_record_v2') || '{}'); } catch { return {}; } })();
           const _todayRec = _allV2[_todayKey] || {};
           const _allChecks = (() => { try { return JSON.parse(localStorage.getItem('nou_condition_checks') || '[]'); } catch { return []; } })();
-          const _dayChecks = _allChecks.filter(c => (c.date || c.timestamp?.slice(0, 10)) === _todayKey);
+          const _dayChecks = _allChecks.filter(c => (c.date || (c.timestamp && _localDate(new Date(c.timestamp)))) === _todayKey);
           const _lastCheck = _dayChecks.length > 0 ? _dayChecks[_dayChecks.length - 1] : null;
           const _condAvg = _lastCheck ? ((_lastCheck.energy || 5) + (_lastCheck.mood || 5)) / 2 : null;
           const _todaySleep = _todayRec.sleep?.hours || null;
@@ -844,7 +844,7 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
         for (let i = 6; i >= 0; i--) {
           const d = new Date(_todayKey + 'T00:00:00'); d.setDate(d.getDate() - i);
           const dk = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-          const dayChecks = _allChecks.filter(c => (c.date || c.timestamp?.slice(0,10)) === dk);
+          const dayChecks = _allChecks.filter(c => (c.date || (c.timestamp && _localDate(new Date(c.timestamp)))) === dk);
           if (dayChecks.length > 0) {
             const last = dayChecks[dayChecks.length - 1];
             _cond7.push({ date: dk, avg: ((last.energy || 5) + (last.mood || 5)) / 2 });
@@ -2367,7 +2367,7 @@ function AddActivityModal({ onSave, onClose }) {
   const getLoggedAt = () => {
     const now = new Date();
     if (timeMode === '30min') return new Date(now.getTime() - 30 * 60 * 1000).toISOString();
-    if (timeMode === 'custom' && customTime) { const [h, m] = customTime.split(':').map(Number); const d = new Date(now); d.setHours(h, m, 0, 0); return d.toISOString(); }
+    if (timeMode === 'custom' && customTime) { const [h, m] = customTime.split(':').map(Number); const d = new Date(now); d.setHours(h, m, 0, 0); if (d > now) d.setDate(d.getDate() - 1); return d.toISOString(); }
     return now.toISOString();
   };
 
@@ -3917,7 +3917,7 @@ function _NoncaffeineModal_UNUSED() { return null; /* kept for reference */
   const getDrunkAt = () => {
     const now = new Date();
     if (timeMode === '30min') return new Date(now.getTime() - 30 * 60 * 1000);
-    if (timeMode === 'custom' && customTime) { const [h, m] = customTime.split(':').map(Number); const d = new Date(now); d.setHours(h, m, 0, 0); return d; }
+    if (timeMode === 'custom' && customTime) { const [h, m] = customTime.split(':').map(Number); const d = new Date(now); d.setHours(h, m, 0, 0); if (d > now) d.setDate(d.getDate() - 1); return d; }
     return now;
   };
 
