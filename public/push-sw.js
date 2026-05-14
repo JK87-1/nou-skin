@@ -32,6 +32,8 @@ self.addEventListener('push', (event) => {
     renotify: true,
     data: {
       url,
+      campaign: type,
+      slot: data.slot || null,
       timestamp: Date.now(),
     },
   };
@@ -39,18 +41,35 @@ self.addEventListener('push', (event) => {
   event.waitUntil(self.registration.showNotification(title, options));
 });
 
+function ensureNotifParam(url) {
+  try {
+    const u = new URL(url, self.location.origin);
+    if (!u.searchParams.has('notif')) u.searchParams.set('notif', '1');
+    return u.pathname + u.search + u.hash;
+  } catch {
+    return url + (url.includes('?') ? '&' : '?') + 'notif=1';
+  }
+}
+
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
-  const targetUrl = event.notification.data?.url || '/';
+  const data = event.notification.data || {};
+  const rawUrl = data.url || '/';
+  const targetUrl = ensureNotifParam(rawUrl);
+  const campaign = data.campaign || 'reminder';
+  const slot = data.slot || null;
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // 이미 열린 클라이언트가 있으면 focus + postMessage
       for (const client of clientList) {
         if (client.url.includes(self.location.origin) && 'focus' in client) {
+          client.postMessage({ type: 'PUSH_NOTIFICATION_OPENED', campaign, slot, url: targetUrl });
           return client.focus();
         }
       }
+      // 없으면 새 창 (URL의 notif=1로 클라이언트가 인식해 트래킹)
       return clients.openWindow(targetUrl);
     })
   );

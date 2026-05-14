@@ -21,18 +21,30 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === 'POST') {
-      const { subscription, reminderTime, nickname, tipEnabled, tipTime, skinData, skinType, skinConcerns, sensitivity } = req.body;
+      const {
+        subscription, reminderTime, nickname, tipEnabled, tipTime,
+        morningEnabled, morningTime, eveningEnabled, eveningTime,
+        skinData, skinType, skinConcerns, sensitivity,
+      } = req.body;
       if (!subscription?.endpoint || !subscription?.keys) {
         return res.status(400).json({ error: 'Invalid subscription' });
       }
 
       const hash = hashEndpoint(subscription.endpoint);
 
+      // morningTime fallback: 클라이언트가 morningTime 안 주고 reminderTime만 주는 구버전 호환
+      const resolvedMorning = morningTime || reminderTime || '09:00';
+      const resolvedEvening = eveningTime || '21:00';
+
       const fields = {
         endpoint: subscription.endpoint,
         p256dh: subscription.keys.p256dh,
         auth: subscription.keys.auth,
-        reminderTime: reminderTime || '08:00',
+        reminderTime: resolvedMorning, // 하위호환: 단일 reminderTime을 morning에 미러링
+        morningTime: resolvedMorning,
+        eveningTime: resolvedEvening,
+        morningEnabled: morningEnabled === undefined ? 'true' : String(morningEnabled),
+        eveningEnabled: eveningEnabled === undefined ? 'true' : String(eveningEnabled),
         nickname: nickname || '',
         createdAt: new Date().toISOString(),
       };
@@ -54,7 +66,11 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'PUT') {
-      const { endpoint, tipEnabled, tipTime, skinData, skinType, skinConcerns, sensitivity, reminderTime, nickname, goalMetrics } = req.body;
+      const {
+        endpoint, tipEnabled, tipTime, skinData, skinType, skinConcerns, sensitivity,
+        reminderTime, nickname, goalMetrics,
+        morningEnabled, morningTime, eveningEnabled, eveningTime,
+      } = req.body;
       if (!endpoint) return res.status(400).json({ error: 'Endpoint required' });
 
       const hash = hashEndpoint(endpoint);
@@ -64,7 +80,17 @@ export default async function handler(req, res) {
       const updates = {};
       if (tipEnabled !== undefined) updates.tipEnabled = String(tipEnabled);
       if (tipTime) updates.tipTime = tipTime;
-      if (reminderTime) updates.reminderTime = reminderTime;
+      if (reminderTime) {
+        updates.reminderTime = reminderTime;
+        if (!morningTime) updates.morningTime = reminderTime; // 하위호환 미러
+      }
+      if (morningEnabled !== undefined) updates.morningEnabled = String(morningEnabled);
+      if (morningTime) {
+        updates.morningTime = morningTime;
+        updates.reminderTime = morningTime; // 하위호환 미러
+      }
+      if (eveningEnabled !== undefined) updates.eveningEnabled = String(eveningEnabled);
+      if (eveningTime) updates.eveningTime = eveningTime;
       if (nickname !== undefined) updates.nickname = nickname;
       if (skinData) {
         updates.skinData = typeof skinData === 'string' ? skinData : JSON.stringify(skinData);

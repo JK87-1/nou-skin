@@ -60,15 +60,35 @@ export async function subscribeToPush() {
   return subscription;
 }
 
-export async function saveSubscriptionToServer(subscription, reminderTime, nickname) {
+/**
+ * 구독을 서버에 저장(POST).
+ * 시그니처 1 (신규): saveSubscriptionToServer(subscription, { morningEnabled, morningTime, eveningEnabled, eveningTime, nickname })
+ * 시그니처 2 (하위호환): saveSubscriptionToServer(subscription, reminderTime, nickname)
+ */
+export async function saveSubscriptionToServer(subscription, optsOrReminderTime, nicknameLegacy) {
+  let body;
+  if (typeof optsOrReminderTime === 'string' || optsOrReminderTime == null) {
+    // legacy: (subscription, reminderTime, nickname)
+    body = {
+      subscription: subscription.toJSON(),
+      reminderTime: optsOrReminderTime || '09:00',
+      nickname: nicknameLegacy || '',
+    };
+  } else {
+    const opts = optsOrReminderTime;
+    body = {
+      subscription: subscription.toJSON(),
+      morningEnabled: opts.morningEnabled !== undefined ? opts.morningEnabled : true,
+      morningTime: opts.morningTime || '09:00',
+      eveningEnabled: opts.eveningEnabled !== undefined ? opts.eveningEnabled : true,
+      eveningTime: opts.eveningTime || '21:00',
+      nickname: opts.nickname || '',
+    };
+  }
   const response = await fetch('/api/push-subscribe', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      subscription: subscription.toJSON(),
-      reminderTime,
-      nickname,
-    }),
+    body: JSON.stringify(body),
   });
   return response.ok;
 }
@@ -96,6 +116,42 @@ export async function updateReminderTime(reminderTime, nickname) {
     return saveSubscriptionToServer(subscription, reminderTime, nickname);
   }
   return false;
+}
+
+/**
+ * 아침/저녁 슬롯 부분 업데이트(PUT). 인자는 모두 optional.
+ * { morningEnabled, morningTime, eveningEnabled, eveningTime, nickname }
+ */
+export async function updateReminderSlots(opts = {}) {
+  if (!isPushSupported()) return false;
+  const registration = await navigator.serviceWorker.ready;
+  const subscription = await registration.pushManager.getSubscription();
+  if (!subscription) return false;
+
+  const body = { endpoint: subscription.endpoint };
+  if (opts.morningEnabled !== undefined) body.morningEnabled = opts.morningEnabled;
+  if (opts.morningTime !== undefined) body.morningTime = opts.morningTime;
+  if (opts.eveningEnabled !== undefined) body.eveningEnabled = opts.eveningEnabled;
+  if (opts.eveningTime !== undefined) body.eveningTime = opts.eveningTime;
+  if (opts.nickname !== undefined) body.nickname = opts.nickname;
+
+  const response = await fetch('/api/push-subscribe', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  return response.ok;
+}
+
+/** 현재 PushManager 구독이 있는지 확인 (UI 토글 초기값용). */
+export async function getCurrentSubscription() {
+  if (!isPushSupported()) return null;
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    return await registration.pushManager.getSubscription();
+  } catch {
+    return null;
+  }
 }
 
 export async function updateTipSettings(tipEnabled, tipTime) {

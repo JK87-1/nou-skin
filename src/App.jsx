@@ -26,7 +26,8 @@ import { CATEGORY_META, getProductsByCategory, getWeakestCategories, calcMatchSc
 import { getRecommendedTreatments, TREATMENT_CATEGORIES } from './data/TreatmentData';
 import { syncSkinDataToServer } from './utils/pushNotification';
 import { getProfile, saveProfile, getDeviceId } from './storage/ProfileStorage';
-import { identifyUser, trackRecordCreatedWithFirstCheck } from './analytics/amplitude';
+import { identifyUser, trackRecordCreatedWithFirstCheck, trackPushNotificationOpened } from './analytics/amplitude';
+import PushPermissionPrompt, { shouldShowPushPrompt } from './components/PushPermissionPrompt';
 import GoalProgressCard from './components/GoalProgressCard';
 import SkinWeather from './components/SkinWeather';
 import WeatherChip from './components/WeatherChip';
@@ -73,6 +74,7 @@ export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [splashExiting, setSplashExiting] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(() => !isOnboardingDone());
+  const [pushPromptSource, setPushPromptSource] = useState(null); // 'onboarding'|'first_record'|null
   const [weatherSheet, setWeatherSheet] = useState(false);
   const [showDataRecovery, setShowDataRecovery] = useState(false);
   const [recoveryInfo, setRecoveryInfo] = useState(null);
@@ -198,6 +200,11 @@ export default function App() {
     }
     // Handle push notification deep link (?scan=1) & steps sync (?steps=N)
     const params = new URLSearchParams(window.location.search);
+    // Push 알림 클릭으로 진입한 경우 Amplitude 트래킹 (SW가 URL에 notif=1을 마킹)
+    if (params.get('notif') === '1') {
+      const slot = params.get('slot') || null;
+      try { trackPushNotificationOpened('reminder', slot); } catch {}
+    }
     if (params.get('scan') === '1') {
       setActiveTab('measure');
       setStage('camera');
@@ -234,11 +241,28 @@ export default function App() {
           });
       });
       navigator.serviceWorker.ready.then(reg => reg.update());
+
+      // SW가 보내는 PUSH_NOTIFICATION_OPENED 메시지 트래킹 (이미 앱이 열려있을 때 클릭 케이스)
+      const onSwMessage = (event) => {
+        if (event.data?.type === 'PUSH_NOTIFICATION_OPENED') {
+          try { trackPushNotificationOpened(event.data.campaign, event.data.slot); } catch {}
+        }
+      };
+      navigator.serviceWorker.addEventListener('message', onSwMessage);
     }
 
     // 홈에서 피부 스캔 트리거
     const handleStartScan = () => { setActiveTab('measure'); setStage('camera'); };
     window.addEventListener('lua:start-scan', handleStartScan);
+
+    // 첫 기록 직후 푸시 권한 prompt (온보딩에서 거절/스킵한 사용자 대상)
+    const handleFirstRecord = () => {
+      // 약간의 지연을 줘서 기록 저장 토스트와 겹치지 않게
+      setTimeout(() => {
+        if (shouldShowPushPrompt()) setPushPromptSource('first_record');
+      }, 1500);
+    };
+    window.addEventListener('lua:first-record', handleFirstRecord);
 
     // SW 업데이트 후 데이터 무결성 검증
     if (sessionStorage.getItem('nou_sw_updating')) {
@@ -637,7 +661,19 @@ export default function App() {
       <GlobalStyles />
       <style>{`@keyframes landingPearlReveal { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }`}</style>
       {showOnboarding && (
-        <OnboardingPage onComplete={() => setShowOnboarding(false)} />
+        <OnboardingPage onComplete={() => {
+          setShowOnboarding(false);
+          // 온보딩 직후 1차 권한 요청
+          setTimeout(() => {
+            if (shouldShowPushPrompt()) setPushPromptSource('onboarding');
+          }, 400);
+        }} />
+      )}
+      {pushPromptSource && (
+        <PushPermissionPrompt
+          source={pushPromptSource}
+          onClose={() => setPushPromptSource(null)}
+        />
       )}
       {showSplash && <SplashScreen exiting={splashExiting} onAnimationEnd={() => setShowSplash(false)} cloverTheme={activeThemeColors?.cloverTheme} />}
       {!showOnboarding && <>

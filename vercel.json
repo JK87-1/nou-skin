@@ -11,5 +11,7 @@
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" }
   ],
-  "crons": []
+  "crons": [
+    { "path": "/api/push-send", "schedule": "0 * * * *" }
+  ]
 }

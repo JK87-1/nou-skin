@@ -97,6 +97,15 @@ export const trackSubscriptionPurchased = (plan, price) =>
 export const trackSubscriptionCanceled = (daysUsed) =>
   track('Subscription_Canceled', { days_used: daysUsed });
 
+export const trackPushPermissionGranted = (source) =>
+  track('Push_Permission_Granted', { source });
+
+export const trackPushPermissionDenied = (source) =>
+  track('Push_Permission_Denied', { source });
+
+export const trackPushNotificationOpened = (campaign, slot) =>
+  track('Push_Notification_Opened', { campaign: campaign || 'reminder', slot: slot || null });
+
 /**
  * 첫 기록 여부를 1회만 발생시키기 위한 가드.
  * localStorage 플래그 사용. 카테고리별이 아닌 "앱 전체 최초 1회" 기준.
@@ -108,6 +117,8 @@ export function trackRecordCreatedWithFirstCheck(category, valueFilled) {
     if (!localStorage.getItem(FIRST_RECORD_KEY)) {
       trackFirstRecordCreated(category);
       localStorage.setItem(FIRST_RECORD_KEY, '1');
+      // 첫 기록 직후 푸시 권한 prompt 트리거(App.jsx에서 listen)
+      try { window.dispatchEvent(new CustomEvent('lua:first-record', { detail: { category } })); } catch {}
     }
   } catch {}
 }

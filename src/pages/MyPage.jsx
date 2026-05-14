@@ -36,6 +36,14 @@ import { getBodyRecords } from '../storage/BodyStorage';
 import DietOnboardingPage from './DietOnboardingPage';
 import SupplementOnboardingPage from './SupplementOnboardingPage';
 import { getPhotoDB } from '../storage/PhotoDB';
+import {
+  isPushSupported, isIOS, isStandalone, getPermissionState,
+  subscribeToPush, unsubscribeFromPush, saveSubscriptionToServer,
+  updateReminderSlots, getCurrentSubscription,
+} from '../utils/pushNotification';
+import {
+  trackPushPermissionGranted, trackPushPermissionDenied,
+} from '../analytics/amplitude';
 
 function _localDate(d = new Date()) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -1947,6 +1955,7 @@ function SettingsPage({ open, onClose, onCategoriesChanged, onTabChange, colorMo
   const [showCategoryPage, setShowCategoryPage] = useState(false);
   const [showGoalPage, setShowGoalPage] = useState(false);
   const [showDisplayPage, setShowDisplayPage] = useState(false);
+  const [showNotificationPage, setShowNotificationPage] = useState(false);
 
   const menuSections = [
     {
@@ -1960,6 +1969,7 @@ function SettingsPage({ open, onClose, onCategoriesChanged, onTabChange, colorMo
       title: '앱 설정',
       items: [
         { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>, label: '화면 모드', action: () => setShowDisplayPage(true), right: <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{colorMode === 'dark' ? '다크' : '라이트'}</span> },
+        { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>, label: '알림', action: () => setShowNotificationPage(true) },
         { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>, label: '카테고리', action: () => setShowCategoryPage(true) },
         { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>, label: '데이터' },
       ],
@@ -2033,7 +2043,258 @@ function SettingsPage({ open, onClose, onCategoriesChanged, onTabChange, colorMo
       {showCategoryPage && <CategorySettingsPage onClose={() => setShowCategoryPage(false)} onSave={onCategoriesChanged} />}
       {showGoalPage && <GoalSettingsPage onClose={() => setShowGoalPage(false)} onTabChange={onTabChange} />}
       {showDisplayPage && <DisplaySettingsPage onClose={() => setShowDisplayPage(false)} colorMode={colorMode} setColorMode={setColorMode} />}
+      {showNotificationPage && <NotificationSettingsPage onClose={() => setShowNotificationPage(false)} />}
     </>
+  );
+}
+
+// ===== NOTIFICATION SETTINGS PAGE =====
+function NotificationSettingsPage({ onClose }) {
+  const supported = isPushSupported();
+  const iosNeedsStandalone = isIOS() && !isStandalone();
+  const [permission, setPermission] = useState(() => getPermissionState());
+  const [subscribed, setSubscribed] = useState(false);
+  const [morningEnabled, setMorningEnabled] = useState(true);
+  const [morningTime, setMorningTime] = useState('09:00');
+  const [eveningEnabled, setEveningEnabled] = useState(true);
+  const [eveningTime, setEveningTime] = useState('21:00');
+  const [busy, setBusy] = useState(false);
+  const [toast, setToast] = useState('');
+
+  // 초기 구독 상태 로드
+  useEffect(() => {
+    (async () => {
+      const sub = await getCurrentSubscription();
+      setSubscribed(!!sub);
+    })();
+  }, []);
+
+  function flashToast(msg) {
+    setToast(msg);
+    setTimeout(() => setToast(''), 1800);
+  }
+
+  async function pushSlots(next) {
+    // 서버 PUT, 실패 시 false 반환
+    const merged = {
+      morningEnabled: next.morningEnabled ?? morningEnabled,
+      morningTime: next.morningTime ?? morningTime,
+      eveningEnabled: next.eveningEnabled ?? eveningEnabled,
+      eveningTime: next.eveningTime ?? eveningTime,
+    };
+    try {
+      const ok = await updateReminderSlots(merged);
+      if (!ok) flashToast('저장 실패. 다시 시도해주세요.');
+    } catch {
+      flashToast('저장 실패. 다시 시도해주세요.');
+    }
+  }
+
+  async function handleMasterToggle(nextOn) {
+    if (busy) return;
+    setBusy(true);
+    if (nextOn) {
+      try {
+        const sub = await subscribeToPush();
+        if (!sub) {
+          trackPushPermissionDenied('mypage');
+          setPermission(getPermissionState());
+          setBusy(false);
+          flashToast('알림 권한이 거부되었어요.');
+          return;
+        }
+        const prof = (() => { try { return getProfile() || {}; } catch { return {}; } })();
+        await saveSubscriptionToServer(sub, {
+          morningEnabled, morningTime, eveningEnabled, eveningTime,
+          nickname: prof.nickname || '',
+        });
+        trackPushPermissionGranted('mypage');
+        setPermission('granted');
+        setSubscribed(true);
+        flashToast('알림이 켜졌어요.');
+      } catch {
+        flashToast('설정 실패. 다시 시도해주세요.');
+      }
+    } else {
+      try {
+        await unsubscribeFromPush();
+        setSubscribed(false);
+        flashToast('알림을 껐어요.');
+      } catch {
+        flashToast('해제 실패. 다시 시도해주세요.');
+      }
+    }
+    setBusy(false);
+  }
+
+  const masterOn = subscribed && permission === 'granted';
+
+  return (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 2002,
+      background: 'var(--page-gradient, linear-gradient(to bottom, #ace2fc, #ffffff))',
+      display: 'flex', flexDirection: 'column',
+      overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+    }}>
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+        <div onClick={onClose} style={{
+          width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', WebkitTapHighlightColor: 'transparent', zIndex: 1,
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </div>
+        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>알림</span>
+      </div>
+
+      <div style={{ padding: '20px' }}>
+        {!supported && !iosNeedsStandalone && (
+          <div style={{
+            padding: '14px 16px', borderRadius: 14,
+            background: 'var(--bg-card, rgba(255,255,255,0.6))',
+            color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.55,
+          }}>
+            이 브라우저에서는 푸시 알림을 지원하지 않아요.
+          </div>
+        )}
+
+        {iosNeedsStandalone && (
+          <div style={{
+            padding: '14px 16px', borderRadius: 14,
+            background: 'var(--bg-card, rgba(255,255,255,0.6))',
+            color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.55,
+            marginBottom: 16,
+          }}>
+            iOS에서는 홈 화면에 추가된 앱에서만 알림을 받을 수 있어요.
+            Safari 공유 &rarr; "홈 화면에 추가"를 먼저 진행해주세요.
+          </div>
+        )}
+
+        {supported && !iosNeedsStandalone && (
+          <>
+            {/* 마스터 토글 */}
+            <SlotRow
+              label="알림 받기"
+              desc={
+                permission === 'denied'
+                  ? '브라우저 알림 권한이 차단되어 있어요. 설정에서 허용해주세요.'
+                  : '아침/저녁 정해진 시간에 기록 알림을 보내요'
+              }
+              checked={masterOn}
+              disabled={busy || permission === 'denied'}
+              onChange={handleMasterToggle}
+            />
+
+            <div style={{ height: 16 }} />
+
+            {/* 슬롯 토글 */}
+            <div style={{
+              background: 'var(--bg-card, rgba(255,255,255,0.6))',
+              borderRadius: 16, overflow: 'hidden',
+              opacity: masterOn ? 1 : 0.45,
+              pointerEvents: masterOn ? 'auto' : 'none',
+            }}>
+              <SlotRow
+                inline
+                label="아침 알림"
+                checked={morningEnabled}
+                onChange={(v) => { setMorningEnabled(v); pushSlots({ morningEnabled: v }); }}
+                right={
+                  <input
+                    type="time"
+                    value={morningTime}
+                    onChange={(e) => { setMorningTime(e.target.value); pushSlots({ morningTime: e.target.value }); }}
+                    disabled={!morningEnabled}
+                    style={{
+                      fontSize: 14, padding: '6px 8px', borderRadius: 8,
+                      border: '1px solid var(--border-subtle, rgba(0,0,0,0.08))',
+                      background: 'transparent', color: 'var(--text-primary)',
+                      fontFamily: 'inherit',
+                    }}
+                  />
+                }
+              />
+              <div style={{ height: 1, background: 'var(--border-subtle, rgba(0,0,0,0.06))', margin: '0 16px' }} />
+              <SlotRow
+                inline
+                label="저녁 알림"
+                checked={eveningEnabled}
+                onChange={(v) => { setEveningEnabled(v); pushSlots({ eveningEnabled: v }); }}
+                right={
+                  <input
+                    type="time"
+                    value={eveningTime}
+                    onChange={(e) => { setEveningTime(e.target.value); pushSlots({ eveningTime: e.target.value }); }}
+                    disabled={!eveningEnabled}
+                    style={{
+                      fontSize: 14, padding: '6px 8px', borderRadius: 8,
+                      border: '1px solid var(--border-subtle, rgba(0,0,0,0.08))',
+                      background: 'transparent', color: 'var(--text-primary)',
+                      fontFamily: 'inherit',
+                    }}
+                  />
+                }
+              />
+            </div>
+
+            <p style={{ fontSize: 11, color: 'var(--text-dim, #8B95A1)', margin: '12px 4px 0', lineHeight: 1.5 }}>
+              알림은 매시 정각 단위로 발송돼요. 분 단위는 가장 가까운 정시로 반영됩니다.
+            </p>
+          </>
+        )}
+      </div>
+
+      {toast && (
+        <div style={{
+          position: 'fixed', bottom: 32, left: 0, right: 0,
+          display: 'flex', justifyContent: 'center', zIndex: 2010,
+          pointerEvents: 'none',
+        }}>
+          <div style={{
+            background: 'rgba(0,0,0,0.78)', color: '#fff', fontSize: 13,
+            padding: '10px 16px', borderRadius: 12,
+          }}>{toast}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SlotRow({ label, desc, checked, onChange, disabled, inline, right }) {
+  return (
+    <div style={{
+      background: inline ? 'transparent' : 'var(--bg-card, rgba(255,255,255,0.6))',
+      borderRadius: inline ? 0 : 16, padding: inline ? '14px 16px' : '14px 16px',
+      display: 'flex', alignItems: 'center', gap: 12,
+    }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{label}</div>
+        {desc && (
+          <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2, lineHeight: 1.45 }}>{desc}</div>
+        )}
+      </div>
+      {right}
+      <button
+        onClick={() => !disabled && onChange(!checked)}
+        disabled={disabled}
+        style={{
+          width: 44, height: 26, borderRadius: 13, border: 'none',
+          background: checked ? 'var(--accent-primary, #FF8C42)' : 'rgba(0,0,0,0.18)',
+          position: 'relative', cursor: disabled ? 'not-allowed' : 'pointer',
+          padding: 0, transition: 'background 0.2s',
+          opacity: disabled ? 0.5 : 1,
+        }}
+        aria-label={label}
+      >
+        <span style={{
+          position: 'absolute', top: 3, left: checked ? 21 : 3,
+          width: 20, height: 20, borderRadius: '50%',
+          background: '#fff', transition: 'left 0.2s',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+        }} />
+      </button>
+    </div>
   );
 }
 
