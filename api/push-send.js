@@ -94,6 +94,10 @@ export default async function handler(req, res) {
     // KST today string for dedup
     const kstDate = new Date(now.getTime() + 9 * 60 * 60 * 1000);
     const today = kstDate.toISOString().split('T')[0];
+    // KST 요일 (0=일요일). 일요일이면 주간 리포트 페이로드로 swap.
+    const kstDayOfWeek = kstDate.getUTCDay();
+    const forceWeekly = req.query.forceWeekly === '1';
+    const isWeeklyReportDay = kstDayOfWeek === 0 || forceWeekly;
 
     const hashes = await redis.smembers('push:subs');
     if (!hashes || hashes.length === 0) {
@@ -136,15 +140,24 @@ export default async function handler(req, res) {
       const nickname = sub.nickname || '';
       const greeting = nickname ? `${nickname}님, ` : '';
 
-      // 컨디션 개인화 메시지
-      const { message, grade, score } = getPersonalizedMessage(sub.skinData);
-      const gradeTag = grade ? ` [${grade.letter}등급]` : '';
-
-      const payload = JSON.stringify({
-        title: `오늘의 피부 컨디션${gradeTag}`,
-        body: `${greeting}${message}`,
-        url: '/?scan=1',
-      });
+      let payload;
+      if (isWeeklyReportDay) {
+        payload = JSON.stringify({
+          title: '이번 주 리포트가 도착했어요',
+          body: `${greeting}지난 7일의 변화를 한눈에 확인해보세요.`,
+          url: '/?weekly=1&notif=1',
+          type: 'weekly',
+        });
+      } else {
+        // 컨디션 개인화 메시지
+        const { message, grade } = getPersonalizedMessage(sub.skinData);
+        const gradeTag = grade ? ` [${grade.letter}등급]` : '';
+        payload = JSON.stringify({
+          title: `오늘의 피부 컨디션${gradeTag}`,
+          body: `${greeting}${message}`,
+          url: '/?scan=1',
+        });
+      }
 
       try {
         await webpush.sendNotification(pushSubscription, payload);

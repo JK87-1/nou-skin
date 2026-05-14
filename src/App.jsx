@@ -35,6 +35,7 @@ import { getDefaultTheme, getThemeById } from './data/BadgeData';
 import SplashScreen from './components/SplashScreen';
 import OnboardingPage, { isOnboardingDone } from './pages/OnboardingPage';
 import SkinMeasurePage from './pages/SkinMeasurePage';
+import WeeklyReportPage from './pages/WeeklyReportPage';
 import { DropletIcon, SparkleIcon, LotionIcon, DiamondIcon, PaletteIcon, MicroscopeIcon, RulerIcon, EyeIcon, BubbleIcon, TargetIcon, SunIcon, MoonIcon, CameraIcon, TestTubeIcon, StarIcon, ShieldIcon, WandIcon, PhotoIcon, CheckIcon, SaveIcon, PastelIcon, LuaMiniIcon } from './components/icons/PastelIcons';
 import SoftCloverIcon from './components/icons/SoftCloverIcon';
 import EternalPearl from './components/icons/EternalPearl';
@@ -73,6 +74,7 @@ export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [splashExiting, setSplashExiting] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(() => !isOnboardingDone());
+  const [weeklyReport, setWeeklyReport] = useState(null); // null | { source: 'home_card'|'change_page'|'push' }
   const [weatherSheet, setWeatherSheet] = useState(false);
   const [showDataRecovery, setShowDataRecovery] = useState(false);
   const [recoveryInfo, setRecoveryInfo] = useState(null);
@@ -203,6 +205,10 @@ export default function App() {
       setStage('camera');
       window.history.replaceState({}, '', '/');
     }
+    if (params.get('weekly') === '1') {
+      setWeeklyReport({ source: 'push' });
+      window.history.replaceState({}, '', '/');
+    }
     const stepsParam = params.get('steps');
     if (stepsParam) {
       const stepsVal = parseInt(stepsParam, 10);
@@ -239,6 +245,13 @@ export default function App() {
     // 홈에서 피부 스캔 트리거
     const handleStartScan = () => { setActiveTab('measure'); setStage('camera'); };
     window.addEventListener('lua:start-scan', handleStartScan);
+
+    // 주간 리포트 열기 (Home 카드/ChangePage CTA → window event)
+    const handleOpenWeekly = (e) => {
+      const source = e?.detail?.source || 'home_card';
+      setWeeklyReport({ source });
+    };
+    window.addEventListener('lua:open-weekly', handleOpenWeekly);
 
     // SW 업데이트 후 데이터 무결성 검증
     if (sessionStorage.getItem('nou_sw_updating')) {
@@ -638,6 +651,13 @@ export default function App() {
       <style>{`@keyframes landingPearlReveal { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }`}</style>
       {showOnboarding && (
         <OnboardingPage onComplete={() => setShowOnboarding(false)} />
+      )}
+      {weeklyReport && (
+        <WeeklyReportPage
+          open
+          source={weeklyReport.source}
+          onClose={() => setWeeklyReport(null)}
+        />
       )}
       {showSplash && <SplashScreen exiting={splashExiting} onAnimationEnd={() => setShowSplash(false)} cloverTheme={activeThemeColors?.cloverTheme} />}
       {!showOnboarding && <>

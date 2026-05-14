@@ -97,6 +97,9 @@ export const trackSubscriptionPurchased = (plan, price) =>
 export const trackSubscriptionCanceled = (daysUsed) =>
   track('Subscription_Canceled', { days_used: daysUsed });
 
+export const trackWeeklyReportViewed = ({ week, source } = {}) =>
+  track('Weekly_Report_Viewed', { week: week || null, source: source || 'unknown' });
+
 /**
  * 첫 기록 여부를 1회만 발생시키기 위한 가드.
  * localStorage 플래그 사용. 카테고리별이 아닌 "앱 전체 최초 1회" 기준.

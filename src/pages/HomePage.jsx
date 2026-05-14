@@ -286,8 +286,9 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
     { id: 'skin_check', label: '피부' },
     { id: 'weather', label: '날씨' },
     { id: 'cycle', label: '주기' },
+    { id: 'weekly_report', label: '주간 리포트' },
   ];
-  const CARD_ORDER_VERSION = 14;
+  const CARD_ORDER_VERSION = 15;
   const DEFAULT_CARD_ORDER = CARD_REGISTRY.map(c => c.id);
   const [cardOrder, setCardOrder] = useState(() => {
     try {
@@ -1447,6 +1448,66 @@ export default function HomePage({ onMeasure, onTabChange, onOpenRoutine, colorM
                         </div>
                       )}
                       {_w && <span style={{ fontSize: 32 }}>{_w.conditionIcon}</span>}
+                    </div>
+                  </div>
+                ));
+              }
+
+              if (cardId === 'weekly_report') {
+                // 지난 7일 컨디션 평균을 미리보기
+                let avgCond = null;
+                let bestDow = null;
+                try {
+                  const checks = JSON.parse(localStorage.getItem('nou_condition_checks') || '[]');
+                  const now = new Date();
+                  const last7 = [];
+                  for (let i = 6; i >= 0; i--) { const d = new Date(now); d.setDate(d.getDate() - i); last7.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`); }
+                  const daily = {};
+                  for (const c of checks) {
+                    const k = c.date || (c.timestamp ? c.timestamp.slice(0, 10) : null);
+                    if (!k || !last7.includes(k)) continue;
+                    const vals = [c.energy, c.skin, c.mood, c.gut].filter(v => typeof v === 'number');
+                    if (vals.length) daily[k] = vals.reduce((a, b) => a + b, 0) / vals.length;
+                  }
+                  const scores = Object.values(daily);
+                  if (scores.length) avgCond = scores.reduce((a, b) => a + b, 0) / scores.length;
+                  let bestK = null, bestV = -Infinity;
+                  for (const [k, v] of Object.entries(daily)) { if (v > bestV) { bestV = v; bestK = k; } }
+                  if (bestK) bestDow = ['일','월','화','수','목','금','토'][new Date(bestK + 'T00:00:00').getDay()];
+                } catch {}
+                return editWrap('주간 리포트', (
+                  <div
+                    onClick={() => handleCardTap('weekly_report', () => window.dispatchEvent(new CustomEvent('lua:open-weekly', { detail: { source: 'home_card' } })))}
+                    style={{
+                      ..._cs, cursor: 'pointer', padding: '20px', position: 'relative',
+                      animation: tappedCard === 'weekly_report' ? 'cardTap 0.3s ease' : 'none',
+                      pointerEvents: isEditing ? 'none' : 'auto',
+                      background: 'linear-gradient(135deg, rgba(255,140,66,0.16), rgba(137,206,245,0.10))',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 0 }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF8C42" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="3 17 9 11 13 15 21 7" />
+                        <polyline points="14 7 21 7 21 14" />
+                      </svg>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>주간 리포트</span>
+                    </div>
+                    <div style={{ marginTop: 'auto' }}>
+                      {avgCond != null ? (
+                        <>
+                          <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>
+                            {avgCond.toFixed(1)}<span style={{ fontSize: 13, color: 'var(--text-muted)' }}> / 10</span>
+                          </div>
+                          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
+                            {bestDow ? `이번 주 최고 · ${bestDow}요일` : '지난 7일 평균'}
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
+                          <div style={{ fontSize: 10, color: 'var(--accent-primary, #89cef5)', marginTop: 4 }}>자세히 보기</div>
+                        </>
+                      )}
                     </div>
                   </div>
                 ));

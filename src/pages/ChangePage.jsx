@@ -656,6 +656,37 @@ export default function ChangePage({ onTabChange }) {
           </>}
 
           {/* ===== 흐름 모드 ===== */}
+          {changeViewMode === '흐름' && (
+            <div
+              onClick={() => window.dispatchEvent(new CustomEvent('lua:open-weekly', { detail: { source: 'change_page' } }))}
+              style={{
+                margin: '10px 14px 0', padding: '14px 16px',
+                background: 'linear-gradient(135deg, rgba(255,140,66,0.14), rgba(137,206,245,0.10))',
+                border: '1px solid rgba(255,140,66,0.25)',
+                borderRadius: 16,
+                display: 'flex', alignItems: 'center', gap: 12,
+                cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              <div style={{
+                width: 36, height: 36, borderRadius: 12,
+                background: 'rgba(255,140,66,0.18)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF8C42" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="3 17 9 11 13 15 21 7" />
+                  <polyline points="14 7 21 7 21 14" />
+                </svg>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>이번 주 리포트 보기</div>
+                <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>지난 7일 패턴을 한눈에 확인해요</div>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </div>
+          )}
           {changeViewMode === '흐름' && (() => {
             const DAY_NAMES = ['일','월','화','수','목','금','토'];
             const days7 = [];
