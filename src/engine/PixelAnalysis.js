@@ -933,11 +933,130 @@ export function analyzePixels(dataUrl, landmarks = null) {
 }
 
 // ===== PIXEL DATA → 10 SCORES + SKIN AGE =====
+// ===== CALIBRATION TABLES (restored from afa58f1) =====
+// Each table: [rawValue, score] pairs — piecewise-linear interpolation.
+// 비선형 점수 매핑으로 평이한 raw 값이 너무 후하게 점수화되는 문제를 보정.
+const CALIBRATION = {
+  wrinkle: [
+    // [edge energy, score] — lower edge = smoother = higher score
+    [1.0, 96], [2.0, 88], [3.5, 78], [5.0, 66],
+    [7.0, 54], [9.5, 42], [12.0, 32], [15.0, 22], [18.0, 15],
+  ],
+  moisture: [
+    // [avgScore from cluster density, score]
+    [15, 15], [25, 28], [35, 42], [45, 55],
+    [55, 65], [65, 75], [75, 85], [85, 92], [95, 95],
+  ],
+  pore: [
+    // [micro variance, score] — lower variance = finer pores = higher score
+    [20, 95], [60, 85], [120, 72], [200, 58],
+    [300, 44], [420, 32], [550, 20], [700, 15],
+  ],
+  texture: [
+    // [combined mid+high energy, score]
+    [2.0, 95], [4.0, 86], [7.0, 75], [10.0, 65],
+    [14.0, 54], [18.0, 42], [24.0, 30], [30.0, 20],
+  ],
+  darkCircle: [
+    // [severity 0~0.5, score]
+    [0.01, 95], [0.05, 85], [0.10, 72], [0.17, 58],
+    [0.24, 44], [0.32, 32], [0.40, 22], [0.50, 15],
+  ],
+  pigmentation: [
+    // [overall penalty, score]
+    [0.5, 95], [2.0, 85], [4.0, 72], [7.0, 58],
+    [10.0, 46], [14.0, 34], [18.0, 24], [22.0, 15],
+  ],
+  elasticity: [
+    // [overall (edge density * firmness blend), score] — higher = more elastic
+    [1.0, 18], [2.0, 30], [3.0, 42], [4.5, 55],
+    [6.0, 65], [8.0, 76], [10.0, 85], [12.0, 92], [14.0, 96],
+  ],
+};
+
+function calibrate(metric, rawValue) {
+  const table = CALIBRATION[metric];
+  if (!table) return 50;
+  if (rawValue <= table[0][0]) return table[0][1];
+  if (rawValue >= table[table.length - 1][0]) return table[table.length - 1][1];
+  for (let i = 0; i < table.length - 1; i++) {
+    const [x0, y0] = table[i];
+    const [x1, y1] = table[i + 1];
+    if (rawValue >= x0 && rawValue <= x1) {
+      const t = (rawValue - x0) / (x1 - x0);
+      return Math.round(y0 + t * (y1 - y0));
+    }
+  }
+  return 50;
+}
+
+// Legacy linear formulas — used ONLY by window.__compareCalibration debug helper.
+// raw 입력은 calibrate()가 받는 것과 동일한 시그니처. texture/elasticity의 경우
+// 옛 main의 실제 공식이 다중 입력(mid+high, edge+firmness) 합성이었으나,
+// 비교용으로 단일 raw 가정해서 근사 — 정확한 1:1 비교가 아니라는 점에 유의.
+const LEGACY_LINEAR_SCORE = {
+  moisture: (raw) => raw,
+  wrinkle: (raw) => 100 - (raw - 3) * 5,
+  pore: (raw) => 100 - (raw - 60) * 0.18,
+  pigmentation: (raw) => 100 - raw * 4.5,
+  darkCircle: (raw) => {
+    const m = raw < 0.15 ? raw * 180 : Math.sqrt(raw) * 100;
+    return 100 - m;
+  },
+  texture: (rawCombined) => {
+    const tFromMid = Math.max(0, 100 - (rawCombined - 3.5) * 4);
+    const tFromHigh = Math.max(0, 100 - (rawCombined - 4) * 2);
+    return tFromMid * 0.65 + tFromHigh * 0.35;
+  },
+  elasticity: (raw) => 92 - (raw - 4) * 2.5,
+};
+
+const COMPARE_RAW_SAMPLES = {
+  wrinkle:      [1, 2, 3, 5, 7, 10, 13, 16],
+  moisture:     [15, 25, 35, 50, 65, 80, 95],
+  pore:         [30, 60, 120, 200, 300, 450, 600],
+  texture:      [2, 5, 8, 12, 16, 22],
+  darkCircle:   [0.05, 0.10, 0.15, 0.22, 0.30, 0.40],
+  pigmentation: [1, 2, 5, 9, 14, 20],
+  elasticity:   [1, 3, 5, 7, 9, 12],
+};
+
+const COMPARE_CLAMP = {
+  wrinkle: [15, 98], pore: [15, 98], texture: [15, 98], darkCircle: [15, 98],
+  pigmentation: [15, 98], elasticity: [15, 98], moisture: [12, 95],
+};
+
+/**
+ * window.__compareCalibration([metric]) — 옛 calibrate(복원) vs 현재 linear 공식 점수 비교.
+ * 인자 없으면 7개 메트릭 모두 출력, 메트릭명 주면 그 하나만.
+ */
+function compareCalibration(metricArg) {
+  const metrics = metricArg ? [metricArg] : Object.keys(CALIBRATION);
+  for (const metric of metrics) {
+    const samples = COMPARE_RAW_SAMPLES[metric];
+    const [lo, hi] = COMPARE_CLAMP[metric] || [0, 100];
+    if (!samples) { console.warn(`[compareCalibration] unknown metric: ${metric}`); continue; }
+    const rows = samples.map((raw) => {
+      const calib = Math.max(lo, Math.min(hi, Math.round(calibrate(metric, raw))));
+      const lin = Math.max(lo, Math.min(hi, Math.round(LEGACY_LINEAR_SCORE[metric](raw))));
+      return { raw, calibrated: calib, legacyLinear: lin, delta: calib - lin };
+    });
+    console.group(`📊 ${metric}  (clamp ${lo}–${hi})`);
+    console.table(rows);
+    console.groupEnd();
+  }
+  return '— compareCalibration done (calibrated = 복원된 표 / legacyLinear = 직전 main 공식)';
+}
+
+if (typeof window !== 'undefined') {
+  window.__compareCalibration = compareCalibration;
+}
+
 export function pixelsToScores(px, mlAge = null) {
   if (!px) return generateDemoScores();
 
-  // ── MOISTURE (cluster density based) ──
-  const moisture = clamp(px.moisture.avgScore, 12, 95);
+  // ── MOISTURE (calibration table) ──
+  const moisture = clamp(calibrate('moisture', px.moisture.avgScore), 12, 95);
 
   // ── SKIN TONE (v3.1: uniformity-centric, reduced brightness bias) ──
   // Brightness accounts for only 30% — skin tone quality is mainly about evenness
@@ -969,36 +1088,24 @@ export function pixelsToScores(px, mlAge = null) {
   const oilRaw = shineSignal * 0.35 + shineLevel * 0.35 + satSignal * 0.30;
   const oilBalance = clamp(15 + oilRaw * 75, 12, 95);
 
-  // ── WRINKLES (low-frequency energy, calibrated for 512px) ──
-  // At 512px: young smooth skin ~3-7, aged skin ~10-16
-  const wrinkleScore = clamp(100 - (px.wrinkle.overall - 3) * 5, 15, 98);
+  // ── WRINKLES (calibration table) ──
+  const wrinkleScore = clamp(calibrate('wrinkle', px.wrinkle.overall), 15, 98);
 
-  // ── PORES (micro-variance, calibrated for 512px) ──
-  // At 512px: smooth skin ~50-120, visible pores ~150-400+
-  const poreScore = clamp(100 - (px.pore.overall - 60) * 0.18, 15, 98);
+  // ── PORES (calibration table) ──
+  const poreScore = clamp(calibrate('pore', px.pore.overall), 15, 98);
 
-  // ── ELASTICITY (firmness-ratio centric, calibrated for 512px) ──
-  // At 512px: edge density typically 4-10
-  const edgeDensity = px.elasticity.jawlineEdge || px.elasticity.overall;
-  const firmness = px.elasticity.firmness || 1;
-  const elasticityBase = 92 - (edgeDensity - 4) * 2.5;
-  const firmAdj = Math.max(-20, Math.min(20, (firmness - 1) * 15));
-  const elasticityScore = clamp(elasticityBase + firmAdj, 15, 98);
+  // ── ELASTICITY (calibration table) ──
+  const elasticityScore = clamp(calibrate('elasticity', px.elasticity.overall), 15, 98);
 
-  // ── PIGMENTATION (cluster-based weighted penalty) ──
-  const pigmentationScore = clamp(100 - px.pigmentation.overallPenalty * 4.5, 15, 98);
+  // ── PIGMENTATION (calibration table) ──
+  const pigmentationScore = clamp(calibrate('pigmentation', px.pigmentation.overallPenalty), 15, 98);
 
-  // ── TEXTURE (mid-frequency energy, calibrated for 512px) ──
-  // At 512px: smooth skin ~3-7, rough skin ~9-16
-  const textureFromMid = Math.max(0, 100 - (px.texture.overallMid - 3.5) * 4);
-  const textureFromHigh = Math.max(0, 100 - (px.texture.overallHigh - 4) * 2);
-  const textureScore = clamp(textureFromMid * 0.65 + textureFromHigh * 0.35, 15, 98);
+  // ── TEXTURE (calibration table on combined mid+high energy) ──
+  const textureCombined = px.texture.overallMid * 0.65 + px.texture.overallHigh * 0.35;
+  const textureScore = clamp(calibrate('texture', textureCombined), 15, 98);
 
-  // ── DARK CIRCLES (LAB 3-component severity) — reduced sensitivity + nonlinear mapping ──
-  const dcSeverity = px.darkCircle.overall;
-  // Nonlinear: sqrt softens penalty for mild dark circles, still penalizes severe ones
-  const dcMapped = dcSeverity < 0.15 ? dcSeverity * 180 : Math.sqrt(dcSeverity) * 100;
-  const dcScore = clamp(100 - dcMapped, 15, 98);
+  // ── DARK CIRCLES (calibration table) ──
+  const dcScore = clamp(calibrate('darkCircle', px.darkCircle.overall), 15, 98);
 
   // ── SKIN TYPE ──
   let skinType;
