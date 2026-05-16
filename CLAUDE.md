@@ -111,4 +111,42 @@ Fallbacks:
 - 박수진: localhost:5173 (기본)
 - junkim: localhost:5174
 
+### 5. 노션 진행 상황 자동 기록
+
+루아 작업 진행은 노션 페이지 "09. 진행 상황"에 자동 기록합니다.
+다음 시점에 `scripts/notion-progress.cjs` 를 실행해주세요:
+
+**자동 실행 시점:**
+- 새 브랜치 생성 후 작업 시작: `node scripts/notion-progress.cjs "<작업 설명>" "시작"`
+- 브랜치에 push 완료 (작업 1차 끝): `node scripts/notion-progress.cjs "<완료된 내용>" "완료" "<Vercel preview URL>"`
+- main 머지 완료 (사용자가 보는 사이트 반영): `node scripts/notion-progress.cjs "<머지된 기능>" "본사이트" "https://nou-skin.vercel.app"`
+- 오류·보류: `node scripts/notion-progress.cjs "<상황 설명>" "오류"` 또는 `"보류"`
+
+**상태 옵션:**
+- `시작` 🟡 — 작업 시작
+- `진행중` 🔵 — 중간 진척
+- `완료` ✅ — 브랜치 작업 완료 (push)
+- `본사이트` 🌟 — main 머지로 사용자 사이트에 반영됨
+- `보류` ⏸ — 작업 멈춤
+- `오류` ❌ — 문제 발생
+
+**메시지 작성 룰 (사람이 읽기 쉽게):**
+- 영문 기술 용어(branch, commit, sha, push, merge 등) 사용 금지
+- 한국어로 작업 내용 한 줄 요약 (예: "주름 점수 보정표 복원했음")
+- 사용자(junkim)가 비개발자임. 코드 내부 용어 노출 X
+
+**스크립트가 자동 수집 (사용자에게 안 보임):**
+- 현재 브랜치 · git author
+- 영역(`accuracy/*` → 🔬 측정 정확도, `ux/*` → 🎨 디자인·화면)
+- 한국 시간 타임스탬프
+
+**사전 요구사항:**
+- `~/nou-skin/.env` 에 `NOTION_TOKEN` 과 `NOTION_PAGE_ID` 존재 (이미 설정됨)
+- `.env` 는 gitignore 처리되어 GitHub에 노출되지 않음
+- 박수진 환경에서는 같은 `.env` 파일이 필요하니, junkim이 토큰을 별도 채널로 안전하게 전달
+
+**기록 안 해도 되는 작업:**
+- 단순 typo 수정, 디버그용 1회성 명령, 실험적 변경
+- 즉, **사용자가 인지할 만한 진척이 있을 때만** 기록
+
 위 규칙을 모든 코드 변경 작업에 자동 적용해주세요.
