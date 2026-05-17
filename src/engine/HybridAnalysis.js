@@ -313,19 +313,29 @@ export function hybridMerge(cv, ai) {
   if (typeof ai.troubleCount === 'number') {
     const rawNew = Math.max(0, Math.min(20, Math.round((100 - ai.troubleCount) / 8.5)));
 
-    // Baseline raw count clamp — UI 흔들림 방지 (같은 사람 같은 날 ±1, 시간 지날수록 완화)
-    // 다른 사람 감지된 경우는 anchor 안 함
+    // Baseline raw count clamp — 비대칭 적용.
+    // - 감소 방향(트러블 줄어듦): UI 흔들림 방지 위해 같은 날 ±1, 시간 지날수록 ±2~5로 천천히 완화
+    // - 증가 방향(트러블 늘어남): 자유 허용. baseline=0에 anchor돼 새 트러블이 0으로 묻히는 부작용 방지
+    // differentPerson인 경우는 anchor 안 함
     let stabilizedRaw = rawNew;
     if (!ai.differentPerson) {
       try {
         const baseline = getBaseline();
         if (baseline && typeof baseline.result?.troubleCount === 'number') {
           const rawBase = Math.max(0, Math.min(20, Math.round((100 - baseline.result.troubleCount) / 8.5)));
-          const daysSince = baseline.timestamp ? (Date.now() - baseline.timestamp) / 86400000 : 0;
-          const maxDelta = daysSince < 1 ? 1 : daysSince <= 2 ? 2 : daysSince <= 5 ? 3 : daysSince <= 14 ? 4 : 5;
-          stabilizedRaw = rawBase + Math.max(-maxDelta, Math.min(maxDelta, rawNew - rawBase));
+          const diff = rawNew - rawBase;
+          if (diff <= 0) {
+            // 트러블 감소(=양호한 방향): stabilization 적용
+            const daysSince = baseline.timestamp ? (Date.now() - baseline.timestamp) / 86400000 : 0;
+            const maxDecrease = daysSince < 1 ? 1 : daysSince <= 2 ? 2 : daysSince <= 5 ? 3 : daysSince <= 14 ? 4 : 5;
+            const clamped = Math.max(-maxDecrease, diff);
+            stabilizedRaw = rawBase + clamped;
+          } else {
+            // 트러블 증가: 자유 허용 (감지된 만큼 즉시 반영)
+            stabilizedRaw = rawNew;
+          }
           if (stabilizedRaw !== rawNew) {
-            console.log('[troubleCount stabilize]', { rawNew, rawBase, daysSince: daysSince.toFixed(2), maxDelta, stabilizedRaw });
+            console.log('[troubleCount stabilize]', { rawNew, rawBase, diff, stabilizedRaw });
           }
         }
       } catch (e) { console.warn('[troubleCount baseline clamp]', e); }

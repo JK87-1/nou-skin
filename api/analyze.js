@@ -63,7 +63,10 @@ Step 1~2의 분석을 종합하여 아래 10개 지표의 최종 점수(0-100)�
 - 수분(moisture): 90-100 촉촉윤기, 70-89 정상, 50-69 약간건조, 30-49 건조, 0-29 심한건조
 - 피부톤(skinTone): 90-100 매우균일, 70-89 양호, 50-69 부분홍조/칙칙, 30-49 색편차큼, 0-29 심한불균일
 - 유분(oilBalance): 90-100 완벽균형, 70-89 약간유분기/건조, 50-69 T존번들거림, 30-49 전체유분과다, 0-29 극심한유분
-- 트러블(troubleCount): 90-100 트러블없음, 70-89 1-2개소, 50-69 여러개산재, 30-49 염증성다수, 0-29 심한여드름
+- 트러블(troubleCount): 95-100 정말 깨끗(어떤 트러블 신호도 보이지 않을 때만), 85-94 미세 트러블 1~2개(작은 화이트헤드/블랙헤드/comedone 포함), 70-84 보이는 트러블 3~5개(mixed papule/pustule), 50-69 6~10개 산재, 30-49 11~15개 염증성 다수, 0-29 15개+ 심한 여드름
+  ※ 트러블 카운트 핵심 룰: 작은 화이트헤드, 블랙헤드, 미세 papule/comedone도 반드시 1점씩 카운트하세요. 빨갛지 않은 미세 트러블도 카운트 대상입니다.
+  ※ 트러블이 사진에 보이는데 95+ 점수를 주지 마세요. 0~5점만 깎고 끝내는 것도 금지입니다. 실제 보이는 트러블 개수에 비례해 점수를 분명히 깎으세요.
+  ※ 메이크업/조명 때문에 가려진 경우엔 보이는 그대로 평가하고 analysis.summary에 "조명/메이크업으로 일부 가려진 가능성"을 언급하세요.
 - 탄력(elasticity): 90-100 탱탱함, 70-89 양호, 50-69 약간처짐시작, 30-49 눈에띄는처짐, 0-29 심한처짐
 - 피부결(texture): 90-100 매끈, 70-89 대체로고움, 50-69 약간거침/요철, 30-49 거친피부결, 0-29 매우거침
 - 색소(pigmentation): 90-100 잡티없음, 70-89 소량잡티, 50-69 기미/잡티산재, 30-49 기미뚜렷, 0-29 심한색소침착
@@ -182,7 +185,12 @@ function stabilizeScores(scores, baselineResult, baselineTimestamp) {
     const baseline = baselineResult[key];
     if (typeof current === 'number' && typeof baseline === 'number') {
       const diff = current - baseline;
-      const clamped = Math.max(-maxDelta, Math.min(maxDelta, diff));
+      // 트러블만 비대칭: 트러블 점수가 떨어지는 방향(=실제 트러블 증가)은 자유 허용.
+      // baseline에 anchor돼서 새로 생긴 트러블이 감지 안 되는 문제 방지.
+      // 점수가 오르는 방향(=실제 트러블 감소)은 stabilization 유지.
+      const lower = key === 'troubleCount' ? -100 : -maxDelta;
+      const upper = maxDelta;
+      const clamped = Math.max(lower, Math.min(upper, diff));
       stabilized[key] = baseline + clamped;
     }
   }
