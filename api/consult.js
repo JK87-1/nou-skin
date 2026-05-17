@@ -62,6 +62,49 @@ function buildSystemPrompt(context) {
     todayContext += `\n안정 피부나이(주간평균): ${context.stableSkinAge}세`;
   }
 
+  // ===== 사용자가 트래커에 등록한 제품 컨텍스트 =====
+  let productContext = '';
+  if (Array.isArray(context.products) && context.products.length > 0) {
+    const byTime = { morning: [], night: [], both: [] };
+    for (const p of context.products) {
+      const slot = (p.timeSlot === 'morning' || p.timeSlot === 'night') ? p.timeSlot : 'both';
+      byTime[slot].push(p);
+    }
+
+    const formatProduct = (p) => {
+      const fullName = `${p.brand || ''} ${p.name || ''}`.trim() || '(이름 없음)';
+      const parts = [fullName];
+      if (p.category) parts.push(`[${p.category}]`);
+      if (p.startDate) {
+        const days = Math.floor((Date.now() - new Date(p.startDate).getTime()) / 86400000);
+        if (days >= 0) parts.push(`${days}일째 사용`);
+      }
+      if (p.ingredients) {
+        const ing = typeof p.ingredients === 'string'
+          ? p.ingredients
+          : (Array.isArray(p.ingredients) ? p.ingredients.join(', ') : '');
+        if (ing) parts.push(`성분: ${ing.slice(0, 250)}`);
+      }
+      return '• ' + parts.join(' · ');
+    };
+
+    productContext = '\n\n[사용자가 현재 사용 중인 제품 — 스킨케어 트래커 등록]';
+    productContext += `\n총 ${context.products.length}개 제품을 사용 중. 상담 시 반드시 인지하고, 사용자 피부 데이터(위)와 연결해서 분석하세요.\n`;
+    if (byTime.morning.length > 0) productContext += `\n[아침 루틴]\n${byTime.morning.map(formatProduct).join('\n')}`;
+    if (byTime.night.length > 0) productContext += `\n\n[저녁 루틴]\n${byTime.night.map(formatProduct).join('\n')}`;
+    if (byTime.both.length > 0) productContext += `\n\n[아침·저녁 공통]\n${byTime.both.map(formatProduct).join('\n')}`;
+
+    productContext += `\n\n[등록 제품 분석 가이드 — 매우 중요]
+- 사용자의 현재 피부 점수와 사용 중인 제품 성분을 항상 cross-check 하세요
+- 자연스러운 인용 예: "지금 쓰고 계신 OOO에 나이아신아마이드가 들어있어서 색소(48점) 케어에 도움되고 있어요"
+- 누락된 카테고리 자연스럽게 안내 (예: 자외선 차단제 없음 → "차단제는 아직 안 쓰시는 것 같은데, 색소 케어엔 꼭 필요해요")
+- 시간대 적절성 체크: 레티놀·AHA·BHA는 저녁 전용 / 비타민C·SPF는 아침 권장. 잘못된 시간대 발견 시 부드럽게 알림
+- 14일 이상 사용한 제품은 효과 평가 시점이라 추세와 연결해 코멘트
+- 일반 상담("건조해요" 같은 질문)에도 등록 제품 우선 참고해서 "지금 쓰는 OOO로 충분하니까 ~만 추가하면 돼요" 같이 활용
+- 제품 추천이 필요할 땐 등록 제품 라인업의 빈 카테고리 우선 추천 (중복 추천 금지)
+- 위 [성분 상호작용 규칙]을 등록 제품들끼리 체크해서 충돌 발견 시 알림`;
+  }
+
   let changeContext = '';
   if (context.changes) {
     const c = context.changes;
@@ -138,7 +181,7 @@ ${context.currentResult ? `종합점수: ${context.currentResult.overallScore}�
 다크서클: ${context.currentResult.darkCircleScore}점
 피부타입: ${context.currentResult.skinType || '알 수 없음'}
 주요 관심사: ${context.currentResult.concerns?.join(', ') || '없음'}` : '분석 데이터 없음'}
-${historyContext}${changeContext}${todayContext}
+${historyContext}${changeContext}${todayContext}${productContext}
 
 [계절 기반 조언 - 현재 ${season}]
 ${seasonalTips[season]}
@@ -228,6 +271,7 @@ D. 기타 사진 (음식, 환경 등):
 6. 성분 추천 시 구체적인 성분명과 사용법(농도, 사용 시간대, 빈도)을 알려주세요
 7. 원인→결과→해결 구조로 답변하세요. 단순 나열 금지.
 8. 사용자가 현재 사용 중인 제품과의 상호작용도 고려하세요
+9. 사용자가 스킨케어 트래커에 등록한 제품이 있으면, 일반 상담이든 구체적 질문이든 반드시 그 제품을 컨텍스트로 활용해서 답변하세요
 
 [제품 추천 정책 — 매우 중요, 반드시 준수]
 
