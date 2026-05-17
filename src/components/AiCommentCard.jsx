@@ -47,6 +47,12 @@ export default function AiCommentCard({
       background: 'var(--tag-bg, rgba(255,140,66,0.06))',
       border: 'none',
       animation: `fadeUp 0.5s ease-out ${animationDelay} both`,
+      /* iOS Safari 환경에서 자식 fit-content layout 강제 (빈 공간 방지) */
+      height: 'auto',
+      minHeight: 0,
+      maxHeight: 'none',
+      overflow: 'visible',
+      display: 'block',
     }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>

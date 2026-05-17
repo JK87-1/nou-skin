@@ -1521,7 +1521,7 @@ export default function App() {
             })()}
 
             {/* ── AI Analysis ── */}
-            <div className="glass-card" style={{ animation: 'fadeUp 0.5s ease-out 0.9s both', boxShadow: 'none' }}>
+            <div className="glass-card" style={{ animation: 'fadeUp 0.5s ease-out 0.9s both', boxShadow: 'none', height: 'auto', minHeight: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
                 <LuaMiniIcon size={14} />
                 <div>
