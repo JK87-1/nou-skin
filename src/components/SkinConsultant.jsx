@@ -199,6 +199,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
   const [pendingImages, setPendingImages] = useState([]); // [{ dataUrl, base64 }, ...] max 3
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const [sttSupported, setSttSupported] = useState(false);
   const [kbOpen, setKbOpen] = useState(false);
   const messagesEndRef = useRef(null);
@@ -206,7 +207,8 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
   const containerRef = useRef(null);
   const cameraInputRef = useRef(null);
   const albumInputRef = useRef(null);
-  const recognitionRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioStreamRef = useRef(null);
 
   const quickQuestions = [
     '내 피부 최대 약점은?',
@@ -308,38 +310,136 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
     return () => document.removeEventListener('click', handler);
   }, [showAttachMenu]);
 
-  // Speech-to-Text initialization
+  // Speech-to-Text — OpenAI gpt-4o-transcribe 기반 (Web Speech API보다 정확, 긴 발화도 안정)
+  // MediaRecorder로 녹음 → /api/transcribe → 텍스트
   useEffect(() => {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) return;
-    const recognition = new SR();
-    recognition.lang = 'ko-KR';
-    recognition.continuous = false;
-    recognition.interimResults = true;
-    recognition.onresult = (event) => {
-      const transcript = Array.from(event.results)
-        .map(r => r[0].transcript)
-        .join('');
-      setInput(transcript);
-    };
-    recognition.onend = () => setIsListening(false);
-    recognition.onerror = () => setIsListening(false);
-    recognitionRef.current = recognition;
-    setSttSupported(true);
+    if (typeof window === 'undefined') return;
+    const hasMic = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+    const hasMR = typeof window.MediaRecorder !== 'undefined';
+    setSttSupported(hasMic && hasMR);
     return () => {
-      try { recognition.abort(); } catch {}
+      // 컴포넌트 unmount 시 마이크 stream 정리
+      try {
+        const rec = mediaRecorderRef.current;
+        if (rec && rec.state === 'recording') rec.stop();
+      } catch {}
+      try {
+        const stream = audioStreamRef.current;
+        if (stream) stream.getTracks().forEach((t) => t.stop());
+      } catch {}
     };
   }, []);
 
-  const toggleListening = useCallback(() => {
-    const recognition = recognitionRef.current;
-    if (!recognition) return;
-    if (isListening) {
-      recognition.stop();
-    } else {
-      try { recognition.start(); setIsListening(true); } catch {}
+  const pickSupportedMime = useCallback(() => {
+    const candidates = [
+      'audio/mp4',                     // Safari (iOS/macOS)
+      'audio/mp4;codecs=mp4a.40.2',
+      'audio/webm;codecs=opus',        // Chrome/Edge/Firefox
+      'audio/webm',
+      'audio/ogg;codecs=opus',
+    ];
+    if (typeof window === 'undefined' || !window.MediaRecorder) return '';
+    for (const c of candidates) {
+      try { if (window.MediaRecorder.isTypeSupported(c)) return c; } catch {}
     }
-  }, [isListening]);
+    return '';
+  }, []);
+
+  const blobToBase64 = useCallback((blob) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result || '';
+      const idx = String(result).indexOf(',');
+      resolve(idx >= 0 ? String(result).slice(idx + 1) : '');
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  }), []);
+
+  const toggleListening = useCallback(async () => {
+    if (isTranscribing) return;
+
+    // 녹음 중 → 정지
+    if (isListening) {
+      try {
+        const recorder = mediaRecorderRef.current;
+        if (recorder && recorder.state === 'recording') recorder.stop();
+      } catch (e) { console.warn('[voice] stop failed', e); }
+      return;
+    }
+
+    // 녹음 시작
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
+      audioStreamRef.current = stream;
+
+      const mimeType = pickSupportedMime();
+      const recorder = mimeType
+        ? new MediaRecorder(stream, { mimeType })
+        : new MediaRecorder(stream);
+      mediaRecorderRef.current = recorder;
+      const chunks = [];
+
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) chunks.push(e.data);
+      };
+
+      recorder.onstop = async () => {
+        // 마이크 stream 정리
+        try { stream.getTracks().forEach((t) => t.stop()); } catch {}
+        audioStreamRef.current = null;
+        setIsListening(false);
+
+        if (chunks.length === 0) return;
+
+        const finalMime = recorder.mimeType || mimeType || 'audio/webm';
+        const blob = new Blob(chunks, { type: finalMime });
+        if (blob.size < 1000) return; // 너무 짧으면 무시 (잘못 눌림 방지)
+
+        setIsTranscribing(true);
+        try {
+          const base64 = await blobToBase64(blob);
+          const resp = await fetch('/api/transcribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ audio: base64, mime: finalMime }),
+          });
+          if (!resp.ok) {
+            const errData = await resp.json().catch(() => ({}));
+            throw new Error(errData.error || `HTTP ${resp.status}`);
+          }
+          const data = await resp.json();
+          const text = (data.text || '').trim();
+          if (text) {
+            // 기존 입력에 이어쓰기 (잘못 인식 시 사용자가 수정 가능)
+            setInput((prev) => (prev ? `${prev} ${text}` : text));
+          }
+        } catch (e) {
+          console.warn('[voice] transcription failed:', e?.message || e);
+        } finally {
+          setIsTranscribing(false);
+        }
+      };
+
+      recorder.onerror = (e) => {
+        console.warn('[voice] recorder error', e);
+        setIsListening(false);
+      };
+
+      recorder.start();
+      setIsListening(true);
+    } catch (e) {
+      console.warn('[voice] mic access failed:', e?.message || e);
+      setIsListening(false);
+      audioStreamRef.current = null;
+    }
+  }, [isListening, isTranscribing, pickSupportedMime, blobToBase64]);
 
   const buildContext = useCallback(() => {
     const records = getRecords();
@@ -777,8 +877,8 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={isListening ? '듣고 있어요...' : pendingImages.length > 0 ? '메시지와 함께 전송...' : '피부 고민을 물어보세요...'}
-          disabled={isLoading}
+          placeholder={isListening ? '듣고 있어요... 끝나면 마이크 다시 눌러주세요' : isTranscribing ? '음성을 텍스트로 변환 중...' : pendingImages.length > 0 ? '메시지와 함께 전송...' : '피부 고민을 물어보세요...'}
+          disabled={isLoading || isTranscribing}
           style={{
             flex: 1, minWidth: 0, padding: '10px 4px', borderRadius: 0,
             border: 'none',
@@ -791,19 +891,30 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
         {/* Mic STT Button */}
         {sttSupported && (
           <button
-            className={`consult-mic-btn${isListening ? ' listening' : ''}`}
+            className={`consult-mic-btn${isListening ? ' listening' : ''}${isTranscribing ? ' transcribing' : ''}`}
             onClick={toggleListening}
-            disabled={isLoading}
-            style={{ opacity: isLoading ? 0.5 : 1 }}
+            disabled={isLoading || isTranscribing}
+            style={{ opacity: (isLoading || isTranscribing) ? 0.6 : 1 }}
+            aria-label={isListening ? '녹음 정지' : isTranscribing ? '변환 중' : '음성 입력'}
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-              stroke={isListening ? '#81E4BD' : '#81E4BD'}
-              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="9" y="1" width="6" height="11" rx="3"/>
-              <path d="M19 10v1a7 7 0 01-14 0v-1"/>
-              <line x1="12" y1="19" x2="12" y2="23"/>
-              <line x1="8" y1="23" x2="16" y2="23"/>
-            </svg>
+            {isTranscribing ? (
+              // 변환 중: 작은 spinner
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                stroke="#81E4BD" strokeWidth="2" strokeLinecap="round"
+                style={{ animation: 'spin 0.8s linear infinite' }}>
+                <path d="M21 12a9 9 0 11-6.219-8.56"/>
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                stroke={isListening ? '#FF6B6B' : '#81E4BD'}
+                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="9" y="1" width="6" height="11" rx="3"
+                  fill={isListening ? '#FF6B6B' : 'none'}/>
+                <path d="M19 10v1a7 7 0 01-14 0v-1"/>
+                <line x1="12" y1="19" x2="12" y2="23"/>
+                <line x1="8" y1="23" x2="16" y2="23"/>
+              </svg>
+            )}
           </button>
         )}
 
