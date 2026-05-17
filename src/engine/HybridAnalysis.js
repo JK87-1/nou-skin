@@ -139,13 +139,17 @@ function cropFace(base64Image, landmarks) {
       const sh = Math.min(h - sy, Math.ceil((maxY - minY + padY * 2) * h));
       if (sw < 50 || sh < 50) { resolve(base64Image); return; }
 
+      // GPT Vision detail='high' 모드를 충분히 활용하기 위해 1024×1024로 (이전 512×512에서 상향).
+      // JPEG quality 0.9: 잡티·주름·모공 디테일 보존 (이전 0.7에서 상향).
+      const CROP_SIZE = 1024;
       const canvas = document.createElement('canvas');
-      canvas.width = 512;
-      canvas.height = 512;
+      canvas.width = CROP_SIZE;
+      canvas.height = CROP_SIZE;
       const ctx = canvas.getContext('2d');
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, 512, 512);
-      const cropped = canvas.toDataURL('image/jpeg', 0.7);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, CROP_SIZE, CROP_SIZE);
+      const cropped = canvas.toDataURL('image/jpeg', 0.9);
       resolve(cropped.split(',')[1]);
     };
     img.onerror = () => resolve(base64Image);
