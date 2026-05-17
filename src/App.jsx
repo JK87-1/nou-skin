@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import GlobalStyles from './design/GlobalStyles';
 import { compressImage, clearCompressCache, analyzePixels, pixelsToScores, generateDemoScores, checkPhotoQuality, generateSmartAdvice } from './engine/PixelAnalysis';
 import { detectLandmarks } from './engine/FaceLandmarker';
@@ -991,51 +992,52 @@ export default function App() {
 
           </div>{/* end first screen wrapper */}
 
-          {/* Weather Bottom Sheet */}
-          {weatherSheet && (
+          {/* Weather Bottom Sheet — rendered via portal */}
+          {weatherSheet && createPortal(
             <>
               <div onClick={() => setWeatherSheet(false)} style={{
-                position: 'fixed', inset: 0, zIndex: 50,
-                background: 'rgba(0,0,0,0.35)',
-                animation: 'weatherSheetFadeIn 0.3s ease',
+                position: 'fixed', inset: 0, zIndex: 200,
+                background: 'rgba(4,44,83,0.18)',
+                backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)',
+                opacity: 1, transition: 'opacity 200ms',
               }} />
               <div style={{
-                position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 60,
-                background: 'var(--bg-secondary)',
-                borderTopLeftRadius: 28, borderTopRightRadius: 28,
-                borderTop: '1px solid var(--border-light)',
-                maxHeight: '85vh',
-                animation: 'weatherSheetSlideUp 0.4s cubic-bezier(0.32, 0.72, 0, 1)',
-                overflow: 'hidden',
+                position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201,
+                height: '62%',
+                background: 'rgba(255,255,255,0.65)',
+                backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255,255,255,0.3)',
+                borderRadius: '20px 20px 0 0',
+                boxShadow: '0 -8px 28px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.6)',
+                maxWidth: 430, margin: '0 auto',
+                display: 'flex', flexDirection: 'column',
+                animation: 'weatherSheetSlideUp 280ms cubic-bezier(0.32,0.72,0,1) forwards',
               }}>
                 <style>{`
-                  @keyframes weatherSheetFadeIn { from { opacity: 0; } to { opacity: 1; } }
                   @keyframes weatherSheetSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
                 `}</style>
                 {/* Handle */}
-                <div onClick={() => setWeatherSheet(false)} style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 8px', cursor: 'pointer' }}>
-                  <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--border-subtle)' }} />
+                <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}>
+                  <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(137,206,245,0.4)' }} />
                 </div>
-                {/* Sheet header */}
-                <div style={{
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
-                  padding: '4px 20px 16px',
-                }}>
-                  <div></div>
+                {/* Header */}
+                <div style={{ padding: '8px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>오늘의 피부 날씨</span>
                   <button onClick={() => setWeatherSheet(false)} style={{
-                    width: 32, height: 32, borderRadius: '50%',
-                    background: 'var(--bg-card-hover)', border: 'none',
+                    width: 32, height: 32, borderRadius: '50%', border: 'none',
+                    background: 'rgba(255,255,255,0.3)', cursor: 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    cursor: 'pointer', marginTop: 4, color: 'var(--text-muted)', fontSize: 16,
-                    fontFamily: 'inherit',
-                  }}>✕</button>
+                  }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
                 </div>
-                {/* Sheet content */}
-                <div style={{ overflowY: 'auto', maxHeight: 'calc(85vh - 80px)', WebkitOverflowScrolling: 'touch' }}>
+                {/* Content */}
+                <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
                   <SkinWeather skinResult={getLatestRecord()} />
                 </div>
               </div>
-            </>
+            </>,
+            document.body,
           )}
         </div>
       )}

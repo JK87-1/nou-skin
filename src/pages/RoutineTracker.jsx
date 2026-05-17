@@ -758,34 +758,32 @@ export default function RoutineTracker({ themeColors, onBack }) {
                 등록된 제품이 없어요
               </div>
             ) : (
-              products.map((p, i) => {
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, padding: 10 }}>
+              {products.map((p) => {
                 const cat = getCat(p.category);
                 const days = Math.max(0, Math.floor((Date.now() - new Date(p.startDate)) / 86400000));
                 return (
                   <div key={p.id} onClick={() => setSelectedProduct(p)} style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '13px 18px', cursor: 'pointer',
-                    borderTop: i > 0 ? '1px solid rgba(255,255,255,0.15)' : 'none',
+                    background: 'rgba(255,255,255,0.25)', borderRadius: 14,
+                    padding: 14, cursor: 'pointer',
+                    display: 'flex', flexDirection: 'column',
                   }}>
                     {p.imageThumb ? (
-                      <img src={p.imageThumb} alt="" style={{ width: 40, height: 40, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} />
+                      <img src={p.imageThumb} alt="" style={{ width: 44, height: 44, borderRadius: 12, objectFit: 'cover', marginBottom: 10 }} />
                     ) : (
-                      <div style={{ width: 40, height: 40, borderRadius: 10, flexShrink: 0, background: 'rgba(255,255,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>
+                      <div style={{ width: 44, height: 44, borderRadius: 12, marginBottom: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>
                         {cat.emoji}
                       </div>
                     )}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.brand} {p.name}</div>
-                      <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
-                        {p.category} · {p.timeSlot === 'both' ? '아침·저녁' : p.timeSlot === 'morning' ? '아침' : '저녁'} · {days}일째
-                      </div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.brand}</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginTop: 2, lineHeight: 1.4, minHeight: '2.8em', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{p.name}</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 'auto', paddingTop: 8 }}>
+                      {p.category} · {days}일째
                     </div>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="1.8" strokeLinecap="round" style={{ flexShrink: 0 }}>
-                      <path d="M9 6l6 6-6 6"/>
-                    </svg>
                   </div>
                 );
-              })
+              })}
+              </div>
             )}
           </div>
 
