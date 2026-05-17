@@ -1529,7 +1529,7 @@ export default function App() {
                   <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>AI 맞춤 리포트</div>
                 </div>
               </div>
-              <p style={{ fontSize: 13.5, color: 'var(--text-secondary)', lineHeight: 1.75 }}>{result.advice}</p>
+              <p style={{ fontSize: 13.5, color: 'var(--text-secondary)', lineHeight: 1.75, margin: 0, outline: '2px dashed #0066ff' /* DEBUG */ }}>{result.advice}</p>
               <AiCommentCard
                 aiNotes={result.aiNotes}
                 aiDetails={result.aiDetails}
