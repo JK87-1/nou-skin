@@ -307,7 +307,26 @@ export function hybridMerge(cv, ai) {
 
   // GPT returns troubleCount as 0-100 score; convert to raw count (0-20)
   if (typeof ai.troubleCount === 'number') {
-    result.troubleCount = Math.max(0, Math.min(20, Math.round((100 - ai.troubleCount) / 8.5)));
+    const rawNew = Math.max(0, Math.min(20, Math.round((100 - ai.troubleCount) / 8.5)));
+
+    // Baseline raw count clamp — UI 흔들림 방지 (같은 사람 같은 날 ±1, 시간 지날수록 완화)
+    // 다른 사람 감지된 경우는 anchor 안 함
+    let stabilizedRaw = rawNew;
+    if (!ai.differentPerson) {
+      try {
+        const baseline = getBaseline();
+        if (baseline && typeof baseline.result?.troubleCount === 'number') {
+          const rawBase = Math.max(0, Math.min(20, Math.round((100 - baseline.result.troubleCount) / 8.5)));
+          const daysSince = baseline.timestamp ? (Date.now() - baseline.timestamp) / 86400000 : 0;
+          const maxDelta = daysSince < 1 ? 1 : daysSince <= 2 ? 2 : daysSince <= 5 ? 3 : daysSince <= 14 ? 4 : 5;
+          stabilizedRaw = rawBase + Math.max(-maxDelta, Math.min(maxDelta, rawNew - rawBase));
+          if (stabilizedRaw !== rawNew) {
+            console.log('[troubleCount stabilize]', { rawNew, rawBase, daysSince: daysSince.toFixed(2), maxDelta, stabilizedRaw });
+          }
+        }
+      } catch (e) { console.warn('[troubleCount baseline clamp]', e); }
+    }
+    result.troubleCount = stabilizedRaw;
   }
 
   if (typeof ai.skinAge === 'number') {
