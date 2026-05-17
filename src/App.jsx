@@ -34,6 +34,7 @@ import SplashScreen from './components/SplashScreen';
 import SkinMeasurePage from './pages/SkinMeasurePage';
 import TrendCard from './components/TrendCard';
 import AiCommentCard from './components/AiCommentCard';
+import BeforeAfterSlider from './components/BeforeAfterSlider';
 import { DropletIcon, SparkleIcon, LotionIcon, DiamondIcon, PaletteIcon, MicroscopeIcon, RulerIcon, EyeIcon, BubbleIcon, TargetIcon, SunIcon, MoonIcon, CameraIcon, TestTubeIcon, StarIcon, ShieldIcon, WandIcon, PhotoIcon, CheckIcon, SaveIcon, PastelIcon, LuaMiniIcon } from './components/icons/PastelIcons';
 import SoftCloverIcon from './components/icons/SoftCloverIcon';
 import EternalPearl from './components/icons/EternalPearl';
@@ -1581,6 +1582,11 @@ export default function App() {
               changes={changes}
               animationDelay="0.95s"
             />
+
+            {/* ── Before & After slider (변화 비교) ── */}
+            <div style={{ animation: 'fadeUp 0.5s ease-out 1s both' }}>
+              <BeforeAfterSlider />
+            </div>
 
             {/* ── GROUP 1: Condition Metrics ── */}
             <div className="glass-card" style={{ padding: '24px', animation: 'fadeUp 0.5s ease-out 1.0s both', boxShadow: 'none' }}>
