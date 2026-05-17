@@ -34,9 +34,10 @@
   <link rel="stylesheet" href="https://static.toss.im/tps/others.css" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background-color: #ace2fc; }
     body {
       font-family: 'Pretendard Variable', 'Pretendard', 'Noto Sans KR', 'Apple SD Gothic Neo', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #F7F8FA;
+      background: transparent;
       -webkit-font-smoothing: antialiased;
       color: #191F28;
     }
@@ -44,10 +45,16 @@
       background: #000000;
       color: #f0f0f5;
     }
-    #root { min-height: 100dvh; }
+    #gradient-bg {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 0; pointer-events: none;
+      background: linear-gradient(to bottom, #ace2fc, #ffffff);
+    }
+    #root { min-height: 100dvh; position: relative; z-index: 1; }
   </style>
 </head>
 <body>
+  <div id="gradient-bg"></div>
   <div id="root"></div>
   <script>
     // Force clear outdated SW caches on version bump
@@ -69,14 +76,19 @@
     try {
       var p = JSON.parse(localStorage.getItem('nou_profile') || '{}');
       var mode = p.colorMode || 'light';
+      var gradBg = document.getElementById('gradient-bg');
       if (mode === 'light') {
         document.documentElement.setAttribute('data-theme', 'light');
-        document.querySelector('meta[name="theme-color"]').content = '#F7F8FA';
+        document.documentElement.style.backgroundColor = '#ace2fc';
+        if (gradBg) gradBg.style.background = 'linear-gradient(to bottom, #ace2fc, #ffffff)';
+        document.querySelector('meta[name="theme-color"]').content = '#ace2fc';
       } else {
         document.documentElement.setAttribute('data-theme', 'dark');
-        document.body.style.background = '#000000';
+        document.documentElement.style.backgroundColor = '#0a1222';
+        document.body.style.background = 'transparent';
         document.body.style.color = '#f0f0f5';
-        document.querySelector('meta[name="theme-color"]').content = '#000000';
+        if (gradBg) gradBg.style.background = 'linear-gradient(180deg, #0a1222 0%, #8d97ce 100%)';
+        document.querySelector('meta[name="theme-color"]').content = '#0a1222';
       }
     } catch(e) {
       document.documentElement.setAttribute('data-theme', 'light');

@@ -13,11 +13,13 @@ import { createAutoBackup, verifyDataIntegrity, restoreFromAutoBackup, startPeri
 import HistoryPage from './pages/HistoryPage';
 import TabBar from './components/TabBar';
 import MyPage from './pages/MyPage';
+import DiscoverPage from './pages/DiscoverPage';
 // RoutinePage removed — tab restructuring
 import RoutineTracker from './pages/RoutineTracker';
 import SkinScoreCircle from './components/SkinScoreCircle';
 import AiInsightCard from './components/AiInsightCard';
 import SkinConsultant from './components/SkinConsultant';
+import LuaChatSheet from './components/LuaChatSheet';
 import InstallBanner from './components/InstallBanner';
 import { CATEGORY_META, getProductsByCategory, getWeakestCategories, calcMatchScore } from './data/ProductCatalog';
 import { getRecommendedTreatments, TREATMENT_CATEGORIES } from './data/TreatmentData';
@@ -59,6 +61,8 @@ export default function App() {
 
   const [activeTab, setActiveTab] = useState('home');
   const [historyInitMode, setHistoryInitMode] = useState(null);
+
+  const [fabChatOpen, setFabChatOpen] = useState(false);
 
   const [recordCount, setRecordCount] = useState(0);
   const [nextInfo, setNextInfo] = useState(null);
@@ -743,16 +747,14 @@ export default function App() {
 
       {/* ===== HISTORY PAGE (gallery + insights merged) ===== */}
       {activeTab === 'history' && (
-        <HistoryPage onBack={goToLanding} onMeasure={openCamera} onOpenConsult={() => setActiveTab('consult')} initialMode={historyInitMode} />
+        <HistoryPage onBack={goToLanding} onMeasure={openCamera} onOpenConsult={() => setFabChatOpen(true)} initialMode={historyInitMode} />
       )}
 
-      {/* ===== CONSULT TAB ===== */}
-      {activeTab === 'consult' && (
-        <SkinConsultant result={result || getLatestRecord()} isTab={true} />
-      )}
 
-      {/* ===== MY PAGE ===== */}
-      {activeTab === 'my' && <MyPage colorMode={colorMode} setColorMode={setColorMode} onThemeChange={setActiveThemeId} />}
+
+      {activeTab === 'discover' && <DiscoverPage onMeasure={openCamera} onOpenConsult={() => setFabChatOpen(true)} />}
+
+      {activeTab === 'my' && <MyPage colorMode={colorMode} setColorMode={setColorMode} onThemeChange={setActiveThemeId} onMeasure={openCamera} />}
 
       {/* ===== HOME TAB (stage-based sub-flow) ===== */}
       {activeTab === 'home' && <>
@@ -813,16 +815,31 @@ export default function App() {
           )}
           {/* First screen — fills full viewport */}
           <div style={{ height: 'calc(100dvh - 72px)', display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
-          {/* Header with Weather Chip */}
-          <div style={{ padding: '24px 24px 16px', position: 'relative', zIndex: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 20, fontWeight: 700, color: '#81E4BD', letterSpacing: 6, fontFamily: "'Fredoka', sans-serif" }}>LUA</span>
-                <span style={{ fontSize: 9, color: 'var(--text-dim)', background: 'var(--chip-bg)', padding: '2px 8px', borderRadius: 'var(--chip-radius)', fontWeight: 500 }}>Beta</span>
+          {/* Header with Logo + Weather Chip */}
+          {/* Header with Logo + Weather + Scan Chip */}
+          <div style={{ padding: '28px 22px 20px', position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <WeatherChip onTap={() => setWeatherSheet(true)} />
+            <img src="/luasky.svg" alt="lua" style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', height: 30, objectFit: 'contain' }} />
+            {/* Scan Chip with Pearl Orb */}
+            <div
+              onClick={openCamera}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '4px 4px 4px 14px',
+                background: 'rgba(255,255,255,0.35)',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255,255,255,0.3)',
+                borderRadius: 50, cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)' }}>피부 분석</span>
+              <div style={{ width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <EternalPearl size={28} animated colors={activeThemeColors} theme={colorMode} />
               </div>
             </div>
-            {/* Weather Chip */}
-            <WeatherChip onTap={() => setWeatherSheet(true)} />
           </div>
 
           {/* Background aura — very subtle (hidden in light mode) */}
@@ -830,68 +847,102 @@ export default function App() {
             <div style={{ position: 'absolute', top: '10%', left: '50%', transform: 'translateX(-50%)', width: '120%', height: '50%', background: `radial-gradient(ellipse at 50% 40%, ${activeThemeColors.accent}06 0%, transparent 60%)`, pointerEvents: 'none' }} />
           )}
 
-          {/* Eternal Pearl Hero */}
-          <div onClick={openCamera} style={{
-            display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center',
-            padding: '0 20px', position: 'relative', zIndex: 2,
-            cursor: 'pointer',
-            WebkitTapHighlightColor: 'transparent',
-          }}>
-            {/* Pearl card wrapper */}
-            <div style={{
-              background: 'var(--bg-card)',
-              borderRadius: 'var(--card-border-radius)',
-              boxShadow: 'none',
-              padding: '32px 20px 28px',
-              width: '100%',
-              textAlign: 'center',
-            }}>
-              <div style={{
-                position: 'relative', width: 312, height: 312,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                margin: '0 auto',
-                ...(showSplash ? {
-                  opacity: 0,
-                  transform: 'scale(0.92)',
-                  animation: splashExiting
-                    ? 'landingPearlReveal 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards'
-                    : undefined,
-                } : {}),
-              }}>
-                <EternalPearl size={200} animated colors={activeThemeColors} theme={colorMode} />
-              </div>
-
-              {/* CTA text */}
-              <div style={{ textAlign: 'center', marginTop: 16 }}>
-                <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: -0.3, lineHeight: 1.6, marginBottom: 6 }}>
-                  탭 하여 피부를 분석하세요
-                </p>
-                <p style={{ fontSize: 12, color: 'var(--text-dim)', fontWeight: 300 }}>AI가 10개 지표를 정밀 분석합니다</p>
-                {/* Condition tags */}
-                <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 14 }}>
-                  {['정면 셀카', '밝은 자연광', '맨 얼굴'].map(tag => (
-                    <span key={tag} style={{
-                      fontSize: 11, fontWeight: 400, color: 'var(--chip-text)',
-                      background: 'var(--tag-bg)',
-                      borderRadius: 'var(--chip-radius)', padding: '5px 12px', letterSpacing: -0.2,
-                    }}>{tag}</span>
-                  ))}
-                </div>
-              </div>
+          {/* ① 인사 영역 */}
+          <div style={{ padding: '8px 22px 4px' }}>
+            <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.3 }}>
+              {(() => { const h = new Date().getHours(); if (h >= 5 && h < 11) return '좋은 아침이에요'; if (h >= 11 && h < 17) return '오늘도 잘 지내고 있나요'; if (h >= 17 && h < 22) return '하루 마무리하셨네요'; return '조용한 시간이에요'; })()}{getProfile().nickname ? `, ${getProfile().nickname}` : ''}
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+              {`${new Date().getMonth() + 1}월 ${new Date().getDate()}일`} · {(() => { const recs = getRecords(); if (!recs.length) return '오늘부터 시작'; const d = Math.floor((Date.now() - new Date(recs[recs.length - 1].date).getTime()) / 86400000); return d > 0 ? `LUA와 ${d}일째` : '오늘부터 시작'; })()}
             </div>
           </div>
 
+          {/* ② lua의 오늘의 한 마디 */}
+          <div
+            onClick={() => setFabChatOpen(true)}
+            style={{
+              margin: '14px 20px 0',
+              background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+              border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+              borderRadius: 20, padding: '14px 16px',
+              display: 'flex', gap: 10, cursor: 'pointer',
+            }}
+          >
+            <div style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0, background: 'var(--accent-primary, #89cef5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ fontSize: 12, color: '#fff', fontWeight: 700 }}>L</span>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.5 }}>오늘은 평소처럼 보내세요. 피부는 매일 조금씩 달라지고 있어요.</div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>방금</div>
+            </div>
+          </div>
+
+          {/* ③ 현재 상태 미니 패널 */}
+          {(() => {
+            const latest = getLatestRecord();
+            const prev = (() => { const recs = getRecords(); return recs.length >= 2 ? recs[1] : null; })();
+            const rc = getRecords().length;
+            const ds = latest ? Math.floor((Date.now() - new Date(latest.date).getTime()) / 86400000) : null;
+            const metrics = [
+              { key: 'elasticityScore', label: 'V라인', icon: '◇' },
+              { key: 'poreScore', label: '모공', icon: '◎' },
+              { key: 'moisture', label: '유수분', icon: '💧' },
+              { key: 'skinTone', label: '홍조', icon: '🔥' },
+            ];
+            return (
+              <div style={{
+                margin: '12px 20px 0',
+                background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+                borderRadius: 20, padding: 16,
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>현재 상태</span>
+                  {ds !== null && (
+                    <span onClick={openCamera} style={{ fontSize: 11, color: 'var(--accent-primary, #89cef5)', fontWeight: 600, cursor: 'pointer' }}>
+                      최근 측정 → {ds}일 전
+                    </span>
+                  )}
+                </div>
+                {rc === 0 ? (
+                  <div style={{ padding: '20px 6px', textAlign: 'center' }}>
+                    <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>측정하면 여기에 너의 데이터가 쌓여요</div>
+                  </div>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                    {metrics.map((m) => {
+                      const val = latest?.[m.key] ?? null;
+                      const prevVal = prev?.[m.key] ?? null;
+                      const diff = val !== null && prevVal !== null ? val - prevVal : null;
+                      return (
+                        <div key={m.key} style={{ background: 'rgba(255,255,255,0.25)', borderRadius: 14, padding: 14 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{ fontSize: 13 }}>{m.icon}</span>
+                            <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500 }}>{m.label}</span>
+                          </div>
+                          <div style={{ fontSize: 28, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.5, marginTop: 6 }}>{val !== null ? val : '—'}</div>
+                          <div style={{ fontSize: 11, fontWeight: 500, marginTop: 2, color: diff === null ? 'var(--text-muted)' : diff > 0 ? 'var(--accent-primary, #89cef5)' : diff < 0 ? '#e05545' : 'var(--text-muted)' }}>
+                            {diff === null ? '기준선' : diff > 0 ? `+${diff} 좋아짐` : diff < 0 ? `${diff} 하락` : '변화 없음'}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           {/* Goal Progress Card */}
           {getGoal()?.status === 'active' && (
-            <div style={{ padding: '17px 0 0' }}>
+            <div style={{ padding: '12px 0 0' }}>
               <GoalProgressCard onTap={() => setActiveTab('my')} colorMode={colorMode} />
             </div>
           )}
 
-          {/* AI Insight Card — on landing when there's data */}
+          {/* AI Insight Card */}
           {getLatestRecord() && (
-            <div style={{ padding: '17px 20px 0' }}>
+            <div style={{ padding: '12px 20px 0' }}>
               <AiInsightCard colorMode={colorMode} />
             </div>
           )}
@@ -899,53 +950,29 @@ export default function App() {
           {/* Routine Tracker Entry Card */}
           <div
             onClick={() => setStage('routineTracker')}
-            style={{
-              margin: '17px 20px 0',
-              padding: 20,
-              borderRadius: 20,
-              background: 'var(--bg-card)',
-              border: 'none',
-              boxShadow: 'none',
-              cursor: 'pointer',
-              animation: 'breatheIn 0.5s ease 0.3s both',
-            }}
+            className="card"
+            style={{ margin: '12px 20px 0', padding: 20, cursor: 'pointer' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{
-                width: 40, height: 40, borderRadius: 14,
-                background: 'transparent',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
+              <div style={{ width: 40, height: 40, borderRadius: 14, background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <svg width="26" height="26" viewBox="0 0 36 36" fill="none">
                   <defs>
-                    <linearGradient id="lotion-g1" x1="30%" y1="0%" x2="70%" y2="100%">
-                      <stop offset="0%" stopColor="#FFF0F3" />
-                      <stop offset="100%" stopColor="#FFD0DA" />
-                    </linearGradient>
-                    <linearGradient id="lotion-g2" x1="30%" y1="0%" x2="70%" y2="100%">
-                      <stop offset="0%" stopColor="#FFE0E8" />
-                      <stop offset="100%" stopColor="#FFC0CC" />
-                    </linearGradient>
+                    <linearGradient id="lotion-g1" x1="30%" y1="0%" x2="70%" y2="100%"><stop offset="0%" stopColor="#FFF0F3" /><stop offset="100%" stopColor="#FFD0DA" /></linearGradient>
+                    <linearGradient id="lotion-g2" x1="30%" y1="0%" x2="70%" y2="100%"><stop offset="0%" stopColor="#FFE0E8" /><stop offset="100%" stopColor="#FFC0CC" /></linearGradient>
                   </defs>
-                  {/* 캡 */}
                   <rect x="13" y="3" width="10" height="4" rx="1.5" fill="url(#lotion-g2)" />
-                  {/* 펌프 */}
                   <rect x="16.5" y="1" width="3" height="3" rx="1" fill="url(#lotion-g2)" />
                   <rect x="14" y="0.5" width="8" height="1.5" rx="0.75" fill="url(#lotion-g2)" />
-                  {/* 몸통 */}
                   <rect x="11" y="7" width="14" height="20" rx="4" fill="url(#lotion-g1)" />
-                  {/* 라벨 영역 */}
                   <rect x="13" y="13" width="10" height="8" rx="2" fill="white" opacity="0.3" />
-                  {/* 하이라이트 */}
                   <rect x="12.5" y="9" width="3" height="12" rx="1.5" fill="white" opacity="0.2" />
-                </svg></div>
+                </svg>
+              </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>스킨케어 트래커</div>
                 <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>제품 등록 · 루틴 관리 · 효과 분석</div>
               </div>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path d="M9 18l6-6-6-6" stroke="var(--text-dim)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="var(--text-dim)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </div>
           </div>
 
@@ -1812,7 +1839,7 @@ export default function App() {
                     })()}
                   </div>
                   <div style={{ padding: '6px 16px 12px' }}>
-                    <button onClick={() => setActiveTab('consult')} style={{
+                    <button onClick={() => setFabChatOpen(true)} style={{
                       width: '100%', padding: '10px 0', borderRadius: 10, border: 'none',
                       background: 'var(--btn-primary-bg)', color: '#fff',
                       fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
@@ -1830,7 +1857,7 @@ export default function App() {
 
             {/* ── Skin Consultant CTA ── */}
             <div style={{ display: 'flex', gap: 10, marginBottom: 10, animation: 'fadeUp 0.5s ease-out 1.25s both' }}>
-              <button onClick={() => setActiveTab('consult')} style={{
+              <button onClick={() => setFabChatOpen(true)} style={{
                 flex: 1, padding: 14, borderRadius: 12, fontFamily: 'inherit',
                 background: 'var(--bg-card)', border: '1px solid var(--border-subtle)',
                 color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
@@ -1870,11 +1897,44 @@ export default function App() {
       {/* End of home tab wrapper */}
 
       {/* Tab bar spacer for pages that show tab bar (consult tab manages its own height) */}
-      {showTabBar && activeTab !== 'home' && activeTab !== 'consult' && <div className="tab-bar-spacer" />}
+      {showTabBar && activeTab !== 'home' && activeTab !== 'home2' && <div className="tab-bar-spacer" />}
       {showTabBar && activeTab === 'home' && stage === 'landing' && <div className="tab-bar-spacer" />}
 
       {/* ===== PWA INSTALL BANNER ===== */}
       <InstallBanner />
+
+      {/* ===== FAB (Global) ===== */}
+      {showTabBar && (
+        <div
+          onClick={() => setFabChatOpen(true)}
+          style={{
+            position: 'fixed',
+            bottom: 'calc(76px + env(safe-area-inset-bottom, 0px) + 24px)',
+            right: 14,
+            width: 48, height: 48, borderRadius: '50%',
+            background: 'linear-gradient(180deg, rgba(255,255,255,0.7) 0%, rgba(172,226,252,0.35) 100%)',
+            backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255,255,255,0.5)',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.6)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', zIndex: 90,
+          }}
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24">
+            <defs>
+              <linearGradient id="global-fab-star" x1="0.15" y1="0.05" x2="0.85" y2="0.95">
+                <stop offset="0%" stopColor="#D6EEFB" />
+                <stop offset="100%" stopColor="#89cef5" />
+              </linearGradient>
+            </defs>
+            <path fill="url(#global-fab-star)" d="M10.48,23.25c-.15.41-.5.71-.86.75-.27.03-.78-.29-.9-.59l-1.53-4.02c-.48-1.26-1.41-2.1-2.67-2.58l-3.91-1.48c-.29-.11-.59-.51-.6-.76-.01-.39.23-.79.6-.93l3.9-1.49c1.27-.48,2.19-1.31,2.68-2.59l1.57-4.14c.08-.2.52-.44.74-.46.24-.02.77.21.86.46l1.57,4.14c.5,1.32,1.47,2.15,2.78,2.63l3.7,1.37c.31.11.66.55.67.83.02.42-.29.82-.68.97l-3.8,1.44c-1.26.48-2.2,1.32-2.67,2.58l-1.45,3.86Z"/>
+            <path fill="url(#global-fab-star)" d="M21.48,6.29c-1.03.59-.9,2.91-2.01,2.98-1.23.08-.99-1.68-1.94-2.78-.77-.88-2.68-.63-2.74-1.78-.07-1.27,2.01-1.1,2.74-1.91.87-.95.73-2.72,1.78-2.8,1.29-.1.98,1.81,1.95,2.77.87.86,2.67.71,2.73,1.8.07,1.08-1.29,1.02-2.51,1.72Z"/>
+          </svg>
+        </div>
+      )}
+
+      {/* ===== LUA CHAT SHEET (Global) ===== */}
+      <LuaChatSheet open={fabChatOpen} onClose={() => setFabChatOpen(false)} />
 
       {/* ===== TAB BAR ===== */}
       {showTabBar && <TabBar activeTab={activeTab} onTabChange={switchTab} onMeasure={openCamera} themeColors={activeThemeColors} colorMode={colorMode} />}

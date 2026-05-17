@@ -14,80 +14,205 @@ import {
 } from '../utils/pushNotification';
 import { getLatestRecord } from '../storage/SkinStorage';
 import { getGoal, saveGoal, clearGoal, getDaysRemaining, getGoalProgress, getOverallProgress, METRIC_META } from '../storage/GoalStorage';
-import BadgeRanking from '../components/BadgeRanking';
 import { getAllPhotosRaw, restorePhotos } from '../storage/PhotoDB';
 import { MoonIcon, SunIcon, CameraIcon, SaveIcon, PastelIcon } from '../components/icons/PastelIcons';
 
-export default function MyPage({ colorMode, setColorMode, onThemeChange }) {
+export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasure }) {
   const [profile, setProfile] = useState(getProfile);
   const [toast, setToast] = useState(false);
   const [toastMsg, setToastMsg] = useState('저장되었습니다');
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [bioModal, setBioModal] = useState(false);
+  const [contentMode, setContentMode] = useState('album'); // album | history
 
-  const showToast = (msg) => {
-    setToastMsg(msg);
-    setToast(true);
-    setTimeout(() => setToast(false), 2500);
-  };
+  const records = getRecords();
+  const recordCount = records.length;
+  const thumbs = (() => { try { const all = {}; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k?.startsWith('nou_thumb_')) all[k.replace('nou_thumb_','')] = localStorage.getItem(k); } return all; } catch { return {}; } })();
+  const recentPhotos = records.slice(0, 5).map(r => ({ date: r.date, thumb: thumbs[r.date] })).filter(p => p.thumb);
+  const habitDays = (() => { let c = 0; for (let i = 0; i < localStorage.length; i++) { if (localStorage.key(i)?.startsWith('lua_habit_')) c++; } return c; })();
 
-  const update = (key, value) => {
-    const next = saveProfile({ [key]: value });
-    setProfile(next);
-  };
+  const glass = { background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)', borderRadius: 20 };
+
+  const showToast = (msg) => { setToastMsg(msg); setToast(true); setTimeout(() => setToast(false), 2500); };
+  const update = (key, value) => { const next = saveProfile({ [key]: value }); setProfile(next); };
+
+  const daysTogether = (() => { if (!records.length) return 0; const first = new Date(records[records.length - 1].date); return Math.max(1, Math.floor((Date.now() - first.getTime()) / 86400000)); })();
+  const initial = (profile.nickname || '?')[0].toUpperCase();
 
   return (
-    <div style={{ paddingBottom: 40 }}>
-      <div style={{ padding: '0 24px 0' }}>
+    <div style={{ minHeight: '100dvh', paddingBottom: 100 }}>
 
-        {/* Badge & Ranking UI (gear icon inside profile header) */}
-        <BadgeRanking onSettingsClick={() => setSettingsOpen(true)} colorMode={colorMode} onThemeChange={onThemeChange} />
-
-        {/* App Info / Version Footer */}
-        <div style={{
-          textAlign: 'center',
-          padding: '20px 0 8px',
-          animation: 'breatheIn 0.8s ease 0.55s both',
+      {/* ① 헤더 (noa style) */}
+      <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ width: 34 }} />
+        <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)' }}>마이</span>
+        <div onClick={() => setSettingsOpen(true)} style={{
+          width: 34, height: 34, borderRadius: '50%', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          WebkitTapHighlightColor: 'transparent',
         }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+          </svg>
+        </div>
+      </div>
+
+      {/* ② 프로필 영역 (noa style) */}
+      <div style={{ margin: '0 16px 12px', padding: '0 2px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+          {/* Avatar */}
           <div style={{
-            fontSize: 11, fontWeight: 300, marginBottom: 4,
-            color: 'var(--text-muted)',
-          }}>루아 Beta v1.0.2</div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 16 }}>
-            <span style={{
-              fontSize: 11, cursor: 'pointer', fontWeight: 300,
-              color: 'var(--text-muted)',
-            }}>이용약관</span>
-            <span style={{
-              fontSize: 11, cursor: 'pointer', fontWeight: 300,
-              color: 'var(--text-muted)',
-            }}>개인정보처리방침</span>
+            width: 86, height: 86, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
+            background: 'rgba(255,255,255,0.15)', border: '2px solid rgba(255,255,255,0.1)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            {profile.profileImage ? (
+              <img src={profile.profileImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5">
+                <circle cx="12" cy="10" r="4" /><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" strokeLinecap="round" />
+              </svg>
+            )}
+          </div>
+
+          {/* Stat Tab Grid (3 tabs) */}
+          <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
+            {[
+              { key: 'album', icon: <img src="/album.svg" alt="앨범" style={{ width: 18, height: 18, opacity: 0.3 }} />, label: '앨범', count: recentPhotos.length },
+              { key: 'history', icon: <svg width="18" height="18" viewBox="0 0 22 22" fill="currentColor" style={{ opacity: 0.3 }}><rect x="0" y="11" width="6" height="11" rx="1.5"/><rect x="8" y="3" width="6" height="19" rx="1.5"/><rect x="16" y="7" width="6" height="15" rx="1.5"/></svg>, label: '변화', count: recordCount },
+              { key: 'record', icon: <img src="/memo.svg" alt="기록" style={{ width: 18, height: 18, opacity: 0.3 }} />, label: '기록', count: daysTogether },
+            ].map(t => {
+              const active = contentMode === t.key;
+              return (
+                <div key={t.key} onClick={() => setContentMode(t.key)} style={{
+                  background: 'transparent', borderRadius: 10, padding: '10px 4px',
+                  textAlign: 'center', cursor: 'pointer', transition: 'background 0.2s ease',
+                  WebkitTapHighlightColor: 'transparent',
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>{t.icon}</div>
+                  <div style={{ fontSize: 11, marginTop: 4, color: active ? 'var(--text-primary)' : 'var(--text-muted)', fontWeight: active ? 500 : 400 }}>{t.label}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>{t.count}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Text below avatar */}
+        <div style={{ paddingTop: 4 }}>
+          <div style={{ fontSize: 14, color: 'var(--text-muted)' }}><span style={{ fontWeight: 600, color: 'var(--text-primary)', marginRight: 8 }}>{profile.nickname || 'user'}</span>lua와 함께한지 {daysTogether}일째</div>
+          <div onClick={() => setBioModal(true)} style={{ fontSize: 12, color: profile.bio ? 'var(--text-primary)' : 'var(--text-dim, #B0B8C1)', marginTop: 6, cursor: 'pointer' }}>
+            {profile.bio || '한 줄 남기기'}
           </div>
         </div>
       </div>
 
+      {/* ⑤ 콘텐츠 영역 */}
+      {contentMode === 'album' && (
+        <div>
+          <div style={{ padding: '16px 16px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.2 }}>앨범</span>
+            <span style={{ fontSize: 10.5, fontWeight: 500, color: 'var(--accent-primary, #89cef5)', cursor: 'pointer' }}>모두 보기</span>
+          </div>
+          {recentPhotos.length === 0 ? (
+            <div style={{ padding: '0 16px' }}>
+              <div style={{ ...glass, padding: '32px 16px', textAlign: 'center' }}>
+                <div style={{ fontSize: 40, opacity: 0.3, marginBottom: 8 }}>📷</div>
+                <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 4 }}>측정한 셀카가 여기에 쌓여요</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 12 }}>첫 측정으로 결을 남겨보세요</div>
+                <button onClick={() => onMeasure?.()} style={{ background: 'var(--accent-primary, #89cef5)', color: '#fff', fontSize: 11, fontWeight: 500, padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>첫 측정 시작</button>
+              </div>
+            </div>
+          ) : (
+            <div style={{ padding: '0 16px 12px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 5 }}>
+              {recentPhotos.map((p, i) => (
+                <div key={i} style={{ aspectRatio: '1', borderRadius: 8, overflow: 'hidden', position: 'relative' }}>
+                  <img src={p.thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <span style={{ position: 'absolute', bottom: 4, left: 4, fontSize: 8, color: '#fff', background: 'rgba(4,44,83,0.5)', padding: '1px 5px', borderRadius: 4, backdropFilter: 'blur(4px)' }}>
+                    {`${new Date(p.date).getMonth()+1}/${new Date(p.date).getDate()}`}
+                  </span>
+                </div>
+              ))}
+              <div onClick={() => onMeasure?.()} style={{
+                aspectRatio: '1', borderRadius: 8, background: 'rgba(255,255,255,0.15)',
+                border: '0.5px dashed rgba(137,206,245,0.4)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+              }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #89cef5)" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {contentMode === 'history' && (
+        <div style={{ padding: '32px 16px', textAlign: 'center' }}>
+          <div style={{ fontSize: 40, opacity: 0.3, marginBottom: 8 }}>📊</div>
+          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 6 }}>곧 만나요</div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>측정의 결을 한 자리에 정돈해드릴게요</div>
+        </div>
+      )}
+
+      {contentMode === 'record' && (
+        <div style={{ padding: '16px 16px 0' }}>
+          <div style={{ fontSize: 14, color: 'var(--text-muted)', textAlign: 'center', padding: '20px 0' }}>
+            꾸준한 기록이 빛나는 변화를 만들어요
+          </div>
+        </div>
+      )}
+
+      {/* Bio 편집 모달 */}
+      {bioModal && createPortal(
+        <BioEditModal
+          bio={profile.bio || ''}
+          onSave={(v) => { update('bio', v); setBioModal(false); showToast('한 줄이 저장되었어요'); }}
+          onClose={() => setBioModal(false)}
+        />,
+        document.body,
+      )}
+
       {/* Settings Modal */}
       {settingsOpen && createPortal(
-        <SettingsModal
-          profile={profile}
-          update={update}
-          onClose={() => setSettingsOpen(false)}
-          showToast={showToast}
-          colorMode={colorMode}
-          setColorMode={setColorMode}
-        />,
+        <SettingsModal profile={profile} update={update} onClose={() => setSettingsOpen(false)} showToast={showToast} colorMode={colorMode} setColorMode={setColorMode} />,
         document.body,
       )}
 
       {/* Toast */}
       {toast && (
-        <div style={{
-          position: 'fixed', bottom: 100, left: '50%', transform: 'translateX(-50%)',
-          background: 'rgba(240,144,112,0.9)', color: '#fff', padding: '10px 24px',
-          borderRadius: 20, fontSize: 13, fontWeight: 500, zIndex: 999,
-          animation: 'fadeIn 0.2s ease',
-        }}>{toastMsg}</div>
+        <div style={{ position: 'fixed', bottom: 100, left: '50%', transform: 'translateX(-50%)', background: 'var(--accent-primary, #89cef5)', color: '#fff', padding: '10px 24px', borderRadius: 20, fontSize: 13, fontWeight: 500, zIndex: 999, animation: 'fadeIn 0.2s ease' }}>{toastMsg}</div>
       )}
     </div>
+  );
+}
+
+// ===== Bio Edit Modal =====
+function BioEditModal({ bio, onSave, onClose }) {
+  const [text, setText] = useState(bio);
+  return (
+    <>
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,44,83,0.18)', backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)' }} />
+      <div style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201,
+        background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+        border: '1px solid rgba(255,255,255,0.3)', borderRadius: '22px 22px 0 0',
+        boxShadow: '0 -8px 28px rgba(0,0,0,0.08)', padding: '0 0 calc(env(safe-area-inset-bottom,0px))',
+        maxWidth: 430, margin: '0 auto', animation: 'slideUp 0.3s ease',
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(137,206,245,0.4)' }} /></div>
+        <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>한 줄 두기</span>
+          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: 'rgba(255,255,255,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div style={{ padding: '0 16px 16px' }}>
+          <textarea value={text} onChange={e => setText(e.target.value.slice(0, 50))} placeholder="입력해주세요"
+            style={{ width: '100%', minHeight: 80, background: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 12, padding: '10px 14px', fontSize: 13, color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', resize: 'none', boxSizing: 'border-box' }} />
+          <div style={{ textAlign: 'right', fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>{text.length}/50</div>
+          <button onClick={() => onSave(text)} style={{ width: '100%', marginTop: 12, padding: 14, borderRadius: 10, border: 'none', background: 'var(--accent-primary, #89cef5)', color: '#fff', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>두기</button>
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -98,9 +223,9 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
   const [editingSkin, setEditingSkin] = useState(false);
   const [goalModalOpen, setGoalModalOpen] = useState(false);
   const [baselineExists, setBaselineExists] = useState(() => hasBaseline());
-  const [restoreConfirm, setRestoreConfirm] = useState(null); // { localStorage: {}, photos: [], stats }
+  const [restoreConfirm, setRestoreConfirm] = useState(null);
   const [restoring, setRestoring] = useState(false);
-  const [backupGuide, setBackupGuide] = useState(null); // { json, photoCount, lsCount }
+  const [backupGuide, setBackupGuide] = useState(null);
   const fileInputRef = useRef(null);
 
   const currentYear = new Date().getFullYear();
@@ -113,425 +238,257 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
     update('skinConcerns', list);
   };
 
-  const skinTypeEmoji = {
-    '건성': '💧', '지성': '🫧', '복합성': '🫧', '중성': '✨', '민감성': '🌸',
+  // SVG icons (noa style: stroke, 22x22, strokeWidth 1.5)
+  const icons = {
+    user: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+    dna: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v4m0 12v4m-7.07-14.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>,
+    bell: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>,
+    bulb: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6m-5 4h4M12 2a7 7 0 00-4 12.7V17h8v-2.3A7 7 0 0012 2z"/></svg>,
+    sun: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>,
+    moon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>,
+    chart: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
+    target: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
+    download: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
+    upload: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>,
+    globe: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>,
+    lock: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>,
+    message: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>,
+    help: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
   };
 
+  // Noa-style settings row
+  const SettingsRow = ({ icon, label, right, onTap }) => (
+    <div onClick={onTap} style={{
+      display: 'flex', alignItems: 'center', gap: 16,
+      padding: '11px 28px', cursor: 'pointer',
+      WebkitTapHighlightColor: 'transparent',
+      color: 'var(--text-primary)',
+    }}>
+      {icon}
+      <span style={{ fontSize: 15, fontWeight: 500, flex: 1 }}>{label}</span>
+      {right && <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{right}</span>}
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.3)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 6l6 6-6 6" />
+      </svg>
+    </div>
+  );
+
+  const SectionHeader = ({ label }) => (
+    <div style={{ padding: '14px 28px 6px', fontSize: 11, fontWeight: 400, color: 'var(--text-dim, #B0B8C1)', letterSpacing: 0.5 }}>{label}</div>
+  );
+
   return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 1000,
-        background: 'var(--bg-modal-overlay)',
-        display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-        animation: 'fadeIn 0.2s ease',
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: '100%', maxWidth: 430,
-          maxHeight: '90vh', overflowY: 'auto',
-          background: 'var(--bg-modal)', borderRadius: '24px 24px 0 0',
-          padding: '24px 24px 40px',
-          border: '1px solid var(--border-subtle)',
-          borderBottom: 'none',
-          animation: 'slideUp 0.3s ease',
-        }}
-      >
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-          <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>설정</div>
-          <button onClick={onClose} style={{
-            width: 32, height: 32, borderRadius: '50%', border: 'none',
-            background: 'var(--bg-input)', color: 'var(--text-muted)',
-            fontSize: 16, cursor: 'pointer', display: 'flex',
-            alignItems: 'center', justifyContent: 'center',
-          }}>✕</button>
+    <div style={{
+      position: 'fixed', top: 0, right: 0, bottom: 0, left: 0, zIndex: 1000,
+      width: '100%', maxWidth: 430, margin: '0 auto',
+      background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
+      display: 'flex', flexDirection: 'column',
+      overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+      animation: 'settingsSlideIn 0.3s ease',
+    }}>
+      <style>{`
+        @keyframes settingsSlideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+      `}</style>
+
+      {/* Header */}
+      <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+        <div onClick={onClose} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
         </div>
+        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>설정</span>
+      </div>
 
-        {/* Profile Edit */}
-        <SettingsSection label="프로필">
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 14,
-            padding: '16px 20px', cursor: 'pointer',
-          }} onClick={() => setEditingProfile(!editingProfile)}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 12,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 17, flexShrink: 0,
-              background: 'rgba(240,144,112,0.08)',
-            }}>👤</div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>프로필 편집</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, marginTop: 2 }}>
-                {profile.nickname || '사용자'} · {age ? `만 ${age}세` : '나이 미설정'}
-              </div>
-            </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" strokeWidth="1.5" strokeLinecap="round"
-              style={{ transform: editingProfile ? 'rotate(90deg)' : 'none', transition: 'transform 0.3s' }}>
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </div>
+      <div style={{ flex: 1, padding: '8px 0' }}>
 
-          {editingProfile && (
-            <div style={{ padding: '0 20px 16px', animation: 'breatheIn 0.3s ease both' }}>
-              <Section label="닉네임">
-                <input
-                  type="text"
-                  value={profile.nickname}
-                  onChange={(e) => update('nickname', e.target.value)}
-                  placeholder="닉네임을 입력하세요"
-                  maxLength={20}
-                  style={inputStyle}
-                />
-              </Section>
-              <Section label="출생연도">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <input
-                    type="number"
-                    value={profile.birthYear}
-                    onChange={(e) => update('birthYear', e.target.value)}
-                    placeholder="예: 1995"
-                    min={1940} max={currentYear}
-                    style={{ ...inputStyle, flex: 1 }}
-                  />
-                  {age !== null && age > 0 && (
-                    <span style={{ fontSize: 13, color: '#ADEBB3', fontWeight: 600, whiteSpace: 'nowrap' }}>만 {age}세</span>
-                  )}
-                </div>
-              </Section>
-              <Section label="성별">
-                <ChipGroup
-                  options={GENDER_OPTIONS}
-                  selected={profile.gender}
-                  onSelect={(v) => update('gender', v)}
-                />
-              </Section>
-            </div>
-          )}
+        {/* ===== Noa-style settings sections ===== */}
 
-          {/* Skin type */}
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 14,
-            padding: '16px 20px', cursor: 'pointer',
-            borderTop: '1px solid var(--border-separator)',
-          }} onClick={() => setEditingSkin(!editingSkin)}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 12,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 17, flexShrink: 0,
-              background: 'rgba(240,144,112,0.08)',
-            }}>{skinTypeEmoji[profile.skinType] || '🧬'}</div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>피부 타입</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, marginTop: 2 }}>
-                {profile.skinType || '미설정'}{profile.sensitivity ? ` · ${profile.sensitivity}` : ''}
-              </div>
-            </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" strokeWidth="1.5" strokeLinecap="round"
-              style={{ transform: editingSkin ? 'rotate(90deg)' : 'none', transition: 'transform 0.3s' }}>
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </div>
+        <SectionHeader label="프로필" />
+        <SettingsRow icon={icons.user} label="프로필" right={profile.nickname || '사용자'} onTap={() => setEditingProfile(true)} />
+        <SettingsRow icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14.504 8.522l-1.758 -4.032a.814 .814 0 0 0 -1.492 0l-1.759 4.032c-.19 .436 -.537 .784 -.973 .973l-4.032 1.759a.814 .814 0 0 0 0 1.492l4.033 1.758c.436 .19 .784 .538 .973 .974l1.759 4.033a.814 .814 0 0 0 1.492 0l1.758 -4.033c.19 -.436 .538 -.784 .974 -.974l4.033 -1.758a.814 .814 0 0 0 0 -1.492l-4.033 -1.759a1.88 1.88 0 0 1 -.974 -.973"/><path d="M3 3l2 2"/><path d="M21 3l-2 2"/><path d="M3 21l2 -2"/><path d="M21 21l-2 -2"/></svg>} label="피부 타입" right={profile.skinType || '미설정'} onTap={() => setEditingSkin(true)} />
 
-          {editingSkin && (
-            <div style={{ padding: '0 20px 16px', animation: 'breatheIn 0.3s ease both' }}>
-              <Section label="피부 타입">
-                <ChipGroup
-                  options={SKIN_TYPES}
-                  selected={profile.skinType}
-                  onSelect={(v) => update('skinType', v)}
-                />
-              </Section>
-              <Section label="민감도">
-                <ChipGroup
-                  options={SENSITIVITY_OPTIONS}
-                  selected={profile.sensitivity}
-                  onSelect={(v) => update('sensitivity', v)}
-                />
-              </Section>
-              <Section label="피부 고민">
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {SKIN_CONCERNS.map((c) => {
-                    const active = profile.skinConcerns.includes(c);
-                    return (
-                      <div
-                        key={c}
-                        onClick={() => toggleConcern(c)}
-                        style={{
-                          padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 400,
-                          cursor: 'pointer', transition: 'all 0.2s',
-                          background: active ? 'rgba(240,144,112,0.08)' : 'var(--bg-card)',
-                          color: active ? '#ADEBB3' : 'var(--text-muted)',
-                          border: active ? '1px solid rgba(240,144,112,0.2)' : '1px solid var(--border-light)',
-                        }}
-                      >{c}</div>
-                    );
-                  })}
-                </div>
-              </Section>
-            </div>
-          )}
-        </SettingsSection>
+        <SectionHeader label="앱 설정" />
+        <SettingsRow icon={icons.sun} label="화면 모드" right={colorMode === 'dark' ? '다크' : '라이트'} onTap={() => setColorMode(colorMode === 'dark' ? 'light' : 'dark')} />
+        <SettingsRow icon={icons.globe} label="언어" right="한국어" onTap={() => showToast('현재 한국어만 지원돼요')} />
 
-        {/* 관리 */}
-        <SettingsSection label="관리">
-          <ReminderItem
-            enabled={profile.reminderEnabled}
-            time={profile.reminderTime || '08:00'}
-            onToggle={(v) => update('reminderEnabled', v)}
-            onTimeChange={(v) => update('reminderTime', v)}
-            profile={profile}
-            tipEnabled={profile.tipEnabled}
-            showToast={showToast}
-          />
-          <BeautyTipItem
-            enabled={profile.tipEnabled}
-            time={profile.tipTime || '20:00'}
-            onToggle={(v) => update('tipEnabled', v)}
-            onTimeChange={(v) => update('tipTime', v)}
-            profile={profile}
-            reminderEnabled={profile.reminderEnabled}
-            showToast={showToast}
-          />
-          {/* Light/Dark Mode Toggle */}
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 14,
-            padding: '16px 20px', cursor: 'pointer',
-            borderTop: '1px solid var(--border-separator)',
-          }} onClick={() => setColorMode(colorMode === 'dark' ? 'light' : 'dark')}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 12,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 17, flexShrink: 0,
-              background: 'rgba(240,144,112,0.08)',
-            }}>{colorMode === 'dark' ? <MoonIcon size={17} /> : <SunIcon size={17} />}</div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>화면 모드</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, marginTop: 2 }}>
-                {colorMode === 'dark' ? '다크 모드' : '라이트 모드'}
-              </div>
-            </div>
-            {/* iOS-style toggle */}
-            <div style={{
-              width: 50, height: 28, borderRadius: 14, padding: 2,
-              background: colorMode === 'light' ? 'rgba(240,144,112,0.8)' : 'rgba(255,255,255,0.12)',
-              transition: 'background 0.3s',
-              position: 'relative',
-            }}>
-              <div style={{
-                width: 24, height: 24, borderRadius: 12,
-                background: '#fff',
-                boxShadow: 'none',
-                transition: 'transform 0.3s',
-                transform: colorMode === 'light' ? 'translateX(22px)' : 'translateX(0)',
-              }} />
-            </div>
-          </div>
+        <SectionHeader label="정보" />
+        <SettingsRow icon={icons.message} label="피드백 보내기" onTap={() => window.open(`mailto:luaskin.co@gmail.com?subject=${encodeURIComponent('루아 피드백')}`, '_blank')} />
+        <SettingsRow icon={icons.lock} label="개인정보 처리방침" onTap={() => showToast('준비 중이에요')} />
 
-          <div
-            onClick={() => {
-              if (!baselineExists) return;
-              if (confirm('기준 측정을 초기화하면 다음 분석이 새로운 기준이 됩니다. 초기화할까요?')) {
-                clearBaseline();
-                setBaselineExists(false);
-                showToast('기준 측정이 초기화되었습니다');
-              }
-            }}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 14,
-              padding: '16px 20px', cursor: baselineExists ? 'pointer' : 'default',
-              borderTop: '1px solid var(--border-separator)',
-              opacity: baselineExists ? 1 : 0.45,
-            }}
-          >
-            <div style={{
-              width: 36, height: 36, borderRadius: 12,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 17, flexShrink: 0,
-              background: 'rgba(240,144,112,0.08)',
-            }}><CameraIcon size={17} /></div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>기준 측정 초기화</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, marginTop: 2 }}>
-                {baselineExists ? '다음 분석이 새 기준이 됩니다' : '기준 사진 없음 (첫 분석 시 자동 저장)'}
-              </div>
-            </div>
-            {baselineExists && (
-              <span style={{
-                padding: '4px 12px', borderRadius: 10, fontSize: 11, fontWeight: 500,
-                background: 'rgba(240,96,80,0.08)', color: '#e05545',
-              }}>초기화</span>
-            )}
-          </div>
-          <SettingsMenuItem icon="📊" label="피부 리포트" desc="월간 분석 리포트 받기" right="badge-new" onTap={() => showToast('피부 리포트는 준비 중이에요')} />
-          <SettingsMenuItem icon="🎯" label="피부 목표 설정" desc={(() => {
-            const g = getGoal();
-            if (!g || g.status === 'expired') return '나만의 피부 점수 목표 세우기';
-            if (g.status === 'completed') return '목표 달성 완료!';
-            const d = getDaysRemaining();
-            return `D-${d} 진행 중 · ${getOverallProgress()}%`;
-          })()} right="arrow" onTap={() => setGoalModalOpen(true)} />
-        </SettingsSection>
-
-        {/* 데이터 */}
-        <SettingsSection label="데이터">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".json"
-            style={{ display: 'none' }}
-            onChange={async (e) => {
-              const file = e.target.files?.[0];
-              if (!file) return;
-              try {
-                const text = await file.text();
-                const parsed = JSON.parse(text);
-                // v2 format: { version, timestamp, localStorage, photos }
-                if (parsed.version === 2 && parsed.localStorage) {
-                  const lsCount = Object.keys(parsed.localStorage).length;
-                  const photoCount = parsed.photos?.length || 0;
-                  setRestoreConfirm({
-                    localStorage: parsed.localStorage,
-                    photos: parsed.photos || [],
-                    stats: { lsCount, photoCount, date: new Date(parsed.timestamp).toLocaleDateString('ko-KR') },
-                  });
-                } else if (parsed.version === undefined && typeof parsed === 'object') {
-                  // v1 legacy: plain localStorage object (nou_* keys only)
-                  const lsCount = Object.keys(parsed).length;
-                  if (lsCount === 0) throw new Error('empty');
-                  setRestoreConfirm({
-                    localStorage: parsed,
-                    photos: [],
-                    stats: { lsCount, photoCount: 0, date: '알 수 없음' },
-                  });
-                } else {
-                  throw new Error('invalid format');
-                }
-              } catch {
-                showToast('유효하지 않은 백업 파일입니다');
-              }
-              e.target.value = '';
-            }}
-          />
-          <div
-            onClick={async () => {
-              try {
-                showToast('백업 준비 중...');
-                const lsData = {};
-                for (let i = 0; i < localStorage.length; i++) {
-                  const key = localStorage.key(i);
-                  if (key) lsData[key] = localStorage.getItem(key);
-                }
-                const photos = await getAllPhotosRaw();
-                const backup = {
-                  version: 2,
-                  timestamp: Date.now(),
-                  localStorage: lsData,
-                  photos,
-                };
-                const json = JSON.stringify(backup);
-                const photoCount = photos.length;
-                const lsCount = Object.keys(lsData).length;
-
-                // 모바일: 안내 모달 → 사용자 확인 후 공유 시트
-                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                if (isMobile) {
-                  setBackupGuide({ json, photoCount, lsCount });
-                  return;
-                }
-
-                // 데스크톱: 직접 다운로드
-                const dateStr = new Date().toISOString().slice(0, 10);
-                const blob = new Blob([json], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `lua-backup-${dateStr}.json`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                localStorage.setItem('nou_last_manual_backup', String(Date.now()));
-                showToast(`백업 완료 (${lsCount}개 항목, ${photoCount}장 사진)`);
-              } catch {
-                showToast('백업 실패 — 다시 시도해주세요');
-              }
-            }}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 14,
-              padding: '16px 20px', cursor: 'pointer',
-              borderTop: '1px solid var(--border-separator)',
-            }}
-          >
-            <div style={{
-              width: 36, height: 36, borderRadius: 12,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 17, flexShrink: 0,
-              background: 'rgba(240,144,112,0.08)',
-            }}>
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ADEBB3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-              </svg>
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>전체 백업 다운로드</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, marginTop: 2 }}>기록, 사진, 뱃지를 파일로 저장</div>
-            </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" strokeWidth="1.5" strokeLinecap="round">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </div>
-          <div
-            onClick={() => fileInputRef.current?.click()}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 14,
-              padding: '16px 20px', cursor: 'pointer',
-              borderTop: '1px solid var(--border-separator)',
-            }}
-          >
-            <div style={{
-              width: 36, height: 36, borderRadius: 12,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 17, flexShrink: 0,
-              background: 'rgba(240,144,112,0.08)',
-            }}>
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ADEBB3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-              </svg>
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>백업에서 복원</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, marginTop: 2 }}>백업 파일 선택하여 복원</div>
-            </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" strokeWidth="1.5" strokeLinecap="round">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </div>
-        </SettingsSection>
-
-        {/* 설정 */}
-        <SettingsSection label="설정">
-          <SettingsMenuItem icon="🌐" label="언어" desc="한국어" right="arrow" onTap={() => showToast('현재 한국어만 지원돼요')} />
-          <SettingsMenuItem icon="🔒" label="개인정보 관리" right="arrow" onTap={() => showToast('모든 데이터는 기기에만 저장돼요')} />
-        </SettingsSection>
-
-        {/* 지원 */}
-        <SettingsSection label="지원">
-          <SettingsMenuItem icon="💬" label="피드백 보내기" right="arrow" onTap={() => {
-            const subject = encodeURIComponent('루아 피드백');
-            window.open(`mailto:luaskin.co@gmail.com?subject=${subject}`, '_blank');
-          }} />
-          <SettingsMenuItem icon="❓" label="자주 묻는 질문" right="arrow" onTap={() => showToast('FAQ는 준비 중이에요')} />
-        </SettingsSection>
-
-        <div style={{ marginTop: 10, textAlign: 'center' }}>
-          <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-            설정한 정보는 기기에만 저장되며 외부로 전송되지 않아요
-          </p>
+        {/* Footer */}
+        <div style={{ padding: '12px 28px 40px', borderTop: '1px solid rgba(255,255,255,0.2)', marginTop: 16 }}>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12 }}>버전 1.0.2</div>
+          <div onClick={() => showToast('로그아웃 기능 준비 중')} style={{ fontSize: 13, color: 'var(--text-muted)', cursor: 'pointer' }}>로그아웃</div>
         </div>
       </div>
+
+      {/* ===== Profile Edit Sub-Page ===== */}
+      {editingProfile && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 1002, maxWidth: 430, margin: '0 auto',
+          background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
+          display: 'flex', flexDirection: 'column',
+          overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+          animation: 'settingsSlideIn 0.3s ease',
+        }}>
+          <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 16px 12px', display: 'flex', alignItems: 'center', position: 'relative' }}>
+            <div onClick={() => setEditingProfile(false)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </div>
+            <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.2 }}>프로필</span>
+          </div>
+
+          {/* Avatar */}
+          <div style={{ textAlign: 'center', padding: '12px 0 20px' }}>
+            <div style={{ position: 'relative', display: 'inline-block' }}>
+              <div style={{
+                width: 88, height: 88, borderRadius: '50%', overflow: 'hidden',
+                background: profile.profileImage ? 'none' : 'linear-gradient(135deg, #DCEEFB, #C5DEF5)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                {profile.profileImage
+                  ? <img src={profile.profileImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : <span style={{ fontSize: 34, fontWeight: 500, color: 'var(--text-muted)', letterSpacing: -0.6 }}>{(profile.nickname || '?')[0].toUpperCase()}</span>
+                }
+              </div>
+              <div style={{
+                position: 'absolute', bottom: -2, right: -2,
+                width: 28, height: 28, borderRadius: '50%',
+                background: 'var(--accent-primary, #89cef5)', border: '2px solid #EAF4FB',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+              }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/>
+                </svg>
+              </div>
+            </div>
+            <div onClick={() => {}} style={{ fontSize: 10.5, color: 'var(--accent-primary, #89cef5)', fontWeight: 500, marginTop: 12, cursor: 'pointer' }}>
+              {profile.profileImage ? '사진 변경' : '사진 추가'}
+            </div>
+          </div>
+
+          {/* Fields */}
+          <div style={{ margin: '0 16px', background: 'rgba(255,255,255,0.35)', borderRadius: 14, border: '1px solid rgba(255,255,255,0.3)' }}>
+            {[
+              { label: '이름', value: profile.nickname, key: 'nickname', placeholder: '입력해주세요' },
+              { label: '나이대', value: profile.birthYear ? `${new Date().getFullYear() - parseInt(profile.birthYear)}세` : '', key: 'birthYear', placeholder: '선택 안 함' },
+              { label: '성별', value: profile.gender || '', key: 'gender', placeholder: '선택 안 함' },
+            ].map((f, i) => (
+              <div key={f.key} style={{
+                padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                borderTop: i > 0 ? '1px solid rgba(255,255,255,0.2)' : 'none', cursor: 'pointer',
+              }}>
+                <span style={{ fontSize: 13, color: 'var(--text-primary)' }}>{f.label}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ fontSize: 12, color: f.value ? '#185FA5' : 'var(--text-dim, #B0B8C1)', fontStyle: 'normal' }}>{f.value || f.placeholder}</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C5DEF5" strokeWidth="1.8" strokeLinecap="round"><path d="M9 6l6 6-6 6"/></svg>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Bio */}
+          <div style={{ padding: '14px 16px' }}>
+            <div style={{ fontSize: 13, color: 'var(--text-primary)', marginBottom: 8 }}>한 줄</div>
+            <textarea
+              value={profile.bio || ''}
+              onChange={(e) => update('bio', e.target.value.slice(0, 50))}
+              placeholder="입력해주세요"
+              style={{
+                width: '100%', minHeight: 50, boxSizing: 'border-box',
+                background: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.3)',
+                borderRadius: 12, padding: '12px 14px', fontSize: 12, color: 'var(--text-muted)',
+                lineHeight: 1.5, outline: 'none', fontFamily: 'inherit', resize: 'none',
+              }}
+            />
+            <div style={{ textAlign: 'right', fontSize: 10, color: (profile.bio?.length || 0) >= 45 ? '#1E90E8' : '#185FA5', marginTop: 6 }}>
+              {(profile.bio?.length || 0)} / 50
+            </div>
+          </div>
+
+          <div style={{ flex: 1 }} />
+          <div style={{ padding: '16px 16px calc(16px + env(safe-area-inset-bottom,0px))' }}>
+            <button onClick={() => { showToast('저장되었어요'); setEditingProfile(false); }} style={{
+              width: '100%', padding: 14, borderRadius: 12, border: 'none',
+              background: 'var(--accent-primary, #89cef5)', color: '#fff', fontSize: 14, fontWeight: 500,
+              letterSpacing: -0.2, cursor: 'pointer', fontFamily: 'inherit',
+            }}>저장</button>
+          </div>
+        </div>
+      )}
+
+      {/* ===== Skin Type Sub-Page ===== */}
+      {editingSkin && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 1002, maxWidth: 430, margin: '0 auto',
+          background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
+          display: 'flex', flexDirection: 'column',
+          overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+          animation: 'settingsSlideIn 0.3s ease',
+        }}>
+          <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 16px 12px', display: 'flex', alignItems: 'center', position: 'relative' }}>
+            <div onClick={() => setEditingSkin(false)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </div>
+            <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.2 }}>피부 타입</span>
+          </div>
+
+          {/* Intro */}
+          <div style={{ padding: '12px 24px 20px' }}>
+            <div style={{ fontSize: 17, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.3, lineHeight: 1.35 }}>
+              {profile.skinType
+                ? '지금 두고 계신 결이에요'
+                : `${profile.nickname || '당신'}의 피부는 어떤 결인가요?`}
+            </div>
+            <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 6, lineHeight: 1.5 }}>
+              {profile.skinType ? '결이 바뀐 것 같다면 다시 두셔도 돼요' : '선택하시면 lua가 더 정확한 분석을 드릴 수 있어요'}
+            </div>
+          </div>
+
+          {/* Skin type options */}
+          <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {[
+              { key: '건성', icon: '💧', desc: '세안 후 당기고 건조한 느낌이 자주 나요' },
+              { key: '지성', icon: '✨', desc: '전체적으로 유분이 많고 번들거림이 있어요' },
+              { key: '복합성', icon: '🌗', desc: 'T존은 유분, 볼은 건조한 편이에요' },
+              { key: '민감성', icon: '🌸', desc: '쉽게 자극받고 환절기에 트러블이 잘 나요' },
+              { key: '중성', icon: '🍃', desc: '특별히 건조하거나 유분이 많지 않아요' },
+            ].map(opt => {
+              const selected = profile.skinType === opt.key;
+              return (
+                <div key={opt.key} onClick={() => update('skinType', opt.key)} style={{
+                  padding: '14px 16px', borderRadius: 14, cursor: 'pointer',
+                  background: selected ? 'rgba(137,206,245,0.12)' : 'rgba(255,255,255,0.35)',
+                  border: selected ? '1px solid var(--accent-primary, #89cef5)' : '1px solid rgba(255,255,255,0.3)',
+                  display: 'flex', alignItems: 'center', gap: 12, transition: 'all 0.2s',
+                }}>
+                  <div style={{
+                    width: 40, height: 40, flexShrink: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20,
+                  }}>{opt.icon}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.2 }}>{opt.key}</div>
+                    <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginTop: 2, lineHeight: 1.4 }}>{opt.desc}</div>
+                  </div>
+                  {selected && (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #89cef5)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          <div style={{ flex: 1 }} />
+          <div style={{ padding: '16px 16px calc(16px + env(safe-area-inset-bottom,0px))' }}>
+            <button onClick={() => { showToast('저장되었어요'); setEditingSkin(false); }} style={{
+              width: '100%', padding: 14, borderRadius: 12, border: 'none',
+              background: 'var(--accent-primary, #89cef5)', color: '#fff', fontSize: 14, fontWeight: 500,
+              letterSpacing: -0.2, cursor: 'pointer', fontFamily: 'inherit',
+            }}>저장</button>
+          </div>
+        </div>
+      )}
 
       {/* Backup Guide Modal — 공유 시트 띄우기 전 안내 */}
       {backupGuide && (

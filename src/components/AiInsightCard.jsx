@@ -62,11 +62,8 @@ export default function AiInsightCard() {
   }
 
   return (
-    <div style={{
+    <div className="card" style={{
       padding: '20px',
-      borderRadius: 16,
-      background: '#FFFFFF',
-      boxShadow: 'none',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <div style={{ width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>

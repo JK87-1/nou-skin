@@ -180,7 +180,7 @@ function ChangeIndicator({ diff, unit = '점', inverse = false, size = 'normal' 
 
 // ===== MAIN HISTORY PAGE =====
 export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialMode }) {
-  const [mode, setMode] = useState(initialMode || 'mission');
+  const [mode, setMode] = useState(initialMode || 'care');
   const [insightMode, setInsightMode] = useState('timeline');
   const [records, setRecords] = useState([]);
   const [graphMetric, setGraphMetric] = useState('skinAge');
@@ -267,6 +267,8 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
       {/* Mode Toggle */}
       <div style={{ padding: '12px 20px 16px' }}>
         <div className="segment-control">
+          <button className={`segment-btn${mode === 'care' ? ' active' : ''}`}
+            onClick={() => setMode('care')}>케어</button>
           <button className={`segment-btn${mode === 'mission' ? ' active' : ''}`}
             onClick={() => setMode('mission')}>미션</button>
           <button className={`segment-btn${mode === 'insights' ? ' active' : ''}`}
@@ -289,6 +291,13 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
             refreshThumbs();
           }}
         />
+      )}
+
+      {/* ===== CARE MODE (embedded) ===== */}
+      {mode === 'care' && (
+        <div style={{ animation: 'breatheIn 0.6s ease both' }}>
+          <CareEmbed onOpenConsult={onOpenConsult} onMeasure={onMeasure} />
+        </div>
       )}
 
       {/* ===== MISSION MODE ===== */}
@@ -1377,6 +1386,192 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ===== Care Embed (CarePage 전체 요소) =====
+function CareEmbed({ onOpenConsult, onMeasure }) {
+  const HABIT_KEY = 'lua_habit_';
+  const getTodayKey = () => HABIT_KEY + new Date().toISOString().slice(0, 10);
+  const getHabitLog = () => { try { return JSON.parse(localStorage.getItem(getTodayKey()) || '{}'); } catch { return {}; } };
+  const saveHabitLog = (data) => { const c = getHabitLog(); const m = { ...c, ...data }; localStorage.setItem(getTodayKey(), JSON.stringify(m)); return m; };
+
+  const [habit, setHabit] = useState(getHabitLog);
+  const [modal, setModal] = useState(null);
+  const [toast, setToast] = useState(false);
+  const waterGoal = 2000;
+  const recordCount = getRecords().length;
+  const refreshHabit = () => setHabit(getHabitLog());
+  const showToast = () => { setToast(true); setTimeout(() => setToast(false), 2000); };
+
+  const waterL = ((habit.water_amount || 0) / 1000).toFixed(1);
+  const sleepH = habit.sleep_hours;
+  const sunscreen = habit.sunscreen_applied;
+
+  const glass = { background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)', borderRadius: 20 };
+
+  const summaryParts = [];
+  if (habit.water_amount) summaryParts.push(`수분 ${waterL}L`);
+  if (sleepH != null) summaryParts.push(`어젯밤 ${sleepH}시간 잠`);
+  if (sunscreen === true) summaryParts.push('선크림 챙김');
+  if (sunscreen === false) summaryParts.push('자외선 아직');
+
+  const HabitCard = ({ icon, label, value, meta, metaHL, progress, onTap }) => (
+    <div onClick={onTap} style={{ ...glass, borderRadius: 20, padding: '12px 10px', textAlign: 'center', cursor: 'pointer' }}>
+      <div style={{ width: 36, height: 36, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>{icon}</div>
+      <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 500, marginTop: 8 }}>{label}</div>
+      <div style={{ fontSize: 18, fontWeight: 500, color: 'var(--text-primary)', marginTop: 4 }}>{value}</div>
+      <div style={{ fontSize: 9, marginTop: 1, color: metaHL ? 'var(--accent-primary)' : 'var(--text-muted)', fontWeight: metaHL ? 500 : 400 }}>{meta}</div>
+      <div style={{ marginTop: 8, height: 3, borderRadius: 1.5, background: 'rgba(255,255,255,0.25)', overflow: 'hidden' }}>
+        <div style={{ height: '100%', borderRadius: 1.5, background: 'var(--accent-primary)', width: `${Math.min(progress, 1) * 100}%`, transition: 'width 0.4s' }} />
+      </div>
+    </div>
+  );
+
+  const closeModal = () => setModal(null);
+  const ModalWrap = ({ title, children }) => (
+    <>
+      <div onClick={closeModal} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,44,83,0.18)', backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)' }} />
+      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201, background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '22px 22px 0 0', boxShadow: '0 -8px 28px rgba(0,0,0,0.08)', padding: '0 0 calc(env(safe-area-inset-bottom,0px))', maxWidth: 430, margin: '0 auto', animation: 'careSheetUp 280ms cubic-bezier(0.32,0.72,0,1) forwards' }}>
+        <style>{`@keyframes careSheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(137,206,245,0.4)' }} /></div>
+        <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>{title}</span>
+          <button onClick={closeModal} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: 'rgba(255,255,255,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div style={{ padding: '0 16px 16px' }}>{children}</div>
+      </div>
+    </>
+  );
+
+  return (
+    <div>
+      {/* 헤더 + 추가 버튼 */}
+      <div style={{ padding: '0 20px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)' }}>케어</span>
+        <button onClick={() => setModal('add')} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: 'var(--accent-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+      </div>
+
+      {/* 오늘의 결 요약 */}
+      <div style={{ padding: '0 20px 14px', fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.45 }}>
+        {summaryParts.length > 0 ? (<><span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>오늘 두고 있는 것들</span> · {summaryParts.join(' · ')}</>) : '오늘의 결을 시작해볼까요?'}
+      </div>
+
+      {/* 섹션 헤더: 오늘의 결 */}
+      <div style={{ padding: '6px 20px 8px', fontSize: 10, color: 'var(--text-muted)', fontWeight: 500, letterSpacing: 0.3, textTransform: 'uppercase' }}>오늘의 결</div>
+
+      {/* 습관 카드 3개 */}
+      <div style={{ padding: '0 12px 12px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+        <HabitCard icon="💧" label="수분" value={`${waterL}L`} meta={`목표 ${waterGoal/1000}L`} progress={(habit.water_amount||0)/waterGoal} onTap={() => setModal('water')} />
+        <HabitCard icon="🌙" label="수면" value={sleepH != null ? `${sleepH}h` : '—'} meta={sleepH != null ? '어젯밤' : '어젯밤 두기'} progress={sleepH != null ? sleepH/8 : 0} onTap={() => setModal('sleep')} />
+        <HabitCard icon="☀️" label="자외선" value={sunscreen === true ? '✓' : '—'} meta={sunscreen === true ? '선크림 챙김' : '아직'} metaHL={sunscreen === true} progress={sunscreen === true ? 1 : 0} onTap={() => setModal('sunscreen')} />
+      </div>
+
+      {/* lua의 결의 발견 */}
+      {recordCount >= 2 && (
+        <div onClick={() => onOpenConsult?.()} style={{ padding: '0 16px 12px', cursor: 'pointer' }}>
+          <div style={{ ...glass, padding: 14, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+            <div style={{ width: 20, height: 20, borderRadius: '50%', flexShrink: 0, background: 'linear-gradient(180deg, rgba(255,255,255,0.7), rgba(172,226,252,0.35))', border: '1px solid rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="10" height="10" viewBox="0 0 24 24"><path fill="#89cef5" d="M10.48,23.25c-.15.41-.5.71-.86.75-.27.03-.78-.29-.9-.59l-1.53-4.02c-.48-1.26-1.41-2.1-2.67-2.58l-3.91-1.48c-.29-.11-.59-.51-.6-.76-.01-.39.23-.79.6-.93l3.9-1.49c1.27-.48,2.19-1.31,2.68-2.59l1.57-4.14c.08-.2.52-.44.74-.46.24-.02.77.21.86.46l1.57,4.14c.5,1.32,1.47,2.15,2.78,2.63l3.7,1.37c.31.11.66.55.67.83.02.42-.29.82-.68.97l-3.8,1.44c-1.26.48-2.2,1.32-2.67,2.58l-1.45,3.86Z"/><path fill="#89cef5" d="M21.48,6.29c-1.03.59-.9,2.91-2.01,2.98-1.23.08-.99-1.68-1.94-2.78-.77-.88-2.68-.63-2.74-1.78-.07-1.27,2.01-1.1,2.74-1.91.87-.95.73-2.72,1.78-2.8,1.29-.1.98,1.81,1.95,2.77.87.86,2.67.71,2.73,1.8.07,1.08-1.29,1.02-2.51,1.72Z"/></svg>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 11, color: 'var(--text-primary)', lineHeight: 1.5 }}>수분이 충분한 주에는 모공 점수가 평균 4점 더 좋았어요.</div>
+              <span style={{ display: 'inline-block', marginTop: 5, fontSize: 9, fontWeight: 500, padding: '2px 7px', borderRadius: 8, background: 'rgba(137,206,245,0.15)', color: 'var(--accent-primary)' }}>결의 발견</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 영역 구분선 */}
+      <div style={{ height: 6, background: 'rgba(255,255,255,0.15)', margin: '8px 0 4px' }} />
+
+      {/* 섹션 헤더: 화장품 */}
+      <div style={{ padding: '6px 20px 8px', fontSize: 10, color: 'var(--text-muted)', fontWeight: 500, letterSpacing: 0.3, textTransform: 'uppercase' }}>화장품</div>
+
+      {/* 화장품 빈 상태 */}
+      <div style={{ padding: '0 12px 12px' }}>
+        <div style={{ ...glass, padding: '32px 16px', textAlign: 'center' }}>
+          <div style={{ fontSize: 40, opacity: 0.3, marginBottom: 8 }}>📦</div>
+          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 4 }}>아직 등록된 화장품이 없어요</div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 12 }}>지금 쓰는 화장품을 등록해보세요</div>
+          <button style={{ background: 'var(--accent-primary)', color: '#fff', fontSize: 11, fontWeight: 500, padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>+ 추가하기</button>
+        </div>
+      </div>
+
+      {/* 입력 모달들 */}
+      {modal === 'add' && (
+        <ModalWrap title="추가">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {[{ label: '수분 두기', icon: '💧', key: 'water' }, { label: '수면 두기', icon: '🌙', key: 'sleep' }, { label: '자외선 두기', icon: '☀️', key: 'sunscreen' }].map(item => (
+              <button key={item.key} onClick={() => setModal(item.key)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 20, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', textAlign: 'left' }}>
+                <span style={{ fontSize: 20 }}>{item.icon}</span>{item.label}
+              </button>
+            ))}
+          </div>
+        </ModalWrap>
+      )}
+      {modal === 'water' && (() => {
+        const WF = () => {
+          const [amt, setAmt] = useState(habit.water_amount || 0);
+          const add = (ml) => { const n = amt + ml; setAmt(n); saveHabitLog({ water_amount: n }); refreshHabit(); showToast(); };
+          return (
+            <div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 8 }}>한 모금 더 두기</div>
+              <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
+                {[{ml:200,l:'한 컵'},{ml:250,l:'텀블러'},{ml:330,l:'병'},{ml:500,l:'큰 병'}].map(b=>(
+                  <button key={b.ml} onClick={()=>add(b.ml)} style={{ flex:1, background:'rgba(255,255,255,0.4)', border:'1px solid rgba(255,255,255,0.3)', borderRadius:12, padding:'10px 4px', fontSize:11, fontWeight:500, color:'var(--text-primary)', cursor:'pointer', fontFamily:'inherit', textAlign:'center' }}>+{b.ml}ml<br/><span style={{fontSize:9,color:'var(--text-muted)',fontWeight:400}}>{b.l}</span></button>
+                ))}
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>오늘 누적 · {(amt/1000).toFixed(1)}L / {waterGoal/1000}L</div>
+              <div style={{ marginTop: 6, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.25)', overflow: 'hidden' }}>
+                <div style={{ height: '100%', borderRadius: 2, background: 'var(--accent-primary)', width: `${Math.min(amt/waterGoal,1)*100}%` }} />
+              </div>
+            </div>
+          );
+        };
+        return <ModalWrap title="수분 두기"><WF /></ModalWrap>;
+      })()}
+      {modal === 'sleep' && (() => {
+        const SF = () => {
+          const [hrs, setHrs] = useState(habit.sleep_hours ?? 7);
+          return (
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 16 }}>어젯밤 수면 시간</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 24, marginBottom: 20 }}>
+                <button onClick={()=>setHrs(Math.max(0,hrs-0.5))} style={{ width:44,height:44,borderRadius:'50%',border:'none',background:'rgba(255,255,255,0.4)',fontSize:20,cursor:'pointer',color:'var(--text-primary)',display:'flex',alignItems:'center',justifyContent:'center' }}>−</button>
+                <div style={{ fontSize:36,fontWeight:500,color:'var(--text-primary)' }}>{hrs}<span style={{fontSize:16,color:'var(--text-muted)'}}>h</span></div>
+                <button onClick={()=>setHrs(Math.min(12,hrs+0.5))} style={{ width:44,height:44,borderRadius:'50%',border:'none',background:'rgba(255,255,255,0.4)',fontSize:20,cursor:'pointer',color:'var(--text-primary)',display:'flex',alignItems:'center',justifyContent:'center' }}>+</button>
+              </div>
+              <button onClick={()=>{saveHabitLog({sleep_hours:hrs});refreshHabit();showToast();closeModal();}} style={{ width:'100%',padding:14,borderRadius:10,border:'none',background:'var(--accent-primary)',color:'#fff',fontSize:13,fontWeight:500,cursor:'pointer',fontFamily:'inherit' }}>두기</button>
+            </div>
+          );
+        };
+        return <ModalWrap title="수면 두기"><SF /></ModalWrap>;
+      })()}
+      {modal === 'sunscreen' && (() => {
+        const UF = () => {
+          const [applied, setApplied] = useState(habit.sunscreen_applied ?? null);
+          return (
+            <div>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+                <button onClick={()=>setApplied(true)} style={{ flex:1, padding:'16px 12px', borderRadius:20, border:applied===true?'none':'1px solid rgba(255,255,255,0.3)', cursor:'pointer', fontFamily:'inherit', background:applied===true?'var(--accent-primary)':'rgba(255,255,255,0.4)', color:applied===true?'#fff':'var(--text-primary)', fontSize:13, fontWeight:500, textAlign:'center' }}>선크림 챙겼어요</button>
+                <button onClick={()=>setApplied(false)} style={{ flex:1, padding:'16px 12px', borderRadius:20, border:applied===false?'1px solid var(--accent-primary)':'1px solid rgba(255,255,255,0.3)', cursor:'pointer', fontFamily:'inherit', background:'rgba(255,255,255,0.4)', color:'var(--text-primary)', fontSize:13, fontWeight:500, textAlign:'center' }}>오늘은 못 챙겼어요</button>
+              </div>
+              <button onClick={()=>{if(applied!==null){saveHabitLog({sunscreen_applied:applied});refreshHabit();showToast();closeModal();}}} disabled={applied===null} style={{ width:'100%',padding:14,borderRadius:10,border:'none',background:applied!==null?'var(--accent-primary)':'rgba(137,206,245,0.2)',color:applied!==null?'#fff':'var(--text-muted)',fontSize:13,fontWeight:500,cursor:applied!==null?'pointer':'default',fontFamily:'inherit' }}>두기</button>
+            </div>
+          );
+        };
+        return <ModalWrap title="자외선 두기"><UF /></ModalWrap>;
+      })()}
+
+      {toast && (
+        <div style={{ position:'fixed',bottom:120,left:'50%',transform:'translateX(-50%)',background:'var(--accent-primary)',color:'#fff',padding:'10px 24px',borderRadius:20,fontSize:13,fontWeight:500,zIndex:999 }}>오늘의 결에 두었어요</div>
+      )}
     </div>
   );
 }

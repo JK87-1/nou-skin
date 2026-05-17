@@ -1,0 +1,537 @@
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { getRecords, getSmoothedChanges, getChanges, getLatestRecord, getStableSkinAge } from '../storage/SkinStorage';
+import { getProfile } from '../storage/ProfileStorage';
+import { compressImage } from '../engine/PixelAnalysis';
+
+function getGreetingMsg() {
+  return '안녕하세요, 당신의 피부 상담사 루아에요. 궁금한 점이 있으면 편하게 물어보세요!';
+}
+
+function formatTime(ts) {
+  const d = new Date(ts);
+  const h = d.getHours();
+  const m = String(d.getMinutes()).padStart(2, '0');
+  return `${h < 12 ? '오전' : '오후'} ${h === 0 ? 12 : h > 12 ? h - 12 : h}:${m}`;
+}
+
+// Star icon SVG (same as FAB)
+function StarIcon({ size = 14, color = '#89cef5' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24">
+      <path fill={color} d="M10.48,23.25c-.15.41-.5.71-.86.75-.27.03-.78-.29-.9-.59l-1.53-4.02c-.48-1.26-1.41-2.1-2.67-2.58l-3.91-1.48c-.29-.11-.59-.51-.6-.76-.01-.39.23-.79.6-.93l3.9-1.49c1.27-.48,2.19-1.31,2.68-2.59l1.57-4.14c.08-.2.52-.44.74-.46.24-.02.77.21.86.46l1.57,4.14c.5,1.32,1.47,2.15,2.78,2.63l3.7,1.37c.31.11.66.55.67.83.02.42-.29.82-.68.97l-3.8,1.44c-1.26.48-2.2,1.32-2.67,2.58l-1.45,3.86Z"/>
+      <path fill={color} d="M21.48,6.29c-1.03.59-.9,2.91-2.01,2.98-1.23.08-.99-1.68-1.94-2.78-.77-.88-2.68-.63-2.74-1.78-.07-1.27,2.01-1.1,2.74-1.91.87-.95.73-2.72,1.78-2.8,1.29-.1.98,1.81,1.95,2.77.87.86,2.67.71,2.73,1.8.07,1.08-1.29,1.02-2.51,1.72Z"/>
+    </svg>
+  );
+}
+
+// Glass style tokens
+const glass = {
+  background: 'rgba(255,255,255,0.35)',
+  backdropFilter: 'blur(16px)',
+  WebkitBackdropFilter: 'blur(16px)',
+  border: '1px solid rgba(255,255,255,0.3)',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+};
+
+export default function LuaChatSheet({ open, onClose, initialContext }) {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const [pendingImages, setPendingImages] = useState([]);
+  const [showAttachMenu, setShowAttachMenu] = useState(false);
+  const [sttSupported, setSttSupported] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const scrollRef = useRef(null);
+  const inputRef = useRef(null);
+  const sheetRef = useRef(null);
+  const cameraInputRef = useRef(null);
+  const albumInputRef = useRef(null);
+  const recognitionRef = useRef(null);
+  const dragStartY = useRef(null);
+  const dragDelta = useRef(0);
+  const MAX_IMAGES = 3;
+
+  useEffect(() => {
+    if (open) {
+      setClosing(false);
+      const greeting = initialContext?.message || getGreetingMsg();
+      setMessages([{ role: 'assistant', content: greeting, timestamp: Date.now() }]);
+    }
+  }, [open, initialContext]);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      setTimeout(() => scrollRef.current.scrollTop = scrollRef.current.scrollHeight, 50);
+    }
+  }, [messages, isLoading]);
+
+  // STT init
+  useEffect(() => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return;
+    const recognition = new SR();
+    recognition.lang = 'ko-KR';
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.onresult = (event) => {
+      const transcript = Array.from(event.results).map(r => r[0].transcript).join('');
+      setInput(transcript);
+    };
+    recognition.onend = () => setIsListening(false);
+    recognition.onerror = () => setIsListening(false);
+    recognitionRef.current = recognition;
+    setSttSupported(true);
+    return () => { try { recognition.abort(); } catch {} };
+  }, []);
+
+  // Close attach menu on outside click
+  useEffect(() => {
+    if (!showAttachMenu) return;
+    const handler = () => setShowAttachMenu(false);
+    setTimeout(() => document.addEventListener('click', handler), 0);
+    return () => document.removeEventListener('click', handler);
+  }, [showAttachMenu]);
+
+  const toggleListening = useCallback(() => {
+    const recognition = recognitionRef.current;
+    if (!recognition) return;
+    if (isListening) { recognition.stop(); }
+    else { try { recognition.start(); setIsListening(true); } catch {} }
+  }, [isListening]);
+
+  const processFile = useCallback((file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        const dataUrl = ev.target.result;
+        const compressed = await compressImage(dataUrl, 1024, 0.85);
+        const base64 = compressed.split(',')[1];
+        resolve({ dataUrl, base64 });
+      };
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(file);
+    });
+  }, []);
+
+  const handleFileSelect = useCallback(async (e) => {
+    const files = Array.from(e.target.files || []).filter(f => f.type.startsWith('image/'));
+    if (files.length === 0) return;
+    e.target.value = '';
+    setShowAttachMenu(false);
+    const results = await Promise.all(files.slice(0, MAX_IMAGES).map(processFile));
+    const valid = results.filter(Boolean);
+    if (valid.length > 0) { setPendingImages(prev => [...prev, ...valid].slice(0, MAX_IMAGES)); }
+  }, [processFile]);
+
+  const handleClose = useCallback(() => {
+    setClosing(true);
+    setTimeout(() => { onClose(); setMessages([]); setInput(''); setClosing(false); }, 240);
+  }, [onClose]);
+
+  const buildContext = useCallback(() => {
+    const records = getRecords();
+    const recentHistory = records.slice(-5).map(r => ({
+      date: r.date, overallScore: r.overallScore, skinAge: r.skinAge,
+      moisture: r.moisture, wrinkleScore: r.wrinkleScore, elasticityScore: r.elasticityScore,
+    }));
+    const changes = getSmoothedChanges() || getChanges();
+    const profile = getProfile();
+    const latest = getLatestRecord();
+    return {
+      currentResult: latest || null, history: recentHistory, changes,
+      stableSkinAge: getStableSkinAge(),
+      profile: { birthYear: profile.birthYear, gender: profile.gender, skinType: profile.skinType },
+    };
+  }, []);
+
+  const sendMessage = useCallback(async (text) => {
+    const msgText = (text || '').trim();
+    const imgs = pendingImages.length > 0 ? pendingImages : null;
+    if (!msgText && !imgs) return;
+    if (isLoading) return;
+
+    const defaultMsg = imgs && imgs.length > 1 ? '이 화장품들을 비교 분석해주세요.' : imgs ? '이 화장품 내 피부에 맞는지 분석해주세요.' : '';
+    const userMsg = {
+      role: 'user', content: msgText || defaultMsg, timestamp: Date.now(),
+      imageThumbs: imgs ? imgs.map(img => img.dataUrl) : null,
+    };
+    setMessages(prev => [...prev, userMsg]);
+    setInput('');
+    setPendingImages([]);
+    setIsLoading(true);
+
+    const conversationHistory = messages
+      .filter(m => m.role === 'user' || m.role === 'assistant')
+      .map(m => ({ role: m.role, content: m.content }));
+    try {
+      const body = { message: userMsg.content, context: buildContext(), conversationHistory };
+      if (imgs && imgs.length === 1) body.image = imgs[0].base64;
+      else if (imgs && imgs.length > 1) body.images = imgs.map(img => img.base64);
+
+      const response = await fetch('/api/consult', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!response.ok) { const err = await response.json().catch(() => ({})); throw new Error(err.error || `HTTP ${response.status}`); }
+      const data = await response.json();
+      setMessages(prev => [...prev, { role: 'assistant', content: data.reply, timestamp: Date.now() }]);
+    } catch (err) {
+      setMessages(prev => [...prev, {
+        role: 'assistant', timestamp: Date.now(),
+        content: err.message?.includes('429') ? '오늘 상담 횟수를 초과했어요. 내일 다시 이용해주세요!' : '잠시 문제가 생겼어요. 다시 시도해주세요.',
+      }]);
+    } finally { setIsLoading(false); }
+  }, [messages, isLoading, buildContext, pendingImages]);
+
+  const canSend = (input.trim() || pendingImages.length > 0) && !isLoading;
+  const handleSubmit = useCallback(() => { sendMessage(input); }, [input, sendMessage]);
+
+  const onTouchStart = (e) => { dragStartY.current = e.touches[0].clientY; };
+  const onTouchMove = (e) => {
+    if (dragStartY.current === null) return;
+    const delta = e.touches[0].clientY - dragStartY.current;
+    if (delta > 0) { dragDelta.current = delta; if (sheetRef.current) sheetRef.current.style.transform = `translateY(${delta}px)`; }
+  };
+  const onTouchEnd = () => {
+    if (dragDelta.current > 120) { handleClose(); }
+    else if (sheetRef.current) { sheetRef.current.style.transform = 'translateY(0)'; sheetRef.current.style.transition = 'transform 0.2s ease'; setTimeout(() => { if (sheetRef.current) sheetRef.current.style.transition = ''; }, 200); }
+    dragStartY.current = null; dragDelta.current = 0;
+  };
+
+  const shouldShowTime = (msgs, idx) => {
+    if (idx === msgs.length - 1) return true;
+    if (msgs[idx].role !== msgs[idx + 1].role) return true;
+    if (msgs[idx + 1].timestamp - msgs[idx].timestamp > 300000) return true;
+    return false;
+  };
+  const isConsecutive = (msgs, idx) => idx > 0 && msgs[idx].role === msgs[idx - 1].role;
+
+  if (!open) return null;
+
+  // lua avatar (glass circle + star icon, same as FAB)
+  const luaAvatar = (size) => (
+    <div style={{
+      width: size, height: size, borderRadius: '50%', flexShrink: 0,
+      background: 'linear-gradient(180deg, rgba(255,255,255,0.7), rgba(172,226,252,0.35))',
+      backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+      border: '1px solid rgba(255,255,255,0.5)',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.6)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}>
+      <StarIcon size={size * 0.55} color="#89cef5" />
+    </div>
+  );
+
+  return (
+    <>
+      {/* Hidden file inputs */}
+      <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handleFileSelect} style={{ display: 'none' }} />
+      <input ref={albumInputRef} type="file" accept="image/*" multiple onChange={handleFileSelect} style={{ display: 'none' }} />
+
+      {/* Scrim */}
+      <div onClick={handleClose} style={{
+        position: 'fixed', inset: 0, zIndex: 200,
+        background: 'rgba(4,44,83,0.18)',
+        backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)',
+        opacity: closing ? 0 : 1, transition: 'opacity 200ms',
+      }} />
+
+      {/* Sheet */}
+      <div ref={sheetRef} style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201,
+        height: '62%',
+        ...glass,
+        background: 'rgba(255,255,255,0.65)',
+        borderRadius: '22px 22px 0 0',
+        boxShadow: '0 -8px 28px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.6)',
+        display: 'flex', flexDirection: 'column',
+        animation: closing ? 'luaChatSlideDown 240ms ease forwards' : 'luaChatSlideUp 280ms cubic-bezier(0.32,0.72,0,1) forwards',
+        maxWidth: 430, margin: '0 auto',
+      }}>
+        <style>{`
+          @keyframes luaChatSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+          @keyframes luaChatSlideDown { from { transform: translateY(0); } to { transform: translateY(100%); } }
+          @keyframes luaDot { 0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1); } }
+        `}</style>
+
+        {/* Handle */}
+        <div onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
+          style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0', cursor: 'grab' }}>
+          <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(137,206,245,0.4)' }} />
+        </div>
+
+        {/* Header */}
+        <div style={{
+          padding: '8px 14px 10px', display: 'flex', alignItems: 'center', gap: 10,
+          borderBottom: '1px solid rgba(255,255,255,0.3)',
+        }}>
+          {luaAvatar(36)}
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary, #191F28)' }}>lua</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 1 }}>
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#89cef5' }} />
+              <span style={{ fontSize: 10, color: 'var(--text-muted, #8B95A1)' }}>늘 곁에 있어요</span>
+            </div>
+          </div>
+          <button onClick={handleClose} style={{
+            width: 32, height: 32, borderRadius: '50%', border: 'none',
+            background: 'rgba(255,255,255,0.3)', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #8B95A1)" strokeWidth="2" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Messages */}
+        <div ref={scrollRef} style={{
+          flex: 1, overflowY: 'auto', padding: '14px 14px',
+          display: 'flex', flexDirection: 'column', gap: 10,
+          WebkitOverflowScrolling: 'touch',
+        }}>
+          <div style={{ fontSize: 10, color: 'var(--text-muted, #8B95A1)', textAlign: 'center', margin: '4px 0' }}>오늘</div>
+
+          {messages.map((msg, i) => {
+            const isLua = msg.role === 'assistant';
+            const consecutive = isConsecutive(messages, i);
+            const showTime = shouldShowTime(messages, i);
+
+            return (
+              <div key={i}>
+                {isLua ? (
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+                    {!consecutive ? luaAvatar(22) : <div style={{ width: 22, flexShrink: 0 }} />}
+                    <div>
+                      <div style={{
+                        ...glass,
+                        background: 'rgba(255,255,255,0.5)',
+                        padding: '10px 14px',
+                        borderRadius: consecutive ? 16 : '16px 16px 16px 4px',
+                        maxWidth: 'calc(75vw - 60px)',
+                        fontSize: 13, color: 'var(--text-primary, #191F28)', lineHeight: 1.5,
+                        whiteSpace: 'pre-wrap',
+                      }}>{msg.content}</div>
+                      {showTime && (
+                        <div style={{ fontSize: 9, color: 'var(--text-muted, #8B95A1)', marginTop: 3, marginLeft: 4 }}>
+                          {formatTime(msg.timestamp)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    {msg.imageThumbs && (
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 4, marginBottom: 4 }}>
+                        {msg.imageThumbs.map((src, ti) => (
+                          <img key={ti} src={src} alt="" style={{ width: 80, height: 80, borderRadius: 12, objectFit: 'cover' }} />
+                        ))}
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <div style={{
+                        background: 'rgba(137,206,245,0.5)',
+                        backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+                        border: '1px solid rgba(137,206,245,0.3)',
+                        padding: '10px 14px',
+                        borderRadius: consecutive ? 16 : '16px 16px 4px 16px',
+                        maxWidth: '75%',
+                        fontSize: 13, color: 'var(--text-primary, #191F28)', lineHeight: 1.5,
+                        whiteSpace: 'pre-wrap',
+                      }}>{msg.content}</div>
+                    </div>
+                    {showTime && (
+                      <div style={{ fontSize: 9, color: 'var(--text-muted, #8B95A1)', marginTop: 3, textAlign: 'right' }}>
+                        {formatTime(msg.timestamp)}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Typing indicator */}
+          {isLoading && (
+            <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+              {luaAvatar(22)}
+              <div style={{
+                ...glass, background: 'rgba(255,255,255,0.5)',
+                padding: '10px 14px', borderRadius: '16px 16px 16px 4px',
+                display: 'flex', gap: 5,
+              }}>
+                {[0, 1, 2].map(j => (
+                  <div key={j} style={{
+                    width: 5, height: 5, borderRadius: '50%', background: '#89cef5',
+                    animation: `luaDot 1.2s ease-in-out ${j * 0.24}s infinite`,
+                  }} />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Image Preview */}
+        {pendingImages.length > 0 && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 10, padding: '8px 14px',
+            flexWrap: 'wrap', borderTop: '1px solid rgba(255,255,255,0.3)',
+          }}>
+            {pendingImages.map((img, idx) => (
+              <div key={idx} style={{ position: 'relative', display: 'inline-block' }}>
+                <img src={img.dataUrl} alt="" style={{ width: 72, height: 72, borderRadius: 12, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.3)' }} />
+                <button onClick={() => setPendingImages(prev => prev.filter((_, i) => i !== idx))} style={{
+                  position: 'absolute', top: -6, right: -6, width: 24, height: 24, borderRadius: '50%',
+                  border: 'none', background: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: 14,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              </div>
+            ))}
+            {pendingImages.length < MAX_IMAGES && (
+              <button onClick={() => albumInputRef.current?.click()} style={{
+                width: 72, height: 72, borderRadius: 12,
+                border: '2px dashed rgba(137,206,245,0.4)', background: 'rgba(137,206,245,0.08)',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', gap: 2, flexShrink: 0,
+              }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#89cef5" strokeWidth="2" strokeLinecap="round">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                <span style={{ fontSize: 10, color: '#89cef5', fontWeight: 600 }}>추가</span>
+              </button>
+            )}
+            <span style={{ fontSize: 12, color: 'var(--text-muted, #8B95A1)', width: '100%' }}>
+              {`사진 ${pendingImages.length}/${MAX_IMAGES}장`}
+              {pendingImages.length >= 2 && ' · 비교 분석 가능'}
+            </span>
+          </div>
+        )}
+
+        {/* Composer */}
+        <div style={{
+          padding: '8px 14px calc(8px + env(safe-area-inset-bottom, 0px))',
+          borderTop: '1px solid rgba(255,255,255,0.3)',
+          background: 'rgba(255,255,255,0.3)',
+          backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+          position: 'relative',
+        }}>
+          {/* Attach Menu */}
+          {showAttachMenu && (
+            <div onClick={(e) => e.stopPropagation()} style={{
+              position: 'absolute', bottom: '100%', left: 14, marginBottom: 8,
+              ...glass, background: 'rgba(255,255,255,0.85)',
+              borderRadius: 16, overflow: 'hidden', zIndex: 10,
+              boxShadow: '0 4px 24px rgba(0,0,0,0.12)',
+            }}>
+              <button onClick={() => { cameraInputRef.current?.click(); setShowAttachMenu(false); }} style={{
+                display: 'flex', alignItems: 'center', gap: 10, padding: '14px 20px',
+                border: 'none', background: 'none', width: '100%', fontSize: 14, fontWeight: 500,
+                color: 'var(--text-primary, #191F28)', cursor: 'pointer', fontFamily: 'inherit',
+              }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#89cef5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/>
+                </svg>
+                카메라로 촬영
+              </button>
+              <button onClick={() => { albumInputRef.current?.click(); setShowAttachMenu(false); }} style={{
+                display: 'flex', alignItems: 'center', gap: 10, padding: '14px 20px',
+                border: 'none', background: 'none', width: '100%', fontSize: 14, fontWeight: 500,
+                color: 'var(--text-primary, #191F28)', cursor: 'pointer', fontFamily: 'inherit',
+                borderTop: '1px solid rgba(255,255,255,0.3)',
+              }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#89cef5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+                </svg>
+                앨범에서 선택
+              </button>
+            </div>
+          )}
+
+          <div style={{
+            display: 'flex', gap: 8, alignItems: 'center', width: '100%',
+            background: '#FFFFFF', borderRadius: 28,
+            padding: '6px 6px 6px 12px', boxSizing: 'border-box',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+          }}>
+            {/* + Attach Button */}
+            <button
+              onClick={(e) => { e.stopPropagation(); setShowAttachMenu(!showAttachMenu); }}
+              disabled={isLoading}
+              style={{
+                width: 40, height: 40, borderRadius: '50%', border: 'none',
+                background: 'rgba(137,206,245,0.12)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', flexShrink: 0,
+                opacity: isLoading ? 0.5 : 1,
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#89cef5" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </button>
+
+            <input
+              ref={inputRef}
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); handleSubmit(); } }}
+              placeholder={isListening ? '듣고 있어요...' : pendingImages.length > 0 ? '메시지와 함께 전송...' : '피부 고민을 물어보세요...'}
+              disabled={isLoading}
+              style={{
+                flex: 1, minWidth: 0, padding: '10px 4px', borderRadius: 0,
+                border: 'none', background: 'transparent',
+                fontSize: 14, color: '#333',
+                fontFamily: 'inherit', outline: 'none',
+              }}
+            />
+
+            {/* Mic Button */}
+            {sttSupported && (
+              <button
+                onClick={toggleListening}
+                disabled={isLoading}
+                style={{
+                  width: 40, height: 40, borderRadius: '50%', border: 'none',
+                  background: isListening ? 'rgba(137,206,245,0.3)' : 'rgba(137,206,245,0.12)',
+                  boxShadow: isListening ? '0 0 0 4px rgba(137,206,245,0.15)' : 'none',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', flexShrink: 0,
+                  opacity: isLoading ? 0.5 : 1, transition: 'background 0.15s, box-shadow 0.15s',
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#89cef5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="9" y="1" width="6" height="11" rx="3"/><path d="M19 10v1a7 7 0 01-14 0v-1"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
+                </svg>
+              </button>
+            )}
+
+            {/* Send Button */}
+            <button
+              onClick={handleSubmit}
+              disabled={!canSend}
+              style={{
+                width: 44, height: 44, borderRadius: '50%', border: 'none',
+                background: canSend ? '#89cef5' : 'rgba(137,206,245,0.15)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: canSend ? 'pointer' : 'default',
+                flexShrink: 0, transition: 'background 0.2s',
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke={canSend ? '#fff' : 'var(--text-dim, #B0B8C1)'}
+                strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}

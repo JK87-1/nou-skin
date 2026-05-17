@@ -65,6 +65,45 @@ Fallbacks:
 - **`src/storage/ProfileStorage.js`** — User profile (nickname, birthYear, skinType).
 - **`src/storage/RoutineStorage.js`** — Routine checklist state.
 
+## 협업 룰 (junkim × 박수진)
+
+루아는 두 명이 같이 작업하는 프로젝트입니다.
+다음 규칙을 모든 작업에 자동으로 따라주세요.
+
+### 1. 브랜치 룰
+- main에 직접 commit / push 금지
+- 작업 시작 시 새 브랜치 생성:
+  - 박수진 (UX/UI 작업): `ux/<작업이름>`
+  - junkim (측정 정확도 작업): `accuracy/<작업이름>`
+- main 머지는 사용자가 명시적으로 요청할 때만
+
+### 2. 영역 경계
+- 박수진 담당 (UX/UI):
+  - src/pages/* (단, SkinMeasurePage.jsx 제외)
+  - src/components/* (단, SkinScoreCircle.jsx 제외)
+  - 스타일·색상·레이아웃·인터랙션
+- junkim 담당 (측정 정확도·엔진):
+  - src/engine/*
+  - api/analyze.js
+  - 측정 결과 스키마, 메트릭 정의
+- 회색 지대 (만지기 전 사용자 확인):
+  - src/App.jsx
+  - src/pages/SkinMeasurePage.jsx
+  - src/components/SkinScoreCircle.jsx
+  - src/storage/SkinStorage.js
+  - src/data/ScienceData.js
+
+### 3. 메트릭·스키마 변경
+- 11개 측정 메트릭 키 이름·범위 변경 금지 (사전 합의 없이는)
+- SkinStorage 저장 키 구조 변경 금지 (사전 합의 없이는)
+- App.jsx의 stage 이름 변경 금지 (사전 합의 없이는)
+
+### 4. dev 서버 포트
+- 박수진: localhost:5173 (기본)
+- junkim: localhost:5174
+
+위 규칙을 모든 코드 변경 작업에 자동 적용해주세요.
+
 ## Conventions
 
 - Inline styles extensively in JSX; CSS classes for reusable patterns (glass-card, tab-bar, orb animations)

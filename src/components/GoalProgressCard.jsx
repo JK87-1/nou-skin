@@ -20,12 +20,10 @@ export default function GoalProgressCard({ onTap }) {
   return (
     <div
       onClick={onTap}
+      className="card"
       style={{
         margin: '0 20px',
         padding: '20px',
-        borderRadius: 16,
-        background: 'var(--bg-card)',
-        boxShadow: 'none',
         cursor: onTap ? 'pointer' : 'default',
         animation: 'breatheIn 0.5s ease both',
       }}

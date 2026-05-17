@@ -1,0 +1,348 @@
+import { useState } from 'react';
+import { getLatestRecord, getPreviousRecord, getRecordCount, getRecords } from '../storage/SkinStorage';
+
+const glass = {
+  background: 'rgba(255,255,255,0.35)',
+  backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+  border: '1px solid rgba(255,255,255,0.3)',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+  borderRadius: 20,
+};
+
+const METRICS = [
+  { key: 'elasticityScore', label: 'V라인' },
+  { key: 'poreScore', label: '모공' },
+  { key: 'moisture', label: '유수분' },
+  { key: 'skinTone', label: '홍조' },
+];
+
+const CHART_COLORS = ['#1E90E8', '#185FA5', '#7FB3E3', '#C5DEF5'];
+
+// Mock impact factors (real implementation would compute from data)
+function getImpactFactors(metricKey, records) {
+  if (records.length < 2) return [];
+  return [
+    { name: '수분 섭취', type: 'habit', icon: '💧', impact: 76 },
+    { name: '수면 시간', type: 'habit', icon: '🌙', impact: 42 },
+    { name: '자외선 차단', type: 'habit', icon: '☀️', impact: 28 },
+    { name: '토너', type: 'product', icon: '💧', impact: -18 },
+  ];
+}
+
+function getHeadline(latest, prev) {
+  if (!latest) return '첫 측정을 해볼까요?';
+  if (!prev) return '기준선이 만들어졌어요. 이제 함께 결을 따라가요.';
+  let bestKey = null, bestDiff = 0;
+  for (const m of METRICS) {
+    const diff = (latest[m.key] ?? 0) - (prev[m.key] ?? 0);
+    if (Math.abs(diff) > Math.abs(bestDiff)) { bestDiff = diff; bestKey = m.label; }
+  }
+  if (Math.abs(bestDiff) < 2) return '전반적으로 안정적인 한 주';
+  return bestDiff > 0 ? `이번 주, ${bestKey}이 크게 좋아졌어요` : `${bestKey}이 조금 떨어졌네요`;
+}
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr);
+  return `${d.getMonth() + 1}월 ${d.getDate()}일`;
+}
+
+export default function DiscoverPage({ onMeasure, onOpenConsult }) {
+  const [mode, setMode] = useState('analysis');
+  const [period, setPeriod] = useState('4w');
+  const [impactMetric, setImpactMetric] = useState(null);
+  const [showMetricDropdown, setShowMetricDropdown] = useState(false);
+
+  const latest = getLatestRecord();
+  const prev = getPreviousRecord();
+  const records = getRecords();
+  const recordCount = records.length;
+
+  const daysSince = latest ? Math.floor((Date.now() - new Date(latest.date).getTime()) / 86400000) : null;
+  const headline = getHeadline(latest, prev);
+
+  // Determine default impact metric
+  const selectedMetric = impactMetric || (() => {
+    if (!latest || !prev) return 'poreScore';
+    let best = METRICS[0].key, bestDiff = 0;
+    for (const m of METRICS) {
+      const d = Math.abs((latest[m.key] ?? 0) - (prev[m.key] ?? 0));
+      if (d > bestDiff) { bestDiff = d; best = m.key; }
+    }
+    return best;
+  })();
+
+  const impacts = getImpactFactors(selectedMetric, records);
+  const confidence = recordCount < 5 ? '낮음' : recordCount < 10 ? '보통' : '높음';
+
+  // Chart data
+  const chartRecords = (() => {
+    const now = Date.now();
+    const ms = period === '7d' ? 7*86400000 : period === '4w' ? 28*86400000 : 90*86400000;
+    return records.filter(r => now - new Date(r.date).getTime() <= ms).reverse();
+  })();
+
+  return (
+    <div style={{ minHeight: '100dvh', paddingBottom: 100 }}>
+
+      {/* ① 헤더 */}
+      <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 16px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontSize: 22, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.4 }}>발견</span>
+        <button onClick={() => onMeasure?.()} style={{
+          width: 32, height: 32, borderRadius: '50%', border: 'none',
+          background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+        }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #89cef5)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/>
+          </svg>
+        </button>
+      </div>
+
+      {/* ② 모드 토글 */}
+      <div style={{ padding: '12px 16px 8px', display: 'flex', gap: 20 }}>
+        {[{ key: 'analysis', label: '분석' }, { key: 'explore', label: '탐색' }].map(m => (
+          <span key={m.key} onClick={() => setMode(m.key)} style={{
+            fontSize: 13, fontWeight: mode === m.key ? 500 : 400, cursor: 'pointer',
+            color: mode === m.key ? 'var(--text-primary)' : 'var(--text-dim, #B0B8C1)',
+            borderBottom: mode === m.key ? '2px solid var(--accent-primary, #89cef5)' : '2px solid transparent',
+            paddingBottom: 6,
+          }}>{m.label}</span>
+        ))}
+      </div>
+
+      {mode === 'explore' ? (
+        /* 탐색 빈 상태 */
+        <div style={{ padding: '60px 32px', textAlign: 'center' }}>
+          <div style={{ fontSize: 40, opacity: 0.3, marginBottom: 12 }}>🔍</div>
+          <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 6 }}>곧 만나요</div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+            다른 사용자의 데이터와 함께<br />너에게 맞는 새 제품을 찾아드릴게요
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* ③ 히어로 요약 카드 */}
+          <div style={{ margin: '0 12px 12px' }}>
+            {recordCount === 0 ? (
+              <div onClick={() => onMeasure?.()} style={{
+                ...glass, background: 'linear-gradient(135deg, rgba(220,238,251,0.6), rgba(240,247,254,0.4))',
+                padding: '32px 16px', textAlign: 'center', cursor: 'pointer',
+              }}>
+                <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 8 }}>첫 측정을 해볼까요?</div>
+                <button style={{
+                  background: 'var(--accent-primary, #89cef5)', color: '#fff', fontSize: 13, fontWeight: 500,
+                  padding: '10px 24px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                }}>측정 시작</button>
+              </div>
+            ) : (
+              <div style={{
+                ...glass, background: 'linear-gradient(135deg, rgba(220,238,251,0.6), rgba(240,247,254,0.4))',
+                padding: 16,
+              }}>
+                {/* 메타 */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10.5, color: 'var(--text-muted)' }}>
+                  <span>{formatDate(latest.date)} 측정</span>
+                  {daysSince !== null && prev && <span>이전 측정 → {daysSince > 7 ? `${Math.floor(daysSince/7)}주 전` : `${daysSince}일 전`}</span>}
+                </div>
+                {/* 헤드라인 */}
+                <div style={{ fontSize: 17, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.3, lineHeight: 1.35, marginTop: 8 }}>
+                  {headline}
+                </div>
+                {/* 4분할 */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginTop: 14 }}>
+                  {METRICS.map(m => {
+                    const val = latest?.[m.key] ?? null;
+                    const prevVal = prev?.[m.key] ?? null;
+                    const diff = val !== null && prevVal !== null ? val - prevVal : null;
+                    return (
+                      <div key={m.key} style={{ background: 'rgba(255,255,255,0.6)', borderRadius: 10, padding: '8px 6px', textAlign: 'center' }}>
+                        <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>{m.label}</div>
+                        <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)', marginTop: 2 }}>{val ?? '—'}</div>
+                        <div style={{ fontSize: 9, fontWeight: 500, marginTop: 1, color: diff === null ? 'var(--text-muted)' : diff > 0 ? '#1976D2' : diff < 0 ? '#A32D2D' : 'var(--text-muted)' }}>
+                          {diff === null ? '기준선' : diff > 0 ? `+${diff}` : diff < 0 ? `${diff}` : '0'}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ④ 트렌드 차트 */}
+          <div style={{ margin: '0 12px 12px', ...glass, padding: 13 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>
+                {period === '7d' ? '7일' : period === '4w' ? '4주' : '3개월'} 변화
+              </span>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {[{ k: '7d', l: '7일' }, { k: '4w', l: '4주' }, { k: '3m', l: '3개월' }].map(p => (
+                  <button key={p.k} onClick={() => setPeriod(p.k)} style={{
+                    padding: '4px 10px', borderRadius: 10, border: 'none', fontSize: 10, fontWeight: 500,
+                    background: period === p.k ? 'var(--accent-primary, #89cef5)' : 'rgba(255,255,255,0.4)',
+                    color: period === p.k ? '#fff' : 'var(--text-muted)',
+                    cursor: 'pointer', fontFamily: 'inherit',
+                    border: period === p.k ? 'none' : '1px solid rgba(255,255,255,0.3)',
+                  }}>{p.l}</button>
+                ))}
+              </div>
+            </div>
+
+            {chartRecords.length < 2 ? (
+              <div style={{ height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.5 }}>
+                  측정이 부족해요.<br />트렌드를 보려면 한 번 더 측정해보세요
+                </div>
+              </div>
+            ) : (
+              <>
+                <svg width="100%" viewBox="0 0 320 140" preserveAspectRatio="none" style={{ display: 'block' }}>
+                  {/* Guide lines */}
+                  {[30, 70, 110].map(y => <line key={y} x1="0" y1={y} x2="320" y2={y} stroke="rgba(255,255,255,0.3)" strokeWidth="1" />)}
+                  {/* Lines */}
+                  {METRICS.map((m, mi) => {
+                    const vals = chartRecords.map(r => r[m.key] ?? 50);
+                    const maxV = 100, minV = 0;
+                    const pts = vals.map((v, i) => {
+                      const x = chartRecords.length === 1 ? 160 : (i / (chartRecords.length - 1)) * 300 + 10;
+                      const y = 130 - ((v - minV) / (maxV - minV)) * 120 + 5;
+                      return `${x},${y}`;
+                    });
+                    return (
+                      <g key={m.key}>
+                        <polyline points={pts.join(' ')} fill="none" stroke={CHART_COLORS[mi]} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        {pts.map((p, pi) => {
+                          const [cx, cy] = p.split(',');
+                          return <circle key={pi} cx={cx} cy={cy} r="3" fill={CHART_COLORS[mi]} />;
+                        })}
+                      </g>
+                    );
+                  })}
+                </svg>
+                {/* X axis labels */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 10px 0' }}>
+                  {chartRecords.map((r, i) => (
+                    <span key={i} style={{ fontSize: 8, color: 'var(--text-muted)' }}>{`${new Date(r.date).getMonth()+1}/${new Date(r.date).getDate()}`}</span>
+                  ))}
+                </div>
+                {/* Legend */}
+                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 6 }}>
+                  {METRICS.map((m, mi) => (
+                    <div key={m.key} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: CHART_COLORS[mi] }} />
+                      <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{m.label}</span>
+                    </div>
+                  ))}
+                </div>
+                {recordCount <= 3 && (
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 6 }}>데이터가 쌓일수록 정확해져요</div>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* ⑤ 영향 요인 차트 */}
+          <div style={{ margin: '0 12px 12px', ...glass, padding: 13 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>영향 요인</span>
+              <div style={{ position: 'relative' }}>
+                <span onClick={() => setShowMetricDropdown(!showMetricDropdown)} style={{ fontSize: 10, color: 'var(--text-muted)', cursor: 'pointer' }}>
+                  {METRICS.find(m => m.key === selectedMetric)?.label || '모공'} 기준 ▾
+                </span>
+                {showMetricDropdown && (
+                  <div style={{
+                    position: 'absolute', top: '100%', right: 0, marginTop: 4, zIndex: 10,
+                    ...glass, background: 'rgba(255,255,255,0.85)', padding: '4px 0', minWidth: 90,
+                  }}>
+                    {METRICS.map(m => (
+                      <div key={m.key} onClick={() => { setImpactMetric(m.key); setShowMetricDropdown(false); }} style={{
+                        padding: '8px 14px', fontSize: 11, color: m.key === selectedMetric ? 'var(--accent-primary)' : 'var(--text-primary)',
+                        fontWeight: m.key === selectedMetric ? 600 : 400, cursor: 'pointer',
+                      }}>{m.label}</div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {recordCount < 2 ? (
+              <div style={{ padding: '32px 16px', textAlign: 'center' }}>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>측정이 더 쌓이면 영향 요인을 분석해드릴게요</div>
+              </div>
+            ) : (
+              <>
+                {impacts.map((f, i) => (
+                  <div key={i} style={{ padding: '8px 0', borderTop: i > 0 ? '0.5px solid rgba(255,255,255,0.2)' : 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{
+                      width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+                      background: 'rgba(255,255,255,0.25)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16,
+                    }}>{f.icon}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 11.5, fontWeight: 500, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</div>
+                      <div style={{ fontSize: 8.5, color: 'var(--text-muted)', marginTop: 2 }}>{f.type === 'habit' ? '습관' : '화장품'}</div>
+                      <div style={{ marginTop: 5, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.25)', position: 'relative' }}>
+                        <div style={{ position: 'absolute', left: '50%', top: -2, width: 1, height: 8, background: 'rgba(255,255,255,0.4)' }} />
+                        {f.impact > 0 ? (
+                          <div style={{ position: 'absolute', left: '50%', top: 0, height: '100%', borderRadius: 2, background: 'var(--accent-primary, #89cef5)', width: `${Math.min(Math.abs(f.impact), 100) / 2}%` }} />
+                        ) : (
+                          <div style={{ position: 'absolute', right: '50%', top: 0, height: '100%', borderRadius: 2, background: confidence === '낮음' ? '#888' : '#E24B4A', width: `${Math.min(Math.abs(f.impact), 100) / 2}%` }} />
+                        )}
+                      </div>
+                    </div>
+                    <span style={{ minWidth: 36, textAlign: 'right', fontSize: 12, fontWeight: 500, color: f.impact > 0 ? '#1976D2' : f.impact < 0 ? (confidence === '낮음' ? '#888' : '#A32D2D') : 'var(--text-muted)' }}>
+                      {f.impact > 0 ? `+${f.impact}%` : `${f.impact}%`}
+                    </span>
+                  </div>
+                ))}
+                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 12 }}>
+                  측정 {recordCount}회 기반 · 신뢰도 {confidence}
+                </div>
+                {confidence === '낮음' && (
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>더 많은 측정 데이터가 쌓이면 정확도가 올라가요</div>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* ⑥ lua의 발견 */}
+          <div style={{ padding: '6px 16px 8px', fontSize: 10, color: 'var(--text-muted)', fontWeight: 500, letterSpacing: 0.3, textTransform: 'uppercase' }}>
+            lua의 발견
+          </div>
+          <div style={{ margin: '0 12px 12px', ...glass, padding: 13 }}>
+            {recordCount < 2 ? (
+              <div style={{ padding: '20px 8px', textAlign: 'center', fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                결을 꾸준히 두면, lua가 패턴을 찾아드릴게요
+              </div>
+            ) : (
+              [
+                { text: '자기 전 토너를 챙긴 날, 다음날 모공 점수가 평균 4점 더 좋았어요.', tag: '루틴 발견' },
+                { text: '수분이 충분한 주에는 유수분 점수가 평균 6점 더 좋았어요.', tag: '결의 발견' },
+                { text: '측정 시각이 일정할수록 점수가 안정적이에요. 주로 일요일 저녁에 재고 있어요.', tag: '패턴 발견' },
+              ].map((d, i) => (
+                <div key={i} onClick={() => onOpenConsult?.()} style={{
+                  padding: '12px 0', cursor: 'pointer',
+                  borderTop: i > 0 ? '0.5px solid rgba(255,255,255,0.2)' : 'none',
+                  display: 'flex', gap: 10, alignItems: 'flex-start',
+                }}>
+                  <div style={{
+                    width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
+                    background: 'linear-gradient(180deg, rgba(255,255,255,0.7), rgba(172,226,252,0.35))',
+                    border: '1px solid rgba(255,255,255,0.5)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <svg width="10" height="10" viewBox="0 0 24 24"><path fill="#89cef5" d="M10.48,23.25c-.15.41-.5.71-.86.75-.27.03-.78-.29-.9-.59l-1.53-4.02c-.48-1.26-1.41-2.1-2.67-2.58l-3.91-1.48c-.29-.11-.59-.51-.6-.76-.01-.39.23-.79.6-.93l3.9-1.49c1.27-.48,2.19-1.31,2.68-2.59l1.57-4.14c.08-.2.52-.44.74-.46.24-.02.77.21.86.46l1.57,4.14c.5,1.32,1.47,2.15,2.78,2.63l3.7,1.37c.31.11.66.55.67.83.02.42-.29.82-.68.97l-3.8,1.44c-1.26.48-2.2,1.32-2.67,2.58l-1.45,3.86Z"/><path fill="#89cef5" d="M21.48,6.29c-1.03.59-.9,2.91-2.01,2.98-1.23.08-.99-1.68-1.94-2.78-.77-.88-2.68-.63-2.74-1.78-.07-1.27,2.01-1.1,2.74-1.91.87-.95.73-2.72,1.78-2.8,1.29-.1.98,1.81,1.95,2.77.87.86,2.67.71,2.73,1.8.07,1.08-1.29,1.02-2.51,1.72Z"/></svg>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 11.5, color: 'var(--text-primary)', lineHeight: 1.5 }}>{d.text}</div>
+                    <span style={{ display: 'inline-block', marginTop: 5, fontSize: 9, fontWeight: 500, padding: '2px 7px', borderRadius: 8, background: 'rgba(137,206,245,0.15)', color: 'var(--accent-primary)' }}>{d.tag}</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
