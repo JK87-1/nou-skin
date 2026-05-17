@@ -32,6 +32,7 @@ import { calculateLevel, getDefaultTheme, getThemeById, getLevelTitleData, THEME
 import { BadgeCelebration } from './components/BadgeRanking';
 import SplashScreen from './components/SplashScreen';
 import SkinMeasurePage from './pages/SkinMeasurePage';
+import BeforeAfterSlider from './components/BeforeAfterSlider';
 import { DropletIcon, SparkleIcon, LotionIcon, DiamondIcon, PaletteIcon, MicroscopeIcon, RulerIcon, EyeIcon, BubbleIcon, TargetIcon, SunIcon, MoonIcon, CameraIcon, TestTubeIcon, StarIcon, ShieldIcon, WandIcon, PhotoIcon, CheckIcon, SaveIcon, PastelIcon, LuaMiniIcon } from './components/icons/PastelIcons';
 import SoftCloverIcon from './components/icons/SoftCloverIcon';
 import EternalPearl from './components/icons/EternalPearl';
@@ -1596,6 +1597,11 @@ export default function App() {
                   </div>
                 );
               })()}
+            </div>
+
+            {/* ── Before & After slider (변화 비교) ── */}
+            <div style={{ animation: 'fadeUp 0.5s ease-out 0.95s both' }}>
+              <BeforeAfterSlider />
             </div>
 
             {/* ── GROUP 1: Condition Metrics ── */}
