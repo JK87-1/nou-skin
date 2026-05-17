@@ -987,7 +987,7 @@ export default function App() {
             <>
               <div onClick={() => setWeatherSheet(false)} style={{
                 position: 'fixed', inset: 0, zIndex: 50,
-                background: 'var(--bg-modal-overlay)',
+                background: 'rgba(0,0,0,0.35)',
                 animation: 'weatherSheetFadeIn 0.3s ease',
               }} />
               <div style={{
