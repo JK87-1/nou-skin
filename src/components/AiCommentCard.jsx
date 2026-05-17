@@ -26,21 +26,6 @@ export default function AiCommentCard({
 }) {
   const [openIdx, setOpenIdx] = useState(null); // 펼친 칩 index. null = 모두 닫힘.
 
-  /* DEBUG: 강제로 props 표시 */
-  return (
-    <div style={{
-      background: '#ff00ff', color: '#fff', padding: 12, fontSize: 11, fontWeight: 700,
-      borderRadius: 8, marginTop: 14,
-    }}>
-      <div>AiCommentCard ENTERED</div>
-      <div>aiNotes type: {typeof aiNotes}, length: {(aiNotes || '').length}</div>
-      <div>aiDetails type: {typeof aiDetails}, length: {(aiDetails || []).length}</div>
-      <div>analysisMode: {String(analysisMode)}</div>
-      <div>makeupDetected: {String(makeupDetected)}</div>
-      <div style={{ fontSize: 9, opacity: 0.8, marginTop: 4 }}>aiNotes preview: {(aiNotes || '').slice(0, 80)}</div>
-    </div>
-  );
-
   if (!aiNotes && (!aiDetails || aiDetails.length === 0)) return null;
 
   // 식별 관련 sentence(동일/다른 인물 등) 필터링 — 사용자에게 노출하지 않음
@@ -60,7 +45,7 @@ export default function AiCommentCard({
     <div style={{
       marginTop: 14, padding: 18, borderRadius: 18,
       background: 'var(--tag-bg, rgba(255,140,66,0.06))',
-      border: '2px dashed #ff0000', /* DEBUG: 임시 진단용, 다음 커밋에서 제거 */
+      border: 'none',
       animation: `fadeUp 0.5s ease-out ${animationDelay} both`,
     }}>
       {/* Header */}
@@ -142,12 +127,6 @@ export default function AiCommentCard({
         </div>
       )}
 
-      <style>{`
-        @keyframes aiDetailFade {
-          from { opacity: 0; transform: translateY(-4px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
     </div>
   );
 }
