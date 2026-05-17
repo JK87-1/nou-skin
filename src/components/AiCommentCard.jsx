@@ -45,7 +45,7 @@ export default function AiCommentCard({
     <div style={{
       marginTop: 14, padding: 18, borderRadius: 18,
       background: 'var(--tag-bg, rgba(255,140,66,0.06))',
-      border: 'none',
+      border: '2px dashed #ff0000', /* DEBUG: 임시 진단용, 다음 커밋에서 제거 */
       animation: `fadeUp 0.5s ease-out ${animationDelay} both`,
     }}>
       {/* Header */}
