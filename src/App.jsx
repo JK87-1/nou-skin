@@ -205,13 +205,19 @@ export default function App() {
     // 주기적 자동 백업 시작 (5분 간격)
     const stopBackup = startPeriodicBackup();
 
-    // 백업 리마인더: 14일 이상 수동 백업 없으면 알림
+    // 백업 리마인더: 마지막 수동 백업 후 14일 + 마지막 노출 후 14일 모두 경과 시에만 노출
+    // (사용자가 닫기만 하고 백업 안 해도 14일 cooldown 유지)
     const records = getRecords();
     if (records.length >= 5) {
       const lastManual = parseInt(localStorage.getItem('nou_last_manual_backup') || '0', 10);
-      const daysSince = (Date.now() - lastManual) / (1000 * 60 * 60 * 24);
-      if (daysSince > 14) {
-        setTimeout(() => setShowBackupReminder(true), 3000);
+      const lastReminder = parseInt(localStorage.getItem('nou_last_backup_reminder') || '0', 10);
+      const daysSinceManual = (Date.now() - lastManual) / (1000 * 60 * 60 * 24);
+      const daysSinceReminder = (Date.now() - lastReminder) / (1000 * 60 * 60 * 24);
+      if (daysSinceManual > 14 && daysSinceReminder > 14) {
+        setTimeout(() => {
+          setShowBackupReminder(true);
+          try { localStorage.setItem('nou_last_backup_reminder', String(Date.now())); } catch {}
+        }, 3000);
       }
     }
 

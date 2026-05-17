@@ -10,3 +10,20 @@ dist/
 .cert.pem
 .key.pem
 .vercel
+
+# vercel CLI env dumps (인증서 누출 방지)
+.env.vercel*
+
+# Capacitor native build artifacts (ios/android 폴더는 트래킹하되 빌드 결과만 무시)
+ios/App/Pods/
+ios/App/App/public/
+ios/App/capacitor.config.json
+ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/
+ios/App/build/
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
+android/.gradle/
+android/app/build/
+android/build/
+android/captures/
+android/local.properties

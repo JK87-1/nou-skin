@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { Capacitor } from '@capacitor/core';
 
 const DISMISS_KEY = 'lua_install_dismissed';
 const DISMISS_DAYS = 14;
@@ -36,6 +37,7 @@ export default function InstallBanner() {
   const deferredPrompt = useRef(null);
 
   useEffect(() => {
+    if (Capacitor.isNativePlatform()) return;
     if (isStandalone()) return;
 
     // Check dismissal
