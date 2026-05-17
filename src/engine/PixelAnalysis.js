@@ -1155,10 +1155,10 @@ export function pixelsToScores(px, mlAge = null) {
   , 32, 96);
 
   // ── CONDITION SCORE (실시간 컨디션 — 구조 지표 대비 컨디션 편차 반영) ──
-  // 컨디션 민감 5개 평균 vs 구조 5개 평균 → 차이를 증폭해 overallScore와 분리
+  // 컨디션 민감 5개 평균 vs 구조 5개 평균 → 차이 강조 (amplification factor 0.8: HybridAnalysis와 통일)
   const condAvg = (moisture + skinTone + dcScore + Math.max(30, oilScoreVal) + troubleScoreVal) / 5;
   const structAvg = (wrinkleScore + elasticityScore + textureScore + poreScore + pigmentationScore) / 5;
-  const conditionScore = clamp(Math.round(condAvg + (condAvg - structAvg) * 1.8), 32, 96);
+  const conditionScore = clamp(Math.round(condAvg + (condAvg - structAvg) * 0.8), 32, 96);
 
   // ── SKIN AGE from overallScore ──
   skinAge = Math.round(60 - (overallScore / 100) * 42);
