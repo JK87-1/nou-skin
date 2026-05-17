@@ -319,13 +319,17 @@ export function hybridMerge(cv, ai) {
     result.overallScore = Math.round(ai.overallScore);
   }
 
-  // conditionScore: condition vs structural deviation amplified
-  const troubleVal = Math.max(0, 100 - (result.troubleCount || 0) * 8.5);
+  // conditionScore: 컨디션(일시적) vs 구조(장기적) 차이 강조
+  // troubleVal: GPT 원본 0-100 직접 사용 (raw count round-trip의 8.5점 bucket jump 제거)
+  const troubleVal = typeof ai.troubleCount === 'number'
+    ? Math.max(0, Math.min(100, ai.troubleCount))
+    : Math.max(0, 100 - (result.troubleCount || 0) * 8.5);
   const oilVal = Math.max(30, 100 - Math.abs(55 - (result.oilBalance || 50)) * 1.4);
   const cAvg = ((result.moisture || 50) + (result.skinTone || 50) + (result.darkCircleScore || 50) + oilVal + troubleVal) / 5;
   const sAvg = ((result.wrinkleScore || 50) + (result.elasticityScore || 50) + (result.textureScore || 50) + (result.poreScore || 50) + (result.pigmentationScore || 50)) / 5;
-  result.conditionScore = clamp(Math.round(cAvg + (cAvg - sAvg) * 1.8), 32, 96);
-  console.log('[conditionScore]', { cAvg: cAvg.toFixed(1), sAvg: sAvg.toFixed(1), diff: (cAvg - sAvg).toFixed(1), conditionScore: result.conditionScore, overallScore: result.overallScore });
+  // amplification factor 1.8 → 0.8: 차이 의미는 유지하되 측정 변동 증폭은 절반 이하로
+  result.conditionScore = clamp(Math.round(cAvg + (cAvg - sAvg) * 0.8), 32, 96);
+  console.log('[conditionScore]', { cAvg: cAvg.toFixed(1), sAvg: sAvg.toFixed(1), diff: (cAvg - sAvg).toFixed(1), troubleVal: troubleVal.toFixed(1), conditionScore: result.conditionScore, overallScore: result.overallScore });
 
   // Store AI analysis summary & details
   if (ai.analysis) {
