@@ -32,6 +32,7 @@ import { calculateLevel, getDefaultTheme, getThemeById, getLevelTitleData, THEME
 import { BadgeCelebration } from './components/BadgeRanking';
 import SplashScreen from './components/SplashScreen';
 import SkinMeasurePage from './pages/SkinMeasurePage';
+import TrendCard from './components/TrendCard';
 import { DropletIcon, SparkleIcon, LotionIcon, DiamondIcon, PaletteIcon, MicroscopeIcon, RulerIcon, EyeIcon, BubbleIcon, TargetIcon, SunIcon, MoonIcon, CameraIcon, TestTubeIcon, StarIcon, ShieldIcon, WandIcon, PhotoIcon, CheckIcon, SaveIcon, PastelIcon, LuaMiniIcon } from './components/icons/PastelIcons';
 import SoftCloverIcon from './components/icons/SoftCloverIcon';
 import EternalPearl from './components/icons/EternalPearl';
@@ -1547,26 +1548,13 @@ export default function App() {
                 const worsened = Object.values(changes).filter(c => !c.improved && Math.abs(c.diff) >= 1 && !skipKeys.includes(c.key));
                 if (improved.length === 0 && worsened.length === 0) return null;
 
-                // Generate summary text
-                const topImproved = improved.sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff)).slice(0, 2).map(c => c.label);
-                const topWorsened = worsened.sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff)).slice(0, 2).map(c => c.label);
-                let summary = '';
-                if (topImproved.length > 0 && topWorsened.length > 0) {
-                  summary = `${topImproved.join('·')} 개선, ${topWorsened.join('·')}은 조금만 신경 쓰면 돼요`;
-                } else if (topImproved.length > 0) {
-                  summary = `${topImproved.join('·')} 등 전반적으로 좋아지고 있어요`;
-                } else {
-                  summary = `${topWorsened.join('·')}이 살짝 변했지만, 금방 회복할 수 있어요`;
-                }
-
                 return (
                   <div style={{
                     marginTop: 14, padding: '14px 16px', borderRadius: 14,
                     background: 'var(--bg-card)',
                     border: '1px solid var(--border-light)',
                   }}>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>지난 측정 대비 변화</div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 10 }}>{summary}</div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10 }}>지표별 변화</div>
                     {improved.length > 0 && (
                       <div style={{ marginBottom: worsened.length > 0 ? 8 : 0 }}>
                         <div style={{ fontSize: 11, color: '#4ecb71', fontWeight: 600, marginBottom: 6 }}>개선됨</div>
@@ -1597,6 +1585,13 @@ export default function App() {
                 );
               })()}
             </div>
+
+            {/* ── Trend card (7일 추세) ── */}
+            <TrendCard
+              accent={activeThemeColors.accent}
+              changes={changes}
+              animationDelay="0.95s"
+            />
 
             {/* ── GROUP 1: Condition Metrics ── */}
             <div className="glass-card" style={{ padding: '24px', animation: 'fadeUp 0.5s ease-out 1.0s both', boxShadow: 'none' }}>
