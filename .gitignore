@@ -18,7 +18,12 @@ dist/
 ios/App/Pods/
 ios/App/App/public/
 ios/App/capacitor.config.json
+ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/
+ios/App/build/
 android/app/src/main/assets/public/
 android/app/src/main/assets/capacitor.config.json
 android/.gradle/
 android/app/build/
+android/build/
+android/captures/
+android/local.properties
