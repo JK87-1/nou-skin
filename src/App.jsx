@@ -32,6 +32,7 @@ import { calculateLevel, getDefaultTheme, getThemeById, getLevelTitleData, THEME
 import { BadgeCelebration } from './components/BadgeRanking';
 import SplashScreen from './components/SplashScreen';
 import SkinMeasurePage from './pages/SkinMeasurePage';
+import AiCommentCard from './components/AiCommentCard';
 import { DropletIcon, SparkleIcon, LotionIcon, DiamondIcon, PaletteIcon, MicroscopeIcon, RulerIcon, EyeIcon, BubbleIcon, TargetIcon, SunIcon, MoonIcon, CameraIcon, TestTubeIcon, StarIcon, ShieldIcon, WandIcon, PhotoIcon, CheckIcon, SaveIcon, PastelIcon, LuaMiniIcon } from './components/icons/PastelIcons';
 import SoftCloverIcon from './components/icons/SoftCloverIcon';
 import EternalPearl from './components/icons/EternalPearl';
@@ -1521,26 +1522,14 @@ export default function App() {
                 </div>
               </div>
               <p style={{ fontSize: 13.5, color: 'var(--text-secondary)', lineHeight: 1.75 }}>{result.advice}</p>
-              {result.aiNotes && (() => {
-                // Remove any sentence about identity comparison (동일 인물, 같은 사람, etc.)
-                const filtered = result.aiNotes
-                  .replace(/[^.。!]*(?:동일\s*인물|같은\s*(?:사람|인물)|다른\s*(?:사람|인물)|differentPerson|두\s*사진\s*(?:은|이|를))[^.。!]*[.。!]\s*/gi, '')
-                  .trim();
-                if (!filtered) return null;
-                return (
-                <div style={{
-                  marginTop: 14, padding: '14px 16px', borderRadius: 16,
-                  background: 'var(--tag-bg)',
-                  border: 'none',
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                    <span style={{ fontSize: 12, display: 'inline-flex', verticalAlign: 'middle' }}><MicroscopeIcon size={12} /></span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: activeThemeColors.accent }}>AI 정밀 판독</span>
-                  </div>
-                  <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>{filtered}</p>
-                </div>
-                );
-              })()}
+              <AiCommentCard
+                aiNotes={result.aiNotes}
+                aiDetails={result.aiDetails}
+                accent={activeThemeColors.accent}
+                analysisMode={result.analysisMode}
+                makeupDetected={result.makeupDetected}
+                animationDelay="0"
+              />
               {changes && (() => {
                 const skipKeys = ['overallScore', 'skinAge'];
                 const improved = Object.values(changes).filter(c => c.improved && Math.abs(c.diff) >= 1 && !skipKeys.includes(c.key));
