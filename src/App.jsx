@@ -1530,6 +1530,7 @@ export default function App() {
                 </div>
               </div>
               <p style={{ fontSize: 13.5, color: 'var(--text-secondary)', lineHeight: 1.75, margin: 0, outline: '2px dashed #0066ff' /* DEBUG */ }}>{result.advice}</p>
+              <div style={{ background: '#ffeb3b', color: '#000', fontSize: 10, fontWeight: 700, padding: '2px 6px', textAlign: 'center' /* DEBUG */ }}>MARKER A: advice end / AiCommentCard slot start</div>
               <AiCommentCard
                 aiNotes={result.aiNotes}
                 aiDetails={result.aiDetails}
@@ -1538,6 +1539,7 @@ export default function App() {
                 makeupDetected={result.makeupDetected}
                 animationDelay="0"
               />
+              <div style={{ background: '#4caf50', color: '#fff', fontSize: 10, fontWeight: 700, padding: '2px 6px', textAlign: 'center' /* DEBUG */ }}>MARKER B: AiCommentCard slot end / changes start</div>
               {changes && (() => {
                 const skipKeys = ['overallScore', 'skinAge'];
                 const improved = Object.values(changes).filter(c => c.improved && Math.abs(c.diff) >= 1 && !skipKeys.includes(c.key));
@@ -1580,6 +1582,7 @@ export default function App() {
                   </div>
                 );
               })()}
+              <div style={{ background: '#03a9f4', color: '#fff', fontSize: 10, fontWeight: 700, padding: '2px 6px', textAlign: 'center' /* DEBUG */ }}>MARKER C: card end (last child of glass-card)</div>
             </div>
 
             {/* ── Trend card (7일 추세) ── */}
