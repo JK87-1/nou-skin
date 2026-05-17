@@ -1,0 +1,29 @@
+{
+  "appId": "co.luaskin.app",
+  "appName": "루아",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "ios": {
+    "contentInset": "always",
+    "limitsNavigationsToAppBoundDomains": false,
+    "scheme": "LUA"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1200,
+      "launchAutoHide": false,
+      "backgroundColor": "#0a0a14",
+      "showSpinner": false
+    },
+    "Keyboard": {
+      "resize": "native",
+      "resizeOnFullScreen": true
+    },
+    "StatusBar": {
+      "overlaysWebView": false,
+      "style": "LIGHT"
+    }
+  }
+}

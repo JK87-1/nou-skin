@@ -2,26 +2,33 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './styles.css';
-import { registerSW } from 'virtual:pwa-register';
+import { Capacitor } from '@capacitor/core';
 import { createAutoBackup } from './storage/AutoBackup';
 
-// SW 업데이트 시 데이터 백업 후 활성화
-const updateSW = registerSW({
-  onNeedRefresh() {
-    // 새 SW가 설치되면 먼저 데이터를 백업한 후 업데이트 적용
-    createAutoBackup()
-      .then(() => {
-        sessionStorage.setItem('nou_sw_updating', '1');
-        updateSW(true);
-      })
-      .catch(() => {
-        // 백업 실패해도 업데이트는 진행
-        sessionStorage.setItem('nou_sw_updating', '1');
-        updateSW(true);
-      });
-  },
-  onOfflineReady() {},
-});
+const isNative = Capacitor.isNativePlatform();
+
+// Native (iOS/Android Capacitor) — 별도 초기화 + PWA SW 등록 스킵
+if (isNative) {
+  import('./native/capacitor-init').then((m) => m.initNative()).catch(() => {});
+} else {
+  // Web/PWA — Service Worker 등록 + 업데이트 시 데이터 백업
+  import('virtual:pwa-register').then(({ registerSW }) => {
+    const updateSW = registerSW({
+      onNeedRefresh() {
+        createAutoBackup()
+          .then(() => {
+            sessionStorage.setItem('nou_sw_updating', '1');
+            updateSW(true);
+          })
+          .catch(() => {
+            sessionStorage.setItem('nou_sw_updating', '1');
+            updateSW(true);
+          });
+      },
+      onOfflineReady() {},
+    });
+  }).catch(() => {});
+}
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

@@ -139,13 +139,17 @@ function cropFace(base64Image, landmarks) {
       const sh = Math.min(h - sy, Math.ceil((maxY - minY + padY * 2) * h));
       if (sw < 50 || sh < 50) { resolve(base64Image); return; }
 
+      // GPT Vision detail='high' 모드를 충분히 활용하기 위해 1024×1024로 (이전 512×512에서 상향).
+      // JPEG quality 0.9: 잡티·주름·모공 디테일 보존 (이전 0.7에서 상향).
+      const CROP_SIZE = 1024;
       const canvas = document.createElement('canvas');
-      canvas.width = 512;
-      canvas.height = 512;
+      canvas.width = CROP_SIZE;
+      canvas.height = CROP_SIZE;
       const ctx = canvas.getContext('2d');
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, 512, 512);
-      const cropped = canvas.toDataURL('image/jpeg', 0.7);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, CROP_SIZE, CROP_SIZE);
+      const cropped = canvas.toDataURL('image/jpeg', 0.9);
       resolve(cropped.split(',')[1]);
     };
     img.onerror = () => resolve(base64Image);
@@ -307,7 +311,36 @@ export function hybridMerge(cv, ai) {
 
   // GPT returns troubleCount as 0-100 score; convert to raw count (0-20)
   if (typeof ai.troubleCount === 'number') {
-    result.troubleCount = Math.max(0, Math.min(20, Math.round((100 - ai.troubleCount) / 8.5)));
+    const rawNew = Math.max(0, Math.min(20, Math.round((100 - ai.troubleCount) / 8.5)));
+
+    // Baseline raw count clamp — 비대칭 적용.
+    // - 감소 방향(트러블 줄어듦): UI 흔들림 방지 위해 같은 날 ±1, 시간 지날수록 ±2~5로 천천히 완화
+    // - 증가 방향(트러블 늘어남): 자유 허용. baseline=0에 anchor돼 새 트러블이 0으로 묻히는 부작용 방지
+    // differentPerson인 경우는 anchor 안 함
+    let stabilizedRaw = rawNew;
+    if (!ai.differentPerson) {
+      try {
+        const baseline = getBaseline();
+        if (baseline && typeof baseline.result?.troubleCount === 'number') {
+          const rawBase = Math.max(0, Math.min(20, Math.round((100 - baseline.result.troubleCount) / 8.5)));
+          const diff = rawNew - rawBase;
+          if (diff <= 0) {
+            // 트러블 감소(=양호한 방향): stabilization 적용
+            const daysSince = baseline.timestamp ? (Date.now() - baseline.timestamp) / 86400000 : 0;
+            const maxDecrease = daysSince < 1 ? 1 : daysSince <= 2 ? 2 : daysSince <= 5 ? 3 : daysSince <= 14 ? 4 : 5;
+            const clamped = Math.max(-maxDecrease, diff);
+            stabilizedRaw = rawBase + clamped;
+          } else {
+            // 트러블 증가: 자유 허용 (감지된 만큼 즉시 반영)
+            stabilizedRaw = rawNew;
+          }
+          if (stabilizedRaw !== rawNew) {
+            console.log('[troubleCount stabilize]', { rawNew, rawBase, diff, stabilizedRaw });
+          }
+        }
+      } catch (e) { console.warn('[troubleCount baseline clamp]', e); }
+    }
+    result.troubleCount = stabilizedRaw;
   }
 
   if (typeof ai.skinAge === 'number') {
@@ -319,13 +352,17 @@ export function hybridMerge(cv, ai) {
     result.overallScore = Math.round(ai.overallScore);
   }
 
-  // conditionScore: condition vs structural deviation amplified
-  const troubleVal = Math.max(0, 100 - (result.troubleCount || 0) * 8.5);
+  // conditionScore: 컨디션(일시적) vs 구조(장기적) 차이 강조
+  // troubleVal: GPT 원본 0-100 직접 사용 (raw count round-trip의 8.5점 bucket jump 제거)
+  const troubleVal = typeof ai.troubleCount === 'number'
+    ? Math.max(0, Math.min(100, ai.troubleCount))
+    : Math.max(0, 100 - (result.troubleCount || 0) * 8.5);
   const oilVal = Math.max(30, 100 - Math.abs(55 - (result.oilBalance || 50)) * 1.4);
   const cAvg = ((result.moisture || 50) + (result.skinTone || 50) + (result.darkCircleScore || 50) + oilVal + troubleVal) / 5;
   const sAvg = ((result.wrinkleScore || 50) + (result.elasticityScore || 50) + (result.textureScore || 50) + (result.poreScore || 50) + (result.pigmentationScore || 50)) / 5;
-  result.conditionScore = clamp(Math.round(cAvg + (cAvg - sAvg) * 1.8), 32, 96);
-  console.log('[conditionScore]', { cAvg: cAvg.toFixed(1), sAvg: sAvg.toFixed(1), diff: (cAvg - sAvg).toFixed(1), conditionScore: result.conditionScore, overallScore: result.overallScore });
+  // amplification factor 1.8 → 0.8: 차이 의미는 유지하되 측정 변동 증폭은 절반 이하로
+  result.conditionScore = clamp(Math.round(cAvg + (cAvg - sAvg) * 0.8), 32, 96);
+  console.log('[conditionScore]', { cAvg: cAvg.toFixed(1), sAvg: sAvg.toFixed(1), diff: (cAvg - sAvg).toFixed(1), troubleVal: troubleVal.toFixed(1), conditionScore: result.conditionScore, overallScore: result.overallScore });
 
   // Store AI analysis summary & details
   if (ai.analysis) {

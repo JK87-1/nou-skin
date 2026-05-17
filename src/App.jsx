@@ -34,6 +34,9 @@ import { calculateLevel, getDefaultTheme, getThemeById, getLevelTitleData, THEME
 import { BadgeCelebration } from './components/BadgeRanking';
 import SplashScreen from './components/SplashScreen';
 import SkinMeasurePage from './pages/SkinMeasurePage';
+import TrendCard from './components/TrendCard';
+import AiCommentCard from './components/AiCommentCard';
+import BeforeAfterSlider from './components/BeforeAfterSlider';
 import { DropletIcon, SparkleIcon, LotionIcon, DiamondIcon, PaletteIcon, MicroscopeIcon, RulerIcon, EyeIcon, BubbleIcon, TargetIcon, SunIcon, MoonIcon, CameraIcon, TestTubeIcon, StarIcon, ShieldIcon, WandIcon, PhotoIcon, CheckIcon, SaveIcon, PastelIcon, LuaMiniIcon } from './components/icons/PastelIcons';
 import SoftCloverIcon from './components/icons/SoftCloverIcon';
 import EternalPearl from './components/icons/EternalPearl';
@@ -206,13 +209,19 @@ export default function App() {
     // 주기적 자동 백업 시작 (5분 간격)
     const stopBackup = startPeriodicBackup();
 
-    // 백업 리마인더: 14일 이상 수동 백업 없으면 알림
+    // 백업 리마인더: 마지막 수동 백업 후 14일 + 마지막 노출 후 14일 모두 경과 시에만 노출
+    // (사용자가 닫기만 하고 백업 안 해도 14일 cooldown 유지)
     const records = getRecords();
     if (records.length >= 5) {
       const lastManual = parseInt(localStorage.getItem('nou_last_manual_backup') || '0', 10);
-      const daysSince = (Date.now() - lastManual) / (1000 * 60 * 60 * 24);
-      if (daysSince > 14) {
-        setTimeout(() => setShowBackupReminder(true), 3000);
+      const lastReminder = parseInt(localStorage.getItem('nou_last_backup_reminder') || '0', 10);
+      const daysSinceManual = (Date.now() - lastManual) / (1000 * 60 * 60 * 24);
+      const daysSinceReminder = (Date.now() - lastReminder) / (1000 * 60 * 60 * 24);
+      if (daysSinceManual > 14 && daysSinceReminder > 14) {
+        setTimeout(() => {
+          setShowBackupReminder(true);
+          try { localStorage.setItem('nou_last_backup_reminder', String(Date.now())); } catch {}
+        }, 3000);
       }
     }
 
@@ -1552,43 +1561,19 @@ export default function App() {
                 </div>
               </div>
               <p style={{ fontSize: 13.5, color: 'var(--text-secondary)', lineHeight: 1.75 }}>{result.advice}</p>
-              {result.aiNotes && (() => {
-                // Remove any sentence about identity comparison (동일 인물, 같은 사람, etc.)
-                const filtered = result.aiNotes
-                  .replace(/[^.。!]*(?:동일\s*인물|같은\s*(?:사람|인물)|다른\s*(?:사람|인물)|differentPerson|두\s*사진\s*(?:은|이|를))[^.。!]*[.。!]\s*/gi, '')
-                  .trim();
-                if (!filtered) return null;
-                return (
-                <div style={{
-                  marginTop: 14, padding: '14px 16px', borderRadius: 16,
-                  background: 'var(--tag-bg)',
-                  border: 'none',
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                    <span style={{ fontSize: 12, display: 'inline-flex', verticalAlign: 'middle' }}><MicroscopeIcon size={12} /></span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: activeThemeColors.accent }}>AI 정밀 판독</span>
-                  </div>
-                  <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>{filtered}</p>
-                </div>
-                );
-              })()}
+              <AiCommentCard
+                aiNotes={result.aiNotes}
+                aiDetails={result.aiDetails}
+                accent={activeThemeColors.accent}
+                analysisMode={result.analysisMode}
+                makeupDetected={result.makeupDetected}
+                animationDelay="0"
+              />
               {changes && (() => {
                 const skipKeys = ['overallScore', 'skinAge'];
                 const improved = Object.values(changes).filter(c => c.improved && Math.abs(c.diff) >= 1 && !skipKeys.includes(c.key));
                 const worsened = Object.values(changes).filter(c => !c.improved && Math.abs(c.diff) >= 1 && !skipKeys.includes(c.key));
                 if (improved.length === 0 && worsened.length === 0) return null;
-
-                // Generate summary text
-                const topImproved = improved.sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff)).slice(0, 2).map(c => c.label);
-                const topWorsened = worsened.sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff)).slice(0, 2).map(c => c.label);
-                let summary = '';
-                if (topImproved.length > 0 && topWorsened.length > 0) {
-                  summary = `${topImproved.join('·')} 개선, ${topWorsened.join('·')}은 조금만 신경 쓰면 돼요`;
-                } else if (topImproved.length > 0) {
-                  summary = `${topImproved.join('·')} 등 전반적으로 좋아지고 있어요`;
-                } else {
-                  summary = `${topWorsened.join('·')}이 살짝 변했지만, 금방 회복할 수 있어요`;
-                }
 
                 return (
                   <div style={{
@@ -1596,8 +1581,7 @@ export default function App() {
                     background: 'var(--bg-card)',
                     border: '1px solid var(--border-light)',
                   }}>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>지난 측정 대비 변화</div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 10 }}>{summary}</div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10 }}>지표별 변화</div>
                     {improved.length > 0 && (
                       <div style={{ marginBottom: worsened.length > 0 ? 8 : 0 }}>
                         <div style={{ fontSize: 11, color: '#4ecb71', fontWeight: 600, marginBottom: 6 }}>개선됨</div>
@@ -1627,6 +1611,18 @@ export default function App() {
                   </div>
                 );
               })()}
+            </div>
+
+            {/* ── Trend card (7일 추세) ── */}
+            <TrendCard
+              accent={activeThemeColors.accent}
+              changes={changes}
+              animationDelay="0.95s"
+            />
+
+            {/* ── Before & After slider (변화 비교) ── */}
+            <div style={{ animation: 'fadeUp 0.5s ease-out 1s both' }}>
+              <BeforeAfterSlider />
             </div>
 
             {/* ── GROUP 1: Condition Metrics ── */}
