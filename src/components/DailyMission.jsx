@@ -183,19 +183,86 @@ export default function DailyMission() {
     setUndoToast(null);
   }, [missions, progress, updateProgress]);
 
-  // 분석 데이터 없음
+  // 분석 데이터 없음 — 측정 후와 동일한 구조로 빈 상태 표시
   if (!latest) {
+    const emptyWeek = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - d.getDay() + i);
+      const dayLabels = ['일','월','화','수','목','금','토'];
+      return { date: d.toISOString().slice(0,10), dayLabel: dayLabels[d.getDay()], isToday: i === new Date().getDay(), completed: false };
+    });
     return (
       <div style={{ padding: '0 20px', marginTop: 24 }}>
-        <div style={{
-          borderRadius: 'var(--card-border-radius)', padding: '32px 20px', textAlign: 'center', margin: 0,
-          background: 'var(--bg-card)',
-          boxShadow: 'none', border: 'none',
-        }}>
-          <div style={{ fontSize: 36, marginBottom: 10 }}><TargetIcon size={36} /></div>
-          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>오늘의 피부 미션</div>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>먼저 피부 측정을 해주세요.<br />분석 결과에 맞는 맞춤 미션이 생성돼요!</div>
+
+        {/* WEEKLY CALENDAR */}
+        <div style={{ display: 'flex', gap: 6, marginBottom: 18 }}>
+          {emptyWeek.map(day => (
+            <div key={day.date} style={{
+              flex: 1, textAlign: 'center', padding: '10px 0 8px', borderRadius: 12,
+              background: day.isToday ? 'var(--day-today-bg)' : 'var(--day-default-bg)',
+            }}>
+              <div style={{ fontSize: 11, color: day.isToday ? 'var(--day-today-accent)' : 'var(--text-muted)', fontWeight: 600, marginBottom: 2 }}>{day.dayLabel}</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: day.isToday ? 'var(--day-today-accent)' : 'var(--text-primary)' }}>{new Date(day.date).getDate()}</div>
+              {day.isToday && <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--day-today-accent)', margin: '4px auto 0' }} />}
+            </div>
+          ))}
         </div>
+
+        {/* TODAY ACHIEVEMENT (0%) */}
+        <div style={{
+          background: 'var(--bg-card)', borderRadius: 'var(--card-border-radius)',
+          border: 'none', padding: '16px 18px',
+          display: 'flex', alignItems: 'center', gap: 16, marginBottom: 18,
+          boxShadow: 'none',
+        }}>
+          <div style={{ position: 'relative', width: 50, height: 50, flexShrink: 0 }}>
+            <svg width="50" height="50" viewBox="0 0 50 50">
+              <circle cx="25" cy="25" r="22" fill="none" stroke="var(--progress-track)" strokeWidth="4" />
+            </svg>
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>0%</div>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>오늘의 달성률</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>0 / 3 완료</div>
+          </div>
+          <div style={{ fontSize: 11, fontWeight: 600, borderRadius: 8, padding: '5px 10px', background: 'var(--bg-card)', color: 'var(--text-muted)', border: 'none' }}>+0 P</div>
+        </div>
+
+        {/* PLACEHOLDER MISSIONS */}
+        <div style={{
+          padding: 20, borderRadius: 'var(--card-border-radius)',
+          background: 'var(--context-bg)', boxShadow: 'none', border: 'none', marginBottom: 12,
+          opacity: 0.6,
+        }}>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+            <div style={{ width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><TargetIcon size={20} /></div>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+                <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 8, background: 'var(--context-bg)', color: 'var(--accent-primary)' }}>메인 미션</span>
+                <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 8, background: 'var(--tag-bg)', color: 'var(--accent-streak)' }}>+30 P</span>
+              </div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>피부 측정 후 미션이 생성돼요</div>
+              <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>분석 결과에 맞는 맞춤 미션을 준비해드릴게요</div>
+            </div>
+          </div>
+        </div>
+
+        {[{ title: '보너스 미션 1', xp: 15 }, { title: '보너스 미션 2', xp: 10 }].map((b, i) => (
+          <div key={i} style={{
+            padding: '14px 18px', borderRadius: 'var(--card-border-radius)',
+            background: 'var(--bg-card)', boxShadow: 'none', border: 'none', marginBottom: 8,
+            opacity: 0.4, display: 'flex', alignItems: 'center', gap: 12,
+          }}>
+            <div style={{ width: 32, height: 32, borderRadius: 10, background: 'var(--tag-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ fontSize: 14, opacity: 0.5 }}>✦</span>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{b.title}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>측정 후 공개</div>
+            </div>
+            <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 8, background: 'var(--tag-bg)', color: 'var(--text-muted)' }}>+{b.xp} P</span>
+          </div>
+        ))}
       </div>
     );
   }
@@ -214,13 +281,6 @@ export default function DailyMission() {
     <div style={{ padding: '0 20px', marginTop: 24 }}>
       <style>{ANIM_CSS}</style>
 
-      {/* === 3-1. HEADER === */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18, ...fadeUp(0) }}>
-        <div>
-          <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1, color: 'var(--text-muted)', marginBottom: 4 }}>DAILY MISSION</div>
-          <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)' }}>오늘의 피부 미션</div>
-        </div>
-      </div>
 
       {/* === 3-2. WEEKLY CALENDAR === */}
       <div style={{ display: 'flex', gap: 6, marginBottom: 18, ...fadeUp(0.1) }}>

@@ -715,7 +715,6 @@
 }
 .photo-cell:hover {
   z-index: 2;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
 }
 .photo-cell img {
   width: 100%;
@@ -957,9 +956,9 @@
   position: relative;
   z-index: 2;
 }
-.tab-bar-item svg {
-  width: 24px;
-  height: 24px;
+.tab-bar-item svg, .tab-bar-item img {
+  width: auto;
+  height: auto;
 }
 
 .tab-bar-item:active {

@@ -652,7 +652,7 @@ export default function RoutineTracker({ themeColors, onBack }) {
   const [showManualForm, setShowManualForm] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
-  const accent = themeColors?.accent || '#81E4BD';
+  const accent = themeColors?.accent || '#89cef5';
   const getCat = (cat) => TRACKER_CATEGORIES[cat] || TRACKER_CATEGORIES['기타'];
 
   // 루틴 데이터
@@ -712,115 +712,102 @@ export default function RoutineTracker({ themeColors, onBack }) {
 
   const sections = [
     { key: 'products', label: '내 제품', icon: '🧴' },
-    { key: 'routine', label: '오늘의 루틴', icon: '✅' },
     { key: 'analysis', label: '효과 분석', icon: '📊' },
   ];
 
   return (
     <div style={{ minHeight: '100vh', paddingBottom: 100, animation: 'breatheIn 0.5s ease both' }}>
       {/* Header */}
-      <div style={{ padding: '52px 20px 0', display: 'flex', alignItems: 'center', gap: 14 }}>
-        <button onClick={onBack} style={{
-          width: 38, height: 38, borderRadius: 12, border: 'none', cursor: 'pointer',
-          background: 'var(--progress-track)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path d="M15 18l-6-6 6-6" stroke={'var(--text-primary)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
-        <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>스킨케어 트래커</h1>
-          <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0' }}>제품 등록 · 루틴 관리 · 효과 분석</p>
-        </div>
-      </div>
+      <div style={{ padding: '52px 20px 0' }}></div>
 
       {/* Section Tabs */}
-      <div style={{ display: 'flex', gap: 8, padding: '20px 20px 4px', overflowX: 'auto' }}>
+      <div style={{ display: 'flex', gap: 8, padding: '20px 20px 16px' }}>
         {sections.map(s => {
           const active = section === s.key;
           return (
             <button key={s.key} onClick={() => setSection(s.key)} style={{
-              border: active ? `1px solid ${accent}40` : 'var(--item-border)',
-              background: active ? `${accent}18` : 'var(--item-bg)',
-              color: active ? accent : ('var(--tag-color)'),
-              borderRadius: 50, padding: '8px 18px', fontSize: 13, fontWeight: active ? 600 : 500,
-              cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, transition: 'all 0.2s',
-            }}><span style={{ display: 'inline-flex', verticalAlign: 'middle', marginRight: 4 }}><PastelIcon emoji={s.icon} size={14} /></span>{s.label}</button>
+              flex: 1, padding: '12px 0', borderRadius: 14, cursor: 'pointer',
+              fontFamily: 'inherit', fontSize: 13, fontWeight: 600, textAlign: 'center',
+              background: active ? 'rgba(137,206,245,0.25)' : 'rgba(255,255,255,0.35)',
+              color: active ? 'var(--text-primary)' : 'var(--text-muted)',
+              backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+              border: active ? '1px solid rgba(137,206,245,0.4)' : '1px solid rgba(255,255,255,0.3)',
+              boxShadow: active ? '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)' : 'none',
+              transition: 'all 0.2s',
+            }}>{s.icon} {s.label}</button>
           );
         })}
       </div>
 
       {/* ═══ SECTION 1: 내 제품 ═══ */}
       {section === 'products' && (
-        <div style={{ padding: '20px 20px 0', animation: 'fadeUp 0.3s ease-out' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <div>
-              <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>등록된 제품</span>
-              <span style={{ fontSize: 11, fontWeight: 600, color: accent, background: `${accent}15`, borderRadius: 10, padding: '2px 8px', marginLeft: 8 }}>
-                {products.length}개
-              </span>
-            </div>
+        <div style={{ padding: '0 20px', animation: 'fadeUp 0.3s ease-out' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>등록된 제품</span>
+            <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)' }}>{products.length}개</span>
           </div>
 
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12, alignItems: 'stretch' }}>
-            {products.map((p, i) => {
-              const cat = getCat(p.category);
-              const days = Math.max(0, Math.floor((Date.now() - new Date(p.startDate)) / 86400000));
-              return (
-                <div key={p.id} onClick={() => setSelectedProduct(p)} className="card" style={{
-                  padding: 14, cursor: 'pointer', minWidth: 0, boxSizing: 'border-box',
-                  display: 'flex', flexDirection: 'column',
-                  animation: `breatheIn 0.4s ease ${i * 0.06}s both`,
-                }}>
-                  {p.imageThumb ? (
-                    <img src={p.imageThumb} alt="" style={{ width: 44, height: 44, borderRadius: 12, objectFit: 'cover', marginBottom: 10, flexShrink: 0 }} />
-                  ) : (
-                    <div style={{ width: 44, height: 44, borderRadius: 12, marginBottom: 10, background: `${cat.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>
-                      {cat.emoji}
-                    </div>
-                  )}
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.brand}</div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginTop: 2, lineHeight: 1.4, minHeight: '2.8em', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{p.name}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 'auto', paddingTop: 10 }}>
-                    <span style={{ fontSize: 10, fontWeight: 600, color: cat.color, background: `${cat.color}15`, borderRadius: 6, padding: '2px 7px', flexShrink: 0 }}>{p.category}</span>
-                    <span style={{ fontSize: 10, color: 'var(--text-dim)', flexShrink: 0 }}>
-                      {p.timeSlot === 'both' ? '아침·저녁' : p.timeSlot === 'morning' ? '아침' : '저녁'}
-                    </span>
-                  </div>
-                  <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 6 }}>{days}일째 사용중</div>
-                </div>
-              );
-            })}
-
-            {/* Add Product Card */}
-            <div onClick={() => setShowAddSheet(true)} style={{
-              padding: 14, cursor: 'pointer', minWidth: 0, boxSizing: 'border-box',
-              borderRadius: 16,
-              border: '2px dashed var(--border-subtle)',
-              background: 'transparent',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              gap: 8, minHeight: 180,
-            }}>
-              <div style={{ width: 44, height: 44, borderRadius: '50%', background: `${accent}12`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 5v14M5 12h14" stroke={accent} strokeWidth="2" strokeLinecap="round" />
-                </svg>
+          <div style={{
+            background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255,255,255,0.3)', borderRadius: 20,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+            padding: '6px 0', marginBottom: 16,
+          }}>
+            {products.length === 0 ? (
+              <div style={{ padding: '24px 16px', textAlign: 'center', fontSize: 13, color: 'var(--text-muted)' }}>
+                등록된 제품이 없어요
               </div>
-              <span style={{ fontSize: 13, fontWeight: 600, color: accent }}>제품 등록</span>
-            </div>
+            ) : (
+              products.map((p, i) => {
+                const cat = getCat(p.category);
+                const days = Math.max(0, Math.floor((Date.now() - new Date(p.startDate)) / 86400000));
+                return (
+                  <div key={p.id} onClick={() => setSelectedProduct(p)} style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '13px 18px', cursor: 'pointer',
+                    borderTop: i > 0 ? '1px solid rgba(255,255,255,0.15)' : 'none',
+                  }}>
+                    {p.imageThumb ? (
+                      <img src={p.imageThumb} alt="" style={{ width: 40, height: 40, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} />
+                    ) : (
+                      <div style={{ width: 40, height: 40, borderRadius: 10, flexShrink: 0, background: 'rgba(255,255,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>
+                        {cat.emoji}
+                      </div>
+                    )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.brand} {p.name}</div>
+                      <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
+                        {p.category} · {p.timeSlot === 'both' ? '아침·저녁' : p.timeSlot === 'morning' ? '아침' : '저녁'} · {days}일째
+                      </div>
+                    </div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="1.8" strokeLinecap="round" style={{ flexShrink: 0 }}>
+                      <path d="M9 6l6 6-6 6"/>
+                    </svg>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Add Product Button */}
+          <div onClick={() => setShowAddSheet(true)} style={{
+            padding: '12px 24px', marginBottom: 16, cursor: 'pointer',
+            background: 'rgba(90,176,232,0.45)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+            border: '1px solid rgba(90,176,232,0.4)', borderRadius: 14,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>제품 등록</span>
           </div>
         </div>
       )}
 
-      {/* ═══ SECTION 2: 오늘의 루틴 ═══ */}
-      {section === 'routine' && (
-        <div style={{ padding: '20px 20px 0', animation: 'fadeUp 0.3s ease-out' }}>
-          <div className="segment-control" style={{ marginBottom: 20 }}>
-            <button className={`segment-btn${routineMode === 'morning' ? ' active' : ''}`} onClick={() => setRoutineMode('morning')}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><SunIcon size={14} /></span> 모닝 케어</button>
-            <button className={`segment-btn${routineMode === 'night' ? ' active' : ''}`} onClick={() => setRoutineMode('night')}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><MoonIcon size={14} /></span> 나이트 케어</button>
-          </div>
+      {/* ═══ SECTION 2: 오늘의 루틴 (케어 페이지로 이동됨) ═══ */}
+      {false && (
+        <div>
 
           {modeProducts.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '40px 0' }}>
@@ -936,7 +923,7 @@ export default function RoutineTracker({ themeColors, onBack }) {
           ) : (
             analyses.map((a, idx) => {
               const cat = getCat(a.category);
-              const confColor = a.confidence === '높음' ? '#34d399' : a.confidence === '보통' ? '#F0B870' : '#8888a0';
+              const confColor = a.confidence === '높음' ? '#5ab0e8' : a.confidence === '보통' ? '#F0B870' : '#8888a0';
               return (
                 <div key={a.productId} className="card" style={{ padding: 20, marginBottom: 16, animation: `breatheIn 0.5s ease ${idx * 0.15}s both` }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
@@ -960,11 +947,11 @@ export default function RoutineTracker({ themeColors, onBack }) {
                         {a.metrics.map((m, mi) => (
                           <div key={mi} style={{
                             display: 'flex', alignItems: 'center', gap: 4, borderRadius: 10, padding: '6px 12px',
-                            background: m.improved ? 'rgba(52,211,153,0.1)' : 'rgba(239,68,68,0.1)',
-                            border: `1px solid ${m.improved ? 'rgba(52,211,153,0.2)' : 'rgba(239,68,68,0.2)'}`,
+                            background: m.improved ? 'rgba(137,206,245,0.1)' : 'rgba(239,68,68,0.1)',
+                            border: `1px solid ${m.improved ? 'rgba(137,206,245,0.2)' : 'rgba(239,68,68,0.2)'}`,
                           }}>
                             <span style={{ fontSize: 12, color: 'var(--tag-color)' }}>{m.label}</span>
-                            <span style={{ fontSize: 14, fontWeight: 700, color: m.improved ? '#34d399' : '#ef4444' }}>
+                            <span style={{ fontSize: 14, fontWeight: 700, color: m.improved ? '#5ab0e8' : '#ef4444' }}>
                               {m.improved ? '↑' : '↓'}{m.diff}
                             </span>
                           </div>

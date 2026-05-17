@@ -747,10 +747,14 @@ export default function App() {
 
       {/* ===== HISTORY PAGE (gallery + insights merged) ===== */}
       {activeTab === 'history' && (
-        <HistoryPage onBack={goToLanding} onMeasure={openCamera} onOpenConsult={() => setFabChatOpen(true)} initialMode={historyInitMode} />
+        <HistoryPage onBack={goToLanding} onMeasure={openCamera} onOpenConsult={() => setFabChatOpen(true)} onAddProduct={() => { setActiveTab('home'); setStage('routineTracker'); }} initialMode={historyInitMode} />
       )}
 
 
+
+      {activeTab === 'care1' && (
+        <RoutineTracker colorMode={colorMode} themeColors={activeThemeColors} onBack={() => setActiveTab('home')} />
+      )}
 
       {activeTab === 'discover' && <DiscoverPage onMeasure={openCamera} onOpenConsult={() => setFabChatOpen(true)} />}
 
@@ -949,7 +953,7 @@ export default function App() {
 
           {/* Routine Tracker Entry Card */}
           <div
-            onClick={() => setStage('routineTracker')}
+            onClick={() => setActiveTab('care1')}
             className="card"
             style={{ margin: '12px 20px 0', padding: 20, cursor: 'pointer' }}
           >
@@ -969,7 +973,7 @@ export default function App() {
                 </svg>
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>스킨케어 트래커</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>스킨케어</div>
                 <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>제품 등록 · 루틴 관리 · 효과 분석</div>
               </div>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="var(--text-dim)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>

@@ -4,7 +4,8 @@ import {
   getProfile, saveProfile,
   SKIN_TYPES, SKIN_CONCERNS, SENSITIVITY_OPTIONS, GENDER_OPTIONS,
 } from '../storage/ProfileStorage';
-import { getRecords, getTotalChanges } from '../storage/SkinStorage';
+import { getRecords, getTotalChanges, getAllThumbnailsAsync, deleteRecord } from '../storage/SkinStorage';
+import { RecordDetailModal } from './HistoryPage';
 import { clearBaseline, hasBaseline } from '../engine/HybridAnalysis';
 import {
   isPushSupported, isStandalone, isIOS, getPermissionState,
@@ -23,12 +24,14 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
   const [toastMsg, setToastMsg] = useState('저장되었습니다');
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [bioModal, setBioModal] = useState(false);
-  const [contentMode, setContentMode] = useState('album'); // album | history
+  const [contentMode, setContentMode] = useState('album'); // album | history | record
+  const [selectedPhoto, setSelectedPhoto] = useState(null); // { record, thumb }
 
   const records = getRecords();
   const recordCount = records.length;
-  const thumbs = (() => { try { const all = {}; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k?.startsWith('nou_thumb_')) all[k.replace('nou_thumb_','')] = localStorage.getItem(k); } return all; } catch { return {}; } })();
-  const recentPhotos = records.slice(0, 5).map(r => ({ date: r.date, thumb: thumbs[r.date] })).filter(p => p.thumb);
+  const [thumbs, setThumbs] = useState({});
+  useEffect(() => { getAllThumbnailsAsync().then(setThumbs); }, []);
+  const recentPhotos = records.slice(0, 5).map(r => ({ date: r.date, record: r, thumb: thumbs[String(r.id)] || thumbs[r.date] })).filter(p => p.thumb);
   const habitDays = (() => { let c = 0; for (let i = 0; i < localStorage.length; i++) { if (localStorage.key(i)?.startsWith('lua_habit_')) c++; } return c; })();
 
   const glass = { background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)', borderRadius: 20 };
@@ -45,7 +48,6 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
       {/* ① 헤더 (noa style) */}
       <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ width: 34 }} />
-        <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)' }}>마이</span>
         <div onClick={() => setSettingsOpen(true)} style={{
           width: 34, height: 34, borderRadius: '50%', cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -78,18 +80,25 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
           {/* Stat Tab Grid (3 tabs) */}
           <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
             {[
-              { key: 'album', icon: <img src="/album.svg" alt="앨범" style={{ width: 18, height: 18, opacity: 0.3 }} />, label: '앨범', count: recentPhotos.length },
-              { key: 'history', icon: <svg width="18" height="18" viewBox="0 0 22 22" fill="currentColor" style={{ opacity: 0.3 }}><rect x="0" y="11" width="6" height="11" rx="1.5"/><rect x="8" y="3" width="6" height="19" rx="1.5"/><rect x="16" y="7" width="6" height="15" rx="1.5"/></svg>, label: '변화', count: recordCount },
-              { key: 'record', icon: <img src="/memo.svg" alt="기록" style={{ width: 18, height: 18, opacity: 0.3 }} />, label: '기록', count: daysTogether },
+              { key: 'album', iconSrc: '/album.svg', label: '앨범', count: recentPhotos.length },
+              { key: 'history', iconSvg: true, label: '변화', count: recordCount },
+              { key: 'record', iconSrc: '/memo.svg', label: '기록', count: daysTogether },
             ].map(t => {
               const active = contentMode === t.key;
+              const iconOpacity = active ? 0.7 : 0.3;
               return (
                 <div key={t.key} onClick={() => setContentMode(t.key)} style={{
                   background: 'transparent', borderRadius: 10, padding: '10px 4px',
-                  textAlign: 'center', cursor: 'pointer', transition: 'background 0.2s ease',
+                  textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s ease',
                   WebkitTapHighlightColor: 'transparent',
                 }}>
-                  <div style={{ display: 'flex', justifyContent: 'center' }}>{t.icon}</div>
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    {t.iconSvg ? (
+                      <svg width="18" height="18" viewBox="0 0 22 22" fill="currentColor" style={{ opacity: iconOpacity, transition: 'opacity 0.2s' }}><rect x="0" y="11" width="6" height="11" rx="1.5"/><rect x="8" y="3" width="6" height="19" rx="1.5"/><rect x="16" y="7" width="6" height="15" rx="1.5"/></svg>
+                    ) : (
+                      <img src={t.iconSrc} alt={t.label} style={{ width: 18, height: 18, opacity: iconOpacity, transition: 'opacity 0.2s' }} />
+                    )}
+                  </div>
                   <div style={{ fontSize: 11, marginTop: 4, color: active ? 'var(--text-primary)' : 'var(--text-muted)', fontWeight: active ? 500 : 400 }}>{t.label}</div>
                   <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>{t.count}</div>
                 </div>
@@ -100,9 +109,9 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
 
         {/* Text below avatar */}
         <div style={{ paddingTop: 4 }}>
-          <div style={{ fontSize: 14, color: 'var(--text-muted)' }}><span style={{ fontWeight: 600, color: 'var(--text-primary)', marginRight: 8 }}>{profile.nickname || 'user'}</span>lua와 함께한지 {daysTogether}일째</div>
-          <div onClick={() => setBioModal(true)} style={{ fontSize: 12, color: profile.bio ? 'var(--text-primary)' : 'var(--text-dim, #B0B8C1)', marginTop: 6, cursor: 'pointer' }}>
-            {profile.bio || '한 줄 남기기'}
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{profile.nickname || 'user'}</div>
+          <div onClick={() => setBioModal(true)} style={{ fontSize: 12, color: profile.bio ? 'var(--text-primary)' : 'var(--text-dim, #B0B8C1)', marginTop: 6, marginBottom: 20, cursor: 'pointer' }}>
+            {profile.bio || '자기소개'}
           </div>
         </div>
       </div>
@@ -110,29 +119,30 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
       {/* ⑤ 콘텐츠 영역 */}
       {contentMode === 'album' && (
         <div>
-          <div style={{ padding: '16px 16px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.2 }}>앨범</span>
-            <span style={{ fontSize: 10.5, fontWeight: 500, color: 'var(--accent-primary, #89cef5)', cursor: 'pointer' }}>모두 보기</span>
-          </div>
           {recentPhotos.length === 0 ? (
-            <div style={{ padding: '0 16px' }}>
-              <div style={{ ...glass, padding: '32px 16px', textAlign: 'center' }}>
-                <div style={{ fontSize: 40, opacity: 0.3, marginBottom: 8 }}>📷</div>
+            <div style={{ padding: '32px 16px', textAlign: 'center' }}>
                 <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 4 }}>측정한 셀카가 여기에 쌓여요</div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 12 }}>첫 측정으로 결을 남겨보세요</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 12 }}>첫 측정을 시작해보세요</div>
                 <button onClick={() => onMeasure?.()} style={{ background: 'var(--accent-primary, #89cef5)', color: '#fff', fontSize: 11, fontWeight: 500, padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>첫 측정 시작</button>
-              </div>
             </div>
           ) : (
-            <div style={{ padding: '0 16px 12px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 5 }}>
-              {recentPhotos.map((p, i) => (
-                <div key={i} style={{ aspectRatio: '1', borderRadius: 8, overflow: 'hidden', position: 'relative' }}>
-                  <img src={p.thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  <span style={{ position: 'absolute', bottom: 4, left: 4, fontSize: 8, color: '#fff', background: 'rgba(4,44,83,0.5)', padding: '1px 5px', borderRadius: 4, backdropFilter: 'blur(4px)' }}>
-                    {`${new Date(p.date).getMonth()+1}/${new Date(p.date).getDate()}`}
-                  </span>
-                </div>
-              ))}
+            <div className="photo-grid" style={{ padding: '0 16px 12px' }}>
+              {recentPhotos.map((p, i) => {
+                const d = new Date(p.date);
+                const shortDate = `${String(d.getMonth()+1).padStart(2,'0')}월${String(d.getDate()).padStart(2,'0')}일`;
+                return (
+                  <div key={i} className="photo-cell" onClick={() => setSelectedPhoto(p)} style={{ cursor: 'pointer' }}>
+                    <img src={p.thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <span style={{
+                      position: 'absolute', bottom: 6, left: 6,
+                      fontSize: 10, fontWeight: 600, color: '#fff',
+                      textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+                      zIndex: 2, pointerEvents: 'none',
+                    }}>{shortDate}</span>
+                    <span className="photo-score-badge">{p.record.overallScore}</span>
+                  </div>
+                );
+              })}
               <div onClick={() => onMeasure?.()} style={{
                 aspectRatio: '1', borderRadius: 8, background: 'rgba(255,255,255,0.15)',
                 border: '0.5px dashed rgba(137,206,245,0.4)',
@@ -149,7 +159,7 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
         <div style={{ padding: '32px 16px', textAlign: 'center' }}>
           <div style={{ fontSize: 40, opacity: 0.3, marginBottom: 8 }}>📊</div>
           <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 6 }}>곧 만나요</div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>측정의 결을 한 자리에 정돈해드릴게요</div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>측정 기록을 한 자리에 정돈해드릴게요</div>
         </div>
       )}
 
@@ -161,11 +171,25 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
         </div>
       )}
 
+      {/* 사진 상세 모달 (케어-앨범과 동일) */}
+      {selectedPhoto && selectedPhoto.record && (
+        <RecordDetailModal
+          record={selectedPhoto.record}
+          thumbnail={selectedPhoto.thumb}
+          onClose={() => setSelectedPhoto(null)}
+          onDelete={(id) => {
+            deleteRecord(id);
+            setSelectedPhoto(null);
+            getAllThumbnailsAsync().then(setThumbs);
+          }}
+        />
+      )}
+
       {/* Bio 편집 모달 */}
       {bioModal && createPortal(
         <BioEditModal
           bio={profile.bio || ''}
-          onSave={(v) => { update('bio', v); setBioModal(false); showToast('한 줄이 저장되었어요'); }}
+          onSave={(v) => { update('bio', v); setBioModal(false); showToast('저장되었어요'); }}
           onClose={() => setBioModal(false)}
         />,
         document.body,
@@ -200,7 +224,7 @@ function BioEditModal({ bio, onSave, onClose }) {
       }}>
         <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(137,206,245,0.4)' }} /></div>
         <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>한 줄 두기</span>
+          <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>자기소개</span>
           <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: 'rgba(255,255,255,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
@@ -221,6 +245,8 @@ function BioEditModal({ bio, onSave, onClose }) {
 function SettingsModal({ profile, update, onClose, showToast, colorMode, setColorMode }) {
   const [editingProfile, setEditingProfile] = useState(false);
   const [editingSkin, setEditingSkin] = useState(false);
+  const [editField, setEditField] = useState(null); // 'nickname' | 'birthYear' | 'gender'
+  const [editFieldValue, setEditFieldValue] = useState('');
   const [goalModalOpen, setGoalModalOpen] = useState(false);
   const [baselineExists, setBaselineExists] = useState(() => hasBaseline());
   const [restoreConfirm, setRestoreConfirm] = useState(null);
@@ -375,13 +401,13 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               { label: '나이대', value: profile.birthYear ? `${new Date().getFullYear() - parseInt(profile.birthYear)}세` : '', key: 'birthYear', placeholder: '선택 안 함' },
               { label: '성별', value: profile.gender || '', key: 'gender', placeholder: '선택 안 함' },
             ].map((f, i) => (
-              <div key={f.key} style={{
+              <div key={f.key} onClick={() => { setEditField(f.key); setEditFieldValue(f.key === 'nickname' ? (profile.nickname || '') : f.key === 'birthYear' ? (profile.birthYear || '') : (profile.gender || '')); }} style={{
                 padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                 borderTop: i > 0 ? '1px solid rgba(255,255,255,0.2)' : 'none', cursor: 'pointer',
               }}>
                 <span style={{ fontSize: 13, color: 'var(--text-primary)' }}>{f.label}</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{ fontSize: 12, color: f.value ? '#185FA5' : 'var(--text-dim, #B0B8C1)', fontStyle: 'normal' }}>{f.value || f.placeholder}</span>
+                  <span style={{ fontSize: 12, color: f.value ? 'var(--text-muted)' : 'var(--text-dim, #B0B8C1)' }}>{f.value || f.placeholder}</span>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C5DEF5" strokeWidth="1.8" strokeLinecap="round"><path d="M9 6l6 6-6 6"/></svg>
                 </div>
               </div>
@@ -390,7 +416,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
 
           {/* Bio */}
           <div style={{ padding: '14px 16px' }}>
-            <div style={{ fontSize: 13, color: 'var(--text-primary)', marginBottom: 8 }}>한 줄</div>
+            <div style={{ fontSize: 13, color: 'var(--text-primary)', marginBottom: 8 }}>자기소개</div>
             <textarea
               value={profile.bio || ''}
               onChange={(e) => update('bio', e.target.value.slice(0, 50))}
@@ -398,11 +424,11 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               style={{
                 width: '100%', minHeight: 50, boxSizing: 'border-box',
                 background: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.3)',
-                borderRadius: 12, padding: '12px 14px', fontSize: 12, color: 'var(--text-muted)',
+                borderRadius: 12, padding: '12px 14px', fontSize: 12, color: 'var(--text-primary)',
                 lineHeight: 1.5, outline: 'none', fontFamily: 'inherit', resize: 'none',
               }}
             />
-            <div style={{ textAlign: 'right', fontSize: 10, color: (profile.bio?.length || 0) >= 45 ? '#1E90E8' : '#185FA5', marginTop: 6 }}>
+            <div style={{ textAlign: 'right', fontSize: 10, color: (profile.bio?.length || 0) >= 45 ? 'var(--accent-primary)' : 'var(--text-muted)', marginTop: 6 }}>
               {(profile.bio?.length || 0)} / 50
             </div>
           </div>
@@ -415,6 +441,99 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               letterSpacing: -0.2, cursor: 'pointer', fontFamily: 'inherit',
             }}>저장</button>
           </div>
+
+          {/* Field Edit Modal */}
+          {editField && (() => {
+            const closeField = () => setEditField(null);
+            const saveField = () => { update(editField, editFieldValue); closeField(); };
+
+            if (editField === 'nickname') {
+              return (
+                <>
+                  <div onClick={closeField} style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(4,44,83,0.18)', backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)' }} />
+                  <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 2001, background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '22px 22px 0 0', padding: '0 0 calc(env(safe-area-inset-bottom,0px))', maxWidth: 430, margin: '0 auto', animation: 'settingsSlideIn 0.25s ease' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(137,206,245,0.4)' }} /></div>
+                    <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>이름</span>
+                      <div onClick={closeField} style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </div>
+                    </div>
+                    <div style={{ padding: '0 16px 16px' }}>
+                      <input type="text" value={editFieldValue} onChange={e => setEditFieldValue(e.target.value)} placeholder="이름을 입력하세요" maxLength={20} autoFocus
+                        style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 12, padding: '12px 14px', fontSize: 14, color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit' }} />
+                      <button onClick={saveField} style={{ width: '100%', marginTop: 12, padding: 14, borderRadius: 12, border: 'none', background: 'var(--accent-primary, #89cef5)', color: '#fff', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>저장</button>
+                    </div>
+                  </div>
+                </>
+              );
+            }
+
+            if (editField === 'birthYear') {
+              const ageRanges = ['1965', '1970', '1975', '1980', '1985', '1990', '1995', '2000', '2005'];
+              const yr = new Date().getFullYear();
+              return (
+                <>
+                  <div onClick={closeField} style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(4,44,83,0.18)', backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)' }} />
+                  <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 2001, background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '22px 22px 0 0', padding: '0 0 calc(env(safe-area-inset-bottom,0px))', maxWidth: 430, margin: '0 auto', animation: 'settingsSlideIn 0.25s ease' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(137,206,245,0.4)' }} /></div>
+                    <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>나이대</span>
+                      <div onClick={closeField} style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </div>
+                    </div>
+                    <div style={{ padding: '0 16px 16px', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                      {ageRanges.map(y => {
+                        const age = yr - parseInt(y);
+                        const selected = editFieldValue === y;
+                        return (
+                          <div key={y} onClick={() => { setEditFieldValue(y); update('birthYear', y); closeField(); }} style={{
+                            padding: '10px 16px', borderRadius: 12, cursor: 'pointer', fontSize: 13, fontWeight: 500,
+                            background: selected ? 'rgba(137,206,245,0.12)' : 'rgba(255,255,255,0.4)',
+                            color: selected ? 'var(--accent-primary)' : 'var(--text-primary)',
+                            border: selected ? '1px solid var(--accent-primary, #89cef5)' : '1px solid rgba(255,255,255,0.3)',
+                          }}>{age}세 ({y}년생)</div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </>
+              );
+            }
+
+            if (editField === 'gender') {
+              return (
+                <>
+                  <div onClick={closeField} style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(4,44,83,0.18)', backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)' }} />
+                  <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 2001, background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '22px 22px 0 0', padding: '0 0 calc(env(safe-area-inset-bottom,0px))', maxWidth: 430, margin: '0 auto', animation: 'settingsSlideIn 0.25s ease' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(137,206,245,0.4)' }} /></div>
+                    <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>성별</span>
+                      <div onClick={closeField} style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </div>
+                    </div>
+                    <div style={{ padding: '0 16px 16px', display: 'flex', gap: 8 }}>
+                      {GENDER_OPTIONS.map(g => {
+                        const selected = editFieldValue === g;
+                        return (
+                          <div key={g} onClick={() => { setEditFieldValue(g); update('gender', g); closeField(); }} style={{
+                            flex: 1, padding: '14px 0', borderRadius: 12, cursor: 'pointer', textAlign: 'center',
+                            fontSize: 14, fontWeight: 500,
+                            background: selected ? 'rgba(137,206,245,0.12)' : 'rgba(255,255,255,0.4)',
+                            color: selected ? 'var(--accent-primary)' : 'var(--text-primary)',
+                            border: selected ? '1px solid var(--accent-primary, #89cef5)' : '1px solid rgba(255,255,255,0.3)',
+                          }}>{g}</div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </>
+              );
+            }
+            return null;
+          })()}
         </div>
       )}
 
@@ -438,11 +557,11 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           <div style={{ padding: '12px 24px 20px' }}>
             <div style={{ fontSize: 17, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.3, lineHeight: 1.35 }}>
               {profile.skinType
-                ? '지금 두고 계신 결이에요'
-                : `${profile.nickname || '당신'}의 피부는 어떤 결인가요?`}
+                ? '지금 설정된 피부 타입이에요'
+                : `${profile.nickname || '당신'}의 피부 타입은 무엇인가요?`}
             </div>
             <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 6, lineHeight: 1.5 }}>
-              {profile.skinType ? '결이 바뀐 것 같다면 다시 두셔도 돼요' : '선택하시면 lua가 더 정확한 분석을 드릴 수 있어요'}
+              {profile.skinType ? '피부 타입이 바뀐 것 같다면 다시 설정해도 돼요' : '선택하시면 lua가 더 정확한 분석을 드릴 수 있어요'}
             </div>
           </div>
 

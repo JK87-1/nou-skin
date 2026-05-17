@@ -18,6 +18,7 @@
  */
 
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import {
   getRecords, getChanges, getTotalChanges, getTimeSeries,
   getMotivation, getNextMeasurementInfo, formatDateFull,
@@ -28,10 +29,11 @@ import { getProfile } from '../storage/ProfileStorage';
 import AiInsightCard from '../components/AiInsightCard';
 import BeforeAfterSlider from '../components/BeforeAfterSlider';
 import DailyMission from '../components/DailyMission';
+import { getProducts, getProductsForMode, getTrackerChecks, toggleTrackerCheck, getTrackerProgress } from '../storage/TrackerStorage';
 import { ChartIcon, CameraIcon, MicroscopeIcon, SparkleIcon, DiamondIcon, DropletIcon, RulerIcon, PaletteIcon, LotionIcon, EyeIcon, BubbleIcon, TargetIcon, ClockIcon, LuaMiniIcon } from '../components/icons/PastelIcons';
 
 // ===== MINI LINE GRAPH (Canvas-based, no dependencies) =====
-function TrendGraph({ data, color = '#ADEBB3', height = 160, metricKey = 'skinAge', inverse = false, showAllLabels = false }) {
+function TrendGraph({ data, color = '#aed8f7', height = 160, metricKey = 'skinAge', inverse = false, showAllLabels = false }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -179,7 +181,7 @@ function ChangeIndicator({ diff, unit = '점', inverse = false, size = 'normal' 
 }
 
 // ===== MAIN HISTORY PAGE =====
-export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialMode }) {
+export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddProduct, initialMode }) {
   const [mode, setMode] = useState(initialMode || 'care');
   const [insightMode, setInsightMode] = useState('timeline');
   const [records, setRecords] = useState([]);
@@ -204,8 +206,8 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
 
   const graphData = getTimeSeries(graphMetric);
   const graphOptions = [
-    { key: 'skinAge', label: '피부나이', color: '#ADEBB3', inverse: true },
-    { key: 'overallScore', label: '종합점수', color: '#ADEBB3', inverse: false },
+    { key: 'skinAge', label: '피부나이', color: '#aed8f7', inverse: true },
+    { key: 'overallScore', label: '종합점수', color: '#aed8f7', inverse: false },
     { key: 'moisture', label: '수분도', color: '#A8DEFF', inverse: false },
     { key: 'wrinkleScore', label: '주름', color: '#F5D0B8', inverse: false },
     { key: 'elasticityScore', label: '탄력', color: '#FFD080', inverse: false },
@@ -264,20 +266,6 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
 
   return (
     <div style={{ paddingBottom: 40 }}>
-      {/* Mode Toggle */}
-      <div style={{ padding: '12px 20px 16px' }}>
-        <div className="segment-control">
-          <button className={`segment-btn${mode === 'care' ? ' active' : ''}`}
-            onClick={() => setMode('care')}>케어</button>
-          <button className={`segment-btn${mode === 'mission' ? ' active' : ''}`}
-            onClick={() => setMode('mission')}>미션</button>
-          <button className={`segment-btn${mode === 'insights' ? ' active' : ''}`}
-            onClick={() => setMode('insights')}>분석</button>
-          <button className={`segment-btn${mode === 'gallery' ? ' active' : ''}`}
-            onClick={() => setMode('gallery')}>앨범</button>
-        </div>
-      </div>
-
       {/* Record Detail Modal */}
       {selectedRecord && (
         <RecordDetailModal
@@ -293,19 +281,10 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
         />
       )}
 
-      {/* ===== CARE MODE (embedded) ===== */}
-      {mode === 'care' && (
-        <div style={{ animation: 'breatheIn 0.6s ease both' }}>
-          <CareEmbed onOpenConsult={onOpenConsult} onMeasure={onMeasure} />
-        </div>
-      )}
-
-      {/* ===== MISSION MODE ===== */}
-      {mode === 'mission' && (
-        <div style={{ animation: 'breatheIn 0.6s ease both' }}>
-          <DailyMission />
-        </div>
-      )}
+      {/* ===== ROUTINE (Morning / Night) ===== */}
+      <div style={{ animation: 'breatheIn 0.6s ease both' }}>
+        <RoutineChecklist />
+      </div>
 
       {/* ===== GALLERY MODE (Instagram-style profile) ===== */}
       {mode === 'gallery' && (() => {
@@ -547,7 +526,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
               </div>
               <TrendGraph
                 data={getTimeSeries('overallScore')}
-                color="#ADEBB3"
+                color="#aed8f7"
                 height={180}
                 showAllLabels
               />
@@ -619,7 +598,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                             {diff > 0 && (
                               <div style={{
                                 width: 4, height: 4, borderRadius: '50%',
-                                background: '#81E4BD',
+                                background: '#89cef5',
                                 boxShadow: 'none',
                                 flexShrink: 0,
                               }} />
@@ -634,7 +613,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                         <div style={{ position: 'relative', width: 42, height: 42, flexShrink: 0 }}>
                           <svg width="42" height="42" viewBox="0 0 42 42">
                             <circle cx="21" cy="21" r={ringR} fill="none" stroke="var(--border-light)" strokeWidth="3" />
-                            <circle cx="21" cy="21" r={ringR} fill="none" stroke="#ADEBB3" strokeWidth="3"
+                            <circle cx="21" cy="21" r={ringR} fill="none" stroke="#aed8f7" strokeWidth="3"
                               strokeDasharray={`${(r.overallScore / 100) * circ} ${circ}`}
                               strokeLinecap="round" transform="rotate(-90 21 21)"
                             />
@@ -726,7 +705,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                       <div style={{ position: 'relative', width: 80, height: 80, margin: '0 auto 6px' }}>
                         <svg width="80" height="80" viewBox="0 0 80 80">
                           <circle cx="40" cy="40" r={bigR} fill="none" stroke="rgba(240,144,112,0.12)" strokeWidth="5" />
-                          <circle cx="40" cy="40" r={bigR} fill="none" stroke="#ADEBB3" strokeWidth="5"
+                          <circle cx="40" cy="40" r={bigR} fill="none" stroke="#aed8f7" strokeWidth="5"
                             strokeDasharray={`${(lastRecord.overallScore / 100) * bigCirc} ${bigCirc}`}
                             strokeLinecap="round" transform="rotate(-90 40 40)"
                           />
@@ -737,7 +716,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                           fontSize: 24, fontWeight: 800, fontFamily: 'var(--font-display)', color: 'var(--text-primary)',
                         }}>{lastRecord.overallScore}</div>
                       </div>
-                      <div style={{ fontSize: 11, color: '#ADEBB3', fontWeight: 600 }}>현재</div>
+                      <div style={{ fontSize: 11, color: '#aed8f7', fontWeight: 600 }}>현재</div>
                     </div>
                   </div>
 
@@ -777,7 +756,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, initialM
                             <div style={{
                               height: '100%', borderRadius: 2,
                               width: `${Math.min(100, Math.max(0, lastVal))}%`,
-                              background: improved || diff === 0 ? '#ADEBB3' : 'var(--text-dim)',
+                              background: improved || diff === 0 ? '#aed8f7' : 'var(--text-dim)',
                               transition: 'width 0.8s ease',
                             }} />
                           </div>
@@ -933,7 +912,7 @@ function PhotoGallery({ records, thumbs, onMeasure, onSelectRecord, onThumbsChan
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M12 5v14M5 12h14" stroke="#ADEBB3" strokeWidth="2.5" strokeLinecap="round" />
+              <path d="M12 5v14M5 12h14" stroke="#aed8f7" strokeWidth="2.5" strokeLinecap="round" />
             </svg>
           </div>
         </div>
@@ -986,7 +965,7 @@ function PhotoGallery({ records, thumbs, onMeasure, onSelectRecord, onThumbsChan
 }
 
 // ===== RECORD DETAIL MODAL (RPG stat card style) =====
-function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
+export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [dragY, setDragY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -1025,9 +1004,9 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
   const dateStr = `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 ${dayLabels[d.getDay()]}요일${timeStr ? ` ${timeStr}` : ''}`;
 
   const getGrade = (score) => {
-    if (score >= 85) return { letter: 'S', label: '최상', gradient: 'linear-gradient(135deg, #81E4BD, #98FBCB)', color: '#81E4BD', bg: 'rgba(125,255,192,0.12)' };
-    if (score >= 70) return { letter: 'A', label: '우수', gradient: 'linear-gradient(135deg, #ADEBB3, #98FBCB)', color: '#ADEBB3', bg: 'rgba(173,235,179,0.12)' };
-    if (score >= 55) return { letter: 'B', label: '양호', gradient: 'linear-gradient(135deg, #81E4BD, #ADEBB3)', color: '#81E4BD', bg: 'rgba(125,255,192,0.12)' };
+    if (score >= 85) return { letter: 'S', label: '최상', gradient: 'linear-gradient(135deg, #89cef5, #aed8f7)', color: '#89cef5', bg: 'rgba(137,206,245,0.12)' };
+    if (score >= 70) return { letter: 'A', label: '우수', gradient: 'linear-gradient(135deg, #89cef5, #5ab0e8)', color: '#89cef5', bg: 'rgba(137,206,245,0.12)' };
+    if (score >= 55) return { letter: 'B', label: '양호', gradient: 'linear-gradient(135deg, #aed8f7, #89cef5)', color: '#aed8f7', bg: 'rgba(174,216,247,0.12)' };
     return { letter: 'C', label: '관리 필요', gradient: 'linear-gradient(135deg, #BDBDBD, #9E9E9E)', color: '#757575', bg: 'rgba(158,158,158,0.12)' };
   };
 
@@ -1052,7 +1031,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 200,
-      background: `rgba(0,0,0,${Math.max(0, 0.45 - dragY * 0.003).toFixed(2)})`,
+      background: `rgba(0,0,0,${Math.max(0, 0.1 - dragY * 0.001).toFixed(2)})`,
       display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
       animation: closing ? 'none' : 'fadeIn 0.2s ease',
     }} onClick={onClose}>
@@ -1063,35 +1042,38 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
         onTouchEnd={handleTouchEnd}
         style={{
           width: '100%', maxWidth: 430,
-          background: 'var(--bg-secondary)',
-          borderRadius: '24px 24px 0 0',
+          background: 'rgba(255,255,255,0.6)',
+          backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          borderRadius: '20px 20px 0 0',
+          border: '1px solid rgba(255,255,255,0.3)',
+          borderBottom: 'none',
+          boxShadow: '0 -8px 28px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.4)',
           padding: '12px 20px 40px',
           maxHeight: '88vh', overflowY: dragY > 0 ? 'hidden' : 'auto',
+          WebkitOverflowScrolling: 'touch',
           animation: closing ? 'none' : 'slideUp 0.3s ease-out',
           transform: `translateY(${dragY}px)`,
           transition: isDragging ? 'none' : 'transform 0.25s ease-out',
         }} onClick={e => e.stopPropagation()}>
         {/* Handle bar + back/delete buttons */}
-        <div style={{ display: 'flex', justifyContent: 'center', position: 'relative', marginBottom: 14 }}>
+        <div style={{ display: 'flex', justifyContent: 'center', position: 'relative', marginBottom: 28 }}>
           <div onClick={onClose} style={{
-            position: 'absolute', left: -4, top: 2,
-            width: 32, height: 32, borderRadius: '50%', cursor: 'pointer',
-            background: 'var(--bg-card-hover)',
+            position: 'absolute', left: -4, top: 0,
+            width: 36, height: 36, cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <path d="M15 18l-6-6 6-6" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M15 18l-6-6 6-6" stroke="#C0C0C0" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--bg-input)', marginTop: 10 }} />
+          <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(137,206,245,0.4)', marginTop: 10 }} />
           <div onClick={() => setShowConfirm(true)} style={{
-            position: 'absolute', right: -4, top: 2,
-            width: 32, height: 32, borderRadius: '50%', cursor: 'pointer',
-            background: 'var(--bg-card-hover)',
+            position: 'absolute', right: -4, top: 0,
+            width: 36, height: 36, cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <path d="M6 12h12" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round" />
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M6 12h12" stroke="#C0C0C0" strokeWidth="2.5" strokeLinecap="round" />
             </svg>
           </div>
         </div>
@@ -1105,82 +1087,78 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
             animation: 'fadeIn 0.15s ease',
           }} onClick={() => setShowConfirm(false)}>
             <div onClick={e => e.stopPropagation()} style={{
-              background: 'var(--bg-card)', backdropFilter: 'var(--card-backdrop)', WebkitBackdropFilter: 'var(--card-backdrop)',
+              background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
               borderRadius: 20, padding: '28px 24px',
               width: 280, textAlign: 'center',
-              border: '1px solid var(--border-subtle)',
-              boxShadow: 'none',
+              border: '1px solid rgba(255,255,255,0.3)',
             }}>
               <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>이 기록을 삭제할까요?</div>
               <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 20 }}>삭제된 기록은 복구할 수 없습니다.</div>
               <div style={{ display: 'flex', gap: 10 }}>
                 <button onClick={() => setShowConfirm(false)} style={{
                   flex: 1, padding: '12px 0', borderRadius: 12, border: 'none',
-                  background: 'var(--bg-input)', color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                  background: 'rgba(255,255,255,0.4)', color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
                 }}>아니오</button>
                 <button onClick={() => { onDelete(record.id || record.date); setShowConfirm(false); }} style={{
                   flex: 1, padding: '12px 0', borderRadius: 12, border: 'none',
-                  background: '#e05545', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                  background: '#e05545', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
                 }}>삭제</button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Header: date */}
-        <div style={{ textAlign: 'center', marginBottom: 16 }}>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 400, letterSpacing: 0.3 }}>{dateStr}</div>
-        </div>
-
-        {/* Hero: skinAge + overallScore */}
-        <div style={{ display: 'flex', gap: 10, marginBottom: 16, animation: 'fadeUp 0.3s ease 0.1s both' }}>
-          <div style={{
-            flex: 1, background: 'var(--bg-card)', borderRadius: 20,
-            border: '1px solid var(--border-light)', padding: '16px 14px', textAlign: 'center',
-          }}>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>피부나이</div>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>
-              <AnimatedNumber target={record.skinAge} duration={1000} />
-              <span style={{ fontSize: 16, fontWeight: 600 }}> 세</span>
-            </div>
-          </div>
-          <div style={{
-            flex: 1, background: 'var(--bg-card)', borderRadius: 20,
-            border: '1px solid var(--border-light)', padding: '16px 14px', textAlign: 'center',
-          }}>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>종합 점수</div>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 800, lineHeight: 1 }}>
-              <span style={{ background: grade.gradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-                <AnimatedNumber target={record.overallScore} duration={1000} />
-              </span>
-              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-muted)' }}> 점</span>
-            </div>
-          </div>
-        </div>
-
         {/* Photo */}
         {thumbnail && (
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16, animation: 'popIn 0.4s ease 0.15s both' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 4, animation: 'popIn 0.4s ease 0.15s both' }}>
             <img src={thumbnail} alt="" style={{
               width: '100%', maxWidth: 320, height: 'auto', aspectRatio: '1/1', borderRadius: 24, objectFit: 'cover',
-              border: '3px solid rgba(240,144,112,0.15)',
+              border: '3px solid rgba(255,255,255,0.3)',
               boxShadow: 'none',
             }} />
           </div>
         )}
 
+
+        {/* 피부 점수 */}
+        <div style={{
+          animation: 'fadeUp 0.3s ease 0.1s both',
+          background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          borderRadius: 22, padding: '16px 18px',
+          border: '1px solid rgba(255,255,255,0.3)', marginBottom: 12,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+        }}>
+          <div style={{ marginBottom: 12 }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>피부 점수</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0', marginBottom: 4 }}>
+            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>피부나이</span>
+            <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}><AnimatedNumber target={record.skinAge} duration={1000} />세</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0', marginBottom: 4 }}>
+            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>종합 점수</span>
+            <span style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-display)', background: grade.gradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}><AnimatedNumber target={record.overallScore} duration={1000} />점</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0', marginBottom: 4 }}>
+            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>스킨 레벨</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-display)', background: grade.gradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{grade.letter}</span>
+              <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)' }}>{grade.label}</span>
+            </div>
+          </div>
+        </div>
+
         {/* 피부 타입 정보 */}
         <div style={{
           animation: 'fadeUp 0.3s ease 0.2s both',
-          background: 'var(--bg-card)', borderRadius: 22, padding: '16px 18px',
-          border: '1px solid var(--border-subtle)', marginBottom: 12,
-          boxShadow: 'none',
+          background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          borderRadius: 22, padding: '16px 18px',
+          border: '1px solid rgba(255,255,255,0.3)', marginBottom: 12,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
-            <LuaMiniIcon size={14} />
+          <div style={{ marginBottom: 12 }}>
             <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>피부 타입 정보</span>
           </div>
-          {/* Skin type */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0', marginBottom: 4 }}>
             <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>피부 타입</span>
             <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{record.skinType}</span>
@@ -1188,14 +1166,11 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
           {/* Analysis mode */}
           {record.analysisMode && (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0', marginBottom: 4 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 14 }}>{record.analysisMode === 'hybrid' ? '🧠' : '📊'}</span>
-                <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>분석 모드</span>
-              </div>
+              <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>분석 모드</span>
               <span style={{
                 fontSize: 11, fontWeight: 600,
-                color: record.analysisMode === 'hybrid' ? '#81E4BD' : 'var(--text-muted)',
-                background: record.analysisMode === 'hybrid' ? 'rgba(124,92,252,0.12)' : 'rgba(184,137,110,0.1)',
+                color: record.analysisMode === 'hybrid' ? '#89cef5' : 'var(--text-muted)',
+                background: record.analysisMode === 'hybrid' ? 'rgba(137,206,245,0.12)' : 'rgba(184,137,110,0.1)',
                 padding: '3px 10px', borderRadius: 10,
               }}>{record.analysisMode === 'hybrid' ? 'AI + CV 하이브리드' : 'CV 비전 분석'}</span>
             </div>
@@ -1203,23 +1178,17 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
           {/* Confidence */}
           {record.confidence != null && (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0', marginBottom: 4 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 14 }}>📊</span>
-                <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>측정 신뢰도</span>
-              </div>
+              <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>측정 신뢰도</span>
               <span style={{
                 fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-display)',
-                color: record.confidence >= 70 ? '#4ecb71' : record.confidence >= 50 ? '#d4900a' : '#f06050',
-              }}>{record.confidence}%</span>
+                color: record.confidence >= 70 ? '#5ab0e8' : record.confidence >= 50 ? '#d4900a' : '#f06050',
+              }}>{Math.min(record.confidence, 95)}%</span>
             </div>
           )}
           {/* Concerns */}
           {(record.concerns || []).length > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 14 }}>⚡</span>
-                <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>관심 사항</span>
-              </div>
+              <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>관심 사항</span>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginLeft: 'auto' }}>
                 {record.concerns.map((c, i) => (
                   <span key={i} style={{
@@ -1238,20 +1207,20 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
         {/* 컨디션 브리핑 */}
         {(() => {
           const cScore = record.conditionScore ?? record.overallScore;
-          const cGrade = cScore >= 85 ? { letter: 'S', color: '#81E4BD', bg: 'rgba(125,255,192,0.15)', border: 'rgba(125,255,192,0.3)' }
-            : cScore >= 70 ? { letter: 'A', color: '#81E4BD', bg: 'rgba(124,92,252,0.15)', border: 'rgba(124,92,252,0.3)' }
+          const cGrade = cScore >= 85 ? { letter: 'S', color: '#89cef5', bg: 'rgba(137,206,245,0.15)', border: 'rgba(137,206,245,0.3)' }
+            : cScore >= 70 ? { letter: 'A', color: '#89cef5', bg: 'rgba(137,206,245,0.15)', border: 'rgba(137,206,245,0.3)' }
             : cScore >= 55 ? { letter: 'B', color: '#f59e0b', bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.3)' }
             : cScore >= 40 ? { letter: 'C', color: '#8888a0', bg: 'rgba(136,136,160,0.12)', border: 'rgba(136,136,160,0.2)' }
             : { letter: 'D', color: '#f06050', bg: 'rgba(240,96,80,0.12)', border: 'rgba(240,96,80,0.2)' };
           return (
             <div style={{
               animation: 'fadeUp 0.3s ease 0.3s both',
-              background: 'var(--bg-card)', borderRadius: 22, padding: '16px 18px',
-              border: '1px solid var(--border-subtle)', marginBottom: 12,
-              boxShadow: 'none',
+              background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+              borderRadius: 22, padding: '16px 18px',
+              border: '1px solid rgba(255,255,255,0.3)', marginBottom: 12,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-                <LuaMiniIcon size={14} />
                 <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>컨디션 브리핑</span>
                 <div style={{ marginLeft: 'auto', padding: '4px 10px', borderRadius: 8, background: cGrade.bg, border: `1px solid ${cGrade.border}`, display: 'flex', alignItems: 'center', gap: 4 }}>
                   <span style={{ fontSize: 14, fontWeight: 800, color: cGrade.color, fontFamily: 'var(--font-display)' }}>{cGrade.letter}</span>
@@ -1273,12 +1242,12 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
         {record.advice && (
           <div style={{
             animation: 'fadeUp 0.3s ease 0.4s both',
-            background: 'var(--bg-card)', borderRadius: 22, padding: '16px 18px',
-            border: '1px solid var(--border-subtle)', marginBottom: 12,
-            boxShadow: 'none',
+            background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+            borderRadius: 22, padding: '16px 18px',
+            border: '1px solid rgba(255,255,255,0.3)', marginBottom: 12,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-              <LuaMiniIcon size={14} />
               <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>전체 피부 분석</span>
             </div>
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.75, margin: 0 }}>{record.advice}</p>
@@ -1294,7 +1263,7 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
                   background: 'linear-gradient(135deg, rgba(240,144,112,0.08), rgba(240,144,112,0.04))',
                   border: '1px solid rgba(240,144,112,0.15)',
                 }}>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: '#81E4BD', marginBottom: 4 }}>AI 정밀 판독</div>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: '#89cef5', marginBottom: 4 }}>AI 정밀 판독</div>
                   <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>{filtered}</p>
                 </div>
               );
@@ -1305,14 +1274,13 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
         {/* Condition metrics group */}
         <div style={{
           animation: 'fadeUp 0.3s ease 0.5s both',
-          background: 'var(--bg-card)',
-          border: '1px solid var(--border-subtle)',
+          background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          border: '1px solid rgba(255,255,255,0.3)',
           borderRadius: 22, padding: '14px 6px 2px',
           marginBottom: 12,
-          boxShadow: 'none',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingLeft: 14, marginBottom: 4 }}>
-            <LuaMiniIcon size={14} />
             <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>컨디션 지표</span>
           </div>
           {conditionMetrics.map((m, i) => (
@@ -1331,14 +1299,13 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
         {/* Aging metrics group */}
         <div style={{
           animation: 'fadeUp 0.3s ease 0.6s both',
-          background: 'var(--bg-card)',
-          border: '1px solid var(--border-subtle)',
+          background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          border: '1px solid rgba(255,255,255,0.3)',
           borderRadius: 22, padding: '14px 6px 2px',
           marginBottom: 12,
-          boxShadow: 'none',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingLeft: 14, marginBottom: 4 }}>
-            <LuaMiniIcon size={14} />
             <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>노화 지표</span>
           </div>
           {agingMetrics.map((m, i) => (
@@ -1354,44 +1321,526 @@ function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
           ))}
         </div>
 
-        {/* SKIN LEVEL footer */}
-        <div style={{
-          animation: 'fadeUp 0.3s ease 0.7s both',
-          background: 'linear-gradient(135deg, rgba(240,144,112,0.06), rgba(240,144,112,0.1))',
-          borderRadius: 18, padding: '16px 20px',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14,
-          border: '1px solid rgba(240,144,112,0.1)',
-        }}>
-          <div style={{
-            fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: 2,
-            textTransform: 'uppercase',
-          }}>SKIN LEVEL</div>
-          <div style={{
-            fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 900,
-            background: 'var(--btn-primary-bg)',
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            lineHeight: 1,
-          }}>
-            <AnimatedNumber target={record.skinAge} suffix="세" duration={1400} />
-          </div>
-          <div style={{
-            background: grade.gradient, borderRadius: 8,
-            padding: '3px 10px',
-          }}>
-            <span style={{
-              fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 800,
-              color: '#fff',
-            }}>{grade.letter}</span>
-          </div>
+        {/* Date */}
+        <div style={{ textAlign: 'center', marginTop: 8, marginBottom: 8 }}>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 400, letterSpacing: 0.3 }}>{dateStr}</div>
         </div>
       </div>
     </div>
   );
 }
 
+// ===== Routine Checklist (Morning / Night) =====
+function RoutineChecklist() {
+  const [mode, setMode] = useState('morning');
+  const [checks, setChecks] = useState(getTrackerChecks);
+  const [addModal, setAddModal] = useState(false);
+  const [addMode, setAddMode] = useState('morning');
+  const [customName, setCustomName] = useState('');
+  const [detailItem, setDetailItem] = useState(null); // item being configured
+
+  // Day settings per routine
+  const getDaySettings = () => { try { return JSON.parse(localStorage.getItem('lua_routine_days') || '{}'); } catch { return {}; } };
+  const [daySettings, setDaySettings] = useState(getDaySettings);
+  const dayLabels = ['일','월','화','수','목','금','토'];
+  const today = new Date().getDay();
+
+  const toggleDay = (itemId, dayIdx) => {
+    const key = `${itemId}_${mode}`;
+    const current = daySettings[key] || [true,true,true,true,true,true,true];
+    const updated = [...current];
+    updated[dayIdx] = !updated[dayIdx];
+    const next = { ...daySettings, [key]: updated };
+    localStorage.setItem('lua_routine_days', JSON.stringify(next));
+    setDaySettings(next);
+  };
+
+  const getItemDays = (itemId) => {
+    const key = `${itemId}_${mode}`;
+    return daySettings[key] || [true,true,true,true,true,true,true]; // default: every day
+  };
+
+  const isActiveToday = (itemId) => {
+    const days = getItemDays(itemId);
+    return days[today];
+  };
+  const products = getProductsForMode(mode);
+
+  // Recommended routines (user picks from these)
+  const recommendedRoutines = [
+    { id: '_water', name: '물 한 잔 마시기', icon: '💧' },
+    { id: '_wash', name: '세안', icon: '🧼' },
+    { id: '_sunscreen', name: '선크림 바르기', icon: '☀️' },
+    { id: '_toner', name: '토너 바르기', icon: '💧' },
+    { id: '_serum', name: '세럼 바르기', icon: '✨' },
+    { id: '_cream', name: '크림 바르기', icon: '🧴' },
+    { id: '_cleansing', name: '클렌징', icon: '🫧' },
+    { id: '_mask', name: '마스크팩', icon: '🎭' },
+    { id: '_vitamin', name: '비타민 먹기', icon: '💊' },
+    { id: '_stretch', name: '스트레칭', icon: '🧘' },
+  ];
+
+  // User-added routines (recommend + custom)
+  const getMyRoutines = () => { try { return JSON.parse(localStorage.getItem('lua_my_routines') || '[]'); } catch { return []; } };
+  const [myRoutines, setMyRoutines] = useState(getMyRoutines);
+
+  const addRoutine = (item, targetMode) => {
+    const exists = myRoutines.some(r => r.id === item.id && r.mode === targetMode);
+    if (exists) return;
+    const entry = { ...item, mode: targetMode, type: item.type || 'recommend' };
+    const updated = [...myRoutines, entry];
+    localStorage.setItem('lua_my_routines', JSON.stringify(updated));
+    setMyRoutines(updated);
+  };
+
+  const addCustomRoutine = (name, targetMode) => {
+    const entry = { id: `_custom_${Date.now()}`, name, icon: '✦', type: 'custom', mode: targetMode };
+    const updated = [...myRoutines, entry];
+    localStorage.setItem('lua_my_routines', JSON.stringify(updated));
+    setMyRoutines(updated);
+  };
+
+  const removeRoutine = (id, targetMode) => {
+    const updated = myRoutines.filter(r => !(r.id === id && r.mode === targetMode));
+    localStorage.setItem('lua_my_routines', JSON.stringify(updated));
+    setMyRoutines(updated);
+  };
+
+  const allItemsRaw = [
+    ...myRoutines.filter(r => r.mode === mode),
+    ...products.map(p => ({ id: p.id, name: `${p.brand} ${p.name}`, icon: '✨', type: 'product', category: p.category })),
+  ];
+  // Only show items active today
+  const allItems = allItemsRaw.filter(item => isActiveToday(item.id));
+
+  // Drag to reorder
+  const [dragIdx, setDragIdx] = useState(null);
+  const [dragOverIdx, setDragOverIdx] = useState(null);
+  const dragStartY = useRef(null);
+  const dragItemHeight = useRef(50);
+
+  const reorderRoutines = (fromIdx, toIdx) => {
+    if (fromIdx === toIdx) return;
+    const modeItems = myRoutines.filter(r => r.mode === mode);
+    const otherItems = myRoutines.filter(r => r.mode !== mode);
+    const reordered = [...modeItems];
+    const [moved] = reordered.splice(fromIdx, 1);
+    reordered.splice(toIdx, 0, moved);
+    const updated = [...otherItems, ...reordered];
+    localStorage.setItem('lua_my_routines', JSON.stringify(updated));
+    setMyRoutines(updated);
+  };
+
+  const handleDragStart = (idx, e) => {
+    e.preventDefault();
+    setDragIdx(idx);
+    setDragOverIdx(idx);
+    dragStartY.current = e.touches[0].clientY;
+  };
+
+  const handleDragMove = (e) => {
+    if (dragIdx === null) return;
+    const dy = e.touches[0].clientY - dragStartY.current;
+    const offset = Math.round(dy / dragItemHeight.current);
+    const newIdx = Math.max(0, Math.min(allItems.length - 1, dragIdx + offset));
+    setDragOverIdx(newIdx);
+  };
+
+  const handleDragEnd = () => {
+    if (dragIdx !== null && dragOverIdx !== null && dragIdx !== dragOverIdx) {
+      // Map allItems indices back to myRoutines indices for this mode
+      const modeItems = myRoutines.filter(r => r.mode === mode);
+      const activeIds = allItems.map(i => i.id);
+      const fromModeIdx = modeItems.findIndex(r => r.id === activeIds[dragIdx]);
+      const toModeIdx = modeItems.findIndex(r => r.id === activeIds[dragOverIdx]);
+      if (fromModeIdx >= 0 && toModeIdx >= 0) {
+        reorderRoutines(fromModeIdx, toModeIdx);
+      }
+    }
+    setDragIdx(null);
+    setDragOverIdx(null);
+    dragStartY.current = null;
+  };
+
+  // Which recommend items are already added for the addMode
+  const addedIds = myRoutines.filter(r => r.mode === addMode).map(r => r.id);
+
+  const handleToggle = (id) => {
+    if (id.startsWith('_')) {
+      // Recommended routine — use localStorage
+      const key = `lua_routine_${new Date().toISOString().slice(0, 10)}`;
+      const saved = JSON.parse(localStorage.getItem(key) || '{}');
+      saved[id] = !saved[id];
+      localStorage.setItem(key, JSON.stringify(saved));
+      setChecks({ ...checks }); // force re-render
+    } else {
+      const updated = toggleTrackerCheck(mode, id);
+      setChecks(updated);
+    }
+  };
+
+  const isChecked = (id) => {
+    if (id.startsWith('_')) {
+      const key = `lua_routine_${new Date().toISOString().slice(0, 10)}`;
+      const saved = JSON.parse(localStorage.getItem(key) || '{}');
+      return !!saved[id];
+    }
+    return !!checks[mode]?.[id];
+  };
+
+  const totalDone = allItems.filter(item => isChecked(item.id)).length;
+  const totalItems = allItems.length;
+  const pct = totalItems > 0 ? Math.round((totalDone / totalItems) * 100) : 0;
+
+  const glass = { background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)', borderRadius: 20 };
+
+  const weekDays = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - d.getDay() + i);
+    const dayLabels = ['일','월','화','수','목','금','토'];
+    return { date: d.toISOString().slice(0,10), dayLabel: dayLabels[d.getDay()], isToday: i === new Date().getDay() };
+  });
+
+  return (
+    <div style={{ padding: '20px 20px 0' }}>
+      {/* Weekly Calendar */}
+      <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
+        {weekDays.map(day => (
+          <div key={day.date} style={{
+            flex: 1, textAlign: 'center', padding: '10px 0 8px', borderRadius: 12,
+            background: day.isToday ? 'var(--day-today-bg)' : 'var(--day-default-bg)',
+          }}>
+            <div style={{ fontSize: 11, color: day.isToday ? 'var(--day-today-accent)' : 'var(--text-muted)', fontWeight: 600, marginBottom: 2 }}>{day.dayLabel}</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: day.isToday ? 'var(--day-today-accent)' : 'var(--text-primary)' }}>{new Date(day.date).getDate()}</div>
+            {day.isToday && <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--day-today-accent)', margin: '4px auto 0' }} />}
+          </div>
+        ))}
+      </div>
+
+      {/* Morning / Day / Night Toggle */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+        {[
+          { key: 'morning', label: '☀️ 모닝' },
+          { key: 'day', label: '🌤️ 데이' },
+          { key: 'night', label: '🌙 나이트' },
+        ].map(m => (
+          <button key={m.key} onClick={() => setMode(m.key)} style={{
+            flex: 1, padding: '12px 0', borderRadius: 14, cursor: 'pointer',
+            fontFamily: 'inherit', fontSize: 13, fontWeight: 600, textAlign: 'center',
+            background: mode === m.key ? 'rgba(137,206,245,0.25)' : 'rgba(255,255,255,0.35)',
+            color: mode === m.key ? 'var(--text-primary)' : 'var(--text-muted)',
+            backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+            border: mode === m.key ? '1px solid rgba(137,206,245,0.4)' : '1px solid rgba(255,255,255,0.3)',
+            boxShadow: mode === m.key ? '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)' : 'none',
+            transition: 'all 0.2s',
+          }}>{m.label}</button>
+        ))}
+      </div>
+
+      {/* Progress */}
+      <div style={{ ...glass, padding: '14px 18px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 14 }}>
+        <div style={{ position: 'relative', width: 44, height: 44, flexShrink: 0 }}>
+          <svg width="44" height="44" viewBox="0 0 44 44">
+            <circle cx="22" cy="22" r="19" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="3.5" />
+            <circle cx="22" cy="22" r="19" fill="none" stroke="var(--accent-primary, #89cef5)" strokeWidth="3.5"
+              strokeDasharray={`${(pct / 100) * 119.38} 119.38`} strokeLinecap="round" transform="rotate(-90 22 22)"
+              style={{ transition: 'stroke-dasharray 0.5s ease' }} />
+          </svg>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--text-primary)' }}>{pct}%</div>
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{mode === 'morning' ? '모닝' : mode === 'day' ? '데이' : '나이트'} 케어 달성률</div>
+          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{totalDone} / {totalItems} 완료</div>
+        </div>
+      </div>
+
+      {/* Checklist */}
+      <div onTouchMove={handleDragMove} onTouchEnd={handleDragEnd} style={{ ...glass, padding: '6px 0', marginBottom: 16 }}>
+        {allItems.length === 0 ? (
+          <div style={{ padding: '24px 16px', textAlign: 'center', fontSize: 13, color: 'var(--text-muted)' }}>
+            케어 항목 추가 버튼으로 루틴을 추가해보세요
+          </div>
+        ) : (
+          allItems.map((item, i) => {
+            const checked = isChecked(item.id);
+            const isDragging = dragIdx === i;
+            const isOver = dragOverIdx === i && dragIdx !== null && dragIdx !== i;
+            return (
+              <div key={item.id} style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '13px 14px 13px 14px',
+                borderTop: i > 0 ? '1px solid rgba(255,255,255,0.15)' : 'none',
+                opacity: isDragging ? 0.4 : checked ? 0.5 : 1,
+                background: isOver ? 'rgba(137,206,245,0.1)' : 'transparent',
+                transition: 'opacity 0.2s, background 0.15s',
+              }}>
+                {/* Drag handle */}
+                <div onTouchStart={(e) => handleDragStart(i, e)} style={{
+                  width: 20, height: 30, flexShrink: 0, cursor: 'grab',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2,
+                  touchAction: 'none',
+                }}>
+                  <div style={{ width: 12, height: 2, borderRadius: 1, background: 'rgba(255,255,255,0.35)' }} />
+                  <div style={{ width: 12, height: 2, borderRadius: 1, background: 'rgba(255,255,255,0.35)' }} />
+                  <div style={{ width: 12, height: 2, borderRadius: 1, background: 'rgba(255,255,255,0.35)' }} />
+                </div>
+                {/* Icon */}
+                <span style={{ fontSize: 18 }}>{item.icon}</span>
+                {/* Name */}
+                <div onClick={() => setDetailItem(item)} style={{ flex: 1, cursor: 'pointer' }}>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', textDecoration: checked ? 'line-through' : 'none' }}>{item.name}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>
+                    {(() => {
+                      const days = getItemDays(item.id);
+                      const allDays = days.every(Boolean);
+                      if (allDays) return '매일';
+                      const active = days.map((d, idx) => d ? dayLabels[idx] : null).filter(Boolean);
+                      return active.length > 0 ? active.join(' · ') : '비활성';
+                    })()}
+                  </div>
+                </div>
+                {/* Checkbox (right side) */}
+                <div onClick={(e) => { e.stopPropagation(); handleToggle(item.id); }} style={{
+                  width: 24, height: 24, borderRadius: 8, flexShrink: 0, cursor: 'pointer',
+                  border: checked ? 'none' : '2px solid rgba(255,255,255,0.4)',
+                  background: checked ? 'var(--accent-primary, #89cef5)' : 'transparent',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'all 0.2s',
+                }}>
+                  {checked && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Routine Detail Modal */}
+      {detailItem && createPortal(
+        <>
+          <div onClick={() => setDetailItem(null)} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,44,83,0.18)', backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)' }} />
+          <div style={{
+            position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201,
+            background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255,255,255,0.3)', borderRadius: '20px 20px 0 0',
+            boxShadow: '0 -8px 28px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.4)',
+            paddingBottom: 'calc(env(safe-area-inset-bottom,0px) + 16px)',
+            maxWidth: 430, margin: '0 auto',
+            animation: 'careSheetUp 280ms cubic-bezier(0.32,0.72,0,1) forwards',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}>
+              <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(137,206,245,0.4)' }} />
+            </div>
+            <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 20 }}>{detailItem.icon}</span>
+                <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>{detailItem.name}</span>
+              </div>
+              <div onClick={() => setDetailItem(null)} style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </div>
+            </div>
+            <div style={{ padding: '0 16px 16px' }}>
+              {/* Day selector */}
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500, marginBottom: 10 }}>반복 요일</div>
+              <div style={{ display: 'flex', gap: 6, marginBottom: 20 }}>
+                {dayLabels.map((label, idx) => {
+                  const days = getItemDays(detailItem.id);
+                  const active = days[idx];
+                  return (
+                    <div key={idx} onClick={() => toggleDay(detailItem.id, idx)} style={{
+                      flex: 1, textAlign: 'center', padding: '10px 0', borderRadius: 12, cursor: 'pointer',
+                      background: active ? 'rgba(137,206,245,0.2)' : 'rgba(255,255,255,0.3)',
+                      border: active ? '1px solid rgba(137,206,245,0.4)' : '1px solid rgba(255,255,255,0.3)',
+                      transition: 'all 0.2s',
+                    }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: active ? 'var(--accent-primary, #89cef5)' : 'var(--text-muted)' }}>{label}</div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Quick presets */}
+              <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+                {[
+                  { label: '매일', days: [true,true,true,true,true,true,true] },
+                  { label: '평일', days: [false,true,true,true,true,true,false] },
+                  { label: '주말', days: [true,false,false,false,false,false,true] },
+                ].map(preset => (
+                  <button key={preset.label} onClick={() => {
+                    const key = `${detailItem.id}_${mode}`;
+                    const next = { ...daySettings, [key]: preset.days };
+                    localStorage.setItem('lua_routine_days', JSON.stringify(next));
+                    setDaySettings(next);
+                  }} style={{
+                    flex: 1, padding: '8px 0', borderRadius: 10, border: 'none', cursor: 'pointer',
+                    background: 'rgba(255,255,255,0.4)', color: 'var(--text-primary)',
+                    fontSize: 12, fontWeight: 500, fontFamily: 'inherit',
+                    border: '1px solid rgba(255,255,255,0.3)',
+                  }}>{preset.label}</button>
+                ))}
+              </div>
+
+              {/* Delete routine */}
+              <button onClick={() => {
+                removeRoutine(detailItem.id, mode);
+                setDetailItem(null);
+              }} style={{
+                width: '100%', padding: 12, borderRadius: 12, border: 'none',
+                background: 'rgba(0,0,0,0.25)', color: '#fff',
+                fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+              }}>이 루틴 삭제</button>
+            </div>
+          </div>
+        </>,
+        document.body,
+      )}
+
+      {/* Add Routine Button */}
+      <div onClick={() => { setAddMode(mode); setAddModal(true); }} style={{
+        padding: '12px 24px', marginBottom: 16, cursor: 'pointer',
+        background: 'rgba(90,176,232,0.45)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+        border: '1px solid rgba(90,176,232,0.4)', borderRadius: 14,
+        boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+      }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        <span style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>케어 항목 추가</span>
+      </div>
+
+      {/* Add Routine Modal */}
+      {addModal && createPortal(
+        <>
+          <div onClick={() => setAddModal(false)} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,44,83,0.18)', backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)' }} />
+          <div style={{
+            position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201,
+            background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255,255,255,0.3)', borderRadius: '20px 20px 0 0',
+            boxShadow: '0 -8px 28px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.4)',
+            paddingBottom: 'calc(env(safe-area-inset-bottom,0px) + 16px)',
+            maxWidth: 430, maxHeight: '70vh', overflowY: 'auto', margin: '0 auto',
+            animation: 'careSheetUp 280ms cubic-bezier(0.32,0.72,0,1) forwards',
+          }}>
+            <style>{`@keyframes careSheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}>
+              <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(137,206,245,0.4)' }} />
+            </div>
+            <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>케어 항목 추가</span>
+              <div onClick={() => setAddModal(false)} style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </div>
+            </div>
+            <div style={{ padding: '0 16px' }}>
+              {/* Mode selector */}
+              <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                {[{ key: 'morning', label: '☀️ 모닝' }, { key: 'day', label: '🌤️ 데이' }, { key: 'night', label: '🌙 나이트' }].map(m => (
+                  <button key={m.key} onClick={() => setAddMode(m.key)} style={{
+                    flex: 1, padding: '10px 0', borderRadius: 12, cursor: 'pointer',
+                    fontFamily: 'inherit', fontSize: 13, fontWeight: 600, textAlign: 'center',
+                    background: addMode === m.key ? 'rgba(137,206,245,0.25)' : 'rgba(255,255,255,0.3)',
+                    color: addMode === m.key ? 'var(--text-primary)' : 'var(--text-muted)',
+                    border: addMode === m.key ? '1px solid rgba(137,206,245,0.4)' : '1px solid rgba(255,255,255,0.3)',
+                  }}>{m.label}</button>
+                ))}
+              </div>
+
+              {/* Recommended routines */}
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 500, marginBottom: 8 }}>추천 루틴</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+                {recommendedRoutines.map(r => {
+                  const added = addedIds.includes(r.id);
+                  return (
+                    <div key={r.id} onClick={() => {
+                      if (added) removeRoutine(r.id, addMode);
+                      else addRoutine(r, addMode);
+                    }} style={{
+                      padding: '8px 14px', borderRadius: 20, cursor: 'pointer',
+                      fontSize: 12, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6,
+                      background: added ? 'rgba(137,206,245,0.15)' : 'rgba(255,255,255,0.4)',
+                      color: added ? 'var(--accent-primary, #89cef5)' : 'var(--text-primary)',
+                      border: added ? '1px solid rgba(137,206,245,0.3)' : '1px solid rgba(255,255,255,0.3)',
+                      transition: 'all 0.2s',
+                    }}>
+                      <span>{r.icon}</span>
+                      <span>{r.name}</span>
+                      {added && <span style={{ fontSize: 10 }}>✓</span>}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* My products */}
+              {(() => {
+                const allProducts = getProducts();
+                if (allProducts.length === 0) return null;
+                return (
+                  <>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 500, marginBottom: 8 }}>내 화장품</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+                      {allProducts.map(p => {
+                        const pid = `_product_${p.id}`;
+                        const added = addedIds.includes(pid);
+                        return (
+                          <div key={p.id} onClick={() => {
+                            if (added) removeRoutine(pid, addMode);
+                            else addRoutine({ id: pid, name: `${p.brand} ${p.name}`, icon: '✨', type: 'product' }, addMode);
+                          }} style={{
+                            padding: '8px 14px', borderRadius: 20, cursor: 'pointer',
+                            fontSize: 12, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6,
+                            background: added ? 'rgba(137,206,245,0.15)' : 'rgba(255,255,255,0.4)',
+                            color: added ? 'var(--accent-primary, #89cef5)' : 'var(--text-primary)',
+                            border: added ? '1px solid rgba(137,206,245,0.3)' : '1px solid rgba(255,255,255,0.3)',
+                            transition: 'all 0.2s',
+                          }}>
+                            <span>✨</span>
+                            <span>{p.brand} {p.name}</span>
+                            {added && <span style={{ fontSize: 10 }}>✓</span>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                );
+              })()}
+
+              {/* Custom input */}
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 500, marginBottom: 8 }}>직접 입력</div>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                <input
+                  value={customName}
+                  onChange={e => setCustomName(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter' && customName.trim()) { addCustomRoutine(customName.trim(), addMode); setCustomName(''); } }}
+                  placeholder="예: 유산균 먹기"
+                  style={{
+                    flex: 1, background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.3)',
+                    borderRadius: 12, padding: '11px 14px', fontSize: 13, color: 'var(--text-primary)',
+                    outline: 'none', fontFamily: 'inherit',
+                  }}
+                />
+                <button onClick={() => {
+                  if (customName.trim()) { addCustomRoutine(customName.trim(), addMode); setCustomName(''); }
+                }} style={{
+                  padding: '11px 18px', borderRadius: 12, border: 'none',
+                  background: customName.trim() ? 'var(--accent-primary, #89cef5)' : 'rgba(137,206,245,0.2)',
+                  color: customName.trim() ? '#fff' : 'var(--text-muted)',
+                  fontSize: 13, fontWeight: 500, cursor: customName.trim() ? 'pointer' : 'default',
+                  fontFamily: 'inherit',
+                }}>추가</button>
+              </div>
+            </div>
+          </div>
+        </>,
+        document.body,
+      )}
+    </div>
+  );
+}
+
 // ===== Care Embed (CarePage 전체 요소) =====
-function CareEmbed({ onOpenConsult, onMeasure }) {
+function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
   const HABIT_KEY = 'lua_habit_';
   const getTodayKey = () => HABIT_KEY + new Date().toISOString().slice(0, 10);
   const getHabitLog = () => { try { return JSON.parse(localStorage.getItem(getTodayKey()) || '{}'); } catch { return {}; } };
@@ -1430,10 +1879,10 @@ function CareEmbed({ onOpenConsult, onMeasure }) {
   );
 
   const closeModal = () => setModal(null);
-  const ModalWrap = ({ title, children }) => (
+  const ModalWrap = ({ title, children }) => createPortal(
     <>
       <div onClick={closeModal} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,44,83,0.18)', backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)' }} />
-      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201, background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '22px 22px 0 0', boxShadow: '0 -8px 28px rgba(0,0,0,0.08)', padding: '0 0 calc(env(safe-area-inset-bottom,0px))', maxWidth: 430, margin: '0 auto', animation: 'careSheetUp 280ms cubic-bezier(0.32,0.72,0,1) forwards' }}>
+      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201, background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '20px 20px 0 0', boxShadow: '0 -8px 28px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.4)', paddingBottom: 'calc(env(safe-area-inset-bottom,0px) + 16px)', maxWidth: 430, margin: '0 auto', animation: 'careSheetUp 280ms cubic-bezier(0.32,0.72,0,1) forwards' }}>
         <style>{`@keyframes careSheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
         <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(137,206,245,0.4)' }} /></div>
         <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -1444,7 +1893,8 @@ function CareEmbed({ onOpenConsult, onMeasure }) {
         </div>
         <div style={{ padding: '0 16px 16px' }}>{children}</div>
       </div>
-    </>
+    </>,
+    document.body,
   );
 
   return (
@@ -1457,13 +1907,13 @@ function CareEmbed({ onOpenConsult, onMeasure }) {
         </button>
       </div>
 
-      {/* 오늘의 결 요약 */}
+      {/* 오늘의 기록 요약 */}
       <div style={{ padding: '0 20px 14px', fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.45 }}>
-        {summaryParts.length > 0 ? (<><span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>오늘 두고 있는 것들</span> · {summaryParts.join(' · ')}</>) : '오늘의 결을 시작해볼까요?'}
+        {summaryParts.length > 0 ? (<><span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>오늘 두고 있는 것들</span> · {summaryParts.join(' · ')}</>) : '오늘의 기록을 시작해볼까요?'}
       </div>
 
-      {/* 섹션 헤더: 오늘의 결 */}
-      <div style={{ padding: '6px 20px 8px', fontSize: 10, color: 'var(--text-muted)', fontWeight: 500, letterSpacing: 0.3, textTransform: 'uppercase' }}>오늘의 결</div>
+      {/* 섹션 헤더: 오늘의 기록 */}
+      <div style={{ padding: '6px 20px 8px', fontSize: 10, color: 'var(--text-muted)', fontWeight: 500, letterSpacing: 0.3, textTransform: 'uppercase' }}>오늘의 기록</div>
 
       {/* 습관 카드 3개 */}
       <div style={{ padding: '0 12px 12px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
@@ -1472,7 +1922,7 @@ function CareEmbed({ onOpenConsult, onMeasure }) {
         <HabitCard icon="☀️" label="자외선" value={sunscreen === true ? '✓' : '—'} meta={sunscreen === true ? '선크림 챙김' : '아직'} metaHL={sunscreen === true} progress={sunscreen === true ? 1 : 0} onTap={() => setModal('sunscreen')} />
       </div>
 
-      {/* lua의 결의 발견 */}
+      {/* lua의 피부 발견 */}
       {recordCount >= 2 && (
         <div onClick={() => onOpenConsult?.()} style={{ padding: '0 16px 12px', cursor: 'pointer' }}>
           <div style={{ ...glass, padding: 14, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
@@ -1481,7 +1931,7 @@ function CareEmbed({ onOpenConsult, onMeasure }) {
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 11, color: 'var(--text-primary)', lineHeight: 1.5 }}>수분이 충분한 주에는 모공 점수가 평균 4점 더 좋았어요.</div>
-              <span style={{ display: 'inline-block', marginTop: 5, fontSize: 9, fontWeight: 500, padding: '2px 7px', borderRadius: 8, background: 'rgba(137,206,245,0.15)', color: 'var(--accent-primary)' }}>결의 발견</span>
+              <span style={{ display: 'inline-block', marginTop: 5, fontSize: 9, fontWeight: 500, padding: '2px 7px', borderRadius: 8, background: 'rgba(137,206,245,0.15)', color: 'var(--accent-primary)' }}>피부 발견</span>
             </div>
           </div>
         </div>
@@ -1499,7 +1949,7 @@ function CareEmbed({ onOpenConsult, onMeasure }) {
           <div style={{ fontSize: 40, opacity: 0.3, marginBottom: 8 }}>📦</div>
           <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 4 }}>아직 등록된 화장품이 없어요</div>
           <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 12 }}>지금 쓰는 화장품을 등록해보세요</div>
-          <button style={{ background: 'var(--accent-primary)', color: '#fff', fontSize: 11, fontWeight: 500, padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>+ 추가하기</button>
+          <button onClick={() => onAddProduct?.()} style={{ background: 'var(--accent-primary)', color: '#fff', fontSize: 11, fontWeight: 500, padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>+ 추가하기</button>
         </div>
       </div>
 
@@ -1570,7 +2020,7 @@ function CareEmbed({ onOpenConsult, onMeasure }) {
       })()}
 
       {toast && (
-        <div style={{ position:'fixed',bottom:120,left:'50%',transform:'translateX(-50%)',background:'var(--accent-primary)',color:'#fff',padding:'10px 24px',borderRadius:20,fontSize:13,fontWeight:500,zIndex:999 }}>오늘의 결에 두었어요</div>
+        <div style={{ position:'fixed',bottom:120,left:'50%',transform:'translateX(-50%)',background:'var(--accent-primary)',color:'#fff',padding:'10px 24px',borderRadius:20,fontSize:13,fontWeight:500,zIndex:999 }}>기록되었어요</div>
       )}
     </div>
   );

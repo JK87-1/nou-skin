@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { getLatestRecord, getPreviousRecord, getRecordCount, getRecords } from '../storage/SkinStorage';
+import { useState, useEffect } from 'react';
+import { getLatestRecord, getPreviousRecord, getRecordCount, getRecords, getTimeSeries, getAllThumbnailsAsync } from '../storage/SkinStorage';
 
 const glass = {
   background: 'rgba(255,255,255,0.35)',
@@ -31,7 +31,7 @@ function getImpactFactors(metricKey, records) {
 
 function getHeadline(latest, prev) {
   if (!latest) return '첫 측정을 해볼까요?';
-  if (!prev) return '기준선이 만들어졌어요. 이제 함께 결을 따라가요.';
+  if (!prev) return '기준선이 만들어졌어요. 이제 함께 변화를 따라가요.';
   let bestKey = null, bestDiff = 0;
   for (const m of METRICS) {
     const diff = (latest[m.key] ?? 0) - (prev[m.key] ?? 0);
@@ -47,7 +47,6 @@ function formatDate(dateStr) {
 }
 
 export default function DiscoverPage({ onMeasure, onOpenConsult }) {
-  const [mode, setMode] = useState('analysis');
   const [period, setPeriod] = useState('4w');
   const [impactMetric, setImpactMetric] = useState(null);
   const [showMetricDropdown, setShowMetricDropdown] = useState(false);
@@ -56,6 +55,8 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
   const prev = getPreviousRecord();
   const records = getRecords();
   const recordCount = records.length;
+  const [thumbs, setThumbs] = useState({});
+  useEffect(() => { getAllThumbnailsAsync().then(setThumbs); }, []);
 
   const daysSince = latest ? Math.floor((Date.now() - new Date(latest.date).getTime()) / 86400000) : null;
   const headline = getHeadline(latest, prev);
@@ -84,44 +85,10 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
   return (
     <div style={{ minHeight: '100dvh', paddingBottom: 100 }}>
 
-      {/* ① 헤더 */}
-      <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 16px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 22, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.4 }}>발견</span>
-        <button onClick={() => onMeasure?.()} style={{
-          width: 32, height: 32, borderRadius: '50%', border: 'none',
-          background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-        }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #89cef5)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/>
-          </svg>
-        </button>
-      </div>
+      {/* ① 헤더 spacer */}
+      <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 16px 4px' }} />
 
-      {/* ② 모드 토글 */}
-      <div style={{ padding: '12px 16px 8px', display: 'flex', gap: 20 }}>
-        {[{ key: 'analysis', label: '분석' }, { key: 'explore', label: '탐색' }].map(m => (
-          <span key={m.key} onClick={() => setMode(m.key)} style={{
-            fontSize: 13, fontWeight: mode === m.key ? 500 : 400, cursor: 'pointer',
-            color: mode === m.key ? 'var(--text-primary)' : 'var(--text-dim, #B0B8C1)',
-            borderBottom: mode === m.key ? '2px solid var(--accent-primary, #89cef5)' : '2px solid transparent',
-            paddingBottom: 6,
-          }}>{m.label}</span>
-        ))}
-      </div>
-
-      {mode === 'explore' ? (
-        /* 탐색 빈 상태 */
-        <div style={{ padding: '60px 32px', textAlign: 'center' }}>
-          <div style={{ fontSize: 40, opacity: 0.3, marginBottom: 12 }}>🔍</div>
-          <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 6 }}>곧 만나요</div>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-            다른 사용자의 데이터와 함께<br />너에게 맞는 새 제품을 찾아드릴게요
-          </div>
-        </div>
-      ) : (
-        <>
-          {/* ③ 히어로 요약 카드 */}
+      {/* ③ 히어로 요약 카드 */}
           <div style={{ margin: '0 12px 12px' }}>
             {recordCount === 0 ? (
               <div onClick={() => onMeasure?.()} style={{
@@ -168,6 +135,122 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
               </div>
             )}
           </div>
+
+          {/* 피부나이 · 종합점수 요약 */}
+          {recordCount >= 2 && (
+            <div style={{ margin: '0 12px 12px', display: 'flex', gap: 8 }}>
+              <div style={{ flex: 1, ...glass, padding: '14px 12px', textAlign: 'center' }}>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>피부나이 변화</div>
+                <div style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)' }}>
+                  {latest?.skinAge ?? '—'}<span style={{ fontSize: 13, color: 'var(--text-muted)' }}>세</span>
+                </div>
+                {prev && (
+                  <div style={{ fontSize: 11, fontWeight: 500, marginTop: 2, color: (latest.skinAge - prev.skinAge) <= 0 ? 'var(--accent-primary)' : '#e05545' }}>
+                    {latest.skinAge - prev.skinAge <= 0 ? `${latest.skinAge - prev.skinAge}세` : `+${latest.skinAge - prev.skinAge}세`}
+                  </div>
+                )}
+              </div>
+              <div style={{ flex: 1, ...glass, padding: '14px 12px', textAlign: 'center' }}>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>종합점수 변화</div>
+                <div style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)' }}>
+                  {latest?.overallScore ?? '—'}<span style={{ fontSize: 13, color: 'var(--text-muted)' }}>점</span>
+                </div>
+                {prev && (
+                  <div style={{ fontSize: 11, fontWeight: 500, marginTop: 2, color: (latest.overallScore - prev.overallScore) >= 0 ? 'var(--accent-primary)' : '#e05545' }}>
+                    {latest.overallScore - prev.overallScore >= 0 ? `+${latest.overallScore - prev.overallScore}점` : `${latest.overallScore - prev.overallScore}점`}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 종합 점수 추이 그래프 */}
+          {recordCount >= 2 && (() => {
+            const series = getTimeSeries('overallScore');
+            if (series.length < 2) return null;
+            const vals = series.map(s => s.value);
+            const minV = Math.min(...vals) - 5;
+            const maxV = Math.max(...vals) + 5;
+            const firstVal = vals[0];
+            const lastVal = vals[vals.length - 1];
+            const diffPct = firstVal > 0 ? ((lastVal - firstVal) / firstVal * 100).toFixed(1) : null;
+            return (
+              <div style={{ margin: '0 12px 12px', ...glass, padding: 13 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>종합 점수 추이</span>
+                  {diffPct && Number(diffPct) !== 0 && (
+                    <span style={{ fontSize: 11, fontWeight: 500, color: Number(diffPct) > 0 ? 'var(--accent-primary)' : '#e05545' }}>
+                      {Number(diffPct) > 0 ? '▲' : '▼'} {Math.abs(Number(diffPct))}%
+                    </span>
+                  )}
+                </div>
+                <svg width="100%" viewBox="0 0 320 120" preserveAspectRatio="none" style={{ display: 'block' }}>
+                  {[30, 60, 90].map(y => <line key={y} x1="0" y1={y} x2="320" y2={y} stroke="rgba(255,255,255,0.3)" strokeWidth="1" />)}
+                  <polyline
+                    points={series.map((s, i) => {
+                      const x = series.length === 1 ? 160 : (i / (series.length - 1)) * 300 + 10;
+                      const y = 110 - ((s.value - minV) / (maxV - minV)) * 100 + 5;
+                      return `${x},${y}`;
+                    }).join(' ')}
+                    fill="none" stroke="var(--accent-primary, #89cef5)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                  />
+                  {series.map((s, i) => {
+                    const x = series.length === 1 ? 160 : (i / (series.length - 1)) * 300 + 10;
+                    const y = 110 - ((s.value - minV) / (maxV - minV)) * 100 + 5;
+                    return <circle key={i} cx={x} cy={y} r="3.5" fill="var(--accent-primary, #89cef5)" />;
+                  })}
+                </svg>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 10px 0' }}>
+                  {series.map((s, i) => (
+                    <span key={i} style={{ fontSize: 8, color: 'var(--text-muted)' }}>{`${new Date(s.date).getMonth()+1}/${new Date(s.date).getDate()}`}</span>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* 측정 기록 타임라인 */}
+          {recordCount > 0 && (
+            <div style={{ margin: '0 12px 12px' }}>
+              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 10, paddingLeft: 4 }}>측정 기록</div>
+              {[...records].reverse().slice(0, 5).map((r, i) => {
+                const d = new Date(r.date);
+                const dayLabels = ['일','월','화','수','목','금','토'];
+                const thumb = thumbs[String(r.id)] || thumbs[r.date];
+                const prevR = [...records].reverse()[i + 1];
+                const diff = prevR ? r.overallScore - prevR.overallScore : 0;
+                return (
+                  <div key={r.id || r.timestamp} style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '12px 14px', marginBottom: 6,
+                    ...glass, cursor: 'pointer',
+                  }}>
+                    <div style={{ textAlign: 'center', minWidth: 32 }}>
+                      <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1 }}>{d.getDate()}</div>
+                      <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>{d.getMonth()+1}월</div>
+                    </div>
+                    <div style={{ width: 1, height: 32, background: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
+                    <div style={{ width: 40, height: 40, borderRadius: 10, overflow: 'hidden', flexShrink: 0, background: 'rgba(255,255,255,0.2)' }}>
+                      {thumb ? <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>📷</div>}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>종합 {r.overallScore}점</span>
+                        {diff !== 0 && (
+                          <span style={{ fontSize: 10, fontWeight: 500, color: diff > 0 ? 'var(--accent-primary)' : '#e05545' }}>
+                            {diff > 0 ? `+${diff}` : diff}
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
+                        {dayLabels[d.getDay()]}요일 · 피부나이 {r.skinAge}세
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           {/* ④ 트렌드 차트 */}
           <div style={{ margin: '0 12px 12px', ...glass, padding: 13 }}>
@@ -312,12 +395,12 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
           <div style={{ margin: '0 12px 12px', ...glass, padding: 13 }}>
             {recordCount < 2 ? (
               <div style={{ padding: '20px 8px', textAlign: 'center', fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                결을 꾸준히 두면, lua가 패턴을 찾아드릴게요
+                꾸준히 기록하면, lua가 패턴을 찾아드릴게요
               </div>
             ) : (
               [
                 { text: '자기 전 토너를 챙긴 날, 다음날 모공 점수가 평균 4점 더 좋았어요.', tag: '루틴 발견' },
-                { text: '수분이 충분한 주에는 유수분 점수가 평균 6점 더 좋았어요.', tag: '결의 발견' },
+                { text: '수분이 충분한 주에는 유수분 점수가 평균 6점 더 좋았어요.', tag: '피부 발견' },
                 { text: '측정 시각이 일정할수록 점수가 안정적이에요. 주로 일요일 저녁에 재고 있어요.', tag: '패턴 발견' },
               ].map((d, i) => (
                 <div key={i} onClick={() => onOpenConsult?.()} style={{
@@ -341,8 +424,6 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
               ))
             )}
           </div>
-        </>
-      )}
     </div>
   );
 }
