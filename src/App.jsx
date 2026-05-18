@@ -433,6 +433,17 @@ export default function App() {
       const prevRecord = findRecentPrimaryRecord(finalScores);
       const todayBefore = getTodayRecords();
 
+      // Outlier 감지: 같은 사용자 baseline 대비 종합점수 ±15 또는 피부나이 ±5 이상이면
+      // "결과가 평소와 크게 달라요" 친절 안내 (차단이 아닌 사용자 자체 재측정 판단용)
+      if (prevRecord && !finalScores.differentPerson) {
+        const overallDiff = Math.abs((finalScores.overallScore ?? 0) - (prevRecord.overallScore ?? 0));
+        const skinAgeDiff = Math.abs((finalScores.skinAge ?? 0) - (prevRecord.skinAge ?? 0));
+        if (overallDiff >= 15 || skinAgeDiff >= 5) {
+          finalScores.outlierWarning = true;
+          finalScores.outlierReason = `평소 측정값 대비 ${overallDiff >= 15 ? `종합점수 ${overallDiff}점` : ''}${overallDiff >= 15 && skinAgeDiff >= 5 ? ' · ' : ''}${skinAgeDiff >= 5 ? `피부나이 ${skinAgeDiff}세` : ''} 차이`;
+        }
+      }
+
       // Save record FIRST so getChanges() compares current vs previous correctly
       const recordId = saveRecord(finalScores);
 
@@ -1471,6 +1482,40 @@ export default function App() {
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 600, color: '#f4a3bb', marginBottom: 2 }}>메이크업이 감지되었어요</div>
                   <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>클렌징 후 다시 측정하면 더 정확한 피부 상태를 확인할 수 있어요</div>
+                </div>
+              </div>
+            )}
+
+            {/* ── 결과 이상치 안내 (baseline 대비 큰 변동) ── */}
+            {result?.outlierWarning && (
+              <div className="glass-card" style={{
+                animation: 'fadeUp 0.5s ease-out 0.7s both',
+                background: 'rgba(245,158,11,0.10)',
+                border: '1px solid rgba(245,158,11,0.35)',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                  <div style={{ fontSize: 20, lineHeight: 1, marginTop: 2 }}>⚠️</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
+                      오늘 결과가 평소와 크게 달라요
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 8 }}>
+                      {result.outlierReason}.<br />
+                      조명·각도·메이크업 차이일 가능성이 있어요.
+                      같은 조건에서 한 번 더 측정하면 더 정확한 비교가 가능합니다.
+                    </div>
+                    <button
+                      onClick={() => { setResult(null); setStage('landing'); }}
+                      style={{
+                        padding: '8px 14px', borderRadius: 10,
+                        background: 'rgba(245,158,11,0.18)',
+                        color: '#b45309',
+                        border: '1px solid rgba(245,158,11,0.3)',
+                        fontSize: 12, fontWeight: 600, fontFamily: 'inherit',
+                        cursor: 'pointer',
+                      }}
+                    >다시 측정하기</button>
+                  </div>
                 </div>
               </div>
             )}
