@@ -1892,7 +1892,7 @@ export default function App() {
         }}>
           <AiInsightCard
             onOpenChat={() => setFabChatOpen(true)}
-            greeting={(() => { const h = new Date().getHours(); if (h >= 5 && h < 11) return '좋은 아침이에요'; if (h >= 11 && h < 17) return '오늘도 잘 지내고 있나요'; if (h >= 17 && h < 22) return '하루 마무리하셨네요'; return '조용한 시간이에요'; })() + (getProfile().nickname ? `, ${getProfile().nickname}` : '')}
+            greeting={(() => { const h = new Date().getHours(); if (h >= 5 && h < 11) return '좋은 아침이에요'; if (h >= 11 && h < 17) return '오늘도 잘 지내고 있나요'; if (h >= 17 && h < 22) return '오늘 하루도 수고했어요'; return '조용한 시간이에요'; })() + (getProfile().nickname ? `, ${getProfile().nickname}` : '')}
             dateInfo={`${new Date().getMonth() + 1}월 ${new Date().getDate()}일 · ${(() => { const recs = getRecords(); if (!recs.length) return '오늘부터 시작'; const d = Math.floor((Date.now() - new Date(recs[recs.length - 1].date).getTime()) / 86400000); return d > 0 ? `LUA와 ${d}일째` : '오늘부터 시작'; })()}`}
           />
         </div>
