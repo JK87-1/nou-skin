@@ -174,10 +174,27 @@ export function checkPhotoQuality(dataUrl, landmarks) {
 
       // 3. Face size check (landmarks available)
       let faceRatio = 0;
+      // 4. Face rotation/tilt check
+      // - Yaw (좌우 회전): 왼쪽 눈(33) ~ 코끝(1) ~ 오른쪽 눈(263) 거리 비율로 측면 추정
+      // - Roll (기울임): 양쪽 눈 외각 y 차이로 좌우 기울임 추정
+      let yawAsymmetry = 0;
+      let rollTilt = 0;
       if (landmarks && landmarks.length >= 468) {
         const earW = Math.abs(landmarks[234].x - landmarks[454].x);
         const faceH = Math.abs(landmarks[10].y - landmarks[152].y);
         faceRatio = earW * faceH;
+
+        const leftEyeOuter = landmarks[33];
+        const rightEyeOuter = landmarks[263];
+        const noseTip = landmarks[1];
+
+        // Yaw: 코끝이 양쪽 눈 중앙에서 얼마나 어긋났는지 (정면이면 0에 가까움)
+        const eyesMidX = (leftEyeOuter.x + rightEyeOuter.x) / 2;
+        const eyeSpan = Math.abs(rightEyeOuter.x - leftEyeOuter.x) || 1;
+        yawAsymmetry = Math.abs(noseTip.x - eyesMidX) / eyeSpan;
+
+        // Roll: 양쪽 눈 외각 y 좌표 차이를 눈 간격으로 정규화
+        rollTilt = Math.abs(leftEyeOuter.y - rightEyeOuter.y) / eyeSpan;
       }
 
       const issues = [];
@@ -186,8 +203,13 @@ export function checkPhotoQuality(dataUrl, landmarks) {
       if (sharpness < 3) issues.push('blurry');
       if (landmarks && landmarks.length >= 468 && faceRatio < 0.04) issues.push('face_too_small');
       if (!landmarks || landmarks.length < 468) issues.push('no_face');
+      // 얼굴 회전: yaw 0.18 초과(정면 기준 약 ±20°) 또는 roll 0.15 초과(약 ±10°)면 경고
+      if (landmarks && landmarks.length >= 468) {
+        if (yawAsymmetry > 0.18) issues.push('face_yawed');
+        else if (rollTilt > 0.15) issues.push('face_tilted');
+      }
 
-      resolve({ passed: issues.length === 0, brightness, sharpness, faceRatio, issues });
+      resolve({ passed: issues.length === 0, brightness, sharpness, faceRatio, yawAsymmetry, rollTilt, issues });
     };
     img.onerror = () => resolve({ passed: true, brightness: 128, sharpness: 10, faceRatio: 0, issues: [] });
     img.src = dataUrl;
