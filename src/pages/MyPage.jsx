@@ -723,20 +723,22 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                   if (e.name === 'AbortError') return;
                 }
 
-                // share 미지원 폴백: 서버 경유
+                // share 미지원 폴백: 클라이언트 <a download> 패턴 (PC Chrome 등)
                 try {
-                  const resp = await fetch('/api/backup-download', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: json,
-                  });
-                  if (resp.ok) {
-                    const dlBlob = await resp.blob();
-                    const dlUrl = URL.createObjectURL(dlBlob);
-                    window.location.href = dlUrl;
-                    setTimeout(() => URL.revokeObjectURL(dlUrl), 10000);
-                  }
-                } catch {}
+                  const dlUrl = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = dlUrl;
+                  a.download = fileName;
+                  a.rel = 'noopener';
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  setTimeout(() => URL.revokeObjectURL(dlUrl), 10000);
+                } catch (e) {
+                  console.warn('backup download fallback failed:', e);
+                  showToast('백업 다운로드 실패 — 다시 시도해주세요');
+                  return;
+                }
                 localStorage.setItem('nou_last_manual_backup', String(Date.now()));
                 showToast(`백업 완료! (${lsCount}개 항목, ${photoCount}장 사진)`);
               }}
