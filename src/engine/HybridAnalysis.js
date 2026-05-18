@@ -363,10 +363,12 @@ export function hybridMerge(cv, ai) {
   if (typeof ai.troubleCount === 'number') {
     const rawNew = Math.max(0, Math.min(20, Math.round((100 - ai.troubleCount) / 8.5)));
 
-    // Baseline raw count clamp — 비대칭 적용.
-    // - 감소 방향(트러블 줄어듦): UI 흔들림 방지 위해 같은 날 ±1, 시간 지날수록 ±2~5로 천천히 완화
-    // - 증가 방향(트러블 늘어남): 자유 허용. baseline=0에 anchor돼 새 트러블이 0으로 묻히는 부작용 방지
-    // differentPerson인 경우는 anchor 안 함
+    // Baseline raw count clamp — 시간 단계별 양방향 적용.
+    // - 감소 방향(트러블 줄어듦): 같은 날 ±1, 1~2일 ±2, 3~5일 ±3, 6~14일 ±4, 15일+ ±5
+    // - 증가 방향(트러블 늘어남): 같은 날 ±1, 1~2일 ±2, 그 이후 자유 허용
+    //   (베타 안정성을 위해 같은 날 측정 노이즈는 흡수하되, 진짜 새 트러블은
+    //    baseline drift(70%·30%)와 함께 1~3일 내 점진적으로 반영됨)
+    // - differentPerson인 경우는 anchor 안 함
     let stabilizedRaw = rawNew;
     if (!ai.differentPerson) {
       try {
@@ -374,18 +376,16 @@ export function hybridMerge(cv, ai) {
         if (baseline && typeof baseline.result?.troubleCount === 'number') {
           const rawBase = Math.max(0, Math.min(20, Math.round((100 - baseline.result.troubleCount) / 8.5)));
           const diff = rawNew - rawBase;
+          const daysSince = baseline.timestamp ? (Date.now() - baseline.timestamp) / 86400000 : 0;
           if (diff <= 0) {
-            // 트러블 감소(=양호한 방향): stabilization 적용
-            const daysSince = baseline.timestamp ? (Date.now() - baseline.timestamp) / 86400000 : 0;
             const maxDecrease = daysSince < 1 ? 1 : daysSince <= 2 ? 2 : daysSince <= 5 ? 3 : daysSince <= 14 ? 4 : 5;
-            const clamped = Math.max(-maxDecrease, diff);
-            stabilizedRaw = rawBase + clamped;
+            stabilizedRaw = rawBase + Math.max(-maxDecrease, diff);
           } else {
-            // 트러블 증가: 자유 허용 (감지된 만큼 즉시 반영)
-            stabilizedRaw = rawNew;
+            const maxIncrease = daysSince < 1 ? 1 : daysSince <= 2 ? 2 : 100;
+            stabilizedRaw = rawBase + Math.min(maxIncrease, diff);
           }
           if (stabilizedRaw !== rawNew) {
-            console.log('[troubleCount stabilize]', { rawNew, rawBase, diff, stabilizedRaw });
+            console.log('[troubleCount stabilize]', { rawNew, rawBase, diff, daysSince: daysSince.toFixed(2), stabilizedRaw });
           }
         }
       } catch (e) { console.warn('[troubleCount baseline clamp]', e); }
