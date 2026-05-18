@@ -283,8 +283,8 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
 
         {/* Handle */}
         <div onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
-          style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0', cursor: 'grab' }}>
-          <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(137,206,245,0.4)' }} />
+          style={{ display: 'flex', justifyContent: 'center', padding: '20px 0 20px', cursor: 'grab' }}>
+          <div style={{ width: 47, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.15)' }} />
         </div>
 
         {/* Header */}
@@ -300,15 +300,6 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
               <span style={{ fontSize: 10, color: 'var(--text-muted, #8B95A1)' }}>늘 곁에 있어요</span>
             </div>
           </div>
-          <button onClick={handleClose} style={{
-            width: 32, height: 32, borderRadius: '50%', border: 'none',
-            background: 'rgba(255,255,255,0.3)', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #8B95A1)" strokeWidth="2" strokeLinecap="round">
-              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
         </div>
 
         {/* Messages */}

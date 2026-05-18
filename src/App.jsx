@@ -88,6 +88,36 @@ export default function App() {
   const [historyInitMode, setHistoryInitMode] = useState(null);
 
   const [fabChatOpen, setFabChatOpen] = useState(false);
+  const [insightCollapsed, setInsightCollapsed] = useState(false);
+  const [showWaterModal, setShowWaterModal] = useState(false);
+  const [showSleepModal, setShowSleepModal] = useState(false);
+  const [showHomeEdit, setShowHomeEdit] = useState(false);
+  const [homeCards, setHomeCards] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('lua_home_cards') || 'null') || { metrics: true, water: true, sleep: true, insight: true, goal: true }; }
+    catch { return { metrics: true, water: true, sleep: true, insight: true, goal: true }; }
+  });
+  const toggleHomeCard = (key) => {
+    const next = { ...homeCards, [key]: !homeCards[key] };
+    setHomeCards(next);
+    localStorage.setItem('lua_home_cards', JSON.stringify(next));
+  };
+  const [waterCups, setWaterCups] = useState(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    const saved = JSON.parse(localStorage.getItem('lua_water') || '{}');
+    return saved.date === today ? saved.cups : 0;
+  });
+  const [sleepHours, setSleepHours] = useState(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    const saved = JSON.parse(localStorage.getItem('lua_sleep') || '{}');
+    return saved.date === today ? saved.hours : null;
+  });
+  const refreshWaterSleep = () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const w = JSON.parse(localStorage.getItem('lua_water') || '{}');
+    setWaterCups(w.date === today ? w.cups : 0);
+    const s = JSON.parse(localStorage.getItem('lua_sleep') || '{}');
+    setSleepHours(s.date === today ? s.hours : null);
+  };
 
   const [recordCount, setRecordCount] = useState(0);
   const [nextInfo, setNextInfo] = useState(null);
@@ -99,6 +129,9 @@ export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [splashExiting, setSplashExiting] = useState(false);
   const [weatherSheet, setWeatherSheet] = useState(false);
+  const weatherSheetRef = useRef(null);
+  const weatherDragY = useRef(null);
+  const weatherDragDelta = useRef(0);
   const [showDataRecovery, setShowDataRecovery] = useState(false);
   const [recoveryInfo, setRecoveryInfo] = useState(null);
   const [showBackupReminder, setShowBackupReminder] = useState(false);
@@ -693,7 +726,7 @@ export default function App() {
       <GlobalStyles />
       <style>{`@keyframes landingPearlReveal { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }`}</style>
       {!showSplash && needsLegalConsent && <ConsentModal onAccept={handleAcceptLegalConsent} />}
-      {showSplash && <SplashScreen exiting={splashExiting} onAnimationEnd={() => setShowSplash(false)} cloverTheme={activeThemeColors?.cloverTheme} />}
+      {showSplash && <SplashScreen exiting={splashExiting} onAnimationEnd={() => setShowSplash(false)} />}
       <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} style={{ display: 'none' }} />
       <input ref={nativeCameraRef} type="file" accept="image/*" capture="user" onChange={handleFile} style={{ display: 'none' }} />
 
@@ -893,6 +926,13 @@ export default function App() {
           <div style={{ padding: '28px 22px 20px', position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <WeatherChip onTap={() => setWeatherSheet(true)} />
             <img src="/luasky.svg" alt="lua" style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', height: 30, objectFit: 'contain' }} />
+            <div onClick={() => setShowHomeEdit(true)} style={{ cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(0,0,0,0.35)">
+                <circle cx="5" cy="12" r="2" />
+                <circle cx="12" cy="12" r="2" />
+                <circle cx="19" cy="12" r="2" />
+              </svg>
+            </div>
           </div>
 
           {/* Background aura — very subtle (hidden in light mode) */}
@@ -929,7 +969,7 @@ export default function App() {
           </div>
 
           {/* ③ 현재 상태 미니 패널 */}
-          {(() => {
+          {homeCards.metrics && (() => {
             const latest = getLatestRecord();
             const prev = (() => { const recs = getRecords(); return recs.length >= 2 ? recs[1] : null; })();
             const rc = getRecords().length;
@@ -941,23 +981,31 @@ export default function App() {
             ];
             if (rc === 0) return null;
             return (
-              <div style={{ margin: '11px 20px 0' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+              <div style={{
+                margin: '11px 20px 0',
+                borderRadius: 20,
+                border: '1px solid rgba(255,255,255,0.4)',
+                backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)',
+                overflow: 'hidden',
+              }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0, padding: '8px 12px' }}>
                   {metrics.map((m) => {
                     const val = latest?.[m.key] ?? null;
                     const prevVal = prev?.[m.key] ?? null;
                     const diff = val !== null && prevVal !== null ? val - prevVal : null;
                     return (
                       <div key={m.key} style={{
-                        borderRadius: 16, padding: 12, textAlign: 'center',
+                        borderRadius: 16, padding: '12px 4px',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center',
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-                          <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 16, height: 16, flexShrink: 0 }}>{m.icon}</span>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 14, height: 14, flexShrink: 0 }}>{m.icon}</span>
                           <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 500 }}>{m.label}</span>
                         </div>
                         <div style={{ fontSize: 22, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.5, marginTop: 6 }}>{val !== null ? val : '—'}</div>
                         <div style={{ fontSize: 10, fontWeight: 500, marginTop: 2, color: diff === null ? 'var(--text-muted)' : diff > 0 ? 'var(--accent-primary, #89cef5)' : diff < 0 ? '#e05545' : 'var(--text-muted)' }}>
-                          {diff === null ? '기준선' : diff > 0 ? `+${diff} 좋아짐` : diff < 0 ? `${diff} 하락` : <span style={{ opacity: 0.5 }}>변화 없음</span>}
+                          {diff === null ? '기준선' : diff > 0 ? `+${diff} 좋아짐` : diff < 0 ? `${diff} 하락` : 'ㅡ'}
                         </div>
                       </div>
                     );
@@ -968,8 +1016,111 @@ export default function App() {
           })()}
 
 
+          {/* 수분 + 수면 카드 (noa style) */}
+          {(homeCards.water || homeCards.sleep) && (() => {
+            const cupMl = 250;
+            const waterGoal = 8;
+            const waterMl = waterCups * cupMl;
+            const waterRingR = 22, waterRingC = 2 * Math.PI * waterRingR;
+            const waterFill = Math.min(waterCups / waterGoal, 1);
+            const waterDash = waterRingC * waterFill;
+
+            const sleepRingR = 22, sleepRingC = 2 * Math.PI * sleepRingR;
+            const sleepFill = sleepHours ? Math.min(sleepHours / 8, 1) : 0;
+            const sleepDash = sleepRingC * sleepFill;
+
+            const cardStyle = {
+              borderRadius: 20, padding: 20, cursor: 'pointer',
+              background: 'transparent',
+              border: '1px solid rgba(255,255,255,0.4)',
+              backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)',
+              display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+              minHeight: 120,
+            };
+
+            return (
+              <div style={{ display: 'grid', gridTemplateColumns: (homeCards.water && homeCards.sleep) ? '1fr 1fr' : '1fr', gap: 10, margin: '12px 20px 0' }}>
+                {/* 수분 카드 */}
+                {homeCards.water && <div onClick={() => setShowWaterModal(true)} style={cardStyle}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 0, flex: '0 0 auto' }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(91,163,212,0.3))' }}><defs><linearGradient id="dropCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#B8E0F5"/><stop offset="100%" stopColor="#5BA3D4"/></linearGradient></defs><path d="M12 2.5c0 0-7.5 8-7.5 13a7.5 7.5 0 0015 0c0-5-7.5-13-7.5-13z" fill="url(#dropCard)" opacity="0.6"/></svg>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>수분</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                        <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{waterCups > 0 ? waterMl.toLocaleString() : '—'}</span>
+                        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>ml</span>
+                      </div>
+                      <div style={{ fontSize: 10, color: waterCups > 0 ? (waterCups >= waterGoal ? '#22C55E' : 'var(--text-muted)') : 'var(--accent-primary, #89cef5)', marginTop: 4, minHeight: 14 }}>
+                        {waterCups > 0 ? (waterCups >= waterGoal ? '목표 달성!' : `${((waterGoal - waterCups) * cupMl).toLocaleString()}ml 남음`) : '기록하기'}
+                      </div>
+                    </div>
+                    <svg width="52" height="52" viewBox="0 0 52 52">
+                      <defs>
+                        <linearGradient id="waterRingGrad" x1="0" y1="0" x2="1" y2="1">
+                          <stop offset="0%" stopColor="#5BA3D4" />
+                          <stop offset="100%" stopColor="#B8E0F5" />
+                        </linearGradient>
+                      </defs>
+                      <circle cx="26" cy="26" r={waterRingR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" />
+                      <circle cx="26" cy="26" r={waterRingR} fill="none" stroke="url(#waterRingGrad)" strokeWidth="5"
+                        strokeDasharray={`${waterDash} ${waterRingC - waterDash}`} strokeLinecap="round"
+                        transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
+                    </svg>
+                  </div>
+                </div>
+
+                }
+                {/* 수면 카드 */}
+                {homeCards.sleep && <div onClick={() => setShowSleepModal(true)} style={cardStyle}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 0, flex: '0 0 auto' }}>
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(91,106,175,0.3))' }}><defs><linearGradient id="moonCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#C8D0F0"/><stop offset="100%" stopColor="#5B6AAF"/></linearGradient></defs><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="url(#moonCard)" opacity="0.6"/></svg>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>수면</span>
+                  </div>
+                  {sleepHours !== null ? (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{sleepHours}</span>
+                          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>시간</span>
+                        </div>
+                        <div style={{ fontSize: 10, color: sleepHours >= 7 ? '#22C55E' : sleepHours >= 5 ? 'var(--text-muted)' : '#E05050', marginTop: 4, minHeight: 14 }}>
+                          {sleepHours >= 7 ? '충분' : sleepHours >= 5 ? '보통' : '부족'}
+                        </div>
+                      </div>
+                      <svg width="52" height="52" viewBox="0 0 52 52">
+                        <defs>
+                          <linearGradient id="sleepRingGrad" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stopColor="#5B6AAF" />
+                            <stop offset="100%" stopColor="#C8D0F0" />
+                          </linearGradient>
+                        </defs>
+                        <circle cx="26" cy="26" r={sleepRingR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" />
+                        <circle cx="26" cy="26" r={sleepRingR} fill="none" stroke="url(#sleepRingGrad)" strokeWidth="5"
+                          strokeDasharray={`${sleepDash} ${sleepRingC - sleepDash}`} strokeLinecap="round"
+                          transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
+                      </svg>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
+                      <div>
+                        <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
+                        <div style={{ fontSize: 10, color: 'var(--accent-primary, #89cef5)', marginTop: 4, minHeight: 14 }}>기록하기</div>
+                      </div>
+                      <svg width="52" height="52" viewBox="0 0 52 52">
+                        <circle cx="26" cy="26" r={sleepRingR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" />
+                      </svg>
+                    </div>
+                  )}
+                </div>}
+              </div>
+            );
+          })()}
+
           {/* Goal Progress Card */}
-          {getGoal()?.status === 'active' && (
+          {homeCards.goal && getGoal()?.status === 'active' && (
             <div style={{ padding: '12px 0 0' }}>
               <GoalProgressCard onTap={() => setActiveTab('my')} colorMode={colorMode} />
             </div>
@@ -988,13 +1139,13 @@ export default function App() {
                 backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)',
                 opacity: 1, transition: 'opacity 200ms',
               }} />
-              <div style={{
+              <div ref={weatherSheetRef} style={{
                 position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201,
                 height: '62%',
                 background: 'rgba(255,255,255,0.65)',
                 backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
                 border: '1px solid rgba(255,255,255,0.3)',
-                borderRadius: '20px 20px 0 0',
+                borderRadius: '30px 30px 0 0',
                 boxShadow: '0 -8px 28px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.6)',
                 maxWidth: 430, margin: '0 auto',
                 display: 'flex', flexDirection: 'column',
@@ -1004,18 +1155,20 @@ export default function App() {
                   @keyframes weatherSheetSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
                 `}</style>
                 {/* Handle */}
-                <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}>
-                  <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(137,206,245,0.4)' }} />
-                </div>
-                {/* Header */}
-                <div style={{ padding: '8px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                  <button onClick={() => setWeatherSheet(false)} style={{
-                    width: 32, height: 32, borderRadius: '50%', border: 'none',
-                    background: 'rgba(255,255,255,0.3)', cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                  </button>
+                <div
+                  onTouchStart={(e) => { weatherDragY.current = e.touches[0].clientY; }}
+                  onTouchMove={(e) => {
+                    if (weatherDragY.current === null) return;
+                    const delta = e.touches[0].clientY - weatherDragY.current;
+                    if (delta > 0) { weatherDragDelta.current = delta; if (weatherSheetRef.current) weatherSheetRef.current.style.transform = `translateY(${delta}px)`; }
+                  }}
+                  onTouchEnd={() => {
+                    if (weatherDragDelta.current > 120) { setWeatherSheet(false); }
+                    else if (weatherSheetRef.current) { weatherSheetRef.current.style.transition = 'transform 0.2s ease'; weatherSheetRef.current.style.transform = 'translateY(0)'; setTimeout(() => { if (weatherSheetRef.current) weatherSheetRef.current.style.transition = ''; }, 200); }
+                    weatherDragY.current = null; weatherDragDelta.current = 0;
+                  }}
+                  style={{ display: 'flex', justifyContent: 'center', padding: '20px 0 20px', cursor: 'grab' }}>
+                  <div style={{ width: 47, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.15)' }} />
                 </div>
                 {/* Content */}
                 <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
@@ -1956,8 +2109,8 @@ export default function App() {
       {showTabBar && activeTab === 'home' && stage === 'landing' && <div className="tab-bar-spacer" />}
 
 
-      {/* ===== 고정 인사이트 카드 (홈 화면만) ===== */}
-      {showTabBar && activeTab === 'home' && stage === 'landing' && getLatestRecord() && (
+      {/* ===== 고정 인사이트 카드 (홈 화면만, 접히지 않았을 때) ===== */}
+      {homeCards.insight && showTabBar && activeTab === 'home' && stage === 'landing' && getLatestRecord() && !insightCollapsed && (
         <div style={{
           position: 'fixed',
           bottom: 'calc(76px + env(safe-area-inset-bottom, 0px) + 32px)',
@@ -1965,16 +2118,25 @@ export default function App() {
           zIndex: 90,
           animation: 'insightFloat 3s ease-in-out infinite',
         }}>
+          {/* 접기 버튼 */}
+          <div onClick={() => setInsightCollapsed(true)} style={{
+            position: 'absolute', top: 18, right: 18, zIndex: 2,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', padding: 0,
+          }}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #8B95A1)" strokeWidth="2.5" strokeLinecap="round" opacity="0.4"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
           <AiInsightCard
             onOpenChat={() => setFabChatOpen(true)}
+            onCollapse={() => setInsightCollapsed(true)}
             greeting={(() => { const h = new Date().getHours(); if (h >= 5 && h < 11) return '좋은 아침이에요'; if (h >= 11 && h < 17) return '오늘도 잘 지내고 있나요'; if (h >= 17 && h < 22) return '오늘 하루도 수고했어요'; return '조용한 시간이에요'; })() + (getProfile().nickname ? `, ${getProfile().nickname}` : '')}
             dateInfo={`${new Date().getMonth() + 1}월 ${new Date().getDate()}일 · ${(() => { const recs = getRecords(); if (!recs.length) return '오늘부터 시작'; const d = Math.floor((Date.now() - new Date(recs[recs.length - 1].date).getTime()) / 86400000); return d > 0 ? `LUA와 ${d}일째` : '오늘부터 시작'; })()}`}
           />
         </div>
       )}
 
-      {/* ===== FAB (홈 인사이트 카드가 없을 때만) ===== */}
-      {showTabBar && !(activeTab === 'home' && stage === 'landing' && getLatestRecord()) && (
+      {/* ===== FAB (인사이트 카드가 없거나 접혔을 때) ===== */}
+      {showTabBar && (!(homeCards.insight && activeTab === 'home' && stage === 'landing' && getLatestRecord()) || insightCollapsed) && (
         <div style={{
           position: 'fixed',
           bottom: 'calc(76px + env(safe-area-inset-bottom, 0px) + 36px)',
@@ -1983,7 +2145,7 @@ export default function App() {
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
         }}>
         <div
-          onClick={() => { setFabChatOpen(true); localStorage.setItem('fab_hint_dismissed', '1'); }}
+          onClick={() => { if (insightCollapsed && activeTab === 'home' && stage === 'landing') { setInsightCollapsed(false); } else { setFabChatOpen(true); localStorage.setItem('fab_hint_dismissed', '1'); } }}
           style={{
             position: 'relative',
             width: 58, height: 58, borderRadius: '50% 50% 8px 50%',
@@ -2048,6 +2210,31 @@ export default function App() {
           </svg>
         </div>
         </div>
+      )}
+
+      {/* ===== HOME EDIT PAGE ===== */}
+      {showHomeEdit && (
+        <HomeEditPage
+          cards={homeCards}
+          onToggle={toggleHomeCard}
+          onClose={() => setShowHomeEdit(false)}
+        />
+      )}
+
+      {/* ===== WATER MODAL ===== */}
+      {showWaterModal && (
+        <WaterIntakeModal
+          onClose={() => setShowWaterModal(false)}
+          onUpdate={() => { setShowWaterModal(false); refreshWaterSleep(); }}
+        />
+      )}
+
+      {/* ===== SLEEP MODAL ===== */}
+      {showSleepModal && (
+        <SleepInputModal
+          onClose={() => setShowSleepModal(false)}
+          onUpdate={() => { setShowSleepModal(false); refreshWaterSleep(); }}
+        />
       )}
 
       {/* ===== LUA CHAT SHEET (Global) ===== */}
@@ -2131,6 +2318,324 @@ export default function App() {
 
       {/* ===== BADGE CELEBRATION POPUP ===== */}
       <BadgeCelebration badge={celebrateBadge} onClose={() => setCelebrateBadge(null)} accent={activeThemeColors.accent} />
+    </div>
+  );
+}
+
+// ===== Water Intake Modal (noa style) =====
+const SLEEP_QUALITIES = ['깊은 수면', '보통', '얕은 수면'];
+
+function WaterIntakeModal({ onClose, onUpdate }) {
+  const today = new Date().toISOString().slice(0, 10);
+  const getWater = () => { try { return JSON.parse(localStorage.getItem('lua_water') || '{}'); } catch { return {}; } };
+  const saved = getWater();
+  const [cups, setCups] = useState(saved.date === today ? (saved.cups || 0) : 0);
+
+  const cupMl = 250;
+  const goalMl = 2000;
+  const totalCups = Math.ceil(goalMl / cupMl);
+  const fillPct = Math.min(cups / totalCups, 1);
+  const currentMl = cups * cupMl;
+  const goalReached = cups >= totalCups;
+
+  const save = (n) => {
+    localStorage.setItem('lua_water', JSON.stringify({ date: today, cups: n }));
+  };
+
+  const addCup = () => {
+    const next = cups + 1;
+    setCups(next);
+    save(next);
+  };
+
+  const removeCup = () => {
+    if (cups <= 0) return;
+    const next = cups - 1;
+    setCups(next);
+    save(next);
+  };
+
+  return (
+    <div onClick={onClose} style={{
+      position: 'fixed', inset: 0, zIndex: 1100,
+      background: 'rgba(0,0,0,0.5)',
+      display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
+        padding: '24px 24px 40px', width: '100%', maxWidth: 420,
+      }}>
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
+
+        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 20 }}>수분</div>
+
+        {/* 물병 */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 24 }}>
+          <div style={{ position: 'relative', width: 120, height: 160 }}>
+            <svg width="120" height="160" viewBox="0 0 120 160">
+              <defs>
+                <clipPath id="bottleClip"><path d="M42 12 Q42 4 50 4 L70 4 Q78 4 78 12 L78 24 Q96 32 96 48 L96 140 Q96 152 84 152 L36 152 Q24 152 24 140 L24 48 Q24 32 42 24 Z" /></clipPath>
+                <linearGradient id="waterFillGrad" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stopColor="#4A9BD9" /><stop offset="100%" stopColor="#89CEF5" /></linearGradient>
+              </defs>
+              <path d="M42 12 Q42 4 50 4 L70 4 Q78 4 78 12 L78 24 Q96 32 96 48 L96 140 Q96 152 84 152 L36 152 Q24 152 24 140 L24 48 Q24 32 42 24 Z" fill="none" stroke="rgba(91,163,212,0.3)" strokeWidth="2" />
+              <g clipPath="url(#bottleClip)">
+                <rect x="20" y={152 - (fillPct * 148)} width="80" height={fillPct * 148} fill="url(#waterFillGrad)" opacity="0.7" style={{ transition: 'y 0.5s ease, height 0.5s ease' }} />
+              </g>
+              <text x="60" y="100" textAnchor="middle" fontSize="14" fontWeight="600" fill={fillPct > 0.5 ? '#fff' : 'var(--text-muted)'} fontFamily="var(--font-display)">{Math.round(fillPct * 100)}%</text>
+            </svg>
+          </div>
+          <div style={{ marginTop: 12, textAlign: 'center' }}>
+            <span style={{ fontSize: 32, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{currentMl.toLocaleString()}</span>
+            <span style={{ fontSize: 14, color: 'var(--text-muted)', marginLeft: 4 }}>ml</span>
+          </div>
+          <div style={{ fontSize: 12, color: goalReached ? '#22C55E' : 'var(--text-muted)', marginTop: 4, fontWeight: goalReached ? 600 : 400 }}>
+            {goalReached ? '목표 달성!' : `목표 ${goalMl.toLocaleString()}ml · ${(goalMl - currentMl).toLocaleString()}ml 남음`}
+          </div>
+        </div>
+
+        {/* 카운터 */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 24, marginBottom: 28 }}>
+          <button onClick={removeCup} style={{
+            width: 44, height: 44, borderRadius: '50%', border: 'none',
+            background: cups > 0 ? 'var(--bg-input, #F2F3F5)' : 'transparent',
+            fontSize: 22, fontWeight: 600, color: cups > 0 ? 'var(--text-primary)' : 'transparent',
+            cursor: cups > 0 ? 'pointer' : 'default', fontFamily: 'inherit',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>−</button>
+          <div style={{ textAlign: 'center', minWidth: 60 }}>
+            <span style={{ fontSize: 32, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{cups}</span>
+            <span style={{ fontSize: 13, color: 'var(--text-muted)', marginLeft: 2 }}>잔</span>
+          </div>
+          <button onClick={addCup} style={{
+            width: 44, height: 44, borderRadius: '50%', border: 'none',
+            background: 'rgba(91,163,212,0.15)',
+            fontSize: 22, fontWeight: 600, color: '#5BA3D4',
+            cursor: 'pointer', fontFamily: 'inherit',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>+</button>
+        </div>
+
+        <button onClick={onUpdate} style={{
+          width: '100%', padding: '14px 0', borderRadius: 'var(--btn-radius)',
+          border: 'none', background: goalReached ? '#22C55E' : 'var(--accent-primary, #89cef5)',
+          color: '#fff', fontSize: 14, fontWeight: 600,
+          cursor: 'pointer', fontFamily: 'inherit',
+        }}>완료</button>
+      </div>
+    </div>
+  );
+}
+
+// ===== Sleep Input Modal (noa style) =====
+function SleepInputModal({ onClose, onUpdate }) {
+  const today = new Date().toISOString().slice(0, 10);
+  const getSleep = () => { try { return JSON.parse(localStorage.getItem('lua_sleep') || '{}'); } catch { return {}; } };
+  const saved = getSleep();
+  const [hours, setHours] = useState(saved.date === today && saved.hours ? saved.hours : 7);
+  const [quality, setQuality] = useState(saved.date === today ? (saved.quality || null) : null);
+  const [bedtime, setBedtime] = useState(saved.date === today ? (saved.bedtime || null) : null);
+  const [wakeTime, setWakeTime] = useState(saved.date === today ? (saved.wakeTime || null) : null);
+  const [mode, setMode] = useState(saved.date === today && saved.bedtime ? 'time' : 'simple');
+
+  const calcFromTime = (bed, wake) => {
+    if (!bed || !wake) return;
+    const [bh, bm] = bed.split(':').map(Number);
+    const [wh, wm] = wake.split(':').map(Number);
+    let bedMin = bh * 60 + bm;
+    let wakeMin = wh * 60 + wm;
+    if (wakeMin <= bedMin) wakeMin += 24 * 60;
+    setHours(Math.round(((wakeMin - bedMin) / 60) * 2) / 2);
+  };
+
+  const handleSave = () => {
+    localStorage.setItem('lua_sleep', JSON.stringify({
+      date: today, hours, quality,
+      bedtime: bedtime || null, wakeTime: wakeTime || null,
+    }));
+    onUpdate?.();
+  };
+
+  return (
+    <div onClick={onClose} style={{
+      position: 'fixed', inset: 0, zIndex: 1100,
+      background: 'rgba(0,0,0,0.5)',
+      display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
+        padding: '24px 24px 40px', width: '100%', maxWidth: 420,
+      }}>
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
+
+        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 6 }}>수면</div>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 24 }}>
+          {quality ? `${hours}시간 · ${quality}` : `${hours}시간`}
+        </div>
+
+        {/* 모드 토글 */}
+        <div style={{ display: 'flex', background: 'rgba(91,106,175,.08)', borderRadius: 10, padding: 3, marginBottom: 20 }}>
+          {[{ key: 'simple', label: '간단 입력' }, { key: 'time', label: '시간 입력' }].map(m => (
+            <button key={m.key} onClick={() => setMode(m.key)} style={{
+              flex: 1, padding: '8px 0', borderRadius: 8, fontSize: 12, fontWeight: mode === m.key ? 600 : 400,
+              border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+              background: mode === m.key ? 'rgba(255,255,255,.95)' : 'transparent',
+              color: mode === m.key ? '#5B6AAF' : 'var(--text-muted)',
+              boxShadow: mode === m.key ? '0 1px 4px rgba(91,106,175,.15)' : 'none',
+              transition: 'all 0.15s ease',
+            }}>{m.label}</button>
+          ))}
+        </div>
+
+        {/* 간단 입력 */}
+        {mode === 'simple' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
+            <div style={{ textAlign: 'center', minWidth: 56 }}>
+              <span style={{ fontSize: 32, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{hours}</span>
+              <span style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 2 }}>시간</span>
+            </div>
+            <div style={{ flex: 1 }}>
+              <input type="range" min="2" max="12" step="0.5" value={hours}
+                onChange={e => setHours(parseFloat(e.target.value))}
+                style={{
+                  width: '100%', height: 6, appearance: 'none', WebkitAppearance: 'none',
+                  background: `linear-gradient(90deg, #5B6AAF ${((hours - 2) / 10) * 100}%, rgba(91,106,175,.15) ${((hours - 2) / 10) * 100}%)`,
+                  borderRadius: 3, outline: 'none',
+                }} />
+            </div>
+          </div>
+        )}
+
+        {/* 시간 입력 */}
+        {mode === 'time' && (
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end', marginBottom: 12 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>잠든 시간</div>
+                <input type="time" value={bedtime || ''} onChange={e => { setBedtime(e.target.value); if (e.target.value && wakeTime) calcFromTime(e.target.value, wakeTime); }}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 14, fontWeight: 500, border: '1px solid rgba(91,106,175,.2)', background: 'rgba(91,106,175,.04)', color: 'var(--text-primary)', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', height: 42 }} />
+              </div>
+              <div style={{ fontSize: 16, color: '#5B6AAF', paddingBottom: 12, fontWeight: 500 }}>→</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>일어난 시간</div>
+                <input type="time" value={wakeTime || ''} onChange={e => { setWakeTime(e.target.value); if (bedtime && e.target.value) calcFromTime(bedtime, e.target.value); }}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 14, fontWeight: 500, border: '1px solid rgba(91,106,175,.2)', background: 'rgba(91,106,175,.04)', color: 'var(--text-primary)', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', height: 42 }} />
+              </div>
+            </div>
+            {bedtime && wakeTime && (
+              <div style={{ textAlign: 'center', padding: '10px 0', borderRadius: 10, background: 'rgba(91,106,175,.05)' }}>
+                <span style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{hours}</span>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 4 }}>시간 수면</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 수면의 질 */}
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10, fontWeight: 500 }}>수면의 질</div>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 28 }}>
+          {SLEEP_QUALITIES.map(q => {
+            const active = quality === q;
+            return (
+              <button key={q} onClick={() => setQuality(active ? null : q)}
+                style={{
+                  flex: 1, padding: '10px 0', borderRadius: 10, fontSize: 12, fontWeight: active ? 600 : 400,
+                  border: `1.5px solid ${active ? 'rgba(91,106,175,.4)' : 'rgba(91,106,175,.12)'}`,
+                  background: active ? 'rgba(91,106,175,.1)' : 'var(--bg-input, #F2F3F5)',
+                  color: active ? '#5B6AAF' : 'var(--text-muted)',
+                  cursor: 'pointer', transition: 'all 0.15s ease', fontFamily: 'inherit',
+                }}>{q}</button>
+            );
+          })}
+        </div>
+
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button onClick={onClose} style={{
+            flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
+            border: 'none', background: 'var(--bg-input, #F2F3F5)',
+            color: 'var(--text-muted)', fontSize: 14, fontWeight: 600,
+            cursor: 'pointer', fontFamily: 'inherit',
+          }}>취소</button>
+          <button onClick={handleSave} style={{
+            flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
+            border: 'none', background: '#5B6AAF',
+            color: '#fff', fontSize: 14, fontWeight: 600,
+            cursor: 'pointer', fontFamily: 'inherit',
+          }}>저장</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== Home Edit Page =====
+function HomeEditPage({ cards, onToggle, onClose }) {
+  const items = [
+    { key: 'metrics', label: '피부 지표', desc: 'V라인 · 모공 · 유수분 · 홍조', icon: '📊' },
+    { key: 'water', label: '수분 섭취', desc: '하루 물 섭취량 기록', icon: '💧' },
+    { key: 'sleep', label: '수면', desc: '수면 시간 · 수면의 질 기록', icon: '🌙' },
+    { key: 'insight', label: 'lua 인사이트', desc: 'AI 피부 조언 카드', icon: '✨' },
+    { key: 'goal', label: '피부 목표', desc: '목표 달성 진행률', icon: '🎯' },
+  ];
+
+  return (
+    <div style={{
+      position: 'fixed', top: 0, right: 0, bottom: 0, left: 0, zIndex: 1000,
+      width: '100%', maxWidth: 430, margin: '0 auto',
+      background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
+      display: 'flex', flexDirection: 'column',
+      overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+      animation: 'homeEditSlideIn 0.3s ease',
+    }}>
+      <style>{`
+        @keyframes homeEditSlideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+      `}</style>
+
+      {/* Header */}
+      <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+        <div onClick={onClose} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </div>
+        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>홈 화면 편집</span>
+      </div>
+
+      <div style={{ padding: '20px 20px 8px' }}>
+        <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+          홈 화면에 표시할 카드를 선택하세요
+        </div>
+      </div>
+
+      <div style={{ flex: 1, padding: '8px 0' }}>
+        {items.map(item => (
+          <div key={item.key} onClick={() => onToggle(item.key)} style={{
+            display: 'flex', alignItems: 'center', gap: 16,
+            padding: '14px 28px', cursor: 'pointer',
+            WebkitTapHighlightColor: 'transparent',
+          }}>
+            <span style={{ fontSize: 20, width: 28, textAlign: 'center' }}>{item.icon}</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>{item.label}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{item.desc}</div>
+            </div>
+            <div style={{
+              width: 48, height: 28, borderRadius: 14,
+              background: cards[item.key] ? '#89cef5' : 'rgba(0,0,0,0.08)',
+              position: 'relative', cursor: 'pointer',
+              transition: 'background 0.2s ease',
+            }}>
+              <div style={{
+                position: 'absolute',
+                top: 2, left: cards[item.key] ? 22 : 2,
+                width: 24, height: 24, borderRadius: '50%',
+                background: '#fff',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                transition: 'left 0.2s ease',
+              }} />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

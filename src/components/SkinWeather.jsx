@@ -146,7 +146,7 @@ export default function SkinWeather({ skinResult }) {
         marginBottom: 16, animation: 'swFadeInUp 0.5s ease both',
       }}>
         <div>
-          <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)' }}>오늘의 피부 날씨</div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>오늘의 피부 날씨</div>
         </div>
         {weather && (
           <div style={{
@@ -177,7 +177,7 @@ export default function SkinWeather({ skinResult }) {
 
       {/* ── Weather Overview Card ── */}
       <div style={{
-        background: 'linear-gradient(135deg, rgba(135,206,235,0.3), rgba(152,232,193,0.3), rgba(255,243,176,0.3))',
+        background: 'linear-gradient(180deg, rgba(135,206,235,0.5) 0%, rgba(255,255,255,0.5) 100%)',
         borderRadius: 24, border: 'none', padding: 20,
         position: 'relative', overflow: 'hidden',
         marginBottom: 12, animation: 'swFadeInUp 0.5s ease 0.05s both',
@@ -185,7 +185,7 @@ export default function SkinWeather({ skinResult }) {
         {/* Glow */}
         <div style={{
           position: 'absolute', top: -30, right: -30, width: 140, height: 140,
-          background: 'radial-gradient(circle, rgba(135,206,235,0.12) 0%, transparent 70%)',
+          background: 'transparent',
           pointerEvents: 'none',
         }} />
 
@@ -240,7 +240,7 @@ export default function SkinWeather({ skinResult }) {
           return (
             <div style={{
               flex: 1, padding: 14, borderRadius: 18,
-              background: 'linear-gradient(135deg, rgba(135,206,235,0.2), rgba(152,232,193,0.2))', border: 'none',
+              background: 'rgba(255,255,255,0.5)', border: 'none',
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                 <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>습도</span>
@@ -263,7 +263,7 @@ export default function SkinWeather({ skinResult }) {
           return (
             <div style={{
               flex: 1, padding: 14, borderRadius: 18,
-              background: 'linear-gradient(135deg, rgba(152,232,193,0.2), rgba(255,243,176,0.2))', border: 'none',
+              background: 'rgba(255,255,255,0.5)', border: 'none',
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                 <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>미세먼지</span>
@@ -283,7 +283,7 @@ export default function SkinWeather({ skinResult }) {
         {/* UV */}
         <div style={{
           flex: 1, padding: 14, borderRadius: 18,
-          background: 'linear-gradient(135deg, rgba(152,232,193,0.08) 0%, rgba(255,243,176,0.18) 50%, rgba(255,223,140,0.2) 100%)', border: 'none',
+          background: 'rgba(255,255,255,0.5)', border: 'none',
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
             <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>자외선</span>
@@ -411,6 +411,7 @@ export default function SkinWeather({ skinResult }) {
           </div>
           <div style={{
             background: 'rgba(255,255,255,0.5)', borderRadius: 20,
+
             border: 'none', padding: 6,
           }}>
             {weather.weekForecast.map((day, i) => {
@@ -436,7 +437,7 @@ export default function SkinWeather({ skinResult }) {
                     }}>
                       <div style={{
                         position: 'absolute', height: '100%', borderRadius: 2,
-                        background: 'linear-gradient(90deg, #87CEEB, #98E8C1, #FFF3B0)',
+                        background: '#d0d0d0',
                         left: `${Math.max(0, Math.min(barLeft, 85))}%`,
                         width: `${Math.min(barWidth, 100 - barLeft)}%`,
                       }} />
@@ -457,7 +458,7 @@ export default function SkinWeather({ skinResult }) {
 
       {/* ── Seasonal Guide ── */}
       <div style={{
-        background: 'linear-gradient(135deg, rgba(255,250,180,0.3), rgba(255,255,255,0.3))',
+        background: 'rgba(255,255,255,0.5)',
         borderRadius: 22, border: 'none', padding: 18,
         marginBottom: 16, animation: 'swFadeInUp 0.5s ease 0.3s both',
       }}>
@@ -491,7 +492,7 @@ export default function SkinWeather({ skinResult }) {
 
       {/* ── Scheduled Notifications ── */}
       {notifications.length > 0 && (
-        <div style={{ marginBottom: 8, animation: 'swFadeInUp 0.5s ease 0.4s both', background: 'rgba(255,255,255,0.3)', borderRadius: 20, padding: 16 }}>
+        <div style={{ marginBottom: 8, animation: 'swFadeInUp 0.5s ease 0.4s both', background: 'rgba(255,255,255,0.5)', borderRadius: 20, padding: 16 }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 12 }}>
             오늘 예정된 알림
           </div>
