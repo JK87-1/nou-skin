@@ -117,6 +117,49 @@ export function hasBaseline() {
   return !!localStorage.getItem(PRIMARY_IMAGE_KEY);
 }
 
+// ===== AI FALLBACK TRACKING (beta D-4 monitoring) =====
+const FALLBACK_STATS_KEY = 'aiFallbackStats';
+
+function loadStats() {
+  try {
+    const raw = localStorage.getItem(FALLBACK_STATS_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function saveStats(stats) {
+  try { localStorage.setItem(FALLBACK_STATS_KEY, JSON.stringify(stats)); } catch {}
+}
+
+function emptyStats() {
+  return { successTotal: 0, fallbackTotal: 0, byReason: {}, history: [], lastReason: null, lastAt: null, lastSuccessAt: null };
+}
+
+function recordAiFallback(reason) {
+  const stats = loadStats() || emptyStats();
+  stats.fallbackTotal = (stats.fallbackTotal || 0) + 1;
+  stats.byReason[reason] = (stats.byReason[reason] || 0) + 1;
+  stats.lastReason = reason;
+  stats.lastAt = new Date().toISOString();
+  stats.history = [...(stats.history || []), { reason, at: stats.lastAt }].slice(-50);
+  saveStats(stats);
+}
+
+function recordAiSuccess() {
+  const stats = loadStats() || emptyStats();
+  stats.successTotal = (stats.successTotal || 0) + 1;
+  stats.lastSuccessAt = new Date().toISOString();
+  saveStats(stats);
+}
+
+export function getAiFallbackStats() {
+  return loadStats() || emptyStats();
+}
+
+export function clearAiFallbackStats() {
+  localStorage.removeItem(FALLBACK_STATS_KEY);
+}
+
 // ===== FACE CROP =====
 function cropFace(base64Image, landmarks) {
   if (!landmarks || landmarks.length < 10) return Promise.resolve(base64Image);
@@ -213,6 +256,7 @@ export async function callVisionAI(base64Image, landmarks) {
 
     if (!resp.ok) {
       console.warn('AI API returned', resp.status);
+      recordAiFallback(`http_${resp.status}`);
       return null;
     }
 
@@ -221,6 +265,7 @@ export async function callVisionAI(base64Image, landmarks) {
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       console.warn('AI response has no JSON block');
+      recordAiFallback('no_json_block');
       return null;
     }
 
@@ -235,6 +280,7 @@ export async function callVisionAI(base64Image, landmarks) {
     for (const key of requiredKeys) {
       if (typeof parsed[key] !== 'number') {
         console.warn(`AI response missing or invalid: ${key}`);
+        recordAiFallback(`missing_field_${key}`);
         return null;
       }
     }
@@ -283,9 +329,13 @@ export async function callVisionAI(base64Image, landmarks) {
       }
     }
 
+    recordAiSuccess();
     return mapped;
   } catch (e) {
-    console.warn('AI analysis failed:', e.message || e);
+    const msg = e.message || String(e);
+    console.warn('AI analysis failed:', msg);
+    const reason = msg === 'AI timeout' ? 'timeout' : `exception:${msg.slice(0, 40)}`;
+    recordAiFallback(reason);
     return null;
   }
 }
