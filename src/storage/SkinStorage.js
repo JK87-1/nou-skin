@@ -358,6 +358,29 @@ function computeAvgDiff(a, b) {
  * 직전 기록 대비 변화량 계산
  * @returns {Object|null} { metric: { prev, curr, diff, improved } } or null
  */
+/**
+ * 컨디션 브리핑 API·기타용 prev record 룩업.
+ * getChanges()와 동일 룰: differentPerson skip + 7일 윈도우 + avgDiff > 25 skip.
+ * saveRecord 전후 호환 — records의 마지막 record가 curr 자신이면 timestamp 1초 이내로 자동 skip.
+ */
+export function findRecentPrimaryRecord(currentScores) {
+  if (currentScores?.differentPerson) return null;
+  const records = getRecords();
+  const MAX_PREV_DAYS = 7;
+  const now = currentScores?.timestamp || Date.now();
+  for (let i = records.length - 1; i >= 0; i--) {
+    const r = records[i];
+    if (!r) continue;
+    if (r.differentPerson) continue;
+    if (r.timestamp && Math.abs(r.timestamp - now) < 1000) continue;
+    const days = (now - (r.timestamp || 0)) / 86400000;
+    if (days > MAX_PREV_DAYS) continue;
+    if (computeAvgDiff(currentScores, r) > 25) continue;
+    return r;
+  }
+  return null;
+}
+
 export function getChanges() {
   const records = getRecords();
   if (records.length < 2) return null;
