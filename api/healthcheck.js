@@ -3,7 +3,7 @@
 // 매일 1회 Vercel Cron이 호출 → OpenAI 키·gpt-5.2 모델 유효성 확인 + 어제 측정 통계 조회 → 노션 기록.
 // 수동 트리거: curl https://www.luaskin.co/api/healthcheck
 
-import { readDailyStats, getKstDate } from './_stats.js';
+import { readDailyStats, getKstDate } from '../lib/stats.js';
 
 const NOTION_PAGE_ID_ENV = 'NOTION_PAGE_ID';
 const NOTION_TOKEN_ENV = 'NOTION_TOKEN';

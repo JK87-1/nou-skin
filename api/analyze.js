@@ -1,7 +1,7 @@
 // Vercel Serverless Function: OpenAI GPT-5.2 Vision skin analysis proxy
 // Baseline image comparison for consistency + 3x API call median scoring
 
-import { recordRequest, recordOutcome, getKstDate } from './_stats.js';
+import { recordRequest, recordOutcome, getKstDate } from '../lib/stats.js';
 
 const RATE_LIMIT = new Map();
 // 베타 기간 상향: 가족·사무실 공유 IP에 다수 사용자 몰릴 가능성 대비.
