@@ -887,64 +887,73 @@ export default function App() {
             <div style={{ position: 'absolute', top: '10%', left: '50%', transform: 'translateX(-50%)', width: '120%', height: '50%', background: `radial-gradient(ellipse at 50% 40%, ${activeThemeColors.accent}06 0%, transparent 60%)`, pointerEvents: 'none' }} />
           )}
 
-          {/* ① 인사 영역 */}
-          <div style={{ padding: '8px 22px 4px' }}>
-            <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.3 }}>
-              {(() => { const h = new Date().getHours(); if (h >= 5 && h < 11) return '좋은 아침이에요'; if (h >= 11 && h < 17) return '오늘도 잘 지내고 있나요'; if (h >= 17 && h < 22) return '하루 마무리하셨네요'; return '조용한 시간이에요'; })()}{getProfile().nickname ? `, ${getProfile().nickname}` : ''}
-            </div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
-              {`${new Date().getMonth() + 1}월 ${new Date().getDate()}일`} · {(() => { const recs = getRecords(); if (!recs.length) return '오늘부터 시작'; const d = Math.floor((Date.now() - new Date(recs[recs.length - 1].date).getTime()) / 86400000); return d > 0 ? `LUA와 ${d}일째` : '오늘부터 시작'; })()}
+
+          {/* ② 피부 분석 버튼 */}
+          <div
+            onClick={openCamera}
+            style={{
+              margin: '14px 20px 0',
+              padding: '40px 24px 32px',
+              cursor: 'pointer',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 36,
+            }}
+          >
+            <EternalPearl size={160} animated colors={activeThemeColors} theme={colorMode} />
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: -0.3 }}>탭 하여 피부를 분석하세요</div>
+              <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 6 }}>AI가 10개 지표를 정밀 분석합니다</div>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 14 }}>
+                {['정면 셀카', '밝은 자연광', '맨 얼굴'].map(tag => (
+                  <div key={tag} style={{
+                    padding: '8px 18px', borderRadius: 50,
+                    background: 'rgba(255,255,255,0.4)',
+                    border: '1px solid rgba(255,255,255,0.3)',
+                    fontSize: 13, fontWeight: 500, color: 'var(--text-secondary, #5a6a7a)',
+                  }}>{tag}</div>
+                ))}
+              </div>
             </div>
           </div>
-
-          {/* ② AI 인사이트 카드 */}
-          {getLatestRecord() && (
-            <div style={{ padding: '14px 20px 0' }}>
-              <AiInsightCard onOpenChat={() => setFabChatOpen(true)} />
-            </div>
-          )}
 
           {/* ③ 현재 상태 미니 패널 */}
           {(() => {
             const latest = getLatestRecord();
             const prev = (() => { const recs = getRecords(); return recs.length >= 2 ? recs[1] : null; })();
             const rc = getRecords().length;
-            const ds = latest ? Math.floor((Date.now() - new Date(latest.date).getTime()) / 86400000) : null;
             const metrics = [
-              { key: 'elasticityScore', label: 'V라인', icon: <EggIcon size={16} /> },
-              { key: 'poreScore', label: '모공', icon: <MicroscopeIcon size={16} /> },
-              { key: 'moisture', label: '유수분', icon: <DropletIcon size={16} /> },
-              { key: 'skinTone', label: '홍조', icon: <BlushIcon size={16} /> },
+              { key: 'elasticityScore', label: 'V라인', icon: <EggIcon size={14} /> },
+              { key: 'poreScore', label: '모공', icon: <MicroscopeIcon size={14} /> },
+              { key: 'moisture', label: '유수분', icon: <DropletIcon size={14} /> },
+              { key: 'skinTone', label: '홍조', icon: <BlushIcon size={14} /> },
             ];
             if (rc === 0) return null;
             return (
-              <div style={{ margin: '12px 20px 0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                {metrics.map((m) => {
-                  const val = latest?.[m.key] ?? null;
-                  const prevVal = prev?.[m.key] ?? null;
-                  const diff = val !== null && prevVal !== null ? val - prevVal : null;
-                  return (
-                    <div key={m.key} style={{
-                      background: 'rgba(255,255,255,0.35)',
-                      backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-                      border: '1px solid rgba(255,255,255,0.3)',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
-                      borderRadius: 20, padding: 14,
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ display: 'inline-flex', alignItems: 'center' }}>{m.icon}</span>
-                        <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500 }}>{m.label}</span>
+              <div style={{ margin: '12px 20px 0' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+                  {metrics.map((m) => {
+                    const val = latest?.[m.key] ?? null;
+                    const prevVal = prev?.[m.key] ?? null;
+                    const diff = val !== null && prevVal !== null ? val - prevVal : null;
+                    return (
+                      <div key={m.key} style={{
+                        borderRadius: 16, padding: 12, textAlign: 'center',
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 16, height: 16, flexShrink: 0 }}>{m.icon}</span>
+                          <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 500 }}>{m.label}</span>
+                        </div>
+                        <div style={{ fontSize: 22, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.5, marginTop: 6 }}>{val !== null ? val : '—'}</div>
+                        <div style={{ fontSize: 10, fontWeight: 500, marginTop: 2, color: diff === null ? 'var(--text-muted)' : diff > 0 ? 'var(--accent-primary, #89cef5)' : diff < 0 ? '#e05545' : 'var(--text-muted)' }}>
+                          {diff === null ? '기준선' : diff > 0 ? `+${diff} 좋아짐` : diff < 0 ? `${diff} 하락` : <span style={{ opacity: 0.5 }}>변화 없음</span>}
+                        </div>
                       </div>
-                      <div style={{ fontSize: 28, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.5, marginTop: 6 }}>{val !== null ? val : '—'}</div>
-                      <div style={{ fontSize: 11, fontWeight: 500, marginTop: 2, color: diff === null ? 'var(--text-muted)' : diff > 0 ? 'var(--accent-primary, #89cef5)' : diff < 0 ? '#e05545' : 'var(--text-muted)' }}>
-                        {diff === null ? '기준선' : diff > 0 ? `+${diff} 좋아짐` : diff < 0 ? `${diff} 하락` : '변화 없음'}
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             );
           })()}
+
 
           {/* Goal Progress Card */}
           {getGoal()?.status === 'active' && (
@@ -1870,8 +1879,25 @@ export default function App() {
       {/* ===== PWA INSTALL BANNER ===== */}
       <InstallBanner />
 
-      {/* ===== FAB (Global) ===== */}
-      {showTabBar && (
+      {/* ===== 고정 인사이트 카드 (홈 화면만) ===== */}
+      {showTabBar && activeTab === 'home' && stage === 'landing' && getLatestRecord() && (
+        <div style={{
+          position: 'fixed',
+          bottom: 'calc(76px + env(safe-area-inset-bottom, 0px) + 32px)',
+          left: 20, right: 20,
+          zIndex: 90,
+          animation: 'insightFloat 3s ease-in-out infinite',
+        }}>
+          <AiInsightCard
+            onOpenChat={() => setFabChatOpen(true)}
+            greeting={(() => { const h = new Date().getHours(); if (h >= 5 && h < 11) return '좋은 아침이에요'; if (h >= 11 && h < 17) return '오늘도 잘 지내고 있나요'; if (h >= 17 && h < 22) return '하루 마무리하셨네요'; return '조용한 시간이에요'; })() + (getProfile().nickname ? `, ${getProfile().nickname}` : '')}
+            dateInfo={`${new Date().getMonth() + 1}월 ${new Date().getDate()}일 · ${(() => { const recs = getRecords(); if (!recs.length) return '오늘부터 시작'; const d = Math.floor((Date.now() - new Date(recs[recs.length - 1].date).getTime()) / 86400000); return d > 0 ? `LUA와 ${d}일째` : '오늘부터 시작'; })()}`}
+          />
+        </div>
+      )}
+
+      {/* ===== FAB (홈 인사이트 카드가 없을 때만) ===== */}
+      {showTabBar && !(activeTab === 'home' && stage === 'landing' && getLatestRecord()) && (
         <div style={{
           position: 'fixed',
           bottom: 'calc(76px + env(safe-area-inset-bottom, 0px) + 36px)',
