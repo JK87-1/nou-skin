@@ -915,7 +915,7 @@ export default function App() {
             onClick={openCamera}
             style={{
               margin: '14px 20px 0',
-              padding: '40px 24px 32px',
+              padding: '48px 24px 38px',
               cursor: 'pointer',
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 36,
             }}
