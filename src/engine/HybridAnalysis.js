@@ -117,6 +117,49 @@ export function hasBaseline() {
   return !!localStorage.getItem(PRIMARY_IMAGE_KEY);
 }
 
+// ===== AI FALLBACK TRACKING (beta D-4 monitoring) =====
+const FALLBACK_STATS_KEY = 'aiFallbackStats';
+
+function loadStats() {
+  try {
+    const raw = localStorage.getItem(FALLBACK_STATS_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function saveStats(stats) {
+  try { localStorage.setItem(FALLBACK_STATS_KEY, JSON.stringify(stats)); } catch {}
+}
+
+function emptyStats() {
+  return { successTotal: 0, fallbackTotal: 0, byReason: {}, history: [], lastReason: null, lastAt: null, lastSuccessAt: null };
+}
+
+function recordAiFallback(reason) {
+  const stats = loadStats() || emptyStats();
+  stats.fallbackTotal = (stats.fallbackTotal || 0) + 1;
+  stats.byReason[reason] = (stats.byReason[reason] || 0) + 1;
+  stats.lastReason = reason;
+  stats.lastAt = new Date().toISOString();
+  stats.history = [...(stats.history || []), { reason, at: stats.lastAt }].slice(-50);
+  saveStats(stats);
+}
+
+function recordAiSuccess() {
+  const stats = loadStats() || emptyStats();
+  stats.successTotal = (stats.successTotal || 0) + 1;
+  stats.lastSuccessAt = new Date().toISOString();
+  saveStats(stats);
+}
+
+export function getAiFallbackStats() {
+  return loadStats() || emptyStats();
+}
+
+export function clearAiFallbackStats() {
+  localStorage.removeItem(FALLBACK_STATS_KEY);
+}
+
 // ===== FACE CROP =====
 function cropFace(base64Image, landmarks) {
   if (!landmarks || landmarks.length < 10) return Promise.resolve(base64Image);
@@ -213,6 +256,7 @@ export async function callVisionAI(base64Image, landmarks) {
 
     if (!resp.ok) {
       console.warn('AI API returned', resp.status);
+      recordAiFallback(`http_${resp.status}`);
       return null;
     }
 
@@ -221,6 +265,7 @@ export async function callVisionAI(base64Image, landmarks) {
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       console.warn('AI response has no JSON block');
+      recordAiFallback('no_json_block');
       return null;
     }
 
@@ -235,6 +280,7 @@ export async function callVisionAI(base64Image, landmarks) {
     for (const key of requiredKeys) {
       if (typeof parsed[key] !== 'number') {
         console.warn(`AI response missing or invalid: ${key}`);
+        recordAiFallback(`missing_field_${key}`);
         return null;
       }
     }
@@ -283,9 +329,13 @@ export async function callVisionAI(base64Image, landmarks) {
       }
     }
 
+    recordAiSuccess();
     return mapped;
   } catch (e) {
-    console.warn('AI analysis failed:', e.message || e);
+    const msg = e.message || String(e);
+    console.warn('AI analysis failed:', msg);
+    const reason = msg === 'AI timeout' ? 'timeout' : `exception:${msg.slice(0, 40)}`;
+    recordAiFallback(reason);
     return null;
   }
 }
@@ -313,10 +363,12 @@ export function hybridMerge(cv, ai) {
   if (typeof ai.troubleCount === 'number') {
     const rawNew = Math.max(0, Math.min(20, Math.round((100 - ai.troubleCount) / 8.5)));
 
-    // Baseline raw count clamp — 비대칭 적용.
-    // - 감소 방향(트러블 줄어듦): UI 흔들림 방지 위해 같은 날 ±1, 시간 지날수록 ±2~5로 천천히 완화
-    // - 증가 방향(트러블 늘어남): 자유 허용. baseline=0에 anchor돼 새 트러블이 0으로 묻히는 부작용 방지
-    // differentPerson인 경우는 anchor 안 함
+    // Baseline raw count clamp — 시간 단계별 양방향 적용.
+    // - 감소 방향(트러블 줄어듦): 같은 날 ±1, 1~2일 ±2, 3~5일 ±3, 6~14일 ±4, 15일+ ±5
+    // - 증가 방향(트러블 늘어남): 같은 날 ±1, 1~2일 ±2, 그 이후 자유 허용
+    //   (베타 안정성을 위해 같은 날 측정 노이즈는 흡수하되, 진짜 새 트러블은
+    //    baseline drift(70%·30%)와 함께 1~3일 내 점진적으로 반영됨)
+    // - differentPerson인 경우는 anchor 안 함
     let stabilizedRaw = rawNew;
     if (!ai.differentPerson) {
       try {
@@ -324,18 +376,16 @@ export function hybridMerge(cv, ai) {
         if (baseline && typeof baseline.result?.troubleCount === 'number') {
           const rawBase = Math.max(0, Math.min(20, Math.round((100 - baseline.result.troubleCount) / 8.5)));
           const diff = rawNew - rawBase;
+          const daysSince = baseline.timestamp ? (Date.now() - baseline.timestamp) / 86400000 : 0;
           if (diff <= 0) {
-            // 트러블 감소(=양호한 방향): stabilization 적용
-            const daysSince = baseline.timestamp ? (Date.now() - baseline.timestamp) / 86400000 : 0;
             const maxDecrease = daysSince < 1 ? 1 : daysSince <= 2 ? 2 : daysSince <= 5 ? 3 : daysSince <= 14 ? 4 : 5;
-            const clamped = Math.max(-maxDecrease, diff);
-            stabilizedRaw = rawBase + clamped;
+            stabilizedRaw = rawBase + Math.max(-maxDecrease, diff);
           } else {
-            // 트러블 증가: 자유 허용 (감지된 만큼 즉시 반영)
-            stabilizedRaw = rawNew;
+            const maxIncrease = daysSince < 1 ? 1 : daysSince <= 2 ? 2 : 100;
+            stabilizedRaw = rawBase + Math.min(maxIncrease, diff);
           }
           if (stabilizedRaw !== rawNew) {
-            console.log('[troubleCount stabilize]', { rawNew, rawBase, diff, stabilizedRaw });
+            console.log('[troubleCount stabilize]', { rawNew, rawBase, diff, daysSince: daysSince.toFixed(2), stabilizedRaw });
           }
         }
       } catch (e) { console.warn('[troubleCount baseline clamp]', e); }
@@ -362,6 +412,32 @@ export function hybridMerge(cv, ai) {
   const sAvg = ((result.wrinkleScore || 50) + (result.elasticityScore || 50) + (result.textureScore || 50) + (result.poreScore || 50) + (result.pigmentationScore || 50)) / 5;
   // amplification factor 1.8 → 0.8: 차이 의미는 유지하되 측정 변동 증폭은 절반 이하로
   result.conditionScore = clamp(Math.round(cAvg + (cAvg - sAvg) * 0.8), 32, 96);
+
+  // conditionScore baseline anchor — 같은 사람·같은 baseline에서 ±n 으로 clamp.
+  // 종합점수(±2~3 안정)와 정합되도록 같은 날 ±3, 1-2일 ±5, 3-5일 ±7, 7-14일 ±10, 15일+ 자유.
+  // baseline.result(GPT 점수)에서 동일 공식으로 재계산하므로 별도 baseline 저장 불필요.
+  if (!ai.differentPerson) {
+    try {
+      const baselineForCondition = getBaseline();
+      if (baselineForCondition?.result) {
+        const b = baselineForCondition.result;
+        const bTroubleVal = typeof b.troubleCount === 'number' ? b.troubleCount : 50;
+        const bOilVal = Math.max(30, 100 - Math.abs(55 - (b.oilBalance ?? 50)) * 1.4);
+        const bCAvg = ((b.moisture ?? 50) + (b.skinTone ?? 50) + (b.darkCircles ?? 50) + bOilVal + bTroubleVal) / 5;
+        const bSAvg = ((b.wrinkles ?? 50) + (b.elasticity ?? 50) + (b.texture ?? 50) + (b.pores ?? 50) + (b.pigmentation ?? 50)) / 5;
+        const baselineCondition = clamp(Math.round(bCAvg + (bCAvg - bSAvg) * 0.8), 32, 96);
+        const daysSince = baselineForCondition.timestamp ? (Date.now() - baselineForCondition.timestamp) / 86400000 : 0;
+        const maxDelta = daysSince < 1 ? 3 : daysSince <= 2 ? 5 : daysSince <= 5 ? 7 : daysSince <= 14 ? 10 : 100;
+        const diff = result.conditionScore - baselineCondition;
+        if (Math.abs(diff) > maxDelta) {
+          const stabilized = baselineCondition + Math.max(-maxDelta, Math.min(maxDelta, diff));
+          console.log('[conditionScore stabilize]', { raw: result.conditionScore, baseline: baselineCondition, diff, daysSince: daysSince.toFixed(2), stabilized });
+          result.conditionScore = stabilized;
+        }
+      }
+    } catch (e) { console.warn('[conditionScore baseline anchor]', e); }
+  }
+
   console.log('[conditionScore]', { cAvg: cAvg.toFixed(1), sAvg: sAvg.toFixed(1), diff: (cAvg - sAvg).toFixed(1), troubleVal: troubleVal.toFixed(1), conditionScore: result.conditionScore, overallScore: result.overallScore });
 
   // Store AI analysis summary & details

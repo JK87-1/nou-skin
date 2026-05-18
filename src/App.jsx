@@ -3,12 +3,12 @@ import { createPortal } from 'react-dom';
 import GlobalStyles from './design/GlobalStyles';
 import { compressImage, clearCompressCache, analyzePixels, pixelsToScores, generateDemoScores, checkPhotoQuality, generateSmartAdvice } from './engine/PixelAnalysis';
 import { detectLandmarks } from './engine/FaceLandmarker';
-import { callVisionAI, hybridMerge, hasBaseline } from './engine/HybridAnalysis';
+import { callVisionAI, hybridMerge, hasBaseline, getAiFallbackStats, clearAiFallbackStats } from './engine/HybridAnalysis';
 import { estimateAge, preload as preloadAge } from './engine/FaceAgeEstimator';
 import { preload as preloadLandmarker } from './engine/FaceLandmarker';
 import { AnimatedNumber, ScoreRing, MetricBar, Tag, DetailPage } from './components/UIComponents';
 import CameraCapture from './components/CameraCapture';
-import { saveRecord, updateRecord, getRecords, getNextMeasurementInfo, getChanges, generateShareText, getLatestRecord, hasTodayRecord, saveThumbnail, saveComparisonPhoto, getTodayRecords, getStableSkinAge } from './storage/SkinStorage';
+import { saveRecord, updateRecord, getRecords, getNextMeasurementInfo, getChanges, generateShareText, getLatestRecord, hasTodayRecord, saveThumbnail, saveComparisonPhoto, getTodayRecords, getStableSkinAge, findRecentPrimaryRecord } from './storage/SkinStorage';
 import { migrateFromLocalStorage } from './storage/PhotoDB';
 import { createAutoBackup, verifyDataIntegrity, restoreFromAutoBackup, startPeriodicBackup, getBackupInfo } from './storage/AutoBackup';
 import HistoryPage from './pages/HistoryPage';
@@ -84,6 +84,27 @@ export default function App() {
   const [colorMode, setColorModeState] = useState(() => getProfile().colorMode || 'light');
   const [userLevel, setUserLevel] = useState(() => calculateLevel(getTotalXP()));
   const [activeThemeId, setActiveThemeId] = useState(() => getProfile().activeTheme || null);
+
+  // AI fallback 디버그 헬퍼 — 콘솔에서 window.__aiFallbackStats() 호출
+  useEffect(() => {
+    window.__aiFallbackStats = () => {
+      const s = getAiFallbackStats();
+      console.table({
+        성공: s.successTotal || 0,
+        실패: s.fallbackTotal || 0,
+        실패율: s.successTotal + s.fallbackTotal > 0
+          ? `${Math.round((s.fallbackTotal / (s.successTotal + s.fallbackTotal)) * 100)}%`
+          : '-',
+        마지막사유: s.lastReason || '-',
+        마지막실패: s.lastAt || '-',
+        마지막성공: s.lastSuccessAt || '-',
+      });
+      console.log('사유별 카운트:', s.byReason);
+      console.log('최근 50건 이력:', s.history);
+      return s;
+    };
+    window.__clearAiFallbackStats = () => { clearAiFallbackStats(); console.log('AI fallback 통계 초기화 완료'); };
+  }, []);
 
   // Apply data-theme attribute for light/dark CSS variables
   useEffect(() => {
@@ -374,13 +395,21 @@ export default function App() {
 
     console.log('[Score Debug] overallScore:', finalScores.overallScore, 'conditionScore:', finalScores.conditionScore, 'mode:', finalScores.analysisMode);
 
+    if (finalScores.analysisMode === 'cv_only') {
+      const stats = getAiFallbackStats();
+      console.error('🚨 AI 분석 실패 → CV-only fallback', {
+        누적_fallback: stats.fallbackTotal,
+        누적_성공: stats.successTotal,
+        마지막_사유: stats.lastReason,
+        사유별_횟수: stats.byReason,
+        상세조회: 'window.__aiFallbackStats() 입력',
+      });
+    }
+
     clearInterval(pi); setProgress(100);
     setTimeout(() => {
-      // Get previous SAME-PERSON record before saving (for briefing comparison)
-      const allRecs = getRecords();
-      const prevRecord = allRecs.length > 0
-        ? [...allRecs].reverse().find(r => !!r.differentPerson === !!finalScores.differentPerson) || null
-        : null;
+      // 컨디션 브리핑용 prev record — 7일 윈도우, differentPerson skip, avgDiff > 25 skip
+      const prevRecord = findRecentPrimaryRecord(finalScores);
       const todayBefore = getTodayRecords();
 
       // Save record FIRST so getChanges() compares current vs previous correctly
@@ -487,11 +516,8 @@ export default function App() {
       clearInterval(pi); setProgress(100);
       setTimeout(() => {
         const scores = generateDemoScores();
-        // Get previous record before saving (for briefing comparison)
-        const demoRecs = getRecords();
-        const prevRecord = demoRecs.length > 0
-          ? [...demoRecs].reverse().find(r => !!r.differentPerson === !!scores.differentPerson) || null
-          : null;
+        // 데모 컨디션 브리핑용 prev — 동일 룰 적용
+        const prevRecord = findRecentPrimaryRecord(scores);
         const todayBefore = getTodayRecords();
 
         // Save record FIRST so getChanges() compares current vs previous correctly
