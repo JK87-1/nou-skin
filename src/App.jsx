@@ -924,7 +924,7 @@ export default function App() {
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: -0.3 }}>탭 하여 피부를 분석하세요</div>
               <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 6 }}>AI가 10개 지표를 정밀 분석합니다</div>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 14 }}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 28 }}>
                 {['정면 셀카', '밝은 자연광', '맨 얼굴'].map(tag => (
                   <div key={tag} style={{
                     padding: '8px 18px', borderRadius: 50,
