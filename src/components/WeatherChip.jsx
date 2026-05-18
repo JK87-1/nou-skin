@@ -114,8 +114,6 @@ export default function WeatherChip({ onTap }) {
         <ellipse cx="15.5" cy="15.5" rx="3.5" ry="2.5" fill="white" opacity="0.35" />
       </svg>
       <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-secondary)', lineHeight: 1 }}>{weather.temp}°</span>
-      <span style={{ fontSize: 9, color: 'var(--text-dim)', lineHeight: 1 }}>{weather.location}</span>
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" strokeWidth="2" strokeLinecap="round"><path d="M6 9l6 6 6-6"/></svg>
     </div>
   );
 }
