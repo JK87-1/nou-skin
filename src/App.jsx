@@ -1486,6 +1486,39 @@ export default function App() {
               </div>
             )}
 
+            {/* ── AI 분석 fallback 안내 (CV-only 모드) ── */}
+            {result?.analysisMode === 'cv_only' && (
+              <div className="glass-card" style={{
+                animation: 'fadeUp 0.5s ease-out 0.65s both',
+                background: 'rgba(96,165,250,0.10)',
+                border: '1px solid rgba(96,165,250,0.35)',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                  <div style={{ fontSize: 20, lineHeight: 1, marginTop: 2 }}>ℹ️</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
+                      AI 정밀 분석이 일시 지연됐어요
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 8 }}>
+                      네트워크 또는 분석 서버 일시 지연으로 AI 정밀 분석 대신 기본 분석(CV)으로 처리됐어요.
+                      잠시 후 다시 측정하면 보통 정상 복귀됩니다.
+                    </div>
+                    <button
+                      onClick={() => { setResult(null); setStage('landing'); }}
+                      style={{
+                        padding: '8px 14px', borderRadius: 10,
+                        background: 'rgba(96,165,250,0.18)',
+                        color: '#1d4ed8',
+                        border: '1px solid rgba(96,165,250,0.3)',
+                        fontSize: 12, fontWeight: 600, fontFamily: 'inherit',
+                        cursor: 'pointer',
+                      }}
+                    >다시 측정하기</button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* ── 결과 이상치 안내 (baseline 대비 큰 변동) ── */}
             {result?.outlierWarning && (
               <div className="glass-card" style={{
