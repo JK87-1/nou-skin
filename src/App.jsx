@@ -1008,8 +1008,7 @@ export default function App() {
                   <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(137,206,245,0.4)' }} />
                 </div>
                 {/* Header */}
-                <div style={{ padding: '8px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>오늘의 피부 날씨</span>
+                <div style={{ padding: '8px 14px 10px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
                   <button onClick={() => setWeatherSheet(false)} style={{
                     width: 32, height: 32, borderRadius: '50%', border: 'none',
                     background: 'rgba(255,255,255,0.3)', cursor: 'pointer',
