@@ -143,6 +143,27 @@ function recordAiFallback(reason) {
   stats.lastAt = new Date().toISOString();
   stats.history = [...(stats.history || []), { reason, at: stats.lastAt }].slice(-50);
   saveStats(stats);
+  pingFallbackReportIfNeeded(reason);
+}
+
+// 서버(노션)로 즉시 알림 ping — 1시간 디바운스, fire-and-forget.
+// 분석 흐름 방해 안 하도록 모든 에러 silent.
+function pingFallbackReportIfNeeded(reason) {
+  try {
+    const KEY = 'aiFallbackLastPingAt';
+    const DEBOUNCE_MS = 60 * 60 * 1000; // 1시간
+    const last = parseInt(localStorage.getItem(KEY) || '0', 10);
+    if (Date.now() - last < DEBOUNCE_MS) return;
+    localStorage.setItem(KEY, String(Date.now()));
+
+    const deviceTag = (localStorage.getItem('nou_device_id') || '').slice(0, 8);
+    fetch('/api/fallback-report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reason, mode: 'cv_only', deviceTag }),
+      keepalive: true,
+    }).catch(() => {});
+  } catch {}
 }
 
 function recordAiSuccess() {
