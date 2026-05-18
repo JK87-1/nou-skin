@@ -14,12 +14,30 @@ function formatTime(ts) {
   return `${h < 12 ? '오전' : '오후'} ${h === 0 ? 12 : h > 12 ? h - 12 : h}:${m}`;
 }
 
-// Star icon SVG (same as FAB)
-function StarIcon({ size = 14, color = '#89cef5' }) {
+// Star icon SVG (same as FAB — glassmorphism + depth)
+function StarIcon({ size = 14 }) {
+  const id = `chat-star-${size}`;
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24">
-      <path fill={color} d="M10.48,23.25c-.15.41-.5.71-.86.75-.27.03-.78-.29-.9-.59l-1.53-4.02c-.48-1.26-1.41-2.1-2.67-2.58l-3.91-1.48c-.29-.11-.59-.51-.6-.76-.01-.39.23-.79.6-.93l3.9-1.49c1.27-.48,2.19-1.31,2.68-2.59l1.57-4.14c.08-.2.52-.44.74-.46.24-.02.77.21.86.46l1.57,4.14c.5,1.32,1.47,2.15,2.78,2.63l3.7,1.37c.31.11.66.55.67.83.02.42-.29.82-.68.97l-3.8,1.44c-1.26.48-2.2,1.32-2.67,2.58l-1.45,3.86Z"/>
-      <path fill={color} d="M21.48,6.29c-1.03.59-.9,2.91-2.01,2.98-1.23.08-.99-1.68-1.94-2.78-.77-.88-2.68-.63-2.74-1.78-.07-1.27,2.01-1.1,2.74-1.91.87-.95.73-2.72,1.78-2.8,1.29-.1.98,1.81,1.95,2.77.87.86,2.67.71,2.73,1.8.07,1.08-1.29,1.02-2.51,1.72Z"/>
+    <svg width={size} height={size} viewBox="0 0 24 24" style={{ filter: 'drop-shadow(0 1px 2px rgba(100,180,230,0.5))' }}>
+      <defs>
+        <linearGradient id={`${id}-fill`} x1="0.15" y1="0.05" x2="0.85" y2="0.95">
+          <stop offset="0%" stopColor="#D6EEFB" />
+          <stop offset="45%" stopColor="#a8d8f5" />
+          <stop offset="100%" stopColor="#6bb8e8" />
+        </linearGradient>
+        <linearGradient id={`${id}-edge`} x1="0.5" y1="0" x2="0.5" y2="1">
+          <stop offset="0%" stopColor="#c8e8fa" />
+          <stop offset="100%" stopColor="#5aaad8" />
+        </linearGradient>
+      </defs>
+      <path fill={`url(#${id}-edge)`} stroke="rgba(90,170,216,0.3)" strokeWidth="0.6" d="M10.48,23.25c-.15.41-.5.71-.86.75-.27.03-.78-.29-.9-.59l-1.53-4.02c-.48-1.26-1.41-2.1-2.67-2.58l-3.91-1.48c-.29-.11-.59-.51-.6-.76-.01-.39.23-.79.6-.93l3.9-1.49c1.27-.48,2.19-1.31,2.68-2.59l1.57-4.14c.08-.2.52-.44.74-.46.24-.02.77.21.86.46l1.57,4.14c.5,1.32,1.47,2.15,2.78,2.63l3.7,1.37c.31.11.66.55.67.83.02.42-.29.82-.68.97l-3.8,1.44c-1.26.48-2.2,1.32-2.67,2.58l-1.45,3.86Z"/>
+      <g transform="translate(0.3,0.3) scale(0.975)">
+        <path fill={`url(#${id}-fill)`} d="M10.48,23.25c-.15.41-.5.71-.86.75-.27.03-.78-.29-.9-.59l-1.53-4.02c-.48-1.26-1.41-2.1-2.67-2.58l-3.91-1.48c-.29-.11-.59-.51-.6-.76-.01-.39.23-.79.6-.93l3.9-1.49c1.27-.48,2.19-1.31,2.68-2.59l1.57-4.14c.08-.2.52-.44.74-.46.24-.02.77.21.86.46l1.57,4.14c.5,1.32,1.47,2.15,2.78,2.63l3.7,1.37c.31.11.66.55.67.83.02.42-.29.82-.68.97l-3.8,1.44c-1.26.48-2.2,1.32-2.67,2.58l-1.45,3.86Z"/>
+      </g>
+      <path fill={`url(#${id}-edge)`} stroke="rgba(90,170,216,0.3)" strokeWidth="0.4" d="M21.48,6.29c-1.03.59-.9,2.91-2.01,2.98-1.23.08-.99-1.68-1.94-2.78-.77-.88-2.68-.63-2.74-1.78-.07-1.27,2.01-1.1,2.74-1.91.87-.95.73-2.72,1.78-2.8,1.29-.1.98,1.81,1.95,2.77.87.86,2.67.71,2.73,1.8.07,1.08-1.29,1.02-2.51,1.72Z"/>
+      <g transform="translate(0.15,0.15) scale(0.988)">
+        <path fill={`url(#${id}-fill)`} d="M21.48,6.29c-1.03.59-.9,2.91-2.01,2.98-1.23.08-.99-1.68-1.94-2.78-.77-.88-2.68-.63-2.74-1.78-.07-1.27,2.01-1.1,2.74-1.91.87-.95.73-2.72,1.78-2.8,1.29-.1.98,1.81,1.95,2.77.87.86,2.67.71,2.73,1.8.07,1.08-1.29,1.02-2.51,1.72Z"/>
+      </g>
     </svg>
   );
 }
@@ -57,6 +75,12 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
       setClosing(false);
       const greeting = initialContext?.message || getGreetingMsg();
       setMessages([{ role: 'assistant', content: greeting, timestamp: Date.now() }]);
+      // Match status bar to scrim
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) { meta._prev = meta.content; meta.content = '#85b5cc'; }
+    } else {
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (meta && meta._prev) { meta.content = meta._prev; delete meta._prev; }
     }
   }, [open, initialContext]);
 
@@ -213,14 +237,15 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
   // lua avatar (glass circle + star icon, same as FAB)
   const luaAvatar = (size) => (
     <div style={{
-      width: size, height: size, borderRadius: '50%', flexShrink: 0,
-      background: 'linear-gradient(180deg, rgba(255,255,255,0.7), rgba(172,226,252,0.35))',
-      backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
-      border: '1px solid rgba(255,255,255,0.5)',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.6)',
+      width: size, height: size, minWidth: size, minHeight: size,
+      borderRadius: '50%', flexShrink: 0,
+      background: 'radial-gradient(circle at 40% 35%, rgba(255,255,255,0.8), rgba(172,226,252,0.35))',
+      border: 'none',
+      boxShadow: '0 0 0 1px rgba(255,255,255,0.4), 0 2px 6px rgba(0,0,0,0.06)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
+      aspectRatio: '1 / 1', boxSizing: 'border-box',
     }}>
-      <StarIcon size={size * 0.55} color="#89cef5" />
+      <StarIcon size={size * 0.55} />
     </div>
   );
 
@@ -232,9 +257,9 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
 
       {/* Scrim */}
       <div onClick={handleClose} style={{
-        position: 'fixed', inset: 0, zIndex: 200,
-        background: 'rgba(4,44,83,0.18)',
-        backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)',
+        position: 'fixed', top: 'calc(-1 * env(safe-area-inset-top, 50px))', left: 0, right: 0, bottom: 0, zIndex: 200,
+        background: 'rgba(4,44,83,0.12)',
+        backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)',
         opacity: closing ? 0 : 1, transition: 'opacity 200ms',
       }} />
 
@@ -244,7 +269,7 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
         height: '62%',
         ...glass,
         background: 'rgba(255,255,255,0.65)',
-        borderRadius: '22px 22px 0 0',
+        borderRadius: '30px 30px 0 0',
         boxShadow: '0 -8px 28px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.6)',
         display: 'flex', flexDirection: 'column',
         animation: closing ? 'luaChatSlideDown 240ms ease forwards' : 'luaChatSlideUp 280ms cubic-bezier(0.32,0.72,0,1) forwards',
@@ -309,7 +334,7 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
                         ...glass,
                         background: 'rgba(255,255,255,0.5)',
                         padding: '10px 14px',
-                        borderRadius: consecutive ? 16 : '16px 16px 16px 4px',
+                        borderRadius: consecutive ? 22 : '22px 22px 22px 4px',
                         maxWidth: 'calc(75vw - 60px)',
                         fontSize: 13, color: 'var(--text-primary, #191F28)', lineHeight: 1.5,
                         whiteSpace: 'pre-wrap',
@@ -336,7 +361,7 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
                         backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
                         border: '1px solid rgba(137,206,245,0.3)',
                         padding: '10px 14px',
-                        borderRadius: consecutive ? 16 : '16px 16px 4px 16px',
+                        borderRadius: consecutive ? 22 : '22px 22px 4px 22px',
                         maxWidth: '75%',
                         fontSize: 13, color: 'var(--text-primary, #191F28)', lineHeight: 1.5,
                         whiteSpace: 'pre-wrap',
@@ -359,7 +384,7 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
               {luaAvatar(22)}
               <div style={{
                 ...glass, background: 'rgba(255,255,255,0.5)',
-                padding: '10px 14px', borderRadius: '16px 16px 16px 4px',
+                padding: '10px 14px', borderRadius: '22px 22px 22px 4px',
                 display: 'flex', gap: 5,
               }}>
                 {[0, 1, 2].map(j => (
@@ -415,10 +440,9 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
 
         {/* Composer */}
         <div style={{
-          padding: '8px 14px calc(8px + env(safe-area-inset-bottom, 0px))',
-          borderTop: '1px solid rgba(255,255,255,0.3)',
-          background: 'rgba(255,255,255,0.3)',
-          backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+          padding: '8px 14px calc(16px + env(safe-area-inset-bottom, 0px))',
+          borderTop: 'none',
+          background: 'transparent',
           position: 'relative',
         }}>
           {/* Attach Menu */}
@@ -426,7 +450,7 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
             <div onClick={(e) => e.stopPropagation()} style={{
               position: 'absolute', bottom: '100%', left: 14, marginBottom: 8,
               ...glass, background: 'rgba(255,255,255,0.85)',
-              borderRadius: 16, overflow: 'hidden', zIndex: 10,
+              borderRadius: 22, overflow: 'hidden', zIndex: 10,
               boxShadow: '0 4px 24px rgba(0,0,0,0.12)',
             }}>
               <button onClick={() => { cameraInputRef.current?.click(); setShowAttachMenu(false); }} style={{
@@ -455,9 +479,11 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
 
           <div style={{
             display: 'flex', gap: 8, alignItems: 'center', width: '100%',
-            background: '#FFFFFF', borderRadius: 28,
+            background: 'rgba(255,255,255,0.35)', borderRadius: 28,
+            backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255,255,255,0.3)',
             padding: '6px 6px 6px 12px', boxSizing: 'border-box',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
           }}>
             {/* + Attach Button */}
             <button

@@ -1,12 +1,22 @@
 /**
- * 오늘의 피부 이야기 — AI 인사이트 카드 (홈 탭 하단)
+ * 오늘의 피부 이야기 — AI 인사이트 카드 (홈 탭 상단)
  * 최근 분석 결과 기반 맞춤 조언
  */
+import { useState, useCallback } from 'react';
 import { getLatestRecord, getChanges } from '../storage/SkinStorage';
 
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-export default function AiInsightCard() {
+function getTimeLabel() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2, '0');
+  const m = String(now.getMinutes()).padStart(2, '0');
+  return `${h}:${m} 기준`;
+}
+
+export default function AiInsightCard({ onOpenChat }) {
+  const [liked, setLiked] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const latest = getLatestRecord();
   const changes = getChanges();
 
@@ -27,25 +37,33 @@ export default function AiInsightCard() {
       icon = '🌟';
       const names = improved.slice(0, 3).map(c => c.label).join(', ');
       insight = pick([
-        `${names} 등 ${improved.length}개 지표가 동시에 올라가고 있어요!`,
-        `${improved.length}개 지표가 개선 중이에요. 현재 루틴이 피부에 잘 맞고 있다는 신호예요.`,
-        `좋은 흐름이에요! ${names}이 함께 올라가면서 피부 컨디션이 전반적으로 좋아지고 있어요.`,
+        `${names} 등 ${improved.length}개가 같이 좋아지고 있어요. 지금 루틴이 잘 맞는 것 같아요!`,
+        `${improved.length}개 지표가 올라가고 있어요. 꾸준히 해온 게 피부에 보이기 시작했어요.`,
+        `좋은 흐름이에요! ${names}이 함께 올라가면서 피부가 전반적으로 좋아지고 있어요.`,
+        `요즘 뭐 바꾸셨어요? ${names}이 눈에 띄게 좋아지고 있거든요!`,
+        `${improved.length}개나 동시에 올라가는 건 흔치 않아요. 지금 하고 있는 거 정답이에요.`,
+        `피부가 확실히 반응하고 있어요. ${names} 모두 상승 중이에요.`,
       ]);
-      sub = '지금 루틴을 꾸준히 유지하세요.';
+      sub = pick(['지금처럼만 해주세요, 충분해요.', '이 흐름 놓치지 마세요!', '루틴 바꾸지 마세요, 지금이 딱이에요.']);
     } else if (worsened.length > 0) {
       const worst = worsened.sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff))[0];
       icon = worst.icon || '🔍';
       const diffAbs = Math.abs(worst.diff);
       insight = pick([
-        `${worst.label}이 ${diffAbs}점 하락했어요. ${worst.label === '수분도' ? '실내 건조 환경이 원인일 수 있어요.' : '최근 생활 패턴이나 스킨케어를 점검해보세요.'}`,
-        `${worst.label}에 변화가 감지됐어요(${worst.diff > 0 ? '+' : ''}${worst.diff}). 이번 주 집중 케어가 필요한 부분이에요.`,
-        `${worst.label} 점수가 이전보다 ${diffAbs}점 떨어졌어요. 원인을 파악하고 집중 관리해보세요.`,
+        `${worst.label}이 ${diffAbs}점 떨어졌어요. ${worst.label === '수분도' ? '요즘 건조하지 않았나요? 수분 보충에 신경 써보세요.' : '최근 생활 패턴이 바뀐 건 없는지 한번 돌아보세요.'}`,
+        `${worst.label}에 변화가 있었어요(${worst.diff > 0 ? '+' : ''}${worst.diff}). 이번 주는 이 부분을 좀 더 챙겨보세요.`,
+        `${worst.label}이 이전보다 ${diffAbs}점 내려갔어요. 같이 원인 찾아봐요.`,
+        `${worst.label} 쪽이 좀 신경 쓰여요. 혹시 요즘 잠을 잘 못 자거나 스트레스 받은 건 아니에요?`,
+        `${worst.label}이 살짝 주춤하고 있어요. 크게 걱정할 건 아닌데, 이번 주 집중해봐요.`,
+        `피부가 ${worst.label} 쪽으로 신호를 보내고 있어요. 한번 케어 루틴을 점검해볼까요?`,
       ]);
       if (improved.length > 0) {
-        sub = `반면 ${improved[0].label}은 ${Math.abs(improved[0].diff)}점 올라갔어요!`;
+        sub = pick([
+          `대신 ${improved[0].label}은 ${Math.abs(improved[0].diff)}점 올라갔어요!`,
+          `${improved[0].label}은 좋아지고 있으니까 너무 걱정 마세요.`,
+        ]);
       }
     } else {
-      // 변화 있지만 큰 변동 없음
       insight = generateMetricInsight(latest, season);
       icon = getMetricIcon(latest);
     }
@@ -55,46 +73,77 @@ export default function AiInsightCard() {
     icon = getMetricIcon(latest);
     const concerns = latest.concerns || [];
     if (concerns.length > 0) {
-      sub = `가장 주의할 부분: ${concerns[0]}`;
+      sub = `지금 가장 신경 쓸 부분: ${concerns[0]}`;
     } else {
-      sub = '다음 주에 다시 측정하면 변화를 비교할 수 있어요.';
+      sub = '다음에 한 번 더 측정하면 변화를 비교할 수 있어요.';
     }
   }
 
   return (
-    <div className="card" style={{
-      padding: '20px',
+    <div onClick={onOpenChat} style={{
+      padding: '16px 18px', cursor: 'pointer',
+      background: 'rgba(255,255,255,0.35)',
+      backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+      border: '1px solid rgba(255,255,255,0.3)',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+      borderRadius: '36px 36px 7px 36px',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{ width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <svg width="26" height="26" viewBox="0 0 36 36" fill="none">
-            <defs>
-              <linearGradient id="ai-g1" x1="20%" y1="0%" x2="80%" y2="100%">
-                <stop offset="0%" stopColor="#FFF3B0" />
-                <stop offset="100%" stopColor="#FFE082" />
-              </linearGradient>
-              <linearGradient id="ai-g2" x1="20%" y1="0%" x2="80%" y2="100%">
-                <stop offset="0%" stopColor="#FFF9D0" />
-                <stop offset="100%" stopColor="#FFF3B0" />
-              </linearGradient>
-            </defs>
-            {/* 큰 별 */}
-            <path d="M18 2 L21 12 L31 15.5 L21 19 L18 29 L15 19 L5 15.5 L15 12 Z" fill="url(#ai-g1)" />
-            {/* 작은 별 우상단 */}
-            <path d="M28 3 L29 6.5 L32.5 7.5 L29 8.5 L28 12 L27 8.5 L23.5 7.5 L27 6.5 Z" fill="url(#ai-g2)" />
-            {/* 작은 별 좌하단 */}
-            <path d="M8 24 L9 27 L12 28 L9 29 L8 32 L7 29 L4 28 L7 27 Z" fill="url(#ai-g2)" />
-            {/* 하이라이트 */}
-            <ellipse cx="15" cy="12" rx="3" ry="2" fill="white" opacity="0.3" />
-          </svg>
-        </div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 13, color: '#8B95A1' }}>AI 인사이트</div>
-          <div style={{ fontSize: 14, color: '#4E5968', marginTop: 4, lineHeight: 1.5 }}>
-            {insight}
-            {sub && <span style={{ fontWeight: 600, color: '#81E4BD' }}> {sub}</span>}
+      {/* 헤더 */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+        <div style={{ position: 'relative', flexShrink: 0, marginRight: 6 }}>
+          <div style={{
+            width: 28, height: 28, borderRadius: '50%',
+            background: 'radial-gradient(circle at 40% 35%, rgba(255,255,255,0.8), rgba(172,226,252,0.35))',
+            boxShadow: '0 0 0 1px rgba(255,255,255,0.4), 0 1px 4px rgba(0,0,0,0.06)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" style={{ filter: 'drop-shadow(0 1px 1px rgba(100,180,230,0.4))' }}>
+              <defs>
+                <linearGradient id="insight-star-fill" x1="0.15" y1="0.05" x2="0.85" y2="0.95">
+                  <stop offset="0%" stopColor="#D6EEFB" />
+                  <stop offset="45%" stopColor="#a8d8f5" />
+                  <stop offset="100%" stopColor="#6bb8e8" />
+                </linearGradient>
+              </defs>
+              <path fill="url(#insight-star-fill)" d="M10.48,23.25c-.15.41-.5.71-.86.75-.27.03-.78-.29-.9-.59l-1.53-4.02c-.48-1.26-1.41-2.1-2.67-2.58l-3.91-1.48c-.29-.11-.59-.51-.6-.76-.01-.39.23-.79.6-.93l3.9-1.49c1.27-.48,2.19-1.31,2.68-2.59l1.57-4.14c.08-.2.52-.44.74-.46.24-.02.77.21.86.46l1.57,4.14c.5,1.32,1.47,2.15,2.78,2.63l3.7,1.37c.31.11.66.55.67.83.02.42-.29.82-.68.97l-3.8,1.44c-1.26.48-2.2,1.32-2.67,2.58l-1.45,3.86Z"/>
+              <path fill="url(#insight-star-fill)" d="M21.48,6.29c-1.03.59-.9,2.91-2.01,2.98-1.23.08-.99-1.68-1.94-2.78-.77-.88-2.68-.63-2.74-1.78-.07-1.27,2.01-1.1,2.74-1.91.87-.95.73-2.72,1.78-2.8,1.29-.1.98,1.81,1.95,2.77.87.86,2.67.71,2.73,1.8.07,1.08-1.29,1.02-2.51,1.72Z"/>
+            </svg>
           </div>
+          {/* 온라인 점 */}
+          <div style={{
+            position: 'absolute', bottom: 0, right: 0,
+            width: 6, height: 6, borderRadius: '50%',
+            background: '#89cef5',
+            border: '1.5px solid rgba(255,255,255,0.8)',
+            boxSizing: 'content-box',
+          }} />
         </div>
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #191F28)' }}>lua</span>
+        <span style={{ fontSize: 10, color: 'var(--text-muted, #8B95A1)' }}>{getTimeLabel()}</span>
+        <span style={{ flex: 1 }} />
+        <div style={{ display: 'flex', gap: 9, marginRight: 4 }}>
+          <button onClick={(e) => { e.stopPropagation(); setLiked(false); setRefreshKey(k => k + 1); }} style={{
+            border: 'none', background: 'transparent', cursor: 'pointer', padding: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #8B95A1)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.4">
+              <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
+            </svg>
+          </button>
+          <button onClick={(e) => { e.stopPropagation(); setLiked(!liked); }} style={{
+            border: 'none', background: 'transparent', cursor: 'pointer', padding: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill={liked ? '#FF8A9B' : 'none'} stroke={liked ? '#FF8A9B' : 'var(--text-muted, #8B95A1)'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity={liked ? 1 : 0.4}>
+              <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      {/* 인사이트 본문 + 버튼 인라인 */}
+      <div style={{ fontSize: 13, color: 'var(--text-primary, #191F28)', lineHeight: 1.6 }}>
+        {insight}
+        {sub && <span style={{ color: '#4a9ec7', fontWeight: 600 }}> {sub}</span>}
       </div>
     </div>
   );
@@ -138,21 +187,36 @@ function generateMetricInsight(latest, season) {
 
   if (overall >= 75) {
     return pick([
-      `종합 ${overall}점으로 피부 컨디션이 좋아요! ${w.label}(${v}점)만 조금 더 신경 쓰면 완벽해요.`,
-      `전반적으로 건강한 피부예요(${overall}점). ${w.label}을 한 단계 올리면 더 좋아질 거예요.`,
-      `피부가 잘 관리되고 있어요. ${seasonContext} 피부에 영향을 줄 수 있으니 보습에 신경 쓰세요.`,
+      `종합 ${overall}점, 피부 컨디션 좋아요! ${w.label}(${v}점)만 조금 더 챙기면 완벽해요.`,
+      `전반적으로 건강한 피부예요(${overall}점). ${w.label}을 한 단계 올려볼까요?`,
+      `피부 관리 잘하고 계세요. ${seasonContext} 영향을 줄 수 있으니 보습만 좀 더 신경 쓰세요.`,
+      `${overall}점이면 상위권이에요! ${w.label}만 챙기면 거의 만점 피부예요.`,
+      `오늘 피부 상태 진짜 좋아요. 어제 뭐 하셨어요? 비결이 궁금해요.`,
+      `피부가 빛나고 있어요. ${w.label}(${v}점)도 곧 따라올 거예요.`,
+      `꾸준함이 만든 결과예요. ${overall}점, 스스로 칭찬해도 돼요.`,
+      `${w.label} 말고는 다 좋아요. 하나만 집중하면 되니까 부담 없죠?`,
     ]);
   }
   if (overall >= 55) {
     return pick([
-      `종합 ${overall}점이에요. ${w.label}(${v}점)이 가장 아쉬운 부분인데, 맞춤 케어로 충분히 개선할 수 있어요.`,
-      `${w.label}(${v}점)이 전체 점수를 끌어내리고 있어요. 이 부분을 집중 관리하면 종합 점수가 빠르게 올라갈 거예요.`,
-      `피부 컨디션이 보통 수준(${overall}점)이에요. ${seasonContext} 피부 장벽에 부담을 줄 수 있으니 주의하세요.`,
+      `종합 ${overall}점이에요. ${w.label}(${v}점)이 좀 아쉬운데, 맞춤 케어로 충분히 올릴 수 있어요.`,
+      `${w.label}(${v}점)이 점수를 끌어내리고 있어요. 여기만 집중하면 금방 좋아질 거예요.`,
+      `피부 컨디션이 보통이에요(${overall}점). ${seasonContext} 피부에 부담이 될 수 있으니 조심하세요.`,
+      `나쁘지 않아요! ${w.label}에 조금만 신경 쓰면 70점대도 금방이에요.`,
+      `${overall}점이면 기본기는 탄탄해요. ${w.label} 케어를 루틴에 넣어볼까요?`,
+      `${w.label}이 발목을 잡고 있어요. 이것만 해결하면 확 달라질 거예요.`,
+      `오늘은 ${w.label} 관련 제품 하나만 신경 써보세요. 작은 변화가 큰 차이를 만들어요.`,
+      `${seasonContext} 피부에 영향을 주는 시기예요. 평소보다 보습을 한 겹 더 챙기세요.`,
     ]);
   }
   return pick([
-    `종합 ${overall}점으로 피부가 지쳐 있어요. ${w.label}(${v}점)부터 집중 관리가 필요해요.`,
-    `${w.label}(${v}점)이 특히 낮아요. 기본 루틴(세안→수분→보습→차단)부터 차근차근 세워보세요.`,
-    `피부 장벽이 약해진 상태(${overall}점)예요. 자극적인 성분은 피하고, 보습과 진정 위주로 케어하세요.`,
+    `종합 ${overall}점, 피부가 좀 지쳐 있어요. ${w.label}(${v}점)부터 같이 챙겨봐요.`,
+    `${w.label}(${v}점)이 낮아요. 기본 루틴부터 차근차근 세워봐요.`,
+    `피부 장벽이 약해진 상태예요(${overall}점). 자극은 피하고, 보습이랑 진정 위주로 가세요.`,
+    `지금은 무리하지 말고, 세안-보습-차단 이 세 가지만 확실히 해보세요.`,
+    `피부가 도움을 요청하고 있어요. ${w.label}부터 하나씩 잡아봐요.`,
+    `${overall}점이면 회복이 필요한 시기예요. 자극적인 건 잠시 쉬고, 순한 제품으로 가세요.`,
+    `힘든 시기지만 관리하면 분명 올라가요. ${w.label}부터 시작해볼까요?`,
+    `지금은 빼기보다 더하기예요. 수분, 진정, 보호에 집중하세요.`,
   ]);
 }

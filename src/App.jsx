@@ -897,25 +897,12 @@ export default function App() {
             </div>
           </div>
 
-          {/* ② lua의 오늘의 한 마디 */}
-          <div
-            onClick={() => setFabChatOpen(true)}
-            style={{
-              margin: '14px 20px 0',
-              background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-              border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
-              borderRadius: 20, padding: '14px 16px',
-              display: 'flex', gap: 10, cursor: 'pointer',
-            }}
-          >
-            <div style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0, background: 'var(--accent-primary, #89cef5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: 12, color: '#fff', fontWeight: 700 }}>L</span>
+          {/* ② AI 인사이트 카드 */}
+          {getLatestRecord() && (
+            <div style={{ padding: '14px 20px 0' }}>
+              <AiInsightCard onOpenChat={() => setFabChatOpen(true)} />
             </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.5 }}>오늘은 평소처럼 보내세요. 피부는 매일 조금씩 달라지고 있어요.</div>
-              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>방금</div>
-            </div>
-          </div>
+          )}
 
           {/* ③ 현재 상태 미니 패널 */}
           {(() => {
@@ -929,46 +916,32 @@ export default function App() {
               { key: 'moisture', label: '유수분', icon: <DropletIcon size={16} /> },
               { key: 'skinTone', label: '홍조', icon: <BlushIcon size={16} /> },
             ];
+            if (rc === 0) return null;
             return (
-              <div style={{
-                margin: '12px 20px 0',
-                background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
-                borderRadius: 20, padding: 16,
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>현재 상태</span>
-                  {ds !== null && (
-                    <span onClick={openCamera} style={{ fontSize: 11, color: 'var(--accent-primary, #89cef5)', fontWeight: 600, cursor: 'pointer' }}>
-                      최근 측정 → {ds}일 전
-                    </span>
-                  )}
-                </div>
-                {rc === 0 ? (
-                  <div style={{ padding: '20px 6px', textAlign: 'center' }}>
-                    <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>측정하면 여기에 너의 데이터가 쌓여요</div>
-                  </div>
-                ) : (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                    {metrics.map((m) => {
-                      const val = latest?.[m.key] ?? null;
-                      const prevVal = prev?.[m.key] ?? null;
-                      const diff = val !== null && prevVal !== null ? val - prevVal : null;
-                      return (
-                        <div key={m.key} style={{ background: 'rgba(255,255,255,0.25)', borderRadius: 14, padding: 14 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <span style={{ display: 'inline-flex', alignItems: 'center' }}>{m.icon}</span>
-                            <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500 }}>{m.label}</span>
-                          </div>
-                          <div style={{ fontSize: 28, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.5, marginTop: 6 }}>{val !== null ? val : '—'}</div>
-                          <div style={{ fontSize: 11, fontWeight: 500, marginTop: 2, color: diff === null ? 'var(--text-muted)' : diff > 0 ? 'var(--accent-primary, #89cef5)' : diff < 0 ? '#e05545' : 'var(--text-muted)' }}>
-                            {diff === null ? '기준선' : diff > 0 ? `+${diff} 좋아짐` : diff < 0 ? `${diff} 하락` : '변화 없음'}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+              <div style={{ margin: '12px 20px 0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                {metrics.map((m) => {
+                  const val = latest?.[m.key] ?? null;
+                  const prevVal = prev?.[m.key] ?? null;
+                  const diff = val !== null && prevVal !== null ? val - prevVal : null;
+                  return (
+                    <div key={m.key} style={{
+                      background: 'rgba(255,255,255,0.35)',
+                      backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+                      border: '1px solid rgba(255,255,255,0.3)',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+                      borderRadius: 20, padding: 14,
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center' }}>{m.icon}</span>
+                        <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500 }}>{m.label}</span>
+                      </div>
+                      <div style={{ fontSize: 28, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.5, marginTop: 6 }}>{val !== null ? val : '—'}</div>
+                      <div style={{ fontSize: 11, fontWeight: 500, marginTop: 2, color: diff === null ? 'var(--text-muted)' : diff > 0 ? 'var(--accent-primary, #89cef5)' : diff < 0 ? '#e05545' : 'var(--text-muted)' }}>
+                        {diff === null ? '기준선' : diff > 0 ? `+${diff} 좋아짐` : diff < 0 ? `${diff} 하락` : '변화 없음'}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             );
           })()}
@@ -980,41 +953,7 @@ export default function App() {
             </div>
           )}
 
-          {/* AI Insight Card */}
-          {getLatestRecord() && (
-            <div style={{ padding: '12px 20px 0' }}>
-              <AiInsightCard colorMode={colorMode} />
-            </div>
-          )}
 
-          {/* Routine Tracker Entry Card */}
-          <div
-            onClick={() => setActiveTab('care1')}
-            className="card"
-            style={{ margin: '12px 20px 0', padding: 20, cursor: 'pointer' }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 40, height: 40, borderRadius: 14, background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="26" height="26" viewBox="0 0 36 36" fill="none">
-                  <defs>
-                    <linearGradient id="lotion-g1" x1="30%" y1="0%" x2="70%" y2="100%"><stop offset="0%" stopColor="#FFF0F3" /><stop offset="100%" stopColor="#FFD0DA" /></linearGradient>
-                    <linearGradient id="lotion-g2" x1="30%" y1="0%" x2="70%" y2="100%"><stop offset="0%" stopColor="#FFE0E8" /><stop offset="100%" stopColor="#FFC0CC" /></linearGradient>
-                  </defs>
-                  <rect x="13" y="3" width="10" height="4" rx="1.5" fill="url(#lotion-g2)" />
-                  <rect x="16.5" y="1" width="3" height="3" rx="1" fill="url(#lotion-g2)" />
-                  <rect x="14" y="0.5" width="8" height="1.5" rx="0.75" fill="url(#lotion-g2)" />
-                  <rect x="11" y="7" width="14" height="20" rx="4" fill="url(#lotion-g1)" />
-                  <rect x="13" y="13" width="10" height="8" rx="2" fill="white" opacity="0.3" />
-                  <rect x="12.5" y="9" width="3" height="12" rx="1.5" fill="white" opacity="0.2" />
-                </svg>
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>스킨케어</div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>제품 등록 · 루틴 관리 · 효과 분석</div>
-              </div>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="var(--text-dim)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            </div>
-          </div>
 
           </div>{/* end first screen wrapper */}
 
@@ -1710,7 +1649,7 @@ export default function App() {
               const weakCats = getWeakestCategories(result);
               if (weakCats.length === 0) return null;
               return (
-                <div className="glass-card" style={{ padding: '24px', animation: 'fadeUp 0.5s ease-out 1.15s both', boxShadow: 'none', borderRadius: 16 }}>
+                <div className="glass-card" style={{ padding: '24px', animation: 'fadeUp 0.5s ease-out 1.15s both', boxShadow: 'none', borderRadius: 30 }}>
                   <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4, color: 'var(--text-primary)' }}>
                     맞춤 추천 제품
                   </div>

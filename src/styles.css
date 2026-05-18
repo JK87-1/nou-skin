@@ -52,7 +52,7 @@
   --chip-border: 1px solid rgba(137,206,245,0.25);
   --chip-text: var(--accent-primary);
   --card-backdrop: blur(16px);
-  --card-border-radius: 22px;
+  --card-border-radius: 30px;
   --segment-radius: 50px;
   --segment-item-radius: 50px;
   --float-pill-bg: rgba(30,30,40,0.9);
@@ -494,7 +494,7 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-subtle);
-  border-radius: 22px;
+  border-radius: 30px;
   padding: 18px;
   margin-bottom: 14px;
   box-shadow: var(--shadow-elevated), var(--glass-inset), var(--glass-accent-inset);
@@ -954,7 +954,7 @@
   -webkit-backdrop-filter: saturate(140%) blur(24px);
   border-top: 1px solid var(--tab-border);
   box-shadow: var(--tab-shadow);
-  border-radius: 22px 22px 0 0;
+  border-radius: 30px 30px 0 0;
   padding-left: 12px;
   padding-right: 12px;
   z-index: 100;
@@ -1541,7 +1541,7 @@
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255,255,255,0.3);
   box-shadow: 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4);
-  border-radius: 20px;
+  border-radius: 30px;
 }
 [data-theme="light"] .glass-card {
   background: rgba(255,255,255,0.35);
