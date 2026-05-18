@@ -967,11 +967,14 @@ function PhotoGallery({ records, thumbs, onMeasure, onSelectRecord, onThumbsChan
 // ===== RECORD DETAIL MODAL (RPG stat card style) =====
 export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
   const [showConfirm, setShowConfirm] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
   const [dragY, setDragY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [closing, setClosing] = useState(false);
+  const [saved, setSaved] = useState(false);
   const dragStart = useRef(null);
   const sheetRef = useRef(null);
+  const captureRef = useRef(null);
 
   const handleTouchStart = (e) => {
     const el = sheetRef.current;
@@ -985,53 +988,117 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
     if (dy > 0) setDragY(dy);
   };
   const handleTouchEnd = () => {
-    if (dragY > 120) {
-      setClosing(true);
-      setDragY(window.innerHeight);
-      setTimeout(onClose, 250);
-    } else {
-      setDragY(0);
-    }
-    dragStart.current = null;
-    setIsDragging(false);
+    if (dragY > 120) { setClosing(true); setDragY(window.innerHeight); setTimeout(onClose, 250); }
+    else setDragY(0);
+    dragStart.current = null; setIsDragging(false);
   };
 
   if (!record) return null;
 
+  // ── 이전 측정 데이터 ──
+  const allRecords = getRecords();
+  const currentIdx = allRecords.findIndex(r => (r.id || r.date) === (record.id || record.date));
+  const prev = currentIdx >= 0 && currentIdx < allRecords.length - 1 ? allRecords[currentIdx + 1] : null;
+  const isFirst = !prev;
+  const daysSincePrev = prev ? Math.floor((new Date(record.date) - new Date(prev.date)) / 86400000) : null;
+
+  // ── 날짜 ──
   const dayLabels = ['일', '월', '화', '수', '목', '금', '토'];
   const d = new Date(record.date);
-  const timeStr = record.timestamp ? new Date(record.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) : '';
-  const dateStr = `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 ${dayLabels[d.getDay()]}요일${timeStr ? ` ${timeStr}` : ''}`;
+  const ts = record.timestamp ? new Date(record.timestamp) : d;
+  const ampm = ts.getHours() < 12 ? '오전' : '오후';
+  const h12 = ts.getHours() === 0 ? 12 : ts.getHours() > 12 ? ts.getHours() - 12 : ts.getHours();
+  const dateStr = `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 ${dayLabels[d.getDay()]}요일 ${ampm} ${h12}:${String(ts.getMinutes()).padStart(2, '0')}`;
+  const dateShort = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 
-  const getGrade = (score) => {
-    if (score >= 85) return { letter: 'S', label: '최상', gradient: 'linear-gradient(135deg, #89cef5, #aed8f7)', color: '#89cef5', bg: 'rgba(137,206,245,0.12)' };
-    if (score >= 70) return { letter: 'A', label: '우수', gradient: 'linear-gradient(135deg, #89cef5, #5ab0e8)', color: '#89cef5', bg: 'rgba(137,206,245,0.12)' };
-    if (score >= 55) return { letter: 'B', label: '양호', gradient: 'linear-gradient(135deg, #aed8f7, #89cef5)', color: '#aed8f7', bg: 'rgba(174,216,247,0.12)' };
-    return { letter: 'C', label: '관리 필요', gradient: 'linear-gradient(135deg, #BDBDBD, #9E9E9E)', color: '#757575', bg: 'rgba(158,158,158,0.12)' };
+  // ── 컬러 시스템 ──
+  const C = {
+    main: '#042C53', sub: '#185FA5', accent: '#1E90E8',
+    positive: '#1976D2', negative: '#A32D2D',
+    gradTop: '#DCEEFB', gradMid: '#EAF4FB',
+    cardBg: '#FFFFFF', outerBg: '#F5FAFD',
+    badgeBg: 'rgba(30,144,232,0.1)', badgeText: '#1976D2',
+    tagAccentBg: 'rgba(30,144,232,0.08)', tagAccentBorder: 'rgba(30,144,232,0.2)',
+    tagBg: 'rgba(255,255,255,0.7)', tagBorder: 'rgba(24,95,165,0.18)',
+    trackBg: 'rgba(24,95,165,0.1)',
+    divLight: 'rgba(24,95,165,0.08)', divStrong: 'rgba(24,95,165,0.12)',
   };
 
-  const grade = getGrade(record.overallScore);
+  // ── 등급 ──
+  const getLevel = (score) => {
+    if (score >= 80) return 'A';
+    if (score >= 60) return 'B';
+    if (score >= 40) return 'C';
+    if (score >= 20) return 'D';
+    return 'E';
+  };
+  const level = getLevel(record.overallScore);
 
-  const agingMetrics = [
-    { label: '피부결', value: record.textureScore, icon: <LotionIcon size={16} />, color: '#FFB0C8' },
-    { label: '탄력', value: record.elasticityScore, icon: <DiamondIcon size={16} />, color: '#FFD080' },
-    { label: '주름', value: record.wrinkleScore, icon: <RulerIcon size={16} />, color: '#F5D0B8' },
-    { label: '모공', value: record.poreScore, icon: <MicroscopeIcon size={16} />, color: '#E8D8C8' },
-    { label: '색소', value: record.pigmentationScore, icon: <PaletteIcon size={16} />, color: '#C0A890' },
-  ];
+  // ── AI 코멘트 ──
+  const aiComment = record.conditionBriefing || record.advice?.split(/[.!?]/)[0] || '결을 기록했어요';
 
+  // ── 태그 ──
+  const profile = getProfile();
+  const tags = [];
+  if (profile.skinType) tags.push({ label: profile.skinType, accent: true });
+  if (record.analysisMode) tags.push({ label: record.analysisMode === 'hybrid' ? 'AI 하이브리드' : 'CV 분석' });
+  if (record.confidence != null) tags.push({ label: `신뢰도 ${Math.min(record.confidence, 95)}%` });
+  (record.concerns || []).forEach(c => tags.push({ label: c }));
+
+  // ── 변화량 계산 ──
+  const getDiff = (key) => {
+    if (!prev || record[key] == null || prev[key] == null) return null;
+    return record[key] - prev[key];
+  };
+
+  // ── 지표 ──
   const conditionMetrics = [
-    { label: '수분도', value: record.moisture, icon: <DropletIcon size={16} />, color: '#A8DEFF', unit: '%' },
-    { label: '유분', value: record.oilBalance, icon: <BubbleIcon size={16} />, color: '#F0E0A8', unit: '%' },
-    { label: '피부톤', value: record.skinTone, icon: <SparkleIcon size={16} />, color: '#FFE082' },
-    { label: '트러블', value: record.troubleCount, icon: <TargetIcon size={14} />, color: '#FFB0B0', unit: '개' },
-    { label: '다크서클', value: record.darkCircleScore, icon: <EyeIcon size={16} />, color: '#C8B8E8' },
+    { label: '수분도', key: 'moisture', icon: <DropletIcon size={16} />, color: '#A8DEFF', unit: '%' },
+    { label: '유분', key: 'oilBalance', icon: <BubbleIcon size={16} />, color: '#F0E0A8', unit: '%' },
+    { label: '피부톤', key: 'skinTone', icon: <SparkleIcon size={16} />, color: '#FFE082' },
+    { label: '트러블', key: 'troubleCount', icon: <TargetIcon size={14} />, color: '#FFB0B0', unit: '개' },
+    { label: '다크서클', key: 'darkCircleScore', icon: <EyeIcon size={16} />, color: '#C8B8E8' },
   ];
+  const agingMetrics = [
+    { label: '피부결', key: 'textureScore', icon: <LotionIcon size={16} />, color: '#FFB0C8' },
+    { label: '탄력', key: 'elasticityScore', icon: <DiamondIcon size={16} />, color: '#FFD080' },
+    { label: '주름', key: 'wrinkleScore', icon: <RulerIcon size={16} />, color: '#F5D0B8' },
+    { label: '모공', key: 'poreScore', icon: <MicroscopeIcon size={16} />, color: '#E8D8C8' },
+    { label: '색소', key: 'pigmentationScore', icon: <PaletteIcon size={16} />, color: '#C0A890' },
+  ];
+
+  // ── 공유 ──
+  const handleShare = async () => {
+    const text = `스킨 리포트 · ${dateShort}\n종합 ${record.overallScore}점 · 스킨 레벨 ${level}\n피부나이 ${record.skinAge}세`;
+    if (navigator.share) {
+      try { await navigator.share({ title: '스킨 리포트', text }); } catch {}
+    } else {
+      navigator.clipboard?.writeText(text);
+    }
+  };
+
+  // ── 저장 (캡처 placeholder) ──
+  const handleSave = () => { setSaved(true); setTimeout(() => setSaved(false), 2000); };
+
+  // ── 변화 행 ──
+  const ChangeRow = ({ label, diff, unit }) => (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: `1px solid ${C.divLight}` }}>
+      <span style={{ fontSize: 12, fontWeight: 500, color: C.main }}>{label}</span>
+      <span style={{ fontSize: 10, fontWeight: 500, color: diff > 0 ? C.positive : diff < 0 ? C.negative : C.sub }}>
+        {diff > 0 ? `+${diff}` : diff < 0 ? `${diff}` : '0'}{unit || ''}
+      </span>
+    </div>
+  );
+
+  const cardStyle = {
+    background: C.cardBg, borderRadius: 22, padding: '16px 18px',
+    marginBottom: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+  };
 
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 200,
-      background: `rgba(0,0,0,${Math.max(0, 0.1 - dragY * 0.001).toFixed(2)})`,
+      background: `rgba(0,0,0,${Math.max(0, 0.15 - dragY * 0.001).toFixed(2)})`,
       display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
       animation: closing ? 'none' : 'fadeIn 0.2s ease',
     }} onClick={onClose}>
@@ -1042,43 +1109,323 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
         onTouchEnd={handleTouchEnd}
         style={{
           width: '100%', maxWidth: 430,
-          background: 'rgba(255,255,255,0.6)',
-          backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-          borderRadius: '20px 20px 0 0',
-          border: '1px solid rgba(255,255,255,0.3)',
-          borderBottom: 'none',
-          boxShadow: '0 -8px 28px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.4)',
-          padding: '12px 20px 40px',
-          maxHeight: '88vh', overflowY: dragY > 0 ? 'hidden' : 'auto',
-          WebkitOverflowScrolling: 'touch',
-          animation: closing ? 'none' : 'slideUp 0.3s ease-out',
+          background: C.outerBg,
+          borderRadius: '24px 24px 0 0',
+          overflow: 'hidden',
+          maxHeight: '92vh',
+          animation: closing ? 'none' : 'slideUp 0.3s cubic-bezier(0.32,0.72,0,1)',
           transform: `translateY(${dragY}px)`,
           transition: isDragging ? 'none' : 'transform 0.25s ease-out',
         }} onClick={e => e.stopPropagation()}>
-        {/* Handle bar + back/delete buttons */}
-        <div style={{ display: 'flex', justifyContent: 'center', position: 'relative', marginBottom: 28 }}>
-          <div onClick={onClose} style={{
-            position: 'absolute', left: -4, top: 0,
-            width: 36, height: 36, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <path d="M15 18l-6-6 6-6" stroke="#C0C0C0" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+        <div style={{ maxHeight: '92vh', overflowY: dragY > 0 ? 'hidden' : 'auto', WebkitOverflowScrolling: 'touch' }}>
+
+        {/* ① 앱 헤더 */}
+        {/* 드래그 핸들 */}
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0 8px' }}>
+          <div style={{ width: 47, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.15)' }} />
+        </div>
+
+        {/* ② 시그니처 카드 */}
+        <div ref={captureRef} style={{ margin: '0 16px 12px', borderRadius: 24, overflow: 'hidden', background: C.cardBg, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+          {/* 상단 그라데이션 */}
+          <div style={{ background: `linear-gradient(180deg, ${C.gradTop} 0%, ${C.gradMid} 50%, ${C.cardBg} 100%)`, padding: '20px 20px 0', textAlign: 'center' }}>
+            {/* 날짜 + LUA */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <span style={{ fontSize: 10, letterSpacing: 0.4, color: C.sub }}>{dateShort}</span>
+              <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: 2.5, color: C.sub }}>LUA</span>
+            </div>
+
+            {/* 두 줄 요약 멘트 */}
+            {(() => {
+              const metricLabels = { moisture: '수분', oilBalance: '유분', skinTone: '피부톤', troubleCount: '트러블', darkCircleScore: '다크서클', textureScore: '피부결', elasticityScore: '탄력', wrinkleScore: '주름', poreScore: '모공', pigmentationScore: '색소' };
+              const positiveConn = { moisture: '이 채워지고', oilBalance: '이 안정되고', skinTone: '이 밝아지고', troubleCount: '이 가라앉고', darkCircleScore: '이 밝아지고', textureScore: '이 매끄러워지고', elasticityScore: '이 탄탄해지고', wrinkleScore: '이 부드러워지고', poreScore: '이 잡히고', pigmentationScore: '이 고르게 되고' };
+              const positiveEnd = { moisture: '이 촉촉해졌어요', oilBalance: '이 안정됐어요', skinTone: '이 한 톤 깨어났어요', troubleCount: '이 가라앉았어요', darkCircleScore: '이 밝아졌어요', textureScore: '이 매끄러워졌어요', elasticityScore: '이 탄탄해졌어요', wrinkleScore: '이 부드러워졌어요', poreScore: '이 뚜렷이 잡혔어요', pigmentationScore: '이 고르게 정돈됐어요' };
+              const positives = Object.keys(metricLabels)
+                .map(k => ({ key: k, label: metricLabels[k], diff: getDiff(k) }))
+                .filter(m => m.diff !== null && m.diff > 0)
+                .sort((a, b) => b.diff - a.diff);
+              const top1 = positives[0];
+              const top2 = positives[1];
+              let text = '';
+              if (isFirst) {
+                text = '첫 번째 피부 기록이에요. 꾸준히 측정하면 변화가 보여요';
+              } else if (top1 && top2) {
+                text = `${top1.label}${positiveConn[top1.key]} ${top2.label}${positiveEnd[top2.key]}`;
+              } else if (top1) {
+                text = `${top1.label}${positiveEnd[top1.key]}`;
+              } else {
+                text = '지난 측정과 비슷한 상태예요';
+              }
+              return (
+                <div style={{ textAlign: 'center', marginBottom: 16, padding: '0 12px' }}>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: C.main, lineHeight: 1.6 }}>{text}</div>
+                </div>
+              );
+            })()}
+
+            {/* 셀카 */}
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
+              <div style={{
+                width: 100, height: 100, borderRadius: '50%',
+                background: thumbnail ? 'none' : `linear-gradient(135deg, ${C.gradTop}, ${C.gradMid})`,
+                padding: 3,
+                boxShadow: `0 0 0 3px ${C.accent}30`,
+              }}>
+                {thumbnail ? (
+                  <img src={thumbnail} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                ) : (
+                  <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: `linear-gradient(135deg, ${C.gradTop}, ${C.gradMid})` }} />
+                )}
+              </div>
+            </div>
+
           </div>
-          <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(137,206,245,0.4)', marginTop: 10 }} />
-          <div onClick={() => setShowConfirm(true)} style={{
-            position: 'absolute', right: -4, top: 0,
-            width: 36, height: 36, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <path d="M6 12h12" stroke="#C0C0C0" strokeWidth="2.5" strokeLinecap="round" />
-            </svg>
+
+          {/* 점수 영역 */}
+          <div style={{ padding: '0 20px 16px', textAlign: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 4, marginBottom: 8 }}>
+              <span style={{ fontSize: 64, fontWeight: 500, letterSpacing: -2.5, lineHeight: 1, color: C.main }}>{record.overallScore ?? '—'}</span>
+              <span style={{ fontSize: 16, letterSpacing: -0.3, color: C.sub, marginBottom: 8 }}>/ 100</span>
+            </div>
+            {/* 스킨 레벨 배지 */}
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 14px', borderRadius: 20, background: C.badgeBg, marginBottom: 14 }}>
+              <span style={{ fontSize: 10.5, fontWeight: 500, letterSpacing: 0.3, color: C.badgeText }}>스킨 레벨 · {level}</span>
+            </div>
+            {/* 태그 */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 6 }}>
+              {tags.map((t, i) => (
+                <span key={i} style={{
+                  fontSize: 10, fontWeight: 500, padding: '4px 10px', borderRadius: 20,
+                  background: t.accent ? C.tagAccentBg : C.tagBg,
+                  border: `1px solid ${t.accent ? C.tagAccentBorder : C.tagBorder}`,
+                  color: t.accent ? C.accent : C.sub,
+                }}>{t.label}</span>
+              ))}
+            </div>
+          </div>
+
+          {/* 지난 측정에서 달라진 점 (시그니처 카드 안) */}
+          <div style={{ padding: '0 20px 20px' }}>
+            {(() => {
+              // 변화량 상위 3개 추출
+              const allMetrics = [
+                { label: '모공', key: 'poreScore', icon: <MicroscopeIcon size={18} /> },
+                { label: '피부톤', key: 'skinTone', icon: <SparkleIcon size={18} /> },
+                { label: '수분도', key: 'moisture', icon: <DropletIcon size={18} /> },
+                { label: '탄력', key: 'elasticityScore', icon: <DiamondIcon size={18} /> },
+                { label: '주름', key: 'wrinkleScore', icon: <RulerIcon size={18} /> },
+                { label: '피부결', key: 'textureScore', icon: <LotionIcon size={18} /> },
+                { label: '색소', key: 'pigmentationScore', icon: <PaletteIcon size={18} /> },
+                { label: '유분', key: 'oilBalance', icon: <BubbleIcon size={18} /> },
+                { label: '다크서클', key: 'darkCircleScore', icon: <EyeIcon size={18} /> },
+                { label: '트러블', key: 'troubleCount', icon: <TargetIcon size={18} /> },
+              ];
+              const changes = allMetrics
+                .map(m => ({ ...m, value: record[m.key], diff: getDiff(m.key) }))
+                .filter(m => m.value != null && m.diff !== null)
+                .sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff))
+                .slice(0, 3);
+
+              if (changes.length === 0 && !isFirst) return null;
+
+              return (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                    <span style={{ fontSize: 13, fontWeight: 500, letterSpacing: -0.2, color: C.main }}>
+                      {isFirst ? '기준선' : '지난 측정에서 달라진 점'}
+                    </span>
+                    <span style={{ fontSize: 9.5, letterSpacing: 0.3, color: C.sub }}>
+                      {isFirst ? '첫 측정' : `${daysSincePrev}일 전`}
+                    </span>
+                  </div>
+
+                  {isFirst ? (
+                    <div style={{ fontSize: 12, color: C.sub, lineHeight: 1.6, textAlign: 'center', padding: '16px 0' }}>
+                      첫 번째 측정이에요. 다음 측정부터 변화를 추적할 수 있어요.
+                    </div>
+                  ) : (
+                    <>
+                      <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+                        {changes.map(m => (
+                          <div key={m.key} style={{
+                            flex: 1, padding: '16px 8px 14px', borderRadius: 16,
+                            background: '#F5FAFD', textAlign: 'center',
+                          }}>
+                            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8, opacity: 0.5 }}>
+                              {m.icon}
+                            </div>
+                            <div style={{ fontSize: 28, fontWeight: 500, letterSpacing: -1, color: C.main, lineHeight: 1 }}>
+                              {m.value ?? '—'}
+                            </div>
+                            <div style={{
+                              fontSize: 12, fontWeight: 500, marginTop: 4,
+                              color: m.diff > 0 ? C.positive : m.diff < 0 ? C.negative : C.sub,
+                            }}>
+                              {m.diff > 0 ? `+${m.diff}` : m.diff}
+                            </div>
+                            <div style={{ fontSize: 11, color: C.sub, marginTop: 4 }}>{m.label}</div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* AI 한줄 요약 */}
+                      <div style={{
+                        display: 'flex', alignItems: 'center', gap: 10,
+                        padding: '12px 14px', borderRadius: 14,
+                        background: '#F5FAFD',
+                      }}>
+                        <div style={{
+                          width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+                          background: 'linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(150,215,248,0.5) 100%)',
+                          boxShadow: '0 0 0 1px rgba(255,255,255,0.4), 0 2px 6px rgba(0,0,0,0.06)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          position: 'relative', overflow: 'hidden',
+                        }}>
+                          <div style={{
+                            position: 'absolute', top: 0, left: '-100%', width: '300%', height: '100%',
+                            background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.25) 45%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0.25) 55%, transparent 70%)',
+                            animation: 'fabShine 3.5s ease-in-out infinite',
+                            pointerEvents: 'none',
+                          }} />
+                          <svg width="16" height="16" viewBox="-1 -1 26 26" style={{ position: 'relative', zIndex: 1, filter: 'drop-shadow(0 1px 2px rgba(100,180,230,0.5))' }}>
+                            <defs>
+                              <linearGradient id="rdm-star-fill" x1="0.15" y1="0.05" x2="0.85" y2="0.95"><stop offset="0%" stopColor="#D6EEFB" /><stop offset="45%" stopColor="#a8d8f5" /><stop offset="100%" stopColor="#6bb8e8" /></linearGradient>
+                              <linearGradient id="rdm-star-edge" x1="0.5" y1="0" x2="0.5" y2="1"><stop offset="0%" stopColor="#c8e8fa" /><stop offset="100%" stopColor="#5aaad8" /></linearGradient>
+                            </defs>
+                            <path fill="url(#rdm-star-edge)" stroke="rgba(90,170,216,0.3)" strokeWidth="0.6" d="M10.48,23.25c-.15.41-.5.71-.86.75-.27.03-.78-.29-.9-.59l-1.53-4.02c-.48-1.26-1.41-2.1-2.67-2.58l-3.91-1.48c-.29-.11-.59-.51-.6-.76-.01-.39.23-.79.6-.93l3.9-1.49c1.27-.48,2.19-1.31,2.68-2.59l1.57-4.14c.08-.2.52-.44.74-.46.24-.02.77.21.86.46l1.57,4.14c.5,1.32,1.47,2.15,2.78,2.63l3.7,1.37c.31.11.66.55.67.83.02.42-.29.82-.68.97l-3.8,1.44c-1.26.48-2.2,1.32-2.67,2.58l-1.45,3.86Z"/>
+                            <g transform="translate(0.3,0.3) scale(0.975)"><path fill="url(#rdm-star-fill)" d="M10.48,23.25c-.15.41-.5.71-.86.75-.27.03-.78-.29-.9-.59l-1.53-4.02c-.48-1.26-1.41-2.1-2.67-2.58l-3.91-1.48c-.29-.11-.59-.51-.6-.76-.01-.39.23-.79.6-.93l3.9-1.49c1.27-.48,2.19-1.31,2.68-2.59l1.57-4.14c.08-.2.52-.44.74-.46.24-.02.77.21.86.46l1.57,4.14c.5,1.32,1.47,2.15,2.78,2.63l3.7,1.37c.31.11.66.55.67.83.02.42-.29.82-.68.97l-3.8,1.44c-1.26.48-2.2,1.32-2.67,2.58l-1.45,3.86Z"/></g>
+                            <path fill="url(#rdm-star-edge)" stroke="rgba(90,170,216,0.3)" strokeWidth="0.4" d="M21.48,6.29c-1.03.59-.9,2.91-2.01,2.98-1.23.08-.99-1.68-1.94-2.78-.77-.88-2.68-.63-2.74-1.78-.07-1.27,2.01-1.1,2.74-1.91.87-.95.73-2.72,1.78-2.8,1.29-.1.98,1.81,1.95,2.77.87.86,2.67.71,2.73,1.8.07,1.08-1.29,1.02-2.51,1.72Z"/>
+                            <g transform="translate(0.15,0.15) scale(0.988)"><path fill="url(#rdm-star-fill)" d="M21.48,6.29c-1.03.59-.9,2.91-2.01,2.98-1.23.08-.99-1.68-1.94-2.78-.77-.88-2.68-.63-2.74-1.78-.07-1.27,2.01-1.1,2.74-1.91.87-.95.73-2.72,1.78-2.8,1.29-.1.98,1.81,1.95,2.77.87.86,2.67.71,2.73,1.8.07,1.08-1.29,1.02-2.51,1.72Z"/></g>
+                          </svg>
+                        </div>
+                        <span style={{ fontSize: 12, color: C.main, lineHeight: 1.5 }}>
+                          {(() => {
+                            const mLabels = { moisture: '수분', oilBalance: '유분', skinTone: '피부톤', troubleCount: '트러블', darkCircleScore: '다크서클', textureScore: '피부결', elasticityScore: '탄력', wrinkleScore: '주름', poreScore: '모공', pigmentationScore: '색소' };
+                            const pConn = { moisture: '이 채워지고', oilBalance: '이 안정되고', skinTone: '이 밝아지고', troubleCount: '이 가라앉고', darkCircleScore: '이 밝아지고', textureScore: '이 매끄러워지고', elasticityScore: '이 탄탄해지고', wrinkleScore: '이 부드러워지고', poreScore: '이 잡히고', pigmentationScore: '이 고르게 되고' };
+                            const pEnd = { moisture: '이 촉촉해졌어요', oilBalance: '이 안정됐어요', skinTone: '이 한 톤 깨어났어요', troubleCount: '이 가라앉았어요', darkCircleScore: '이 밝아졌어요', textureScore: '이 매끄러워졌어요', elasticityScore: '이 탄탄해졌어요', wrinkleScore: '이 부드러워졌어요', poreScore: '이 뚜렷이 잡혔어요', pigmentationScore: '이 고르게 정돈됐어요' };
+                            const pos = Object.keys(mLabels)
+                              .map(k => ({ key: k, label: mLabels[k], diff: getDiff(k) }))
+                              .filter(m => m.diff !== null && m.diff > 0)
+                              .sort((a, b) => b.diff - a.diff);
+                            if (pos.length >= 2) return `${pos[0].label}${pConn[pos[0].key]} ${pos[1].label}${pEnd[pos[1].key]}`;
+                            if (pos.length === 1) return `${pos[0].label}${pEnd[pos[0].key]}`;
+                            return '지난 측정과 비슷한 상태예요';
+                          })()}
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </>
+              );
+            })()}
           </div>
         </div>
 
-        {/* Delete confirm popup */}
+        {/* ③ 자세한 측정 토글 + 액션 버튼 */}
+        <div style={{
+          margin: '0 16px 12px', padding: '14px 20px',
+          display: 'flex', alignItems: 'center',
+        }}>
+          <div onClick={() => setDetailOpen(!detailOpen)} style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={C.sub} strokeWidth="2" strokeLinecap="round"
+              style={{ transform: detailOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.25s cubic-bezier(0.32,0.72,0,1)' }}>
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+            <span style={{ fontSize: 11, fontWeight: 500, color: C.main }}>{detailOpen ? '자세한 측정 접기' : '자세한 측정 보기'}</span>
+          </div>
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
+            <div onClick={handleSave} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C.sub} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </div>
+            <div onClick={handleShare} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C.sub} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </div>
+            <div onClick={() => setShowConfirm(true)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C.sub} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /><path d="M9 12l6 0" /></svg>
+            </div>
+          </div>
+        </div>
+
+        {/* ④ 상세 섹션 */}
+        {detailOpen && (
+          <div style={{ margin: '0 16px', animation: 'fadeUp 0.3s cubic-bezier(0.32,0.72,0,1) both' }}>
+
+            {/* 컨디션 브리핑 */}
+            {(() => {
+              const cScore = record.conditionScore ?? record.overallScore;
+              const cGrade = cScore >= 85 ? { letter: 'S', color: C.accent, bg: 'rgba(30,144,232,0.1)', border: 'rgba(30,144,232,0.2)' }
+                : cScore >= 70 ? { letter: 'A', color: C.accent, bg: 'rgba(30,144,232,0.1)', border: 'rgba(30,144,232,0.2)' }
+                : cScore >= 55 ? { letter: 'B', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.2)' }
+                : cScore >= 40 ? { letter: 'C', color: '#8888a0', bg: 'rgba(136,136,160,0.08)', border: 'rgba(136,136,160,0.15)' }
+                : { letter: 'D', color: C.negative, bg: 'rgba(163,45,45,0.08)', border: 'rgba(163,45,45,0.15)' };
+              return (
+                <div style={cardStyle}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                    <span style={{ fontSize: 13, fontWeight: 500, letterSpacing: -0.2, color: C.main }}>컨디션 브리핑</span>
+                    <div style={{ marginLeft: 'auto', padding: '4px 10px', borderRadius: 8, background: cGrade.bg, border: `1px solid ${cGrade.border}`, display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: cGrade.color, fontFamily: 'var(--font-display)' }}>{cGrade.letter}</span>
+                      <span style={{ fontSize: 10, fontWeight: 500, color: cGrade.color }}>{cScore}점</span>
+                    </div>
+                  </div>
+                  {record.conditionBriefing ? (
+                    <p style={{ fontSize: 12, color: C.sub, lineHeight: 1.8, margin: 0 }}>{record.conditionBriefing}</p>
+                  ) : (
+                    <p style={{ fontSize: 12, color: C.sub, lineHeight: 1.8, margin: 0, fontStyle: 'italic' }}>컨디션 브리핑은 이후 측정부터 저장됩니다.</p>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* 전체 피부 분석 + AI 정밀 판독 */}
+            {record.advice && (
+              <div style={cardStyle}>
+                <div style={{ fontSize: 13, fontWeight: 500, letterSpacing: -0.2, color: C.main, marginBottom: 10 }}>전체 피부 분석</div>
+                <p style={{ fontSize: 12, color: C.sub, lineHeight: 1.75, margin: 0 }}>{record.advice}</p>
+                {record.aiNotes && (() => {
+                  const filtered = record.aiNotes
+                    .replace(/[^.。!]*(?:동일\s*인물|같은\s*(?:사람|인물)|다른\s*(?:사람|인물)|differentPerson|두\s*사진\s*(?:은|이|를))[^.。!]*[.。!]\s*/gi, '')
+                    .trim();
+                  if (!filtered) return null;
+                  return (
+                    <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 12, background: 'rgba(30,144,232,0.04)', border: `1px solid ${C.divLight}` }}>
+                      <div style={{ fontSize: 10, fontWeight: 500, color: C.accent, marginBottom: 4 }}>AI 정밀 판독</div>
+                      <p style={{ fontSize: 11, color: C.sub, lineHeight: 1.7, margin: 0 }}>{filtered}</p>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
+            {/* 컨디션 지표 */}
+            <div style={{ ...cardStyle, padding: '14px 6px 2px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 14, paddingRight: 14, marginBottom: 4 }}>
+                <span style={{ fontSize: 13, fontWeight: 500, letterSpacing: -0.2, color: C.main }}>컨디션 지표</span>
+                <span style={{ fontSize: 9.5, letterSpacing: 0.3, color: C.sub }}>5가지</span>
+              </div>
+              {conditionMetrics.map((m, i) => (
+                <MetricBar key={m.label} label={m.label} value={record[m.key]} unit={m.unit || ''} color={m.color} icon={m.icon} delay={i * 80} />
+              ))}
+            </div>
+
+            {/* ④-3 노화 지표 */}
+            <div style={{ ...cardStyle, padding: '14px 6px 2px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 14, paddingRight: 14, marginBottom: 4 }}>
+                <span style={{ fontSize: 13, fontWeight: 500, letterSpacing: -0.2, color: C.main }}>노화 지표</span>
+                <span style={{ fontSize: 9.5, letterSpacing: 0.3, color: C.sub }}>5가지</span>
+              </div>
+              {agingMetrics.map((m, i) => (
+                <MetricBar key={m.label} label={m.label} value={record[m.key]} unit="" color={m.color} icon={m.icon} delay={i * 80} />
+              ))}
+            </div>
+
+          </div>
+        )}
+
+
+
+        </div>{/* end scroll wrapper */}
+
+        {/* 삭제 확인 팝업 */}
         {showConfirm && (
           <div style={{
             position: 'fixed', inset: 0, zIndex: 300,
@@ -1087,244 +1434,33 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
             animation: 'fadeIn 0.15s ease',
           }} onClick={() => setShowConfirm(false)}>
             <div onClick={e => e.stopPropagation()} style={{
-              background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-              borderRadius: 20, padding: '28px 24px',
+              background: '#fff', borderRadius: 20, padding: '28px 24px',
               width: 280, textAlign: 'center',
-              border: '1px solid rgba(255,255,255,0.3)',
             }}>
-              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>이 기록을 삭제할까요?</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 20 }}>삭제된 기록은 복구할 수 없습니다.</div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: C.main, marginBottom: 8 }}>이 기록을 삭제할까요?</div>
+              <div style={{ fontSize: 12, color: C.sub, marginBottom: 20 }}>삭제된 기록은 복구할 수 없습니다.</div>
               <div style={{ display: 'flex', gap: 10 }}>
                 <button onClick={() => setShowConfirm(false)} style={{
                   flex: 1, padding: '12px 0', borderRadius: 12, border: 'none',
-                  background: 'rgba(255,255,255,0.4)', color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                  background: '#F0F4F8', color: C.main, fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
                 }}>아니오</button>
                 <button onClick={() => { onDelete(record.id || record.date); setShowConfirm(false); }} style={{
                   flex: 1, padding: '12px 0', borderRadius: 12, border: 'none',
-                  background: '#e05545', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                  background: '#A32D2D', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
                 }}>삭제</button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Photo */}
-        {thumbnail && (
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 4, animation: 'popIn 0.4s ease 0.15s both' }}>
-            <img src={thumbnail} alt="" style={{
-              width: '100%', maxWidth: 320, height: 'auto', aspectRatio: '1/1', borderRadius: 24, objectFit: 'cover',
-              border: '3px solid rgba(255,255,255,0.3)',
-              boxShadow: 'none',
-            }} />
-          </div>
-        )}
-
-
-        {/* 피부 점수 */}
-        <div style={{
-          animation: 'fadeUp 0.3s ease 0.1s both',
-          background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-          borderRadius: 22, padding: '16px 18px',
-          border: '1px solid rgba(255,255,255,0.3)', marginBottom: 12,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
-        }}>
-          <div style={{ marginBottom: 12 }}>
-            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>피부 점수</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0', marginBottom: 4 }}>
-            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>피부나이</span>
-            <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}><AnimatedNumber target={record.skinAge} duration={1000} />세</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0', marginBottom: 4 }}>
-            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>종합 점수</span>
-            <span style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-display)', background: grade.gradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}><AnimatedNumber target={record.overallScore} duration={1000} />점</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0', marginBottom: 4 }}>
-            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>스킨 레벨</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 15, fontWeight: 700, fontFamily: 'var(--font-display)', background: grade.gradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{grade.letter}</span>
-              <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)' }}>{grade.label}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* 피부 타입 정보 */}
-        <div style={{
-          animation: 'fadeUp 0.3s ease 0.2s both',
-          background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-          borderRadius: 22, padding: '16px 18px',
-          border: '1px solid rgba(255,255,255,0.3)', marginBottom: 12,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
-        }}>
-          <div style={{ marginBottom: 12 }}>
-            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>피부 타입 정보</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0', marginBottom: 4 }}>
-            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>피부 타입</span>
-            <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{record.skinType}</span>
-          </div>
-          {/* Analysis mode */}
-          {record.analysisMode && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0', marginBottom: 4 }}>
-              <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>분석 모드</span>
-              <span style={{
-                fontSize: 11, fontWeight: 600,
-                color: record.analysisMode === 'hybrid' ? '#89cef5' : 'var(--text-muted)',
-                background: record.analysisMode === 'hybrid' ? 'rgba(137,206,245,0.12)' : 'rgba(184,137,110,0.1)',
-                padding: '3px 10px', borderRadius: 10,
-              }}>{record.analysisMode === 'hybrid' ? 'AI + CV 하이브리드' : 'CV 비전 분석'}</span>
-            </div>
-          )}
-          {/* Confidence */}
-          {record.confidence != null && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0', marginBottom: 4 }}>
-              <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>측정 신뢰도</span>
-              <span style={{
-                fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-display)',
-                color: record.confidence >= 70 ? '#5ab0e8' : record.confidence >= 50 ? '#d4900a' : '#f06050',
-              }}>{Math.min(record.confidence, 95)}%</span>
-            </div>
-          )}
-          {/* Concerns */}
-          {(record.concerns || []).length > 0 && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>관심 사항</span>
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginLeft: 'auto' }}>
-                {record.concerns.map((c, i) => (
-                  <span key={i} style={{
-                    fontSize: 11, fontWeight: 500,
-                    color: i === 0 ? '#e05545' : '#d4900a',
-                    background: i === 0 ? 'rgba(240,96,80,0.1)' : 'rgba(245,166,35,0.1)',
-                    border: `1px solid ${i === 0 ? 'rgba(240,96,80,0.18)' : 'rgba(245,166,35,0.18)'}`,
-                    padding: '3px 10px', borderRadius: 20,
-                  }}>{c}</span>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* 컨디션 브리핑 */}
-        {(() => {
-          const cScore = record.conditionScore ?? record.overallScore;
-          const cGrade = cScore >= 85 ? { letter: 'S', color: '#89cef5', bg: 'rgba(137,206,245,0.15)', border: 'rgba(137,206,245,0.3)' }
-            : cScore >= 70 ? { letter: 'A', color: '#89cef5', bg: 'rgba(137,206,245,0.15)', border: 'rgba(137,206,245,0.3)' }
-            : cScore >= 55 ? { letter: 'B', color: '#f59e0b', bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.3)' }
-            : cScore >= 40 ? { letter: 'C', color: '#8888a0', bg: 'rgba(136,136,160,0.12)', border: 'rgba(136,136,160,0.2)' }
-            : { letter: 'D', color: '#f06050', bg: 'rgba(240,96,80,0.12)', border: 'rgba(240,96,80,0.2)' };
-          return (
-            <div style={{
-              animation: 'fadeUp 0.3s ease 0.3s both',
-              background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-              borderRadius: 22, padding: '16px 18px',
-              border: '1px solid rgba(255,255,255,0.3)', marginBottom: 12,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-                <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>컨디션 브리핑</span>
-                <div style={{ marginLeft: 'auto', padding: '4px 10px', borderRadius: 8, background: cGrade.bg, border: `1px solid ${cGrade.border}`, display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{ fontSize: 14, fontWeight: 800, color: cGrade.color, fontFamily: 'var(--font-display)' }}>{cGrade.letter}</span>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: cGrade.color }}>{cScore}점</span>
-                </div>
-              </div>
-              {record.conditionBriefing ? (
-                <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.8, margin: 0 }}>{record.conditionBriefing}</p>
-              ) : (
-                <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.8, margin: 0, fontStyle: 'italic' }}>
-                  컨디션 브리핑은 이후 측정부터 저장됩니다.
-                </p>
-              )}
-            </div>
-          );
-        })()}
-
-        {/* 전체 피부 분석 (advice) */}
-        {record.advice && (
+        {/* 저장 토스트 */}
+        {saved && (
           <div style={{
-            animation: 'fadeUp 0.3s ease 0.4s both',
-            background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-            borderRadius: 22, padding: '16px 18px',
-            border: '1px solid rgba(255,255,255,0.3)', marginBottom: 12,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-              <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>전체 피부 분석</span>
-            </div>
-            <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.75, margin: 0 }}>{record.advice}</p>
-            {/* AI 정밀 판독 */}
-            {record.aiNotes && (() => {
-              const filtered = record.aiNotes
-                .replace(/[^.。!]*(?:동일\s*인물|같은\s*(?:사람|인물)|다른\s*(?:사람|인물)|differentPerson|두\s*사진\s*(?:은|이|를))[^.。!]*[.。!]\s*/gi, '')
-                .trim();
-              if (!filtered) return null;
-              return (
-                <div style={{
-                  marginTop: 12, padding: '10px 14px', borderRadius: 12,
-                  background: 'linear-gradient(135deg, rgba(240,144,112,0.08), rgba(240,144,112,0.04))',
-                  border: '1px solid rgba(240,144,112,0.15)',
-                }}>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: '#89cef5', marginBottom: 4 }}>AI 정밀 판독</div>
-                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.7, margin: 0 }}>{filtered}</p>
-                </div>
-              );
-            })()}
-          </div>
+            position: 'fixed', top: 60, left: '50%', transform: 'translateX(-50%)',
+            background: C.accent, color: '#fff', padding: '10px 22px', borderRadius: 30,
+            fontSize: 13, fontWeight: 600, zIndex: 999, animation: 'fadeIn 0.2s ease',
+          }}>앨범에 두었어요</div>
         )}
-
-        {/* Condition metrics group */}
-        <div style={{
-          animation: 'fadeUp 0.3s ease 0.5s both',
-          background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-          border: '1px solid rgba(255,255,255,0.3)',
-          borderRadius: 22, padding: '14px 6px 2px',
-          marginBottom: 12,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingLeft: 14, marginBottom: 4 }}>
-            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>컨디션 지표</span>
-          </div>
-          {conditionMetrics.map((m, i) => (
-            <MetricBar
-              key={m.label}
-              label={m.label}
-              value={m.value}
-              unit={m.unit || ''}
-              color={m.color}
-              icon={m.icon}
-              delay={i * 80}
-            />
-          ))}
-        </div>
-
-        {/* Aging metrics group */}
-        <div style={{
-          animation: 'fadeUp 0.3s ease 0.6s both',
-          background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-          border: '1px solid rgba(255,255,255,0.3)',
-          borderRadius: 22, padding: '14px 6px 2px',
-          marginBottom: 12,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingLeft: 14, marginBottom: 4 }}>
-            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>노화 지표</span>
-          </div>
-          {agingMetrics.map((m, i) => (
-            <MetricBar
-              key={m.label}
-              label={m.label}
-              value={m.value}
-              unit=""
-              color={m.color}
-              icon={m.icon}
-              delay={i * 80}
-            />
-          ))}
-        </div>
-
-        {/* Date */}
-        <div style={{ textAlign: 'center', marginTop: 8, marginBottom: 8 }}>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 400, letterSpacing: 0.3 }}>{dateStr}</div>
-        </div>
       </div>
     </div>
   );
