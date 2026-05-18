@@ -5,5 +5,10 @@
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" }
   ],
-  "crons": []
+  "crons": [
+    {
+      "path": "/api/healthcheck",
+      "schedule": "0 0 * * *"
+    }
+  ]
 }
