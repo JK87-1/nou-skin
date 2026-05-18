@@ -58,6 +58,8 @@ export default defineConfig({
         name: '루아 — 피부 여정의 시작',
         short_name: '루아',
         description: 'AI 기반 웰니스 솔루션',
+        lang: 'ko',
+        dir: 'ltr',
         theme_color: '#000000',
         background_color: '#000000',
         display: 'standalone',
