@@ -2,7 +2,9 @@
 // Baseline image comparison for consistency + 3x API call median scoring
 
 const RATE_LIMIT = new Map();
-const MAX_REQUESTS_PER_DAY = 30;
+// 베타 기간 상향: 가족·사무실 공유 IP에 다수 사용자 몰릴 가능성 대비.
+// 베타 후 device-id 기반 rate limit 도입 시 다시 낮출 예정.
+const MAX_REQUESTS_PER_DAY = 200;
 
 const IMAGE_CACHE = new Map();
 const CACHE_TTL_MS = 3600000;
