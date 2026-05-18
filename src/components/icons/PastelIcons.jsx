@@ -380,6 +380,25 @@ export const FlameIcon = ({ size = s }) => (
   </svg>
 );
 
+// 🔺 V라인 — 파스텔 오렌지 V자 위로 향한 화살표 두 개
+export const EggIcon = ({ size = s }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <defs><linearGradient id="vline-g" x1="20%" y1="100%" x2="80%" y2="0%"><stop offset="0%" stopColor="#FFD0A0"/><stop offset="100%" stopColor="#FFB070"/></linearGradient></defs>
+    <path d="M4 6 L12 16 L20 6" stroke="url(#vline-g)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+    <path d="M4 11 L12 21 L20 11" stroke="url(#vline-g)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+  </svg>
+);
+
+// 🔴 홍조 — 파스텔 레드 빗금(///)
+export const BlushIcon = ({ size = s }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <defs><linearGradient id="blush-g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#FFD0D0"/><stop offset="100%" stopColor="#FFB0B0"/></linearGradient></defs>
+    <line x1="7" y1="18" x2="13" y2="6" stroke="url(#blush-g)" strokeWidth="2.5" strokeLinecap="round"/>
+    <line x1="12" y1="18" x2="18" y2="6" stroke="url(#blush-g)" strokeWidth="2.5" strokeLinecap="round"/>
+    <line x1="17" y1="18" x2="23" y2="6" stroke="url(#blush-g)" strokeWidth="2.5" strokeLinecap="round"/>
+  </svg>
+);
+
 // 🥶 추위 — 파스텔 아이스블루 온도계+눈
 export const SnowflakeIcon = ({ size = s }) => (
   <svg width={size} height={size} viewBox="0 0 20 20" fill="none">

@@ -38,7 +38,7 @@ import SkinMeasurePage from './pages/SkinMeasurePage';
 import TrendCard from './components/TrendCard';
 import AiCommentCard from './components/AiCommentCard';
 import BeforeAfterSlider from './components/BeforeAfterSlider';
-import { DropletIcon, SparkleIcon, LotionIcon, DiamondIcon, PaletteIcon, MicroscopeIcon, RulerIcon, EyeIcon, BubbleIcon, TargetIcon, SunIcon, MoonIcon, CameraIcon, TestTubeIcon, StarIcon, ShieldIcon, WandIcon, PhotoIcon, CheckIcon, SaveIcon, PastelIcon, LuaMiniIcon } from './components/icons/PastelIcons';
+import { DropletIcon, SparkleIcon, LotionIcon, DiamondIcon, PaletteIcon, MicroscopeIcon, RulerIcon, EyeIcon, BubbleIcon, TargetIcon, SunIcon, MoonIcon, CameraIcon, TestTubeIcon, StarIcon, ShieldIcon, WandIcon, PhotoIcon, CheckIcon, SaveIcon, PastelIcon, LuaMiniIcon, FlameIcon, EggIcon, BlushIcon } from './components/icons/PastelIcons';
 import SoftCloverIcon from './components/icons/SoftCloverIcon';
 import EternalPearl from './components/icons/EternalPearl';
 
@@ -898,10 +898,10 @@ export default function App() {
             const rc = getRecords().length;
             const ds = latest ? Math.floor((Date.now() - new Date(latest.date).getTime()) / 86400000) : null;
             const metrics = [
-              { key: 'elasticityScore', label: 'V라인', icon: '◇' },
-              { key: 'poreScore', label: '모공', icon: '◎' },
-              { key: 'moisture', label: '유수분', icon: '💧' },
-              { key: 'skinTone', label: '홍조', icon: '🔥' },
+              { key: 'elasticityScore', label: 'V라인', icon: <EggIcon size={16} /> },
+              { key: 'poreScore', label: '모공', icon: <MicroscopeIcon size={16} /> },
+              { key: 'moisture', label: '유수분', icon: <DropletIcon size={16} /> },
+              { key: 'skinTone', label: '홍조', icon: <BlushIcon size={16} /> },
             ];
             return (
               <div style={{
@@ -931,7 +931,7 @@ export default function App() {
                       return (
                         <div key={m.key} style={{ background: 'rgba(255,255,255,0.25)', borderRadius: 14, padding: 14 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <span style={{ fontSize: 13 }}>{m.icon}</span>
+                            <span style={{ display: 'inline-flex', alignItems: 'center' }}>{m.icon}</span>
                             <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500 }}>{m.label}</span>
                           </div>
                           <div style={{ fontSize: 28, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.5, marginTop: 6 }}>{val !== null ? val : '—'}</div>
@@ -1907,31 +1907,78 @@ export default function App() {
 
       {/* ===== FAB (Global) ===== */}
       {showTabBar && (
+        <div style={{
+          position: 'fixed',
+          bottom: 'calc(76px + env(safe-area-inset-bottom, 0px) + 36px)',
+          right: 21,
+          zIndex: 90,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+        }}>
         <div
-          onClick={() => setFabChatOpen(true)}
+          onClick={() => { setFabChatOpen(true); localStorage.setItem('fab_hint_dismissed', '1'); }}
           style={{
-            position: 'fixed',
-            bottom: 'calc(76px + env(safe-area-inset-bottom, 0px) + 24px)',
-            right: 14,
-            width: 48, height: 48, borderRadius: '50%',
-            background: 'linear-gradient(180deg, rgba(255,255,255,0.7) 0%, rgba(172,226,252,0.35) 100%)',
+            position: 'relative',
+            width: 58, height: 58, borderRadius: '50% 50% 8px 50%',
+            background: 'linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(150,215,248,0.5) 100%)',
             backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-            border: '1px solid rgba(255,255,255,0.5)',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.6)',
+            border: 'none',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer', zIndex: 90,
+            animation: 'fabFloat 3s ease-in-out infinite',
           }}
         >
-          <svg width="22" height="22" viewBox="0 0 24 24">
+          {/* 말풍선 힌트 */}
+          {!fabChatOpen && !localStorage.getItem('fab_hint_dismissed') && (
+            <div onClick={(e) => { e.stopPropagation(); localStorage.setItem('fab_hint_dismissed', '1'); }} style={{
+              position: 'absolute', bottom: '100%', right: 0, marginBottom: 10,
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(240,240,240,0.85) 100%)',
+              backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+              borderRadius: '30px 30px 4px 30px', padding: '9px 14px', whiteSpace: 'nowrap',
+              border: '1px solid rgba(255,255,255,0.5)',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
+              animation: 'fabHintIn 0.5s ease-out 1.5s both, fabHintOut 0.4s ease-in 10s both',
+              fontSize: 11, color: 'rgba(0,0,0,0.4)', fontWeight: 600, letterSpacing: -0.2,
+            }}>
+              피부 고민을 물어봐 ✨
+            </div>
+          )}
+          {/* 빛 흐름 레이어 */}
+          <div style={{
+            position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+            borderRadius: '50% 50% 8px 50%', overflow: 'hidden', pointerEvents: 'none',
+          }}>
+            <div style={{
+              position: 'absolute', top: 0, left: '-100%', width: '300%', height: '100%',
+              background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.2) 45%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0.2) 55%, transparent 70%)',
+              animation: 'fabShine 3.5s ease-in-out infinite',
+            }} />
+          </div>
+          <svg width="28" height="28" viewBox="0 0 24 24" style={{ position: 'relative', zIndex: 1, animation: 'fabStarTwinkle 2.5s ease-in-out infinite', filter: 'drop-shadow(0 1px 2px rgba(100,180,230,0.5))' }}>
             <defs>
               <linearGradient id="global-fab-star" x1="0.15" y1="0.05" x2="0.85" y2="0.95">
                 <stop offset="0%" stopColor="#D6EEFB" />
-                <stop offset="100%" stopColor="#89cef5" />
+                <stop offset="45%" stopColor="#a8d8f5" />
+                <stop offset="100%" stopColor="#6bb8e8" />
+              </linearGradient>
+              <linearGradient id="global-fab-star-edge" x1="0.5" y1="0" x2="0.5" y2="1">
+                <stop offset="0%" stopColor="#c8e8fa" />
+                <stop offset="100%" stopColor="#5aaad8" />
               </linearGradient>
             </defs>
-            <path fill="url(#global-fab-star)" d="M10.48,23.25c-.15.41-.5.71-.86.75-.27.03-.78-.29-.9-.59l-1.53-4.02c-.48-1.26-1.41-2.1-2.67-2.58l-3.91-1.48c-.29-.11-.59-.51-.6-.76-.01-.39.23-.79.6-.93l3.9-1.49c1.27-.48,2.19-1.31,2.68-2.59l1.57-4.14c.08-.2.52-.44.74-.46.24-.02.77.21.86.46l1.57,4.14c.5,1.32,1.47,2.15,2.78,2.63l3.7,1.37c.31.11.66.55.67.83.02.42-.29.82-.68.97l-3.8,1.44c-1.26.48-2.2,1.32-2.67,2.58l-1.45,3.86Z"/>
-            <path fill="url(#global-fab-star)" d="M21.48,6.29c-1.03.59-.9,2.91-2.01,2.98-1.23.08-.99-1.68-1.94-2.78-.77-.88-2.68-.63-2.74-1.78-.07-1.27,2.01-1.1,2.74-1.91.87-.95.73-2.72,1.78-2.8,1.29-.1.98,1.81,1.95,2.77.87.86,2.67.71,2.73,1.8.07,1.08-1.29,1.02-2.51,1.72Z"/>
+            {/* 별 외곽선 — 두께감 */}
+            <path fill="url(#global-fab-star-edge)" stroke="rgba(90,170,216,0.3)" strokeWidth="0.6" d="M10.48,23.25c-.15.41-.5.71-.86.75-.27.03-.78-.29-.9-.59l-1.53-4.02c-.48-1.26-1.41-2.1-2.67-2.58l-3.91-1.48c-.29-.11-.59-.51-.6-.76-.01-.39.23-.79.6-.93l3.9-1.49c1.27-.48,2.19-1.31,2.68-2.59l1.57-4.14c.08-.2.52-.44.74-.46.24-.02.77.21.86.46l1.57,4.14c.5,1.32,1.47,2.15,2.78,2.63l3.7,1.37c.31.11.66.55.67.83.02.42-.29.82-.68.97l-3.8,1.44c-1.26.48-2.2,1.32-2.67,2.58l-1.45,3.86Z"/>
+            {/* 별 메인 — 약간 축소해서 테두리 보이게 */}
+            <g transform="translate(0.3,0.3) scale(0.975)">
+              <path fill="url(#global-fab-star)" d="M10.48,23.25c-.15.41-.5.71-.86.75-.27.03-.78-.29-.9-.59l-1.53-4.02c-.48-1.26-1.41-2.1-2.67-2.58l-3.91-1.48c-.29-.11-.59-.51-.6-.76-.01-.39.23-.79.6-.93l3.9-1.49c1.27-.48,2.19-1.31,2.68-2.59l1.57-4.14c.08-.2.52-.44.74-.46.24-.02.77.21.86.46l1.57,4.14c.5,1.32,1.47,2.15,2.78,2.63l3.7,1.37c.31.11.66.55.67.83.02.42-.29.82-.68.97l-3.8,1.44c-1.26.48-2.2,1.32-2.67,2.58l-1.45,3.86Z"/>
+            </g>
+            {/* 작은 별 */}
+            <path fill="url(#global-fab-star-edge)" stroke="rgba(90,170,216,0.3)" strokeWidth="0.4" d="M21.48,6.29c-1.03.59-.9,2.91-2.01,2.98-1.23.08-.99-1.68-1.94-2.78-.77-.88-2.68-.63-2.74-1.78-.07-1.27,2.01-1.1,2.74-1.91.87-.95.73-2.72,1.78-2.8,1.29-.1.98,1.81,1.95,2.77.87.86,2.67.71,2.73,1.8.07,1.08-1.29,1.02-2.51,1.72Z"/>
+            <g transform="translate(0.15,0.15) scale(0.988)">
+              <path fill="url(#global-fab-star)" d="M21.48,6.29c-1.03.59-.9,2.91-2.01,2.98-1.23.08-.99-1.68-1.94-2.78-.77-.88-2.68-.63-2.74-1.78-.07-1.27,2.01-1.1,2.74-1.91.87-.95.73-2.72,1.78-2.8,1.29-.1.98,1.81,1.95,2.77.87.86,2.67.71,2.73,1.8.07,1.08-1.29,1.02-2.51,1.72Z"/>
+            </g>
           </svg>
+        </div>
         </div>
       )}
 
