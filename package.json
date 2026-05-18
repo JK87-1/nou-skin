@@ -4,9 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "node scripts/check-env.cjs && vite",
+    "build": "node scripts/check-env.cjs && vite build",
     "preview": "vite preview",
+    "check:env": "node scripts/check-env.cjs",
     "cap:sync": "vite build && npx cap sync",
     "cap:ios": "vite build && npx cap sync ios && npx cap open ios",
     "cap:android": "vite build && npx cap sync android && npx cap open android"
