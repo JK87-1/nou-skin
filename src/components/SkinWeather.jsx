@@ -146,9 +146,6 @@ export default function SkinWeather({ skinResult }) {
         marginBottom: 16, animation: 'swFadeInUp 0.5s ease both',
       }}>
         <div>
-          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 4 }}>
-            SKIN WEATHER
-          </div>
           <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)' }}>오늘의 피부 날씨</div>
         </div>
         {weather && (
