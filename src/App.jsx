@@ -1080,6 +1080,8 @@ export default function App() {
                 {photoQuality.issues.includes('too_bright') && <span>사진이 너무 밝아요. 직사광선을 피해서 촬영해보세요.<br/></span>}
                 {photoQuality.issues.includes('blurry') && <span>사진이 흐릿해요. 카메라를 고정하고 다시 촬영해보세요.<br/></span>}
                 {photoQuality.issues.includes('face_too_small') && <span>얼굴이 너무 작아요. 좀 더 가까이에서 촬영해보세요.<br/></span>}
+                {photoQuality.issues.includes('face_yawed') && <span>얼굴이 측면으로 돌아가 있어요. 카메라를 정면으로 향해서 촬영해보세요.<br/></span>}
+                {photoQuality.issues.includes('face_tilted') && <span>얼굴이 기울어져 있어요. 양쪽 눈이 수평이 되도록 자세를 잡아보세요.<br/></span>}
                 {photoQuality.issues.includes('no_face') && <span>얼굴을 인식하지 못했어요. 정면을 바라보고 다시 촬영해보세요.</span>}
               </div>
             </div>
