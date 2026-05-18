@@ -92,12 +92,30 @@ export default async function handler(req, res) {
     const stats = await readDailyStats(yesterday);
 
     let statsLine = '';
+    const alerts = []; // 임계 초과 항목 누적
+
     if (stats && stats.requests > 0) {
       const rateStr = stats.successRate != null ? `${stats.successRate.toFixed(1)}%` : '-';
       const avgStr = stats.avgResponseMs > 0 ? `${(stats.avgResponseMs / 1000).toFixed(1)}초` : '-';
       statsLine = `\n어제(${yesterday}) 측정: ${stats.requests}건 · 성공 ${stats.success} · 실패 ${stats.failures}${stats.rateLimit > 0 ? ` · 한도초과 ${stats.rateLimit}` : ''} · 성공률 ${rateStr} · 평균 응답 ${avgStr}`;
+
+      // 임계 초과 감지 (베타 운영 모니터링)
+      if (stats.avgResponseMs > 25000) {
+        alerts.push(`⏱ 평균 응답 시간 ${(stats.avgResponseMs / 1000).toFixed(1)}초 (임계 25초 초과)`);
+      }
+      if (stats.successRate != null && stats.successRate < 70) {
+        alerts.push(`📉 성공률 ${stats.successRate.toFixed(1)}% (임계 70% 미만)`);
+      }
+      if (stats.requests >= 10 && stats.rateLimit > stats.requests * 0.1) {
+        alerts.push(`🚦 한도초과 ${stats.rateLimit}건 (전체의 ${(stats.rateLimit / stats.requests * 100).toFixed(0)}%)`);
+      }
     } else if (stats) {
       statsLine = `\n어제(${yesterday}) 측정 0건`;
+    }
+
+    if (alerts.length > 0) {
+      await notifyNotion(`⚠️ 임계 초과 감지\n${alerts.join('\n')}\n\nOpenAI 키 유효 · 헬스체크 자체 응답 ${elapsed}ms${statsLine}`, '오류');
+      return res.status(200).json({ ok: true, alerts, elapsed_ms: elapsed, gpt52: true, yesterday_stats: stats });
     }
 
     await notifyNotion(`OpenAI 키 유효 · gpt-5.2 사용 가능 · 응답 ${elapsed}ms${statsLine}`, '완료');
