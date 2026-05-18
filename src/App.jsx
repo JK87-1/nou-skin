@@ -29,6 +29,7 @@ import { getProfile, saveProfile, getDeviceId } from './storage/ProfileStorage';
 import GoalProgressCard from './components/GoalProgressCard';
 import SkinWeather from './components/SkinWeather';
 import WeatherChip from './components/WeatherChip';
+import { getWeatherData } from './storage/WeatherStorage';
 import { getGoal, updateGoalProgress } from './storage/GoalStorage';
 import { addXP, checkAndAwardBadges, incrementStat, getTotalXP, getLevel } from './storage/BadgeStorage';
 import { calculateLevel, getDefaultTheme, getThemeById, getLevelTitleData, THEMES } from './data/BadgeData';
@@ -92,14 +93,23 @@ export default function App() {
   const [showWaterModal, setShowWaterModal] = useState(false);
   const [showSleepModal, setShowSleepModal] = useState(false);
   const [showHomeEdit, setShowHomeEdit] = useState(false);
+  const DEFAULT_ORDER = ['metrics', 'weather', 'water', 'sleep', 'insight', 'goal'];
   const [homeCards, setHomeCards] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('lua_home_cards') || 'null') || { metrics: true, water: true, sleep: true, insight: true, goal: true }; }
-    catch { return { metrics: true, water: true, sleep: true, insight: true, goal: true }; }
+    try { return JSON.parse(localStorage.getItem('lua_home_cards') || 'null') || { metrics: false, weather: false, water: false, sleep: false, insight: true, goal: true }; }
+    catch { return { metrics: false, weather: false, water: false, sleep: false, insight: true, goal: true }; }
+  });
+  const [homeCardOrder, setHomeCardOrder] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('lua_home_order') || 'null') || DEFAULT_ORDER; }
+    catch { return DEFAULT_ORDER; }
   });
   const toggleHomeCard = (key) => {
     const next = { ...homeCards, [key]: !homeCards[key] };
     setHomeCards(next);
     localStorage.setItem('lua_home_cards', JSON.stringify(next));
+  };
+  const reorderHomeCards = (newOrder) => {
+    setHomeCardOrder(newOrder);
+    localStorage.setItem('lua_home_order', JSON.stringify(newOrder));
   };
   const [waterCups, setWaterCups] = useState(() => {
     const today = new Date().toISOString().slice(0, 10);
@@ -926,11 +936,13 @@ export default function App() {
           <div style={{ padding: '28px 22px 20px', position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <WeatherChip onTap={() => setWeatherSheet(true)} />
             <img src="/luasky.svg" alt="lua" style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', height: 30, objectFit: 'contain' }} />
-            <div onClick={() => setShowHomeEdit(true)} style={{ cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(0,0,0,0.35)">
-                <circle cx="5" cy="12" r="2" />
-                <circle cx="12" cy="12" r="2" />
-                <circle cx="19" cy="12" r="2" />
+            <div onClick={() => setShowHomeEdit(true)} style={{
+              width: 34, height: 34, borderRadius: '50%', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              WebkitTapHighlightColor: 'transparent',
+            }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.8)" strokeWidth="1.8" strokeLinecap="round">
+                <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
               </svg>
             </div>
           </div>
@@ -946,185 +958,288 @@ export default function App() {
             onClick={openCamera}
             style={{
               margin: '14px 20px 0',
-              padding: '48px 24px 34px',
+              padding: '88px 24px 88px',
               cursor: 'pointer',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 54,
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 88,
             }}
           >
-            <EternalPearl size={160} animated colors={activeThemeColors} theme={colorMode} />
+            <EternalPearl size={192} animated colors={activeThemeColors} theme={colorMode} />
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 18, fontWeight: 600, color: 'rgba(0,0,0,0.4)', letterSpacing: -0.3 }}>탭 하여 피부를 분석하세요</div>
-              <div style={{ fontSize: 12, color: 'rgba(0,0,0,0.4)', marginTop: 12 }}>AI가 10개 지표를 정밀 분석합니다</div>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 28 }}>
+              <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: -0.3, color: '#ffffff', textShadow: '0 0 12px rgba(137,206,245,0.7), 0 0 30px rgba(137,206,245,0.4), 0 0 50px rgba(137,206,245,0.2)', animation: 'textBreathe 3s ease-in-out infinite' }}>탭 하여 피부를 분석하세요</div>
+              <div style={{ height: 18, overflow: 'hidden', marginTop: 15 }}>
+                <div style={{ animation: 'subtitleSlide 20s ease-in-out infinite' }}>
+                  <div style={{ height: 18, lineHeight: '18px', fontSize: 13, color: 'rgba(0,0,0,0.35)' }}>당신의 피부를 더 깊이 이해해요</div>
+                  <div style={{ height: 18, lineHeight: '18px', fontSize: 13, color: 'rgba(0,0,0,0.35)' }}>AI가 10개 지표를 정밀 분석해줘요</div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 28 }}>
                 {['정면 셀카', '밝은 자연광', '맨 얼굴'].map(tag => (
                   <div key={tag} style={{
-                    padding: '6px 14px', borderRadius: 50,
-                    background: 'rgba(255,255,255,0.4)',
-                    border: '1px solid rgba(255,255,255,0.3)',
-                    fontSize: 11, fontWeight: 500, color: 'var(--text-secondary, #5a6a7a)',
+                    padding: '4px 10px', borderRadius: 50,
+                    background: 'rgba(255,255,255,0.25)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    fontSize: 10, fontWeight: 500, color: 'rgba(0,0,0,0.35)',
                   }}>{tag}</div>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* ③ 현재 상태 미니 패널 */}
-          {homeCards.metrics && (() => {
-            const latest = getLatestRecord();
-            const prev = (() => { const recs = getRecords(); return recs.length >= 2 ? recs[1] : null; })();
-            const rc = getRecords().length;
-            const metrics = [
-              { key: 'elasticityScore', label: 'V라인', icon: <EggIcon size={14} /> },
-              { key: 'poreScore', label: '모공', icon: <MicroscopeIcon size={14} /> },
-              { key: 'moisture', label: '유수분', icon: <DropletIcon size={14} /> },
-              { key: 'skinTone', label: '홍조', icon: <BlushIcon size={14} /> },
-            ];
-            if (rc === 0) return null;
-            return (
-              <div style={{
-                margin: '11px 20px 0',
-                borderRadius: 20,
-                border: '1px solid rgba(255,255,255,0.4)',
-                backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)',
-                overflow: 'hidden',
-              }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0, padding: '8px 12px' }}>
-                  {metrics.map((m) => {
-                    const val = latest?.[m.key] ?? null;
-                    const prevVal = prev?.[m.key] ?? null;
-                    const diff = val !== null && prevVal !== null ? val - prevVal : null;
-                    return (
-                      <div key={m.key} style={{
-                        borderRadius: 16, padding: '12px 4px',
-                        display: 'flex', flexDirection: 'column', alignItems: 'center',
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-                          <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 14, height: 14, flexShrink: 0 }}>{m.icon}</span>
-                          <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 500 }}>{m.label}</span>
-                        </div>
-                        <div style={{ fontSize: 22, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.5, marginTop: 6 }}>{val !== null ? val : '—'}</div>
-                        <div style={{ fontSize: 10, fontWeight: 500, marginTop: 2, color: diff === null ? 'var(--text-muted)' : diff > 0 ? 'var(--accent-primary, #89cef5)' : diff < 0 ? '#e05545' : 'var(--text-muted)' }}>
-                          {diff === null ? '기준선' : diff > 0 ? `+${diff} 좋아짐` : diff < 0 ? `${diff} 하락` : 'ㅡ'}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })()}
+          {/* ③ 홈 카드 — homeCardOrder 순서대로 렌더링 */}
+          {homeCardOrder.map(cardKey => {
+            if (!homeCards[cardKey]) return null;
 
-
-          {/* 수분 + 수면 카드 (noa style) */}
-          {(homeCards.water || homeCards.sleep) && (() => {
-            const cupMl = 250;
-            const waterGoal = 8;
-            const waterMl = waterCups * cupMl;
-            const waterRingR = 22, waterRingC = 2 * Math.PI * waterRingR;
-            const waterFill = Math.min(waterCups / waterGoal, 1);
-            const waterDash = waterRingC * waterFill;
-
-            const sleepRingR = 22, sleepRingC = 2 * Math.PI * sleepRingR;
-            const sleepFill = sleepHours ? Math.min(sleepHours / 8, 1) : 0;
-            const sleepDash = sleepRingC * sleepFill;
-
-            const cardStyle = {
-              borderRadius: 20, padding: 20, cursor: 'pointer',
-              background: 'transparent',
-              border: '1px solid rgba(255,255,255,0.4)',
-              backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)',
-              display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-              minHeight: 120,
-            };
-
-            return (
-              <div style={{ display: 'grid', gridTemplateColumns: (homeCards.water && homeCards.sleep) ? '1fr 1fr' : '1fr', gap: 10, margin: '12px 20px 0' }}>
-                {/* 수분 카드 */}
-                {homeCards.water && <div onClick={() => setShowWaterModal(true)} style={cardStyle}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 0, flex: '0 0 auto' }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(91,163,212,0.3))' }}><defs><linearGradient id="dropCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#B8E0F5"/><stop offset="100%" stopColor="#5BA3D4"/></linearGradient></defs><path d="M12 2.5c0 0-7.5 8-7.5 13a7.5 7.5 0 0015 0c0-5-7.5-13-7.5-13z" fill="url(#dropCard)" opacity="0.6"/></svg>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>수분</span>
+            // 피부 지표
+            if (cardKey === 'metrics') {
+              const latest = getLatestRecord();
+              const prev = (() => { const recs = getRecords(); return recs.length >= 2 ? recs[1] : null; })();
+              if (getRecords().length === 0) return null;
+              const metrics = [
+                { key: 'moisture', label: '수분', icon: <DropletIcon size={14} /> },
+                { key: 'wrinkleScore', label: '주름', icon: <RulerIcon size={14} /> },
+                { key: 'elasticityScore', label: '탄력', icon: <DiamondIcon size={14} /> },
+                { key: 'poreScore', label: '모공', icon: <MicroscopeIcon size={14} /> },
+              ];
+              return (
+                <div key={cardKey} style={{
+                  margin: '11px 20px 0', borderRadius: 20, padding: 20,
+                  background: 'transparent', border: '1px solid rgba(255,255,255,0.4)',
+                  backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(240,168,136,0.3))' }}><defs><linearGradient id="sparkCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#FFD4C0"/><stop offset="100%" stopColor="#F0A888"/></linearGradient></defs><path d="M14.504 8.522l-1.758 -4.032a.814 .814 0 0 0 -1.492 0l-1.759 4.032c-.19 .436 -.537 .784 -.973 .973l-4.032 1.759a.814 .814 0 0 0 0 1.492l4.033 1.758c.436 .19 .784 .538 .973 .974l1.759 4.033a.814 .814 0 0 0 1.492 0l1.758 -4.033c.19 -.436 .538 -.784 .974 -.974l4.033 -1.758a.814 .814 0 0 0 0 -1.492l-4.033 -1.759a1.88 1.88 0 0 1 -.974 -.973" fill="url(#sparkCard)" opacity="0.6"/></svg>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>피부</span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0 }}>
+                    {metrics.map((m) => {
+                      const val = latest?.[m.key] ?? null;
+                      const prevVal = prev?.[m.key] ?? null;
+                      const diff = val !== null && prevVal !== null ? val - prevVal : null;
+                      return (
+                        <div key={m.key} style={{ textAlign: 'left', padding: '0 4px' }}>
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
+                            <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{val !== null ? val : '—'}</span>
+                            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>점</span>
+                          </div>
+                          <div style={{ fontSize: 10, marginTop: 4, minHeight: 14, color: diff === null ? 'var(--text-muted)' : diff > 0 ? 'var(--accent-primary, #89cef5)' : diff < 0 ? '#e05545' : 'var(--text-muted)' }}>
+                            {m.label}{diff !== null && diff !== 0 ? ` ${Math.abs(diff)}${diff > 0 ? '▲' : '▼'}` : ''}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            }
+
+            // 날씨
+            if (cardKey === 'weather') {
+              const _w = getWeatherData();
+              const humInfo = (v) => { if (v < 30) return { color: '#f59e0b', label: '매우낮음' }; if (v < 40) return { color: '#F0B870', label: '낮음' }; if (v <= 60) return { color: '#34d399', label: '적정' }; if (v <= 70) return { color: '#38bdf8', label: '높음' }; return { color: '#ADEBB3', label: '매우높음' }; };
+              const airInfo = (v) => { if (v <= 30) return { color: '#34d399', label: '좋음' }; if (v <= 50) return { color: '#ADEBB3', label: '보통' }; if (v <= 80) return { color: '#F0B870', label: '나쁨' }; return { color: '#ef4444', label: '매우나쁨' }; };
+              const uvInfo = (v) => { if (v <= 2) return { color: '#34d399', label: '낮음' }; if (v <= 5) return { color: '#F0B870', label: '보통' }; if (v <= 7) return { color: '#f97316', label: '높음' }; return { color: '#ef4444', label: '매우높음' }; };
+              const cb = { flex: 1, borderRadius: 16, padding: '14px 12px', background: 'rgba(255,255,255,0.35)' };
+              return (
+                <div key={cardKey} onClick={() => setWeatherSheet(true)} style={{
+                  margin: '10px 20px 0', cursor: 'pointer', borderRadius: 20, padding: 20,
+                  background: 'transparent', border: '1px solid rgba(255,255,255,0.4)',
+                  backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)',
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                     <div>
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                        <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{waterCups > 0 ? waterMl.toLocaleString() : '—'}</span>
-                        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>ml</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(137,206,245,0.3))' }}><defs><linearGradient id="weatherCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#B8E4F8"/><stop offset="100%" stopColor="#6AB4E0"/></linearGradient></defs><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" fill="url(#weatherCard)" opacity="0.6"/></svg>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>날씨</span>
                       </div>
-                      <div style={{ fontSize: 10, color: waterCups > 0 ? (waterCups >= waterGoal ? '#22C55E' : 'var(--text-muted)') : 'var(--accent-primary, #89cef5)', marginTop: 4, minHeight: 14 }}>
-                        {waterCups > 0 ? (waterCups >= waterGoal ? '목표 달성!' : `${((waterGoal - waterCups) * cupMl).toLocaleString()}ml 남음`) : '기록하기'}
+                      {_w ? (
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
+                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_w.temp}°</span>
+                          <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>{_w.condition}</span>
+                        </div>
+                      ) : (
+                        <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
+                      )}
+                    </div>
+                    {_w && <span style={{ fontSize: 36 }}>{_w.conditionIcon}</span>}
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {[
+                      { label: '습도', val: _w?.humidity, unit: '%', info: _w ? humInfo(_w.humidity) : null },
+                      { label: '미세먼지', val: _w?.airQuality, unit: 'AQI', info: _w ? airInfo(_w.airQuality) : null },
+                      { label: '자외선', val: _w?.uv, unit: '/10', info: _w ? uvInfo(_w.uv) : null },
+                    ].map(d => (
+                      <div key={d.label} style={cb}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{d.label}</span>
+                          {d.info && <span style={{ fontSize: 9, fontWeight: 600, color: d.info.color, background: `${d.info.color}15`, padding: '2px 6px', borderRadius: 6 }}>{d.info.label}</span>}
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+                          <span style={{ fontSize: 24, fontWeight: 700, color: d.info ? d.info.color : 'var(--text-muted)', filter: 'brightness(0.7)' }}>{d.val ?? '—'}</span>
+                          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{d.unit}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            }
+
+            // 수분
+            if (cardKey === 'water') {
+              const cupMl = 250, waterGoal = 8, waterMl = waterCups * cupMl;
+              const rR = 22, rC = 2 * Math.PI * rR, fill = Math.min(waterCups / waterGoal, 1), dash = rC * fill;
+              const cs = { borderRadius: 20, padding: 20, cursor: 'pointer', background: 'transparent', border: '1px solid rgba(255,255,255,0.4)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 120 };
+              // Check if sleep is next in order for grid pairing
+              const myIdx = homeCardOrder.indexOf('water');
+              const sleepIdx = homeCardOrder.indexOf('sleep');
+              const paired = homeCards.sleep && sleepIdx === myIdx + 1;
+              if (paired) {
+                // Render water+sleep together
+                const sR = 22, sC = 2 * Math.PI * sR, sFill = sleepHours ? Math.min(sleepHours / 8, 1) : 0, sDash = sC * sFill;
+                return (
+                  <div key="water_sleep" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, margin: '12px 20px 0' }}>
+                    <div onClick={() => setShowWaterModal(true)} style={cs}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: '0 0 auto' }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(91,163,212,0.3))' }}><defs><linearGradient id="dropCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#B8E0F5"/><stop offset="100%" stopColor="#5BA3D4"/></linearGradient></defs><path d="M12 2.5c0 0-7.5 8-7.5 13a7.5 7.5 0 0015 0c0-5-7.5-13-7.5-13z" fill="url(#dropCard)" opacity="0.6"/></svg>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>수분</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                            <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{waterCups > 0 ? waterMl.toLocaleString() : '—'}</span>
+                            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>ml</span>
+                          </div>
+                          <div style={{ fontSize: 10, color: waterCups > 0 ? (waterCups >= waterGoal ? '#22C55E' : 'var(--text-muted)') : 'var(--accent-primary, #89cef5)', marginTop: 4, minHeight: 14 }}>
+                            {waterCups > 0 ? (waterCups >= waterGoal ? '목표 달성!' : `${((waterGoal - waterCups) * cupMl).toLocaleString()}ml 남음`) : '기록하기'}
+                          </div>
+                        </div>
+                        <svg width="52" height="52" viewBox="0 0 52 52">
+                          <defs><linearGradient id="waterRingGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#5BA3D4" /><stop offset="100%" stopColor="#B8E0F5" /></linearGradient></defs>
+                          <circle cx="26" cy="26" r={rR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" />
+                          <circle cx="26" cy="26" r={rR} fill="none" stroke="url(#waterRingGrad)" strokeWidth="5" strokeDasharray={`${dash} ${rC - dash}`} strokeLinecap="round" transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
+                        </svg>
                       </div>
                     </div>
-                    <svg width="52" height="52" viewBox="0 0 52 52">
-                      <defs>
-                        <linearGradient id="waterRingGrad" x1="0" y1="0" x2="1" y2="1">
-                          <stop offset="0%" stopColor="#5BA3D4" />
-                          <stop offset="100%" stopColor="#B8E0F5" />
-                        </linearGradient>
-                      </defs>
-                      <circle cx="26" cy="26" r={waterRingR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" />
-                      <circle cx="26" cy="26" r={waterRingR} fill="none" stroke="url(#waterRingGrad)" strokeWidth="5"
-                        strokeDasharray={`${waterDash} ${waterRingC - waterDash}`} strokeLinecap="round"
-                        transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
-                    </svg>
+                    <div onClick={() => setShowSleepModal(true)} style={cs}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: '0 0 auto' }}>
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(91,106,175,0.3))' }}><defs><linearGradient id="moonCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#C8D0F0"/><stop offset="100%" stopColor="#5B6AAF"/></linearGradient></defs><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="url(#moonCard)" opacity="0.6"/></svg>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>수면</span>
+                      </div>
+                      {sleepHours !== null ? (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                              <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{sleepHours}</span>
+                              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>시간</span>
+                            </div>
+                            <div style={{ fontSize: 10, color: sleepHours >= 7 ? '#22C55E' : sleepHours >= 5 ? 'var(--text-muted)' : '#E05050', marginTop: 4, minHeight: 14 }}>{sleepHours >= 7 ? '충분' : sleepHours >= 5 ? '보통' : '부족'}</div>
+                          </div>
+                          <svg width="52" height="52" viewBox="0 0 52 52">
+                            <defs><linearGradient id="sleepRingGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#5B6AAF" /><stop offset="100%" stopColor="#C8D0F0" /></linearGradient></defs>
+                            <circle cx="26" cy="26" r={sR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" />
+                            <circle cx="26" cy="26" r={sR} fill="none" stroke="url(#sleepRingGrad)" strokeWidth="5" strokeDasharray={`${sDash} ${sC - sDash}`} strokeLinecap="round" transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
+                          </svg>
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
+                          <div>
+                            <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
+                            <div style={{ fontSize: 10, color: 'var(--accent-primary, #89cef5)', marginTop: 4, minHeight: 14 }}>기록하기</div>
+                          </div>
+                          <svg width="52" height="52" viewBox="0 0 52 52"><circle cx="26" cy="26" r={sR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" /></svg>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-
-                }
-                {/* 수면 카드 */}
-                {homeCards.sleep && <div onClick={() => setShowSleepModal(true)} style={cardStyle}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 0, flex: '0 0 auto' }}>
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(91,106,175,0.3))' }}><defs><linearGradient id="moonCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#C8D0F0"/><stop offset="100%" stopColor="#5B6AAF"/></linearGradient></defs><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="url(#moonCard)" opacity="0.6"/></svg>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>수면</span>
-                  </div>
-                  {sleepHours !== null ? (
+                );
+              }
+              // Water alone
+              return (
+                <div key={cardKey} style={{ margin: '12px 20px 0' }}>
+                  <div onClick={() => setShowWaterModal(true)} style={cs}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: '0 0 auto' }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(91,163,212,0.3))' }}><defs><linearGradient id="dropCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#B8E0F5"/><stop offset="100%" stopColor="#5BA3D4"/></linearGradient></defs><path d="M12 2.5c0 0-7.5 8-7.5 13a7.5 7.5 0 0015 0c0-5-7.5-13-7.5-13z" fill="url(#dropCard)" opacity="0.6"/></svg>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>수분</span>
+                    </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
                       <div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{sleepHours}</span>
-                          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>시간</span>
+                          <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{waterCups > 0 ? (waterCups * 250).toLocaleString() : '—'}</span>
+                          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>ml</span>
                         </div>
-                        <div style={{ fontSize: 10, color: sleepHours >= 7 ? '#22C55E' : sleepHours >= 5 ? 'var(--text-muted)' : '#E05050', marginTop: 4, minHeight: 14 }}>
-                          {sleepHours >= 7 ? '충분' : sleepHours >= 5 ? '보통' : '부족'}
+                        <div style={{ fontSize: 10, color: waterCups > 0 ? (waterCups >= 8 ? '#22C55E' : 'var(--text-muted)') : 'var(--accent-primary, #89cef5)', marginTop: 4, minHeight: 14 }}>
+                          {waterCups > 0 ? (waterCups >= 8 ? '목표 달성!' : `${((8 - waterCups) * 250).toLocaleString()}ml 남음`) : '기록하기'}
                         </div>
                       </div>
                       <svg width="52" height="52" viewBox="0 0 52 52">
-                        <defs>
-                          <linearGradient id="sleepRingGrad" x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0%" stopColor="#5B6AAF" />
-                            <stop offset="100%" stopColor="#C8D0F0" />
-                          </linearGradient>
-                        </defs>
-                        <circle cx="26" cy="26" r={sleepRingR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" />
-                        <circle cx="26" cy="26" r={sleepRingR} fill="none" stroke="url(#sleepRingGrad)" strokeWidth="5"
-                          strokeDasharray={`${sleepDash} ${sleepRingC - sleepDash}`} strokeLinecap="round"
-                          transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
+                        <defs><linearGradient id="waterRingGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#5BA3D4" /><stop offset="100%" stopColor="#B8E0F5" /></linearGradient></defs>
+                        <circle cx="26" cy="26" r={rR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" />
+                        <circle cx="26" cy="26" r={rR} fill="none" stroke="url(#waterRingGrad)" strokeWidth="5" strokeDasharray={`${dash} ${rC - dash}`} strokeLinecap="round" transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
                       </svg>
                     </div>
-                  ) : (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
-                      <div>
-                        <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
-                        <div style={{ fontSize: 10, color: 'var(--accent-primary, #89cef5)', marginTop: 4, minHeight: 14 }}>기록하기</div>
-                      </div>
-                      <svg width="52" height="52" viewBox="0 0 52 52">
-                        <circle cx="26" cy="26" r={sleepRingR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" />
-                      </svg>
-                    </div>
-                  )}
-                </div>}
-              </div>
-            );
-          })()}
+                  </div>
+                </div>
+              );
+            }
 
-          {/* Goal Progress Card */}
-          {homeCards.goal && getGoal()?.status === 'active' && (
-            <div style={{ padding: '12px 0 0' }}>
-              <GoalProgressCard onTap={() => setActiveTab('my')} colorMode={colorMode} />
-            </div>
-          )}
+            // 수면 (water가 바로 앞에 있으면 이미 paired로 렌더링됨 → skip)
+            if (cardKey === 'sleep') {
+              const waterIdx = homeCardOrder.indexOf('water');
+              const sleepIdx = homeCardOrder.indexOf('sleep');
+              if (homeCards.water && waterIdx === sleepIdx - 1) return null; // already rendered with water
+              const sR = 22, sC = 2 * Math.PI * sR, sFill = sleepHours ? Math.min(sleepHours / 8, 1) : 0, sDash = sC * sFill;
+              const cs = { borderRadius: 20, padding: 20, cursor: 'pointer', background: 'transparent', border: '1px solid rgba(255,255,255,0.4)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 120 };
+              return (
+                <div key={cardKey} style={{ margin: '12px 20px 0' }}>
+                  <div onClick={() => setShowSleepModal(true)} style={cs}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: '0 0 auto' }}>
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(91,106,175,0.3))' }}><defs><linearGradient id="moonCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#C8D0F0"/><stop offset="100%" stopColor="#5B6AAF"/></linearGradient></defs><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="url(#moonCard)" opacity="0.6"/></svg>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>수면</span>
+                    </div>
+                    {sleepHours !== null ? (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                            <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{sleepHours}</span>
+                            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>시간</span>
+                          </div>
+                          <div style={{ fontSize: 10, color: sleepHours >= 7 ? '#22C55E' : sleepHours >= 5 ? 'var(--text-muted)' : '#E05050', marginTop: 4, minHeight: 14 }}>{sleepHours >= 7 ? '충분' : sleepHours >= 5 ? '보통' : '부족'}</div>
+                        </div>
+                        <svg width="52" height="52" viewBox="0 0 52 52">
+                          <defs><linearGradient id="sleepRingGrad2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#5B6AAF" /><stop offset="100%" stopColor="#C8D0F0" /></linearGradient></defs>
+                          <circle cx="26" cy="26" r={sR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" />
+                          <circle cx="26" cy="26" r={sR} fill="none" stroke="url(#sleepRingGrad2)" strokeWidth="5" strokeDasharray={`${sDash} ${sC - sDash}`} strokeLinecap="round" transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
+                        </svg>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
+                        <div>
+                          <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
+                          <div style={{ fontSize: 10, color: 'var(--accent-primary, #89cef5)', marginTop: 4, minHeight: 14 }}>기록하기</div>
+                        </div>
+                        <svg width="52" height="52" viewBox="0 0 52 52"><circle cx="26" cy="26" r={sR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" /></svg>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            }
+
+            // 피부 목표
+            if (cardKey === 'goal') {
+              if (getGoal()?.status !== 'active') return null;
+              return (
+                <div key={cardKey} style={{ padding: '12px 0 0' }}>
+                  <GoalProgressCard onTap={() => setActiveTab('my')} colorMode={colorMode} />
+                </div>
+              );
+            }
+
+            // insight는 fixed overlay로 별도 처리
+            return null;
+          })}
 
 
 
@@ -2218,7 +2333,9 @@ export default function App() {
       {showHomeEdit && (
         <HomeEditPage
           cards={homeCards}
+          order={homeCardOrder}
           onToggle={toggleHomeCard}
+          onReorder={reorderHomeCards}
           onClose={() => setShowHomeEdit(false)}
         />
       )}
@@ -2570,14 +2687,48 @@ function SleepInputModal({ onClose, onUpdate }) {
 }
 
 // ===== Home Edit Page =====
-function HomeEditPage({ cards, onToggle, onClose }) {
-  const items = [
-    { key: 'metrics', label: '피부 지표', desc: 'V라인 · 모공 · 유수분 · 홍조', icon: '📊' },
-    { key: 'water', label: '수분 섭취', desc: '하루 물 섭취량 기록', icon: '💧' },
-    { key: 'sleep', label: '수면', desc: '수면 시간 · 수면의 질 기록', icon: '🌙' },
-    { key: 'insight', label: 'lua 인사이트', desc: 'AI 피부 조언 카드', icon: '✨' },
-    { key: 'goal', label: '피부 목표', desc: '목표 달성 진행률', icon: '🎯' },
-  ];
+function HomeEditPage({ cards, order, onToggle, onReorder, onClose }) {
+  const META = {
+    metrics: { label: '피부 지표', desc: '수분 · 주름 · 탄력 · 모공', icon: '📊' },
+    weather: { label: '날씨', desc: '기온 · 습도 · 자외선', icon: '☁️' },
+    water: { label: '수분 섭취', desc: '하루 물 섭취량 기록', icon: '💧' },
+    sleep: { label: '수면', desc: '수면 시간 · 수면의 질 기록', icon: '🌙' },
+    insight: { label: 'lua 인사이트', desc: 'AI 피부 조언 카드', icon: '✨' },
+    goal: { label: '피부 목표', desc: '목표 달성 진행률', icon: '🎯' },
+  };
+
+  const [dragIdx, setDragIdx] = useState(null);
+  const [overIdx, setOverIdx] = useState(null);
+  const startY = useRef(0);
+  const rowRefs = useRef([]);
+
+  const handleTouchStart = (idx, e) => {
+    setDragIdx(idx);
+    startY.current = e.touches[0].clientY;
+  };
+  const handleTouchMove = (e) => {
+    if (dragIdx === null) return;
+    const y = e.touches[0].clientY;
+    for (let i = 0; i < rowRefs.current.length; i++) {
+      const el = rowRefs.current[i];
+      if (!el) continue;
+      const rect = el.getBoundingClientRect();
+      if (y >= rect.top && y <= rect.bottom && i !== dragIdx) {
+        setOverIdx(i);
+        return;
+      }
+    }
+  };
+  const handleTouchEnd = () => {
+    if (dragIdx !== null && overIdx !== null && dragIdx !== overIdx) {
+      const newOrder = [...order];
+      const [moved] = newOrder.splice(dragIdx, 1);
+      newOrder.splice(overIdx, 0, moved);
+      onReorder(newOrder);
+    }
+    setDragIdx(null);
+    setOverIdx(null);
+  };
 
   return (
     <div style={{
@@ -2604,39 +2755,64 @@ function HomeEditPage({ cards, onToggle, onClose }) {
 
       <div style={{ padding: '20px 20px 8px' }}>
         <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-          홈 화면에 표시할 카드를 선택하세요
+          카드를 길게 눌러 순서를 변경하세요
         </div>
       </div>
 
-      <div style={{ flex: 1, padding: '8px 0' }}>
-        {items.map(item => (
-          <div key={item.key} onClick={() => onToggle(item.key)} style={{
-            display: 'flex', alignItems: 'center', gap: 16,
-            padding: '14px 28px', cursor: 'pointer',
-            WebkitTapHighlightColor: 'transparent',
-          }}>
-            <span style={{ fontSize: 20, width: 28, textAlign: 'center' }}>{item.icon}</span>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>{item.label}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{item.desc}</div>
+      <div style={{ flex: 1, padding: '8px 0' }} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
+        {order.map((key, idx) => {
+          const item = META[key];
+          if (!item) return null;
+          const isDragging = dragIdx === idx;
+          const isOver = overIdx === idx;
+          return (
+            <div
+              key={key}
+              ref={el => rowRefs.current[idx] = el}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '14px 20px 14px 12px',
+                background: isDragging ? 'rgba(137,206,245,0.1)' : isOver ? 'rgba(137,206,245,0.05)' : 'transparent',
+                borderTop: isOver ? '2px solid #89cef5' : '2px solid transparent',
+                transition: 'background 0.15s',
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              {/* 드래그 핸들 */}
+              <div
+                onTouchStart={(e) => handleTouchStart(idx, e)}
+                style={{
+                  display: 'flex', flexDirection: 'column', gap: 2, padding: '8px 4px',
+                  cursor: 'grab', touchAction: 'none', flexShrink: 0,
+                }}
+              >
+                <div style={{ width: 16, height: 2, borderRadius: 1, background: 'rgba(0,0,0,0.15)' }} />
+                <div style={{ width: 16, height: 2, borderRadius: 1, background: 'rgba(0,0,0,0.15)' }} />
+                <div style={{ width: 16, height: 2, borderRadius: 1, background: 'rgba(0,0,0,0.15)' }} />
+              </div>
+              <span style={{ fontSize: 20, width: 28, textAlign: 'center', flexShrink: 0 }}>{item.icon}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>{item.label}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{item.desc}</div>
+              </div>
+              <div onClick={(e) => { e.stopPropagation(); onToggle(key); }} style={{
+                width: 48, height: 28, borderRadius: 14,
+                background: cards[key] ? '#89cef5' : 'rgba(0,0,0,0.08)',
+                position: 'relative', cursor: 'pointer',
+                transition: 'background 0.2s ease', flexShrink: 0,
+              }}>
+                <div style={{
+                  position: 'absolute',
+                  top: 2, left: cards[key] ? 22 : 2,
+                  width: 24, height: 24, borderRadius: '50%',
+                  background: '#fff',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                  transition: 'left 0.2s ease',
+                }} />
+              </div>
             </div>
-            <div style={{
-              width: 48, height: 28, borderRadius: 14,
-              background: cards[item.key] ? '#89cef5' : 'rgba(0,0,0,0.08)',
-              position: 'relative', cursor: 'pointer',
-              transition: 'background 0.2s ease',
-            }}>
-              <div style={{
-                position: 'absolute',
-                top: 2, left: cards[item.key] ? 22 : 2,
-                width: 24, height: 24, borderRadius: '50%',
-                background: '#fff',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-                transition: 'left 0.2s ease',
-              }} />
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

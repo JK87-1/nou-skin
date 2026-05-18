@@ -100,7 +100,14 @@ export default function AiInsightCard({ onOpenChat, greeting, dateInfo }) {
               background: 'linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(150,215,248,0.5) 100%)',
               boxShadow: '0 0 0 1px rgba(255,255,255,0.4), 0 2px 6px rgba(0,0,0,0.06)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
+              position: 'relative', overflow: 'hidden',
             }}>
+              <div style={{
+                position: 'absolute', top: 0, left: '-100%', width: '300%', height: '100%',
+                background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.25) 45%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0.25) 55%, transparent 70%)',
+                animation: 'fabShine 3.5s ease-in-out infinite',
+                pointerEvents: 'none',
+              }} />
               <svg width="26" height="26" viewBox="0 0 24 24" style={{ filter: 'drop-shadow(0 1px 2px rgba(100,180,230,0.5))' }}>
                 <defs>
                   <linearGradient id="insight-star-fill" x1="0.15" y1="0.05" x2="0.85" y2="0.95">

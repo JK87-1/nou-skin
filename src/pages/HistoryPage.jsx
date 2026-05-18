@@ -1527,11 +1527,11 @@ function RoutineChecklist() {
           <button key={m.key} onClick={() => setMode(m.key)} style={{
             flex: 1, padding: '12px 0', borderRadius: 14, cursor: 'pointer',
             fontFamily: 'inherit', fontSize: 13, fontWeight: 600, textAlign: 'center',
-            background: mode === m.key ? 'rgba(137,206,245,0.25)' : 'rgba(255,255,255,0.35)',
+            background: mode === m.key ? 'rgba(255,255,255,0.5)' : 'transparent',
             color: mode === m.key ? 'var(--text-primary)' : 'var(--text-muted)',
-            backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-            border: mode === m.key ? '1px solid rgba(137,206,245,0.4)' : '1px solid rgba(255,255,255,0.3)',
-            boxShadow: mode === m.key ? '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)' : 'none',
+            backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+            border: '1px solid rgba(255,255,255,0.4)',
+            boxShadow: mode === m.key ? '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.3)' : 'inset 0 1px 0 rgba(255,255,255,0.3)',
             transition: 'all 0.2s',
           }}>{m.label}</button>
         ))}
@@ -1739,9 +1739,11 @@ function RoutineChecklist() {
                   <button key={m.key} onClick={() => setAddMode(m.key)} style={{
                     flex: 1, padding: '10px 0', borderRadius: 12, cursor: 'pointer',
                     fontFamily: 'inherit', fontSize: 13, fontWeight: 600, textAlign: 'center',
-                    background: addMode === m.key ? 'rgba(137,206,245,0.25)' : 'rgba(255,255,255,0.3)',
+                    background: addMode === m.key ? 'rgba(255,255,255,0.5)' : 'transparent',
                     color: addMode === m.key ? 'var(--text-primary)' : 'var(--text-muted)',
-                    border: addMode === m.key ? '1px solid rgba(137,206,245,0.4)' : '1px solid rgba(255,255,255,0.3)',
+                    backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+                    border: '1px solid rgba(255,255,255,0.4)',
+                    boxShadow: addMode === m.key ? '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.3)' : 'inset 0 1px 0 rgba(255,255,255,0.3)',
                   }}>{m.label}</button>
                 ))}
               </div>

@@ -728,11 +728,11 @@ export default function RoutineTracker({ themeColors, onBack }) {
             <button key={s.key} onClick={() => setSection(s.key)} style={{
               flex: 1, padding: '12px 0', borderRadius: 14, cursor: 'pointer',
               fontFamily: 'inherit', fontSize: 13, fontWeight: 600, textAlign: 'center',
-              background: active ? 'rgba(137,206,245,0.25)' : 'rgba(255,255,255,0.35)',
+              background: active ? 'rgba(255,255,255,0.5)' : 'transparent',
               color: active ? 'var(--text-primary)' : 'var(--text-muted)',
-              backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-              border: active ? '1px solid rgba(137,206,245,0.4)' : '1px solid rgba(255,255,255,0.3)',
-              boxShadow: active ? '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)' : 'none',
+              backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255,255,255,0.4)',
+              boxShadow: active ? '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.3)' : 'inset 0 1px 0 rgba(255,255,255,0.3)',
               transition: 'all 0.2s',
             }}>{s.icon} {s.label}</button>
           );

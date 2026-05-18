@@ -186,13 +186,21 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                 </div>
                 <svg width="100%" viewBox="0 0 320 120" preserveAspectRatio="none" style={{ display: 'block' }}>
                   {[30, 60, 90].map(y => <line key={y} x1="0" y1={y} x2="320" y2={y} stroke="rgba(255,255,255,0.3)" strokeWidth="1" />)}
-                  <polyline
-                    points={series.map((s, i) => {
-                      const x = series.length === 1 ? 160 : (i / (series.length - 1)) * 300 + 10;
-                      const y = 110 - ((s.value - minV) / (maxV - minV)) * 100 + 5;
-                      return `${x},${y}`;
-                    }).join(' ')}
-                    fill="none" stroke="var(--accent-primary, #89cef5)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                  <path
+                    d={(() => {
+                      const pts = series.map((s, i) => ({
+                        x: series.length === 1 ? 160 : (i / (series.length - 1)) * 300 + 10,
+                        y: 110 - ((s.value - minV) / (maxV - minV)) * 100 + 5,
+                      }));
+                      if (pts.length < 2) return `M${pts[0].x},${pts[0].y}`;
+                      let d = `M${pts[0].x},${pts[0].y}`;
+                      for (let i = 0; i < pts.length - 1; i++) {
+                        const cx = (pts[i].x + pts[i + 1].x) / 2;
+                        d += ` C${cx},${pts[i].y} ${cx},${pts[i + 1].y} ${pts[i + 1].x},${pts[i + 1].y}`;
+                      }
+                      return d;
+                    })()}
+                    fill="none" stroke="var(--accent-primary, #89cef5)" strokeWidth="2.5" strokeLinecap="round"
                   />
                   {series.map((s, i) => {
                     const x = series.length === 1 ? 160 : (i / (series.length - 1)) * 300 + 10;

@@ -85,35 +85,14 @@ export default function WeatherChip({ onTap }) {
         border: 'none',
         borderRadius: '50px', cursor: 'pointer',
         boxShadow: 'none',
-        marginTop: 4,
+        marginTop: 0,
         WebkitTapHighlightColor: 'transparent',
         transition: 'background 0.2s',
       }}
     >
-      <svg width="20" height="20" viewBox="0 0 36 36" fill="none" style={{ flexShrink: 0 }}>
-        <defs>
-          <radialGradient id="sun-rg" cx="40%" cy="38%" r="55%">
-            <stop offset="0%" stopColor="#FFF9D0" />
-            <stop offset="50%" stopColor="#FFF3B0" />
-            <stop offset="100%" stopColor="#FFE082" />
-          </radialGradient>
-        </defs>
-        {/* 광선 — 중심에서 바깥으로 */}
-        {[0,45,90,135,180,225,270,315].map(a => {
-          const r1 = 10.5, r2 = 15.5;
-          const rad = a * Math.PI / 180;
-          return <line key={a}
-            x1={18+Math.cos(rad)*r1} y1={18+Math.sin(rad)*r1}
-            x2={18+Math.cos(rad)*r2} y2={18+Math.sin(rad)*r2}
-            stroke="#FFE082" strokeWidth="2" strokeLinecap="round"
-          />;
-        })}
-        {/* 해 본체 */}
-        <circle cx="18" cy="18" r="9" fill="url(#sun-rg)" />
-        {/* 하이라이트 */}
-        <ellipse cx="15.5" cy="15.5" rx="3.5" ry="2.5" fill="white" opacity="0.35" />
-      </svg>
-      <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-secondary)', lineHeight: 1 }}>{weather.temp}°</span>
+      <span style={{ fontSize: 18, lineHeight: 1, flexShrink: 0 }}>{weather.conditionIcon || '☀️'}</span>
+      <span style={{ fontSize: 15, fontWeight: 700, color: 'rgba(0,0,0,0.8)', lineHeight: 1 }}>{weather.temp}°</span>
+      <span style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1 }}>{weather.condition || '맑음'}</span>
     </div>
   );
 }
