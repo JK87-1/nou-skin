@@ -1878,8 +1878,6 @@ export default function App() {
       {showTabBar && activeTab !== 'home' && activeTab !== 'home2' && <div className="tab-bar-spacer" />}
       {showTabBar && activeTab === 'home' && stage === 'landing' && <div className="tab-bar-spacer" />}
 
-      {/* ===== PWA INSTALL BANNER ===== */}
-      <InstallBanner />
 
       {/* ===== 고정 인사이트 카드 (홈 화면만) ===== */}
       {showTabBar && activeTab === 'home' && stage === 'landing' && getLatestRecord() && (
