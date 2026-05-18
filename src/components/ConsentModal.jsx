@@ -57,7 +57,7 @@ export default function ConsentModal({ onAccept }) {
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      background: 'var(--bg-primary)', zIndex: 9999,
+      background: '#ffffff', zIndex: 9999,
       display: 'flex', flexDirection: 'column',
       maxWidth: 480, margin: '0 auto',
     }}>
@@ -93,7 +93,7 @@ export default function ConsentModal({ onAccept }) {
       <div style={{
         borderTop: '1px solid var(--border, rgba(0,0,0,0.08))',
         padding: '14px 20px 20px',
-        background: 'var(--bg-primary)',
+        background: '#ffffff',
       }}>
         <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, marginBottom: 12, cursor: 'pointer' }}>
           <input
