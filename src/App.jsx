@@ -882,26 +882,6 @@ export default function App() {
           <div style={{ padding: '28px 22px 20px', position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <WeatherChip onTap={() => setWeatherSheet(true)} />
             <img src="/luasky.svg" alt="lua" style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', height: 30, objectFit: 'contain' }} />
-            {/* Scan Chip with Pearl Orb */}
-            <div
-              onClick={openCamera}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                padding: '4px 4px 4px 14px',
-                background: 'rgba(255,255,255,0.35)',
-                backdropFilter: 'blur(16px)',
-                WebkitBackdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255,255,255,0.3)',
-                borderRadius: 50, cursor: 'pointer',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
-                WebkitTapHighlightColor: 'transparent',
-              }}
-            >
-              <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)' }}>피부 분석</span>
-              <div style={{ width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <EternalPearl size={28} animated colors={activeThemeColors} theme={colorMode} />
-              </div>
-            </div>
           </div>
 
           {/* Background aura — very subtle (hidden in light mode) */}
