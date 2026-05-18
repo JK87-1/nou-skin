@@ -36,26 +36,28 @@ function warn(msg) {
   console.warn(`${YELLOW}⚠  ${msg}${RESET}`);
 }
 
-if (!fs.existsSync(ENV_PATH)) {
-  fail('.env 파일이 없습니다.', 'OPENAI_API_KEY · NOTION_TOKEN 등을 담은 .env 를 ~/nou-skin/ 에 만드세요.');
-}
-
-const text = fs.readFileSync(ENV_PATH, 'utf8');
-
-// 줄 단위로 정확히 파싱 (값에 공백·다른 변수 끼면 즉시 감지)
+// .env 파일이 없으면 process.env 기반 검증 (Vercel/CI 빌드 환경 등)
 const env = {};
-const lines = text.split('\n');
-for (let i = 0; i < lines.length; i++) {
-  const line = lines[i].trim();
-  if (!line || line.startsWith('#')) continue;
-  const eq = line.indexOf('=');
-  if (eq === -1) {
-    warn(`.env line ${i + 1}: '=' 없음 → 무시됨: "${line.slice(0, 40)}..."`);
-    continue;
+if (fs.existsSync(ENV_PATH)) {
+  const text = fs.readFileSync(ENV_PATH, 'utf8');
+  const lines = text.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line || line.startsWith('#')) continue;
+    const eq = line.indexOf('=');
+    if (eq === -1) {
+      warn(`.env line ${i + 1}: '=' 없음 → 무시됨: "${line.slice(0, 40)}..."`);
+      continue;
+    }
+    const key = line.slice(0, eq).trim();
+    const value = line.slice(eq + 1).trim();
+    env[key] = { value, line: i + 1 };
   }
-  const key = line.slice(0, eq).trim();
-  const value = line.slice(eq + 1).trim();
-  env[key] = { value, line: i + 1 };
+} else {
+  // Vercel/CI 빌드: 환경 변수에서 직접 검증
+  if (process.env.OPENAI_API_KEY) env.OPENAI_API_KEY = { value: process.env.OPENAI_API_KEY, line: 0 };
+  if (process.env.NOTION_TOKEN) env.NOTION_TOKEN = { value: process.env.NOTION_TOKEN, line: 0 };
+  console.log(`${YELLOW}ℹ${RESET}  .env 파일 없음 → 환경 변수(process.env)에서 직접 검증`);
 }
 
 // 1. OPENAI_API_KEY 존재
