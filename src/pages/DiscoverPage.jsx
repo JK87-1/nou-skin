@@ -261,11 +261,10 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
               <div style={{ display: 'flex', gap: 6 }}>
                 {[{ k: '7d', l: '7일' }, { k: '4w', l: '4주' }, { k: '3m', l: '3개월' }].map(p => (
                   <button key={p.k} onClick={() => setPeriod(p.k)} style={{
-                    padding: '4px 10px', borderRadius: 10, border: 'none', fontSize: 10, fontWeight: 500,
+                    padding: '4px 10px', borderRadius: 10, border: period === p.k ? 'none' : '1px solid rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 500,
                     background: period === p.k ? 'var(--accent-primary, #89cef5)' : 'rgba(255,255,255,0.4)',
                     color: period === p.k ? '#fff' : 'var(--text-muted)',
                     cursor: 'pointer', fontFamily: 'inherit',
-                    border: period === p.k ? 'none' : '1px solid rgba(255,255,255,0.3)',
                   }}>{p.l}</button>
                 ))}
               </div>

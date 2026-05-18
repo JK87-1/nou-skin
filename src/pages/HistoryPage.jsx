@@ -1673,10 +1673,9 @@ function RoutineChecklist() {
                     localStorage.setItem('lua_routine_days', JSON.stringify(next));
                     setDaySettings(next);
                   }} style={{
-                    flex: 1, padding: '8px 0', borderRadius: 10, border: 'none', cursor: 'pointer',
+                    flex: 1, padding: '8px 0', borderRadius: 10, border: '1px solid rgba(255,255,255,0.3)', cursor: 'pointer',
                     background: 'rgba(255,255,255,0.4)', color: 'var(--text-primary)',
                     fontSize: 12, fontWeight: 500, fontFamily: 'inherit',
-                    border: '1px solid rgba(255,255,255,0.3)',
                   }}>{preset.label}</button>
                 ))}
               </div>
