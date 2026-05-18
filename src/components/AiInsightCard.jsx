@@ -9,12 +9,14 @@ function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
 function getTimeLabel() {
   const now = new Date();
-  const h = String(now.getHours()).padStart(2, '0');
+  const h = now.getHours();
   const m = String(now.getMinutes()).padStart(2, '0');
-  return `${h}:${m} 기준`;
+  const period = h < 12 ? 'AM' : 'PM';
+  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  return `${h12}:${m} ${period}`;
 }
 
-export default function AiInsightCard({ onOpenChat }) {
+export default function AiInsightCard({ onOpenChat, greeting, dateInfo }) {
   const [liked, setLiked] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const latest = getLatestRecord();
@@ -50,11 +52,11 @@ export default function AiInsightCard({ onOpenChat }) {
       icon = worst.icon || '🔍';
       const diffAbs = Math.abs(worst.diff);
       insight = pick([
-        `${worst.label}이 ${diffAbs}점 떨어졌어요. ${worst.label === '수분도' ? '요즘 건조하지 않았나요? 수분 보충에 신경 써보세요.' : '최근 생활 패턴이 바뀐 건 없는지 한번 돌아보세요.'}`,
+        `${worst.label}가 ${diffAbs}점 떨어졌어요. ${worst.label === '수분도' ? '요즘 건조하지 않았나요? 수분 보충에 신경 써보세요.' : '최근 생활 패턴이 바뀐 건 없는지 한번 돌아보세요.'}`,
         `${worst.label}에 변화가 있었어요(${worst.diff > 0 ? '+' : ''}${worst.diff}). 이번 주는 이 부분을 좀 더 챙겨보세요.`,
-        `${worst.label}이 이전보다 ${diffAbs}점 내려갔어요. 같이 원인 찾아봐요.`,
+        `${worst.label}가 이전보다 ${diffAbs}점 내려갔어요. 같이 원인 찾아봐요.`,
         `${worst.label} 쪽이 좀 신경 쓰여요. 혹시 요즘 잠을 잘 못 자거나 스트레스 받은 건 아니에요?`,
-        `${worst.label}이 살짝 주춤하고 있어요. 크게 걱정할 건 아닌데, 이번 주 집중해봐요.`,
+        `${worst.label}가 살짝 주춤하고 있어요. 크게 걱정할 건 아닌데, 이번 주 집중해봐요.`,
         `피부가 ${worst.label} 쪽으로 신호를 보내고 있어요. 한번 케어 루틴을 점검해볼까요?`,
       ]);
       if (improved.length > 0) {
@@ -89,61 +91,93 @@ export default function AiInsightCard({ onOpenChat }) {
       borderRadius: '36px 36px 7px 36px',
     }}>
       {/* 헤더 */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-        <div style={{ position: 'relative', flexShrink: 0, marginRight: 6 }}>
-          <div style={{
-            width: 28, height: 28, borderRadius: '50%',
-            background: 'radial-gradient(circle at 40% 35%, rgba(255,255,255,0.8), rgba(172,226,252,0.35))',
-            boxShadow: '0 0 0 1px rgba(255,255,255,0.4), 0 1px 4px rgba(0,0,0,0.06)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" style={{ filter: 'drop-shadow(0 1px 1px rgba(100,180,230,0.4))' }}>
-              <defs>
-                <linearGradient id="insight-star-fill" x1="0.15" y1="0.05" x2="0.85" y2="0.95">
-                  <stop offset="0%" stopColor="#D6EEFB" />
-                  <stop offset="45%" stopColor="#a8d8f5" />
-                  <stop offset="100%" stopColor="#6bb8e8" />
-                </linearGradient>
-              </defs>
-              <path fill="url(#insight-star-fill)" d="M10.48,23.25c-.15.41-.5.71-.86.75-.27.03-.78-.29-.9-.59l-1.53-4.02c-.48-1.26-1.41-2.1-2.67-2.58l-3.91-1.48c-.29-.11-.59-.51-.6-.76-.01-.39.23-.79.6-.93l3.9-1.49c1.27-.48,2.19-1.31,2.68-2.59l1.57-4.14c.08-.2.52-.44.74-.46.24-.02.77.21.86.46l1.57,4.14c.5,1.32,1.47,2.15,2.78,2.63l3.7,1.37c.31.11.66.55.67.83.02.42-.29.82-.68.97l-3.8,1.44c-1.26.48-2.2,1.32-2.67,2.58l-1.45,3.86Z"/>
-              <path fill="url(#insight-star-fill)" d="M21.48,6.29c-1.03.59-.9,2.91-2.01,2.98-1.23.08-.99-1.68-1.94-2.78-.77-.88-2.68-.63-2.74-1.78-.07-1.27,2.01-1.1,2.74-1.91.87-.95.73-2.72,1.78-2.8,1.29-.1.98,1.81,1.95,2.77.87.86,2.67.71,2.73,1.8.07,1.08-1.29,1.02-2.51,1.72Z"/>
-            </svg>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 21 }}>
+        {/* 좌측: 아이콘 + lua 텍스트 */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+          <div style={{ position: 'relative' }}>
+            <div style={{
+              width: 52, height: 52, borderRadius: '50%',
+              background: 'linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(150,215,248,0.5) 100%)',
+              boxShadow: '0 0 0 1px rgba(255,255,255,0.4), 0 2px 6px rgba(0,0,0,0.06)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <svg width="26" height="26" viewBox="0 0 24 24" style={{ filter: 'drop-shadow(0 1px 2px rgba(100,180,230,0.5))' }}>
+                <defs>
+                  <linearGradient id="insight-star-fill" x1="0.15" y1="0.05" x2="0.85" y2="0.95">
+                    <stop offset="0%" stopColor="#D6EEFB" />
+                    <stop offset="45%" stopColor="#a8d8f5" />
+                    <stop offset="100%" stopColor="#6bb8e8" />
+                  </linearGradient>
+                  <linearGradient id="insight-star-edge" x1="0.5" y1="0" x2="0.5" y2="1">
+                    <stop offset="0%" stopColor="#c8e8fa" />
+                    <stop offset="100%" stopColor="#5aaad8" />
+                  </linearGradient>
+                </defs>
+                <path fill="url(#insight-star-edge)" stroke="rgba(90,170,216,0.3)" strokeWidth="0.6" d="M10.48,23.25c-.15.41-.5.71-.86.75-.27.03-.78-.29-.9-.59l-1.53-4.02c-.48-1.26-1.41-2.1-2.67-2.58l-3.91-1.48c-.29-.11-.59-.51-.6-.76-.01-.39.23-.79.6-.93l3.9-1.49c1.27-.48,2.19-1.31,2.68-2.59l1.57-4.14c.08-.2.52-.44.74-.46.24-.02.77.21.86.46l1.57,4.14c.5,1.32,1.47,2.15,2.78,2.63l3.7,1.37c.31.11.66.55.67.83.02.42-.29.82-.68.97l-3.8,1.44c-1.26.48-2.2,1.32-2.67,2.58l-1.45,3.86Z"/>
+                <g transform="translate(0.3,0.3) scale(0.975)">
+                  <path fill="url(#insight-star-fill)" d="M10.48,23.25c-.15.41-.5.71-.86.75-.27.03-.78-.29-.9-.59l-1.53-4.02c-.48-1.26-1.41-2.1-2.67-2.58l-3.91-1.48c-.29-.11-.59-.51-.6-.76-.01-.39.23-.79.6-.93l3.9-1.49c1.27-.48,2.19-1.31,2.68-2.59l1.57-4.14c.08-.2.52-.44.74-.46.24-.02.77.21.86.46l1.57,4.14c.5,1.32,1.47,2.15,2.78,2.63l3.7,1.37c.31.11.66.55.67.83.02.42-.29.82-.68.97l-3.8,1.44c-1.26.48-2.2,1.32-2.67,2.58l-1.45,3.86Z"/>
+                </g>
+                <path fill="url(#insight-star-edge)" stroke="rgba(90,170,216,0.3)" strokeWidth="0.4" d="M21.48,6.29c-1.03.59-.9,2.91-2.01,2.98-1.23.08-.99-1.68-1.94-2.78-.77-.88-2.68-.63-2.74-1.78-.07-1.27,2.01-1.1,2.74-1.91.87-.95.73-2.72,1.78-2.8,1.29-.1.98,1.81,1.95,2.77.87.86,2.67.71,2.73,1.8.07,1.08-1.29,1.02-2.51,1.72Z"/>
+                <g transform="translate(0.15,0.15) scale(0.988)">
+                  <path fill="url(#insight-star-fill)" d="M21.48,6.29c-1.03.59-.9,2.91-2.01,2.98-1.23.08-.99-1.68-1.94-2.78-.77-.88-2.68-.63-2.74-1.78-.07-1.27,2.01-1.1,2.74-1.91.87-.95.73-2.72,1.78-2.8,1.29-.1.98,1.81,1.95,2.77.87.86,2.67.71,2.73,1.8.07,1.08-1.29,1.02-2.51,1.72Z"/>
+                </g>
+              </svg>
+            </div>
+            {/* 온라인 점 */}
+            <div style={{
+              position: 'absolute', bottom: 1, right: 1,
+              width: 8, height: 8, borderRadius: '50%',
+              background: '#89cef5',
+              border: '2px solid rgba(255,255,255,0.8)',
+              boxSizing: 'content-box',
+            }} />
           </div>
-          {/* 온라인 점 */}
-          <div style={{
-            position: 'absolute', bottom: 0, right: 0,
-            width: 6, height: 6, borderRadius: '50%',
-            background: '#89cef5',
-            border: '1.5px solid rgba(255,255,255,0.8)',
-            boxSizing: 'content-box',
-          }} />
+          <span style={{ fontSize: 13, fontWeight: 600, color: '#89cef5', marginTop: 4 }}>lua</span>
         </div>
-        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #191F28)' }}>lua</span>
-        <span style={{ fontSize: 10, color: 'var(--text-muted, #8B95A1)' }}>{getTimeLabel()}</span>
-        <span style={{ flex: 1 }} />
-        <div style={{ display: 'flex', gap: 9, marginRight: 4 }}>
-          <button onClick={(e) => { e.stopPropagation(); setLiked(false); setRefreshKey(k => k + 1); }} style={{
-            border: 'none', background: 'transparent', cursor: 'pointer', padding: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #8B95A1)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.4">
-              <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
-            </svg>
-          </button>
-          <button onClick={(e) => { e.stopPropagation(); setLiked(!liked); }} style={{
-            border: 'none', background: 'transparent', cursor: 'pointer', padding: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill={liked ? '#FF8A9B' : 'none'} stroke={liked ? '#FF8A9B' : 'var(--text-muted, #8B95A1)'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity={liked ? 1 : 0.4}>
-              <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
-            </svg>
-          </button>
+        {/* 우측: 인사 + 본문 */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {greeting && <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #191F28)', letterSpacing: -0.3, lineHeight: 1.8, marginBottom: 0 }}>{greeting}</div>}
+          {/* 인사이트 본문 */}
+          <div style={{ fontSize: 13, color: 'var(--text-primary, #191F28)', lineHeight: 1.8 }}>
+            {(() => {
+              const match = insight.match(/^([^.!?]+[.!?])\s*(.*)$/);
+              if (match && match[2]) return <>{match[1]}<br/>{match[2]}</>;
+              return insight;
+            })()}
+          </div>
+          {/* 하단: sub + 시간/버튼 */}
+          <div style={{ display: 'flex', alignItems: 'center', marginTop: 6 }}>
+            {sub ? (
+              <div style={{ fontSize: 12, color: '#4a9ec7', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+                  <circle cx="12" cy="12" r="10" fill="#d0eaf8" />
+                  <text x="12" y="16.5" textAnchor="middle" fontSize="14" fontWeight="700" fill="#5aaad8" fontFamily="inherit">!</text>
+                </svg>
+                {sub}
+              </div>
+            ) : <span />}
+            <span style={{ flex: 1 }} />
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 9, whiteSpace: 'nowrap' }}>
+              <span style={{ fontSize: 10, color: 'var(--text-muted, #8B95A1)' }}>{getTimeLabel()}</span>
+              <button onClick={(e) => { e.stopPropagation(); setLiked(false); setRefreshKey(k => k + 1); }} style={{
+                border: 'none', background: 'transparent', cursor: 'pointer', padding: 0,
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #8B95A1)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.4">
+                  <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
+                </svg>
+              </button>
+              <button onClick={(e) => { e.stopPropagation(); setLiked(!liked); }} style={{
+                border: 'none', background: 'transparent', cursor: 'pointer', padding: 0,
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill={liked ? '#FF8A9B' : 'none'} stroke={liked ? '#FF8A9B' : 'var(--text-muted, #8B95A1)'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity={liked ? 1 : 0.4}>
+                  <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-      {/* 인사이트 본문 + 버튼 인라인 */}
-      <div style={{ fontSize: 13, color: 'var(--text-primary, #191F28)', lineHeight: 1.6 }}>
-        {insight}
-        {sub && <span style={{ color: '#4a9ec7', fontWeight: 600 }}> {sub}</span>}
       </div>
     </div>
   );
@@ -204,7 +238,7 @@ function generateMetricInsight(latest, season) {
       `피부 컨디션이 보통이에요(${overall}점). ${seasonContext} 피부에 부담이 될 수 있으니 조심하세요.`,
       `나쁘지 않아요! ${w.label}에 조금만 신경 쓰면 70점대도 금방이에요.`,
       `${overall}점이면 기본기는 탄탄해요. ${w.label} 케어를 루틴에 넣어볼까요?`,
-      `${w.label}이 발목을 잡고 있어요. 이것만 해결하면 확 달라질 거예요.`,
+      `${w.label}가 조금 아쉬워요. 여기만 집중하면 확 달라질 거예요.`,
       `오늘은 ${w.label} 관련 제품 하나만 신경 써보세요. 작은 변화가 큰 차이를 만들어요.`,
       `${seasonContext} 피부에 영향을 주는 시기예요. 평소보다 보습을 한 겹 더 챙기세요.`,
     ]);

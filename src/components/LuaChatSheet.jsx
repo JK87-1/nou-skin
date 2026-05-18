@@ -327,15 +327,20 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
             return (
               <div key={i}>
                 {isLua ? (
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
-                    {!consecutive ? luaAvatar(22) : <div style={{ width: 22, flexShrink: 0 }} />}
-                    <div>
+                  <div>
+                    {!consecutive && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                        {luaAvatar(28)}
+                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #191F28)' }}>lua</span>
+                      </div>
+                    )}
+                    <div style={{ marginLeft: 36 }}>
                       <div style={{
                         ...glass,
                         background: 'rgba(255,255,255,0.5)',
                         padding: '10px 14px',
-                        borderRadius: consecutive ? 22 : '22px 22px 22px 4px',
-                        maxWidth: 'calc(75vw - 60px)',
+                        borderRadius: consecutive ? 22 : '4px 22px 22px 22px',
+                        maxWidth: 'calc(75vw - 40px)',
                         fontSize: 13, color: 'var(--text-primary, #191F28)', lineHeight: 1.5,
                         whiteSpace: 'pre-wrap',
                       }}>{msg.content}</div>
@@ -361,7 +366,7 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
                         backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
                         border: '1px solid rgba(137,206,245,0.3)',
                         padding: '10px 14px',
-                        borderRadius: consecutive ? 22 : '22px 22px 4px 22px',
+                        borderRadius: consecutive ? 22 : '22px 4px 22px 22px',
                         maxWidth: '75%',
                         fontSize: 13, color: 'var(--text-primary, #191F28)', lineHeight: 1.5,
                         whiteSpace: 'pre-wrap',
@@ -380,9 +385,13 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
 
           {/* Typing indicator */}
           {isLoading && (
-            <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
-              {luaAvatar(22)}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                {luaAvatar(28)}
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #191F28)' }}>lua</span>
+              </div>
               <div style={{
+                marginLeft: 36,
                 ...glass, background: 'rgba(255,255,255,0.5)',
                 padding: '10px 14px', borderRadius: '22px 22px 22px 4px',
                 display: 'flex', gap: 5,

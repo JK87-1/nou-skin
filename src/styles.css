@@ -295,6 +295,11 @@
   50% { transform: translateY(-4px) scale(1.05); box-shadow: 0 8px 24px rgba(137,206,245,0.2), inset 0 1px 0 rgba(255,255,255,0.6); }
 }
 
+@keyframes insightFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
 @keyframes fabStarTwinkle {
   0%, 100% { opacity: 0.85; transform: scale(1); }
   50% { opacity: 1; transform: scale(1.08); }
