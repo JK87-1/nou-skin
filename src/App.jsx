@@ -922,7 +922,7 @@ export default function App() {
           >
             <EternalPearl size={160} animated colors={activeThemeColors} theme={colorMode} />
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 18, fontWeight: 500, color: '#ffffff', letterSpacing: -0.3, opacity: 0.7 }}>탭 하여 피부를 분석하세요</div>
+              <div style={{ fontSize: 18, fontWeight: 600, color: '#b0b0b0', letterSpacing: -0.3 }}>탭 하여 피부를 분석하세요</div>
               <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 6 }}>AI가 10개 지표를 정밀 분석합니다</div>
               <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 28 }}>
                 {['정면 셀카', '밝은 자연광', '맨 얼굴'].map(tag => (
