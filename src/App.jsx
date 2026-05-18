@@ -915,7 +915,7 @@ export default function App() {
             onClick={openCamera}
             style={{
               margin: '14px 20px 0',
-              padding: '48px 24px 38px',
+              padding: '48px 24px 34px',
               cursor: 'pointer',
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 54,
             }}
@@ -950,7 +950,7 @@ export default function App() {
             ];
             if (rc === 0) return null;
             return (
-              <div style={{ margin: '12px 20px 0' }}>
+              <div style={{ margin: '11px 20px 0' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
                   {metrics.map((m) => {
                     const val = latest?.[m.key] ?? null;
