@@ -412,6 +412,32 @@ export function hybridMerge(cv, ai) {
   const sAvg = ((result.wrinkleScore || 50) + (result.elasticityScore || 50) + (result.textureScore || 50) + (result.poreScore || 50) + (result.pigmentationScore || 50)) / 5;
   // amplification factor 1.8 → 0.8: 차이 의미는 유지하되 측정 변동 증폭은 절반 이하로
   result.conditionScore = clamp(Math.round(cAvg + (cAvg - sAvg) * 0.8), 32, 96);
+
+  // conditionScore baseline anchor — 같은 사람·같은 baseline에서 ±n 으로 clamp.
+  // 종합점수(±2~3 안정)와 정합되도록 같은 날 ±3, 1-2일 ±5, 3-5일 ±7, 7-14일 ±10, 15일+ 자유.
+  // baseline.result(GPT 점수)에서 동일 공식으로 재계산하므로 별도 baseline 저장 불필요.
+  if (!ai.differentPerson) {
+    try {
+      const baselineForCondition = getBaseline();
+      if (baselineForCondition?.result) {
+        const b = baselineForCondition.result;
+        const bTroubleVal = typeof b.troubleCount === 'number' ? b.troubleCount : 50;
+        const bOilVal = Math.max(30, 100 - Math.abs(55 - (b.oilBalance ?? 50)) * 1.4);
+        const bCAvg = ((b.moisture ?? 50) + (b.skinTone ?? 50) + (b.darkCircles ?? 50) + bOilVal + bTroubleVal) / 5;
+        const bSAvg = ((b.wrinkles ?? 50) + (b.elasticity ?? 50) + (b.texture ?? 50) + (b.pores ?? 50) + (b.pigmentation ?? 50)) / 5;
+        const baselineCondition = clamp(Math.round(bCAvg + (bCAvg - bSAvg) * 0.8), 32, 96);
+        const daysSince = baselineForCondition.timestamp ? (Date.now() - baselineForCondition.timestamp) / 86400000 : 0;
+        const maxDelta = daysSince < 1 ? 3 : daysSince <= 2 ? 5 : daysSince <= 5 ? 7 : daysSince <= 14 ? 10 : 100;
+        const diff = result.conditionScore - baselineCondition;
+        if (Math.abs(diff) > maxDelta) {
+          const stabilized = baselineCondition + Math.max(-maxDelta, Math.min(maxDelta, diff));
+          console.log('[conditionScore stabilize]', { raw: result.conditionScore, baseline: baselineCondition, diff, daysSince: daysSince.toFixed(2), stabilized });
+          result.conditionScore = stabilized;
+        }
+      }
+    } catch (e) { console.warn('[conditionScore baseline anchor]', e); }
+  }
+
   console.log('[conditionScore]', { cAvg: cAvg.toFixed(1), sAvg: sAvg.toFixed(1), diff: (cAvg - sAvg).toFixed(1), troubleVal: troubleVal.toFixed(1), conditionScore: result.conditionScore, overallScore: result.overallScore });
 
   // Store AI analysis summary & details
