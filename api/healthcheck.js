@@ -1,7 +1,9 @@
 // Vercel Serverless Function: AI 분석 자동 헬스체크
 //
-// 매일 1회 Vercel Cron이 호출 → OpenAI 키·gpt-5.2 모델 유효성 확인 → 노션 기록.
+// 매일 1회 Vercel Cron이 호출 → OpenAI 키·gpt-5.2 모델 유효성 확인 + 어제 측정 통계 조회 → 노션 기록.
 // 수동 트리거: curl https://www.luaskin.co/api/healthcheck
+
+import { readDailyStats, getKstDate } from '../lib/stats.js';
 
 const NOTION_PAGE_ID_ENV = 'NOTION_PAGE_ID';
 const NOTION_TOKEN_ENV = 'NOTION_TOKEN';
@@ -85,8 +87,21 @@ export default async function handler(req, res) {
       return res.status(502).json({ ok: false, error: 'gpt-5.2 not available', available_gpt5: ids.filter(i => i.startsWith('gpt-5')) });
     }
 
-    await notifyNotion(`OpenAI 키 유효 · gpt-5.2 사용 가능 · 응답 ${elapsed}ms`, '완료');
-    return res.status(200).json({ ok: true, elapsed_ms: elapsed, gpt52: true });
+    // 어제 측정 통계 조회 (Upstash Redis)
+    const yesterday = getKstDate(-1);
+    const stats = await readDailyStats(yesterday);
+
+    let statsLine = '';
+    if (stats && stats.requests > 0) {
+      const rateStr = stats.successRate != null ? `${stats.successRate.toFixed(1)}%` : '-';
+      const avgStr = stats.avgResponseMs > 0 ? `${(stats.avgResponseMs / 1000).toFixed(1)}초` : '-';
+      statsLine = `\n어제(${yesterday}) 측정: ${stats.requests}건 · 성공 ${stats.success} · 실패 ${stats.failures}${stats.rateLimit > 0 ? ` · 한도초과 ${stats.rateLimit}` : ''} · 성공률 ${rateStr} · 평균 응답 ${avgStr}`;
+    } else if (stats) {
+      statsLine = `\n어제(${yesterday}) 측정 0건`;
+    }
+
+    await notifyNotion(`OpenAI 키 유효 · gpt-5.2 사용 가능 · 응답 ${elapsed}ms${statsLine}`, '완료');
+    return res.status(200).json({ ok: true, elapsed_ms: elapsed, gpt52: true, yesterday_stats: stats });
   } catch (e) {
     const msg = e.message || String(e);
     await notifyNotion(`헬스체크 실패 — 예외: ${msg.slice(0, 200)}`, '오류');

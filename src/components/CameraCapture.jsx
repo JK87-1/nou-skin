@@ -89,13 +89,22 @@ function CameraErrorScreen({ reason, onFallback, onClose, onRetry, colorMode }) 
          '카메라를 사용할 수 없습니다'}
       </h2>
 
-      <p style={{ color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.6, marginBottom: 32, maxWidth: 300 }}>
-        {isInsecure
-          ? '모바일에서 카메라를 사용하려면 HTTPS 연결이 필요합니다. 앨범에서 사진을 선택해주세요.'
-          : isDenied
-          ? '브라우저 설정에서 카메라 권한을 허용한 후 다시 시도해주세요.'
-          : '이 기기에서 카메라에 접근할 수 없습니다. 앨범에서 사진을 선택해주세요.'}
-      </p>
+      <div style={{ color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.6, marginBottom: 24, maxWidth: 320, textAlign: 'left' }}>
+        {isInsecure ? (
+          <p style={{ margin: 0, textAlign: 'center' }}>모바일에서 카메라를 사용하려면 HTTPS 연결이 필요합니다.<br />앨범에서 사진을 선택해주세요.</p>
+        ) : isDenied ? (
+          <>
+            <p style={{ margin: '0 0 12px', textAlign: 'center' }}>브라우저 설정에서 카메라 권한을 허용한 후 [다시 시도]를 눌러주세요.</p>
+            <div style={{ fontSize: 12, color: 'var(--text-dim)', lineHeight: 1.7, padding: '10px 14px', background: 'var(--context-bg)', borderRadius: 10 }}>
+              <div><strong style={{ color: 'var(--text-secondary)' }}>iPhone Safari</strong>: 주소창 좌측 「ⓐⓐ」 → 웹사이트 설정 → 카메라 → 허용</div>
+              <div style={{ marginTop: 4 }}><strong style={{ color: 'var(--text-secondary)' }}>Android Chrome</strong>: 주소창 좌측 🔒 → 권한 → 카메라 허용</div>
+              <div style={{ marginTop: 4 }}><strong style={{ color: 'var(--text-secondary)' }}>PC 브라우저</strong>: 주소창 좌측 자물쇠/카메라 아이콘 → 허용</div>
+            </div>
+          </>
+        ) : (
+          <p style={{ margin: 0, textAlign: 'center' }}>이 기기에서 카메라에 접근할 수 없습니다.<br />앨범에서 사진을 선택해주세요.</p>
+        )}
+      </div>
 
       <button onClick={onFallback} style={{
         width: '100%', maxWidth: 300, padding: 16, borderRadius: 12, border: 'none',

@@ -1,6 +1,8 @@
 // Vercel Serverless Function: OpenAI GPT-5.2 Vision skin analysis proxy
 // Baseline image comparison for consistency + 3x API call median scoring
 
+import { recordRequest, recordOutcome, getKstDate } from '../lib/stats.js';
+
 const RATE_LIMIT = new Map();
 // 베타 기간 상향: 가족·사무실 공유 IP에 다수 사용자 몰릴 가능성 대비.
 // 베타 후 device-id 기반 rate limit 도입 시 다시 낮출 예정.
@@ -306,8 +308,13 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
+  const startedAt = Date.now();
+  const reqDate = getKstDate();
+  recordRequest(reqDate);
+
   const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 'unknown';
   if (!checkRateLimit(ip)) {
+    recordOutcome(reqDate, 'rate_limit', Date.now() - startedAt);
     return res.status(429).json({ error: 'Rate limit exceeded. Try again tomorrow.' });
   }
 
@@ -317,12 +324,16 @@ export default async function handler(req, res) {
     if (!image) return res.status(400).json({ error: 'No image provided' });
 
     const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) return res.status(500).json({ error: 'API key not configured' });
+    if (!apiKey) {
+      recordOutcome(reqDate, 'failure', Date.now() - startedAt);
+      return res.status(500).json({ error: 'API key not configured' });
+    }
 
     // Server-side cache
     const imgHash = hashImage(image);
     const cachedEntry = IMAGE_CACHE.get(imgHash);
     if (cachedEntry && (Date.now() - cachedEntry.timestamp < CACHE_TTL_MS)) {
+      recordOutcome(reqDate, 'success', Date.now() - startedAt);
       return res.status(200).json({ content: [{ text: JSON.stringify(cachedEntry.scores) }] });
     }
 
@@ -334,6 +345,7 @@ export default async function handler(req, res) {
     const valid = results.filter(r => r !== null);
 
     if (valid.length === 0) {
+      recordOutcome(reqDate, 'failure', Date.now() - startedAt);
       return res.status(502).json({ error: 'All AI calls failed' });
     }
 
@@ -369,9 +381,11 @@ export default async function handler(req, res) {
     }
     IMAGE_CACHE.set(imgHash, { scores: merged, timestamp: Date.now() });
 
+    recordOutcome(reqDate, 'success', Date.now() - startedAt);
     res.status(200).json({ content: [{ text: JSON.stringify(merged) }] });
   } catch (error) {
     console.error('analyze handler error:', error);
+    recordOutcome(reqDate, 'failure', Date.now() - startedAt);
     res.status(500).json({ error: error.message });
   }
 }
