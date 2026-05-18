@@ -917,7 +917,7 @@ export default function App() {
               margin: '14px 20px 0',
               padding: '48px 24px 38px',
               cursor: 'pointer',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 36,
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 54,
             }}
           >
             <EternalPearl size={160} animated colors={activeThemeColors} theme={colorMode} />
