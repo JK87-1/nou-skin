@@ -8,7 +8,7 @@ import { estimateAge, preload as preloadAge } from './engine/FaceAgeEstimator';
 import { preload as preloadLandmarker } from './engine/FaceLandmarker';
 import { AnimatedNumber, ScoreRing, MetricBar, Tag, DetailPage } from './components/UIComponents';
 import CameraCapture from './components/CameraCapture';
-import { saveRecord, updateRecord, getRecords, getNextMeasurementInfo, getChanges, generateShareText, getLatestRecord, hasTodayRecord, saveThumbnail, saveComparisonPhoto, getTodayRecords, getStableSkinAge } from './storage/SkinStorage';
+import { saveRecord, updateRecord, getRecords, getNextMeasurementInfo, getChanges, generateShareText, getLatestRecord, hasTodayRecord, saveThumbnail, saveComparisonPhoto, getTodayRecords, getStableSkinAge, findRecentPrimaryRecord } from './storage/SkinStorage';
 import { migrateFromLocalStorage } from './storage/PhotoDB';
 import { createAutoBackup, verifyDataIntegrity, restoreFromAutoBackup, startPeriodicBackup, getBackupInfo } from './storage/AutoBackup';
 import HistoryPage from './pages/HistoryPage';
@@ -408,11 +408,8 @@ export default function App() {
 
     clearInterval(pi); setProgress(100);
     setTimeout(() => {
-      // Get previous SAME-PERSON record before saving (for briefing comparison)
-      const allRecs = getRecords();
-      const prevRecord = allRecs.length > 0
-        ? [...allRecs].reverse().find(r => !!r.differentPerson === !!finalScores.differentPerson) || null
-        : null;
+      // 컨디션 브리핑용 prev record — 7일 윈도우, differentPerson skip, avgDiff > 25 skip
+      const prevRecord = findRecentPrimaryRecord(finalScores);
       const todayBefore = getTodayRecords();
 
       // Save record FIRST so getChanges() compares current vs previous correctly
@@ -519,11 +516,8 @@ export default function App() {
       clearInterval(pi); setProgress(100);
       setTimeout(() => {
         const scores = generateDemoScores();
-        // Get previous record before saving (for briefing comparison)
-        const demoRecs = getRecords();
-        const prevRecord = demoRecs.length > 0
-          ? [...demoRecs].reverse().find(r => !!r.differentPerson === !!scores.differentPerson) || null
-          : null;
+        // 데모 컨디션 브리핑용 prev — 동일 룰 적용
+        const prevRecord = findRecentPrimaryRecord(scores);
         const todayBefore = getTodayRecords();
 
         // Save record FIRST so getChanges() compares current vs previous correctly
