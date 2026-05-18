@@ -364,29 +364,26 @@ export function getChanges() {
 
   const curr = records[records.length - 1];
 
-  // Find the most recent SAME-PERSON record before current
-  // Uses differentPerson flag; avgDiff is a soft heuristic only
+  // 현재 측정이 differentPerson(다른 사람으로 판정됨)이면 변화량 비교 안 함
+  if (curr.differentPerson) return null;
+
+  // prev 후보 조건:
+  //  1) differentPerson === false (다른 사람 측정 제외)
+  //  2) 7일 이내 측정 (옛 컨디션 트래킹 시대 데이터·장기 미사용 후 재측정 false-positive 방지)
+  //  3) avgDiff <= 25 (점수 거리가 너무 크면 다른 사람 가능성)
+  // 위 조건 모두 통과한 가장 최근 record를 prev로 사용. 없으면 null → 변화량 표시 안 함.
+  const MAX_PREV_DAYS = 7;
+  const now = curr.timestamp || Date.now();
   let prev = null;
-  let fallbackPrev = null; // fallback if avgDiff filter skips all
   for (let i = records.length - 2; i >= 0; i--) {
     const r = records[i];
-    const currIsDiff = !!curr.differentPerson;
-    const rIsDiff = !!r.differentPerson;
-
-    if (currIsDiff === rIsDiff) {
-      if (!currIsDiff && !rIsDiff) {
-        // Both unflagged: save first match as fallback
-        if (!fallbackPrev) fallbackPrev = r;
-        // Soft check: skip only if scores are VERY different (likely different person)
-        const avgDiff = computeAvgDiff(curr, r);
-        if (avgDiff > 25) continue;
-      }
-      prev = r;
-      break;
-    }
+    if (r.differentPerson) continue;
+    const days = (now - (r.timestamp || 0)) / 86400000;
+    if (days > MAX_PREV_DAYS) continue;
+    if (computeAvgDiff(curr, r) > 25) continue;
+    prev = r;
+    break;
   }
-  // If avgDiff filter skipped all records, use fallback (same user, different analysis mode)
-  if (!prev) prev = fallbackPrev;
   if (!prev) return null;
 
   const metrics = [
