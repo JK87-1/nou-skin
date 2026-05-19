@@ -166,6 +166,68 @@ export function getTrackerWeekly() {
   });
 }
 
+// ===== 상담사용 종합 컨텍스트 (AI 뷰티 에이전트) =====
+
+/**
+ * 등록 제품 + 오늘 아침/저녁 체크 여부 + 등록 후 경과일.
+ * consult API에 보낼 products 컨텍스트로 사용.
+ */
+export function getProductsWithUsageContext() {
+  const products = getProducts();
+  const todayChecks = getTrackerChecks();
+  const now = Date.now();
+
+  return products.map(p => {
+    const todayUsedMorning = !!todayChecks.morning?.[p.id];
+    const todayUsedNight = !!todayChecks.night?.[p.id];
+    const daysSinceRegistered = p.startDate
+      ? Math.floor((now - new Date(p.startDate).getTime()) / 86400000)
+      : null;
+
+    let usedToday;
+    if (p.timeSlot === 'morning') usedToday = todayUsedMorning;
+    else if (p.timeSlot === 'night') usedToday = todayUsedNight;
+    else usedToday = todayUsedMorning || todayUsedNight; // both: 둘 중 하나라도
+
+    return {
+      brand: p.brand,
+      name: p.name,
+      category: p.category,
+      timeSlot: p.timeSlot, // 'morning' | 'night' | 'both'
+      ingredients: p.ingredients,
+      startDate: p.startDate,
+      daysSinceRegistered,        // 등록 후 N일 — 효과 평가 시점 판단
+      todayUsedMorning,           // 오늘 아침 체크
+      todayUsedNight,             // 오늘 저녁 체크
+      usedToday,                  // 시간대 기준 오늘 사용 여부
+    };
+  });
+}
+
+/**
+ * 오늘 루틴 진행도 + 주간 완수율.
+ * "꾸준한 사용자" 판단에 활용.
+ */
+export function getRoutineSnapshot() {
+  const morning = getTrackerProgress('morning');
+  const night = getTrackerProgress('night');
+  const weekly = getTrackerWeekly();
+  const completedDays = weekly.filter(w => w.completed).length;
+  const partialDays = weekly.filter(w => w.partial && !w.completed).length;
+
+  return {
+    today: {
+      morning: { done: morning.done, total: morning.total, percent: morning.total > 0 ? Math.round((morning.done / morning.total) * 100) : null },
+      night: { done: night.done, total: night.total, percent: night.total > 0 ? Math.round((night.done / night.total) * 100) : null },
+    },
+    weekly: {
+      completedDays,           // 모든 루틴 완수한 일수 / 7
+      partialDays,             // 일부만 완수한 일수
+      skippedDays: 7 - completedDays - partialDays,
+    },
+  };
+}
+
 // ===== 상관관계 분석 =====
 
 const METRIC_KEYS = [

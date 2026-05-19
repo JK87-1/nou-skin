@@ -5,7 +5,7 @@ import { saveConsultSession, loadConsultSession, clearConsultSession } from '../
 import { compressImage } from '../engine/PixelAnalysis';
 import { incrementStat, addXP, checkAndAwardBadges } from '../storage/BadgeStorage';
 import { PRODUCTS, CATEGORY_META, getProductsByCategory, calcMatchScore } from '../data/ProductCatalog';
-import { getProducts } from '../storage/TrackerStorage';
+import { getProducts, getProductsWithUsageContext, getRoutineSnapshot } from '../storage/TrackerStorage';
 import SoftCloverIcon from './icons/SoftCloverIcon';
 import { DropletIcon, SparkleIcon, TestTubeIcon, SunIcon, DiamondIcon, PaletteIcon, MicroscopeIcon, LotionIcon } from './icons/PastelIcons';
 
@@ -491,14 +491,8 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
         gender: profile.gender,
         skinType: profile.skinType,
       },
-      products: getProducts().map(p => ({
-        brand: p.brand,
-        name: p.name,
-        category: p.category,
-        timeSlot: p.timeSlot,
-        ingredients: p.ingredients,
-        startDate: p.startDate,
-      })),
+      products: getProductsWithUsageContext(),
+      routineSnapshot: getRoutineSnapshot(),
     };
   }, [result]);
 

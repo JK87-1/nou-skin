@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { getRecords, getSmoothedChanges, getChanges, getLatestRecord, getStableSkinAge } from '../storage/SkinStorage';
 import { getProfile } from '../storage/ProfileStorage';
 import { compressImage } from '../engine/PixelAnalysis';
+import { getProductsWithUsageContext, getRoutineSnapshot } from '../storage/TrackerStorage';
 
 function getGreetingMsg() {
   return '안녕하세요, 당신의 피부 상담사 루아에요. 궁금한 점이 있으면 편하게 물어보세요!';
@@ -166,6 +167,8 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
       currentResult: latest || null, history: recentHistory, changes,
       stableSkinAge: getStableSkinAge(),
       profile: { birthYear: profile.birthYear, gender: profile.gender, skinType: profile.skinType },
+      products: getProductsWithUsageContext(),
+      routineSnapshot: getRoutineSnapshot(),
     };
   }, []);
 
