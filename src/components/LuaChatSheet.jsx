@@ -4,6 +4,52 @@ import { getProfile } from '../storage/ProfileStorage';
 import { compressImage } from '../engine/PixelAnalysis';
 import { getProductsWithUsageContext, getRoutineSnapshot } from '../storage/TrackerStorage';
 
+// 단순 마크다운 렌더링 — **볼드**, 줄바꿈, 불릿/번호 리스트, → 화살표 처리
+// 외부 라이브러리 없이 가벼움. AI 응답 가독성용.
+function renderChatMarkdown(text) {
+  if (!text) return null;
+  const lines = String(text).split('\n');
+  return lines.map((line, i) => {
+    const key = `mk-${i}`;
+    if (line === '') return <div key={key} style={{ height: 8 }} />;
+
+    // 불릿 / 번호 리스트
+    const bulletMatch = line.match(/^(\s*)([•·\-*]|\d+[\.)])\s+(.*)$/);
+    if (bulletMatch) {
+      const [, indent, marker, rest] = bulletMatch;
+      const isNum = /\d/.test(marker);
+      return (
+        <div key={key} style={{
+          display: 'flex', gap: 6,
+          paddingLeft: 4 + (indent.length * 8),
+          margin: '3px 0', lineHeight: 1.7,
+        }}>
+          <span style={{ color: 'var(--accent-primary, #5BA8D6)', fontWeight: isNum ? 700 : 500, minWidth: isNum ? 18 : 8, flexShrink: 0 }}>
+            {isNum ? marker : '•'}
+          </span>
+          <span style={{ flex: 1 }}>{renderInline(rest)}</span>
+        </div>
+      );
+    }
+
+    return (
+      <div key={key} style={{ margin: '2px 0', lineHeight: 1.7 }}>
+        {renderInline(line)}
+      </div>
+    );
+  });
+}
+
+function renderInline(line) {
+  // **bold** 처리
+  const parts = line.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((p, j) =>
+    p.startsWith('**') && p.endsWith('**')
+      ? <strong key={j} style={{ fontWeight: 700, color: 'var(--text-primary, #191F28)' }}>{p.slice(2, -2)}</strong>
+      : <span key={j}>{p}</span>
+  );
+}
+
 function getGreetingMsg() {
   return '안녕하세요, 당신의 피부 상담사 루아에요. 궁금한 점이 있으면 편하게 물어보세요!';
 }
@@ -332,12 +378,11 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
                       <div style={{
                         ...glass,
                         background: 'rgba(255,255,255,0.5)',
-                        padding: '10px 14px',
+                        padding: '12px 16px',
                         borderRadius: consecutive ? 22 : '4px 22px 22px 22px',
-                        maxWidth: 'calc(75vw - 40px)',
-                        fontSize: 13, color: 'var(--text-primary, #191F28)', lineHeight: 1.5,
-                        whiteSpace: 'pre-wrap',
-                      }}>{msg.content}</div>
+                        maxWidth: 'calc(85vw - 40px)',
+                        fontSize: 14, color: 'var(--text-primary, #191F28)', lineHeight: 1.65,
+                      }}>{renderChatMarkdown(msg.content)}</div>
                       {showTime && (
                         <div style={{ fontSize: 9, color: 'var(--text-muted, #8B95A1)', marginTop: 3, marginLeft: 4 }}>
                           {formatTime(msg.timestamp)}
@@ -359,10 +404,10 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
                         background: 'rgba(137,206,245,0.5)',
                         backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
                         border: '1px solid rgba(137,206,245,0.3)',
-                        padding: '10px 14px',
+                        padding: '12px 16px',
                         borderRadius: consecutive ? 22 : '22px 4px 22px 22px',
-                        maxWidth: '75%',
-                        fontSize: 13, color: 'var(--text-primary, #191F28)', lineHeight: 1.5,
+                        maxWidth: '85%',
+                        fontSize: 14, color: 'var(--text-primary, #191F28)', lineHeight: 1.65,
                         whiteSpace: 'pre-wrap',
                       }}>{msg.content}</div>
                     </div>
