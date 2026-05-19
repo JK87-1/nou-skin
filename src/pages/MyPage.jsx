@@ -17,7 +17,7 @@ import { getLatestRecord } from '../storage/SkinStorage';
 import { getGoal, saveGoal, clearGoal, getDaysRemaining, getGoalProgress, getOverallProgress, METRIC_META } from '../storage/GoalStorage';
 import { getAllPhotosRaw, restorePhotos } from '../storage/PhotoDB';
 import { MoonIcon, SunIcon, CameraIcon, SaveIcon, PastelIcon } from '../components/icons/PastelIcons';
-import { TERMS_OF_SERVICE, PRIVACY_POLICY, BIOMETRIC_CONSENT } from '../legal/legalContent';
+import { TERMS_OF_SERVICE, PRIVACY_POLICY, BIOMETRIC_CONSENT, INQUIRY_FAQ, CONTACT_EMAIL } from '../legal/legalContent';
 
 export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasure }) {
   const [profile, setProfile] = useState(getProfile);
@@ -247,6 +247,8 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
   const [editingProfile, setEditingProfile] = useState(false);
   const [editingSkin, setEditingSkin] = useState(false);
   const [legalPage, setLegalPage] = useState(null); // 'terms' | 'privacy' | 'biometric' | null
+  const [faqOpen, setFaqOpen] = useState(false);
+  const [openFaqIndex, setOpenFaqIndex] = useState(0); // 첫 항목 펼침
   const [editField, setEditField] = useState(null); // 'nickname' | 'birthYear' | 'gender'
   const [editFieldValue, setEditFieldValue] = useState('');
   const [goalModalOpen, setGoalModalOpen] = useState(false);
@@ -342,7 +344,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
         <SettingsRow icon={icons.globe} label="언어" right="한국어" onTap={() => showToast('현재 한국어만 지원돼요')} />
 
         <SectionHeader label="정보" />
-        <SettingsRow icon={icons.message} label="문의하기" onTap={() => window.open(`mailto:luaskin.co@gmail.com?subject=${encodeURIComponent('루아 피드백')}`, '_blank')} />
+        <SettingsRow icon={icons.message} label="문의하기" onTap={() => { setOpenFaqIndex(0); setFaqOpen(true); }} />
         <SettingsRow icon={icons.doc} label="이용약관" onTap={() => setLegalPage('terms')} />
 
         {/* Footer */}
@@ -409,6 +411,97 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                 </p>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* ===== Inquiry FAQ Sub-Page ===== */}
+      {faqOpen && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 1002, maxWidth: 430, margin: '0 auto',
+          background: '#ffffff',
+          display: 'flex', flexDirection: 'column',
+          animation: 'settingsSlideIn 0.3s ease',
+        }}>
+          <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 16px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+            <div onClick={() => setFaqOpen(false)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </div>
+            <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
+              문의하기
+            </span>
+          </div>
+
+          <div style={{ flex: 1, overflowY: 'auto', padding: '20px 16px 40px', WebkitOverflowScrolling: 'touch' }}>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16, lineHeight: 1.6 }}>
+              자주 묻는 질문을 먼저 확인해주세요.<br />
+              해결되지 않으면 페이지 하단의 이메일 문의를 이용해주세요.
+            </div>
+
+            {INQUIRY_FAQ.map((item, idx) => {
+              const isOpen = openFaqIndex === idx;
+              return (
+                <div
+                  key={idx}
+                  style={{
+                    marginBottom: 8,
+                    background: 'rgba(0,0,0,0.04)',
+                    borderRadius: 12,
+                    overflow: 'hidden',
+                    transition: 'background 0.2s',
+                  }}
+                >
+                  <button
+                    onClick={() => setOpenFaqIndex(isOpen ? -1 : idx)}
+                    style={{
+                      width: '100%', padding: '14px 16px',
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      fontFamily: 'inherit', textAlign: 'left',
+                    }}
+                  >
+                    <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.4 }}>
+                      {idx + 1}. {item.q}
+                    </span>
+                    <svg
+                      width="18" height="18" viewBox="0 0 24 24" fill="none"
+                      stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                      style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', flexShrink: 0 }}
+                    >
+                      <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                  </button>
+                  {isOpen && (
+                    <div style={{
+                      padding: '0 16px 16px',
+                      fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7,
+                      whiteSpace: 'pre-line',
+                    }}>
+                      {item.a}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            <div style={{ marginTop: 24, padding: '16px', background: 'rgba(91,168,214,0.08)', borderRadius: 12, border: '1px solid rgba(91,168,214,0.2)' }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>
+                해결이 안 되셨나요?
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 12, lineHeight: 1.6 }}>
+                위 답변에서 해결되지 않은 문의는 이메일로 보내주세요. 영업일 기준 1~2일 내에 답변드립니다.
+              </div>
+              <button
+                onClick={() => window.open(`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('[루아 문의]')}`, '_blank')}
+                style={{
+                  width: '100%', padding: '12px', borderRadius: 10, border: 'none',
+                  background: '#5BA8D6', color: '#fff',
+                  fontSize: 14, fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer',
+                }}
+              >
+                이메일로 문의하기
+              </button>
+            </div>
           </div>
         </div>
       )}
