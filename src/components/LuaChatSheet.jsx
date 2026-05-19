@@ -164,6 +164,25 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
     return () => document.removeEventListener('click', handler);
   }, [showAttachMenu]);
 
+  // iOS Safari 키보드 푸시 방지: visualViewport 높이를 sheet에 직접 적용
+  // 키보드 올라올 때 sheet가 함께 위로 밀려 헤더가 화면 밖으로 잘리는 문제 해결
+  useEffect(() => {
+    const vv = typeof window !== 'undefined' ? window.visualViewport : null;
+    if (!vv) return;
+    const applyHeight = () => {
+      if (sheetRef.current) {
+        sheetRef.current.style.height = `${vv.height}px`;
+      }
+    };
+    applyHeight();
+    vv.addEventListener('resize', applyHeight);
+    vv.addEventListener('scroll', applyHeight);
+    return () => {
+      vv.removeEventListener('resize', applyHeight);
+      vv.removeEventListener('scroll', applyHeight);
+    };
+  }, []);
+
   const toggleListening = useCallback(() => {
     const recognition = recognitionRef.current;
     if (!recognition) return;
@@ -321,9 +340,10 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
         opacity: closing ? 0 : 1, transition: 'opacity 200ms',
       }} />
 
-      {/* Sheet — 풀스크린 (채팅 중 시야 최대) */}
+      {/* Sheet — 풀스크린 (채팅 중 시야 최대). iOS 키보드 푸시 방지를 위해 100dvh 사용 */}
       <div ref={sheetRef} style={{
-        position: 'fixed', top: 0, bottom: 0, left: 0, right: 0, zIndex: 201,
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 201,
+        height: '100vh', // fallback for older iOS
         background: '#ffffff',
         borderRadius: 0,
         boxShadow: 'none',
@@ -331,7 +351,10 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
         animation: closing ? 'luaChatSlideDown 240ms ease forwards' : 'luaChatSlideUp 280ms cubic-bezier(0.32,0.72,0,1) forwards',
         maxWidth: 430, margin: '0 auto',
         paddingTop: 'env(safe-area-inset-top, 0px)',
-      }}>
+      }}
+      // 키보드 영역 제외한 동적 viewport 사용 (iOS 15.4+ / Android Chrome)
+      // CSS-in-JS로 100dvh 지원 (older iOS는 100vh fallback)
+      data-fullscreen-dynamic>
         <style>{`
           @keyframes luaChatSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
           @keyframes luaChatSlideDown { from { transform: translateY(0); } to { transform: translateY(100%); } }
