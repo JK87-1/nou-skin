@@ -153,7 +153,35 @@ function buildBlocks({ author, area, statusInfo, message, extra }) {
   ];
 }
 
-// 7) Main
+// 7) 캘린더 DB에 행 추가 (루아 캘린더)
+async function addCalendarEntry({ env, author, area, statusInfo, message, extra }) {
+  if (!env.NOTION_CALENDAR_DB_ID) return; // 캘린더 ID 없으면 skip
+  const title = `${area.label} — ${message}`;
+  const richTitle = [{ type: "text", text: { content: title } }];
+
+  // 한국 시간 기준 오늘 날짜 (YYYY-MM-DD)
+  const kstDate = new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+  const body = {
+    parent: { database_id: env.NOTION_CALENDAR_DB_ID },
+    icon: { type: "emoji", emoji: statusInfo.icon },
+    properties: {
+      Name: { title: richTitle },
+      Date: { date: { start: kstDate } },
+    },
+    children: buildBlocks({ author, area, statusInfo, message, extra }),
+  };
+
+  try {
+    await callNotion("POST", "/v1/pages", body, env.NOTION_TOKEN);
+    return true;
+  } catch (e) {
+    console.error("⚠️ 캘린더 기록 실패:", e.message);
+    return false;
+  }
+}
+
+// 8) Main
 async function main() {
   const env = loadEnv();
   if (!env.NOTION_TOKEN || !env.NOTION_PAGE_ID) {
@@ -174,10 +202,16 @@ async function main() {
   const blocks = buildBlocks({ author, area, statusInfo, message, extra });
 
   try {
-    await callNotion("PATCH", `/v1/blocks/${env.NOTION_PAGE_ID}/children`, { children: blocks }, env.NOTION_TOKEN);
-    console.log(`✅ 노션 기록: ${area.label} — ${statusInfo.label}`);
-    console.log(`   ${author} · ${message}`);
-    if (env.NOTION_PAGE_URL) console.log(`   ${env.NOTION_PAGE_URL}`);
+    // 캘린더 DB에만 기록 (진행 상황 페이지 callout 추가는 더 이상 안 함 — 노이즈 제거)
+    const calendarOk = await addCalendarEntry({ env, author, area, statusInfo, message, extra });
+
+    if (calendarOk) {
+      console.log(`✅ 캘린더 기록: ${area.label} — ${statusInfo.label}`);
+      console.log(`   ${author} · ${message}`);
+    } else {
+      console.error("❌ 캘린더 기록 실패 (NOTION_CALENDAR_DB_ID 확인 필요)");
+      process.exit(1);
+    }
   } catch (e) {
     console.error("❌ 노션 기록 실패:", e.message);
     process.exit(1);
