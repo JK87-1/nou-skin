@@ -39,10 +39,26 @@ function buildAnalysisPrompt() {
   return `당신은 피부과 전문의 수준의 AI 피부 분석가입니다.
 반드시 아래 순서대로 단계적으로 분석한 후 최종 점수를 산출하세요.
 
-[Step 0. 메이크업 감지]
+[Step 0. 메이크업 감지 — 보수적 판단]
 사진에서 메이크업(파운데이션, BB크림, 컨실러, 아이메이크업, 립 등) 착용 여부를 먼저 판별하세요.
-- 메이크업이 감지되면: 화장으로 가려진 부분은 보이는 그대로 평가하되, analysis.summary에 메이크업이 감지되었음을 명시하고, 클렌징 후 재측정을 권장하세요. JSON에 "makeupDetected":true를 포함하세요.
-- 메이크업이 없으면: "makeupDetected":false로 설정하고 일반 분석을 진행하세요.
+
+※ false-positive 회피 — 다음은 메이크업이 아닙니다:
+- 자연 피부 자체의 매끈함·균일한 톤
+- 면도·세안 직후의 깨끗한 피부 (특히 남성)
+- 자연광·LED 조명에 의한 광택·윤기
+- 카메라 자동 보정·뷰티 필터에 의한 스무딩
+- 한국인·동아시아인 특유의 균일한 피부톤
+
+※ 확실히 보이는 단서가 있을 때만 true:
+- 입술의 비자연스러운 색조 (틴트·립스틱)
+- 눈 주변 명확한 아이라이너·마스카라·아이섀도우 색조
+- 베이스 두께감 (피부결 위에 명백히 얹힌 파운데이션 층, 모공 막힘)
+- 컨실러로 인한 부분적 톤 불일치
+
+※ 애매하거나 의심 정도면 반드시 false. 사용자 신뢰도가 false positive에 매우 민감합니다.
+
+- 메이크업이 명백히 감지되면: 화장으로 가려진 부분은 보이는 그대로 평가하되, analysis.summary에 메이크업이 감지되었음을 명시하고, 클렌징 후 재측정을 권장하세요. JSON에 "makeupDetected":true를 포함하세요.
+- 메이크업이 없거나 애매하면: "makeupDetected":false로 설정하고 일반 분석을 진행하세요.
 
 [Step 1. 부위별 정밀 분석]
 이마, 눈가, 볼, 팔자, 턱/하관, 코 각각에 대해:
@@ -358,6 +374,13 @@ export default async function handler(req, res) {
     // Pick analysis from a random valid response for diversity
     const analysisSource = valid[Math.floor(Math.random() * valid.length)];
     merged.analysis = analysisSource.analysis || { summary: '', details: [] };
+
+    // makeupDetected: majority vote — false-positive 회피.
+    // valid 3: 2개 이상 true일 때만, valid 2: 둘 다 true일 때만, valid 1: 단일 결과.
+    const makeupVotes = valid.filter(r => r.makeupDetected === true).length;
+    merged.makeupDetected = valid.length >= 2
+      ? makeupVotes > valid.length / 2
+      : makeupVotes >= 1;
 
     // If ANY GPT call detected a different person, skip stabilization
     const gptSaysDifferent = valid.some(r => r.differentPerson === true);
