@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LUA 스킨 다이어리 — 목업</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #111;
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+    font-family: 'Noto Sans KR', -apple-system, sans-serif;
+    min-height: 100vh;
+  }
+  #root { display: flex; justify-content: center; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.3.1",
+    "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
+    "react/jsx-runtime": "https://esm.sh/react@18.3.1/jsx-runtime"
+  }
+}
+</script>
+<script type="module">
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+
+const { useState, useEffect, createElement: h } = React;
+
+const font = "'Noto Sans KR', -apple-system, sans-serif";
+const fontNum = "'Outfit', sans-serif";
+
+// Demo data
+const RECORDS = Array.from({ length: 60 }, (_, i) => {
+  const base = 62, trend = i * 0.25;
+  const noise = Math.sin(i * 0.8) * 3 + Math.cos(i * 1.2) * 2;
+  const serumBoost = i >= 35 ? (i - 35) * 0.4 : 0;
+  const drinkDip = (i >= 49 && i <= 52) ? -6 : 0;
+  const clamp = v => Math.round(Math.max(35, Math.min(95, v)));
+  return {
+    day: i + 1,
+    overallScore: clamp(base + trend + noise + serumBoost + drinkDip),
+    moisture: clamp(55 + trend * 0.8 + noise * 0.6 + serumBoost * 1.5 + drinkDip * 0.8),
+    elasticityScore: clamp(60 + trend * 0.5 + noise * 0.4),
+    textureScore: clamp(65 + trend * 0.3 + noise * 0.5),
+    poreScore: clamp(58 + trend * 0.2 + noise * 0.3),
+    routineRate: Math.round(40 + Math.random() * 60),
+  };
+});
+
+const CONDITIONS = RECORDS.map((_, i) => ({
+  day: i + 1,
+  sleep: i < 45 ? null : +(5.5 + Math.random() * 3).toFixed(1),
+  stress: i < 45 ? null : Math.round(1 + Math.random() * 4),
+  alcohol: i === 49 || i === 50 ? 2 : (i >= 45 && Math.random() > 0.8 ? 1 : 0),
+  logged: i >= 45,
+}));
+
+const PRODUCTS = [
+  { id: 1, name: "시카플라스트 밤 B5+", brand: "라로슈포제", startDay: 1, endDay: null, color: "#a78bfa" },
+  { id: 2, name: "스네일 뮤신 에센스", brand: "코스알엑스", startDay: 35, endDay: null, color: "#34d399" },
+  { id: 3, name: "그린티 세럼", brand: "이니스프리", startDay: 10, endDay: 34, color: "#fbbf24" },
+];
+
+const CORRELATIONS = [
+  { factor: "루틴 완료율", icon: "✅", corr: 0.68, dir: "+", insight: "루틴 80% 이상 완료한 주, 종합 점수 평균 +5점", source: "auto", dataCount: 60, minRequired: 14 },
+  { factor: "습도", icon: "💨", corr: 0.58, dir: "+", insight: "습도 50% 이상일 때 수분 점수 평균 +4점", source: "auto", dataCount: 60, minRequired: 14 },
+  { factor: "코스알엑스 에센스", icon: "💧", corr: 0.65, dir: "+", insight: "사용 시작 후 수분 +14점 상승 추세", source: "auto", dataCount: 25, minRequired: 14 },
+  { factor: "측정 시간대", icon: "🕐", corr: 0.31, dir: "+", insight: "오전 측정 시 점수가 평균 +2점 높은 경향", source: "auto", dataCount: 60, minRequired: 14 },
+  { factor: "수면 시간", icon: "😴", corr: 0.72, dir: "+", insight: "7시간 이상 수면 시 종합 점수 평균 +6점", source: "manual", dataCount: 15, minRequired: 14 },
+  { factor: "음주", icon: "🍺", corr: 0.61, dir: "-", insight: "음주 다음날 종합 점수 평균 -7점 하락", source: "manual", dataCount: 15, minRequired: 14 },
+  { factor: "스트레스", icon: "😰", corr: 0.38, dir: "-", insight: "데이터 수집 중...", source: "manual", dataCount: 15, minRequired: 21 },
+];
+
+// MiniChart SVG
+function MiniChart({ data, ht = 50, color = "#a78bfa", markers = [], products = [] }) {
+  if (!data || data.length < 2) return null;
+  const max = Math.max(...data) + 3, min = Math.min(...data) - 3;
+  const range = max - min || 1;
+  const pts = data.map((v, i) => ((i / (data.length - 1)) * 100) + "," + (100 - ((v - min) / range) * 80 - 10)).join(" ");
+  const uid = "c" + (Math.random() * 1e5 | 0);
+  return h('svg', { width: "100%", height: ht, viewBox: "0 0 100 100", preserveAspectRatio: "none", style: { display: "block" } },
+    h('defs', null,
+      h('linearGradient', { id: uid + "f", x1: "0", y1: "0", x2: "0", y2: "1" },
+        h('stop', { offset: "0%", stopColor: color, stopOpacity: "0.25" }),
+        h('stop', { offset: "100%", stopColor: color, stopOpacity: "0" })
+      )
+    ),
+    ...products.map((p, i) => {
+      const x = ((p.startDay - 1) / (data.length - 1)) * 100;
+      return h('line', { key: "p" + i, x1: x, y1: "0", x2: x, y2: "100", stroke: p.color, strokeWidth: "0.8", strokeDasharray: "2,2", opacity: "0.5", vectorEffect: "non-scaling-stroke" });
+    }),
+    h('polygon', { points: "0,100 " + pts + " 100,100", fill: "url(#" + uid + "f)" }),
+    h('polyline', { points: pts, fill: "none", stroke: color, strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", vectorEffect: "non-scaling-stroke" }),
+    ...markers.map((m, i) => h('circle', { key: "m" + i, cx: (m.day / (data.length - 1)) * 100, cy: "8", r: "3", fill: "#f87171", opacity: "0.8" }))
+  );
+}
+
+function Bar({ value, max = 1, color = "#a78bfa", ht = 4 }) {
+  return h('div', { style: { height: ht, borderRadius: ht / 2, background: "rgba(255,255,255,0.06)", overflow: "hidden" } },
+    h('div', { style: { width: Math.min(100, Math.abs(value / max) * 100) + "%", height: "100%", borderRadius: ht / 2, background: color, transition: "width 0.8s ease-out" } })
+  );
+}
+
+function QuickSlider({ icon, label, min, max, step, def, unit, color }) {
+  const [val, setVal] = useState(def);
+  return h('div', { style: { display: "flex", alignItems: "center", gap: 10, marginBottom: 10, padding: "8px 0" } },
+    h('span', { style: { fontSize: 16 } }, icon),
+    h('span', { style: { fontSize: 12, fontWeight: 500, color: "#e0e0e8", width: 30, flexShrink: 0 } }, label),
+    h('input', { type: "range", min, max, step, value: val, onChange: e => setVal(Number(e.target.value)), style: { flex: 1, accentColor: color } }),
+    h('span', { style: { fontSize: 14, fontWeight: 700, color, fontFamily: fontNum, width: 36, textAlign: "right" } }, val + unit)
+  );
+}
+
+// Main
+function SkinDiaryMockup() {
+  const [loaded, setLoaded] = useState(false);
+  const [screen, setScreen] = useState("result");
+  const [conditionOpen, setConditionOpen] = useState(false);
+  const [conditionSaved, setConditionSaved] = useState(false);
+  const [activeMetric, setActiveMetric] = useState("overallScore");
+  const [historyMode, setHistoryMode] = useState("insight");
+  const [alcoholVal, setAlcoholVal] = useState(0);
+  const [stressVal, setStressVal] = useState(2);
+
+  useEffect(() => { setTimeout(() => setLoaded(true), 80); }, []);
+
+  const s = (i) => ({
+    opacity: loaded ? 1 : 0,
+    transform: loaded ? "translateY(0)" : "translateY(12px)",
+    transition: "all 0.5s ease-out " + (i * 0.05) + "s",
+  });
+
+  const drinkDays = CONDITIONS.filter(c => c.alcohol > 0).map(c => ({ day: c.day - 1 }));
+  const chartData = RECORDS.map(r => r[activeMetric]);
+
+  return h('div', { style: {
+    width: 390, background: "#000", borderRadius: 40, overflow: "hidden",
+    position: "relative", fontFamily: font,
+    border: "1px solid rgba(255,255,255,0.08)",
+    boxShadow: "0 25px 80px rgba(0,0,0,0.8)",
+  }},
+
+    // Status Bar
+    h('div', { style: { padding: "14px 28px 0", display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 14, fontWeight: 600, color: "#f0f0f5" } },
+      h('span', null, "9:41"),
+      h('div', { style: { display: "flex", gap: 4, alignItems: "center" } },
+        ...[1,2,3,4].map(i => h('div', { key: i, style: { width: 3, height: 6 + i * 2, background: "#f0f0f5", borderRadius: 1 } })),
+        h('div', { style: { width: 17, height: 11, border: "1px solid #f0f0f5", borderRadius: 2, position: "relative", marginLeft: 4 } },
+          h('div', { style: { width: 11, height: 7, background: "#f0f0f5", borderRadius: 1, position: "absolute", left: 2, top: 1 } })
+        )
+      )
+    ),
+
+    // Screen switch
+    h('div', { style: { padding: "8px 24px 0", display: "flex", gap: 4, ...s(0) } },
+      ...[
+        { id: "result", label: "측정 결과 화면" },
+        { id: "history", label: "기록 탭 (인사이트)" },
+      ].map(t =>
+        h('button', { key: t.id, onClick: () => { setScreen(t.id); if (t.id === "history") setHistoryMode("insight"); }, style: {
+          flex: 1, padding: "8px 4px", borderRadius: 10,
+          border: screen === t.id ? "1px solid rgba(167,139,250,0.2)" : "1px solid rgba(255,255,255,0.04)",
+          background: screen === t.id ? "rgba(167,139,250,0.15)" : "rgba(255,255,255,0.03)",
+          color: screen === t.id ? "#a78bfa" : "#555568",
+          fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: font,
+        }}, t.label)
+      )
+    ),
+
+    // Content
+    h('div', { style: { height: 720, overflowY: "auto", paddingBottom: 10 } },
+
+      // ═══ RESULT SCREEN ═══
+      screen === "result" && h('div', { style: { padding: "14px 24px" } },
+
+        // Result summary
+        h('div', { style: { padding: 20, borderRadius: 22, marginBottom: 14, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", ...s(1) } },
+          h('div', { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 } },
+            h('div', null,
+              h('div', { style: { fontSize: 12, color: "#a78bfa", fontWeight: 600, letterSpacing: 0.3 } }, "분석 완료"),
+              h('div', { style: { fontSize: 20, fontWeight: 600, color: "#f0f0f5", margin: "4px 0", letterSpacing: -0.3 } }, "피부 컨디션"),
+              h('div', { style: { fontSize: 12, color: "#8888a0", fontWeight: 300 } }, "2026.03.11 오전 9:41"),
+            ),
+            h('div', { style: { display: "flex", gap: 8 } },
+              // Skin age card
+              h('div', { style: { width: 66, height: 72, borderRadius: 14, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" } },
+                h('span', { style: { fontSize: 24, fontWeight: 650, color: "#a78bfa", lineHeight: 1, fontFamily: fontNum } }, "33"),
+                h('span', { style: { fontSize: 9, color: "#8888a0", fontWeight: 500, marginTop: 2 } }, "피부나이"),
+                h('span', { style: { fontSize: 8, color: "#34d399", fontWeight: 600, marginTop: 1 } }, "-2세 ↓"),
+              ),
+              // Overall score card
+              h('div', { style: { width: 66, height: 72, borderRadius: 14, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative" } },
+                h('svg', { width: 62, height: 62, style: { transform: "rotate(-90deg)", position: "absolute" } },
+                  h('circle', { cx: 31, cy: 31, r: 25, fill: "none", stroke: "rgba(255,255,255,0.06)", strokeWidth: 4 }),
+                  h('circle', { cx: 31, cy: 31, r: 25, fill: "none", stroke: "#a78bfa", strokeWidth: 4, strokeDasharray: 157, strokeDashoffset: 157 - (78 / 100) * 157, strokeLinecap: "round" }),
+                ),
+                h('span', { style: { fontSize: 24, fontWeight: 650, color: "#a78bfa", lineHeight: 1, fontFamily: fontNum, zIndex: 1 } }, "78"),
+                h('span', { style: { fontSize: 9, color: "#8888a0", fontWeight: 500, marginTop: 1, zIndex: 1 } }, "종합"),
+                h('span', { style: { fontSize: 8, fontWeight: 700, color: "#34d399", zIndex: 1 } }, "+3"),
+              ),
+            ),
+          ),
+          // Condition briefing
+          h('div', { style: { padding: "12px 14px", borderRadius: 12, background: "linear-gradient(135deg, rgba(167,139,250,0.08), rgba(167,139,250,0.04))", border: "1px solid rgba(167,139,250,0.12)" } },
+            h('div', { style: { display: "flex", alignItems: "center", gap: 6, marginBottom: 6 } },
+              h('span', { style: { fontSize: 14, fontWeight: 700, color: "#a78bfa" } }, "오늘의 피부 컨디션"),
+              h('div', { style: { padding: "2px 8px", borderRadius: 10, background: "rgba(167,139,250,0.15)", border: "1px solid rgba(167,139,250,0.25)" } },
+                h('span', { style: { fontSize: 12, fontWeight: 800, color: "#a78bfa", fontFamily: fontNum } }, "A"),
+                h('span', { style: { fontSize: 10, fontWeight: 600, color: "#a78bfa", marginLeft: 4 } }, "78점"),
+              ),
+            ),
+            h('p', { style: { fontSize: 13, color: "#e0e0e8", lineHeight: 1.7, margin: 0 } },
+              "전체적으로 안정적이에요. 수분과 피부톤이 개선되고 있어요. 모공 점수만 소폭 하락했는데, 꾸준한 관리로 충분히 회복할 수 있어요."
+            ),
+          ),
+        ),
+
+        // ★★★ Collapsible condition card ★★★
+        h('div', { style: {
+          borderRadius: 20, overflow: "hidden", marginBottom: 14,
+          background: conditionSaved ? "rgba(52,211,153,0.06)" : conditionOpen ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.02)",
+          border: conditionSaved ? "1px solid rgba(52,211,153,0.15)" : "1px solid rgba(255,255,255,0.05)",
+          transition: "all 0.3s ease", ...s(2),
+        }},
+          // Header
+          h('div', { onClick: () => { if (!conditionSaved) setConditionOpen(!conditionOpen); }, style: { padding: "14px 18px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" } },
+            h('div', { style: { display: "flex", alignItems: "center", gap: 10 } },
+              h('span', { style: { fontSize: 16 } }, conditionSaved ? "✅" : "📝"),
+              h('div', null,
+                h('div', { style: { fontSize: 13, fontWeight: 600, color: conditionSaved ? "#34d399" : "#f0f0f5" } },
+                  conditionSaved ? "오늘 컨디션 기록 완료" : "오늘 컨디션도 기록할래요?"
+                ),
+                h('div', { style: { fontSize: 10, color: "#555568", marginTop: 2 } },
+                  conditionSaved ? "기록이 분석에 반영될 거예요" : "기록하면 더 정확한 피부 인사이트를 받아요"
+                ),
+              ),
+            ),
+            !conditionSaved && h('span', { style: { fontSize: 10, color: "#555568", transform: conditionOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s ease", display: "inline-block" } }, "▾"),
+          ),
+
+          // Expanded content
+          conditionOpen && !conditionSaved && h('div', { style: { padding: "0 18px 18px" } },
+            h('div', { style: { height: 1, background: "rgba(255,255,255,0.04)", marginBottom: 14 } }),
+
+            // Auto collected tags
+            h('div', { style: { display: "flex", gap: 6, marginBottom: 14, flexWrap: "wrap" } },
+              ...[
+                { icon: "🌤", label: "습도 52%" },
+                { icon: "🌡", label: "18°C" },
+                { icon: "✅", label: "루틴 80%" },
+                { icon: "🧴", label: "제품 2개 사용 중" },
+              ].map((tag, i) =>
+                h('div', { key: i, style: { padding: "4px 8px", borderRadius: 6, background: "rgba(52,211,153,0.08)", border: "1px solid rgba(52,211,153,0.12)", fontSize: 10, color: "#34d399", display: "flex", alignItems: "center", gap: 3 } },
+                  tag.icon, " ", tag.label,
+                  h('span', { style: { fontSize: 7, color: "#555568", marginLeft: 2 } }, "자동")
+                )
+              )
+            ),
+
+            h('div', { style: { fontSize: 10, fontWeight: 600, color: "#8888a0", marginBottom: 10, letterSpacing: 0.5 } }, "아래 항목은 선택이에요 (기록하면 분석이 더 풍부해져요)"),
+
+            // Sleep
+            h(QuickSlider, { icon: "😴", label: "수면", min: 3, max: 10, step: 0.5, def: 7, unit: "h", color: "#a78bfa" }),
+
+            // Alcohol
+            h('div', { style: { display: "flex", alignItems: "center", gap: 10, marginBottom: 10, padding: "8px 0" } },
+              h('span', { style: { fontSize: 16 } }, "🍺"),
+              h('span', { style: { fontSize: 12, fontWeight: 500, color: "#e0e0e8", flex: 1 } }, "어제 음주"),
+              h('div', { style: { display: "flex", gap: 4 } },
+                ...["없음", "가볍게", "많이"].map((opt, i) =>
+                  h('button', { key: i, onClick: () => setAlcoholVal(i), style: {
+                    padding: "5px 10px", borderRadius: 7, border: "none",
+                    background: alcoholVal === i ? (i === 0 ? "rgba(52,211,153,0.12)" : "rgba(248,113,113,0.12)") : "rgba(255,255,255,0.04)",
+                    color: alcoholVal === i ? (i === 0 ? "#34d399" : "#f87171") : "#555568",
+                    fontSize: 10, fontWeight: 600, cursor: "pointer", fontFamily: font,
+                  }}, opt)
+                )
+              ),
+            ),
+
+            // Stress
+            h('div', { style: { display: "flex", alignItems: "center", gap: 10, marginBottom: 14, padding: "8px 0" } },
+              h('span', { style: { fontSize: 16 } }, "😰"),
+              h('span', { style: { fontSize: 12, fontWeight: 500, color: "#e0e0e8", flex: 1 } }, "스트레스"),
+              h('div', { style: { display: "flex", gap: 3 } },
+                ...[1,2,3,4,5].map(n =>
+                  h('div', { key: n, onClick: () => setStressVal(n), style: {
+                    width: 28, height: 28, borderRadius: 8,
+                    background: n <= stressVal ? "rgba(167,139,250,0.15)" : "rgba(255,255,255,0.04)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 10, fontWeight: 600, cursor: "pointer",
+                    color: n <= stressVal ? "#a78bfa" : "#555568",
+                    border: n === stressVal ? "1px solid rgba(167,139,250,0.3)" : "1px solid transparent",
+                  }}, n)
+                )
+              ),
+            ),
+
+            h('button', { onClick: () => { setConditionSaved(true); setConditionOpen(false); }, style: {
+              width: "100%", padding: "12px", borderRadius: 12,
+              background: "linear-gradient(135deg, #9080c8, #6858a8, #483090)",
+              border: "none", color: "#fff", fontSize: 13, fontWeight: 600,
+              cursor: "pointer", fontFamily: font,
+            }}, "기록 저장"),
+
+            h('button', { onClick: () => setConditionOpen(false), style: {
+              width: "100%", padding: "10px", borderRadius: 10, marginTop: 6,
+              background: "none", border: "none",
+              color: "#555568", fontSize: 12, cursor: "pointer", fontFamily: font,
+            }}, "건너뛰기"),
+          ),
+
+          // Saved tags
+          conditionSaved && h('div', { style: { padding: "0 18px 14px", display: "flex", gap: 5, flexWrap: "wrap" } },
+            ...["😴 7h", "🍺 없음", "😰 2/5"].map((t, i) =>
+              h('span', { key: i, style: { padding: "3px 8px", borderRadius: 6, background: "rgba(255,255,255,0.04)", fontSize: 10, color: "#8888a0" } }, t)
+            ),
+            h('span', { style: { padding: "3px 8px", borderRadius: 6, background: "rgba(52,211,153,0.08)", fontSize: 10, color: "#34d399" } }, "+ 자동 4개"),
+          ),
+        ),
+
+        // AI Analysis preview
+        h('div', { style: { padding: 18, borderRadius: 20, marginBottom: 14, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)", ...s(3) } },
+          h('div', { style: { display: "flex", alignItems: "center", gap: 8, marginBottom: 10 } },
+            h('span', { style: { fontSize: 14 } }, "🧠"),
+            h('span', { style: { fontSize: 14, fontWeight: 700, color: "#a78bfa" } }, "전체 피부 분석"),
+          ),
+          h('p', { style: { fontSize: 13, color: "#e0e0e8", lineHeight: 1.7, margin: 0 } },
+            "수분 지표가 지속적으로 상승하고 있어요. 코스알엑스 에센스 사용 이후 수분 흡수력이 좋아진 것으로 보여요. 모공 점수가 소폭 하락했지만 계절 영향일 수 있어요."
+          ),
+        ),
+
+        // Metrics grid
+        h('div', { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 14, ...s(4) } },
+          ...[
+            { label: "수분도", value: 75, icon: "💧", change: "+3", color: "#4FC3F7" },
+            { label: "탄력", value: 72, icon: "💎", change: "+1", color: "#F06292" },
+            { label: "피부결", value: 80, icon: "🧴", change: "+2", color: "#7986CB" },
+            { label: "모공", value: 65, icon: "🔬", change: "-1", color: "#4DB6AC" },
+          ].map((m, i) =>
+            h('div', { key: i, style: { padding: "12px 14px", borderRadius: 16, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)" } },
+              h('div', { style: { display: "flex", alignItems: "center", gap: 6, marginBottom: 6 } },
+                h('span', { style: { fontSize: 14 } }, m.icon),
+                h('span', { style: { fontSize: 11, color: "#8888a0" } }, m.label),
+              ),
+              h('div', { style: { display: "flex", alignItems: "baseline", gap: 6 } },
+                h('span', { style: { fontSize: 22, fontWeight: 700, color: "#f0f0f5", fontFamily: fontNum } }, m.value),
+                h('span', { style: { fontSize: 11, fontWeight: 600, color: m.change.startsWith("+") ? "#34d399" : "#f87171" } }, m.change),
+              ),
+            )
+          )
+        ),
+
+        // Insight preview link
+        h('div', { onClick: () => setScreen("history"), style: { padding: "14px 16px", borderRadius: 16, background: "linear-gradient(135deg, rgba(167,139,250,0.06), rgba(167,139,250,0.02))", border: "1px solid rgba(167,139,250,0.1)", cursor: "pointer", ...s(5) } },
+          h('div', { style: { display: "flex", alignItems: "center", justifyContent: "space-between" } },
+            h('div', { style: { display: "flex", alignItems: "center", gap: 8 } },
+              h('span', { style: { fontSize: 14 } }, "📊"),
+              h('div', null,
+                h('div', { style: { fontSize: 12, fontWeight: 600, color: "#f0f0f5" } }, "60일 피부 인사이트 보기"),
+                h('div', { style: { fontSize: 10, color: "#555568", marginTop: 2 } }, "수면, 날씨, 제품, 루틴의 영향을 분석해요"),
+              ),
+            ),
+            h('span', { style: { fontSize: 12, color: "#a78bfa" } }, "→"),
+          ),
+        ),
+      ),
+
+      // ═══ HISTORY SCREEN ═══
+      screen === "history" && h('div', { style: { padding: "14px 24px" } },
+
+        // Tab bar
+        h('div', { style: { display: "flex", gap: 0, background: "rgba(255,255,255,0.03)", borderRadius: 14, padding: 3, marginBottom: 16, border: "1px solid rgba(255,255,255,0.05)", ...s(0) } },
+          ...[
+            { id: "mission", label: "미션" },
+            { id: "insights", label: "분석" },
+            { id: "gallery", label: "앨범" },
+            { id: "insight", label: "🔬 인사이트" },
+          ].map(tab =>
+            h('button', { key: tab.id, onClick: () => setHistoryMode(tab.id), style: {
+              flex: 1, padding: "9px 4px", borderRadius: 11, border: "none",
+              fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: font,
+              background: historyMode === tab.id ? "linear-gradient(135deg, #9080c8, #6858a8, #483090)" : "transparent",
+              color: historyMode === tab.id ? "#fff" : "#555568",
+              transition: "all 0.25s",
+            }}, tab.label)
+          )
+        ),
+
+        // Placeholder for existing tabs
+        historyMode !== "insight" && h('div', { style: { padding: "40px 20px", textAlign: "center", background: "rgba(255,255,255,0.02)", borderRadius: 20, border: "1px solid rgba(255,255,255,0.04)" } },
+          h('div', { style: { fontSize: 40, marginBottom: 12 } }, historyMode === "mission" ? "🎯" : historyMode === "insights" ? "📈" : "📷"),
+          h('div', { style: { fontSize: 14, fontWeight: 600, color: "#f0f0f5" } }, historyMode === "mission" ? "기존 미션 뷰" : historyMode === "insights" ? "기존 분석 뷰" : "기존 앨범 뷰"),
+          h('div', { style: { fontSize: 12, color: "#555568", marginTop: 6 } }, "기존 HistoryPage UI가 그대로 유지돼요"),
+        ),
+
+        // ★ Insight tab
+        historyMode === "insight" && h('div', null,
+
+          // Data collection status
+          h('div', { style: { padding: 16, borderRadius: 18, marginBottom: 14, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)", ...s(1) } },
+            h('div', { style: { fontSize: 13, fontWeight: 600, color: "#f0f0f5", marginBottom: 12 } }, "데이터 수집 현황"),
+            h('div', { style: { display: "flex", gap: 6, flexWrap: "wrap" } },
+              ...[
+                { label: "피부 측정", count: 60, icon: "🪞", status: "good" },
+                { label: "날씨", count: 60, icon: "🌤", status: "good" },
+                { label: "루틴 완료", count: 58, icon: "✅", status: "good" },
+                { label: "제품 기록", count: 3, icon: "🧴", status: "good" },
+                { label: "수면 기록", count: 15, icon: "😴", status: "partial" },
+                { label: "음주 기록", count: 15, icon: "🍺", status: "partial" },
+                { label: "스트레스", count: 15, icon: "😰", status: "building" },
+              ].map((d, i) =>
+                h('div', { key: i, style: {
+                  padding: "6px 10px", borderRadius: 8,
+                  background: d.status === "good" ? "rgba(52,211,153,0.08)" : d.status === "partial" ? "rgba(167,139,250,0.08)" : "rgba(255,255,255,0.04)",
+                  border: "1px solid " + (d.status === "good" ? "rgba(52,211,153,0.12)" : d.status === "partial" ? "rgba(167,139,250,0.12)" : "rgba(255,255,255,0.05)"),
+                  display: "flex", alignItems: "center", gap: 4,
+                }},
+                  h('span', { style: { fontSize: 12 } }, d.icon),
+                  h('span', { style: { fontSize: 10, fontWeight: 500, color: d.status === "good" ? "#34d399" : d.status === "partial" ? "#a78bfa" : "#555568" } }, d.count + "일"),
+                  d.status === "good" && h('span', { style: { fontSize: 7, color: "#34d399" } }, "자동"),
+                )
+              )
+            ),
+          ),
+
+          // Skin trend chart
+          h('div', { style: { padding: 18, borderRadius: 20, marginBottom: 14, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)", ...s(2) } },
+            h('div', { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 } },
+              h('div', { style: { fontSize: 14, fontWeight: 600, color: "#f0f0f5" } }, "피부 변화 추이"),
+              h('div', { style: { fontSize: 8, color: "#555568" } }, "🔴 음주 · --- 제품 시작"),
+            ),
+            h('div', { style: { display: "flex", gap: 4, marginBottom: 10 } },
+              ...[
+                { id: "overallScore", label: "종합" },
+                { id: "moisture", label: "수분" },
+                { id: "elasticityScore", label: "탄력" },
+                { id: "poreScore", label: "모공" },
+              ].map(m =>
+                h('button', { key: m.id, onClick: () => setActiveMetric(m.id), style: {
+                  padding: "4px 9px", borderRadius: 7, border: "none",
+                  background: activeMetric === m.id ? "rgba(167,139,250,0.15)" : "rgba(255,255,255,0.03)",
+                  color: activeMetric === m.id ? "#a78bfa" : "#555568",
+                  fontSize: 10, fontWeight: 600, cursor: "pointer", fontFamily: font,
+                }}, m.label)
+              )
+            ),
+            h(MiniChart, { data: chartData, ht: 70, color: "#a78bfa", markers: drinkDays, products: PRODUCTS }),
+            h('div', { style: { display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" } },
+              ...PRODUCTS.map(p =>
+                h('div', { key: p.id, style: { display: "flex", alignItems: "center", gap: 3 } },
+                  h('div', { style: { width: 6, height: 6, borderRadius: 1, background: p.color, border: "1px dashed " + p.color } }),
+                  h('span', { style: { fontSize: 8, color: "#8888a0" } }, p.name.slice(0, 8)),
+                  !p.endDay && h('span', { style: { fontSize: 7, color: "#34d399" } }, "사용 중"),
+                  p.endDay && h('span', { style: { fontSize: 7, color: "#f87171" } }, "중단"),
+                )
+              )
+            ),
+          ),
+
+          // Correlations
+          h('div', { style: { padding: 18, borderRadius: 20, marginBottom: 14, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)", ...s(3) } },
+            h('div', { style: { fontSize: 14, fontWeight: 600, color: "#f0f0f5", marginBottom: 4 } }, "내 피부에 영향을 주는 것들"),
+            h('div', { style: { fontSize: 10, color: "#555568", marginBottom: 14 } }, "60일 데이터 기반 · 상관관계 순위"),
+
+            ...CORRELATIONS.map((c, idx) => {
+              const hasEnoughData = c.source === "auto" || c.dataCount >= (c.minRequired || 14);
+              return h('div', { key: idx, style: { padding: "11px 12px", marginBottom: 5, borderRadius: 14, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.03)", opacity: hasEnoughData ? 1 : 0.55 } },
+                h('div', { style: { display: "flex", alignItems: "center", gap: 8, marginBottom: 6 } },
+                  h('div', { style: { width: 28, height: 28, borderRadius: 8, background: c.dir === "+" ? "rgba(52,211,153,0.1)" : "rgba(248,113,113,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 } }, c.icon),
+                  h('div', { style: { flex: 1, minWidth: 0 } },
+                    h('div', { style: { display: "flex", alignItems: "center", gap: 5 } },
+                      h('span', { style: { fontSize: 12, fontWeight: 600, color: "#f0f0f5", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, c.factor),
+                      c.source === "auto" && h('span', { style: { fontSize: 7, color: "#34d399", background: "rgba(52,211,153,0.1)", padding: "1px 4px", borderRadius: 3, flexShrink: 0 } }, "자동"),
+                      c.source === "manual" && h('span', { style: { fontSize: 7, color: "#a78bfa", background: "rgba(167,139,250,0.1)", padding: "1px 4px", borderRadius: 3, flexShrink: 0 } }, "수동"),
+                    ),
+                  ),
+                  hasEnoughData
+                    ? h('span', { style: { fontSize: 13, fontWeight: 700, fontFamily: fontNum, color: c.dir === "+" ? "#34d399" : "#f87171", flexShrink: 0 } }, c.dir + Math.round(c.corr * 100) + "%")
+                    : h('span', { style: { fontSize: 9, color: "#555568", flexShrink: 0 } }, c.dataCount + "/" + c.minRequired + "일"),
+                ),
+                h(Bar, { value: hasEnoughData ? c.corr : c.dataCount / (c.minRequired || 14), max: 1, color: hasEnoughData ? (c.dir === "+" ? "#34d399" : "#f87171") : "#555568", ht: 3 }),
+                h('div', { style: { fontSize: 10, color: "#8888a0", marginTop: 6, lineHeight: 1.5 } },
+                  hasEnoughData ? c.insight : "데이터 수집 중... " + (c.minRequired - c.dataCount) + "일 더 기록하면 분석이 시작돼요"
+                ),
+              );
+            }),
+
+            h('div', { style: { marginTop: 8, padding: "8px 10px", borderRadius: 8, background: "rgba(255,255,255,0.02)", textAlign: "center", fontSize: 9, color: "#555568", lineHeight: 1.5 } },
+              "상관관계는 인과관계가 아니에요 · 여러 요인이 복합적으로 작용해요"
+            ),
+          ),
+
+          // AI summary
+          h('div', { style: { padding: 18, borderRadius: 20, background: "linear-gradient(135deg, rgba(167,139,250,0.06), rgba(167,139,250,0.02))", border: "1px solid rgba(167,139,250,0.1)", ...s(4) } },
+            h('div', { style: { display: "flex", alignItems: "center", gap: 8, marginBottom: 12 } },
+              h('span', { style: { fontSize: 14 } }, "🤖"),
+              h('span', { style: { fontSize: 14, fontWeight: 600, color: "#a78bfa" } }, "AI 종합 분석"),
+            ),
+            h('div', { style: { fontSize: 12, color: "#8888a0", lineHeight: 1.8 } },
+              "60일간의 데이터를 종합하면, ",
+              h('span', { style: { color: "#f0f0f5", fontWeight: 600 } }, "루틴 완료율"),
+              "과 ",
+              h('span', { style: { color: "#f0f0f5", fontWeight: 600 } }, "습도"),
+              "가 자동 수집 데이터 중 가장 높은 상관관계를 보여요.",
+              h('br'), h('br'),
+              "최근 15일간 수동 기록 결과, ",
+              h('span', { style: { color: "#34d399", fontWeight: 600 } }, "수면 시간"),
+              "이 가장 강한 양의 상관관계(+72%)를 보여요. 다만 아직 15일분이라 더 쌓이면 정확도가 올라가요.",
+              h('br'), h('br'),
+              h('span', { style: { color: "#34d399", fontWeight: 600 } }, "코스알엑스 에센스"),
+              " 사용 시작(35일째) 이후 수분이 상승 중이지만, 같은 기간 습도도 올라갔기 때문에 제품 단독 효과는 확정하기 어려워요.",
+            ),
+            h('div', { style: { marginTop: 14, padding: "10px 14px", borderRadius: 10, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.04)" } },
+              h('div', { style: { fontSize: 11, fontWeight: 600, color: "#a78bfa", marginBottom: 4 } }, "💡 이번 주 추천"),
+              h('div', { style: { fontSize: 11, color: "#8888a0", lineHeight: 1.6 } }, "루틴 완료율 80% 이상 유지 + 수면 7시간 이상 + 에센스 계속 사용"),
+            ),
+          ),
+        ),
+      ),
+    ),
+
+    // Tab bar
+    h('div', { style: {
+      position: "sticky", bottom: 0, height: 72,
+      background: "rgba(0,0,0,0.95)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
+      borderTop: "1px solid rgba(255,255,255,0.04)",
+      display: "flex", justifyContent: "space-around", alignItems: "center",
+      padding: "0 8px 12px",
+    }},
+      ...[
+        { id: "home", icon: "△", label: "홈" },
+        { id: "consult", icon: "▢", label: "상담" },
+        { id: "measure", icon: "pearl", label: "" },
+        { id: "history", icon: "▭", label: "기록" },
+        { id: "my", icon: "○", label: "마이" },
+      ].map(tab => {
+        const active = (screen === "result" && tab.id === "home") || (screen === "history" && tab.id === "history");
+        if (tab.id === "pearl") {
+          return h('div', { key: "pearl", style: { display: "flex", flexDirection: "column", alignItems: "center" } },
+            h('div', { style: {
+              width: 48, height: 48, borderRadius: "50%", marginTop: -14,
+              background: "radial-gradient(circle at 38% 34%, #e8e4f0, #c4b5fd, #8b5cf6)",
+              boxShadow: "0 4px 16px rgba(139,92,246,0.25)", position: "relative",
+            }},
+              h('div', { style: { position: "absolute", top: "22%", left: "28%", width: "24%", height: "16%", borderRadius: "50%", background: "rgba(255,255,255,0.55)", filter: "blur(2px)" } })
+            )
+          );
+        }
+        return h('div', { key: tab.id, onClick: () => {
+          if (tab.id === "home") setScreen("result");
+          if (tab.id === "history") { setScreen("history"); setHistoryMode("insight"); }
+        }, style: {
+          display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
+          cursor: "pointer", opacity: active ? 1 : 0.4, transition: "opacity 0.2s", position: "relative",
+        }},
+          h('span', { style: { fontSize: 18, color: active ? "#f0f0f5" : "#555568", fontWeight: 300 } }, tab.icon),
+          h('span', { style: { fontSize: 9, fontWeight: active ? 600 : 400, color: active ? "#a78bfa" : "#555568" } }, tab.label),
+          active && h('div', { style: { width: 4, height: 4, borderRadius: 2, background: "linear-gradient(135deg, #6858a8, #a78bfa)", marginTop: -1 } }),
+        );
+      }),
+    ),
+  );
+}
+
+createRoot(document.getElementById('root')).render(h(SkinDiaryMockup));
+</script>
+</body>
+</html>
