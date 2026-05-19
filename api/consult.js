@@ -75,10 +75,23 @@ function buildSystemPrompt(context) {
       const fullName = `${p.brand || ''} ${p.name || ''}`.trim() || '(이름 없음)';
       const parts = [fullName];
       if (p.category) parts.push(`[${p.category}]`);
-      if (p.startDate) {
-        const days = Math.floor((Date.now() - new Date(p.startDate).getTime()) / 86400000);
-        if (days >= 0) parts.push(`${days}일째 사용`);
+      // 등록 후 경과일 (daysSinceRegistered 우선)
+      const days = (typeof p.daysSinceRegistered === 'number')
+        ? p.daysSinceRegistered
+        : (p.startDate ? Math.floor((Date.now() - new Date(p.startDate).getTime()) / 86400000) : null);
+      if (days != null && days >= 0) parts.push(`${days}일째`);
+
+      // 오늘 실제 사용 여부 — Phase 3 핵심
+      if (p.timeSlot === 'morning') {
+        parts.push(p.todayUsedMorning ? '✅ 오늘 아침 사용함' : '⛔ 오늘 아침 미사용');
+      } else if (p.timeSlot === 'night') {
+        parts.push(p.todayUsedNight ? '✅ 오늘 저녁 사용함' : '⛔ 오늘 저녁 미사용');
+      } else {
+        const m = p.todayUsedMorning ? '아침✅' : '아침⛔';
+        const n = p.todayUsedNight ? '저녁✅' : '저녁⛔';
+        parts.push(`${m}/${n}`);
       }
+
       if (p.ingredients) {
         const ing = typeof p.ingredients === 'string'
           ? p.ingredients
@@ -89,20 +102,59 @@ function buildSystemPrompt(context) {
     };
 
     productContext = '\n\n[사용자가 현재 사용 중인 제품 — 스킨케어 트래커 등록]';
-    productContext += `\n총 ${context.products.length}개 제품을 사용 중. 상담 시 반드시 인지하고, 사용자 피부 데이터(위)와 연결해서 분석하세요.\n`;
+    productContext += `\n총 ${context.products.length}개 제품 등록. 각 제품의 ✅/⛔ 표시는 사용자가 오늘 실제로 발랐는지(체크) 여부입니다.\n`;
     if (byTime.morning.length > 0) productContext += `\n[아침 루틴]\n${byTime.morning.map(formatProduct).join('\n')}`;
     if (byTime.night.length > 0) productContext += `\n\n[저녁 루틴]\n${byTime.night.map(formatProduct).join('\n')}`;
     if (byTime.both.length > 0) productContext += `\n\n[아침·저녁 공통]\n${byTime.both.map(formatProduct).join('\n')}`;
 
+    // 카테고리별 개수 집계 — 과사용 추정용
+    const categoryCount = {};
+    for (const p of context.products) {
+      const c = p.category || '미분류';
+      categoryCount[c] = (categoryCount[c] || 0) + 1;
+    }
+    const overUsedCategories = Object.entries(categoryCount)
+      .filter(([cat, n]) => n >= 3 && /앰플|세럼|에센스|크림/i.test(cat))
+      .map(([cat, n]) => `${cat} ${n}종`);
+    if (overUsedCategories.length > 0) {
+      productContext += `\n\n[과사용 의심 카테고리] ${overUsedCategories.join(', ')} — 동일 카테고리 다종 동시 사용은 과영양·각질 누적·피부톤 칙칙함을 유발할 수 있음. 사용자 피부 상태(특히 피부톤·피부결·트러블)와 연결해서 분석.`;
+    }
+
     productContext += `\n\n[등록 제품 분석 가이드 — 매우 중요]
+- ✅ 표시는 오늘 실제로 발랐다는 뜻. ⛔ 는 등록은 했지만 오늘 안 발랐다는 뜻.
+  · 사용자가 "오늘 뭐 발랐어?" 류 질문 시 ✅ 항목만 정확히 답변. ⛔ 항목은 "등록은 했지만 오늘은 안 쓰셨네요" 안내.
+  · 측정 결과가 안 좋은데 핵심 제품이 ⛔라면 그게 원인일 수 있음을 부드럽게 짚어주세요.
 - 사용자의 현재 피부 점수와 사용 중인 제품 성분을 항상 cross-check 하세요
 - 자연스러운 인용 예: "지금 쓰고 계신 OOO에 나이아신아마이드가 들어있어서 색소(48점) 케어에 도움되고 있어요"
 - 누락된 카테고리 자연스럽게 안내 (예: 자외선 차단제 없음 → "차단제는 아직 안 쓰시는 것 같은데, 색소 케어엔 꼭 필요해요")
 - 시간대 적절성 체크: 레티놀·AHA·BHA는 저녁 전용 / 비타민C·SPF는 아침 권장. 잘못된 시간대 발견 시 부드럽게 알림
 - 14일 이상 사용한 제품은 효과 평가 시점이라 추세와 연결해 코멘트
+- 동일 기능군 다종 사용(예: 앰플 3종, 크림 2종) 발견 시 과사용·과영양 추정:
+  · 피부톤 칙칙함(skinTone < 60) + 앰플/세럼 3+종 매일 → "층층이 쌓인 영양분이 각질 턴오버를 방해할 수 있어요. 1주일만 1~2개로 줄여보는 게 어떨까요?"
+  · 트러블 증가 + 크림 2+종 매일 → 과영양으로 인한 모공 막힘 의심
+  · 유분 과다 + 오일 계열 다종 → 유분 누적
 - 일반 상담("건조해요" 같은 질문)에도 등록 제품 우선 참고해서 "지금 쓰는 OOO로 충분하니까 ~만 추가하면 돼요" 같이 활용
 - 제품 추천이 필요할 땐 등록 제품 라인업의 빈 카테고리 우선 추천 (중복 추천 금지)
 - 위 [성분 상호작용 규칙]을 등록 제품들끼리 체크해서 충돌 발견 시 알림`;
+  }
+
+  // ===== 루틴 진행도·꾸준함 컨텍스트 =====
+  let routineContext = '';
+  if (context.routineSnapshot) {
+    const r = context.routineSnapshot;
+    const today = r.today || {};
+    const weekly = r.weekly || {};
+    const lines = ['\n\n[루틴 실천도 — 사용자가 얼마나 꾸준한지 평가용]'];
+    if (today.morning?.total > 0) lines.push(`오늘 아침: ${today.morning.done}/${today.morning.total} 완료 (${today.morning.percent}%)`);
+    if (today.night?.total > 0) lines.push(`오늘 저녁: ${today.night.done}/${today.night.total} 완료 (${today.night.percent}%)`);
+    lines.push(`이번 주 7일: 완수 ${weekly.completedDays}일 · 부분 ${weekly.partialDays}일 · 스킵 ${weekly.skippedDays}일`);
+    lines.push('');
+    lines.push('[꾸준함 평가 룰]');
+    lines.push('- 완수 5일+ → "정말 꾸준히 하고 계세요" 형태로 격려 + 피부 좋은 부분이 이 꾸준함 덕분임을 연결');
+    lines.push('- 완수 2~4일 → "이번 주 절반 정도 하셨네요" 정도, 부담스럽지 않게');
+    lines.push('- 완수 0~1일 → 비난하지 말고 "바쁘셨나봐요. 저녁에 하나만이라도 챙기시면" 식 가벼운 권유');
+    lines.push('- 오늘 진행도가 0%인데 시간대(저녁/밤)라면 → "아직 저녁 루틴 전이시면 ~제품부터 시작" 식 자연스러운 리마인드');
+    routineContext = lines.join('\n');
   }
 
   let changeContext = '';
@@ -181,7 +233,7 @@ ${context.currentResult ? `종합점수: ${context.currentResult.overallScore}�
 다크서클: ${context.currentResult.darkCircleScore}점
 피부타입: ${context.currentResult.skinType || '알 수 없음'}
 주요 관심사: ${context.currentResult.concerns?.join(', ') || '없음'}` : '분석 데이터 없음'}
-${historyContext}${changeContext}${todayContext}${productContext}
+${historyContext}${changeContext}${todayContext}${productContext}${routineContext}
 
 [계절 기반 조언 - 현재 ${season}]
 ${seasonalTips[season]}
