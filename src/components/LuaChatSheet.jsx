@@ -4,52 +4,6 @@ import { getProfile } from '../storage/ProfileStorage';
 import { compressImage } from '../engine/PixelAnalysis';
 import { getProductsWithUsageContext, getRoutineSnapshot } from '../storage/TrackerStorage';
 
-// 단순 마크다운 렌더링 — **볼드**, 줄바꿈, 불릿/번호 리스트, → 화살표 처리
-// 외부 라이브러리 없이 가벼움. AI 응답 가독성용.
-function renderChatMarkdown(text) {
-  if (!text) return null;
-  const lines = String(text).split('\n');
-  return lines.map((line, i) => {
-    const key = `mk-${i}`;
-    if (line === '') return <div key={key} style={{ height: 8 }} />;
-
-    // 불릿 / 번호 리스트
-    const bulletMatch = line.match(/^(\s*)([•·\-*]|\d+[\.)])\s+(.*)$/);
-    if (bulletMatch) {
-      const [, indent, marker, rest] = bulletMatch;
-      const isNum = /\d/.test(marker);
-      return (
-        <div key={key} style={{
-          display: 'flex', gap: 6,
-          paddingLeft: 4 + (indent.length * 8),
-          margin: '3px 0', lineHeight: 1.7,
-        }}>
-          <span style={{ color: 'var(--accent-primary, #5BA8D6)', fontWeight: isNum ? 700 : 500, minWidth: isNum ? 18 : 8, flexShrink: 0 }}>
-            {isNum ? marker : '•'}
-          </span>
-          <span style={{ flex: 1 }}>{renderInline(rest)}</span>
-        </div>
-      );
-    }
-
-    return (
-      <div key={key} style={{ margin: '2px 0', lineHeight: 1.7 }}>
-        {renderInline(line)}
-      </div>
-    );
-  });
-}
-
-function renderInline(line) {
-  // **bold** 처리
-  const parts = line.split(/(\*\*[^*]+\*\*)/g);
-  return parts.map((p, j) =>
-    p.startsWith('**') && p.endsWith('**')
-      ? <strong key={j} style={{ fontWeight: 700, color: 'var(--text-primary, #191F28)' }}>{p.slice(2, -2)}</strong>
-      : <span key={j}>{p}</span>
-  );
-}
-
 function getGreetingMsg() {
   return '안녕하세요, 당신의 피부 상담사 루아에요. 궁금한 점이 있으면 편하게 물어보세요!';
 }
@@ -164,9 +118,6 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
     return () => document.removeEventListener('click', handler);
   }, [showAttachMenu]);
 
-  // 키보드 처리는 index.html viewport meta의 interactive-widget=resizes-content가 담당.
-  // 별도 JS 핸들러 불필요 — iOS 16+ / Android Chrome / 데스크톱 모두 자동 layout 재조정.
-
   const toggleListening = useCallback(() => {
     const recognition = recognitionRef.current;
     if (!recognition) return;
@@ -252,16 +203,7 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
       });
       if (!response.ok) { const err = await response.json().catch(() => ({})); throw new Error(err.error || `HTTP ${response.status}`); }
       const data = await response.json();
-      const replyText = (data?.reply || '').trim();
-      if (!replyText) {
-        // 빈 응답(토큰 초과·OpenAI 응답 없음 등) → 명시적 fallback 메시지
-        setMessages(prev => [...prev, {
-          role: 'assistant', timestamp: Date.now(),
-          content: '답변이 길어서 잠시 끊겼어요. 같은 질문 한 번만 더 보내주시면 정리해서 답변드릴게요.',
-        }]);
-      } else {
-        setMessages(prev => [...prev, { role: 'assistant', content: replyText, timestamp: Date.now() }]);
-      }
+      setMessages(prev => [...prev, { role: 'assistant', content: data.reply, timestamp: Date.now() }]);
     } catch (err) {
       setMessages(prev => [...prev, {
         role: 'assistant', timestamp: Date.now(),
@@ -324,13 +266,14 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
         opacity: closing ? 0 : 1, transition: 'opacity 200ms',
       }} />
 
-      {/* Sheet — 바닥 고정 90% (iOS PWA 키보드 충돌 회피, 거의 풀스크린) */}
+      {/* Sheet */}
       <div ref={sheetRef} style={{
         position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201,
-        height: '90%',
-        background: '#ffffff',
-        borderRadius: '24px 24px 0 0',
-        boxShadow: '0 -4px 24px rgba(0,0,0,0.08)',
+        height: '62%',
+        ...glass,
+        background: 'rgba(255,255,255,0.65)',
+        borderRadius: '30px 30px 0 0',
+        boxShadow: '0 -8px 28px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.6)',
         display: 'flex', flexDirection: 'column',
         animation: closing ? 'luaChatSlideDown 240ms ease forwards' : 'luaChatSlideUp 280ms cubic-bezier(0.32,0.72,0,1) forwards',
         maxWidth: 430, margin: '0 auto',
@@ -341,36 +284,25 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
           @keyframes luaDot { 0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1); } }
         `}</style>
 
-        {/* Header — 풀스크린 채팅 헤더 (좌측 lua 정보 + 우측 X 닫기) */}
+        {/* Handle */}
+        <div onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
+          style={{ display: 'flex', justifyContent: 'center', padding: '20px 0 20px', cursor: 'grab' }}>
+          <div style={{ width: 47, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.15)' }} />
+        </div>
+
+        {/* Header */}
         <div style={{
-          padding: '12px 16px',
-          display: 'flex', alignItems: 'center', gap: 10,
-          borderBottom: '1px solid rgba(0,0,0,0.06)',
-          background: 'rgba(255,255,255,0.95)',
+          padding: '8px 14px 10px', display: 'flex', alignItems: 'center', gap: 10,
+          borderBottom: '1px solid rgba(255,255,255,0.3)',
         }}>
           {luaAvatar(36)}
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary, #191F28)' }}>lua</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary, #191F28)' }}>lua</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 1 }}>
               <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#89cef5' }} />
-              <span style={{ fontSize: 11, color: 'var(--text-muted, #8B95A1)' }}>늘 곁에 있어요</span>
+              <span style={{ fontSize: 10, color: 'var(--text-muted, #8B95A1)' }}>늘 곁에 있어요</span>
             </div>
           </div>
-          <button
-            onClick={handleClose}
-            aria-label="채팅 닫기"
-            style={{
-              width: 36, height: 36, borderRadius: 18,
-              background: 'rgba(0,0,0,0.04)', border: 'none',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', flexShrink: 0,
-            }}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary, #191F28)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
         </div>
 
         {/* Messages */}
@@ -400,11 +332,12 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
                       <div style={{
                         ...glass,
                         background: 'rgba(255,255,255,0.5)',
-                        padding: '12px 16px',
+                        padding: '10px 14px',
                         borderRadius: consecutive ? 22 : '4px 22px 22px 22px',
-                        maxWidth: 'calc(85vw - 40px)',
-                        fontSize: 14, color: 'var(--text-primary, #191F28)', lineHeight: 1.65,
-                      }}>{renderChatMarkdown(msg.content)}</div>
+                        maxWidth: 'calc(75vw - 40px)',
+                        fontSize: 13, color: 'var(--text-primary, #191F28)', lineHeight: 1.5,
+                        whiteSpace: 'pre-wrap',
+                      }}>{msg.content}</div>
                       {showTime && (
                         <div style={{ fontSize: 9, color: 'var(--text-muted, #8B95A1)', marginTop: 3, marginLeft: 4 }}>
                           {formatTime(msg.timestamp)}
@@ -426,10 +359,10 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
                         background: 'rgba(137,206,245,0.5)',
                         backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
                         border: '1px solid rgba(137,206,245,0.3)',
-                        padding: '12px 16px',
+                        padding: '10px 14px',
                         borderRadius: consecutive ? 22 : '22px 4px 22px 22px',
-                        maxWidth: '85%',
-                        fontSize: 14, color: 'var(--text-primary, #191F28)', lineHeight: 1.65,
+                        maxWidth: '75%',
+                        fontSize: 13, color: 'var(--text-primary, #191F28)', lineHeight: 1.5,
                         whiteSpace: 'pre-wrap',
                       }}>{msg.content}</div>
                     </div>
