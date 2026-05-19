@@ -324,8 +324,7 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
       {/* Sheet — 풀스크린 (채팅 중 시야 최대) */}
       <div ref={sheetRef} style={{
         position: 'fixed', top: 0, bottom: 0, left: 0, right: 0, zIndex: 201,
-        ...glass,
-        background: 'rgba(255,255,255,0.85)',
+        background: '#ffffff',
         borderRadius: 0,
         boxShadow: 'none',
         display: 'flex', flexDirection: 'column',
@@ -339,25 +338,36 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
           @keyframes luaDot { 0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1); } }
         `}</style>
 
-        {/* Handle */}
-        <div onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
-          style={{ display: 'flex', justifyContent: 'center', padding: '20px 0 20px', cursor: 'grab' }}>
-          <div style={{ width: 47, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.15)' }} />
-        </div>
-
-        {/* Header */}
+        {/* Header — 풀스크린 채팅 헤더 (좌측 lua 정보 + 우측 X 닫기) */}
         <div style={{
-          padding: '8px 14px 10px', display: 'flex', alignItems: 'center', gap: 10,
-          borderBottom: '1px solid rgba(255,255,255,0.3)',
+          padding: '12px 16px',
+          display: 'flex', alignItems: 'center', gap: 10,
+          borderBottom: '1px solid rgba(0,0,0,0.06)',
+          background: 'rgba(255,255,255,0.95)',
         }}>
           {luaAvatar(36)}
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary, #191F28)' }}>lua</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary, #191F28)' }}>lua</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 1 }}>
               <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#89cef5' }} />
-              <span style={{ fontSize: 10, color: 'var(--text-muted, #8B95A1)' }}>늘 곁에 있어요</span>
+              <span style={{ fontSize: 11, color: 'var(--text-muted, #8B95A1)' }}>늘 곁에 있어요</span>
             </div>
           </div>
+          <button
+            onClick={handleClose}
+            aria-label="채팅 닫기"
+            style={{
+              width: 36, height: 36, borderRadius: 18,
+              background: 'rgba(0,0,0,0.04)', border: 'none',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', flexShrink: 0,
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary, #191F28)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
         </div>
 
         {/* Messages */}
