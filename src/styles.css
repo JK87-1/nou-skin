@@ -633,6 +633,12 @@
   90% { opacity: 1; }
   100% { top: 75%; opacity: 0; }
 }
+@keyframes luaScan {
+  0% { top: -60px; opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { top: calc(100% - 2px); opacity: 0; }
+}
 
 /* ===== Daily Journey (horizontal scroll) ===== */
 .journey-scroll {

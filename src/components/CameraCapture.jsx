@@ -36,13 +36,84 @@ const KEY_LANDMARKS = [
   152, 148, 377, 172, 397, 176, 400, 234, 454,
 ];
 
-// Analysis zone definitions with landmark anchor and display config
+// ===== v3: Beauty Lines + Active Measurement =====
+
+// Layer 1: Beauty Lines — ~27 dots on facial beauty lines
+// grade 1 = bright (40%), grade 2 = normal (50%), grade 3 = dim (10%)
+const BEAUTY_LINES = [
+  // 이마 — 5 dots (v1에서 선별)
+  { lm: 10, grade: 3 },
+  { lm: 67, grade: 2 },
+  { lm: 297, grade: 2 },
+  { lm: 109, grade: 2 },
+  { lm: 338, grade: 3 },
+  // 눈썹 아치 좌 (camera-left) — 3 dots
+  { lm: 300, grade: 2 },
+  { lm: 293, grade: 1 },
+  { lm: 334, grade: 2 },
+  // 눈썹 아치 우 (camera-right) — 3 dots
+  { lm: 70, grade: 2 },
+  { lm: 63, grade: 1 },
+  { lm: 105, grade: 2 },
+  // 아이라인 꼬리 좌 — 3 dots (작은 점, 세로 높이 동일)
+  { lm: 446, grade: 3 },
+  { lm: 464, grade: 3 },
+  { lm: 454, grade: 3 },
+  // 아이라인 꼬리 우 — 3 dots (작은 점, 세로 높이 동일)
+  { lm: 226, grade: 3 },
+  { lm: 244, grade: 3 },
+  { lm: 234, grade: 3 },
+  // 눈밑 바깥 좌 (camera-left) — 2 dots
+  { lm: 448, grade: 3 },
+  { lm: 449, grade: 3 },
+  // 눈밑 바깥 우 (camera-right) — 2 dots
+  { lm: 228, grade: 3 },
+  { lm: 229, grade: 3 },
+  // 콧대 + 콧끝 — 3 dots
+  { lm: 6, grade: 1 },
+  { lm: 4, grade: 2 },
+  { lm: 1, grade: 1 },
+  // 콧볼 좌우 — 작은 점
+  { lm: 98, grade: 3 },
+  { lm: 327, grade: 3 },
+  // 광대 헤일로 좌 (camera-left) — 3 dots
+  { lm: 345, grade: 1 },
+  { lm: 323, grade: 2 },
+  { lm: 361, grade: 3 },
+  // 광대 헤일로 우 (camera-right) — 3 dots
+  { lm: 116, grade: 1 },
+  { lm: 93, grade: 2 },
+  { lm: 132, grade: 3 },
+  // 입꼬리 — 양쪽 끝만 작은 점
+  { lm: 57, grade: 3 },
+  { lm: 287, grade: 3 },
+  { lm: 78, grade: 3 },
+  { lm: 308, grade: 3 },
+  // 턱선 V라인 — 4 dots (좌우 대칭 2+2)
+  { lm: 172, grade: 2 },
+  { lm: 176, grade: 3 },
+  { lm: 397, grade: 2 },
+  { lm: 400, grade: 3 },
+];
+
+// Pre-compute animation params for each beauty dot (stable across renders)
+const BEAUTY_DOT_PARAMS = BEAUTY_LINES.map(dot => ({
+  ...dot,
+  period: 4.5 + Math.random() * 1.5,
+  phase: Math.random() * 6,
+  coreR: dot.grade === 1 ? 1.35 : dot.grade === 2 ? 1.1 : 1.0,
+  glowR: dot.grade === 1 ? 6 : dot.grade === 2 ? 5 : 4.5,
+}));
+
+// Layer 2: Active Measurement — 7 zones with highlight dots
 const ANALYSIS_ZONES = [
-  { label: '이마', anchor: 10, offsetY: -0.03, color: 'rgba(255,200,80,0.55)' },
-  { label: 'T존', anchor: 4, offsetY: 0.01, color: 'rgba(255,160,60,0.5)' },
-  { label: '왼볼', anchor: 93, offsetX: -0.03, color: 'rgba(100,180,255,0.5)' },
-  { label: '오른볼', anchor: 323, offsetX: 0.03, color: 'rgba(100,180,255,0.5)' },
-  { label: '턱선', anchor: 152, offsetY: 0.02, color: 'rgba(180,130,255,0.5)' },
+  { id: 'forehead', label: '이마', anchor: 10, offsetY: -0.02, dots: [10, 67, 297, 109, 338] },
+  { id: 'under_eye_left', label: '왼눈가', anchor: 33, offsetX: -0.07, dots: [111, 117, 118] },
+  { id: 'under_eye_right', label: '오른눈가', anchor: 263, offsetX: 0.07, dots: [340, 346, 347] },
+  { id: 't_zone', label: 'T존', anchor: 4, offsetY: 0.0, dots: [6, 4, 197] },
+  { id: 'cheek_left', label: '왼볼', anchor: 132, offsetX: -0.025, dots: [116, 93, 132, 123] },
+  { id: 'cheek_right', label: '오른볼', anchor: 361, offsetX: 0.025, dots: [345, 323, 361, 352] },
+  { id: 'chin', label: '턱선', anchor: 152, offsetY: 0.022, dots: [152, 175, 396] },
 ];
 
 // Brightness sampling landmarks (14 points across face)
@@ -169,6 +240,12 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
   const [mediapipeReady, setMediapipeReady] = useState(false);
   const [cameraError, setCameraError] = useState(null); // null | 'insecure' | 'denied' | 'unavailable'
   const [cameraReady, setCameraReady] = useState(false);
+  const [activeZoneIdx, setActiveZoneIdx] = useState(-1);
+  const [scanProgress, setScanProgress] = useState(0);
+  const scanStartRef = useRef(null);
+  const [ellipse, setEllipse] = useState({ cx: 0, cy: 0, rx: 0, ry: 0 });
+  const labelFirstShownRef = useRef(null); // timestamp when labels first appeared
+  const [scanStopped, setScanStopped] = useState(false);
 
   // Cleanup: stop stream, cancel RAF
   const cleanup = useCallback(() => {
@@ -185,172 +262,145 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
   // Store drawOverlay in a ref so RAF loop always calls the latest version
   const drawOverlayRef = useRef(null);
 
-  // drawOverlay reads statusRef (always fresh) — assigned to ref each render
+  // Store ellipse dimensions for HTML overlay positioning
+  const ellipseRef = useRef({ cx: 0, cy: 0, rx: 0, ry: 0 });
+
+  // drawOverlay — v3: Beauty Lines + Active Measurement
   drawOverlayRef.current = function drawOverlay(ctx, W, H, landmarks, videoW, videoH) {
     ctx.clearRect(0, 0, W, H);
+    const now = performance.now() / 1000;
 
-    // objectFit: cover coordinate mapping — video normalized coords → display coords
+    // objectFit: cover coordinate mapping
     const vidAspect = videoW / videoH;
     const dispAspect = W / H;
     let mapScale, mapOffX, mapOffY;
     if (dispAspect > vidAspect) {
-      mapScale = W / videoW;
-      mapOffX = 0;
-      mapOffY = (H - videoH * mapScale) / 2;
+      mapScale = W / videoW; mapOffX = 0; mapOffY = (H - videoH * mapScale) / 2;
     } else {
-      mapScale = H / videoH;
-      mapOffX = (W - videoW * mapScale) / 2;
-      mapOffY = 0;
+      mapScale = H / videoH; mapOffX = (W - videoW * mapScale) / 2; mapOffY = 0;
     }
     function mapX(nx) { return nx * videoW * mapScale + mapOffX; }
     function mapY(ny) { return ny * videoH * mapScale + mapOffY; }
 
-    // Oval guide — fixed egg-shaped proportions based on display size
+    // Ellipse dimensions
     const cx = W * 0.5;
     const cy = H * 0.44;
     const baseSize = Math.min(W, H);
     const rx = baseSize * 0.34;
     const ry = Math.min(rx * 1.35, H * 0.40);
-
-    const curStatus = statusRef.current;
-    // White / Lemon / Mint palette
-    const readyColor = 'rgba(126,252,202,0.9)';   // mint
-    const readyGlow = 'rgba(126,252,202,0.3)';
-    const pendingColor = 'rgba(255,255,255,0.7)';
-
-    let guideColor = pendingColor;
-    let glowColor = null;
-    if (landmarks) {
-      if (curStatus === 'ready') {
-        guideColor = readyColor;
-        glowColor = readyGlow;
-      } else {
-        guideColor = 'rgba(255,251,139,0.75)';  // lemon for aligning
-      }
+    ellipseRef.current = { cx, cy, rx, ry };
+    if (Math.abs(ellipse.rx - rx) > 1 || Math.abs(ellipse.ry - ry) > 1) {
+      setEllipse({ cx, cy, rx, ry });
     }
 
-    // Layer 1: Vignette mask
+    // --- Background darkening (cinematic vignette) ---
     ctx.save();
-    ctx.fillStyle = 'rgba(0,0,0,0.45)';
+    const vignette = ctx.createRadialGradient(cx, cy, Math.min(rx, ry) * 0.5, cx, cy, Math.max(W, H) * 0.7);
+    vignette.addColorStop(0, 'rgba(0,0,0,0)');
+    vignette.addColorStop(0.6, 'rgba(0,0,0,0.1)');
+    vignette.addColorStop(1, 'rgba(0,0,0,0.3)');
+    ctx.fillStyle = vignette;
     ctx.fillRect(0, 0, W, H);
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.beginPath();
-    ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
-    ctx.fill();
     ctx.restore();
 
-    // Layer 2: Ellipse guide border
+    // --- Ellipse guide (dotted, medical-instrument feel) ---
+    // After labels fade + ready → white ellipse
+    const labelsDone = labelFirstShownRef.current && (now - labelFirstShownRef.current) >= 5;
+    const scanComplete = labelsDone && statusRef.current === 'ready';
+    if (scanComplete && !scanStopped) setScanStopped(true);
+    if (!scanComplete && scanStopped) setScanStopped(false);
     ctx.save();
-    if (glowColor) {
-      ctx.shadowColor = glowColor;
-      ctx.shadowBlur = 24;
-    }
-    ctx.strokeStyle = guideColor;
-    ctx.lineWidth = 3.5;
-    if (!landmarks) ctx.setLineDash([10, 8]);
+    ctx.strokeStyle = scanComplete ? 'rgba(255, 255, 255, 0.6)' : 'rgba(30, 144, 232, 0.55)';
+    ctx.lineWidth = scanComplete ? 1.6 : 1.2;
+    ctx.setLineDash(scanComplete ? [3, 4] : [2, 5]);
     ctx.beginPath();
     ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
     ctx.stroke();
     ctx.setLineDash([]);
     ctx.restore();
 
+    // --- Corner markers ---
+    const markerLen = 14, pad = 16;
+    const mL = cx - rx - pad, mR = cx + rx + pad;
+    const mT = cy - ry - pad, mB = cy + ry + pad;
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+    ctx.lineWidth = 1.2;
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(mL, mT + markerLen); ctx.lineTo(mL, mT); ctx.lineTo(mL + markerLen, mT); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(mR - markerLen, mT); ctx.lineTo(mR, mT); ctx.lineTo(mR, mT + markerLen); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(mL, mB - markerLen); ctx.lineTo(mL, mB); ctx.lineTo(mL + markerLen, mB); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(mR - markerLen, mB); ctx.lineTo(mR, mB); ctx.lineTo(mR, mB - markerLen); ctx.stroke();
+    ctx.restore();
+
     if (!landmarks) return;
 
-    // Shared label drawing helper
-    const drawLabel = (x, y, label, bgColor) => {
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.scale(-1, 1);  // counter CSS scaleX(-1) for readable text
-      ctx.font = '600 13px "Pretendard Variable", Pretendard, -apple-system, system-ui, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      const textW = ctx.measureText(label).width + 20;
-      const boxW = Math.max(textW, 48);
-      const boxH = 28;
-      const rad = 10;
-      // Background pill with slight shadow
-      ctx.shadowColor = 'rgba(0,0,0,0.15)';
-      ctx.shadowBlur = 8;
-      ctx.shadowOffsetY = 2;
-      ctx.fillStyle = bgColor;
-      ctx.beginPath();
-      ctx.roundRect(-boxW / 2, -boxH / 2, boxW, boxH, rad);
-      ctx.fill();
-      // Text — dark text for light label backgrounds
-      ctx.shadowColor = 'transparent';
-      ctx.fillStyle = '#1a1a2e';
-      ctx.fillText(label, 0, 0.5);
-      ctx.restore();
-    };
-
-    // Layer 3: Analysis zone labels — white/lemon/mint palette
-    const ZONE_COLORS = {
-      '이마': 'rgba(255,251,139,0.85)',     // lemon
-      'T존': 'rgba(126,252,202,0.8)',       // mint
-      '왼볼': 'rgba(255,255,255,0.75)',     // white
-      '오른볼': 'rgba(255,255,255,0.75)',   // white
-      '턱선': 'rgba(126,252,202,0.8)',      // mint
-    };
-    for (const zone of ANALYSIS_ZONES) {
-      if (zone.anchor >= landmarks.length) continue;
-      const lm = landmarks[zone.anchor];
-      const zx = mapX(lm.x + (zone.offsetX || 0));
-      const zy = mapY(lm.y + (zone.offsetY || 0));
-      drawLabel(zx, zy, zone.label, ZONE_COLORS[zone.label] || 'rgba(124,92,252,0.7)');
-    }
-
-    // Layer 4: Landmark dots — larger with glow
-    const dotColor = curStatus === 'ready' ? 'rgba(255,251,139,0.9)' : 'rgba(255,255,255,0.7)';  // lemon / white
-    const dotGlow = curStatus === 'ready' ? 'rgba(255,251,139,0.5)' : 'rgba(255,255,255,0.3)';
-    for (const idx of KEY_LANDMARKS) {
-      if (idx >= landmarks.length) continue;
-      const lm = landmarks[idx];
+    // --- Helper: draw glow dot ---
+    const drawGlowDot = (x, y, coreR, glowR, opacity, isActive) => {
       // Glow
-      ctx.save();
-      ctx.shadowColor = dotGlow;
-      ctx.shadowBlur = 6;
+      const grad = ctx.createRadialGradient(x, y, 0, x, y, glowR);
+      if (isActive) {
+        grad.addColorStop(0, `rgba(255,255,255,${opacity})`);
+        grad.addColorStop(0.4, `rgba(200,232,255,${opacity * 0.9})`);
+        grad.addColorStop(1, 'rgba(30,144,232,0)');
+      } else {
+        grad.addColorStop(0, `rgba(232,244,255,${opacity})`);
+        grad.addColorStop(0.5, `rgba(168,216,240,${opacity * 0.6})`);
+        grad.addColorStop(1, 'rgba(30,144,232,0)');
+      }
+      ctx.fillStyle = grad;
       ctx.beginPath();
-      ctx.arc(mapX(lm.x), mapY(lm.y), 4, 0, Math.PI * 2);
-      ctx.fillStyle = dotColor;
+      ctx.arc(x, y, glowR, 0, Math.PI * 2);
       ctx.fill();
-      ctx.restore();
+      // Core
+      ctx.fillStyle = isActive ? `rgba(255,255,255,${opacity})` : `rgba(232,244,255,${opacity})`;
+      ctx.beginPath();
+      ctx.arc(x, y, coreR, 0, Math.PI * 2);
+      ctx.fill();
+    };
+
+    // --- Layer 1: Beauty Lines (always visible, breathing) ---
+    for (const dot of BEAUTY_DOT_PARAMS) {
+      if (dot.lm >= landmarks.length) continue;
+      const lm = landmarks[dot.lm];
+      const x = mapX(lm.x), y = mapY(lm.y);
+      // Breathing: sin wave with per-dot random period/phase
+      const t = ((now + dot.phase) % dot.period) / dot.period;
+      const opacity = 0.3 + 0.55 * (0.5 + 0.5 * Math.sin(t * Math.PI * 2));
+      drawGlowDot(x, y, dot.coreR, dot.glowR, opacity, false);
     }
 
-    // Layer 5: Under-eye dots
-    if (landmarks.length >= 468) {
-      const eyes = [
-        { upper: 159, lower: 145, inner: 133, outer: 33 },
-        { upper: 386, lower: 374, inner: 362, outer: 263 },
-      ];
-      const underEyeDots = [];
-      for (const eye of eyes) {
-        const inn = landmarks[eye.inner], out = landmarks[eye.outer];
-        const ecx = (inn.x + out.x) / 2;
-        const stableY = (inn.y + out.y) / 2;
-        const eyeW = Math.abs(out.x - inn.x);
-        const dotY = stableY + eyeW * 0.55;
-        const spread = eyeW * 0.22;
-        underEyeDots.push(
-          { x: ecx - spread, y: dotY },
-          { x: ecx, y: dotY },
-          { x: ecx + spread, y: dotY },
-        );
-      }
-      for (const dot of underEyeDots) {
+    // --- Zone labels (pill shape, fade out after 5s) ---
+    if (!labelFirstShownRef.current) labelFirstShownRef.current = now;
+    const labelAge = now - labelFirstShownRef.current;
+    const labelOpacity = labelAge < 4.5 ? 1 : labelAge < 5 ? 1 - (labelAge - 4.5) / 0.5 : 0;
+
+    if (labelOpacity > 0) {
+      for (const zone of ANALYSIS_ZONES) {
+        if (zone.anchor >= landmarks.length) continue;
+        const lm = landmarks[zone.anchor];
+        const zx = mapX(lm.x + (zone.offsetX || 0));
+        const zy = mapY(lm.y + (zone.offsetY || 0));
+
         ctx.save();
-        ctx.shadowColor = dotGlow;
-        ctx.shadowBlur = 6;
+        ctx.globalAlpha = labelOpacity;
+        ctx.translate(zx, zy);
+        ctx.scale(-1, 1);
+        ctx.font = '400 10px "Pretendard Variable", Pretendard, -apple-system, system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const tw = ctx.measureText(zone.label).width;
+        const bw = tw + 20, bh = 20;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
         ctx.beginPath();
-        ctx.arc(mapX(dot.x), mapY(dot.y), 4, 0, Math.PI * 2);
-        ctx.fillStyle = dotColor;
+        ctx.roundRect(-bw / 2, -bh / 2, bw, bh, bh / 2);
         ctx.fill();
+        ctx.fillStyle = '#042C53';
+        ctx.fillText(zone.label, 0, 0.5);
         ctx.restore();
       }
-
-      // '눈밑' label
-      const rEyeCenter = underEyeDots[1];
-      drawLabel(mapX(rEyeCenter.x), mapY(rEyeCenter.y + 0.02), '눈밑', 'rgba(126,252,202,0.8)');
     }
+
   };
 
   // Evaluate face conditions from landmarks
@@ -611,11 +661,10 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: 'var(--bg-primary)', zIndex: 200,
-      display: 'flex', flexDirection: 'column',
+      position: 'fixed', inset: 0, background: '#000', zIndex: 200,
     }}>
-      {/* Camera preview */}
-      <div style={{ flex: 1, position: 'relative', overflow: 'hidden', borderRadius: '0 0 24px 24px' }}>
+      {/* Camera preview — full screen */}
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
         <video
           ref={videoRef}
           autoPlay
@@ -638,16 +687,26 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
           }}
         />
 
-        {/* Scanline animation */}
-        {hasLandmarks && (
+        {/* Scan line — clipped to ellipse, stops when scan complete */}
+        {hasLandmarks && ellipse.rx > 0 && !scanStopped && (
           <div style={{
             position: 'absolute',
-            left: '16%', right: '16%',
-            height: 2,
-            background: 'linear-gradient(90deg, transparent, rgba(129,228,189,0.6), transparent)',
-            animation: 'scanLine 2.5s ease-in-out infinite',
+            left: ellipse.cx - ellipse.rx,
+            top: ellipse.cy - ellipse.ry,
+            width: ellipse.rx * 2,
+            height: ellipse.ry * 2,
+            borderRadius: '50%',
+            overflow: 'hidden',
             pointerEvents: 'none',
-          }} />
+          }}>
+            <div style={{
+              position: 'absolute', left: 0, right: 0,
+              height: 60,
+              background: 'linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.25) 50%, rgba(255,255,255,0) 100%)',
+              animation: 'luaScan 3s ease-in-out infinite',
+              pointerEvents: 'none',
+            }} />
+          </div>
         )}
 
         {/* Flash overlay */}
@@ -663,29 +722,55 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
         {/* Back button */}
         <button
           onClick={() => { cleanup(); onClose(); }}
+          aria-label="뒤로 가기"
           style={{
-            position: 'absolute', top: 'calc(16px + env(safe-area-inset-top, 0px))', left: 16,
-            width: 40, height: 40, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.85)', border: 'none',
-            color: '#191F28', fontSize: 20, cursor: 'pointer',
+            position: 'absolute', top: 'calc(12px + env(safe-area-inset-top, 0px))', left: 12,
+            width: 32, height: 32, borderRadius: '50%',
+            background: 'rgba(255,255,255,0.92)', border: 'none',
+            cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
             zIndex: 10,
           }}
         >
-          <span>←</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#042C53" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
         </button>
+
+        {/* Status chip */}
+        <div
+          aria-live="polite"
+          style={{
+            position: 'absolute', top: 'calc(56px + env(safe-area-inset-top, 0px))',
+            left: '50%', transform: 'translateX(-50%)',
+            padding: '6px 11px',
+            background: 'rgba(4, 44, 83, 0.78)',
+            borderRadius: 14,
+            display: 'flex', alignItems: 'center', gap: 6,
+            zIndex: 10,
+          }}
+        >
+          {hasLandmarks && status === 'ready' ? (
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#7EC8E3" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          ) : (
+            <div style={{ width: 5, height: 5, borderRadius: '50%', background: hasLandmarks ? '#7EC8E3' : 'rgba(255,255,255,0.4)' }} />
+          )}
+          <span style={{ color: '#fff', fontSize: 10, fontWeight: 500, whiteSpace: 'nowrap' }}>
+            {!hasLandmarks ? '얼굴을 가운데에 맞춰주세요' :
+             isCapturing ? '결과 정리 중' :
+             status === 'ready' ? '얼굴 인식 완료 · 7개 영역' :
+             '얼굴을 가운데에 맞춰주세요'}
+          </span>
+        </div>
 
         {/* Album fallback button */}
         <button
           onClick={() => { cleanup(); onFallback(); }}
+          aria-label="앨범에서 사진 선택"
           style={{
-            position: 'absolute', top: 'calc(16px + env(safe-area-inset-top, 0px))', right: 16,
-            padding: '8px 14px', borderRadius: 10,
-            background: 'rgba(255,255,255,0.85)', border: 'none',
-            color: '#191F28', fontSize: 12, fontWeight: 600, cursor: 'pointer',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
-            zIndex: 10,
+            position: 'absolute', top: 'calc(12px + env(safe-area-inset-top, 0px))', right: 12,
+            padding: '7px 12px', borderRadius: 16,
+            background: 'rgba(255,255,255,0.92)', border: 'none',
+            color: '#042C53', fontSize: 11, fontWeight: 500, cursor: 'pointer',
+            zIndex: 10, fontFamily: 'inherit',
           }}
         >
           앨범에서 선택
@@ -695,69 +780,70 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
       {/* Brightness sampling canvas (hidden) */}
       <canvas ref={brightnessCanvasRef} style={{ display: 'none' }} />
 
+      {/* Bottom gradient overlay */}
+      <div style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0, height: '30%',
+        background: 'linear-gradient(180deg, transparent 0%, rgba(135, 206, 235, 0.45) 100%)',
+        pointerEvents: 'none',
+      }} />
+
       {/* Bottom controls */}
       <div style={{
-        background: 'var(--bg-primary)',
-        padding: '16px 20px calc(20px + env(safe-area-inset-bottom, 0px))',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14,
+        position: 'absolute', bottom: 0, left: 0, right: 0,
+        background: 'transparent',
+        padding: '18px 20px calc(22px + env(safe-area-inset-bottom, 0px))',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16,
       }}>
         {/* Status text */}
         <p style={{
-          color: isReady ? accentOk : 'var(--text-primary)',
-          fontSize: 15, fontWeight: 600, textAlign: 'center',
-          margin: 0, minHeight: 20,
-          transition: 'color 0.3s',
+          color: isReady && scanStopped ? '#ffffff' : isReady ? '#7EC8E3' : 'rgba(255,255,255,0.7)',
+          fontSize: 13, fontWeight: 500, textAlign: 'center', letterSpacing: 0.2,
+          margin: 0, minHeight: 18, transition: 'color 0.3s',
         }}>
-          {STATUS_TEXT[status] || ''}
+          {status === 'ready' && !scanStopped ? '잠시만 기다려주세요' : STATUS_TEXT[status] || ''}
         </p>
 
-        {/* Condition indicators */}
-        <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
+        {/* Condition indicators — inline compact */}
+        <div style={{ display: 'flex', gap: 20, justifyContent: 'center' }}>
           {[
             { key: 'face', label: '얼굴' },
             { key: 'position', label: '위치' },
             { key: 'distance', label: '거리' },
             { key: 'light', label: '조명' },
           ].map(({ key, label }) => (
-            <div key={key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+            <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <div style={{
-                width: 24, height: 24, borderRadius: '50%',
-                background: conditions[key] ? accentOk : 'transparent',
-                border: `2px solid ${conditions[key] ? accentOk : 'var(--text-disabled)'}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 6, height: 6, borderRadius: '50%',
+                background: conditions[key] ? '#7EC8E3' : 'rgba(255,255,255,0.2)',
                 transition: 'all 0.3s',
-              }}>
-                {conditions[key] && (
-                  <span style={{ color: '#fff', fontSize: 12, fontWeight: 700 }}>&#10003;</span>
-                )}
-              </div>
-              <span style={{ color: conditions[key] ? accentOk : 'var(--text-dim)', fontSize: 10, fontWeight: 600 }}>
-                {label}
-              </span>
+              }} />
+              <span style={{
+                color: conditions[key] ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)',
+                fontSize: 10, fontWeight: 500, transition: 'color 0.3s',
+              }}>{label}</span>
             </div>
           ))}
         </div>
 
-        {/* Capture button */}
+        {/* Capture button — minimal ring */}
         <button
           onClick={handleCapture}
           disabled={isCapturing}
           style={{
-            width: 72, height: 72, borderRadius: '50%',
-            background: canCapture
-              ? 'var(--accent-primary)'
-              : 'var(--text-disabled)',
-            border: `4px solid ${canCapture ? '#fff' : 'var(--text-disabled)'}`,
-            boxShadow: 'none',
+            width: 64, height: 64, borderRadius: '50%',
+            background: 'transparent',
+            border: `2px solid ${canCapture ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.15)'}`,
             cursor: canCapture && !isCapturing ? 'pointer' : 'default',
             transition: 'all 0.3s',
             opacity: isCapturing ? 0.5 : 1,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 0,
           }}
         >
           <div style={{
-            width: 56, height: 56, borderRadius: '50%',
-            background: canCapture ? 'rgba(255,255,255,0.3)' : 'transparent',
+            width: 52, height: 52, borderRadius: '50%',
+            background: canCapture ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.08)',
+            transition: 'all 0.3s',
           }} />
         </button>
       </div>
