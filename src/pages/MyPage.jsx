@@ -248,7 +248,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
   const [editingSkin, setEditingSkin] = useState(false);
   const [legalPage, setLegalPage] = useState(null); // 'terms' | 'privacy' | 'biometric' | null
   const [faqOpen, setFaqOpen] = useState(false);
-  const [openFaqIndex, setOpenFaqIndex] = useState(0);
+  const [openFaqIndex, setOpenFaqIndex] = useState(-1);
   const [editField, setEditField] = useState(null); // 'nickname' | 'birthYear' | 'gender'
   const [editFieldValue, setEditFieldValue] = useState('');
   const [goalModalOpen, setGoalModalOpen] = useState(false);
@@ -340,16 +340,53 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
 
         <SectionHeader label="프로필" />
         <SettingsRow icon={icons.user} label="프로필" right={profile.nickname || '사용자'} onTap={() => setEditingProfile(true)} />
-        <SettingsRow icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14.504 8.522l-1.758 -4.032a.814 .814 0 0 0 -1.492 0l-1.759 4.032c-.19 .436 -.537 .784 -.973 .973l-4.032 1.759a.814 .814 0 0 0 0 1.492l4.033 1.758c.436 .19 .784 .538 .973 .974l1.759 4.033a.814 .814 0 0 0 1.492 0l1.758 -4.033c.19 -.436 .538 -.784 .974 -.974l4.033 -1.758a.814 .814 0 0 0 0 -1.492l-4.033 -1.759a1.88 1.88 0 0 1 -.974 -.973"/><path d="M3 3l2 2"/><path d="M21 3l-2 2"/><path d="M3 21l2 -2"/><path d="M21 21l-2 -2"/></svg>} label="피부 타입" right={profile.skinType || '미설정'} onTap={() => setEditingSkin(true)} />
+        <SettingsRow icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M19 3h-4a2 2 0 0 0 -2 2v12a4 4 0 0 0 8 0v-12a2 2 0 0 0 -2 -2" /><path d="M13 7.35l-2 -2a2 2 0 0 0 -2.828 0l-2.828 2.828a2 2 0 0 0 0 2.828l9 9" /><path d="M7.3 13h-2.3a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h12" /><path d="M17 17l0 .01" /></svg>} label="피부 타입" right={profile.skinType || '미설정'} onTap={() => setEditingSkin(true)} />
 
         <SectionHeader label="앱 설정" />
-        <SettingsRow icon={icons.sun} label="화면 모드" right={colorMode === 'dark' ? '다크' : '라이트'} onTap={() => setColorMode(colorMode === 'dark' ? 'light' : 'dark')} />
-        <SettingsRow icon={icons.globe} label="언어" right="한국어" onTap={() => showToast('현재 한국어만 지원돼요')} />
+        <SettingsRow icon={icons.sun} label="화면 모드" />
+        <SettingsRow icon={icons.globe} label="언어" />
+
+        <SectionHeader label="데이터 관리" />
+        <SettingsRow icon={icons.download} label="데이터 백업" onTap={async () => {
+          try {
+            const lsData = {};
+            for (let i = 0; i < localStorage.length; i++) {
+              const k = localStorage.key(i);
+              lsData[k] = localStorage.getItem(k);
+            }
+            const photos = await getAllPhotosRaw();
+            const json = JSON.stringify({ localStorage: lsData, photos, exportedAt: new Date().toISOString() });
+            const lsCount = Object.keys(lsData).length;
+            const photoCount = photos ? photos.length : 0;
+            setBackupGuide({ json, lsCount, photoCount });
+          } catch { showToast('백업 준비 중 오류가 발생했어요'); }
+        }} />
+        <SettingsRow icon={icons.upload} label="데이터 복원" onTap={() => fileInputRef.current?.click()} />
 
         <SectionHeader label="정보" />
-        <SettingsRow icon={icons.message} label="문의하기" onTap={() => { setOpenFaqIndex(0); setFaqOpen(true); }} />
-        <SettingsRow icon={icons.doc} label="이용약관" onTap={() => setLegalPage('terms')} />
+        <SettingsRow icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>} label="이용약관" onTap={() => setLegalPage('terms')} />
         <SettingsRow icon={icons.lock} label="개인정보 처리방침" onTap={() => setLegalPage('privacy')} />
+        <SettingsRow icon={icons.message} label="문의하기" onTap={() => { setOpenFaqIndex(-1); setFaqOpen(true); }} />
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json"
+          style={{ display: 'none' }}
+          onChange={async (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            try {
+              const text = await file.text();
+              const data = JSON.parse(text);
+              const lsCount = data.localStorage ? Object.keys(data.localStorage).length : 0;
+              const photoCount = data.photos ? data.photos.length : 0;
+              const date = data.exportedAt ? new Date(data.exportedAt).toLocaleDateString('ko-KR') : '알 수 없음';
+              setRestoreConfirm({ ...data, stats: { lsCount, photoCount, date } });
+            } catch { showToast('파일을 읽을 수 없어요'); }
+            e.target.value = '';
+          }}
+        />
 
         {/* Footer */}
         <div style={{ padding: '12px 28px 40px', borderTop: '1px solid rgba(255,255,255,0.2)', marginTop: 16 }}>
@@ -570,10 +607,10 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           <div style={{ margin: '0 16px', background: 'rgba(255,255,255,0.35)', borderRadius: 14, border: '1px solid rgba(255,255,255,0.3)' }}>
             {[
               { label: '이름', value: profile.nickname, key: 'nickname', placeholder: '입력해주세요' },
-              { label: '나이대', value: profile.birthYear ? `${new Date().getFullYear() - parseInt(profile.birthYear)}세` : '', key: 'birthYear', placeholder: '선택 안 함' },
+              { label: '생년월일', value: profile.birthYear ? (profile.birthYear.includes('-') ? profile.birthYear.replace(/-/g, '.') : `${profile.birthYear}년생`) : '', key: 'birthYear', placeholder: '선택 안 함' },
               { label: '성별', value: profile.gender || '', key: 'gender', placeholder: '선택 안 함' },
             ].map((f, i) => (
-              <div key={f.key} onClick={() => { setEditField(f.key); setEditFieldValue(f.key === 'nickname' ? (profile.nickname || '') : f.key === 'birthYear' ? (profile.birthYear || '') : (profile.gender || '')); }} style={{
+              <div key={f.key} onClick={() => { setEditField(f.key); setEditFieldValue(f.key === 'nickname' ? (profile.nickname || '') : f.key === 'birthYear' ? (profile.birthYear ? profile.birthYear.replace(/-/g, '.') : '') : (profile.gender || '')); }} style={{
                 padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                 borderTop: i > 0 ? '1px solid rgba(255,255,255,0.2)' : 'none', cursor: 'pointer',
               }}>
@@ -623,18 +660,25 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               return (
                 <>
                   <div onClick={closeField} style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(4,44,83,0.18)', backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)' }} />
-                  <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 2001, background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '22px 22px 0 0', padding: '0 0 calc(env(safe-area-inset-bottom,0px))', maxWidth: 430, margin: '0 auto', animation: 'settingsSlideIn 0.25s ease' }}>
+                  <div style={{
+                    position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 2001,
+                    background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+                    border: '1px solid rgba(255,255,255,0.3)', borderRadius: '22px 22px 0 0',
+                    boxShadow: '0 -8px 28px rgba(0,0,0,0.08)', padding: '0 0 calc(env(safe-area-inset-bottom,0px))',
+                    maxWidth: 430, margin: '0 auto', animation: 'slideUp 0.3s ease',
+                  }}>
                     <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(137,206,245,0.4)' }} /></div>
                     <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>이름</span>
-                      <div onClick={closeField} style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                      <button onClick={closeField} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: 'rgba(255,255,255,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                      </div>
+                      </button>
                     </div>
                     <div style={{ padding: '0 16px 16px' }}>
                       <input type="text" value={editFieldValue} onChange={e => setEditFieldValue(e.target.value)} placeholder="이름을 입력하세요" maxLength={20} autoFocus
-                        style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 12, padding: '12px 14px', fontSize: 14, color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit' }} />
-                      <button onClick={saveField} style={{ width: '100%', marginTop: 12, padding: 14, borderRadius: 12, border: 'none', background: 'var(--accent-primary, #89cef5)', color: '#fff', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>저장</button>
+                        style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 12, padding: '10px 14px', fontSize: 13, color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit' }} />
+                      <div style={{ textAlign: 'right', fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>{editFieldValue.length}/20</div>
+                      <button onClick={saveField} style={{ width: '100%', marginTop: 12, padding: 14, borderRadius: 10, border: 'none', background: 'var(--accent-primary, #89cef5)', color: '#fff', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>저장</button>
                     </div>
                   </div>
                 </>
@@ -642,32 +686,56 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
             }
 
             if (editField === 'birthYear') {
-              const ageRanges = ['1965', '1970', '1975', '1980', '1985', '1990', '1995', '2000', '2005'];
-              const yr = new Date().getFullYear();
+              const formatBirth = (raw) => {
+                const digits = raw.replace(/\D/g, '').slice(0, 8);
+                if (digits.length <= 4) return digits;
+                if (digits.length <= 6) return digits.slice(0, 4) + '.' + digits.slice(4);
+                return digits.slice(0, 4) + '.' + digits.slice(4, 6) + '.' + digits.slice(6);
+              };
+              const birthToISO = (formatted) => {
+                const d = formatted.replace(/\D/g, '');
+                if (d.length === 8) return d.slice(0, 4) + '-' + d.slice(4, 6) + '-' + d.slice(6);
+                return '';
+              };
               return (
                 <>
                   <div onClick={closeField} style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(4,44,83,0.18)', backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)' }} />
-                  <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 2001, background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '22px 22px 0 0', padding: '0 0 calc(env(safe-area-inset-bottom,0px))', maxWidth: 430, margin: '0 auto', animation: 'settingsSlideIn 0.25s ease' }}>
+                  <div style={{
+                    position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 2001,
+                    background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+                    border: '1px solid rgba(255,255,255,0.3)', borderRadius: '22px 22px 0 0',
+                    boxShadow: '0 -8px 28px rgba(0,0,0,0.08)', padding: '0 0 calc(env(safe-area-inset-bottom,0px))',
+                    maxWidth: 430, margin: '0 auto', animation: 'slideUp 0.3s ease',
+                  }}>
                     <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(137,206,245,0.4)' }} /></div>
                     <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>나이대</span>
-                      <div onClick={closeField} style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                      <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>생년월일</span>
+                      <button onClick={closeField} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: 'rgba(255,255,255,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                      </div>
+                      </button>
                     </div>
-                    <div style={{ padding: '0 16px 16px', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                      {ageRanges.map(y => {
-                        const age = yr - parseInt(y);
-                        const selected = editFieldValue === y;
-                        return (
-                          <div key={y} onClick={() => { setEditFieldValue(y); update('birthYear', y); closeField(); }} style={{
-                            padding: '10px 16px', borderRadius: 12, cursor: 'pointer', fontSize: 13, fontWeight: 500,
-                            background: selected ? 'rgba(137,206,245,0.12)' : 'rgba(255,255,255,0.4)',
-                            color: selected ? 'var(--accent-primary)' : 'var(--text-primary)',
-                            border: selected ? '1px solid var(--accent-primary, #89cef5)' : '1px solid rgba(255,255,255,0.3)',
-                          }}>{age}세 ({y}년생)</div>
-                        );
-                      })}
+                    <div style={{ padding: '0 16px 16px' }}>
+                      <input
+                        type="tel"
+                        inputMode="numeric"
+                        value={editFieldValue || ''}
+                        placeholder="2000.01.01"
+                        maxLength={10}
+                        autoFocus
+                        onChange={(e) => {
+                          const formatted = formatBirth(e.target.value);
+                          setEditFieldValue(formatted);
+                          const iso = birthToISO(formatted);
+                          if (iso) { update('birthYear', iso); }
+                        }}
+                        style={{
+                          width: '100%', padding: '10px 14px', borderRadius: 12, fontSize: 13,
+                          border: '1px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.35)',
+                          color: 'var(--text-primary)', fontFamily: 'inherit', boxSizing: 'border-box',
+                          outline: 'none',
+                        }}
+                      />
+                      <div style={{ textAlign: 'right', fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>{editFieldValue.replace(/\D/g, '').length}/8</div>
                     </div>
                   </div>
                 </>
@@ -781,98 +849,38 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
         </div>
       )}
 
-      {/* Backup Guide Modal — 공유 시트 띄우기 전 안내 */}
+      {/* Backup Guide Sub-Page */}
       {backupGuide && (
-        <div
-          onClick={() => setBackupGuide(null)}
-          style={{
-            position: 'fixed', inset: 0, zIndex: 1001,
-            background: 'var(--bg-modal-overlay)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: 24,
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              maxWidth: 340, width: '100%',
-              background: 'var(--bg-modal)', borderRadius: 24, padding: 28,
-              border: '1px solid var(--border-subtle)',
-            }}
-          >
-            <div style={{ textAlign: 'center', marginBottom: 16 }}>
-              <div style={{ marginBottom: 4 }}><SaveIcon size={44} /></div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
-                백업 파일 저장하기
-              </div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                {backupGuide.lsCount}개 항목 · {backupGuide.photoCount}장 사진
-              </div>
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 1002,
+          background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
+          animation: 'settingsSlideIn 0.3s ease',
+        }}>
+        <div style={{
+          position: 'absolute', top: 0, bottom: 0, left: '50%', transform: 'translateX(-50%)',
+          width: '100%', maxWidth: 430,
+          display: 'flex', flexDirection: 'column',
+        }}>
+          <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 16px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+            <div onClick={() => setBackupGuide(null)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </div>
+            <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>데이터 백업</span>
+          </div>
+
+          <div style={{ flex: 1, overflowY: 'auto', padding: '25px 20px 40px', WebkitOverflowScrolling: 'touch' }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>
+              백업 파일 저장하기
+            </div>
+            <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 24, lineHeight: 1.6 }}>
+              {backupGuide.lsCount}개 항목 · {backupGuide.photoCount}장 사진이 백업됩니다.
             </div>
 
-            {/* 시각적 안내 */}
-            <div style={{
-              background: 'rgba(240,144,112,0.06)', borderRadius: 16, padding: '18px 16px',
-              marginBottom: 20,
-            }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 14 }}>
-                다음 화면에서 이렇게 해주세요
-              </div>
-              {/* 가짜 공유 시트 미리보기 */}
-              <div style={{
-                background: 'var(--bg-card, #fff)', borderRadius: 12, padding: '12px 14px',
-                border: '1px solid var(--border-subtle, #e5e7eb)',
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 8 }}>
-                  {['AirDrop', '메시지', 'Mail', '메모'].map(label => (
-                    <div key={label} style={{ textAlign: 'center', opacity: 0.35 }}>
-                      <div style={{ width: 36, height: 36, borderRadius: 10, background: '#ddd', marginBottom: 4 }} />
-                      <div style={{ fontSize: 9 }}>{label}</div>
-                    </div>
-                  ))}
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: 16 }}>
-                  {[
-                    { label: '복사', highlight: false },
-                    { label: '빠른 메모', highlight: false },
-                    { label: '파일에 저장', highlight: true },
-                    { label: '더 보기', highlight: false },
-                  ].map(item => (
-                    <div key={item.label} style={{ textAlign: 'center', position: 'relative' }}>
-                      <div style={{
-                        width: 44, height: 44, borderRadius: 22,
-                        background: item.highlight ? '#81E4BD' : '#ddd',
-                        marginBottom: 4,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        boxShadow: 'none',
-                        transition: 'all 0.3s',
-                      }}>
-                        {item.highlight && (
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round">
-                            <path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/>
-                          </svg>
-                        )}
-                      </div>
-                      <div style={{
-                        fontSize: 9,
-                        fontWeight: item.highlight ? 700 : 400,
-                        color: item.highlight ? '#81E4BD' : 'var(--text-muted)',
-                      }}>{item.label}</div>
-                      {item.highlight && (
-                        <div style={{
-                          position: 'absolute', top: -8, left: '50%', transform: 'translateX(-50%)',
-                          fontSize: 14,
-                        }}>👆</div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div style={{
-                marginTop: 12, fontSize: 13, color: '#81E4BD', fontWeight: 600, textAlign: 'center',
-              }}>
-                "파일에 저장"을 눌러주세요!
-              </div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12 }}>
+              저장 방법 안내
+            </div>
+            <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 24 }}>
+              아래 버튼을 누르면 공유 화면이 열립니다.{'\n'}"파일에 저장"을 선택해주세요.
             </div>
 
             <button
@@ -895,7 +903,6 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                   if (e.name === 'AbortError') return;
                 }
 
-                // share 미지원 폴백: 클라이언트 <a download> 패턴 (PC Chrome 등)
                 try {
                   const dlUrl = URL.createObjectURL(blob);
                   const a = document.createElement('a');
@@ -915,24 +922,17 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                 showToast(`백업 완료! (${lsCount}개 항목, ${photoCount}장 사진)`);
               }}
               style={{
-                width: '100%', padding: 15, borderRadius: 14, border: 'none',
-                background: 'var(--btn-primary-bg, linear-gradient(135deg, #81E4BD, #81E4BD))',
-                color: '#fff', fontSize: 15, fontWeight: 700,
-                cursor: 'pointer', fontFamily: 'inherit',
-                boxShadow: 'none',
-                marginBottom: 10,
+                width: '100%', padding: '12px', borderRadius: 10,
+                border: 'none', background: 'rgba(91,168,214,0.1)', color: '#5BA8D6',
+                fontSize: 14, fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
-            >확인 — 저장 화면 열기</button>
-            <button
-              onClick={() => setBackupGuide(null)}
-              style={{
-                width: '100%', padding: 12, borderRadius: 14,
-                border: '1px solid var(--border-subtle)', background: 'transparent',
-                color: 'var(--text-muted)', fontSize: 13, fontWeight: 500,
-                cursor: 'pointer', fontFamily: 'inherit',
-              }}
-            >취소</button>
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6 }}><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              백업 파일 저장하기
+            </button>
           </div>
+        </div>
         </div>
       )}
 

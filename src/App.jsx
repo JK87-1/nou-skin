@@ -938,17 +938,17 @@ export default function App() {
 
           {/* ② 피부 분석 버튼 */}
           <div
-            onClick={openCamera}
             style={{
               margin: '14px 20px 0',
               padding: '88px 24px 88px',
-              cursor: 'pointer',
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 88,
             }}
           >
-            <EternalPearl size={192} animated colors={activeThemeColors} theme={colorMode} />
+            <div onClick={openCamera} style={{ cursor: 'pointer' }}>
+              <EternalPearl size={192} animated colors={activeThemeColors} theme={colorMode} />
+            </div>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: -0.3, color: '#ffffff', textShadow: '0 0 12px rgba(137,206,245,0.7), 0 0 30px rgba(137,206,245,0.4), 0 0 50px rgba(137,206,245,0.2)', animation: 'textBreathe 3s ease-in-out infinite' }}>탭 하여 피부를 분석하세요</div>
+              <div onClick={openCamera} style={{ fontSize: 20, fontWeight: 600, letterSpacing: -0.3, color: '#ffffff', textShadow: '0 0 12px rgba(137,206,245,0.7), 0 0 30px rgba(137,206,245,0.4), 0 0 50px rgba(137,206,245,0.2)', animation: 'textBreathe 3s ease-in-out infinite', cursor: 'pointer' }}>탭 하여 피부를 분석하세요</div>
               <div style={{ height: 18, overflow: 'hidden', marginTop: 15 }}>
                 <div style={{ animation: 'subtitleSlide 20s ease-in-out infinite' }}>
                   <div style={{ height: 18, lineHeight: '18px', fontSize: 13, color: 'rgba(0,0,0,0.35)' }}>당신의 피부를 더 깊이 이해해요</div>
