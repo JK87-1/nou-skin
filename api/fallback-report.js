@@ -17,17 +17,21 @@ function maskIp(ip) {
   return ip.slice(0, 8) + '...';
 }
 
+// 캘린더 DB에 page 추가 (진행 상황 페이지 callout 노이즈 제거)
 async function notifyNotion(payload) {
   const token = process.env.NOTION_TOKEN;
-  const pageId = process.env.NOTION_PAGE_ID;
-  if (!token || !pageId) {
-    console.warn('Notion env missing, skip notify');
+  const calendarDbId = process.env.NOTION_CALENDAR_DB_ID;
+  if (!token || !calendarDbId) {
+    console.warn('Notion calendar env missing, skip notify');
     return;
   }
 
-  const kstNow = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 16).replace('T', ' ');
-  const lines = [
-    `AI 분석 실패 알림 ${kstNow} KST`,
+  const kstNow = new Date(Date.now() + 9 * 3600000);
+  const kstDate = kstNow.toISOString().slice(0, 10);
+  const kstTime = kstNow.toISOString().slice(11, 16);
+
+  const title = `[🚨 AI fallback ${kstTime}] ${payload.reason || '미상'} · ${payload.maskedIp || ''}${payload.deviceTag ? ` · ${payload.deviceTag}` : ''}`.slice(0, 100);
+  const detailLines = [
     `사유: ${payload.reason || '미상'}`,
     `모드: ${payload.mode || '미상'}`,
     `사용자: ${payload.maskedIp || '미상'}${payload.deviceTag ? ` · ${payload.deviceTag}` : ''}`,
@@ -35,22 +39,22 @@ async function notifyNotion(payload) {
   ].filter(Boolean).join('\n');
 
   const body = {
+    parent: { database_id: calendarDbId },
+    icon: { type: 'emoji', emoji: '🚨' },
+    properties: {
+      Name: { title: [{ type: 'text', text: { content: title } }] },
+      Date: { date: { start: kstDate } },
+    },
     children: [{
       object: 'block',
-      type: 'callout',
-      callout: {
-        icon: { type: 'emoji', emoji: '🚨' },
-        color: 'red_background',
-        rich_text: [
-          { type: 'text', text: { content: lines } },
-        ],
-      },
+      type: 'paragraph',
+      paragraph: { rich_text: [{ type: 'text', text: { content: detailLines } }] },
     }],
   };
 
   try {
-    const resp = await fetch(`https://api.notion.com/v1/blocks/${pageId}/children`, {
-      method: 'PATCH',
+    const resp = await fetch(`https://api.notion.com/v1/pages`, {
+      method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Notion-Version': '2022-06-28',
@@ -60,10 +64,10 @@ async function notifyNotion(payload) {
     });
     if (!resp.ok) {
       const t = await resp.text();
-      console.warn('Notion notify HTTP', resp.status, t.slice(0, 200));
+      console.warn('Notion calendar notify HTTP', resp.status, t.slice(0, 200));
     }
   } catch (e) {
-    console.warn('Notion notify failed:', e.message || e);
+    console.warn('Notion calendar notify failed:', e.message || e);
   }
 }
 
