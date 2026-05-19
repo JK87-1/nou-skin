@@ -36,84 +36,16 @@ const KEY_LANDMARKS = [
   152, 148, 377, 172, 397, 176, 400, 234, 454,
 ];
 
-// ===== v3: Beauty Lines + Active Measurement =====
-
-// Layer 1: Beauty Lines — ~27 dots on facial beauty lines
-// grade 1 = bright (40%), grade 2 = normal (50%), grade 3 = dim (10%)
-const BEAUTY_LINES = [
-  // 이마 — 5 dots (v1에서 선별)
-  { lm: 10, grade: 3 },
-  { lm: 67, grade: 2 },
-  { lm: 297, grade: 2 },
-  { lm: 109, grade: 2 },
-  { lm: 338, grade: 3 },
-  // 눈썹 아치 좌 (camera-left) — 3 dots
-  { lm: 300, grade: 2 },
-  { lm: 293, grade: 1 },
-  { lm: 334, grade: 2 },
-  // 눈썹 아치 우 (camera-right) — 3 dots
-  { lm: 70, grade: 2 },
-  { lm: 63, grade: 1 },
-  { lm: 105, grade: 2 },
-  // 아이라인 꼬리 좌 — 3 dots (작은 점, 세로 높이 동일)
-  { lm: 446, grade: 3 },
-  { lm: 464, grade: 3 },
-  { lm: 454, grade: 3 },
-  // 아이라인 꼬리 우 — 3 dots (작은 점, 세로 높이 동일)
-  { lm: 226, grade: 3 },
-  { lm: 244, grade: 3 },
-  { lm: 234, grade: 3 },
-  // 눈밑 바깥 좌 (camera-left) — 2 dots
-  { lm: 448, grade: 3 },
-  { lm: 449, grade: 3 },
-  // 눈밑 바깥 우 (camera-right) — 2 dots
-  { lm: 228, grade: 3 },
-  { lm: 229, grade: 3 },
-  // 콧대 + 콧끝 — 3 dots
-  { lm: 6, grade: 1 },
-  { lm: 4, grade: 2 },
-  { lm: 1, grade: 1 },
-  // 콧볼 좌우 — 작은 점
-  { lm: 98, grade: 3 },
-  { lm: 327, grade: 3 },
-  // 광대 헤일로 좌 (camera-left) — 3 dots
-  { lm: 345, grade: 1 },
-  { lm: 323, grade: 2 },
-  { lm: 361, grade: 3 },
-  // 광대 헤일로 우 (camera-right) — 3 dots
-  { lm: 116, grade: 1 },
-  { lm: 93, grade: 2 },
-  { lm: 132, grade: 3 },
-  // 입꼬리 — 양쪽 끝만 작은 점
-  { lm: 57, grade: 3 },
-  { lm: 287, grade: 3 },
-  { lm: 78, grade: 3 },
-  { lm: 308, grade: 3 },
-  // 턱선 V라인 — 4 dots (좌우 대칭 2+2)
-  { lm: 172, grade: 2 },
-  { lm: 176, grade: 3 },
-  { lm: 397, grade: 2 },
-  { lm: 400, grade: 3 },
-];
-
-// Pre-compute animation params for each beauty dot (stable across renders)
-const BEAUTY_DOT_PARAMS = BEAUTY_LINES.map(dot => ({
-  ...dot,
-  period: 4.5 + Math.random() * 1.5,
-  phase: Math.random() * 6,
-  coreR: dot.grade === 1 ? 1.35 : dot.grade === 2 ? 1.1 : 1.0,
-  glowR: dot.grade === 1 ? 6 : dot.grade === 2 ? 5 : 4.5,
-}));
-
-// Layer 2: Active Measurement — 7 zones with highlight dots
+// Analysis zone definitions — 7 regions, left/right from user's perspective
+// Note: canvas has scaleX(-1), so camera-right landmarks appear on screen-left = user's left
 const ANALYSIS_ZONES = [
-  { id: 'forehead', label: '이마', anchor: 10, offsetY: -0.02, dots: [10, 67, 297, 109, 338] },
-  { id: 'under_eye_left', label: '왼눈가', anchor: 33, offsetX: -0.07, dots: [111, 117, 118] },
-  { id: 'under_eye_right', label: '오른눈가', anchor: 263, offsetX: 0.07, dots: [340, 346, 347] },
-  { id: 't_zone', label: 'T존', anchor: 4, offsetY: 0.0, dots: [6, 4, 197] },
-  { id: 'cheek_left', label: '왼볼', anchor: 132, offsetX: -0.025, dots: [116, 93, 132, 123] },
-  { id: 'cheek_right', label: '오른볼', anchor: 361, offsetX: 0.025, dots: [345, 323, 361, 352] },
-  { id: 'chin', label: '턱선', anchor: 152, offsetY: 0.022, dots: [152, 175, 396] },
+  { id: 'forehead', label: '이마', anchor: 10, offsetY: -0.02 },
+  { id: 'under_eye_left', label: '왼눈밑', anchor: 111, offsetY: 0.012 },      // camera-right → screen-left → user-left
+  { id: 'under_eye_right', label: '오른눈밑', anchor: 340, offsetY: 0.012 },   // camera-left → screen-right → user-right
+  { id: 't_zone', label: 'T존', anchor: 6, offsetY: 0.0 },
+  { id: 'cheek_left', label: '왼볼', anchor: 132, offsetX: -0.025 },           // camera-right → screen-left → user-left
+  { id: 'cheek_right', label: '오른볼', anchor: 361, offsetX: 0.025 },         // camera-left → screen-right → user-right
+  { id: 'chin', label: '턱선', anchor: 152, offsetY: 0.022 },
 ];
 
 // Brightness sampling landmarks (14 points across face)
@@ -240,12 +172,6 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
   const [mediapipeReady, setMediapipeReady] = useState(false);
   const [cameraError, setCameraError] = useState(null); // null | 'insecure' | 'denied' | 'unavailable'
   const [cameraReady, setCameraReady] = useState(false);
-  const [activeZoneIdx, setActiveZoneIdx] = useState(-1);
-  const [scanProgress, setScanProgress] = useState(0);
-  const scanStartRef = useRef(null);
-  const [ellipse, setEllipse] = useState({ cx: 0, cy: 0, rx: 0, ry: 0 });
-  const labelFirstShownRef = useRef(null); // timestamp when labels first appeared
-  const [scanStopped, setScanStopped] = useState(false);
 
   // Cleanup: stop stream, cancel RAF
   const cleanup = useCallback(() => {
@@ -265,146 +191,128 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
   // Store ellipse dimensions for HTML overlay positioning
   const ellipseRef = useRef({ cx: 0, cy: 0, rx: 0, ry: 0 });
 
-  // drawOverlay — v3: Beauty Lines + Active Measurement
+  // drawOverlay reads statusRef (always fresh) — assigned to ref each render
   drawOverlayRef.current = function drawOverlay(ctx, W, H, landmarks, videoW, videoH) {
     ctx.clearRect(0, 0, W, H);
-    const now = performance.now() / 1000;
 
-    // objectFit: cover coordinate mapping
+    // objectFit: cover coordinate mapping — video normalized coords → display coords
     const vidAspect = videoW / videoH;
     const dispAspect = W / H;
     let mapScale, mapOffX, mapOffY;
     if (dispAspect > vidAspect) {
-      mapScale = W / videoW; mapOffX = 0; mapOffY = (H - videoH * mapScale) / 2;
+      mapScale = W / videoW;
+      mapOffX = 0;
+      mapOffY = (H - videoH * mapScale) / 2;
     } else {
-      mapScale = H / videoH; mapOffX = (W - videoW * mapScale) / 2; mapOffY = 0;
+      mapScale = H / videoH;
+      mapOffX = (W - videoW * mapScale) / 2;
+      mapOffY = 0;
     }
     function mapX(nx) { return nx * videoW * mapScale + mapOffX; }
     function mapY(ny) { return ny * videoH * mapScale + mapOffY; }
 
-    // Ellipse dimensions
+    // Oval guide — fixed egg-shaped proportions
     const cx = W * 0.5;
     const cy = H * 0.44;
     const baseSize = Math.min(W, H);
     const rx = baseSize * 0.34;
     const ry = Math.min(rx * 1.35, H * 0.40);
+
+    // Store for HTML overlays (scan line clipping, corner markers)
     ellipseRef.current = { cx, cy, rx, ry };
-    if (Math.abs(ellipse.rx - rx) > 1 || Math.abs(ellipse.ry - ry) > 1) {
-      setEllipse({ cx, cy, rx, ry });
-    }
 
-    // --- Background darkening (cinematic vignette) ---
+    // --- Layer 1: Ellipse guide (LUA Blue, thin) ---
     ctx.save();
-    const vignette = ctx.createRadialGradient(cx, cy, Math.min(rx, ry) * 0.5, cx, cy, Math.max(W, H) * 0.7);
-    vignette.addColorStop(0, 'rgba(0,0,0,0)');
-    vignette.addColorStop(0.6, 'rgba(0,0,0,0.1)');
-    vignette.addColorStop(1, 'rgba(0,0,0,0.3)');
-    ctx.fillStyle = vignette;
-    ctx.fillRect(0, 0, W, H);
-    ctx.restore();
-
-    // --- Ellipse guide (dotted, medical-instrument feel) ---
-    // Reset label timer when conditions break (face lost, too far, etc.)
-    const curStatus = statusRef.current;
-    if (curStatus !== 'ready') {
-      labelFirstShownRef.current = null;
-    }
-    const labelsDone = labelFirstShownRef.current && (now - labelFirstShownRef.current) >= 3;
-    const scanComplete = labelsDone && curStatus === 'ready';
-    if (scanComplete && !scanStopped) setScanStopped(true);
-    if (!scanComplete && scanStopped) setScanStopped(false);
-    ctx.save();
-    ctx.strokeStyle = scanComplete ? 'rgba(255, 255, 255, 0.6)' : 'rgba(30, 144, 232, 0.55)';
-    ctx.lineWidth = scanComplete ? 1.6 : 1.2;
-    ctx.setLineDash(scanComplete ? [3, 4] : [2, 5]);
+    ctx.strokeStyle = 'rgba(30, 144, 232, 0.7)';
+    ctx.lineWidth = 1.2;
     ctx.beginPath();
     ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
     ctx.stroke();
-    ctx.setLineDash([]);
     ctx.restore();
 
-    // --- Corner markers ---
-    const markerLen = 14, pad = 16;
-    const mL = cx - rx - pad, mR = cx + rx + pad;
-    const mT = cy - ry - pad, mB = cy + ry + pad;
+    // --- Layer 2: Corner markers (white L-shapes around ellipse area) ---
+    const markerLen = 14;
+    const pad = 16;
+    const mLeft = cx - rx - pad;
+    const mRight = cx + rx + pad;
+    const mTop = cy - ry - pad;
+    const mBot = cy + ry + pad;
+
     ctx.save();
-    ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
     ctx.lineWidth = 1.2;
     ctx.lineCap = 'round';
-    ctx.beginPath(); ctx.moveTo(mL, mT + markerLen); ctx.lineTo(mL, mT); ctx.lineTo(mL + markerLen, mT); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(mR - markerLen, mT); ctx.lineTo(mR, mT); ctx.lineTo(mR, mT + markerLen); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(mL, mB - markerLen); ctx.lineTo(mL, mB); ctx.lineTo(mL + markerLen, mB); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(mR - markerLen, mB); ctx.lineTo(mR, mB); ctx.lineTo(mR, mB - markerLen); ctx.stroke();
+    // Top-left
+    ctx.beginPath(); ctx.moveTo(mLeft, mTop + markerLen); ctx.lineTo(mLeft, mTop); ctx.lineTo(mLeft + markerLen, mTop); ctx.stroke();
+    // Top-right
+    ctx.beginPath(); ctx.moveTo(mRight - markerLen, mTop); ctx.lineTo(mRight, mTop); ctx.lineTo(mRight, mTop + markerLen); ctx.stroke();
+    // Bottom-left
+    ctx.beginPath(); ctx.moveTo(mLeft, mBot - markerLen); ctx.lineTo(mLeft, mBot); ctx.lineTo(mLeft + markerLen, mBot); ctx.stroke();
+    // Bottom-right
+    ctx.beginPath(); ctx.moveTo(mRight - markerLen, mBot); ctx.lineTo(mRight, mBot); ctx.lineTo(mRight, mBot - markerLen); ctx.stroke();
     ctx.restore();
 
     if (!landmarks) return;
 
-    // --- Helper: draw glow dot ---
-    const drawGlowDot = (x, y, coreR, glowR, opacity, isActive) => {
-      // Glow
-      const grad = ctx.createRadialGradient(x, y, 0, x, y, glowR);
-      if (isActive) {
-        grad.addColorStop(0, `rgba(255,255,255,${opacity})`);
-        grad.addColorStop(0.4, `rgba(200,232,255,${opacity * 0.9})`);
-        grad.addColorStop(1, 'rgba(30,144,232,0)');
-      } else {
-        grad.addColorStop(0, `rgba(232,244,255,${opacity})`);
-        grad.addColorStop(0.5, `rgba(168,216,240,${opacity * 0.6})`);
-        grad.addColorStop(1, 'rgba(30,144,232,0)');
-      }
-      ctx.fillStyle = grad;
+    // --- Layer 3: Mesh dots (white, subtle) ---
+    ctx.save();
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.32)';
+    for (const idx of KEY_LANDMARKS) {
+      if (idx >= landmarks.length) continue;
+      const lm = landmarks[idx];
       ctx.beginPath();
-      ctx.arc(x, y, glowR, 0, Math.PI * 2);
+      ctx.arc(mapX(lm.x), mapY(lm.y), 1, 0, Math.PI * 2);
       ctx.fill();
-      // Core
-      ctx.fillStyle = isActive ? `rgba(255,255,255,${opacity})` : `rgba(232,244,255,${opacity})`;
+    }
+    ctx.restore();
+
+    // --- Layer 4: Zone labels (white bg, dark text, 10px) ---
+    const drawLabel = (x, y, label) => {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(-1, 1); // counter CSS scaleX(-1)
+      ctx.font = '400 10px "Pretendard Variable", Pretendard, -apple-system, system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const textW = ctx.measureText(label).width;
+      const boxW = textW + 20;
+      const boxH = 22;
+      const rad = 4;
+      // Background
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
       ctx.beginPath();
-      ctx.arc(x, y, coreR, 0, Math.PI * 2);
+      ctx.roundRect(-boxW / 2, -boxH / 2, boxW, boxH, rad);
       ctx.fill();
+      // Text
+      ctx.fillStyle = '#042C53';
+      ctx.fillText(label, 0, 0.5);
+      ctx.restore();
     };
 
-    // --- Layer 1: Beauty Lines (always visible, breathing) ---
-    for (const dot of BEAUTY_DOT_PARAMS) {
-      if (dot.lm >= landmarks.length) continue;
-      const lm = landmarks[dot.lm];
-      const x = mapX(lm.x), y = mapY(lm.y);
-      // Breathing: sin wave with per-dot random period/phase
-      const t = ((now + dot.phase) % dot.period) / dot.period;
-      const opacity = 0.3 + 0.55 * (0.5 + 0.5 * Math.sin(t * Math.PI * 2));
-      drawGlowDot(x, y, dot.coreR, dot.glowR, opacity, false);
-    }
+    // --- Layer 5: Zone dot clusters + labels ---
+    for (const zone of ANALYSIS_ZONES) {
+      if (zone.anchor >= landmarks.length) continue;
+      const lm = landmarks[zone.anchor];
+      const zx = mapX(lm.x + (zone.offsetX || 0));
+      const zy = mapY(lm.y + (zone.offsetY || 0));
 
-    // --- Zone labels (pill shape, fade out after 5s) ---
-    if (!labelFirstShownRef.current) labelFirstShownRef.current = now;
-    const labelAge = now - labelFirstShownRef.current;
-    const labelOpacity = labelAge < 2.5 ? 1 : labelAge < 3 ? 1 - (labelAge - 2.5) / 0.5 : 0;
-
-    if (labelOpacity > 0) {
-      for (const zone of ANALYSIS_ZONES) {
-        if (zone.anchor >= landmarks.length) continue;
-        const lm = landmarks[zone.anchor];
-        const zx = mapX(lm.x + (zone.offsetX || 0));
-        const zy = mapY(lm.y + (zone.offsetY || 0));
-
-        ctx.save();
-        ctx.globalAlpha = labelOpacity;
-        ctx.translate(zx, zy);
-        ctx.scale(-1, 1);
-        ctx.font = '400 10px "Pretendard Variable", Pretendard, -apple-system, system-ui, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        const tw = ctx.measureText(zone.label).width;
-        const bw = tw + 20, bh = 20;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+      // Dot cluster (6 small dots around zone center)
+      ctx.save();
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.32)';
+      const clusterR = 8;
+      for (let i = 0; i < 6; i++) {
+        const angle = (Math.PI * 2 / 6) * i;
+        const dx = Math.cos(angle) * clusterR;
+        const dy = Math.sin(angle) * clusterR;
         ctx.beginPath();
-        ctx.roundRect(-bw / 2, -bh / 2, bw, bh, bh / 2);
+        ctx.arc(zx + dx, zy + dy, 1, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = '#042C53';
-        ctx.fillText(zone.label, 0, 0.5);
-        ctx.restore();
       }
-    }
+      ctx.restore();
 
+      // Label
+      drawLabel(zx, zy - 18, zone.label);
+    }
   };
 
   // Evaluate face conditions from landmarks
@@ -416,11 +324,11 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
     const cond = { face: true, position: false, distance: false, light: false };
 
     const nose = landmarks[NOSE_TIP];
-    cond.position = Math.abs(nose.x - 0.5) < 0.08 && Math.abs(nose.y - 0.44) < 0.08;
+    cond.position = Math.abs(nose.x - 0.5) < 0.15 && Math.abs(nose.y - 0.44) < 0.15;
 
     const earW = Math.abs(landmarks[RIGHT_EAR].x - landmarks[LEFT_EAR].x);
     const faceH = Math.abs(landmarks[CHIN].y - landmarks[FOREHEAD].y);
-    cond.distance = earW > 0.25 && earW < 0.60 && faceH > 0.25 && faceH < 0.65;
+    cond.distance = earW > 0.18 && earW < 0.70 && faceH > 0.20 && faceH < 0.80;
 
     const bCanvas = brightnessCanvasRef.current;
     const video = videoRef.current;
@@ -619,11 +527,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
     const captureCanvas = document.createElement('canvas');
     captureCanvas.width = video.videoWidth;
     captureCanvas.height = video.videoHeight;
-    const capCtx = captureCanvas.getContext('2d');
-    // Mirror the capture to match selfie view
-    capCtx.translate(video.videoWidth, 0);
-    capCtx.scale(-1, 1);
-    capCtx.drawImage(video, 0, 0);
+    captureCanvas.getContext('2d').drawImage(video, 0, 0);
     const dataUrl = captureCanvas.toDataURL('image/jpeg', 0.92);
 
     if (flashRef.current) {
@@ -669,10 +573,11 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: '#000', zIndex: 200,
+      position: 'fixed', inset: 0, background: 'var(--bg-primary)', zIndex: 200,
+      display: 'flex', flexDirection: 'column',
     }}>
-      {/* Camera preview — full screen */}
-      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+      {/* Camera preview */}
+      <div style={{ flex: 1, position: 'relative', overflow: 'hidden', borderRadius: '0 0 24px 24px' }}>
         <video
           ref={videoRef}
           autoPlay
@@ -695,22 +600,32 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
           }}
         />
 
-        {/* Scan line — clipped to ellipse, stops when scan complete */}
-        {hasLandmarks && ellipse.rx > 0 && !scanStopped && (
+        {/* Scan line — clipped to ellipse, dual structure */}
+        {hasLandmarks && (
           <div style={{
             position: 'absolute',
-            left: ellipse.cx - ellipse.rx,
-            top: ellipse.cy - ellipse.ry,
-            width: ellipse.rx * 2,
-            height: ellipse.ry * 2,
+            left: '50%', top: '44%',
+            width: Math.min(window.innerWidth, 430) * 0.68,
+            height: Math.min(window.innerWidth, 430) * 0.68 * 1.35,
+            transform: 'translate(-50%, -50%) scaleX(-1)',
             borderRadius: '50%',
             overflow: 'hidden',
             pointerEvents: 'none',
           }}>
+            {/* Glow band */}
             <div style={{
               position: 'absolute', left: 0, right: 0,
               height: 60,
-              background: 'linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.25) 50%, rgba(255,255,255,0) 100%)',
+              background: 'linear-gradient(180deg, rgba(30,144,232,0) 0%, rgba(30,144,232,0.35) 50%, rgba(30,144,232,0) 100%)',
+              animation: 'luaScan 3s ease-in-out infinite',
+              pointerEvents: 'none',
+            }} />
+            {/* Core line */}
+            <div style={{
+              position: 'absolute', left: 0, right: 0,
+              height: 2,
+              background: 'rgba(150, 200, 255, 0.9)',
+              boxShadow: '0 0 8px rgba(30, 144, 232, 0.6)',
               animation: 'luaScan 3s ease-in-out infinite',
               pointerEvents: 'none',
             }} />
@@ -756,15 +671,14 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
             zIndex: 10,
           }}
         >
-          {hasLandmarks && status === 'ready' ? (
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#7EC8E3" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          ) : (
-            <div style={{ width: 5, height: 5, borderRadius: '50%', background: hasLandmarks ? '#7EC8E3' : 'rgba(255,255,255,0.4)' }} />
-          )}
+          <div style={{
+            width: 5, height: 5, borderRadius: '50%',
+            background: hasLandmarks ? '#5DCAA5' : 'rgba(255,255,255,0.4)',
+          }} />
           <span style={{ color: '#fff', fontSize: 10, fontWeight: 500, whiteSpace: 'nowrap' }}>
             {!hasLandmarks ? '얼굴을 가운데에 맞춰주세요' :
-             isCapturing ? '결과 정리 중' :
              status === 'ready' ? '얼굴 인식 완료 · 7개 영역' :
+             status === 'capturing' || status === 'captured' ? '결과 정리 중' :
              '얼굴을 가운데에 맞춰주세요'}
           </span>
         </div>
@@ -788,70 +702,69 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
       {/* Brightness sampling canvas (hidden) */}
       <canvas ref={brightnessCanvasRef} style={{ display: 'none' }} />
 
-      {/* Bottom gradient overlay */}
-      <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0, height: '30%',
-        background: 'linear-gradient(180deg, transparent 0%, rgba(135, 206, 235, 0.45) 100%)',
-        pointerEvents: 'none',
-      }} />
-
       {/* Bottom controls */}
       <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0,
-        background: 'transparent',
-        padding: '18px 20px calc(22px + env(safe-area-inset-bottom, 0px))',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16,
+        background: 'var(--bg-primary)',
+        padding: '16px 20px calc(20px + env(safe-area-inset-bottom, 0px))',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14,
       }}>
         {/* Status text */}
         <p style={{
-          color: isReady && scanStopped ? '#ffffff' : isReady ? '#7EC8E3' : 'rgba(255,255,255,0.7)',
-          fontSize: 13, fontWeight: 500, textAlign: 'center', letterSpacing: 0.2,
-          margin: 0, minHeight: 18, transition: 'color 0.3s',
+          color: isReady ? accentOk : 'var(--text-primary)',
+          fontSize: 15, fontWeight: 600, textAlign: 'center',
+          margin: 0, minHeight: 20,
+          transition: 'color 0.3s',
         }}>
-          {status === 'ready' && !scanStopped ? '잠시만 기다려주세요' : STATUS_TEXT[status] || ''}
+          {STATUS_TEXT[status] || ''}
         </p>
 
-        {/* Condition indicators — inline compact */}
-        <div style={{ display: 'flex', gap: 20, justifyContent: 'center' }}>
+        {/* Condition indicators */}
+        <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
           {[
             { key: 'face', label: '얼굴' },
             { key: 'position', label: '위치' },
             { key: 'distance', label: '거리' },
             { key: 'light', label: '조명' },
           ].map(({ key, label }) => (
-            <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <div key={key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
               <div style={{
-                width: 6, height: 6, borderRadius: '50%',
-                background: conditions[key] ? '#7EC8E3' : 'rgba(255,255,255,0.2)',
+                width: 24, height: 24, borderRadius: '50%',
+                background: conditions[key] ? accentOk : 'transparent',
+                border: `2px solid ${conditions[key] ? accentOk : 'var(--text-disabled)'}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
                 transition: 'all 0.3s',
-              }} />
-              <span style={{
-                color: conditions[key] ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)',
-                fontSize: 10, fontWeight: 500, transition: 'color 0.3s',
-              }}>{label}</span>
+              }}>
+                {conditions[key] && (
+                  <span style={{ color: '#fff', fontSize: 12, fontWeight: 700 }}>&#10003;</span>
+                )}
+              </div>
+              <span style={{ color: conditions[key] ? accentOk : 'var(--text-dim)', fontSize: 10, fontWeight: 600 }}>
+                {label}
+              </span>
             </div>
           ))}
         </div>
 
-        {/* Capture button — minimal ring */}
+        {/* Capture button */}
         <button
           onClick={handleCapture}
           disabled={isCapturing}
           style={{
-            width: 64, height: 64, borderRadius: '50%',
-            background: 'transparent',
-            border: `2px solid ${canCapture ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.15)'}`,
+            width: 72, height: 72, borderRadius: '50%',
+            background: canCapture
+              ? 'var(--accent-primary)'
+              : 'var(--text-disabled)',
+            border: `4px solid ${canCapture ? '#fff' : 'var(--text-disabled)'}`,
+            boxShadow: 'none',
             cursor: canCapture && !isCapturing ? 'pointer' : 'default',
             transition: 'all 0.3s',
             opacity: isCapturing ? 0.5 : 1,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: 0,
           }}
         >
           <div style={{
-            width: 52, height: 52, borderRadius: '50%',
-            background: canCapture ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.08)',
-            transition: 'all 0.3s',
+            width: 56, height: 56, borderRadius: '50%',
+            background: canCapture ? 'rgba(255,255,255,0.3)' : 'transparent',
           }} />
         </button>
       </div>

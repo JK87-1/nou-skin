@@ -198,15 +198,15 @@ export function checkPhotoQuality(dataUrl, landmarks) {
       }
 
       const issues = [];
-      if (brightness < 50) issues.push('too_dark');
-      if (brightness > 220) issues.push('too_bright');
-      if (sharpness < 3) issues.push('blurry');
-      if (landmarks && landmarks.length >= 468 && faceRatio < 0.04) issues.push('face_too_small');
+      if (brightness < 150) issues.push('too_dark');
+      if (brightness > 152) issues.push('too_bright');
+      if (sharpness < 18) issues.push('blurry');
+      if (landmarks && landmarks.length >= 468 && faceRatio < 0.08) issues.push('face_too_small');
       if (!landmarks || landmarks.length < 468) issues.push('no_face');
-      // 얼굴 회전: yaw 0.18 초과(정면 기준 약 ±20°) 또는 roll 0.15 초과(약 ±10°)면 경고
+      // 얼굴 회전: yaw 0.08 초과(정면 기준 약 ±8°) 또는 roll 0.05 초과(약 ±3°)면 경고
       if (landmarks && landmarks.length >= 468) {
-        if (yawAsymmetry > 0.18) issues.push('face_yawed');
-        else if (rollTilt > 0.15) issues.push('face_tilted');
+        if (yawAsymmetry > 0.08) issues.push('face_yawed');
+        else if (rollTilt > 0.05) issues.push('face_tilted');
       }
 
       resolve({ passed: issues.length === 0, brightness, sharpness, faceRatio, yawAsymmetry, rollTilt, issues });

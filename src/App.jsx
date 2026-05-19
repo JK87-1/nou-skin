@@ -417,7 +417,15 @@ export default function App() {
     if (!pixelData) return;
     clearCompressCache(); // Prevent cross-person contamination from cached compressed images
     setStage('analyzing'); setProgress(0); setSaved(false); setConditionBriefing(null); setBriefingLoading(false);
-    const pi = setInterval(() => { setProgress(p => { if (p >= 90) { clearInterval(pi); return 90; } return p + Math.random() * 8 + 2; }); }, 450);
+    const pi = setInterval(() => { setProgress(p => {
+      if (p >= 92) { clearInterval(pi); return 92; }
+      // Slow start, steady middle, slow finish
+      const increment = p < 30 ? Math.random() * 3 + 1
+        : p < 60 ? Math.random() * 4 + 2
+        : p < 80 ? Math.random() * 2 + 1
+        : Math.random() * 1 + 0.3;
+      return p + increment;
+    }); }, 600);
 
     // CV scoring (with mlAge from FaceAgeEstimator)
     const cvScores = pixelsToScores(pixelData, mlAge);
@@ -569,7 +577,14 @@ export default function App() {
 
   const startDemo = useCallback(() => {
     setStage('analyzing'); setProgress(0); setSaved(false);
-    const pi = setInterval(() => { setProgress(p => { if (p >= 90) { clearInterval(pi); return 90; } return p + Math.random() * 12 + 4; }); }, 350);
+    const pi = setInterval(() => { setProgress(p => {
+      if (p >= 92) { clearInterval(pi); return 92; }
+      const increment = p < 30 ? Math.random() * 3 + 1
+        : p < 60 ? Math.random() * 4 + 2
+        : p < 80 ? Math.random() * 2 + 1
+        : Math.random() * 1 + 0.3;
+      return p + increment;
+    }); }, 600);
     setTimeout(() => {
       clearInterval(pi); setProgress(100);
       setTimeout(() => {
@@ -940,8 +955,8 @@ export default function App() {
           <div
             style={{
               margin: '14px 20px 0',
-              padding: '88px 24px 88px',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 88,
+              padding: '100px 24px 88px',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 70,
             }}
           >
             <div onClick={openCamera} style={{ cursor: 'pointer' }}>
@@ -1300,69 +1315,140 @@ export default function App() {
 
       {/* ===== UPLOAD PREVIEW ===== */}
       {stage === 'upload' && (() => {
-        const isL = colorMode === 'light';
-        return (
-        <div style={{ background: 'var(--bg-primary)', padding: '24px 24px 0', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <button onClick={reset} style={{
-            alignSelf: 'flex-start', marginBottom: 147,
-            width: 38, height: 38, borderRadius: '50%', border: 'none',
-            background: 'var(--bg-input)', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 18, color: 'var(--text-muted)',
-          }}>←</button>
+        // Quality check mapping
+        const q = photoQuality || { passed: true, issues: [], brightness: 128, sharpness: 10, yawAsymmetry: 0, rollTilt: 0, faceRatio: 0.1 };
+        // 3-level: good / moderate / warning
+        const frontal = q.issues.includes('face_yawed') ? { status: 'warning', label: '재촬영 권장' }
+          : q.issues.includes('face_tilted') ? { status: 'moderate', label: '보통' }
+          : { status: 'good', label: '양호' };
+        const lighting = q.issues.includes('too_dark') ? (q.brightness < 120 ? { status: 'warning', label: '재촬영 권장' } : { status: 'moderate', label: '보통' })
+          : q.issues.includes('too_bright') ? (q.brightness > 175 ? { status: 'warning', label: '재촬영 권장' } : { status: 'moderate', label: '보통' })
+          : { status: 'good', label: '양호' };
+        const sharp = q.issues.includes('blurry') ? (q.sharpness < 6 ? { status: 'warning', label: '재촬영 권장' } : { status: 'moderate', label: '보통' })
+          : { status: 'good', label: '양호' };
+        const regions = q.issues.includes('no_face') ? { count: 0, status: 'warning' }
+          : q.issues.includes('face_too_small') ? { count: 5, status: 'moderate' }
+          : { count: 7, status: 'good' };
+        const hasWarning = [frontal, lighting, sharp, regions].some(r => r.status === 'warning');
+        const hasModerate = [frontal, lighting, sharp, regions].some(r => r.status === 'moderate');
+        const allGood = !hasWarning && !hasModerate;
+        const isBlocked = false; // 사용자 통제권 존중 — 품질 부족해도 진행 가능
+
+        const checkIcon = <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1976D2" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
+        const modIcon = <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 20h20L12 2z"/></svg>;
+        const warnIcon = <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A32D2D" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>;
+        const statusIcon = (s) => s === 'good' ? checkIcon : s === 'moderate' ? modIcon : warnIcon;
+
+        const QualityRow = ({ label, value, icon, isLast }) => (
           <div style={{
-            width: 300, height: 300, borderRadius: '50%', overflow: 'hidden',
-            border: '3px solid var(--border-subtle)',
-            boxShadow: 'none',
-            position: 'relative',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            padding: '6px 0',
+            borderBottom: isLast ? 'none' : '0.5px solid rgba(4, 44, 83, 0.08)',
           }}>
-            <img src={image} alt="selfie" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-            {!isL && <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(transparent 50%, rgba(0,0,0,0.4))', borderRadius: '50%' }} />}
-          </div>
-          {photoQuality && !photoQuality.passed && (
-            <div style={{
-              margin: '16px 0 0', padding: '10px 16px', width: '100%', maxWidth: 320,
-              background: !hasBaseline() ? 'rgba(220,38,38,0.08)' : 'rgba(245,158,11,0.08)',
-              border: `1px solid ${!hasBaseline() ? 'rgba(220,38,38,0.15)' : 'rgba(245,158,11,0.15)'}`, borderRadius: 16,
-            }}>
-              <div style={{ fontSize: 12, color: '#BF360C', lineHeight: 1.5 }}>
-                {!hasBaseline() && <span style={{ fontWeight: 700 }}>첫 분석은 기준이 되므로 좋은 사진이 필요해요!<br/></span>}
-                {photoQuality.issues.includes('too_dark') && <span>사진이 너무 어두워요. 밝은 곳에서 다시 촬영하세요.<br/></span>}
-                {photoQuality.issues.includes('too_bright') && <span>사진이 너무 밝아요. 직사광선을 피해서 촬영해보세요.<br/></span>}
-                {photoQuality.issues.includes('blurry') && <span>사진이 흐릿해요. 카메라를 고정하고 다시 촬영해보세요.<br/></span>}
-                {photoQuality.issues.includes('face_too_small') && <span>얼굴이 너무 작아요. 좀 더 가까이에서 촬영해보세요.<br/></span>}
-                {photoQuality.issues.includes('face_yawed') && <span>얼굴이 측면으로 돌아가 있어요. 카메라를 정면으로 향해서 촬영해보세요.<br/></span>}
-                {photoQuality.issues.includes('face_tilted') && <span>얼굴이 기울어져 있어요. 양쪽 눈이 수평이 되도록 자세를 잡아보세요.<br/></span>}
-                {photoQuality.issues.includes('no_face') && <span>얼굴을 인식하지 못했어요. 정면을 바라보고 다시 촬영해보세요.</span>}
-              </div>
+            <span style={{ color: '#185FA5', fontSize: 11, fontWeight: 400, letterSpacing: 0.2 }}>{label}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              {icon}
+              <span style={{ color: '#042C53', fontSize: 11, fontWeight: 500 }}>{value}</span>
             </div>
-          )}
-          <div style={{ textAlign: 'center', marginTop: 60 }}>
-            <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 3, letterSpacing: -0.3 }}>이 사진으로 분석할까요?</p>
-            <p style={{ fontSize: 11, color: 'var(--text-muted)' }}>{imageSize}</p>
           </div>
-          <div style={{ padding: '60px 20px', width: '100%' }}>
-            {(() => {
-              const isBlocked = !hasBaseline() && photoQuality && !photoQuality.passed;
-              return <button onClick={isBlocked ? undefined : startAnalysis} disabled={isBlocked} style={{
-                marginBottom: 12, width: '100%', padding: 14, borderRadius: 'var(--btn-radius)',
-                border: 'none',
-                background: isBlocked
-                  ? 'var(--text-disabled)'
-                  : 'var(--btn-primary-bg)',
-                boxShadow: 'none',
-                color: '#fff', fontSize: 16, fontWeight: 700,
+        );
+
+        return (
+        <div style={{ position: 'fixed', inset: 0, background: '#000', zIndex: 200 }}>
+          {/* Full-screen photo */}
+          <img src={image} alt="selfie" style={{
+            position: 'absolute', inset: 0, width: '100%', height: '100%',
+            objectFit: 'cover', display: 'block',
+          }} />
+
+          {/* Cinematic vignette */}
+          <div style={{
+            position: 'absolute', inset: 0, pointerEvents: 'none',
+            background: 'radial-gradient(ellipse at 50% 44%, transparent 30%, rgba(0,0,0,0.3) 100%)',
+          }} />
+
+          {/* Back button */}
+          <button onClick={reset} style={{
+            position: 'absolute', top: 'calc(12px + env(safe-area-inset-top, 0px))', left: 12,
+            width: 32, height: 32, borderRadius: '50%',
+            background: 'rgba(255,255,255,0.92)', border: 'none',
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 10,
+          }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#042C53" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+          </button>
+
+          {/* Status chip */}
+          <div style={{
+            position: 'absolute', top: 'calc(56px + env(safe-area-inset-top, 0px))',
+            left: '50%', transform: 'translateX(-50%)',
+            padding: '6px 11px', background: 'rgba(4, 44, 83, 0.78)',
+            borderRadius: 14, display: 'flex', alignItems: 'center', gap: 6, zIndex: 10,
+          }}>
+            {allGood
+              ? <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#7EC8E3" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              : <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#A32D2D' }} />
+            }
+            <span style={{ color: '#fff', fontSize: 10, fontWeight: 500 }}>
+              {allGood ? '촬영 품질 검토 완료' : '일부 항목을 확인해주세요'}
+            </span>
+          </div>
+
+          {/* Bottom gradient — sky blue */}
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0, height: '30%',
+            background: 'linear-gradient(180deg, transparent 0%, rgba(135, 206, 235, 0.45) 100%)',
+            pointerEvents: 'none',
+          }} />
+
+          {/* Bottom: Quality indicators + CTA */}
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0,
+            padding: '18px 20px calc(22px + env(safe-area-inset-bottom, 0px))',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16,
+          }}>
+            {/* Quality indicators — inline, same style as camera conditions */}
+            <div style={{ display: 'flex', gap: 18, justifyContent: 'center' }}>
+              {[
+                { label: '정렬', s: frontal.status, v: frontal.label },
+                { label: '조명', s: lighting.status, v: lighting.label },
+                { label: '화질', s: sharp.status, v: sharp.label },
+              ].map(({ label, s, v }) => (
+                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: 10, fontWeight: 500 }}>{label}</span>
+                  {s === 'good' ? <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#7EC8E3" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                   : s === 'moderate' ? <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 20h20L12 2z"/></svg>
+                   : <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#A32D2D" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>}
+                  <span style={{
+                    fontSize: 10, fontWeight: 400,
+                    color: s === 'good' ? 'rgba(126,200,227,0.9)' : s === 'moderate' ? 'rgba(255,255,255,0.5)' : 'rgba(163,45,45,0.9)',
+                  }}>{v}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* CTA buttons */}
+            <div style={{ width: '100%' }}>
+              <button onClick={isBlocked ? undefined : startAnalysis} disabled={isBlocked} style={{
+                width: '100%', height: 50, borderRadius: 14, border: 'none',
+                background: isBlocked ? 'rgba(255,255,255,0.25)' : '#7EC8E3',
+                color: isBlocked ? 'rgba(255,255,255,0.5)' : '#fff',
+                fontSize: 15, fontWeight: 600,
                 cursor: isBlocked ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
-                opacity: isBlocked ? 0.6 : 1,
-              }}><span style={{marginRight:6,fontSize:21,verticalAlign:'middle',display:'inline-flex'}}>{isBlocked ? <CameraIcon size={21} /> : <WandIcon size={21} />}</span>{isBlocked ? '다시 촬영해주세요' : 'AI 피부 분석 시작'}</button>;
-            })()}
-            <button onClick={() => fileRef.current?.click()} style={{
-              width: '100%', padding: 12, borderRadius: 'var(--btn-radius)',
-              background: 'var(--btn-secondary-bg)',
-              border: 'var(--btn-secondary-border)',
-              boxShadow: 'none',
-              color: 'var(--text-muted)', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-            }}><span style={{marginRight:6,fontSize:21,verticalAlign:'middle',display:'inline-flex'}}><PhotoIcon size={21} /></span>다른 사진 선택</button>
+                marginBottom: 8,
+              }}>
+                {allGood ? 'AI 피부 분석 시작' : '이대로 분석하기'}
+              </button>
+              <button onClick={allGood ? () => fileRef.current?.click() : () => setStage('camera')} style={{
+                width: '100%', height: 40, borderRadius: 14,
+                border: '1px solid rgba(255,255,255,0.4)',
+                background: 'transparent',
+                color: 'rgba(255,255,255,0.85)', fontSize: 13, fontWeight: 500,
+                cursor: 'pointer', fontFamily: 'inherit',
+              }}>
+                {allGood ? '다른 사진 선택' : '다시 촬영하기'}
+              </button>
+            </div>
           </div>
         </div>
         );
@@ -1370,95 +1456,106 @@ export default function App() {
 
       {/* ===== ANALYZING ===== */}
       {stage === 'analyzing' && (() => {
-        const isL = colorMode === 'light';
         return (
-        <div style={{
-          minHeight: '100dvh', display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center', padding: 40,
-          background: 'var(--bg-primary)',
-        }}>
-          <div style={{ position: 'relative', marginBottom: 40 }}>
-            {/* Blob aura behind the photo — only dark mode */}
-            {!isL && (
-            <div className="voice-orb" style={{
-              position: 'absolute',
-              width: 360, height: 360,
-              top: '50%', left: '50%',
-              transform: 'translate(-50%, -50%)',
-              borderRadius: '50%',
-              overflow: 'hidden',
-              mask: 'radial-gradient(circle, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 70%)',
-              WebkitMask: 'radial-gradient(circle, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 70%)',
-              animation: 'analyzingBreatheCenter 3s ease-in-out infinite',
-            }}>
-              <div className="orb-blob orb-blob-1" style={{ animationDuration: '3.5s' }} />
-              <div className="orb-blob orb-blob-2" style={{ animationDuration: '4s' }} />
-              <div className="orb-blob orb-blob-3" style={{ animationDuration: '3s' }} />
-              <div className="orb-blob orb-blob-4" style={{ animationDuration: '4.5s' }} />
-            </div>
-            )}
-            {/* Subtle glow ring — light mode */}
-            {isL && (
-              <div style={{
-                position: 'absolute', width: 280, height: 280,
-                top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-                borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(124,92,252,0.08) 0%, transparent 70%)',
-                animation: 'analyzingBreatheCenter 3s ease-in-out infinite',
-              }} />
-            )}
-            {/* Photo circle */}
-            <div style={{
-              width: 220, height: 220, borderRadius: '50%', overflow: 'hidden',
-              border: '3px solid var(--border-subtle)',
-              boxShadow: 'none',
-              position: 'relative', zIndex: 1,
-            }}>
-              {image ? (
-                <img src={image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              ) : (
-                <div style={{
-                  width: '100%', height: '100%',
-                  background: 'var(--bg-card-solid)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 44,
-                }}><SparkleIcon size={44} /></div>
-              )}
-            </div>
-          </div>
+        <div style={{ position: 'fixed', inset: 0, background: '#000', zIndex: 200 }}>
+          {/* Full-screen photo */}
+          {image && (
+            <img src={image} alt="" style={{
+              position: 'absolute', inset: 0, width: '100%', height: '100%',
+              objectFit: 'cover', display: 'block',
+            }} />
+          )}
 
-          <h2 style={{ fontSize: 22, fontWeight: 600, fontFamily: "'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif", color: 'var(--text-primary)', letterSpacing: -0.3 }}>
-            피부 분석중
-          </h2>
-          <p style={{ fontSize: 14, fontFamily: "'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif", color: 'var(--text-muted)', margin: '8px 0 32px' }}>
-            수분 · 탄력 · 피부결을 분석하고 있어요
-          </p>
+          {/* Cinematic vignette */}
+          <div style={{
+            position: 'absolute', inset: 0, pointerEvents: 'none',
+            background: 'radial-gradient(ellipse at 50% 44%, rgba(0,0,0,0.1) 20%, rgba(0,0,0,0.5) 100%)',
+          }} />
 
-          <div style={{ width: '100%', maxWidth: 280 }}>
-            <div style={{
-              height: 6, borderRadius: 3,
-              background: 'var(--progress-track)', overflow: 'hidden', marginBottom: 12,
-            }}>
-              <div style={{
-                height: '100%', borderRadius: 3,
-                background: 'var(--progress-fill)',
-                width: `${Math.min(progress, 100)}%`,
-                transition: 'width 0.4s',
-              }} />
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--text-muted)' }}>
-              <span>{getProgressText(progress)}</span>
-              <span>{Math.round(Math.min(progress, 99))}%</span>
-            </div>
-          </div>
-
-          {/* Tip message */}
-          <p key={getProgressTip(progress)} style={{
-            marginTop: 48, fontSize: 13, color: 'var(--text-dim)', textAlign: 'center',
-            letterSpacing: -0.2, lineHeight: 1.5,
-            animation: 'fadeIn 0.6s ease',
+          {/* Circular progress ring */}
+          <div style={{
+            position: 'absolute', top: '50%', left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 220, height: 220, pointerEvents: 'none',
           }}>
-            {getProgressTip(progress)}
-          </p>
+            <svg width="220" height="220" viewBox="0 0 220 220" style={{ transform: 'rotate(-90deg)' }}>
+              {/* Track */}
+              <circle cx="110" cy="110" r="106" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1.5" />
+              {/* Progress fill */}
+              <circle cx="110" cy="110" r="106" fill="none"
+                stroke="rgba(126,200,227,0.7)"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeDasharray={`${2 * Math.PI * 106}`}
+                strokeDashoffset={`${2 * Math.PI * 106 * (1 - Math.min(progress, 100) / 100)}`}
+                style={{ transition: 'stroke-dashoffset 0.6s ease-out' }}
+              />
+            </svg>
+          </div>
+
+          {/* Status chip */}
+          <div style={{
+            position: 'absolute', top: 'calc(56px + env(safe-area-inset-top, 0px))',
+            left: '50%', transform: 'translateX(-50%)',
+            padding: '6px 11px', background: 'rgba(4, 44, 83, 0.78)',
+            borderRadius: 14, display: 'flex', alignItems: 'center', gap: 6, zIndex: 10,
+          }}>
+            <div style={{
+              width: 5, height: 5, borderRadius: '50%',
+              background: '#7EC8E3',
+              animation: 'pulseChip 1.5s ease-in-out infinite',
+            }} />
+            <span style={{ color: '#fff', fontSize: 10, fontWeight: 500 }}>
+              {getProgressText(progress)}
+            </span>
+          </div>
+
+          {/* Bottom gradient */}
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0, height: '35%',
+            background: 'linear-gradient(180deg, transparent 0%, rgba(135, 206, 235, 0.45) 100%)',
+            pointerEvents: 'none',
+          }} />
+
+          {/* Bottom progress UI */}
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0,
+            padding: '18px 20px calc(22px + env(safe-area-inset-bottom, 0px))',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
+          }}>
+            {/* Title */}
+            <p style={{ color: '#fff', fontSize: 15, fontWeight: 600, margin: 0, letterSpacing: -0.3 }}>
+              피부 분석중
+            </p>
+            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, margin: 0 }}>
+              수분 · 탄력 · 피부결을 분석하고 있어요
+            </p>
+
+            {/* Progress bar */}
+            <div style={{ width: '100%', maxWidth: 320 }}>
+              <div style={{ height: 2, borderRadius: 1, background: 'rgba(255,255,255,0.2)', overflow: 'hidden', marginBottom: 8 }}>
+                <div style={{
+                  height: '100%', borderRadius: 1,
+                  background: '#7EC8E3',
+                  width: `${Math.min(progress, 100)}%`,
+                  transition: 'width 0.4s',
+                }} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10 }}>
+                <span style={{ color: 'rgba(255,255,255,0.5)' }}>{getProgressText(progress)}</span>
+                <span style={{ color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>{Math.round(Math.min(progress, 99))}%</span>
+              </div>
+            </div>
+
+            {/* Tip */}
+            <p key={getProgressTip(progress)} style={{
+              color: 'rgba(255,255,255,0.5)', fontSize: 11, textAlign: 'center',
+              margin: '8px 0 0', letterSpacing: -0.2, lineHeight: 1.5,
+              animation: 'fadeIn 0.6s ease',
+            }}>
+              {getProgressTip(progress)}
+            </p>
+          </div>
         </div>
         );
       })()}
