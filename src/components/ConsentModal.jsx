@@ -62,7 +62,7 @@ export default function ConsentModal({ onAccept }) {
       maxWidth: 480, margin: '0 auto',
     }}>
       <header style={{ padding: '24px 20px 14px', borderBottom: '1px solid var(--border, rgba(0,0,0,0.08))' }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: '#FF8C42', letterSpacing: 0.4, marginBottom: 4 }}>BETA 약관 안내</div>
+        <div style={{ fontSize: 12, fontWeight: 600, color: '#5BA8D6', letterSpacing: 0.4, marginBottom: 4 }}>BETA</div>
         <h1 style={{ fontSize: 19, fontWeight: 800, color: 'var(--text-primary)', margin: 0, lineHeight: 1.3 }}>
           {SERVICE_NAME}을(를) 시작하기 전<br />아래 사항에 동의해주세요
         </h1>
@@ -77,7 +77,7 @@ export default function ConsentModal({ onAccept }) {
               flex: 1, padding: '12px 4px', background: 'none', border: 'none',
               fontSize: 12, fontWeight: 600, fontFamily: 'inherit',
               color: activeTab === key ? 'var(--text-primary)' : 'var(--text-muted)',
-              borderBottom: activeTab === key ? '2px solid #FF8C42' : '2px solid transparent',
+              borderBottom: activeTab === key ? '2px solid #5BA8D6' : '2px solid transparent',
               cursor: 'pointer',
             }}
           >
@@ -100,7 +100,7 @@ export default function ConsentModal({ onAccept }) {
             type="checkbox"
             checked={current.agreed}
             onChange={e => current.setAgreed(e.target.checked)}
-            style={{ marginTop: 2, accentColor: '#FF8C42' }}
+            style={{ marginTop: 2, accentColor: '#5BA8D6' }}
           />
           <span style={{ color: 'var(--text-primary)', lineHeight: 1.5 }}>
             <strong>(필수) {current.title}</strong>의 내용을 모두 확인하였으며 이에 동의합니다.
@@ -111,7 +111,7 @@ export default function ConsentModal({ onAccept }) {
           onClick={onAccept}
           style={{
             width: '100%', padding: '14px', borderRadius: 12,
-            background: allAgreed ? '#FF8C42' : 'var(--border, rgba(0,0,0,0.1))',
+            background: allAgreed ? '#5BA8D6' : 'var(--border, rgba(0,0,0,0.1))',
             color: allAgreed ? '#fff' : 'var(--text-muted)',
             border: 'none', fontSize: 15, fontWeight: 700, fontFamily: 'inherit',
             cursor: allAgreed ? 'pointer' : 'not-allowed',

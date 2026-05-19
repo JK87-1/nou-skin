@@ -17,6 +17,7 @@ import { getLatestRecord } from '../storage/SkinStorage';
 import { getGoal, saveGoal, clearGoal, getDaysRemaining, getGoalProgress, getOverallProgress, METRIC_META } from '../storage/GoalStorage';
 import { getAllPhotosRaw, restorePhotos } from '../storage/PhotoDB';
 import { MoonIcon, SunIcon, CameraIcon, SaveIcon, PastelIcon } from '../components/icons/PastelIcons';
+import { TERMS_OF_SERVICE, PRIVACY_POLICY, BIOMETRIC_CONSENT } from '../legal/legalContent';
 
 export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasure }) {
   const [profile, setProfile] = useState(getProfile);
@@ -245,6 +246,7 @@ function BioEditModal({ bio, onSave, onClose }) {
 function SettingsModal({ profile, update, onClose, showToast, colorMode, setColorMode }) {
   const [editingProfile, setEditingProfile] = useState(false);
   const [editingSkin, setEditingSkin] = useState(false);
+  const [legalPage, setLegalPage] = useState(null); // 'terms' | 'privacy' | 'biometric' | null
   const [editField, setEditField] = useState(null); // 'nickname' | 'birthYear' | 'gender'
   const [editFieldValue, setEditFieldValue] = useState('');
   const [goalModalOpen, setGoalModalOpen] = useState(false);
@@ -279,6 +281,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
     globe: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>,
     lock: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>,
     message: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>,
+    doc: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>,
     help: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
   };
 
@@ -339,8 +342,8 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
         <SettingsRow icon={icons.globe} label="언어" right="한국어" onTap={() => showToast('현재 한국어만 지원돼요')} />
 
         <SectionHeader label="정보" />
-        <SettingsRow icon={icons.message} label="피드백 보내기" onTap={() => window.open(`mailto:luaskin.co@gmail.com?subject=${encodeURIComponent('루아 피드백')}`, '_blank')} />
-        <SettingsRow icon={icons.lock} label="개인정보 처리방침" onTap={() => showToast('준비 중이에요')} />
+        <SettingsRow icon={icons.message} label="문의하기" onTap={() => window.open(`mailto:luaskin.co@gmail.com?subject=${encodeURIComponent('루아 피드백')}`, '_blank')} />
+        <SettingsRow icon={icons.doc} label="이용약관" onTap={() => setLegalPage('terms')} />
 
         {/* Footer */}
         <div style={{ padding: '12px 28px 40px', borderTop: '1px solid rgba(255,255,255,0.2)', marginTop: 16 }}>
@@ -348,6 +351,67 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           <div onClick={() => showToast('로그아웃 기능 준비 중')} style={{ fontSize: 13, color: 'var(--text-muted)', cursor: 'pointer' }}>로그아웃</div>
         </div>
       </div>
+
+      {/* ===== Legal Document Sub-Page ===== */}
+      {legalPage && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 1002, maxWidth: 430, margin: '0 auto',
+          background: '#ffffff',
+          display: 'flex', flexDirection: 'column',
+          animation: 'settingsSlideIn 0.3s ease',
+        }}>
+          <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 16px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+            <div onClick={() => setLegalPage(null)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </div>
+            <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
+              {legalPage === 'terms' ? '이용약관' : legalPage === 'privacy' ? '개인정보 처리방침' : '생체정보 동의'}
+            </span>
+          </div>
+          <div style={{ display: 'flex', borderBottom: '1px solid var(--border, rgba(0,0,0,0.08))', margin: '12px 0 0' }}>
+            {[
+              { key: 'terms', label: '이용약관' },
+              { key: 'privacy', label: '개인정보 처리방침' },
+              { key: 'biometric', label: '생체정보 동의' },
+            ].map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setLegalPage(tab.key)}
+                style={{
+                  flex: 1, padding: '12px 4px', background: 'none', border: 'none',
+                  fontSize: 13, fontWeight: 600, fontFamily: 'inherit',
+                  color: legalPage === tab.key ? 'var(--text-primary)' : 'var(--text-muted)',
+                  borderBottom: legalPage === tab.key ? '2px solid #5BA8D6' : '2px solid transparent',
+                  cursor: 'pointer',
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '14px 20px 40px', WebkitOverflowScrolling: 'touch' }}>
+            {(legalPage === 'terms' ? TERMS_OF_SERVICE : legalPage === 'privacy' ? PRIVACY_POLICY : BIOMETRIC_CONSENT).split('\n').map((line, i) => {
+              const key = `legal-${i}`;
+              if (line.startsWith('## ')) return <h2 key={key} style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', margin: '18px 0 8px' }}>{line.slice(3)}</h2>;
+              if (line.startsWith('# ')) return <h1 key={key} style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)', margin: '8px 0 14px' }}>{line.slice(2)}</h1>;
+              if (line.startsWith('|')) return <div key={key} style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--text-secondary)', whiteSpace: 'pre', lineHeight: 1.6 }}>{line}</div>;
+              if (line.startsWith('- ')) return <div key={key} style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '3px 0', paddingLeft: 14, lineHeight: 1.6 }}>• {line.slice(2)}</div>;
+              if (/^\d+\. /.test(line)) return <div key={key} style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '3px 0', paddingLeft: 14, lineHeight: 1.6 }}>{line}</div>;
+              if (line === '') return <div key={key} style={{ height: 6 }} />;
+              const parts = line.split(/(\*\*[^*]+\*\*)/g);
+              return (
+                <p key={key} style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.75, margin: 0 }}>
+                  {parts.map((p, j) =>
+                    p.startsWith('**') && p.endsWith('**')
+                      ? <strong key={j} style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{p.slice(2, -2)}</strong>
+                      : p
+                  )}
+                </p>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* ===== Profile Edit Sub-Page ===== */}
       {editingProfile && (

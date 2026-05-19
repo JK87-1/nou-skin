@@ -42,28 +42,11 @@ import BeforeAfterSlider from './components/BeforeAfterSlider';
 import { DropletIcon, SparkleIcon, LotionIcon, DiamondIcon, PaletteIcon, MicroscopeIcon, RulerIcon, EyeIcon, BubbleIcon, TargetIcon, SunIcon, MoonIcon, CameraIcon, TestTubeIcon, StarIcon, ShieldIcon, WandIcon, PhotoIcon, CheckIcon, SaveIcon, PastelIcon, LuaMiniIcon, FlameIcon, EggIcon, BlushIcon } from './components/icons/PastelIcons';
 import SoftCloverIcon from './components/icons/SoftCloverIcon';
 import EternalPearl from './components/icons/EternalPearl';
-import ConsentModal from './components/ConsentModal';
+// ConsentModal removed — legal docs moved to MyPage > 설정 > 정보
 
-const LEGAL_CONSENT_VERSION = '2026-05-22';
-const LEGAL_CONSENT_KEY = 'legalConsentAt';
-const LEGAL_CONSENT_VERSION_KEY = 'legalConsentVersion';
 
 export default function App() {
-  const [needsLegalConsent, setNeedsLegalConsent] = useState(() => {
-    try {
-      const at = localStorage.getItem(LEGAL_CONSENT_KEY);
-      const ver = localStorage.getItem(LEGAL_CONSENT_VERSION_KEY);
-      return !at || ver !== LEGAL_CONSENT_VERSION;
-    } catch { return true; }
-  });
-
-  const handleAcceptLegalConsent = useCallback(() => {
-    try {
-      localStorage.setItem(LEGAL_CONSENT_KEY, new Date().toISOString());
-      localStorage.setItem(LEGAL_CONSENT_VERSION_KEY, LEGAL_CONSENT_VERSION);
-    } catch {}
-    setNeedsLegalConsent(false);
-  }, []);
+  // Legal consent modal removed — docs available in MyPage > 설정 > 정보
 
   const [stage, setStage] = useState('landing');
   const [image, setImage] = useState(null);
@@ -735,7 +718,7 @@ export default function App() {
     <div className="app-container">
       <GlobalStyles />
       <style>{`@keyframes landingPearlReveal { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }`}</style>
-      {!showSplash && needsLegalConsent && <ConsentModal onAccept={handleAcceptLegalConsent} />}
+      {/* Legal consent modal removed — docs in MyPage > 설정 > 정보 */}
       {showSplash && <SplashScreen exiting={splashExiting} onAnimationEnd={() => setShowSplash(false)} />}
       <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} style={{ display: 'none' }} />
       <input ref={nativeCameraRef} type="file" accept="image/*" capture="user" onChange={handleFile} style={{ display: 'none' }} />
