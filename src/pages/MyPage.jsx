@@ -17,7 +17,7 @@ import { getLatestRecord } from '../storage/SkinStorage';
 import { getGoal, saveGoal, clearGoal, getDaysRemaining, getGoalProgress, getOverallProgress, METRIC_META } from '../storage/GoalStorage';
 import { getAllPhotosRaw, restorePhotos } from '../storage/PhotoDB';
 import { MoonIcon, SunIcon, CameraIcon, SaveIcon, PastelIcon } from '../components/icons/PastelIcons';
-import { TERMS_OF_SERVICE, PRIVACY_POLICY, BIOMETRIC_CONSENT, INQUIRY_FAQ, CONTACT_EMAIL } from '../legal/legalContent';
+import { TERMS_OF_SERVICE, PRIVACY_POLICY, INQUIRY_FAQ, CONTACT_EMAIL } from '../legal/legalContent';
 
 export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasure }) {
   const [profile, setProfile] = useState(getProfile);
@@ -248,7 +248,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
   const [editingSkin, setEditingSkin] = useState(false);
   const [legalPage, setLegalPage] = useState(null); // 'terms' | 'privacy' | 'biometric' | null
   const [faqOpen, setFaqOpen] = useState(false);
-  const [openFaqIndex, setOpenFaqIndex] = useState(0); // 첫 항목 펼침
+  const [openFaqIndex, setOpenFaqIndex] = useState(0);
   const [editField, setEditField] = useState(null); // 'nickname' | 'birthYear' | 'gender'
   const [editFieldValue, setEditFieldValue] = useState('');
   const [goalModalOpen, setGoalModalOpen] = useState(false);
@@ -311,8 +311,11 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
   return (
     <div style={{
       position: 'fixed', top: 0, right: 0, bottom: 0, left: 0, zIndex: 1000,
-      width: '100%', maxWidth: 430, margin: '0 auto',
       background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
+    }}>
+    <div style={{
+      position: 'absolute', top: 0, bottom: 0, left: '50%', transform: 'translateX(-50%)',
+      width: '100%', maxWidth: 430,
       display: 'flex', flexDirection: 'column',
       overflowY: 'auto', WebkitOverflowScrolling: 'touch',
       animation: 'settingsSlideIn 0.3s ease',
@@ -346,6 +349,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
         <SectionHeader label="정보" />
         <SettingsRow icon={icons.message} label="문의하기" onTap={() => { setOpenFaqIndex(0); setFaqOpen(true); }} />
         <SettingsRow icon={icons.doc} label="이용약관" onTap={() => setLegalPage('terms')} />
+        <SettingsRow icon={icons.lock} label="개인정보 처리방침" onTap={() => setLegalPage('privacy')} />
 
         {/* Footer */}
         <div style={{ padding: '12px 28px 40px', borderTop: '1px solid rgba(255,255,255,0.2)', marginTop: 16 }}>
@@ -354,11 +358,30 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
         </div>
       </div>
 
+      {/* ===== FAQ Sub-Page ===== */}
+      {faqOpen && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 1002, maxWidth: 430, margin: '0 auto',
+          background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
+          display: 'flex', flexDirection: 'column',
+          animation: 'settingsSlideIn 0.3s ease',
+        }}>
+          <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 16px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+            <div onClick={() => setFaqOpen(false)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </div>
+            <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>문의하기</span>
+          </div>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '20px', WebkitOverflowScrolling: 'touch' }}>
+          </div>
+        </div>
+      )}
+
       {/* ===== Legal Document Sub-Page ===== */}
       {legalPage && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 1002, maxWidth: 430, margin: '0 auto',
-          background: '#ffffff',
+          background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
           display: 'flex', flexDirection: 'column',
           animation: 'settingsSlideIn 0.3s ease',
         }}>
@@ -367,50 +390,65 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
             </div>
             <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
-              {legalPage === 'terms' ? '이용약관' : legalPage === 'privacy' ? '개인정보 처리방침' : '생체정보 동의'}
+              {legalPage === 'terms' ? '이용약관' : '개인정보 처리방침'}
             </span>
           </div>
-          <div style={{ display: 'flex', borderBottom: '1px solid var(--border, rgba(0,0,0,0.08))', margin: '12px 0 0' }}>
-            {[
-              { key: 'terms', label: '이용약관' },
-              { key: 'privacy', label: '개인정보 처리방침' },
-              { key: 'biometric', label: '생체정보 동의' },
-            ].map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => setLegalPage(tab.key)}
-                style={{
-                  flex: 1, padding: '12px 4px', background: 'none', border: 'none',
-                  fontSize: 13, fontWeight: 600, fontFamily: 'inherit',
-                  color: legalPage === tab.key ? 'var(--text-primary)' : 'var(--text-muted)',
-                  borderBottom: legalPage === tab.key ? '2px solid #5BA8D6' : '2px solid transparent',
-                  cursor: 'pointer',
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-          <div style={{ flex: 1, overflowY: 'auto', padding: '14px 20px 40px', WebkitOverflowScrolling: 'touch' }}>
-            {(legalPage === 'terms' ? TERMS_OF_SERVICE : legalPage === 'privacy' ? PRIVACY_POLICY : BIOMETRIC_CONSENT).split('\n').map((line, i) => {
-              const key = `legal-${i}`;
-              if (line.startsWith('## ')) return <h2 key={key} style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', margin: '18px 0 8px' }}>{line.slice(3)}</h2>;
-              if (line.startsWith('# ')) return <h1 key={key} style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)', margin: '8px 0 14px' }}>{line.slice(2)}</h1>;
-              if (line.startsWith('|')) return <div key={key} style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--text-secondary)', whiteSpace: 'pre', lineHeight: 1.6 }}>{line}</div>;
-              if (line.startsWith('- ')) return <div key={key} style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '3px 0', paddingLeft: 14, lineHeight: 1.6 }}>• {line.slice(2)}</div>;
-              if (/^\d+\. /.test(line)) return <div key={key} style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '3px 0', paddingLeft: 14, lineHeight: 1.6 }}>{line}</div>;
-              if (line === '') return <div key={key} style={{ height: 6 }} />;
-              const parts = line.split(/(\*\*[^*]+\*\*)/g);
-              return (
-                <p key={key} style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.75, margin: 0 }}>
-                  {parts.map((p, j) =>
-                    p.startsWith('**') && p.endsWith('**')
-                      ? <strong key={j} style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{p.slice(2, -2)}</strong>
-                      : p
-                  )}
-                </p>
-              );
-            })}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '25px 20px 40px', WebkitOverflowScrolling: 'touch' }}>
+            {(() => {
+              const lines = (legalPage === 'terms' ? TERMS_OF_SERVICE : PRIVACY_POLICY).split('\n');
+              const elements = [];
+              let i = 0;
+              while (i < lines.length) {
+                const line = lines[i];
+                const key = `legal-${i}`;
+                // 테이블 그룹 처리
+                if (line.startsWith('|')) {
+                  const tableLines = [];
+                  while (i < lines.length && lines[i].startsWith('|')) {
+                    tableLines.push(lines[i]);
+                    i++;
+                  }
+                  const headerCells = tableLines[0].split('|').filter(c => c.trim()).map(c => c.trim());
+                  const dataRows = tableLines.filter((l, idx) => idx > 1).map(l => l.split('|').filter(c => c.trim() !== '' && !/^-+$/.test(c.trim())).map(c => c.trim()));
+                  elements.push(
+                    <div key={key} style={{ overflowX: 'auto', margin: '10px 0', borderRadius: 5, border: '1px solid rgba(0,0,0,0.08)' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                        <thead>
+                          <tr style={{ background: 'rgba(91,168,214,0.1)' }}>
+                            {headerCells.map((c, j) => <th key={j} style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 600, color: 'var(--text-primary)', borderBottom: '1px solid rgba(0,0,0,0.08)', borderRight: j < headerCells.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none' }}>{c}</th>)}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {dataRows.map((row, ri) => (
+                            <tr key={ri}>
+                              {row.map((c, ci) => <td key={ci} style={{ padding: '7px 10px', color: 'var(--text-secondary)', borderBottom: ri < dataRows.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none', borderRight: ci < row.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none' }}>{c}</td>)}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  );
+                  continue;
+                }
+                if (line.startsWith('## ')) { elements.push(<h2 key={key} style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', margin: '18px 0 8px' }}>{line.slice(3)}</h2>); i++; continue; }
+                if (line.startsWith('# ') && !line.startsWith('## ')) { i++; continue; }
+                if (line.startsWith('- ')) { const bp = line.slice(2).split(/(\*\*[^*]+\*\*)/g); elements.push(<div key={key} style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '3px 0', paddingLeft: 14, lineHeight: 1.6 }}>• {bp.map((p, j) => p.startsWith('**') && p.endsWith('**') ? <strong key={j} style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{p.slice(2, -2)}</strong> : p)}</div>); i++; continue; }
+                if (/^\d+\. /.test(line)) { elements.push(<div key={key} style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '3px 0', paddingLeft: 14, lineHeight: 1.6 }}>{line}</div>); i++; continue; }
+                if (line === '') { elements.push(<div key={key} style={{ height: 6 }} />); i++; continue; }
+                const parts = line.split(/(\*\*[^*]+\*\*)/g);
+                elements.push(
+                  <p key={key} style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.75, margin: 0 }}>
+                    {parts.map((p, j) =>
+                      p.startsWith('**') && p.endsWith('**')
+                        ? <strong key={j} style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{p.slice(2, -2)}</strong>
+                        : p
+                    )}
+                  </p>
+                );
+                i++;
+              }
+              return elements;
+            })()}
           </div>
         </div>
       )}
@@ -787,7 +825,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           >
             <div style={{ textAlign: 'center', marginBottom: 16 }}>
               <div style={{ marginBottom: 4 }}><SaveIcon size={44} /></div>
-              <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
                 백업 파일 저장하기
               </div>
               <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
@@ -1014,6 +1052,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           showToast={showToast}
         />
       )}
+    </div>
     </div>
   );
 }

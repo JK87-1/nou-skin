@@ -49,7 +49,7 @@ export default function ConsentModal({ onAccept }) {
   const content = {
     terms: { title: '이용약관', text: TERMS_OF_SERVICE, agreed: agreedTerms, setAgreed: setAgreedTerms },
     privacy: { title: '개인정보 처리방침', text: PRIVACY_POLICY, agreed: agreedPrivacy, setAgreed: setAgreedPrivacy },
-    biometric: { title: '생체정보 동의', text: BIOMETRIC_CONSENT, agreed: agreedBiometric, setAgreed: setAgreedBiometric },
+    biometric: { title: '사진 분석 안내', text: BIOMETRIC_CONSENT, agreed: agreedBiometric, setAgreed: setAgreedBiometric },
   };
 
   const current = content[activeTab];
