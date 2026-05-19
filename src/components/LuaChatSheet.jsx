@@ -249,7 +249,16 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
       });
       if (!response.ok) { const err = await response.json().catch(() => ({})); throw new Error(err.error || `HTTP ${response.status}`); }
       const data = await response.json();
-      setMessages(prev => [...prev, { role: 'assistant', content: data.reply, timestamp: Date.now() }]);
+      const replyText = (data?.reply || '').trim();
+      if (!replyText) {
+        // 빈 응답(토큰 초과·OpenAI 응답 없음 등) → 명시적 fallback 메시지
+        setMessages(prev => [...prev, {
+          role: 'assistant', timestamp: Date.now(),
+          content: '답변이 길어서 잠시 끊겼어요. 같은 질문 한 번만 더 보내주시면 정리해서 답변드릴게요.',
+        }]);
+      } else {
+        setMessages(prev => [...prev, { role: 'assistant', content: replyText, timestamp: Date.now() }]);
+      }
     } catch (err) {
       setMessages(prev => [...prev, {
         role: 'assistant', timestamp: Date.now(),
@@ -312,17 +321,17 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
         opacity: closing ? 0 : 1, transition: 'opacity 200ms',
       }} />
 
-      {/* Sheet */}
+      {/* Sheet — 풀스크린 (채팅 중 시야 최대) */}
       <div ref={sheetRef} style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201,
-        height: '62%',
+        position: 'fixed', top: 0, bottom: 0, left: 0, right: 0, zIndex: 201,
         ...glass,
-        background: 'rgba(255,255,255,0.65)',
-        borderRadius: '30px 30px 0 0',
-        boxShadow: '0 -8px 28px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.6)',
+        background: 'rgba(255,255,255,0.85)',
+        borderRadius: 0,
+        boxShadow: 'none',
         display: 'flex', flexDirection: 'column',
         animation: closing ? 'luaChatSlideDown 240ms ease forwards' : 'luaChatSlideUp 280ms cubic-bezier(0.32,0.72,0,1) forwards',
         maxWidth: 430, margin: '0 auto',
+        paddingTop: 'env(safe-area-inset-top, 0px)',
       }}>
         <style>{`
           @keyframes luaChatSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }

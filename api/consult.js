@@ -446,7 +446,7 @@ export default async function handler(req, res) {
     }
 
     // Scale tokens based on number of images
-    const maxTokens = hasImages ? 1500 + (imageList.length * 500) : 1500;
+    const maxTokens = hasImages ? 2800 + (imageList.length * 500) : 2800;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -457,9 +457,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'gpt-5.2',
         max_completion_tokens: maxTokens,
-        temperature: 0.6,
-        presence_penalty: 0.2,
-        frequency_penalty: 0.2,
+        temperature: 0.55,
         messages,
       }),
     });
