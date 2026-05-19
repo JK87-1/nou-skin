@@ -358,25 +358,6 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
         </div>
       </div>
 
-      {/* ===== FAQ Sub-Page ===== */}
-      {faqOpen && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 1002, maxWidth: 430, margin: '0 auto',
-          background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
-          display: 'flex', flexDirection: 'column',
-          animation: 'settingsSlideIn 0.3s ease',
-        }}>
-          <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 16px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
-            <div onClick={() => setFaqOpen(false)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-            </div>
-            <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>문의하기</span>
-          </div>
-          <div style={{ flex: 1, overflowY: 'auto', padding: '20px', WebkitOverflowScrolling: 'touch' }}>
-          </div>
-        </div>
-      )}
-
       {/* ===== Legal Document Sub-Page ===== */}
       {legalPage && (
         <div style={{
@@ -456,10 +437,14 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
       {/* ===== Inquiry FAQ Sub-Page ===== */}
       {faqOpen && (
         <div style={{
-          position: 'fixed', inset: 0, zIndex: 1002, maxWidth: 430, margin: '0 auto',
-          background: '#ffffff',
-          display: 'flex', flexDirection: 'column',
+          position: 'fixed', inset: 0, zIndex: 1002,
+          background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
           animation: 'settingsSlideIn 0.3s ease',
+        }}>
+        <div style={{
+          position: 'absolute', top: 0, bottom: 0, left: '50%', transform: 'translateX(-50%)',
+          width: '100%', maxWidth: 430,
+          display: 'flex', flexDirection: 'column',
         }}>
           <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 16px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
             <div onClick={() => setFaqOpen(false)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
@@ -470,20 +455,15 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
             </span>
           </div>
 
-          <div style={{ flex: 1, overflowY: 'auto', padding: '20px 16px 40px', WebkitOverflowScrolling: 'touch' }}>
-            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16, lineHeight: 1.6 }}>
-              자주 묻는 질문을 먼저 확인해주세요.<br />
-              해결되지 않으면 페이지 하단의 이메일 문의를 이용해주세요.
-            </div>
-
+          <div style={{ flex: 1, overflowY: 'auto', padding: '25px 16px 40px', WebkitOverflowScrolling: 'touch' }}>
             {INQUIRY_FAQ.map((item, idx) => {
               const isOpen = openFaqIndex === idx;
               return (
                 <div
                   key={idx}
                   style={{
-                    marginBottom: 8,
-                    background: 'rgba(0,0,0,0.04)',
+                    marginBottom: 6,
+                    background: 'transparent',
                     borderRadius: 12,
                     overflow: 'hidden',
                     transition: 'background 0.2s',
@@ -512,7 +492,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                   {isOpen && (
                     <div style={{
                       padding: '0 16px 16px',
-                      fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7,
+                      fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7,
                       whiteSpace: 'pre-line',
                     }}>
                       {item.a}
@@ -522,25 +502,22 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               );
             })}
 
-            <div style={{ marginTop: 24, padding: '16px', background: 'rgba(91,168,214,0.08)', borderRadius: 12, border: '1px solid rgba(91,168,214,0.2)' }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>
-                해결이 안 되셨나요?
-              </div>
-              <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 12, lineHeight: 1.6 }}>
-                위 답변에서 해결되지 않은 문의는 이메일로 보내주세요. 영업일 기준 1~2일 내에 답변드립니다.
-              </div>
+            <div style={{ marginTop: 17, padding: '0 16px' }}>
               <button
                 onClick={() => window.open(`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('[루아 문의]')}`, '_blank')}
                 style={{
-                  width: '100%', padding: '12px', borderRadius: 10, border: 'none',
-                  background: '#5BA8D6', color: '#fff',
+                  width: '100%', padding: '12px', borderRadius: 10,
+                  border: 'none', background: 'rgba(91,168,214,0.1)', color: '#5BA8D6',
                   fontSize: 14, fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
               >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6 }}><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10" /><path d="M3 7l9 6l9 -6" /></svg>
                 이메일로 문의하기
               </button>
             </div>
           </div>
+        </div>
         </div>
       )}
 

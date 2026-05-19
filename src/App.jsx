@@ -2219,10 +2219,11 @@ export default function App() {
           animation: 'insightFloat 3s ease-in-out infinite',
         }}>
           {/* 접기 버튼 */}
-          <div onClick={() => setInsightCollapsed(true)} style={{
-            position: 'absolute', top: 18, right: 18, zIndex: 2,
+          <div onClick={(e) => { e.stopPropagation(); setInsightCollapsed(true); }} style={{
+            position: 'absolute', top: 6, right: 6, zIndex: 2,
+            width: 40, height: 40,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', padding: 0,
+            cursor: 'pointer',
           }}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #8B95A1)" strokeWidth="2.5" strokeLinecap="round" opacity="0.4"><path d="M6 9l6 6 6-6"/></svg>
           </div>
