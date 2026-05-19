@@ -164,24 +164,8 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
     return () => document.removeEventListener('click', handler);
   }, [showAttachMenu]);
 
-  // iOS Safari 키보드 푸시 방지: visualViewport 높이를 sheet에 직접 적용
-  // 키보드 올라올 때 sheet가 함께 위로 밀려 헤더가 화면 밖으로 잘리는 문제 해결
-  useEffect(() => {
-    const vv = typeof window !== 'undefined' ? window.visualViewport : null;
-    if (!vv) return;
-    const applyHeight = () => {
-      if (sheetRef.current) {
-        sheetRef.current.style.height = `${vv.height}px`;
-      }
-    };
-    applyHeight();
-    vv.addEventListener('resize', applyHeight);
-    vv.addEventListener('scroll', applyHeight);
-    return () => {
-      vv.removeEventListener('resize', applyHeight);
-      vv.removeEventListener('scroll', applyHeight);
-    };
-  }, []);
+  // 키보드 처리는 index.html viewport meta의 interactive-widget=resizes-content가 담당.
+  // 별도 JS 핸들러 불필요 — iOS 16+ / Android Chrome / 데스크톱 모두 자동 layout 재조정.
 
   const toggleListening = useCallback(() => {
     const recognition = recognitionRef.current;
