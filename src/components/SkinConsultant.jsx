@@ -7,6 +7,8 @@ import { incrementStat, addXP, checkAndAwardBadges } from '../storage/BadgeStora
 import { PRODUCTS, CATEGORY_META, getProductsByCategory, calcMatchScore } from '../data/ProductCatalog';
 import { getProducts, getProductsWithUsageContext, getRoutineSnapshot } from '../storage/TrackerStorage';
 import { getMemoryContext, recordUserMessage } from '../storage/UserMemoryStorage';
+import { Capacitor } from '@capacitor/core';
+import { Keyboard } from '@capacitor/keyboard';
 import SoftCloverIcon from './icons/SoftCloverIcon';
 import { StarIcon } from './icons/PastelIcons';
 import { DropletIcon, SparkleIcon, TestTubeIcon, SunIcon, DiamondIcon, PaletteIcon, MicroscopeIcon, LotionIcon } from './icons/PastelIcons';
@@ -146,29 +148,53 @@ function ProductRecommendSection({ category, result, delay = 0 }) {
 }
 
 /** Minimal markdown → React: **bold**, \n→<br>, • bullets */
+// Gemini 스타일 마크다운 — heading bold, 단락 명확한 간격, 평문 친화
+function renderInline(text) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((p, i) => {
+    if (/^\*\*[^*]+\*\*$/.test(p)) {
+      return <strong key={i} style={{ fontWeight: 700, color: 'inherit' }}>{p.slice(2, -2)}</strong>;
+    }
+    return <span key={i}>{p}</span>;
+  });
+}
+
 function renderMarkdown(text) {
   if (!text) return null;
-  return text.split('\n').map((line, li) => {
-    const isBullet = line.trimStart().startsWith('• ') || line.trimStart().startsWith('- ');
-    const cleanLine = isBullet ? line.replace(/^\s*[•\-]\s*/, '') : line;
+  const lines = text.split('\n');
+  const blocks = [];
+  let para = [], bullets = [];
+  const flushPara = () => { if (para.length) { blocks.push({ type: 'p', text: para.join(' ') }); para = []; } };
+  const flushBullets = () => { if (bullets.length) { blocks.push({ type: 'ul', items: bullets }); bullets = []; } };
 
-    const parts = cleanLine.split(/(\*\*[^*]+\*\*)/g).map((seg, si) => {
-      if (seg.startsWith('**') && seg.endsWith('**')) {
-        return <strong key={si} style={{ color: '#FFF3B0', fontWeight: 500 }}>{seg.slice(2, -2)}</strong>;
-      }
-      return seg;
-    });
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (line === '') { flushPara(); flushBullets(); blocks.push({ type: 'gap' }); continue; }
+    if (line.startsWith('### ')) { flushPara(); flushBullets(); blocks.push({ type: 'h3', text: line.slice(4) }); continue; }
+    if (line.startsWith('## '))  { flushPara(); flushBullets(); blocks.push({ type: 'h2', text: line.slice(3) }); continue; }
+    if (line.startsWith('# '))   { flushPara(); flushBullets(); blocks.push({ type: 'h2', text: line.slice(2) }); continue; }
+    if (/^[-•]\s+/.test(line))   { flushPara(); bullets.push(line.replace(/^[-•]\s+/, '')); continue; }
+    flushBullets();
+    para.push(line);
+  }
+  flushPara(); flushBullets();
 
-    if (isBullet) {
-      return <div key={li} style={{ display: 'flex', gap: 8, marginTop: li > 0 ? 6 : 0 }}>
-        <span style={{ flexShrink: 0, opacity: 0.5, color: 'var(--accent-primary)' }}>•</span>
-        <span>{parts}</span>
-      </div>;
-    }
-    if (line.trim() === '') {
-      return <div key={li} style={{ height: 14 }} />;
-    }
-    return <div key={li} style={{ marginTop: li > 0 ? 3 : 0 }}>{parts}</div>;
+  const compact = [];
+  for (const b of blocks) {
+    if (b.type === 'gap' && compact[compact.length - 1]?.type === 'gap') continue;
+    compact.push(b);
+  }
+
+  return compact.map((b, i) => {
+    if (b.type === 'gap') return <div key={i} style={{ height: 10 }} />;
+    if (b.type === 'h2') return <div key={i} style={{ fontSize: 17, fontWeight: 700, marginTop: i === 0 ? 0 : 14, marginBottom: 6, letterSpacing: -0.2 }}>{renderInline(b.text)}</div>;
+    if (b.type === 'h3') return <div key={i} style={{ fontSize: 15, fontWeight: 700, marginTop: i === 0 ? 0 : 10, marginBottom: 4 }}>{renderInline(b.text)}</div>;
+    if (b.type === 'ul') return (
+      <ul key={i} style={{ margin: '4px 0', paddingLeft: 18 }}>
+        {b.items.map((it, j) => <li key={j} style={{ marginBottom: 2, lineHeight: 1.6 }}>{renderInline(it)}</li>)}
+      </ul>
+    );
+    return <div key={i} style={{ marginBottom: 0, lineHeight: 1.65 }}>{renderInline(b.text)}</div>;
   });
 }
 
@@ -204,6 +230,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [sttSupported, setSttSupported] = useState(false);
   const [kbOpen, setKbOpen] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const containerRef = useRef(null);
@@ -256,9 +283,48 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
     return () => { document.body.style.overflow = orig; };
   }, []);
 
-  // Mobile keyboard handling via visualViewport API
-  // Dynamically resize container to fit above the keyboard
+  // Mobile keyboard handling
+  // Capacitor native: Keyboard plugin event (정확). 웹: visualViewport (fallback).
   useEffect(() => {
+    // Capacitor native iOS — Keyboard plugin 이벤트로 정밀 제어
+    if (typeof Capacitor !== 'undefined' && Capacitor.isNativePlatform?.()) {
+      let showSub = null, hideSub = null;
+      let cancelled = false;
+      (async () => {
+        try {
+          showSub = await Keyboard.addListener('keyboardWillShow', info => {
+            if (cancelled) return;
+            const c = containerRef.current;
+            const h = info?.keyboardHeight || 0;
+            setKeyboardHeight(h);
+            setKbOpen(true);
+            if (c) {
+              c.style.height = isTab
+                ? `calc(100dvh - ${h}px - 76px)`
+                : `calc(100dvh - ${h}px)`;
+              c.style.bottom = 'auto';
+            }
+            requestAnimationFrame(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); });
+          });
+          hideSub = await Keyboard.addListener('keyboardWillHide', () => {
+            if (cancelled) return;
+            const c = containerRef.current;
+            setKeyboardHeight(0);
+            setKbOpen(false);
+            if (c) { c.style.height = ''; c.style.bottom = ''; }
+          });
+        } catch {}
+      })();
+      return () => {
+        cancelled = true;
+        try { showSub?.remove?.(); } catch {}
+        try { hideSub?.remove?.(); } catch {}
+        const c = containerRef.current;
+        if (c) { c.style.height = ''; c.style.bottom = ''; }
+      };
+    }
+
+    // 웹 환경 — visualViewport API
     const vv = window.visualViewport;
     if (!vv || !containerRef.current) return;
 
@@ -270,11 +336,9 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
       const isOpen = kbHeight > 150;
 
       if (isOpen) {
-        // Keyboard open: fill from top to visual viewport height
         container.style.height = `${vv.height}px`;
         container.style.bottom = 'auto';
       } else {
-        // Keyboard closed: restore CSS defaults
         container.style.height = '';
         container.style.bottom = '';
       }
@@ -296,7 +360,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
         c.style.bottom = '';
       }
     };
-  }, []);
+  }, [isTab]);
 
   // Close attach menu on outside click
   useEffect(() => {
@@ -766,11 +830,12 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
               />
             </svg>
             <div style={{
-              fontSize: 32, fontWeight: 400, color: '#1F1F1F',
-              letterSpacing: -0.6, lineHeight: 1.25,
+              fontSize: 30, fontWeight: 500, color: '#1F1F1F',
+              letterSpacing: -0.5, lineHeight: 1.3,
               fontFamily: 'var(--font-display), Pretendard, -apple-system, sans-serif',
+              maxWidth: 320,
             }}>
-              무엇을 도와드릴까요?
+              오늘 피부는 어떤가요?
             </div>
           </div>
         )}
@@ -787,46 +852,69 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
           const prevMsg = i > 0 ? messages[i - 1] : null;
           const showAiLabel = isAI && (!prevMsg || prevMsg.role === 'user');
 
-          return (
-            <div key={i}>
-              {showAiLabel && (
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  marginBottom: 6, marginTop: i > 0 ? 12 : 0,
-                  paddingLeft: 2,
-                }}>
-                  <div style={{ flexShrink: 0 }}>
-                    <SoftCloverIcon theme="morningLight" size={28} animate />
-                  </div>
-                  <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 400 }}>루아</span>
-                </div>
-              )}
-              <div className={`consult-bubble ${msg.role === 'user' ? 'user' : 'ai'}`}>
-                {msg.imageThumbs && msg.imageThumbs.length > 0 ? (
-                  <div className="consult-bubble-images">
+          if (isAI) {
+            // Gemini 스타일: 버블·아바타·"루아" 라벨 모두 없음. 평문 마크다운만 + 액션 row.
+            return (
+              <div key={i} style={{ padding: '10px 2px 4px', fontSize: 16, color: 'var(--text-primary)' }}>
+                {msg.imageThumbs && msg.imageThumbs.length > 0 && (
+                  <div className="consult-bubble-images" style={{ marginBottom: 8 }}>
                     {msg.imageThumbs.map((thumb, ti) => (
                       <img key={ti} src={thumb} alt={`첨부 이미지 ${ti + 1}`} className="consult-bubble-image" />
                     ))}
                   </div>
-                ) : msg.imageThumb && (
-                  <img src={msg.imageThumb} alt="첨부 이미지" className="consult-bubble-image" />
                 )}
-                {isAI ? renderMarkdown(cleanText) : msg.content}
-              </div>
-              {/* Product recommendation cards below AI message */}
-              {showProducts && (
-                <div style={{ padding: '0 4px 0 44px' }}>
-                  {categories.map((cat, ci) => (
-                    <ProductRecommendSection key={cat} category={cat} result={result} delay={ci * 0.15} />
-                  ))}
-                  <div style={{
-                    fontSize: 10, color: 'var(--text-dim)', textAlign: 'center',
-                    padding: '6px 12px 2px', lineHeight: 1.4,
-                  }}>
-                    이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
+                {renderMarkdown(cleanText)}
+                {!isLoading || i !== messages.length - 1 ? (
+                  <div style={{ display: 'flex', gap: 18, alignItems: 'center', marginTop: 14 }}>
+                    <button className="gem-act" aria-label="좋아요"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H7l-3-3v-9a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg></button>
+                    <button className="gem-act" aria-label="별로예요"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H17l3 3v9a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"/></svg></button>
+                    <button className="gem-act" aria-label="다시 답변" onClick={() => {
+                      const lastUser = [...messages].reverse().find(m => m.role === 'user');
+                      if (lastUser) { setMessages(prev => prev.slice(0, -1)); sendMessage(lastUser.content); }
+                    }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg></button>
+                    <button className="gem-act" aria-label="복사" onClick={() => { try { navigator.clipboard?.writeText(cleanText); } catch {} }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    </button>
                   </div>
+                ) : null}
+                {/* Product recommendation cards below AI message */}
+                {showProducts && (
+                  <div style={{ padding: '8px 0 0 0' }}>
+                    {categories.map((cat, ci) => (
+                      <ProductRecommendSection key={cat} category={cat} result={result} delay={ci * 0.15} />
+                    ))}
+                    <div style={{
+                      fontSize: 10, color: 'var(--text-dim)', textAlign: 'center',
+                      padding: '6px 12px 2px', lineHeight: 1.4,
+                    }}>
+                      이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          }
+          // User 메시지 — Gemini 스타일 옅은 회색 캡슐
+          return (
+            <div key={i} style={{ padding: '6px 0' }}>
+              {msg.imageThumbs && msg.imageThumbs.length > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 4, marginBottom: 6 }}>
+                  {msg.imageThumbs.map((thumb, ti) => (
+                    <img key={ti} src={thumb} alt="" style={{ width: 88, height: 88, borderRadius: 14, objectFit: 'cover' }} />
+                  ))}
                 </div>
               )}
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <div style={{
+                  background: 'var(--bg-card, #F1F3F4)',
+                  padding: '11px 18px',
+                  borderRadius: 20,
+                  maxWidth: '82%',
+                  fontSize: 16, color: 'var(--text-primary)', lineHeight: 1.55,
+                  whiteSpace: 'pre-wrap',
+                  letterSpacing: -0.1,
+                }}>{msg.content}</div>
+              </div>
             </div>
           );
         })}
