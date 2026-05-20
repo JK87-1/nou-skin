@@ -1269,7 +1269,8 @@
   top: 0;
   left: 0;
   right: 0;
-  bottom: 76px;
+  /* dvh로 키보드 올라오면 자동 축소 → composer가 키보드 위에 sticky 효과 */
+  height: calc(100dvh - 76px);
   display: flex;
   flex-direction: column;
   background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
@@ -1282,7 +1283,11 @@
 
 .consult-overlay {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  /* 키보드 올라오면 자동 축소 — iOS Safari 16.4+ / Chrome 108+ */
+  height: 100dvh;
   z-index: 200;
   display: flex;
   flex-direction: column;
@@ -1343,11 +1348,11 @@
 }
 
 .consult-bubble {
-  max-width: 82%;
+  max-width: 84%;
   padding: 14px 18px;
   border-radius: 18px;
-  font-size: 14px;
-  line-height: 1.7;
+  font-size: 16px;
+  line-height: 1.6;
   word-break: break-word;
   animation: fadeUp 0.3s ease-out;
   letter-spacing: -0.1px;
@@ -1376,8 +1381,8 @@
   color: var(--text-secondary);
   border-radius: 18px 18px 18px 6px;
   padding: 16px 20px;
-  line-height: 1.85;
-  font-size: 13.5px;
+  line-height: 1.65;
+  font-size: 16px;
 }
 
 .consult-typing {

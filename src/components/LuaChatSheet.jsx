@@ -196,7 +196,7 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
       .filter(m => m.role === 'user' || m.role === 'assistant')
       .map(m => ({ role: m.role, content: m.content }));
     try {
-      const body = { message: userMsg.content, context: buildContext(), conversationHistory };
+      const body = { message: userMsg.content, context: buildContext(), conversationHistory, stream: true };
       if (imgs && imgs.length === 1) body.image = imgs[0].base64;
       else if (imgs && imgs.length > 1) body.images = imgs.map(img => img.base64);
 
@@ -206,8 +206,50 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
         body: JSON.stringify(body),
       });
       if (!response.ok) { const err = await response.json().catch(() => ({})); throw new Error(err.error || `HTTP ${response.status}`); }
-      const data = await response.json();
-      setMessages(prev => [...prev, { role: 'assistant', content: data.reply, timestamp: Date.now() }]);
+
+      // SSE 스트리밍 읽기 — 첫 토큰 도착 시점에 빈 assistant bubble 추가, 이후 delta 누적.
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let assistantText = '';
+      let bubbleAdded = false;
+      let streamError = null;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+        for (const line of lines) {
+          const t = line.trim();
+          if (!t.startsWith('data: ')) continue;
+          const payload = t.slice(6);
+          if (payload === '[DONE]') continue;
+          try {
+            const evt = JSON.parse(payload);
+            if (evt.error) { streamError = evt.error; continue; }
+            if (evt.delta) {
+              assistantText += evt.delta;
+              if (!bubbleAdded) {
+                bubbleAdded = true;
+                setMessages(prev => [...prev, { role: 'assistant', content: assistantText, timestamp: Date.now() }]);
+              } else {
+                setMessages(prev => {
+                  const next = [...prev];
+                  next[next.length - 1] = { ...next[next.length - 1], content: assistantText };
+                  return next;
+                });
+              }
+            }
+          } catch {}
+        }
+      }
+
+      if (streamError) throw new Error(streamError);
+      if (!bubbleAdded) {
+        setMessages(prev => [...prev, { role: 'assistant', content: '잠시 문제가 생겼어요. 다시 시도해주세요.', timestamp: Date.now() }]);
+      }
     } catch (err) {
       setMessages(prev => [...prev, {
         role: 'assistant', timestamp: Date.now(),
@@ -270,10 +312,11 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
         opacity: closing ? 0 : 1, transition: 'opacity 200ms',
       }} />
 
-      {/* Sheet — Gemini Flash 스타일 (거의 풀스크린 + 그라데이션) */}
+      {/* Sheet — Gemini Flash 스타일 (거의 풀스크린 + 그라데이션)
+          height: dvh로 키보드 올라오면 자동 축소 → input bar(flex 마지막)가 키보드 위에 sticky 효과 */}
       <div ref={sheetRef} style={{
         position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201,
-        height: '95%',
+        height: 'min(95dvh, 100%)',
         background: 'linear-gradient(180deg, #ffffff 0%, #ffffff 45%, #EAF4FB 100%)',
         borderRadius: '24px 24px 0 0',
         boxShadow: '0 -6px 24px rgba(0,0,0,0.06)',
@@ -391,21 +434,21 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
                     {!consecutive && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                         {luaAvatar(28)}
-                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #191F28)' }}>lua</span>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary, #191F28)' }}>lua</span>
                       </div>
                     )}
                     <div style={{ marginLeft: 36 }}>
                       <div style={{
                         ...glass,
                         background: 'rgba(255,255,255,0.5)',
-                        padding: '10px 14px',
+                        padding: '12px 16px',
                         borderRadius: consecutive ? 22 : '4px 22px 22px 22px',
-                        maxWidth: 'calc(75vw - 40px)',
-                        fontSize: 13, color: 'var(--text-primary, #191F28)', lineHeight: 1.5,
+                        maxWidth: 'calc(85vw - 40px)',
+                        fontSize: 16, color: 'var(--text-primary, #191F28)', lineHeight: 1.6,
                         whiteSpace: 'pre-wrap',
                       }}>{msg.content}</div>
                       {showTime && (
-                        <div style={{ fontSize: 9, color: 'var(--text-muted, #8B95A1)', marginTop: 3, marginLeft: 4 }}>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted, #8B95A1)', marginTop: 4, marginLeft: 4 }}>
                           {formatTime(msg.timestamp)}
                         </div>
                       )}
@@ -425,15 +468,15 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
                         background: 'rgba(137,206,245,0.5)',
                         backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
                         border: '1px solid rgba(137,206,245,0.3)',
-                        padding: '10px 14px',
+                        padding: '12px 16px',
                         borderRadius: consecutive ? 22 : '22px 4px 22px 22px',
-                        maxWidth: '75%',
-                        fontSize: 13, color: 'var(--text-primary, #191F28)', lineHeight: 1.5,
+                        maxWidth: '82%',
+                        fontSize: 16, color: 'var(--text-primary, #191F28)', lineHeight: 1.6,
                         whiteSpace: 'pre-wrap',
                       }}>{msg.content}</div>
                     </div>
                     {showTime && (
-                      <div style={{ fontSize: 9, color: 'var(--text-muted, #8B95A1)', marginTop: 3, textAlign: 'right' }}>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted, #8B95A1)', marginTop: 4, textAlign: 'right' }}>
                         {formatTime(msg.timestamp)}
                       </div>
                     )}
@@ -448,7 +491,7 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                 {luaAvatar(28)}
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #191F28)' }}>lua</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary, #191F28)' }}>lua</span>
               </div>
               <div style={{
                 marginLeft: 36,

@@ -294,29 +294,25 @@ function buildSystemPrompt(context) {
 - 단정 X. "~한 분이 많아요", "~일 가능성이 커요" 같이 부드럽게
 - 절대 비난·꾸중 X. 빠진 부분도 "이 부분만 채우면 완벽" 식으로 권유
 
-[응답 구조 — 4단 흐름]
-풍부한 상담일수록 아래 4단을 자연스럽게 거치세요:
-1) **공감·요약 (1줄)**: 질문·고민에 먼저 공감하고 핵심 요점 짚기
-2) **원인 추론 (2~3줄)**: "왜 그런지" 피부과학 원리 + 사용자 데이터(점수·등록 제품·오늘 사용·꾸준함)와 연결
-3) **구체 액션 (3~5줄)**: 정확히 며칠·언제·어떻게. 사용자가 이미 가진 제품을 우선 활용. 새 제품 추천은 빈 카테고리에만.
-4) **마무리 격려 (1줄)**: 부담 없는 한 줄 응원·실천 유도
+[응답 구조 — Gemini 수준의 응축성 ★ 가장 중요]
+사용자가 모바일 채팅으로 읽습니다. 길면 안 읽어요. 다음 룰 엄격 준수:
 
-[응답 깊이 — 품질 핵심]
-- 단순 "~하세요" 나열 금지. 각 권유에 "왜 그게 도움되는지" 짧은 근거 한 문장 동반
-- 사용자 등록 제품의 성분이 측정 결과의 어떤 지표에 어떤 원리로 기여하는지 연결
-- 추정·가설일 땐 명시 ("~일 가능성이 커요", "그게 원인일 수 있어요")
-- 측정 변화 + 사용 패턴 + 시간대 + 계절을 모두 cross-check 해서 가장 그럴듯한 단일 원인을 짚어주세요
-- 일반론·교과서식 답변 금지. 반드시 이 사용자의 데이터에 맞춰 개인화
+- **답변 길이: 3~5문장 + 액션 1~2개**. 7문장·150단어 넘으면 안 됨.
+- 구조: (1) 한 줄 직답 → (2) 핵심 근거 1~2문장 → (3) 구체 액션 1~2개 → (4) 선택적 한 줄 격려
+- 가벼운 질문은 2~3문장으로 끝. 복합 질문도 5문장 + 불릿 최대 3개.
+- 한 문장 내 종속절·괄호 늘리지 말 것. 짧고 명확하게.
+- 인사·서론·반복 금지 ("좋은 질문이에요" X). 바로 본론.
 
-[응답 포맷 — 마크다운 활용]
-- 모바일 채팅 + 마크다운 렌더링됨. **굵게**·줄바꿈 자유롭게 사용
-- 응답 길이: 질문 깊이에 맞춤. 가벼운 질문은 4~6줄, 복합 상담은 8~14줄까지 허용
-- 한 문단 최대 2~3문장. 문단 사이에 반드시 빈 줄(\n\n)
-- 핵심 키워드(제품명·성분·점수·시점)는 **볼드**로 강조
-- 3개 이상 나열 시 "• " 불릿
-- 단계·순서는 "1) ... 2) ... 3) ..." 또는 화살표 "→" 활용
-- 성분명은 영문 약자 X 풀어쓰기 ("AHA(글리콜산)", "PHA", "BHA(살리실산)")
-- 첫 문장은 공감·간결한 답변으로 시작
+[응답 깊이]
+- 사용자 데이터(점수·등록 제품·오늘 사용·꾸준함) 1~2개만 골라 자연 인용
+- 일반론·교과서식 답변 금지. 이 사용자에 개인화
+- 추정·가설은 명시 ("~일 가능성이 커요")
+
+[응답 포맷 — 마크다운]
+- 핵심 키워드(제품명·성분·점수)는 **볼드** 강조
+- 3개 이상 나열 시만 "• " 불릿
+- 문단 사이 빈 줄(\n\n) 한 번만
+- 성분명 영문 약자 X 풀어쓰기 ("BHA(살리실산)")
 
 [현재 사용자 피부 데이터]
 ${context.currentResult ? `종합점수: ${context.currentResult.overallScore}점
@@ -525,9 +521,70 @@ export default async function handler(req, res) {
       messages.push({ role: 'user', content: message });
     }
 
-    // Scale tokens based on number of images
-    const maxTokens = hasImages ? 2800 + (imageList.length * 500) : 2800;
+    // 응축 답변(3~5 문장) 강제 위한 token 축소.
+    // hasImages는 이미지 분석 좀 더 길어질 수 있으니 1500 + image당 200.
+    const maxTokens = hasImages ? 1500 + (imageList.length * 200) : 1000;
+    const wantsStream = req.body?.stream === true;
 
+    // ===== Streaming mode (SSE) =====
+    if (wantsStream) {
+      res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-cache, no-transform');
+      res.setHeader('Connection', 'keep-alive');
+      res.setHeader('X-Accel-Buffering', 'no');
+
+      const upstream = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+        body: JSON.stringify({
+          model: 'gpt-5.2',
+          max_completion_tokens: maxTokens,
+          temperature: 0.55,
+          messages,
+          stream: true,
+        }),
+      });
+
+      if (!upstream.ok || !upstream.body) {
+        res.write(`data: ${JSON.stringify({ error: 'AI 응답을 받지 못했어요.' })}\n\n`);
+        res.write(`data: [DONE]\n\n`);
+        return res.end();
+      }
+
+      const reader = upstream.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let totalText = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith('data: ')) continue;
+          const payload = trimmed.slice(6);
+          if (payload === '[DONE]') continue;
+          try {
+            const json = JSON.parse(payload);
+            const delta = json.choices?.[0]?.delta?.content;
+            if (delta) {
+              totalText += delta;
+              res.write(`data: ${JSON.stringify({ delta })}\n\n`);
+            }
+          } catch {}
+        }
+      }
+      if (!totalText) {
+        res.write(`data: ${JSON.stringify({ error: 'AI 응답이 비어있어요.' })}\n\n`);
+      }
+      res.write(`data: [DONE]\n\n`);
+      return res.end();
+    }
+
+    // ===== Non-streaming mode (legacy fallback) =====
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {

@@ -535,6 +535,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
         message: userMsg.content,
         context: buildContext(),
         conversationHistory,
+        stream: true,
       };
       if (imgs && imgs.length === 1) {
         body.image = imgs[0].base64;
@@ -553,9 +554,49 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
         throw new Error(errData.error || `HTTP ${response.status}`);
       }
 
-      const data = await response.json();
-      const aiMsg = { role: 'assistant', content: data.reply, timestamp: Date.now() };
-      setMessages(prev => [...prev, aiMsg]);
+      // SSE 스트리밍: 첫 delta에 빈 assistant bubble 추가, 이후 누적 갱신
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let assistantText = '';
+      let bubbleAdded = false;
+      let streamError = null;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+        for (const line of lines) {
+          const t = line.trim();
+          if (!t.startsWith('data: ')) continue;
+          const payload = t.slice(6);
+          if (payload === '[DONE]') continue;
+          try {
+            const evt = JSON.parse(payload);
+            if (evt.error) { streamError = evt.error; continue; }
+            if (evt.delta) {
+              assistantText += evt.delta;
+              if (!bubbleAdded) {
+                bubbleAdded = true;
+                setMessages(prev => [...prev, { role: 'assistant', content: assistantText, timestamp: Date.now() }]);
+              } else {
+                setMessages(prev => {
+                  const next = [...prev];
+                  next[next.length - 1] = { ...next[next.length - 1], content: assistantText };
+                  return next;
+                });
+              }
+            }
+          } catch {}
+        }
+      }
+
+      if (streamError) throw new Error(streamError);
+      if (!bubbleAdded) {
+        setMessages(prev => [...prev, { role: 'assistant', content: '잠시 문제가 생겼어요. 다시 시도해주세요.', timestamp: Date.now() }]);
+      }
     } catch (err) {
       console.error('Consult API error:', err);
       const errorMsg = {
