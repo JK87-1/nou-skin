@@ -735,18 +735,20 @@ export function getRecentTrend(days = 7) {
 
   if (records.length < 2) return null;
 
+  // 임계 절반으로 낮춤 — 김준 대표님 "큰 변화 못 느낌" 피드백 반영.
+  // 작은 변동도 자발 인사이트로 짚어주되, 측정 노이즈(±2~3)와 신호 경계인 3으로 통일.
   const metrics = [
-    { key: 'overallScore', label: '종합 점수', threshold: 5, inverse: false },
-    { key: 'moisture', label: '수분', threshold: 8, inverse: false },
-    { key: 'oilBalance', label: '유분', threshold: 8, inverse: false },
-    { key: 'skinTone', label: '피부톤', threshold: 6, inverse: false },
-    { key: 'wrinkleScore', label: '주름', threshold: 5, inverse: false },
-    { key: 'elasticityScore', label: '탄력', threshold: 5, inverse: false },
-    { key: 'darkCircleScore', label: '다크서클', threshold: 6, inverse: false },
-    { key: 'textureScore', label: '피부결', threshold: 6, inverse: false },
-    { key: 'poreScore', label: '모공', threshold: 5, inverse: false },
-    { key: 'pigmentationScore', label: '색소', threshold: 6, inverse: false },
-    { key: 'troubleCount', label: '트러블', threshold: 2, inverse: true },
+    { key: 'overallScore', label: '종합 점수', threshold: 3, inverse: false },
+    { key: 'moisture', label: '수분', threshold: 4, inverse: false },
+    { key: 'oilBalance', label: '유분', threshold: 4, inverse: false },
+    { key: 'skinTone', label: '피부톤', threshold: 3, inverse: false },
+    { key: 'wrinkleScore', label: '주름', threshold: 3, inverse: false },
+    { key: 'elasticityScore', label: '탄력', threshold: 3, inverse: false },
+    { key: 'darkCircleScore', label: '다크서클', threshold: 3, inverse: false },
+    { key: 'textureScore', label: '피부결', threshold: 3, inverse: false },
+    { key: 'poreScore', label: '모공', threshold: 3, inverse: false },
+    { key: 'pigmentationScore', label: '색소', threshold: 3, inverse: false },
+    { key: 'troubleCount', label: '트러블', threshold: 1, inverse: true },
   ];
 
   const notable = [];
