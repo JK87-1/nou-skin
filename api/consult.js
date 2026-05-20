@@ -184,7 +184,7 @@ function buildSystemPrompt(context) {
     lines.push('[멀티턴 기억 활용 룰]');
     lines.push('- 자주 묻는 주제와 관련된 질문이면 자연스럽게 누적 기록을 반영');
     lines.push('  예: 다크서클 4회 물어본 사용자에게 "지난 측정들 보면 다크서클이 꾸준한 관심사신데, 이번엔 ~점이 됐어요" 식.');
-    lines.push('- 첫 채팅(totalMessages 1~2)이면 기억 언급 X. 5회 이상부터 자연스럽게 활용.');
+    lines.push('- 첫 채팅(totalMessages 1)이면 기억 언급 X. 2회 이상부터 자연스럽게 활용 — "지난번에 ~ 물어보셨었죠" 식의 가벼운 연결도 OK.');
     lines.push('- 마지막 채팅이 7일+ 지났으면 환영 인사로 자연 연결 ("오랜만이에요").');
     lines.push('- 관심 주제가 한 metric에 치우쳐 있고 그 metric이 개선됐다면 적극 칭찬.');
     lines.push('- 사용자가 명시적으로 묻지 않은 누적 주제를 억지로 끼워넣지 마세요. 자연스러움이 핵심.');
