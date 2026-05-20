@@ -270,14 +270,13 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
         opacity: closing ? 0 : 1, transition: 'opacity 200ms',
       }} />
 
-      {/* Sheet */}
+      {/* Sheet — Gemini Flash 스타일 (거의 풀스크린 + 그라데이션) */}
       <div ref={sheetRef} style={{
         position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201,
-        height: '62%',
-        ...glass,
-        background: 'rgba(255,255,255,0.65)',
-        borderRadius: '30px 30px 0 0',
-        boxShadow: '0 -8px 28px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.6)',
+        height: '95%',
+        background: 'linear-gradient(180deg, #ffffff 0%, #ffffff 45%, #EAF4FB 100%)',
+        borderRadius: '24px 24px 0 0',
+        boxShadow: '0 -6px 24px rgba(0,0,0,0.06)',
         display: 'flex', flexDirection: 'column',
         animation: closing ? 'luaChatSlideDown 240ms ease forwards' : 'luaChatSlideUp 280ms cubic-bezier(0.32,0.72,0,1) forwards',
         maxWidth: 430, margin: '0 auto',
@@ -288,33 +287,78 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
           @keyframes luaDot { 0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1); } }
         `}</style>
 
-        {/* Handle */}
+        {/* Handle (드래그 닫기) */}
         <div onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
-          style={{ display: 'flex', justifyContent: 'center', padding: '20px 0 20px', cursor: 'grab' }}>
-          <div style={{ width: 47, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.15)' }} />
+          style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 4px', cursor: 'grab' }}>
+          <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.1)' }} />
         </div>
 
-        {/* Header */}
+        {/* Gemini Flash Style Header — X(좌) · lua●(중앙) · 새 채팅(우) */}
         <div style={{
-          padding: '8px 14px 10px', display: 'flex', alignItems: 'center', gap: 10,
-          borderBottom: '1px solid rgba(255,255,255,0.3)',
+          padding: '8px 16px 12px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
-          {luaAvatar(36)}
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary, #191F28)' }}>lua</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 1 }}>
-              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#89cef5' }} />
-              <span style={{ fontSize: 10, color: 'var(--text-muted, #8B95A1)' }}>늘 곁에 있어요</span>
-            </div>
+          <button onClick={handleClose} aria-label="채팅 닫기" style={{
+            width: 44, height: 44, borderRadius: 22,
+            background: '#ffffff',
+            border: 'none',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', flexShrink: 0,
+            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+          }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#191F28" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 18, fontWeight: 600, color: '#191F28', letterSpacing: -0.3 }}>lua</span>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#89cef5' }} />
           </div>
+
+          <button onClick={() => { setMessages([]); setInput(''); setPendingImages([]); }} aria-label="새 채팅" style={{
+            width: 44, height: 44, borderRadius: 22,
+            background: '#ffffff',
+            border: 'none',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', flexShrink: 0,
+            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#191F28" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 20h9"/>
+              <path d="M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4L16.5 3.5z"/>
+            </svg>
+          </button>
         </div>
 
-        {/* Messages */}
+        {/* Messages or Empty State (Gemini Flash 스타일) */}
         <div ref={scrollRef} style={{
           flex: 1, overflowY: 'auto', padding: '14px 14px',
           display: 'flex', flexDirection: 'column', gap: 10,
           WebkitOverflowScrolling: 'touch',
         }}>
+          {messages.length === 0 ? (
+            <div style={{
+              flex: 1,
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+              textAlign: 'center', padding: '40px 24px',
+              gap: 18,
+            }}>
+              {luaAvatar(64)}
+              <div style={{
+                fontSize: 26, fontWeight: 500, color: '#191F28',
+                letterSpacing: -0.5, lineHeight: 1.3,
+              }}>
+                무엇을 도와드릴까요?
+              </div>
+              <div style={{ fontSize: 13, color: 'var(--text-muted, #8B95A1)', maxWidth: 280, lineHeight: 1.5 }}>
+                피부 고민, 사용 중인 제품, 측정 결과 무엇이든 편하게 물어보세요.
+              </div>
+            </div>
+          ) : (
+          <>
           <div style={{ fontSize: 10, color: 'var(--text-muted, #8B95A1)', textAlign: 'center', margin: '4px 0' }}>오늘</div>
 
           {messages.map((msg, i) => {
@@ -402,6 +446,8 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
                 ))}
               </div>
             </div>
+          )}
+          </>
           )}
         </div>
 
