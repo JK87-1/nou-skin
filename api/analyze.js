@@ -87,6 +87,17 @@ Step 1~2의 분석을 종합하여 아래 10개 지표의 최종 점수(0-100)�
   ※ 트러블 카운트 핵심 룰: 작은 화이트헤드, 블랙헤드, 미세 papule/comedone도 반드시 1점씩 카운트하세요. 빨갛지 않은 미세 트러블도 카운트 대상입니다.
   ※ 트러블이 사진에 보이는데 95+ 점수를 주지 마세요. 0~5점만 깎고 끝내는 것도 금지입니다. 실제 보이는 트러블 개수에 비례해 점수를 분명히 깎으세요.
   ※ 메이크업/조명 때문에 가려진 경우엔 보이는 그대로 평가하고 analysis.summary에 "조명/메이크업으로 일부 가려진 가능성"을 언급하세요.
+
+[트러블 종류별 분류 — troubleBreakdown]
+troubleCount(0-100 점수) 외에 별도로 실제 개수를 5종으로 분류하세요:
+- whitehead (화이트헤드): 흰 점, 닫힌 면포(closed comedone). 살색~흰색 작은 융기, 염증 없음
+- blackhead (블랙헤드): 검은 점, 열린 면포(open comedone). 모공 입구가 검게 변색된 형태
+- papule (구진): 붉고 단단한 솟음. 농(고름) 없는 염증성 트러블, 직경 1~5mm
+- pustule (농포): 붉은 base + 중앙에 흰/노란 농(고름) 동반. 곪은 여드름
+- nodule (결절·낭종): 깊은 염증성 큰 덩어리, 5mm+. 단단하거나 낭종 형태
+※ 각 종류별 개수를 정수로 산출. 사진에 보이는 그대로 보수적으로 카운트.
+※ troubleBreakdown 합계가 raw troubleCount(round((100-troubleCount)/8.5))와 비슷한 범위여야 합니다. 분류가 애매한 트러블은 papule로 분류.
+※ 의료 진단 아닌 시각 추정임을 인지하고, 명확히 구분 가능한 것만 분류. 애매하면 papule로.
 - 탄력(elasticity): 90-100 탱탱함, 70-89 양호, 50-69 약간처짐시작, 30-49 눈에띄는처짐, 0-29 심한처짐
 - 피부결(texture): 90-100 매끈, 70-89 대체로고움, 50-69 약간거침/요철, 30-49 거친피부결, 0-29 매우거침
 - 색소(pigmentation): 90-100 잡티없음, 70-89 소량잡티, 50-69 기미/잡티산재, 30-49 기미뚜렷, 0-29 심한색소침착
@@ -95,7 +106,7 @@ Step 1~2의 분석을 종합하여 아래 10개 지표의 최종 점수(0-100)�
 [Step 4. JSON 출력]
 분석 완료 후 반드시 아래 형식의 JSON을 ---JSON_START--- 와 ---JSON_END--- 태그 사이에 출력하세요:
 ---JSON_START---
-{"moisture":숫자,"skinTone":숫자,"oilBalance":숫자,"troubleCount":숫자,"wrinkles":숫자,"elasticity":숫자,"texture":숫자,"pores":숫자,"pigmentation":숫자,"darkCircles":숫자,"makeupDetected":true또는false,"analysis":{"summary":"정밀판독 2~3줄","details":["부위별 소견1","소견2","소견3"]}}
+{"moisture":숫자,"skinTone":숫자,"oilBalance":숫자,"troubleCount":숫자,"troubleBreakdown":{"whitehead":숫자,"blackhead":숫자,"papule":숫자,"pustule":숫자,"nodule":숫자},"wrinkles":숫자,"elasticity":숫자,"texture":숫자,"pores":숫자,"pigmentation":숫자,"darkCircles":숫자,"makeupDetected":true또는false,"analysis":{"summary":"정밀판독 2~3줄","details":["부위별 소견1","소견2","소견3"]}}
 ---JSON_END---
 
 [analysis 작성 가이드 — 매우 중요]
@@ -157,6 +168,18 @@ const SCORE_KEYS = [
   'wrinkles', 'pores', 'elasticity',
   'pigmentation', 'texture', 'darkCircles',
 ];
+
+const BREAKDOWN_KEYS = ['whitehead', 'blackhead', 'papule', 'pustule', 'nodule'];
+
+function normalizeBreakdown(bd) {
+  const out = { whitehead: 0, blackhead: 0, papule: 0, pustule: 0, nodule: 0 };
+  if (!bd || typeof bd !== 'object') return out;
+  for (const k of BREAKDOWN_KEYS) {
+    const v = bd[k];
+    out[k] = (typeof v === 'number' && v >= 0) ? Math.round(v) : 0;
+  }
+  return out;
+}
 
 function median(arr) {
   const sorted = [...arr].sort((a, b) => a - b);
@@ -254,6 +277,7 @@ function parseAIResponse(text) {
     for (const key of SCORE_KEYS) {
       if (typeof parsed[key] !== 'number') return null;
     }
+    parsed.troubleBreakdown = normalizeBreakdown(parsed.troubleBreakdown);
     return parsed;
   } catch { return null; }
 }
@@ -297,7 +321,7 @@ async function callGPT(apiKey, newImage, seed, baselineImage, baselineResult) {
     },
     body: JSON.stringify({
       model: 'gpt-5.2',
-      max_completion_tokens: 2000,
+      max_completion_tokens: 2400,
       temperature: 0.3,
       top_p: 1,
       seed,
@@ -370,6 +394,13 @@ export default async function handler(req, res) {
       for (const key of SCORE_KEYS) {
         merged[key] = median(valid.map(r => r[key]));
       }
+      const breakdown = { whitehead: 0, blackhead: 0, papule: 0, pustule: 0, nodule: 0 };
+      for (const k of BREAKDOWN_KEYS) {
+        breakdown[k] = median(valid.map(r => (r.troubleBreakdown && r.troubleBreakdown[k]) || 0));
+      }
+      merged.troubleBreakdown = breakdown;
+    } else {
+      merged.troubleBreakdown = normalizeBreakdown(merged.troubleBreakdown);
     }
     // Pick analysis from a random valid response for diversity
     const analysisSource = valid[Math.floor(Math.random() * valid.length)];
