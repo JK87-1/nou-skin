@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { getRecords, getSmoothedChanges, getChanges, getLatestRecord, getStableSkinAge } from '../storage/SkinStorage';
+import { getRecords, getSmoothedChanges, getChanges, getLatestRecord, getStableSkinAge, getRecentTrend } from '../storage/SkinStorage';
 import { getProfile } from '../storage/ProfileStorage';
 import { compressImage } from '../engine/PixelAnalysis';
 import { getProductsWithUsageContext, getRoutineSnapshot } from '../storage/TrackerStorage';
@@ -169,6 +169,7 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
       profile: { birthYear: profile.birthYear, gender: profile.gender, skinType: profile.skinType },
       products: getProductsWithUsageContext(),
       routineSnapshot: getRoutineSnapshot(),
+      recentTrend: getRecentTrend(7),
     };
   }, []);
 

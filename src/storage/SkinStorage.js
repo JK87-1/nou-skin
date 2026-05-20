@@ -711,3 +711,73 @@ export function formatDateFull(dateStr) {
   const d = new Date(dateStr);
   return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
 }
+
+/**
+ * 최근 N일 측정 추세 분석 — Proactive Insights 핵심.
+ * 상담사가 사용자가 안 물어도 자발적으로 짚어줄 거리 추출.
+ *
+ * 반환:
+ *  - notableTrends: 주목할 metric 배열 (declining/improving 3+개 또는 큰 변동)
+ *    각 항목: { metric, label, first, last, diff, direction, daysOfChange, severity }
+ *  - summary: 한 줄 요약
+ */
+export function getRecentTrend(days = 7) {
+  const records = getRecords()
+    .filter(r => !r.differentPerson)
+    .filter(r => {
+      const ts = r.timestamp || 0;
+      return ts >= Date.now() - days * 86400000;
+    })
+    .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+
+  if (records.length < 2) return null;
+
+  const metrics = [
+    { key: 'overallScore', label: '종합 점수', threshold: 5, inverse: false },
+    { key: 'moisture', label: '수분', threshold: 8, inverse: false },
+    { key: 'oilBalance', label: '유분', threshold: 8, inverse: false },
+    { key: 'skinTone', label: '피부톤', threshold: 6, inverse: false },
+    { key: 'wrinkleScore', label: '주름', threshold: 5, inverse: false },
+    { key: 'elasticityScore', label: '탄력', threshold: 5, inverse: false },
+    { key: 'darkCircleScore', label: '다크서클', threshold: 6, inverse: false },
+    { key: 'textureScore', label: '피부결', threshold: 6, inverse: false },
+    { key: 'poreScore', label: '모공', threshold: 5, inverse: false },
+    { key: 'pigmentationScore', label: '색소', threshold: 6, inverse: false },
+    { key: 'troubleCount', label: '트러블', threshold: 2, inverse: true },
+  ];
+
+  const notable = [];
+  for (const m of metrics) {
+    const vals = records.map(r => r[m.key]).filter(v => typeof v === 'number');
+    if (vals.length < 2) continue;
+    const first = vals[0];
+    const last = vals[vals.length - 1];
+    const diff = last - first;
+    // 양호한 방향: 보통 점수 ↑(개선), 다만 트러블·피부나이는 ↓(개선)
+    const improved = m.inverse ? diff < 0 : diff > 0;
+    const severity = Math.abs(diff);
+
+    if (severity < m.threshold) continue; // 작은 변동은 skip
+
+    notable.push({
+      metric: m.key,
+      label: m.label,
+      first,
+      last,
+      diff: m.inverse ? -diff : diff,        // 항상 양수면 개선, 음수면 하락
+      direction: improved ? 'improving' : 'declining',
+      severity,
+      daysOfChange: records.length,
+    });
+  }
+
+  // 가장 주목할 만한 1~3개 (severity 큰 순)
+  notable.sort((a, b) => b.severity - a.severity);
+  const top = notable.slice(0, 3);
+
+  return {
+    days,
+    recordCount: records.length,
+    notableTrends: top,
+  };
+}

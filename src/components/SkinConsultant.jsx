@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { getRecords, getSmoothedChanges, getChanges, getTodayRecords, getStableSkinAge } from '../storage/SkinStorage';
+import { getRecords, getSmoothedChanges, getChanges, getTodayRecords, getStableSkinAge, getRecentTrend } from '../storage/SkinStorage';
 import { getProfile } from '../storage/ProfileStorage';
 import { saveConsultSession, loadConsultSession, clearConsultSession } from '../storage/ConsultStorage';
 import { compressImage } from '../engine/PixelAnalysis';
@@ -493,6 +493,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
       },
       products: getProductsWithUsageContext(),
       routineSnapshot: getRoutineSnapshot(),
+      recentTrend: getRecentTrend(7),
     };
   }, [result]);
 

@@ -138,6 +138,28 @@ function buildSystemPrompt(context) {
 - 위 [성분 상호작용 규칙]을 등록 제품들끼리 체크해서 충돌 발견 시 알림`;
   }
 
+  // ===== 최근 추세 컨텍스트 — Proactive Insights 핵심 =====
+  let trendContext = '';
+  if (context.recentTrend && Array.isArray(context.recentTrend.notableTrends) && context.recentTrend.notableTrends.length > 0) {
+    const lines = [`\n\n[최근 ${context.recentTrend.days}일 추세 — 사용자가 안 물어도 자발적으로 짚어줄 거리]`];
+    lines.push(`측정 ${context.recentTrend.recordCount}회 기준 주목할 변화:`);
+    for (const t of context.recentTrend.notableTrends) {
+      const arrow = t.direction === 'improving' ? '↑ 개선' : '↓ 하락';
+      const diffStr = (t.diff > 0 ? '+' : '') + t.diff;
+      lines.push(`- ${t.label}: ${t.first} → ${t.last} (${diffStr}, ${arrow})`);
+    }
+    lines.push('');
+    lines.push('[자발적 인사이트 룰 — 매우 중요]');
+    lines.push('- 사용자가 질문하지 않은 주제라도, 위 추세 중 가장 주목할 1개를 자연스럽게 짚어주세요.');
+    lines.push('- "하락 추세" 항목은 반드시 원인 추정 + 등록 제품·꾸준함 cross-check해서 짚기.');
+    lines.push('  예: "최근 7일 다크서클이 58→49로 떨어지고 있어요. 비타민C가 미사용 상태이고 저녁 루틴이 절반밖에 안 되셔서, 회복이 지연되는 것 같아요."');
+    lines.push('- "개선 추세" 항목은 칭찬·격려로 자연스럽게 연결.');
+    lines.push('  예: "지난 일주일 트러블이 5→3개로 줄었어요. 시카크림 매일 챙기신 게 효과 보고 있어요."');
+    lines.push('- 단, 사용자 질문 의도를 무시하고 추세 얘기만 늘어놓지는 마세요. 질문 답변 안에 자연스럽게 한 줄 끼워넣는 정도.');
+    lines.push('- 추세 인사이트는 답변당 최대 1개. 여러 항목 나열 금지.');
+    trendContext = lines.join('\n');
+  }
+
   // ===== 루틴 진행도·꾸준함 컨텍스트 =====
   let routineContext = '';
   if (context.routineSnapshot) {
@@ -253,7 +275,7 @@ ${context.currentResult ? `종합점수: ${context.currentResult.overallScore}�
 다크서클: ${context.currentResult.darkCircleScore}점
 피부타입: ${context.currentResult.skinType || '알 수 없음'}
 주요 관심사: ${context.currentResult.concerns?.join(', ') || '없음'}` : '분석 데이터 없음'}
-${historyContext}${changeContext}${todayContext}${productContext}${routineContext}
+${historyContext}${changeContext}${todayContext}${productContext}${trendContext}${routineContext}
 
 [계절 기반 조언 - 현재 ${season}]
 ${seasonalTips[season]}
