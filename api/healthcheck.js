@@ -118,11 +118,13 @@ export default async function handler(req, res) {
     }
 
     if (alerts.length > 0) {
+      // 임계 초과·오류만 캘린더에 기록 (정상은 stdout 로그만)
       await notifyNotion(`⚠️ 임계 초과 감지\n${alerts.join('\n')}\n\nOpenAI 키 유효 · 헬스체크 자체 응답 ${elapsed}ms${statsLine}`, '오류');
       return res.status(200).json({ ok: true, alerts, elapsed_ms: elapsed, gpt52: true, yesterday_stats: stats });
     }
 
-    await notifyNotion(`OpenAI 키 유효 · gpt-5.2 사용 가능 · 응답 ${elapsed}ms${statsLine}`, '완료');
+    // 정상 시 캘린더 기록 skip (노이즈 제거). stdout 로그만 남김.
+    console.log(`[healthcheck OK] OpenAI ${elapsed}ms${statsLine}`);
     return res.status(200).json({ ok: true, elapsed_ms: elapsed, gpt52: true, yesterday_stats: stats });
   } catch (e) {
     const msg = e.message || String(e);

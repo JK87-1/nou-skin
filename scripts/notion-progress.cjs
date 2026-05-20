@@ -201,8 +201,15 @@ async function main() {
   const area = detectArea(branch, status);
   const blocks = buildBlocks({ author, area, statusInfo, message, extra });
 
+  // 캘린더는 "본사이트 반영" 결과물만 기록 (노이즈 제거).
+  // "시작/진행중/완료" 같은 중간 단계는 stdout 로그만 출력하고 캘린더 skip.
+  if (status !== "본사이트" && status !== "오류" && status !== "보류") {
+    console.log(`📝 [stdout] ${area.label} — ${statusInfo.label}: ${message}`);
+    console.log(`   (캘린더 기록은 '본사이트' 상태에서만)`);
+    return;
+  }
+
   try {
-    // 캘린더 DB에만 기록 (진행 상황 페이지 callout 추가는 더 이상 안 함 — 노이즈 제거)
     const calendarOk = await addCalendarEntry({ env, author, area, statusInfo, message, extra });
 
     if (calendarOk) {
