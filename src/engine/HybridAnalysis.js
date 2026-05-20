@@ -350,6 +350,11 @@ export async function callVisionAI(base64Image, landmarks) {
       }
     }
 
+    // troubleBreakdown — 5종 분류 (whitehead/blackhead/papule/pustule/nodule)
+    if (parsed.troubleBreakdown && typeof parsed.troubleBreakdown === 'object') {
+      mapped.troubleBreakdown = parsed.troubleBreakdown;
+    }
+
     recordAiSuccess();
     return mapped;
   } catch (e) {
@@ -471,6 +476,17 @@ export function hybridMerge(cv, ai) {
   if (typeof ai.confidence === 'number') result.confidence = ai.confidence;
   if (ai.makeupDetected) result.makeupDetected = true;
   if (ai.differentPerson) result.differentPerson = true;
+
+  // troubleBreakdown — 5종 분류를 결과에 보존 (UI는 박수진 정밀 작업에 일임)
+  if (ai.troubleBreakdown && typeof ai.troubleBreakdown === 'object') {
+    result.troubleBreakdown = {
+      whitehead: Math.max(0, Math.round(ai.troubleBreakdown.whitehead || 0)),
+      blackhead: Math.max(0, Math.round(ai.troubleBreakdown.blackhead || 0)),
+      papule: Math.max(0, Math.round(ai.troubleBreakdown.papule || 0)),
+      pustule: Math.max(0, Math.round(ai.troubleBreakdown.pustule || 0)),
+      nodule: Math.max(0, Math.round(ai.troubleBreakdown.nodule || 0)),
+    };
+  }
 
   return result;
 }
