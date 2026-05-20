@@ -160,6 +160,37 @@ function buildSystemPrompt(context) {
     trendContext = lines.join('\n');
   }
 
+  // ===== 사용자 누적 관심사 (멀티턴 기억) — 진짜 똑똑한 에이전트 =====
+  let memoryContext = '';
+  if (context.userMemory && context.userMemory.totalMessages > 0) {
+    const m = context.userMemory;
+    const lines = [`\n\n[사용자 누적 관심사 — 멀티턴 기억]`];
+    lines.push(`총 ${m.totalMessages}회 상담. 시작 ${m.daysSinceFirstMessage || 0}일 전, 마지막 ${m.daysSinceLastMessage || 0}일 전.`);
+    if (m.topTopics && m.topTopics.length > 0) {
+      const topicLabels = {
+        moisture: '수분', troubleCount: '트러블', darkCircleScore: '다크서클',
+        wrinkleScore: '주름', oilBalance: '유분', pigmentationScore: '색소',
+        poreScore: '모공', textureScore: '피부결', elasticityScore: '탄력',
+        skinTone: '피부톤', makeup: '메이크업', routine: '루틴', sun: '자외선',
+      };
+      const top = m.topTopics.map(t => `${topicLabels[t.metric] || t.metric}(${t.count}회)`).join(', ');
+      lines.push(`자주 묻는 주제: ${top}`);
+    }
+    if (m.lastTopic && m.daysSinceLastMessage != null && m.daysSinceLastMessage <= 14) {
+      const topicLabels = { moisture: '수분', troubleCount: '트러블', darkCircleScore: '다크서클', wrinkleScore: '주름', oilBalance: '유분', pigmentationScore: '색소', poreScore: '모공', textureScore: '피부결', elasticityScore: '탄력', skinTone: '피부톤', makeup: '메이크업', routine: '루틴', sun: '자외선' };
+      lines.push(`최근 관심: ${topicLabels[m.lastTopic.metric] || m.lastTopic.metric}`);
+    }
+    lines.push('');
+    lines.push('[멀티턴 기억 활용 룰]');
+    lines.push('- 자주 묻는 주제와 관련된 질문이면 자연스럽게 누적 기록을 반영');
+    lines.push('  예: 다크서클 4회 물어본 사용자에게 "지난 측정들 보면 다크서클이 꾸준한 관심사신데, 이번엔 ~점이 됐어요" 식.');
+    lines.push('- 첫 채팅(totalMessages 1~2)이면 기억 언급 X. 5회 이상부터 자연스럽게 활용.');
+    lines.push('- 마지막 채팅이 7일+ 지났으면 환영 인사로 자연 연결 ("오랜만이에요").');
+    lines.push('- 관심 주제가 한 metric에 치우쳐 있고 그 metric이 개선됐다면 적극 칭찬.');
+    lines.push('- 사용자가 명시적으로 묻지 않은 누적 주제를 억지로 끼워넣지 마세요. 자연스러움이 핵심.');
+    memoryContext = lines.join('\n');
+  }
+
   // ===== 루틴 진행도·꾸준함 컨텍스트 =====
   let routineContext = '';
   if (context.routineSnapshot) {
@@ -302,7 +333,7 @@ ${context.currentResult ? `종합점수: ${context.currentResult.overallScore}�
 다크서클: ${context.currentResult.darkCircleScore}점
 피부타입: ${context.currentResult.skinType || '알 수 없음'}
 주요 관심사: ${context.currentResult.concerns?.join(', ') || '없음'}` : '분석 데이터 없음'}
-${historyContext}${changeContext}${todayContext}${productContext}${trendContext}${routineContext}
+${historyContext}${changeContext}${todayContext}${productContext}${trendContext}${memoryContext}${routineContext}
 
 [계절 기반 조언 - 현재 ${season}]
 ${seasonalTips[season]}

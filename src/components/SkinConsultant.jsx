@@ -6,6 +6,7 @@ import { compressImage } from '../engine/PixelAnalysis';
 import { incrementStat, addXP, checkAndAwardBadges } from '../storage/BadgeStorage';
 import { PRODUCTS, CATEGORY_META, getProductsByCategory, calcMatchScore } from '../data/ProductCatalog';
 import { getProducts, getProductsWithUsageContext, getRoutineSnapshot } from '../storage/TrackerStorage';
+import { getMemoryContext, recordUserMessage } from '../storage/UserMemoryStorage';
 import SoftCloverIcon from './icons/SoftCloverIcon';
 import { DropletIcon, SparkleIcon, TestTubeIcon, SunIcon, DiamondIcon, PaletteIcon, MicroscopeIcon, LotionIcon } from './icons/PastelIcons';
 
@@ -494,6 +495,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
       products: getProductsWithUsageContext(),
       routineSnapshot: getRoutineSnapshot(),
       recentTrend: getRecentTrend(7),
+      userMemory: getMemoryContext(),
     };
   }, [result]);
 
@@ -517,6 +519,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
       imageThumb: imgs?.[0]?.dataUrl || null,
     };
     setMessages(prev => [...prev, userMsg]);
+    recordUserMessage(userMsg.content);
     setInput('');
     setPendingImages([]);
     setIsLoading(true);

@@ -3,6 +3,7 @@ import { getRecords, getSmoothedChanges, getChanges, getLatestRecord, getStableS
 import { getProfile } from '../storage/ProfileStorage';
 import { compressImage } from '../engine/PixelAnalysis';
 import { getProductsWithUsageContext, getRoutineSnapshot } from '../storage/TrackerStorage';
+import { getMemoryContext, recordUserMessage } from '../storage/UserMemoryStorage';
 
 function getGreetingMsg() {
   return '안녕하세요, 당신의 피부 상담사 루아에요. 궁금한 점이 있으면 편하게 물어보세요!';
@@ -170,6 +171,7 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
       products: getProductsWithUsageContext(),
       routineSnapshot: getRoutineSnapshot(),
       recentTrend: getRecentTrend(7),
+      userMemory: getMemoryContext(),
     };
   }, []);
 
@@ -185,6 +187,7 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
       imageThumbs: imgs ? imgs.map(img => img.dataUrl) : null,
     };
     setMessages(prev => [...prev, userMsg]);
+    recordUserMessage(userMsg.content);
     setInput('');
     setPendingImages([]);
     setIsLoading(true);
