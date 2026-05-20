@@ -636,14 +636,14 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
         flexShrink: 0,
       }}>
         {!isTab ? (
-          <button onClick={handleClose} aria-label="채팅 닫기" style={{
+          <button onClick={handleClose} aria-label="채팅 닫기" className="gem-btn" style={{
             width: 44, height: 44, borderRadius: 22,
             background: '#ffffff', border: 'none',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer', flexShrink: 0,
             boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
           }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#191F28" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#191F28" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"/>
               <line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
@@ -651,8 +651,12 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
         ) : <div style={{ width: 44 }} />}
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 18, fontWeight: 600, color: '#191F28', letterSpacing: -0.3 }}>lua</span>
-          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#89cef5' }} />
+          <span style={{
+            fontSize: 22, fontWeight: 500, color: '#1F1F1F',
+            letterSpacing: -0.3, lineHeight: 1,
+            fontFamily: 'var(--font-display), Pretendard, -apple-system, sans-serif',
+          }}>lua</span>
+          <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#89cef5' }} />
         </div>
 
         <button onClick={() => {
@@ -660,12 +664,11 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
           setMessages([]);
           setInput('');
           setPendingImages([]);
-        }} aria-label="새 상담" style={{
+        }} aria-label="새 상담" className="gem-btn" style={{
           width: 44, height: 44, borderRadius: 22,
-          background: '#ffffff', border: 'none',
+          background: '#ffffff', border: '1.5px dashed rgba(0,0,0,0.18)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: 'pointer', flexShrink: 0,
-          boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
         }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#191F28" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 20h9"/>
@@ -673,6 +676,10 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
           </svg>
         </button>
       </div>
+      <style>{`
+        .gem-btn { transition: transform 0.12s ease, opacity 0.12s ease; -webkit-tap-highlight-color: transparent; }
+        .gem-btn:active { transform: scale(0.92); opacity: 0.75; }
+      `}</style>
 
       {/* Quick Question Chips */}
       <div className="consult-chips">
@@ -702,24 +709,27 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
             flex: 1, minHeight: 360,
             display: 'flex', flexDirection: 'column',
             alignItems: 'center', justifyContent: 'center',
-            textAlign: 'center', padding: '40px 24px', gap: 18,
+            textAlign: 'center', padding: '32px 24px 80px', gap: 20,
           }}>
+            <svg width="56" height="56" viewBox="0 0 56 56" fill="none" aria-hidden>
+              <defs>
+                <linearGradient id="luaStarGradSC" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#89cef5" />
+                  <stop offset="55%" stopColor="#ace2fc" />
+                  <stop offset="100%" stopColor="#cce8fb" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M28 2 C29 14 30 17 32 19 C34 22 37 23 54 28 C37 33 34 34 32 37 C30 39 29 42 28 54 C27 42 26 39 24 37 C22 34 19 33 2 28 C19 23 22 22 24 19 C26 17 27 14 28 2 Z"
+                fill="url(#luaStarGradSC)"
+              />
+            </svg>
             <div style={{
-              width: 64, height: 64, borderRadius: '50%',
-              background: 'radial-gradient(circle at 40% 35%, rgba(255,255,255,0.8), rgba(172,226,252,0.35))',
-              boxShadow: '0 0 0 1px rgba(255,255,255,0.4), 0 2px 6px rgba(0,0,0,0.06)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <StarIcon size={36} />
-            </div>
-            <div style={{
-              fontSize: 26, fontWeight: 500, color: '#191F28',
-              letterSpacing: -0.5, lineHeight: 1.3,
+              fontSize: 32, fontWeight: 400, color: '#1F1F1F',
+              letterSpacing: -0.6, lineHeight: 1.25,
+              fontFamily: 'var(--font-display), Pretendard, -apple-system, sans-serif',
             }}>
               무엇을 도와드릴까요?
-            </div>
-            <div style={{ fontSize: 13, color: 'var(--text-muted, #8B95A1)', maxWidth: 280, lineHeight: 1.5 }}>
-              피부 고민, 사용 중인 제품, 측정 결과 무엇이든 편하게 물어보세요.
             </div>
           </div>
         )}
