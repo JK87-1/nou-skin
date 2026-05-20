@@ -6,6 +6,9 @@ import { getProductsWithUsageContext, getRoutineSnapshot } from '../storage/Trac
 import { getMemoryContext, recordUserMessage } from '../storage/UserMemoryStorage';
 import { Capacitor } from '@capacitor/core';
 import { Keyboard } from '@capacitor/keyboard';
+import { getActivePersonaId, setActivePersonaId } from '../storage/PersonaStorage';
+import { getPersonaById, PERSONAS } from '../data/PersonaCatalog';
+import PersonaPicker from './PersonaPicker';
 
 function getGreetingMsg() {
   return '안녕하세요, 당신의 피부 상담사 루아에요. 궁금한 점이 있으면 편하게 물어보세요!';
@@ -129,6 +132,9 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
   const [sttSupported, setSttSupported] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [personaId, setPersonaId] = useState(() => getActivePersonaId());
+  const [personaPickerOpen, setPersonaPickerOpen] = useState(false);
+  const persona = getPersonaById(personaId);
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
   const sheetRef = useRef(null);
@@ -289,7 +295,7 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
       .filter(m => m.role === 'user' || m.role === 'assistant')
       .map(m => ({ role: m.role, content: m.content }));
     try {
-      const body = { message: userMsg.content, context: buildContext(), conversationHistory, stream: true };
+      const body = { message: userMsg.content, context: buildContext(), conversationHistory, stream: true, persona: personaId };
       if (imgs && imgs.length === 1) body.image = imgs[0].base64;
       else if (imgs && imgs.length > 1) body.images = imgs.map(img => img.base64);
 
@@ -349,7 +355,22 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
         content: err.message?.includes('429') ? '오늘 상담 횟수를 초과했어요. 내일 다시 이용해주세요!' : '잠시 문제가 생겼어요. 다시 시도해주세요.',
       }]);
     } finally { setIsLoading(false); }
-  }, [messages, isLoading, buildContext, pendingImages]);
+  }, [messages, isLoading, buildContext, pendingImages, personaId]);
+
+  // 페르소나 변경 — 새 채팅 시작 + localStorage 저장 + 환영 메시지
+  const handleSelectPersona = useCallback((id) => {
+    if (!id || id === personaId) {
+      setPersonaPickerOpen(false);
+      return;
+    }
+    setActivePersonaId(id);
+    setPersonaId(id);
+    setPersonaPickerOpen(false);
+    const p = getPersonaById(id);
+    setMessages([{ role: 'assistant', content: p.welcomeMessage, timestamp: Date.now() }]);
+    setInput('');
+    setPendingImages([]);
+  }, [personaId]);
 
   const canSend = (input.trim() || pendingImages.length > 0) && !isLoading;
   const handleSubmit = useCallback(() => { sendMessage(input); }, [input, sendMessage]);
@@ -433,6 +454,15 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
           .gem-act:active { transform: scale(0.92); background: rgba(0,0,0,0.06); }
         `}</style>
 
+        {/* Persona Picker — chevron 클릭 시 헤더 아래 슬라이드 다운 */}
+        <PersonaPicker
+          open={personaPickerOpen}
+          activeId={personaId}
+          onSelect={handleSelectPersona}
+          onClose={() => setPersonaPickerOpen(false)}
+          anchorTop={72}
+        />
+
         {/* Handle (드래그 닫기) */}
         <div onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
           style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 4px', cursor: 'grab' }}>
@@ -458,16 +488,30 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
             </svg>
           </button>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <button
+            onClick={() => setPersonaPickerOpen(v => !v)}
+            aria-label="모델 선택"
+            className="gem-btn"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 4,
+              padding: '6px 8px', borderRadius: 12,
+              background: 'transparent', border: 'none', cursor: 'pointer',
+              fontFamily: 'inherit',
+            }}
+          >
             <span style={{
               fontSize: 22, fontWeight: 500, color: '#1F1F1F',
               letterSpacing: -0.3, lineHeight: 1,
               fontFamily: 'var(--font-display), Pretendard, -apple-system, sans-serif',
             }}>lua</span>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5F6368" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginTop: 2 }}>
+            <span style={{
+              fontSize: 15, fontWeight: 400, color: '#5F6368',
+              letterSpacing: -0.2, lineHeight: 1, marginLeft: 2,
+            }}>{persona.short}</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5F6368" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginTop: 2, transition: 'transform 0.18s', transform: personaPickerOpen ? 'rotate(180deg)' : 'none' }}>
               <polyline points="6 9 12 15 18 9"/>
             </svg>
-          </div>
+          </button>
 
           <button onClick={() => { setMessages([]); setInput(''); setPendingImages([]); }} aria-label="새 채팅" className="gem-btn" style={{
             width: 44, height: 44, borderRadius: 22,

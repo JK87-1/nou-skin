@@ -9,6 +9,9 @@ import { getProducts, getProductsWithUsageContext, getRoutineSnapshot } from '..
 import { getMemoryContext, recordUserMessage } from '../storage/UserMemoryStorage';
 import { Capacitor } from '@capacitor/core';
 import { Keyboard } from '@capacitor/keyboard';
+import { getActivePersonaId, setActivePersonaId } from '../storage/PersonaStorage';
+import { getPersonaById } from '../data/PersonaCatalog';
+import PersonaPicker from './PersonaPicker';
 import SoftCloverIcon from './icons/SoftCloverIcon';
 import { StarIcon } from './icons/PastelIcons';
 import { DropletIcon, SparkleIcon, TestTubeIcon, SunIcon, DiamondIcon, PaletteIcon, MicroscopeIcon, LotionIcon } from './icons/PastelIcons';
@@ -231,6 +234,9 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
   const [sttSupported, setSttSupported] = useState(false);
   const [kbOpen, setKbOpen] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [personaId, setPersonaId] = useState(() => getActivePersonaId());
+  const [personaPickerOpen, setPersonaPickerOpen] = useState(false);
+  const persona = getPersonaById(personaId);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const containerRef = useRef(null);
@@ -600,6 +606,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
         context: buildContext(),
         conversationHistory,
         stream: true,
+        persona: personaId,
       };
       if (imgs && imgs.length === 1) {
         body.image = imgs[0].base64;
@@ -674,7 +681,20 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
     } finally {
       setIsLoading(false);
     }
-  }, [messages, isLoading, buildContext, pendingImages]);
+  }, [messages, isLoading, buildContext, pendingImages, personaId]);
+
+  // 페르소나 변경 — 새 채팅 + localStorage 저장 + 환영 메시지
+  const handleSelectPersona = useCallback((id) => {
+    if (!id || id === personaId) { setPersonaPickerOpen(false); return; }
+    setActivePersonaId(id);
+    setPersonaId(id);
+    setPersonaPickerOpen(false);
+    clearConsultSession();
+    const p = getPersonaById(id);
+    setMessages([{ role: 'assistant', content: p.welcomeMessage, timestamp: Date.now() }]);
+    setInput('');
+    setPendingImages([]);
+  }, [personaId]);
 
   const MAX_IMAGES = 3;
 
@@ -755,14 +775,30 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
           </button>
         ) : <div style={{ width: 44 }} />}
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <button
+          onClick={() => setPersonaPickerOpen(v => !v)}
+          aria-label="모델 선택"
+          className="gem-btn"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 4,
+            padding: '6px 8px', borderRadius: 12,
+            background: 'transparent', border: 'none', cursor: 'pointer',
+            fontFamily: 'inherit',
+          }}
+        >
           <span style={{
             fontSize: 22, fontWeight: 500, color: '#1F1F1F',
             letterSpacing: -0.3, lineHeight: 1,
             fontFamily: 'var(--font-display), Pretendard, -apple-system, sans-serif',
           }}>lua</span>
-          <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#89cef5' }} />
-        </div>
+          <span style={{
+            fontSize: 15, fontWeight: 400, color: '#5F6368',
+            letterSpacing: -0.2, lineHeight: 1, marginLeft: 2,
+          }}>{persona.short}</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5F6368" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginTop: 2, transition: 'transform 0.18s', transform: personaPickerOpen ? 'rotate(180deg)' : 'none' }}>
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
 
         <button onClick={() => {
           clearConsultSession();
@@ -784,7 +820,18 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
       <style>{`
         .gem-btn { transition: transform 0.12s ease, opacity 0.12s ease; -webkit-tap-highlight-color: transparent; }
         .gem-btn:active { transform: scale(0.92); opacity: 0.75; }
+        .gem-act { background: transparent; border: none; cursor: pointer; padding: 6px; border-radius: 10px; transition: background 0.15s, transform 0.12s; -webkit-tap-highlight-color: transparent; color: #5F6368; display: inline-flex; align-items: center; justify-content: center; }
+        .gem-act:active { transform: scale(0.92); background: rgba(0,0,0,0.06); }
       `}</style>
+
+      {/* Persona Picker — chevron 클릭 시 헤더 아래 슬라이드 다운 */}
+      <PersonaPicker
+        open={personaPickerOpen}
+        activeId={personaId}
+        onSelect={handleSelectPersona}
+        onClose={() => setPersonaPickerOpen(false)}
+        anchorTop={isTab ? 76 : 108}
+      />
 
       {/* Quick Question Chips */}
       <div className="consult-chips">

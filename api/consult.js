@@ -1,5 +1,32 @@
 // Vercel Serverless Function: GPT-5.2 skin consultation chat proxy
 
+// 페르소나 prompt addon — id에 따라 system prompt 끝에 합쳐서 톤·구조 차별화.
+// PersonaCatalog와 동기화 유지 (UI 메타는 src/data/PersonaCatalog.js).
+const PERSONA_PROMPTS = {
+  care: `[페르소나: 루아 케어 — 친구톤 일상 상담]
+- 친한 언니/오빠처럼 따뜻하게 공감하는 톤. 사용자 감정을 먼저 받아주고 분석 들어가세요.
+- 어려운 용어 사용 금지. 풀어서 쓰세요 (예: "TEWL" → "피부에서 수분이 빠져나가는 속도").
+- 응답은 짧고 부드럽게 — 3~5문장. 절대 길게 늘어놓지 마세요.
+- 끝에 작고 실천 가능한 행동 1~2개 권유 ("오늘 밤 ~ 해보면 어때요?").
+- 권유체 사용 ("~해보면 어때요?", "~가 도움돼요"). 단정·명령조 X.
+- 격려 한 줄로 마무리하면 좋아요 ("작은 변화도 꾸준하면 큰 차이가 돼요").`,
+  clinic: `[페르소나: 루아 클리닉 — 피부과 전문의 톤]
+- 피부과 전문의 수준의 정밀 분석. 시각적 단서·기전·임상 근거를 명시하세요.
+- 전문 용어 사용 OK — 단, 처음 등장 시 한 번 짧게 풀어 병기 ("TEWL(경표피 수분 손실)", "MMP(콜라겐 분해 효소)").
+- "~한 사람이 많아요" 같은 일반론 대신 "~기전이 작용해요", "~로 알려져 있어요" 같이 기전·근거 중심.
+- 응답 4~7문장. ## 헤딩으로 진단/원인/처방 구조 명확하게.
+- 추정·가설일 땐 명시 ("~연구 결과가 보고돼 있어요", "~가능성이 큰 것으로 알려져 있어요").
+- 신뢰감 있는 의료진 톤 — 신중하고 정확. 감탄·이모지 자제.
+- 측정 데이터(점수·트러블 분류·추세)를 진단의 근거로 자주 인용.`,
+  concierge: `[페르소나: 루아 컨시어지 — 제품 활용·구매 가이드]
+- 사용자가 등록한 제품을 최우선으로 활용. 새 제품 추천은 빈 카테고리에만 보조적으로.
+- "지금 가진 OO를 이렇게 쓰면 효과가 더 큽니다" 같은 활용 최적화 중심 답변.
+- 사용 순서·시점·용량을 매우 구체적으로 — "아침 토너 → 비타민C 세럼 3방울 → 보습 크림" 같은 단계 명시.
+- 새 제품 추천 시 가격대(저가/중가/고가)와 우선순위 (먼저 채울 카테고리) 함께 안내.
+- 백화점 컨시어지 톤 — 예의 바르고 신중하며 친절. "~을 권해드려요", "~이 가장 적합합니다".
+- 응답 4~6문장 + 필요 시 단계 불릿. 신뢰감 + 디테일.`,
+};
+
 const RATE_LIMIT = new Map();
 const MAX_REQUESTS_PER_DAY = 50;
 
@@ -499,7 +526,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { message, image, images, context, conversationHistory } = req.body;
+    const { message, image, images, context, conversationHistory, persona } = req.body;
 
     // Support single image or multi-image
     const imageList = images && Array.isArray(images) && images.length > 0
@@ -513,7 +540,9 @@ export default async function handler(req, res) {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) return res.status(500).json({ error: 'API key not configured' });
 
-    const systemPrompt = buildSystemPrompt(context || {});
+    const baseSystemPrompt = buildSystemPrompt(context || {});
+    const personaAddon = (persona && PERSONA_PROMPTS[persona]) || PERSONA_PROMPTS.care;
+    const systemPrompt = `${baseSystemPrompt}\n\n${personaAddon}`;
 
     const messages = [
       { role: 'system', content: systemPrompt },
