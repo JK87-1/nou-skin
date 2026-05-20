@@ -8,6 +8,7 @@ import { PRODUCTS, CATEGORY_META, getProductsByCategory, calcMatchScore } from '
 import { getProducts, getProductsWithUsageContext, getRoutineSnapshot } from '../storage/TrackerStorage';
 import { getMemoryContext, recordUserMessage } from '../storage/UserMemoryStorage';
 import SoftCloverIcon from './icons/SoftCloverIcon';
+import { StarIcon } from './icons/PastelIcons';
 import { DropletIcon, SparkleIcon, TestTubeIcon, SunIcon, DiamondIcon, PaletteIcon, MicroscopeIcon, LotionIcon } from './icons/PastelIcons';
 
 /** Extract [RECOMMEND:카테고리] tags — only explicit tags from AI, no keyword fallback */
@@ -221,19 +222,13 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
     '맞춤 피부 시술 추천해줘',
   ];
 
-  // Initialize: load saved session or create welcome message
+  // Initialize: load saved session. (Gemini Flash 스타일 — 빈 시작, welcome 자동 추가 X)
   useEffect(() => {
     const saved = loadConsultSession();
     if (saved && saved.length > 0) {
       setMessages(saved);
-    } else {
-      const welcome = {
-        role: 'assistant',
-        content: generateWelcomeMessage(result),
-        timestamp: Date.now(),
-      };
-      setMessages([welcome]);
     }
+    // welcome message 자동 추가 안 함 → 빈 상태에서 "무엇을 도와드릴까요?" 표시
   }, []);
 
   // Auto-scroll to bottom
@@ -633,64 +628,50 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
       <input ref={albumInputRef} type="file" accept="image/*" multiple
         onChange={handleFileSelect} style={{ display: 'none' }} />
 
-      {/* Header */}
+      {/* Gemini Flash 스타일 Header — X(좌) · lua●(중앙) · 새 상담(우) */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: isTab ? '20px 20px 14px' : '52px 20px 14px',
-        background: isTab ? 'transparent' : 'var(--consult-header-bg)',
-        backdropFilter: isTab ? 'none' : 'var(--card-backdrop)', WebkitBackdropFilter: isTab ? 'none' : 'var(--card-backdrop)',
-        borderBottom: '1px solid var(--border-separator)',
+        padding: isTab ? '20px 16px 12px' : '52px 16px 12px',
+        background: 'transparent',
         flexShrink: 0,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: '50%',
-            background: 'var(--btn-primary-bg)',
+        {!isTab ? (
+          <button onClick={handleClose} aria-label="채팅 닫기" style={{
+            width: 44, height: 44, borderRadius: 22,
+            background: '#ffffff', border: 'none',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 18,
+            cursor: 'pointer', flexShrink: 0,
+            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
           }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#191F28" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
-          </div>
-          <div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: -0.3 }}>
-              나만의 피부 상담사
-            </div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 400 }}>
-              AI 맞춤 피부 컨시어지 서비스
-            </div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          <button onClick={() => {
-            clearConsultSession();
-            const welcome = { role: 'assistant', content: generateWelcomeMessage(result), timestamp: Date.now() };
-            setMessages([welcome]);
-          }} style={{
-            height: 32, padding: '0 12px', borderRadius: 16, border: 'none',
-            background: 'var(--bg-card-hover)',
-            fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', cursor: 'pointer',
-            fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 4,
-          }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 105.64-11.36L1 10"/>
-            </svg>
-            새 상담
           </button>
-          {!isTab && (
-            <button onClick={handleClose} style={{
-              width: 36, height: 36, borderRadius: '50%',
-              background: 'var(--bg-input)', border: 'none',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', fontSize: 18, color: 'var(--text-muted)',
-            }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
-          )}
+        ) : <div style={{ width: 44 }} />}
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 18, fontWeight: 600, color: '#191F28', letterSpacing: -0.3 }}>lua</span>
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#89cef5' }} />
         </div>
+
+        <button onClick={() => {
+          clearConsultSession();
+          setMessages([]);
+          setInput('');
+          setPendingImages([]);
+        }} aria-label="새 상담" style={{
+          width: 44, height: 44, borderRadius: 22,
+          background: '#ffffff', border: 'none',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', flexShrink: 0,
+          boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+        }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#191F28" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 20h9"/>
+            <path d="M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4L16.5 3.5z"/>
+          </svg>
+        </button>
       </div>
 
       {/* Quick Question Chips */}
@@ -716,6 +697,32 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
 
       {/* Messages */}
       <div className="consult-messages">
+        {messages.length === 0 && (
+          <div style={{
+            flex: 1, minHeight: 360,
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            textAlign: 'center', padding: '40px 24px', gap: 18,
+          }}>
+            <div style={{
+              width: 64, height: 64, borderRadius: '50%',
+              background: 'radial-gradient(circle at 40% 35%, rgba(255,255,255,0.8), rgba(172,226,252,0.35))',
+              boxShadow: '0 0 0 1px rgba(255,255,255,0.4), 0 2px 6px rgba(0,0,0,0.06)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <StarIcon size={36} />
+            </div>
+            <div style={{
+              fontSize: 26, fontWeight: 500, color: '#191F28',
+              letterSpacing: -0.5, lineHeight: 1.3,
+            }}>
+              무엇을 도와드릴까요?
+            </div>
+            <div style={{ fontSize: 13, color: 'var(--text-muted, #8B95A1)', maxWidth: 280, lineHeight: 1.5 }}>
+              피부 고민, 사용 중인 제품, 측정 결과 무엇이든 편하게 물어보세요.
+            </div>
+          </div>
+        )}
         {messages.map((msg, i) => {
           const isAI = msg.role === 'ai' || msg.role === 'assistant';
           const { cleanText, categories } = isAI
