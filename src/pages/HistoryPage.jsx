@@ -30,6 +30,7 @@ import AiInsightCard from '../components/AiInsightCard';
 import BeforeAfterSlider from '../components/BeforeAfterSlider';
 import DailyMission from '../components/DailyMission';
 import { getProducts, getProductsForMode, getTrackerChecks, toggleTrackerCheck, getTrackerProgress } from '../storage/TrackerStorage';
+import { hapticLight, hapticSelection } from '../utils/haptics';
 import { ChartIcon, CameraIcon, MicroscopeIcon, SparkleIcon, DiamondIcon, DropletIcon, RulerIcon, PaletteIcon, LotionIcon, EyeIcon, BubbleIcon, TargetIcon, ClockIcon, LuaMiniIcon } from '../components/icons/PastelIcons';
 
 // ===== MINI LINE GRAPH (Canvas-based, no dependencies) =====
@@ -1667,42 +1668,70 @@ function RoutineChecklist() {
     };
   });
 
+  // 스와이프 — 좌측 swipe: 다음 주(미래 차단), 우측 swipe: 지난 주
+  const swipeStartX = useRef(null);
+  const swipeStartY = useRef(null);
+  const swipeMoved = useRef(false);
+  const onWeekSwipeStart = (e) => {
+    const t = e.touches?.[0];
+    if (!t) return;
+    swipeStartX.current = t.clientX;
+    swipeStartY.current = t.clientY;
+    swipeMoved.current = false;
+  };
+  const onWeekSwipeMove = (e) => {
+    if (swipeStartX.current == null) return;
+    const t = e.touches?.[0];
+    if (!t) return;
+    const dx = t.clientX - swipeStartX.current;
+    const dy = t.clientY - swipeStartY.current;
+    if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy)) swipeMoved.current = true;
+  };
+  const onWeekSwipeEnd = (e) => {
+    if (swipeStartX.current == null) return;
+    const t = e.changedTouches?.[0];
+    if (!t) { swipeStartX.current = null; return; }
+    const dx = t.clientX - swipeStartX.current;
+    const dy = t.clientY - swipeStartY.current;
+    const THRESHOLD = 48;
+    if (Math.abs(dx) > THRESHOLD && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      if (dx < 0) {
+        // 좌측 스와이프 = 다음 주 (미래 차단)
+        setWeekStartOffset(o => {
+          if (o >= 0) return o;
+          hapticSelection();
+          return o + 1;
+        });
+      } else {
+        // 우측 스와이프 = 지난 주 (8주까지)
+        setWeekStartOffset(o => {
+          if (o <= -8) return o;
+          hapticSelection();
+          return o - 1;
+        });
+      }
+    }
+    swipeStartX.current = null;
+    swipeStartY.current = null;
+  };
+
   return (
     <div style={{ padding: '20px 20px 0' }}>
-      {/* 선택 날짜 표시 + 좌우 주 이동 (지난 주 / 이번 주) */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-        <button
-          onClick={() => setWeekStartOffset(o => Math.max(o - 1, -8))} // 최대 8주 전
-          aria-label="지난 주"
-          style={{ background: 'transparent', border: 'none', padding: 6, cursor: 'pointer', color: 'var(--text-secondary)' }}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{_care_dateLabel(selectedDate)}</span>
-          {selectedDate !== _care_todayStr() && (
-            <button
-              onClick={() => { setSelectedDate(_care_todayStr()); setWeekStartOffset(0); }}
-              style={{ background: 'rgba(137,206,245,0.18)', border: 'none', borderRadius: 12, padding: '4px 10px', fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'inherit' }}
-            >오늘로</button>
-          )}
-        </div>
-        <button
-          onClick={() => setWeekStartOffset(o => Math.min(o + 1, 0))} // 미래 차단
-          aria-label="다음 주"
-          disabled={weekStartOffset >= 0}
-          style={{ background: 'transparent', border: 'none', padding: 6, cursor: weekStartOffset >= 0 ? 'default' : 'pointer', color: weekStartOffset >= 0 ? 'var(--text-dim)' : 'var(--text-secondary)', opacity: weekStartOffset >= 0 ? 0.3 : 1 }}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-      </div>
-
-      {/* Weekly Calendar — 각 요일 클릭으로 날짜 선택 */}
-      <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
+      {/* Weekly Calendar — 좌우 스와이프로 주 이동, 각 요일 탭으로 날짜 선택 */}
+      <div
+        onTouchStart={onWeekSwipeStart}
+        onTouchMove={onWeekSwipeMove}
+        onTouchEnd={onWeekSwipeEnd}
+        style={{ display: 'flex', gap: 6, marginBottom: 16, touchAction: 'pan-y' }}
+      >
         {weekDays.map(day => (
           <button
             key={day.date}
-            onClick={() => { if (!day.isFuture) setSelectedDate(day.date); }}
+            onClick={() => {
+              if (day.isFuture || swipeMoved.current) return;
+              hapticLight();
+              setSelectedDate(day.date);
+            }}
             disabled={day.isFuture}
             style={{
               flex: 1, textAlign: 'center', padding: '10px 0 8px', borderRadius: 12,
@@ -1711,6 +1740,7 @@ function RoutineChecklist() {
               border: 'none', cursor: day.isFuture ? 'default' : 'pointer',
               opacity: day.isFuture ? 0.3 : 1,
               fontFamily: 'inherit', transition: 'background 0.15s',
+              WebkitTapHighlightColor: 'transparent',
             }}
           >
             <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 2,
