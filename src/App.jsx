@@ -2350,41 +2350,43 @@ export default function App() {
               피부 고민을 물어봐 
             </div>
           )}
-          {/* 빛 흐름 레이어 */}
+          {/* luastar with orb blob colors — clip-path 방식 */}
           <div style={{
-            position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-            borderRadius: '50% 50% 8px 50%', overflow: 'hidden', pointerEvents: 'none',
+            position: 'relative', width: 34, height: 34, zIndex: 1,
+            animation: 'fabStarTwinkle 2.5s ease-in-out infinite',
+            filter: 'drop-shadow(0 2px 4px rgba(100,180,230,0.4))',
           }}>
+            <svg width="0" height="0" style={{ position: 'absolute' }}>
+              <defs>
+                <clipPath id="fab-luastar-clip" clipPathUnits="objectBoundingBox">
+                  <path d="M0.441,0.997c-0.021,0.007-0.043,0.001-0.059-0.014c-0.014-0.013-0.025-0.03-0.03-0.048l-0.018-0.055c-0.009-0.029-0.017-0.056-0.031-0.083c-0.029-0.057-0.077-0.099-0.137-0.12l-0.071-0.02c-0.032-0.009-0.07-0.024-0.086-0.053c-0.012-0.023-0.011-0.048,0.004-0.069c0.024-0.034,0.07-0.046,0.109-0.058l0.052-0.015c0.036-0.011,0.068-0.031,0.094-0.058l0.01-0.012c0.022-0.026,0.036-0.058,0.046-0.092l0.015-0.06c0.009-0.035,0.025-0.074,0.059-0.086c0.021-0.007,0.043-0.002,0.059,0.014c0.04,0.037,0.037,0.107,0.063,0.165c0.012,0.027,0.027,0.052,0.049,0.071c0.041,0.038,0.073,0.047,0.12,0.065l0.054,0.021c0.015,0.006,0.028,0.016,0.038,0.029c0.019,0.025,0.019,0.058,0,0.083c-0.013,0.017-0.031,0.029-0.051,0.037l-0.061,0.025c-0.049,0.02-0.091,0.054-0.118,0.101c-0.013,0.023-0.023,0.046-0.029,0.072l-0.013,0.056c-0.01,0.041-0.026,0.09-0.067,0.104Z" />
+                  <path d="M0.881,0.302c-0.009,0.027-0.019,0.058-0.051,0.056c-0.011-0.001-0.021-0.007-0.029-0.018c-0.014-0.022-0.017-0.054-0.041-0.083c-0.029-0.035-0.062-0.035-0.084-0.053c-0.009-0.007-0.015-0.016-0.015-0.027c0-0.011,0.004-0.021,0.012-0.029c0.018-0.018,0.053-0.021,0.079-0.048c0.029-0.03,0.03-0.064,0.047-0.085c0.012-0.015,0.033-0.021,0.049-0.01c0.022,0.015,0.025,0.048,0.042,0.074c0.015,0.025,0.039,0.041,0.066,0.051c0.011,0.004,0.021,0.009,0.03,0.017c0.012,0.011,0.017,0.03,0.008,0.044c-0.008,0.013-0.02,0.02-0.033,0.025c-0.044,0.017-0.067,0.039-0.081,0.086Z" />
+                </clipPath>
+              </defs>
+            </svg>
+            {/* Blob 컨테이너 — luastar 형태로 클리핑 */}
             <div style={{
-              position: 'absolute', top: 0, left: '-100%', width: '300%', height: '100%',
-              background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.2) 45%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0.2) 55%, transparent 70%)',
-              animation: 'fabShine 3.5s ease-in-out infinite',
-            }} />
+              width: '100%', height: '100%',
+              clipPath: 'url(#fab-luastar-clip)',
+              WebkitClipPath: 'url(#fab-luastar-clip)',
+              position: 'relative', overflow: 'hidden',
+              background: '#ffffff',
+            }}>
+              {/* 흰색 베이스 — 중심부 전체 커버 */}
+              <div style={{ position: 'absolute', inset: 0, background: '#FFFFFF' }} />
+              {/* 테두리 은은한 색상 blob */}
+              <div style={{ position: 'absolute', width: '50%', height: '50%', top: '-10%', left: '-5%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,184,200,0.45), transparent)', filter: 'blur(6px)', animation: 'fabBlob1 4s ease-in-out infinite' }} />
+              <div style={{ position: 'absolute', width: '45%', height: '45%', bottom: '-5%', right: '-5%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(216,168,240,0.4), transparent)', filter: 'blur(6px)', animation: 'fabBlob2 5s ease-in-out infinite' }} />
+              <div style={{ position: 'absolute', width: '40%', height: '40%', bottom: '-5%', left: '10%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(144,196,248,0.35), transparent)', filter: 'blur(6px)', animation: 'fabBlob3 3.5s ease-in-out infinite' }} />
+              <div style={{ position: 'absolute', width: '45%', height: '45%', top: '-5%', right: '5%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(224,200,240,0.35), transparent)', filter: 'blur(6px)', animation: 'fabBlob4 4.5s ease-in-out infinite' }} />
+            </div>
           </div>
-          <svg width="28" height="28" viewBox="0 0 24 24" style={{ position: 'relative', zIndex: 1, animation: 'fabStarTwinkle 2.5s ease-in-out infinite', filter: 'drop-shadow(0 1px 2px rgba(100,180,230,0.5))' }}>
-            <defs>
-              <linearGradient id="global-fab-star" x1="0.15" y1="0.05" x2="0.85" y2="0.95">
-                <stop offset="0%" stopColor="#D6EEFB" />
-                <stop offset="45%" stopColor="#a8d8f5" />
-                <stop offset="100%" stopColor="#6bb8e8" />
-              </linearGradient>
-              <linearGradient id="global-fab-star-edge" x1="0.5" y1="0" x2="0.5" y2="1">
-                <stop offset="0%" stopColor="#c8e8fa" />
-                <stop offset="100%" stopColor="#5aaad8" />
-              </linearGradient>
-            </defs>
-            {/* 별 외곽선 — 두께감 */}
-            <path fill="url(#global-fab-star-edge)" stroke="rgba(90,170,216,0.3)" strokeWidth="0.6" d="M10.48,23.25c-.15.41-.5.71-.86.75-.27.03-.78-.29-.9-.59l-1.53-4.02c-.48-1.26-1.41-2.1-2.67-2.58l-3.91-1.48c-.29-.11-.59-.51-.6-.76-.01-.39.23-.79.6-.93l3.9-1.49c1.27-.48,2.19-1.31,2.68-2.59l1.57-4.14c.08-.2.52-.44.74-.46.24-.02.77.21.86.46l1.57,4.14c.5,1.32,1.47,2.15,2.78,2.63l3.7,1.37c.31.11.66.55.67.83.02.42-.29.82-.68.97l-3.8,1.44c-1.26.48-2.2,1.32-2.67,2.58l-1.45,3.86Z"/>
-            {/* 별 메인 — 약간 축소해서 테두리 보이게 */}
-            <g transform="translate(0.3,0.3) scale(0.975)">
-              <path fill="url(#global-fab-star)" d="M10.48,23.25c-.15.41-.5.71-.86.75-.27.03-.78-.29-.9-.59l-1.53-4.02c-.48-1.26-1.41-2.1-2.67-2.58l-3.91-1.48c-.29-.11-.59-.51-.6-.76-.01-.39.23-.79.6-.93l3.9-1.49c1.27-.48,2.19-1.31,2.68-2.59l1.57-4.14c.08-.2.52-.44.74-.46.24-.02.77.21.86.46l1.57,4.14c.5,1.32,1.47,2.15,2.78,2.63l3.7,1.37c.31.11.66.55.67.83.02.42-.29.82-.68.97l-3.8,1.44c-1.26.48-2.2,1.32-2.67,2.58l-1.45,3.86Z"/>
-            </g>
-            {/* 작은 별 */}
-            <path fill="url(#global-fab-star-edge)" stroke="rgba(90,170,216,0.3)" strokeWidth="0.4" d="M21.48,6.29c-1.03.59-.9,2.91-2.01,2.98-1.23.08-.99-1.68-1.94-2.78-.77-.88-2.68-.63-2.74-1.78-.07-1.27,2.01-1.1,2.74-1.91.87-.95.73-2.72,1.78-2.8,1.29-.1.98,1.81,1.95,2.77.87.86,2.67.71,2.73,1.8.07,1.08-1.29,1.02-2.51,1.72Z"/>
-            <g transform="translate(0.15,0.15) scale(0.988)">
-              <path fill="url(#global-fab-star)" d="M21.48,6.29c-1.03.59-.9,2.91-2.01,2.98-1.23.08-.99-1.68-1.94-2.78-.77-.88-2.68-.63-2.74-1.78-.07-1.27,2.01-1.1,2.74-1.91.87-.95.73-2.72,1.78-2.8,1.29-.1.98,1.81,1.95,2.77.87.86,2.67.71,2.73,1.8.07,1.08-1.29,1.02-2.51,1.72Z"/>
-            </g>
-          </svg>
+          <style>{`
+            @keyframes fabBlob1 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(8%,6%) scale(1.05); } }
+            @keyframes fabBlob2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-6%,-8%) scale(1.08); } }
+            @keyframes fabBlob3 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(5%,-5%) scale(0.95); } }
+            @keyframes fabBlob4 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-8%,5%) scale(1.03); } }
+          `}</style>
         </div>
         </div>
       )}
