@@ -714,6 +714,59 @@ export default function RoutineTracker({ themeColors, onBack }) {
   // 제품 저장 핸들러 (누끼 이미지 먼저 가져온 후 저장)
   const [saving, setSaving] = useState(false);
 
+  // ===== 기존 제품 성분 자동 보강 (백그라운드 순차) =====
+  // ingredients가 비어있는 등록 제품에 대해 /api/product-ingredients를 순차 호출.
+  // 첫 진입 시 1회만. rate limit·서버 부하 고려해 1초 간격.
+  const [backfillProgress, setBackfillProgress] = useState(null); // null | { done, total }
+  const backfillStartedRef = useRef(false);
+
+  useEffect(() => {
+    if (backfillStartedRef.current) return;
+    const targets = products.filter(p =>
+      (!p.ingredients ||
+        (typeof p.ingredients === 'string' && p.ingredients.trim().length === 0) ||
+        (Array.isArray(p.ingredients) && p.ingredients.length === 0))
+      && (p.brand || p.name)
+    );
+    if (targets.length === 0) return;
+    backfillStartedRef.current = true;
+    let cancelled = false;
+
+    (async () => {
+      setBackfillProgress({ done: 0, total: targets.length });
+      for (let i = 0; i < targets.length; i++) {
+        if (cancelled) return;
+        const t = targets[i];
+        try {
+          const resp = await fetch('/api/product-ingredients', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ brand: t.brand || '', name: t.name || '', category: t.category || '' }),
+          });
+          if (resp.ok) {
+            const data = await resp.json();
+            if (Array.isArray(data.ingredients) && data.ingredients.length > 0) {
+              const next = saveProduct({
+                ...t,
+                ingredients: data.ingredients,
+                ingredientsConfidence: data.confidence || 'estimated',
+              });
+              if (!cancelled) setProducts(next);
+            }
+          }
+        } catch { /* skip on error */ }
+        if (!cancelled) setBackfillProgress({ done: i + 1, total: targets.length });
+        // 1초 간격 — rate limit·서버 부하 완화
+        if (i < targets.length - 1) await new Promise(r => setTimeout(r, 1000));
+      }
+      // 완료 후 1.5초 뒤 chip 사라짐
+      setTimeout(() => { if (!cancelled) setBackfillProgress(null); }, 1500);
+    })();
+
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // 첫 마운트 1회만
+
   const handleSaveProduct = async (formData) => {
     setSaving(true);
     try {
@@ -791,6 +844,34 @@ export default function RoutineTracker({ themeColors, onBack }) {
     <div style={{ minHeight: '100vh', paddingBottom: 100, animation: 'breatheIn 0.5s ease both' }}>
       {/* Header */}
       <div style={{ padding: '52px 20px 0' }}></div>
+
+      {/* 성분 자동 보강 진행 chip — 기존 제품 backfill */}
+      {backfillProgress && (
+        <div style={{
+          position: 'fixed', top: 'calc(env(safe-area-inset-top, 0px) + 16px)',
+          left: '50%', transform: 'translateX(-50%)',
+          background: 'rgba(31,31,31,0.86)', color: '#fff',
+          backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+          borderRadius: 16, padding: '8px 14px',
+          fontSize: 12, fontWeight: 500, letterSpacing: -0.1,
+          boxShadow: '0 4px 18px rgba(0,0,0,0.18)', zIndex: 950,
+          display: 'flex', alignItems: 'center', gap: 8,
+          animation: 'breatheIn 0.25s ease both',
+        }}>
+          <span style={{
+            display: 'inline-block', width: 12, height: 12, borderRadius: '50%',
+            border: '2px solid rgba(255,255,255,0.3)',
+            borderTopColor: '#89cef5',
+            animation: 'ingredientSpin 0.9s linear infinite',
+          }} />
+          <span>{backfillProgress.done < backfillProgress.total
+            ? `성분 검색 중 ${backfillProgress.done}/${backfillProgress.total}`
+            : `완료 ✓`}</span>
+        </div>
+      )}
+      <style>{`
+        @keyframes ingredientSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      `}</style>
 
       {/* Section Tabs */}
       <div style={{ display: 'flex', gap: 8, padding: '20px 20px 16px' }}>
