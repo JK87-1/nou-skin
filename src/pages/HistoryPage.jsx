@@ -1466,14 +1466,37 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
   );
 }
 
+// 날짜 헬퍼 — 케어 페이지 selectedDate용
+function _care_dateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+function _care_todayStr() { return _care_dateStr(new Date()); }
+function _care_dateLabel(dateStr) {
+  if (dateStr === _care_todayStr()) return '오늘';
+  const today = new Date(); today.setHours(0,0,0,0);
+  const diff = Math.floor((today.getTime() - new Date(dateStr + 'T00:00:00').getTime()) / 86400000);
+  if (diff === 1) return '어제';
+  if (diff === 2) return '그제';
+  const d = new Date(dateStr + 'T12:00:00');
+  const days = ['일','월','화','수','목','금','토'];
+  return `${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+}
+
 // ===== Routine Checklist (Morning / Night) =====
 function RoutineChecklist() {
   const [mode, setMode] = useState('morning');
-  const [checks, setChecks] = useState(getTrackerChecks);
+  const [selectedDate, setSelectedDate] = useState(() => _care_todayStr());
+  const [weekStartOffset, setWeekStartOffset] = useState(0); // 0=이번 주, -1=지난 주, ...
+  const [checks, setChecks] = useState(() => getTrackerChecks(_care_todayStr()));
   const [addModal, setAddModal] = useState(false);
   const [addMode, setAddMode] = useState('morning');
   const [customName, setCustomName] = useState('');
   const [detailItem, setDetailItem] = useState(null); // item being configured
+
+  // selectedDate 변경 시 checks 동기화
+  useEffect(() => {
+    setChecks(getTrackerChecks(selectedDate));
+  }, [selectedDate]);
 
   // Day settings per routine
   const getDaySettings = () => { try { return JSON.parse(localStorage.getItem('lua_routine_days') || '{}'); } catch { return {}; } };
@@ -1603,21 +1626,21 @@ function RoutineChecklist() {
 
   const handleToggle = (id) => {
     if (id.startsWith('_')) {
-      // Recommended routine — use localStorage
-      const key = `lua_routine_${new Date().toISOString().slice(0, 10)}`;
+      // Recommended routine — selectedDate 기반 키 (지난 날짜 수정 지원)
+      const key = `lua_routine_${selectedDate}`;
       const saved = JSON.parse(localStorage.getItem(key) || '{}');
       saved[id] = !saved[id];
       localStorage.setItem(key, JSON.stringify(saved));
       setChecks({ ...checks }); // force re-render
     } else {
-      const updated = toggleTrackerCheck(mode, id);
+      const updated = toggleTrackerCheck(mode, id, selectedDate);
       setChecks(updated);
     }
   };
 
   const isChecked = (id) => {
     if (id.startsWith('_')) {
-      const key = `lua_routine_${new Date().toISOString().slice(0, 10)}`;
+      const key = `lua_routine_${selectedDate}`;
       const saved = JSON.parse(localStorage.getItem(key) || '{}');
       return !!saved[id];
     }
@@ -1632,24 +1655,72 @@ function RoutineChecklist() {
 
   const weekDays = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
-    d.setDate(d.getDate() - d.getDay() + i);
+    d.setDate(d.getDate() - d.getDay() + i + weekStartOffset * 7);
     const dayLabels = ['일','월','화','수','목','금','토'];
-    return { date: d.toISOString().slice(0,10), dayLabel: dayLabels[d.getDay()], isToday: i === new Date().getDay() };
+    const dateStr = _care_dateStr(d);
+    return {
+      date: dateStr,
+      dayLabel: dayLabels[d.getDay()],
+      isToday: dateStr === _care_todayStr(),
+      isSelected: dateStr === selectedDate,
+      isFuture: dateStr > _care_todayStr(),
+    };
   });
 
   return (
     <div style={{ padding: '20px 20px 0' }}>
-      {/* Weekly Calendar */}
+      {/* 선택 날짜 표시 + 좌우 주 이동 (지난 주 / 이번 주) */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <button
+          onClick={() => setWeekStartOffset(o => Math.max(o - 1, -8))} // 최대 8주 전
+          aria-label="지난 주"
+          style={{ background: 'transparent', border: 'none', padding: 6, cursor: 'pointer', color: 'var(--text-secondary)' }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{_care_dateLabel(selectedDate)}</span>
+          {selectedDate !== _care_todayStr() && (
+            <button
+              onClick={() => { setSelectedDate(_care_todayStr()); setWeekStartOffset(0); }}
+              style={{ background: 'rgba(137,206,245,0.18)', border: 'none', borderRadius: 12, padding: '4px 10px', fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'inherit' }}
+            >오늘로</button>
+          )}
+        </div>
+        <button
+          onClick={() => setWeekStartOffset(o => Math.min(o + 1, 0))} // 미래 차단
+          aria-label="다음 주"
+          disabled={weekStartOffset >= 0}
+          style={{ background: 'transparent', border: 'none', padding: 6, cursor: weekStartOffset >= 0 ? 'default' : 'pointer', color: weekStartOffset >= 0 ? 'var(--text-dim)' : 'var(--text-secondary)', opacity: weekStartOffset >= 0 ? 0.3 : 1 }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      {/* Weekly Calendar — 각 요일 클릭으로 날짜 선택 */}
       <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
         {weekDays.map(day => (
-          <div key={day.date} style={{
-            flex: 1, textAlign: 'center', padding: '10px 0 8px', borderRadius: 12,
-            background: day.isToday ? 'var(--day-today-bg)' : 'var(--day-default-bg)',
-          }}>
-            <div style={{ fontSize: 11, color: day.isToday ? 'var(--day-today-accent)' : 'var(--text-muted)', fontWeight: 600, marginBottom: 2 }}>{day.dayLabel}</div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: day.isToday ? 'var(--day-today-accent)' : 'var(--text-primary)' }}>{new Date(day.date).getDate()}</div>
-            {day.isToday && <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--day-today-accent)', margin: '4px auto 0' }} />}
-          </div>
+          <button
+            key={day.date}
+            onClick={() => { if (!day.isFuture) setSelectedDate(day.date); }}
+            disabled={day.isFuture}
+            style={{
+              flex: 1, textAlign: 'center', padding: '10px 0 8px', borderRadius: 12,
+              background: day.isSelected ? 'var(--accent-primary, #89cef5)' : day.isToday ? 'var(--day-today-bg)' : 'var(--day-default-bg)',
+              color: day.isSelected ? '#fff' : 'inherit',
+              border: 'none', cursor: day.isFuture ? 'default' : 'pointer',
+              opacity: day.isFuture ? 0.3 : 1,
+              fontFamily: 'inherit', transition: 'background 0.15s',
+            }}
+          >
+            <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 2,
+              color: day.isSelected ? '#fff' : day.isToday ? 'var(--day-today-accent)' : 'var(--text-muted)',
+            }}>{day.dayLabel}</div>
+            <div style={{ fontSize: 15, fontWeight: 700,
+              color: day.isSelected ? '#fff' : day.isToday ? 'var(--day-today-accent)' : 'var(--text-primary)',
+            }}>{new Date(day.date + 'T12:00:00').getDate()}</div>
+            {day.isToday && !day.isSelected && <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--day-today-accent)', margin: '4px auto 0' }} />}
+          </button>
         ))}
       </div>
 
