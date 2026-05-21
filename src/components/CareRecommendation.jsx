@@ -186,15 +186,25 @@ export default function CareRecommendation() {
     <div style={{ marginTop: 8, marginBottom: 24 }}>
       {/* Section Header */}
       <div style={{ padding: '0 4px', marginBottom: 16 }}>
-        <div style={{
-          fontSize: 17, fontWeight: 700, color: 'var(--text-primary)',
-          letterSpacing: -0.3, marginBottom: 4,
-        }}>
-          당신의 피부에 맞는 루틴
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+          <div style={{
+            fontSize: 17, fontWeight: 700, color: 'var(--text-primary)',
+            letterSpacing: -0.3,
+          }}>
+            당신의 피부에 맞는 루틴
+          </div>
+          <span style={{
+            fontSize: 10, fontWeight: 600, color: '#5BA8D6',
+            background: 'rgba(137,206,245,0.18)', borderRadius: 8,
+            padding: '3px 8px', letterSpacing: -0.1,
+          }}>표준 정렬</span>
         </div>
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.55 }}>
           등록한 화장품을 표준 순서대로 정리했어요.
           {result?.overallScore != null && ` 종합 ${result.overallScore}점 기준 매칭도 높은 순.`}
+        </div>
+        <div style={{ fontSize: 11.5, color: '#5BA8D6', lineHeight: 1.55, marginTop: 6, fontWeight: 500 }}>
+          내 피부 별 맞춤 추천은 상담으로 진행해보세요.
         </div>
       </div>
 
