@@ -536,11 +536,11 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, accent }) {
             </div>
 
             <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
-              <div style={{ flex: 1, borderRadius: 12, padding: '14px', textAlign: 'center', background: 'var(--item-bg)' }}>
+              <div style={{ flex: 1, borderRadius: 18, padding: '14px', textAlign: 'center', background: 'rgba(255,255,255,0.42)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}>
                 <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>사용 기간</div>
                 <div style={{ fontSize: 20, fontWeight: 700, color: accent, fontFamily: 'var(--font-display)' }}>{days}일</div>
               </div>
-              <div style={{ flex: 1, borderRadius: 12, padding: '14px', textAlign: 'center', background: 'var(--item-bg)' }}>
+              <div style={{ flex: 1, borderRadius: 18, padding: '14px', textAlign: 'center', background: 'rgba(255,255,255,0.42)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}>
                 <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>시작일</div>
                 <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}>{product.startDate}</div>
               </div>
@@ -879,13 +879,13 @@ export default function RoutineTracker({ themeColors, onBack }) {
           const active = section === s.key;
           return (
             <button key={s.key} onClick={() => setSection(s.key)} style={{
-              flex: 1, padding: '12px 0', borderRadius: 14, cursor: 'pointer',
+              flex: 1, padding: '12px 0', borderRadius: 18, cursor: 'pointer',
               fontFamily: 'inherit', fontSize: 13, fontWeight: 600, textAlign: 'center',
-              background: active ? 'rgba(255,255,255,0.5)' : 'transparent',
+              background: active ? 'rgba(255,255,255,0.42)' : 'transparent',
               color: active ? 'var(--text-primary)' : 'var(--text-muted)',
-              backdropFilter: 'none', WebkitBackdropFilter: 'none',
+              backdropFilter: active ? 'blur(14px)' : 'none', WebkitBackdropFilter: active ? 'blur(14px)' : 'none',
               border: '1px solid rgba(255,255,255,0.4)',
-              boxShadow: active ? '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.3)' : 'inset 0 1px 0 rgba(255,255,255,0.3)',
+              boxShadow: active ? '0 2px 12px rgba(0,0,0,0.05)' : 'none',
               transition: 'all 0.2s',
             }}>{s.icon} {s.label}</button>
           );
@@ -901,8 +901,10 @@ export default function RoutineTracker({ themeColors, onBack }) {
           </div>
 
           <div style={{
-            background: '#FFFFFF', borderRadius: 20,
-            boxShadow: '0 1px 4px rgba(0,0,0,0.03)',
+            background: 'rgba(255,255,255,0.42)', borderRadius: 18,
+            backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+            border: '1px solid rgba(255,255,255,0.4)',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
             padding: '6px 0', marginBottom: 16,
           }}>
             {products.length === 0 ? (
@@ -916,7 +918,10 @@ export default function RoutineTracker({ themeColors, onBack }) {
                 const days = Math.max(0, Math.floor((Date.now() - new Date(p.startDate)) / 86400000));
                 return (
                   <div key={p.id} onClick={() => setSelectedProduct(p)} style={{
-                    background: '#ffffff', borderRadius: 14,
+                    background: 'rgba(255,255,255,0.42)', borderRadius: 18,
+                    backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+                    border: '1px solid rgba(255,255,255,0.4)',
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
                     padding: 14, cursor: 'pointer',
                     display: 'flex', flexDirection: 'column',
                   }}>
@@ -942,8 +947,9 @@ export default function RoutineTracker({ themeColors, onBack }) {
           {/* Add Product Button */}
           <div onClick={() => setShowAddSheet(true)} style={{
             padding: '12px 24px', marginBottom: 16, cursor: 'pointer',
-            background: '#5AB0E8', borderRadius: 14,
-            boxShadow: '0 1px 4px rgba(0,0,0,0.03)',
+            background: '#5AB0E8', borderRadius: 18,
+            backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
           }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round">

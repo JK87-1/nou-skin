@@ -456,8 +456,10 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h2 style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', margin: 0 }}>나의 피부 여정</h2>
                 <div style={{
-                  display: 'flex', background: 'var(--bg-card)',
-                  borderRadius: 10, padding: 3, gap: 2,
+                  display: 'flex', background: 'rgba(255,255,255,0.42)',
+                  backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+                  border: '1px solid rgba(255,255,255,0.4)',
+                  borderRadius: 18, padding: 3, gap: 2,
                 }}>
                   {['timeline', 'compare'].map(m => (
                     <button key={m} onClick={() => setInsightMode(m)} style={{
@@ -475,8 +477,10 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
             {totalChanges && (
               <div style={{ display: 'flex', gap: 12, marginBottom: 16, animation: 'breatheIn 0.6s ease 0.1s both' }}>
                 <div style={{
-                  flex: 1, background: 'var(--bg-card)',
-                  border: 'none', borderRadius: 16, padding: '14px 16px',
+                  flex: 1, background: 'rgba(255,255,255,0.42)',
+                  backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+                  border: '1px solid rgba(255,255,255,0.4)', borderRadius: 18, padding: '14px 16px',
+                  boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
                   display: 'flex', alignItems: 'center', gap: 12,
                 }}>
                   <div style={{
@@ -493,8 +497,10 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
                   </div>
                 </div>
                 <div style={{
-                  flex: 1, background: 'var(--bg-card)',
-                  border: 'none', borderRadius: 16, padding: '14px 16px',
+                  flex: 1, background: 'rgba(255,255,255,0.42)',
+                  backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+                  border: '1px solid rgba(255,255,255,0.4)', borderRadius: 18, padding: '14px 16px',
+                  boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
                   display: 'flex', alignItems: 'center', gap: 12,
                 }}>
                   <div style={{
@@ -514,7 +520,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
             )}
 
             {/* === TREND GRAPH === */}
-            <div className="card" style={{ padding: '16px 12px', marginBottom: 16, animation: 'breatheIn 0.6s ease 0.15s both', boxShadow: 'none', border: 'none' }}>
+            <div className="card" style={{ padding: '16px 12px', marginBottom: 16, animation: 'breatheIn 0.6s ease 0.15s both' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                 <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}>종합 점수 추이</span>
                 {improvementPct !== null && Number(improvementPct) !== 0 && (
@@ -1653,7 +1659,7 @@ function RoutineChecklist() {
   const totalItems = allItems.length;
   const pct = totalItems > 0 ? Math.round((totalDone / totalItems) * 100) : 0;
 
-  const glass = { background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', borderRadius: 20 };
+  const glass = { background: 'rgba(255,255,255,0.42)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', borderRadius: 18 };
 
   // 주 단위 weekDays 빌더 — carousel용 3개 주(이전·현재·다음) 렌더에 재사용
   const buildWeek = (offset) => {
@@ -1812,13 +1818,13 @@ function RoutineChecklist() {
           { key: 'night', label: ' 나이트' },
         ].map(m => (
           <button key={m.key} onClick={() => setMode(m.key)} style={{
-            flex: 1, padding: '12px 0', borderRadius: 14, cursor: 'pointer',
+            flex: 1, padding: '12px 0', borderRadius: 18, cursor: 'pointer',
             fontFamily: 'inherit', fontSize: 13, fontWeight: 600, textAlign: 'center',
-            background: mode === m.key ? 'rgba(255,255,255,0.5)' : 'transparent',
+            background: mode === m.key ? 'rgba(255,255,255,0.42)' : 'transparent',
             color: mode === m.key ? 'var(--text-primary)' : 'var(--text-muted)',
-            backdropFilter: 'none', WebkitBackdropFilter: 'none',
-            border: 'none',
-            boxShadow: mode === m.key ? '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.3)' : 'inset 0 1px 0 rgba(255,255,255,0.3)',
+            backdropFilter: mode === m.key ? 'blur(14px)' : 'none', WebkitBackdropFilter: mode === m.key ? 'blur(14px)' : 'none',
+            border: '1px solid rgba(255,255,255,0.4)',
+            boxShadow: mode === m.key ? '0 2px 12px rgba(0,0,0,0.05)' : 'none',
             transition: 'all 0.2s',
           }}>{m.label}</button>
         ))}
@@ -1960,8 +1966,10 @@ function RoutineChecklist() {
                     localStorage.setItem('lua_routine_days', JSON.stringify(next));
                     setDaySettings(next);
                   }} style={{
-                    flex: 1, padding: '8px 0', borderRadius: 10, border: 'none', cursor: 'pointer',
-                    background: '#ffffff', color: 'var(--text-primary)',
+                    flex: 1, padding: '8px 0', borderRadius: 18, border: '1px solid rgba(255,255,255,0.4)', cursor: 'pointer',
+                    background: 'rgba(255,255,255,0.42)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+                    color: 'var(--text-primary)',
                     fontSize: 12, fontWeight: 500, fontFamily: 'inherit',
                   }}>{preset.label}</button>
                 ))}
@@ -1985,9 +1993,9 @@ function RoutineChecklist() {
       {/* Add Routine Button */}
       <div onClick={() => { setAddMode(mode); setAddModal(true); }} style={{
         padding: '12px 24px', marginBottom: 16, cursor: 'pointer',
-        background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none',
-        border: '1px solid rgba(90,176,232,0.4)', borderRadius: 14,
-        boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+        background: 'rgba(255,255,255,0.42)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+        border: '1px solid rgba(255,255,255,0.4)', borderRadius: 18,
+        boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
       }}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round">
@@ -2024,13 +2032,13 @@ function RoutineChecklist() {
               <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
                 {[{ key: 'morning', label: ' 모닝' }, { key: 'day', label: ' 데이' }, { key: 'night', label: ' 나이트' }].map(m => (
                   <button key={m.key} onClick={() => setAddMode(m.key)} style={{
-                    flex: 1, padding: '10px 0', borderRadius: 12, cursor: 'pointer',
+                    flex: 1, padding: '10px 0', borderRadius: 18, cursor: 'pointer',
                     fontFamily: 'inherit', fontSize: 13, fontWeight: 600, textAlign: 'center',
-                    background: addMode === m.key ? 'rgba(255,255,255,0.5)' : 'transparent',
+                    background: addMode === m.key ? 'rgba(255,255,255,0.42)' : 'transparent',
                     color: addMode === m.key ? 'var(--text-primary)' : 'var(--text-muted)',
-                    backdropFilter: 'none', WebkitBackdropFilter: 'none',
-                    border: 'none',
-                    boxShadow: addMode === m.key ? '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.3)' : 'inset 0 1px 0 rgba(255,255,255,0.3)',
+                    backdropFilter: addMode === m.key ? 'blur(14px)' : 'none', WebkitBackdropFilter: addMode === m.key ? 'blur(14px)' : 'none',
+                    border: '1px solid rgba(255,255,255,0.4)',
+                    boxShadow: addMode === m.key ? '0 2px 12px rgba(0,0,0,0.05)' : 'none',
                   }}>{m.label}</button>
                 ))}
               </div>
@@ -2146,7 +2154,7 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
   const sleepH = habit.sleep_hours;
   const sunscreen = habit.sunscreen_applied;
 
-  const glass = { background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', borderRadius: 20 };
+  const glass = { background: 'rgba(255,255,255,0.42)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', borderRadius: 18 };
 
   const summaryParts = [];
   if (habit.water_amount) summaryParts.push(`수분 ${waterL}L`);

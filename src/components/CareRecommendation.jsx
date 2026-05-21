@@ -291,10 +291,11 @@ export default function CareRecommendation() {
     return (
       <div style={{
         padding: '28px 18px', marginBottom: 20,
-        background: 'rgba(255,255,255,0.3)',
-        backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-        border: '1px solid rgba(255,255,255,0.3)',
+        background: 'rgba(255,255,255,0.42)',
+        backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+        border: '1px solid rgba(255,255,255,0.4)',
         borderRadius: 18, textAlign: 'center',
+        boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
       }}>
         <div style={{ fontSize: 30, marginBottom: 10 }}>🧴</div>
         <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
@@ -311,9 +312,11 @@ export default function CareRecommendation() {
     return (
       <div style={{
         padding: '24px 18px', marginBottom: 20,
-        background: 'rgba(255,255,255,0.3)',
-        border: '1px solid rgba(255,255,255,0.3)',
+        background: 'rgba(255,255,255,0.42)',
+        backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+        border: '1px solid rgba(255,255,255,0.4)',
         borderRadius: 18, textAlign: 'center',
+        boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
       }}>
         <div style={{ fontSize: 28, marginBottom: 8 }}>🤔</div>
         <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>

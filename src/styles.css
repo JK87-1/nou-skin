@@ -767,6 +767,7 @@
   -webkit-tap-highlight-color: transparent;
   transition: all 0.3s ease;
   border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.1);
 }
 .photo-cell:hover {
   z-index: 2;
@@ -1567,20 +1568,20 @@
 
 /* Cards: glassmorphism */
 [data-theme="light"] .card {
-  background: rgba(255,255,255,0.5);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border: none;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-  border-radius: 20px;
+  background: rgba(255,255,255,0.42);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,0.4);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  border-radius: 18px;
 }
 [data-theme="light"] .glass-card {
-  background: rgba(255,255,255,0.5);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border: none;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-  border-radius: 20px;
+  background: rgba(255,255,255,0.42);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,0.4);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  border-radius: 18px;
   padding: 24px;
   margin: 0 0 12px;
 }
@@ -1592,16 +1593,12 @@
   padding: 16px 18px;
 }
 
-/* Global glass effect removed for light mode */
+/* Global glass effect for light mode */
 [data-theme="light"] [style*="--bg-card"] {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border: none !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.03) !important;
-}
-[data-theme="light"] [style*="border-radius"][style*="background"] {
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border: 1px solid rgba(255,255,255,0.4) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05) !important;
 }
 
 /* Section icon: 40x40 rounded square with tinted bg */

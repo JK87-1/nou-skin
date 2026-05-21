@@ -33,7 +33,7 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
   const recordCount = records.length;
   const [thumbs, setThumbs] = useState({});
   useEffect(() => { getAllThumbnailsAsync().then(setThumbs); }, []);
-  const recentPhotos = records.slice(0, 5).map(r => ({ date: r.date, record: r, thumb: thumbs[String(r.id)] || thumbs[r.date] })).filter(p => p.thumb);
+  const recentPhotos = [...records].reverse().map(r => ({ date: r.date, record: r, thumb: thumbs[String(r.id)] || thumbs[r.date] })).filter(p => p.thumb);
   const habitDays = (() => { let c = 0; for (let i = 0; i < localStorage.length; i++) { if (localStorage.key(i)?.startsWith('lua_habit_')) c++; } return c; })();
 
   const glass = { background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', borderRadius: 20 };
@@ -55,8 +55,8 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           WebkitTapHighlightColor: 'transparent',
         }}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.8" strokeLinecap="round">
-            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path strokeWidth="0" d="M0 0h24v24H0z" fill="none" /><path d="M4 6l16 0" /><path d="M4 12l16 0" /><path d="M4 18l16 0" />
           </svg>
         </div>
       </div>
@@ -87,22 +87,15 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
               { key: 'record', iconSrc: '/memo.svg', label: '기록', count: daysTogether },
             ].map(t => {
               const active = contentMode === t.key;
-              const iconOpacity = active ? 0.7 : 0.3;
+              const itemColor = active ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0.5)';
               return (
                 <div key={t.key} onClick={() => setContentMode(t.key)} style={{
                   background: 'transparent', borderRadius: 10, padding: '10px 4px',
                   textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s ease',
                   WebkitTapHighlightColor: 'transparent',
                 }}>
-                  <div style={{ display: 'flex', justifyContent: 'center' }}>
-                    {t.iconSvg ? (
-                      <svg width="18" height="18" viewBox="0 0 22 22" fill="currentColor" style={{ opacity: iconOpacity, transition: 'opacity 0.2s' }}><rect x="0" y="11" width="6" height="11" rx="1.5"/><rect x="8" y="3" width="6" height="19" rx="1.5"/><rect x="16" y="7" width="6" height="15" rx="1.5"/></svg>
-                    ) : (
-                      <img src={t.iconSrc} alt={t.label} style={{ width: 18, height: 18, opacity: iconOpacity, transition: 'opacity 0.2s' }} />
-                    )}
-                  </div>
-                  <div style={{ fontSize: 11, marginTop: 4, color: active ? 'var(--text-primary)' : 'var(--text-muted)', fontWeight: active ? 500 : 400 }}>{t.label}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>{t.count}</div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: itemColor, transition: 'color 0.2s' }}>{t.count}</div>
+                  <div style={{ fontSize: 11, marginTop: 4, color: itemColor, fontWeight: active ? 500 : 400, transition: 'color 0.2s' }}>{t.label}</div>
                 </div>
               );
             })}
@@ -111,8 +104,8 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
 
         {/* Text below avatar */}
         <div style={{ paddingTop: 4 }}>
-          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{profile.nickname || 'user'}</div>
-          <div onClick={() => setBioModal(true)} style={{ fontSize: 12, color: profile.bio ? 'var(--text-primary)' : 'var(--text-dim, #B0B8C1)', marginTop: 6, marginBottom: 20, cursor: 'pointer' }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,1)' }}>{profile.nickname || 'user'}</div>
+          <div onClick={() => setBioModal(true)} style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 6, marginBottom: 20, cursor: 'pointer' }}>
             {profile.bio || '자기소개'}
           </div>
         </div>
@@ -145,13 +138,6 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
                   </div>
                 );
               })}
-              <div onClick={() => onMeasure?.()} style={{
-                aspectRatio: '1', borderRadius: 8, background: '#ffffff',
-                border: '0.5px dashed rgba(137,206,245,0.4)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-              }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #89cef5)" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              </div>
             </div>
           )}
         </div>
