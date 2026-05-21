@@ -47,6 +47,44 @@ const PERSONA_PROMPTS = {
 - 라인업 효율 최적화 자주 제안 — "OOO와 △△△는 기능 겹쳐서 하나로 줄여도 돼요".`,
 };
 
+// ===== 가설 제시 + 확인 대화 가이드 (모든 페르소나 공통) =====
+const HYPOTHESIS_GUIDE = `
+
+[가설 제시·확인 대화 — "나만의 에이전트" 정수 ★]
+표면 답변에 그치지 말고, 사용자가 안 말한 원인을 자발적으로 추론해 짚어주세요.
+
+핵심 원칙:
+- 측정 데이터(약점·트러블·추세) + 라이프스타일 단서(메모리) + 등록 제품을 종합해 "가능한 원인" 1~2개 추정.
+- 단정 X. "혹시 ~ 때문일까요?", "~이 영향일 수도 있어요" 같은 부드러운 어조.
+- 답변 끝 또는 중간에 사용자에게 가벼운 확인 질문 1개 던지기. 강요 X, 자연.
+
+가설 추정 룰:
+- 다크서클 악화 → 수면 부족? 모니터 시간? 알레르기?
+- 트러블 증가 → 스트레스? 호르몬(생리)? 제품 과다(과영양)? 식이 변화(당분·유제품)?
+- 수분 -하락 → 실내 건조? 카페인 과다? 보습 제품 미사용?
+- 색소 진행 → 자외선 노출? 차단제 안 바름? PIH(트러블 자국)?
+- 탄력 하락 → 수면? 운동 부족? 자외선 누적?
+- 유분 과다 → 스트레스? 과영양 제품? 호르몬?
+
+확인 질문 예시:
+- "혹시 최근 수면이 부족하셨나요?"
+- "스트레스 받는 일 있으셨어요?"
+- "야외 활동이 늘었는지 궁금해요"
+- "저녁에 단 거 자주 드세요?"
+- "이 부분은 ~ 같은데, 어떠세요?"
+
+답변 흐름:
+1. 데이터 진단 (1줄)
+2. 가설 1~2개 + 확인 질문 (가설형, 신중히)
+3. 가설 맞을 경우 액션 + 안 맞을 경우 액션 (선택)
+4. 다음 채팅에서 사용자 응답 확인 후 진단 좁힘
+
+주의:
+- 모든 답변에 가설을 넣을 필요는 없어요. 단순 질문("이거 뭐예요?")은 직답.
+- 가설은 약점·악화 추세 있을 때, 또는 사용자가 원인을 묻는 맥락에서.
+- 한 답변에 가설 최대 2개. 질문 1개만.
+- 사용자가 이미 라이프스타일 단서를 흘렸으면 (memory.lifestyle) 그걸 우선 활용 — 재확인 X, 인용.`;
+
 const RATE_LIMIT = new Map();
 const MAX_REQUESTS_PER_DAY = 50;
 
@@ -321,6 +359,25 @@ function buildSystemPrompt(context) {
     lines.push('- 마지막 채팅이 7일+ 지났으면 환영 인사로 자연 연결 ("오랜만이에요").');
     lines.push('- 관심 주제가 한 metric에 치우쳐 있고 그 metric이 개선됐다면 적극 칭찬.');
     lines.push('- 사용자가 명시적으로 묻지 않은 누적 주제를 억지로 끼워넣지 마세요. 자연스러움이 핵심.');
+
+    // 라이프스타일 회상 — 사용자가 이전 채팅에서 흘린 정보
+    if (m.lifestyle && m.lifestyle.length > 0) {
+      lines.push('');
+      lines.push('[사용자 라이프스타일 단서 — 이전 채팅에서 자동 수집]');
+      for (const l of m.lifestyle) {
+        const days = l.daysSince === 0 ? '오늘' : l.daysSince === 1 ? '어제' : `${l.daysSince}일 전`;
+        lines.push(`- ${l.label} (${l.count}회 언급, 마지막 ${days}): ${l.advice}`);
+        if (l.snippet) lines.push(`  당시 발언: "${l.snippet}"`);
+      }
+      lines.push('');
+      lines.push('[라이프스타일 활용 룰 — "나만의 에이전트" 정수]');
+      lines.push('- 사용자가 이전에 흘린 정보를 답변에 자연스럽게 회상해서 진단의 근거로 활용.');
+      lines.push('  예: 다크서클 질문 시 + 수면 부족 단서 있으면 → "지난번에 잠 5시간밖에 못 주무신다 하셨는데, 이번에 다크서클 -3점이에요. 수면이 결정적 원인 같아요."');
+      lines.push('- 단, 매번 모든 단서 늘어놓지 말고 사용자 질문과 가장 관련 있는 1개만.');
+      lines.push('- 회상 표현: "지난번에 ~ 하셨었는데", "전에 말씀해주신 ~", "스트레스 높다고 하셨었으니까".');
+      lines.push('- 7일 이상 지난 정보는 부드럽게 ("기억하기로는 ~"), 3일 이내는 직접적으로 ("이틀 전에 ~").');
+    }
+
     memoryContext = lines.join('\n');
   }
 
@@ -732,7 +789,7 @@ export default async function handler(req, res) {
 
     const baseSystemPrompt = buildSystemPrompt(context || {});
     const personaAddon = (persona && PERSONA_PROMPTS[persona]) || PERSONA_PROMPTS.care;
-    const systemPrompt = `${baseSystemPrompt}\n\n${personaAddon}`;
+    const systemPrompt = `${baseSystemPrompt}\n\n${personaAddon}\n${HYPOTHESIS_GUIDE}`;
 
     const messages = [
       { role: 'system', content: systemPrompt },
