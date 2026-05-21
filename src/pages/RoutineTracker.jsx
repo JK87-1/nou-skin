@@ -12,6 +12,7 @@ import {
   getTrackerProgress, getTrackerWeekly,
   computeAllCorrelations, compressProductThumb,
 } from '../storage/TrackerStorage';
+import CareRecommendation from '../components/CareRecommendation';
 
 // 네이버 쇼핑에서 제품 누끼 이미지 + 정확한 브랜드명 검색
 async function fetchProductInfo(brand, name) {
@@ -843,6 +844,9 @@ export default function RoutineTracker({ themeColors, onBack }) {
             </svg>
             <span style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>제품 등록</span>
           </div>
+
+          {/* 측정 데이터 기반 맞춤 제품 추천 — 화장대 (내 제품) 아래 배치 */}
+          <CareRecommendation />
         </div>
       )}
 

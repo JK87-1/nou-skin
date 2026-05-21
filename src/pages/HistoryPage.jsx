@@ -31,7 +31,7 @@ import BeforeAfterSlider from '../components/BeforeAfterSlider';
 import DailyMission from '../components/DailyMission';
 import { getProducts, getProductsForMode, getTrackerChecks, toggleTrackerCheck, getTrackerProgress } from '../storage/TrackerStorage';
 import { hapticLight, hapticSelection } from '../utils/haptics';
-import CareRecommendation from '../components/CareRecommendation';
+// CareRecommendation은 화장대(RoutineTracker)로 이동됨
 import { ChartIcon, CameraIcon, MicroscopeIcon, SparkleIcon, DiamondIcon, DropletIcon, RulerIcon, PaletteIcon, LotionIcon, EyeIcon, BubbleIcon, TargetIcon, ClockIcon, LuaMiniIcon } from '../components/icons/PastelIcons';
 
 // ===== MINI LINE GRAPH (Canvas-based, no dependencies) =====
@@ -286,11 +286,6 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
       {/* ===== ROUTINE (Morning / Night) ===== */}
       <div style={{ animation: 'breatheIn 0.6s ease both' }}>
         <RoutineChecklist />
-
-        {/* 측정 데이터 기반 맞춤 제품 추천 */}
-        <div style={{ padding: '0 20px 8px' }}>
-          <CareRecommendation />
-        </div>
       </div>
 
       {/* ===== GALLERY MODE (Instagram-style profile) ===== */}
