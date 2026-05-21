@@ -560,6 +560,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
       products: getProductsWithUsageContext(),
       routineSnapshot: getRoutineSnapshot(),
       recentTrend: getRecentTrend(7),
+      longTrend: getRecentTrend(30),
       userMemory: getMemoryContext(),
     };
   }, [result]);
