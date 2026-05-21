@@ -221,3 +221,30 @@ export function calcMatchScore(metricValue, inverse = false) {
   const raw = Math.round(100 - val * 0.3);
   return Math.min(98, Math.max(75, raw));
 }
+
+/**
+ * 제품 태그·이름 기반 권장 사용 시점 추정.
+ * 'morning' | 'night' | 'both'
+ *
+ * 룰:
+ * - 레티놀·바쿠치올·AHA·BHA·살리실·아젤라익 → 광민감·각질로 night
+ * - 비타민C·아스코빌·글루타치온·미백·SPF·선크림 → 자외선 케어용으로 morning
+ * - 그 외 보습·수분·진정·탄력 → both
+ */
+export function getProductTimeSlot(product) {
+  const text = [
+    product.name || '',
+    product.brand || '',
+    ...(product.tags || []),
+  ].join(' ').toLowerCase();
+  if (/레티놀|retinol|레티날|바쿠치올|bakuchiol|아하|aha|글리콜|락트산|살리실|bha|아젤라/.test(text)) return 'night';
+  if (/비타민\s*c|vitamin\s*c|아스코빌|글루타치온|미백|선크림|sunscreen|spf|자외선/.test(text)) return 'morning';
+  return 'both';
+}
+
+/** 시점 라벨 (UI 표시용) */
+export function getTimeSlotLabel(slot) {
+  if (slot === 'morning') return { icon: '☀️', label: '아침' };
+  if (slot === 'night') return { icon: '🌙', label: '저녁' };
+  return { icon: '🌤️', label: '아침·저녁' };
+}
