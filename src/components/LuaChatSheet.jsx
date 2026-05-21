@@ -2,7 +2,8 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { getRecords, getSmoothedChanges, getChanges, getLatestRecord, getStableSkinAge, getRecentTrend } from '../storage/SkinStorage';
 import { getProfile } from '../storage/ProfileStorage';
 import { compressImage } from '../engine/PixelAnalysis';
-import { getProductsWithUsageContext, getRoutineSnapshot } from '../storage/TrackerStorage';
+import { getProductsWithUsageContext, getRoutineSnapshot, getProducts } from '../storage/TrackerStorage';
+import { buildRoutineRecommendation, serializeRoutineForPrompt } from '../utils/routineBuilder';
 import { getMemoryContext, recordUserMessage } from '../storage/UserMemoryStorage';
 import { Capacitor } from '@capacitor/core';
 import { Keyboard } from '@capacitor/keyboard';
@@ -272,6 +273,7 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
       recentTrend: getRecentTrend(7),
       longTrend: getRecentTrend(30),
       userMemory: getMemoryContext(),
+      routineRecommendation: serializeRoutineForPrompt(buildRoutineRecommendation(latest, getProducts())),
     };
   }, []);
 

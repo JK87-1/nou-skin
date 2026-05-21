@@ -343,6 +343,43 @@ function buildSystemPrompt(context) {
     routineContext = lines.join('\n');
   }
 
+  // ===== 루아가 추천한 루틴 (CareRecommendation 결과) =====
+  let routineRecContext = '';
+  if (context.routineRecommendation) {
+    const r = context.routineRecommendation;
+    const lines = ['\n\n[루아가 추천한 루틴 — 등록 제품을 표준 순서로 배치]'];
+    const formatProducts = (slot) => {
+      const arr = r[slot] || [];
+      if (arr.length === 0) return null;
+      const stepLines = arr.map(s => {
+        const items = s.products.map(p => {
+          const pri = p.priority === 'daily' ? '매일' : '가끔';
+          const reason = p.matched && p.matched.length > 0 ? ` (${p.matched.join('/')})` : '';
+          return `${p.brand || ''} ${p.name || ''}${reason} — ${pri}`;
+        }).join(', ');
+        return `  ${s.step}. ${s.label}: ${items}`;
+      });
+      return stepLines.join('\n');
+    };
+    const mLines = formatProducts('morning');
+    const nLines = formatProducts('night');
+    if (mLines) lines.push('아침:\n' + mLines);
+    if (nLines) lines.push('저녁:\n' + nLines);
+    lines.push(`통계 — 아침 매일 ${r.morningDaily}개·가끔 ${r.morningOccasional}개 / 저녁 매일 ${r.nightDaily}개·가끔 ${r.nightOccasional}개`);
+    if (r.hasManyProducts) {
+      lines.push('※ 제품 과다 — 각 단계 2개까지만 매일 + 나머지 주 2~3회로 권유 중');
+    }
+    lines.push('');
+    lines.push('[추천 루틴 활용 룰]');
+    lines.push('- 사용자가 "오늘 뭐 발라야 해?", "내 루틴은?" 같은 질문에 위 추천을 직접 인용하세요.');
+    lines.push('  예: "아침엔 [브랜드 토너] 매일 → [세럼] 매일 → [크림] 매일 순이에요. △△ 세럼은 가끔만 발라주세요."');
+    lines.push('- 특정 약점 케어 질문 시: "그 약점엔 OOO를 매일 발라주시는 게 좋아요" (matched 안의 메트릭 활용)');
+    lines.push('- "가끔" 표시 제품은 주 2~3회 또는 약점 케어 집중일에만 권유. 매일 X.');
+    lines.push('- 사용자가 등록 제품의 사용 순서를 물으면 위 step 번호와 라벨 그대로 인용.');
+    lines.push('- 추천에 없는 카테고리(예: 사용자가 클렌저 등록 안 함)는 "라인업에 [카테고리]가 비어있어요" 식 공백 짚기.');
+    routineRecContext = lines.join('\n');
+  }
+
   let changeContext = '';
   if (context.changes) {
     const c = context.changes;
@@ -496,7 +533,7 @@ ${context.currentResult.troubleBreakdown ? `troubleBreakdown 데이터를 받았
 - 결절·낭종(깊은 큰 트러블): 피부과 권유. 비전문 치료 위험.
 ※ 답변에서 "트러블이 있네요" 같은 두루뭉술 표현 금지. 종류별 카운트를 자연 인용해서 "화이트헤드가 ${context.currentResult.troubleBreakdown.whitehead || 0}개 보이는데..." 식으로 정밀하게 짚어주세요.
 ※ 가장 많은 종류 1~2개에 집중. 0개는 언급 X.` : 'troubleBreakdown 데이터 없음 — 종류별 분류 안 됨'}` : '분석 데이터 없음'}
-${historyContext}${changeContext}${todayContext}${productContext}${trendContext}${longTrendContext}${memoryContext}${routineContext}
+${historyContext}${changeContext}${todayContext}${productContext}${trendContext}${longTrendContext}${memoryContext}${routineContext}${routineRecContext}
 
 [계절 기반 조언 - 현재 ${season}]
 ${seasonalTips[season]}
