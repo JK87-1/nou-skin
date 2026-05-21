@@ -1654,104 +1654,153 @@ function RoutineChecklist() {
 
   const glass = { background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)', borderRadius: 20 };
 
-  const weekDays = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - d.getDay() + i + weekStartOffset * 7);
+  // 주 단위 weekDays 빌더 — carousel용 3개 주(이전·현재·다음) 렌더에 재사용
+  const buildWeek = (offset) => {
     const dayLabels = ['일','월','화','수','목','금','토'];
-    const dateStr = _care_dateStr(d);
-    return {
-      date: dateStr,
-      dayLabel: dayLabels[d.getDay()],
-      isToday: dateStr === _care_todayStr(),
-      isSelected: dateStr === selectedDate,
-      isFuture: dateStr > _care_todayStr(),
-    };
-  });
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - d.getDay() + i + offset * 7);
+      const dateStr = _care_dateStr(d);
+      return {
+        date: dateStr,
+        dayLabel: dayLabels[d.getDay()],
+        isToday: dateStr === _care_todayStr(),
+        isSelected: dateStr === selectedDate,
+        isFuture: dateStr > _care_todayStr(),
+      };
+    });
+  };
+  const prevWeek = buildWeek(weekStartOffset - 1);
+  const currentWeek = buildWeek(weekStartOffset);
+  const nextWeek = buildWeek(weekStartOffset + 1);
+  // 기존 코드와 호환
+  const weekDays = currentWeek;
 
-  // 스와이프 — 좌측 swipe: 다음 주(미래 차단), 우측 swipe: 지난 주
-  const swipeStartX = useRef(null);
-  const swipeStartY = useRef(null);
-  const swipeMoved = useRef(false);
-  const onWeekSwipeStart = (e) => {
-    const t = e.touches?.[0];
-    if (!t) return;
-    swipeStartX.current = t.clientX;
-    swipeStartY.current = t.clientY;
-    swipeMoved.current = false;
+  // ── Carousel 드래그 (Apple 캘린더 스타일) ──
+  // 3개 주(prev/current/next)를 가로로 렌더하고 dragX만큼 translate.
+  // 드래그 종료 시 임계 넘으면 snap + weekStartOffset 변경. 햅틱은 임계 넘는 순간.
+  const carouselRef = useRef(null);
+  const [dragX, setDragX] = useState(0);
+  const [transitioning, setTransitioning] = useState(false);
+  const swipeState = useRef({ x: 0, y: 0, axis: null, moved: false });
+  const hapticArmed = useRef(true); // 임계 넘는 순간 한 번만 햅틱
+
+  const onCarouselTouchStart = (e) => {
+    const t = e.touches?.[0]; if (!t) return;
+    setTransitioning(false);
+    swipeState.current = { x: t.clientX, y: t.clientY, axis: null, moved: false };
+    hapticArmed.current = true;
   };
-  const onWeekSwipeMove = (e) => {
-    if (swipeStartX.current == null) return;
-    const t = e.touches?.[0];
-    if (!t) return;
-    const dx = t.clientX - swipeStartX.current;
-    const dy = t.clientY - swipeStartY.current;
-    if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy)) swipeMoved.current = true;
-  };
-  const onWeekSwipeEnd = (e) => {
-    if (swipeStartX.current == null) return;
-    const t = e.changedTouches?.[0];
-    if (!t) { swipeStartX.current = null; return; }
-    const dx = t.clientX - swipeStartX.current;
-    const dy = t.clientY - swipeStartY.current;
-    const THRESHOLD = 48;
-    if (Math.abs(dx) > THRESHOLD && Math.abs(dx) > Math.abs(dy) * 1.5) {
-      if (dx < 0) {
-        // 좌측 스와이프 = 다음 주 (미래 차단)
-        setWeekStartOffset(o => {
-          if (o >= 0) return o;
+  const onCarouselTouchMove = (e) => {
+    const t = e.touches?.[0]; if (!t) return;
+    const s = swipeState.current;
+    const dx = t.clientX - s.x;
+    const dy = t.clientY - s.y;
+    if (!s.axis) {
+      if (Math.abs(dx) > 6 && Math.abs(dx) > Math.abs(dy) * 1.2) s.axis = 'h';
+      else if (Math.abs(dy) > 6 && Math.abs(dy) > Math.abs(dx) * 1.2) s.axis = 'v';
+    }
+    if (s.axis === 'h') {
+      s.moved = true;
+      // 미래 차단·과거 8주 한계에서 저항 (rubber band)
+      let constrained = dx;
+      if (dx < 0 && weekStartOffset >= 0) constrained = dx * 0.25;
+      if (dx > 0 && weekStartOffset <= -8) constrained = dx * 0.25;
+      setDragX(constrained);
+      // 임계 절반 넘는 순간 햅틱 (앱 캘린더처럼 살짝 알림)
+      const w = carouselRef.current?.offsetWidth || 320;
+      if (hapticArmed.current && Math.abs(dx) > w * 0.18) {
+        // 한계가 아닌 경우만
+        if (!(dx < 0 && weekStartOffset >= 0) && !(dx > 0 && weekStartOffset <= -8)) {
           hapticSelection();
-          return o + 1;
-        });
-      } else {
-        // 우측 스와이프 = 지난 주 (8주까지)
-        setWeekStartOffset(o => {
-          if (o <= -8) return o;
-          hapticSelection();
-          return o - 1;
-        });
+          hapticArmed.current = false;
+        }
       }
     }
-    swipeStartX.current = null;
-    swipeStartY.current = null;
+  };
+  const onCarouselTouchEnd = () => {
+    const s = swipeState.current;
+    if (s.axis !== 'h') { setDragX(0); return; }
+    const w = carouselRef.current?.offsetWidth || 320;
+    const THRESHOLD = Math.min(w * 0.28, 90);
+    setTransitioning(true);
+    if (dragX <= -THRESHOLD && weekStartOffset < 0) {
+      // 다음 주로 — 완전히 -w까지 슬라이드한 뒤 weekStartOffset 변경 + dragX 리셋
+      setDragX(-w);
+      setTimeout(() => {
+        setTransitioning(false);
+        setWeekStartOffset(o => o + 1);
+        setDragX(0);
+      }, 280);
+    } else if (dragX >= THRESHOLD && weekStartOffset > -8) {
+      setDragX(w);
+      setTimeout(() => {
+        setTransitioning(false);
+        setWeekStartOffset(o => o - 1);
+        setDragX(0);
+      }, 280);
+    } else {
+      // 원위치 (한계·임계 미달)
+      setDragX(0);
+      setTimeout(() => setTransitioning(false), 280);
+    }
   };
 
   return (
     <div style={{ padding: '20px 20px 0' }}>
-      {/* Weekly Calendar — 좌우 스와이프로 주 이동, 각 요일 탭으로 날짜 선택 */}
+      {/* Weekly Calendar Carousel — 3개 주를 가로로 렌더, 손가락 따라 부드럽게 transform */}
       <div
-        onTouchStart={onWeekSwipeStart}
-        onTouchMove={onWeekSwipeMove}
-        onTouchEnd={onWeekSwipeEnd}
-        style={{ display: 'flex', gap: 6, marginBottom: 16, touchAction: 'pan-y' }}
+        ref={carouselRef}
+        onTouchStart={onCarouselTouchStart}
+        onTouchMove={onCarouselTouchMove}
+        onTouchEnd={onCarouselTouchEnd}
+        onTouchCancel={onCarouselTouchEnd}
+        style={{
+          overflow: 'hidden', marginBottom: 16, touchAction: 'pan-y',
+          // 인접 주 영역 — 좌우로 살짝 padding 두어 살짝 미리 보이게도 가능. 현재 0.
+        }}
       >
-        {weekDays.map(day => (
-          <button
-            key={day.date}
-            onClick={() => {
-              if (day.isFuture || swipeMoved.current) return;
-              hapticLight();
-              setSelectedDate(day.date);
-            }}
-            disabled={day.isFuture}
-            style={{
-              flex: 1, textAlign: 'center', padding: '10px 0 8px', borderRadius: 12,
-              background: day.isSelected ? 'var(--accent-primary, #89cef5)' : day.isToday ? 'var(--day-today-bg)' : 'var(--day-default-bg)',
-              color: day.isSelected ? '#fff' : 'inherit',
-              border: 'none', cursor: day.isFuture ? 'default' : 'pointer',
-              opacity: day.isFuture ? 0.3 : 1,
-              fontFamily: 'inherit', transition: 'background 0.15s',
-              WebkitTapHighlightColor: 'transparent',
-            }}
-          >
-            <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 2,
-              color: day.isSelected ? '#fff' : day.isToday ? 'var(--day-today-accent)' : 'var(--text-muted)',
-            }}>{day.dayLabel}</div>
-            <div style={{ fontSize: 15, fontWeight: 700,
-              color: day.isSelected ? '#fff' : day.isToday ? 'var(--day-today-accent)' : 'var(--text-primary)',
-            }}>{new Date(day.date + 'T12:00:00').getDate()}</div>
-            {day.isToday && !day.isSelected && <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--day-today-accent)', margin: '4px auto 0' }} />}
-          </button>
-        ))}
+        <div style={{
+          display: 'flex',
+          width: '300%',
+          transform: `translateX(calc(-33.3333% + ${dragX}px))`,
+          transition: transitioning ? 'transform 0.28s cubic-bezier(0.32,0.72,0,1)' : 'none',
+          willChange: 'transform',
+        }}>
+          {[prevWeek, currentWeek, nextWeek].map((week, weekIdx) => (
+            <div key={weekIdx} style={{ flex: '0 0 33.3333%', display: 'flex', gap: 6 }}>
+              {week.map(day => (
+                <button
+                  key={day.date}
+                  onClick={() => {
+                    if (day.isFuture || swipeState.current.moved) return;
+                    hapticLight();
+                    setSelectedDate(day.date);
+                  }}
+                  disabled={day.isFuture}
+                  style={{
+                    flex: 1, textAlign: 'center', padding: '10px 0 8px', borderRadius: 12,
+                    background: day.isSelected ? 'var(--accent-primary, #89cef5)' : day.isToday ? 'var(--day-today-bg)' : 'var(--day-default-bg)',
+                    color: day.isSelected ? '#fff' : 'inherit',
+                    border: 'none', cursor: day.isFuture ? 'default' : 'pointer',
+                    opacity: day.isFuture ? 0.3 : 1,
+                    fontFamily: 'inherit',
+                    WebkitTapHighlightColor: 'transparent',
+                    minWidth: 0, // flex 안 안전
+                  }}
+                >
+                  <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 2,
+                    color: day.isSelected ? '#fff' : day.isToday ? 'var(--day-today-accent)' : 'var(--text-muted)',
+                  }}>{day.dayLabel}</div>
+                  <div style={{ fontSize: 15, fontWeight: 700,
+                    color: day.isSelected ? '#fff' : day.isToday ? 'var(--day-today-accent)' : 'var(--text-primary)',
+                  }}>{new Date(day.date + 'T12:00:00').getDate()}</div>
+                  {day.isToday && !day.isSelected && <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--day-today-accent)', margin: '4px auto 0' }} />}
+                </button>
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Morning / Day / Night Toggle */}
