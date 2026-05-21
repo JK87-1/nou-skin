@@ -9,7 +9,7 @@ import { COMPANY_INFO, DPO_INFO, CONTACT_EMAIL } from '../legal/legalContent';
  *
  * onShowLegal({ key: 'terms'|'privacy'|'biometric' }) 콜백으로 약관 모달 트리거.
  */
-export default function SiteFooter({ onShowLegal }) {
+export default function SiteFooter() {
   const [expanded, setExpanded] = useState(false);
 
   const row = (label, value) => (
@@ -26,12 +26,7 @@ export default function SiteFooter({ onShowLegal }) {
       marginTop: 12,
       fontFamily: 'inherit',
     }}>
-      {/* 약관 링크 row — 항상 노출 (생체정보·국외 이전은 처리방침에 통합) */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 14px', marginBottom: 14, fontSize: 12 }}>
-        <button onClick={() => onShowLegal?.('terms')} style={linkBtnStyle}>이용약관</button>
-        <span style={dotStyle}>·</span>
-        <button onClick={() => onShowLegal?.('privacy')} style={{ ...linkBtnStyle, fontWeight: 600 }}>개인정보 처리방침</button>
-      </div>
+      {/* 약관 링크 행은 제거 — MyPage 정보 섹션의 SettingsRow와 중복 */}
 
       {/* 사업자 정보 — expand 토글 */}
       <button
@@ -76,10 +71,3 @@ export default function SiteFooter({ onShowLegal }) {
   );
 }
 
-const linkBtnStyle = {
-  background: 'none', border: 'none', padding: 0,
-  fontSize: 12, color: 'var(--text-secondary, #6F7787)',
-  cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'underline',
-  textUnderlineOffset: 2, textDecorationColor: 'rgba(127,135,144,0.3)',
-};
-const dotStyle = { color: 'var(--text-dim, #B0B8C1)', fontSize: 11 };
