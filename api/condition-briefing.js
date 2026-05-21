@@ -62,7 +62,7 @@ function pickStyle() {
 }
 
 function buildPrompt(data) {
-  const { current, previous, timeOfDay, skinType, todayCount, stableSkinAge, dayName, season, seasonTip, trend, style } = data;
+  const { current, previous, timeOfDay, skinType, todayCount, stableSkinAge, dayName, season, seasonTip, trend, style, nickname } = data;
 
   let comparison = '';
   if (previous) {
@@ -111,6 +111,11 @@ ${stableSkinAge ? `- 안정 피부나이(주간평균): ${stableSkinAge}세, 현
 - 마지막 문장: 시간대(${timeOfDay})·계절(${season})에 맞는 즉시 실천 가능한 팁 1개
 - "~해요" 체, 고급스럽고 따뜻한 톤
 - 이전 사용자에게 했던 표현·시작 패턴 절대 반복 금지
+
+[호칭 규칙 — 절대 준수]
+- "여러분", "고객님", "사용자님", "사용자분" 같은 다수·기계적 호칭 절대 금지
+- ${nickname ? `사용자 닉네임 "${nickname}"이 있어요. 자연스러우면 한 번 "${nickname}님"으로 부르되, 어색하면 그냥 호칭 생략하고 "지금 피부 상태는..." 식으로 시작.` : '닉네임이 없으니 호칭 생략. "지금 피부 상태는..." / "오늘 컨디션은..." 같이 자연스럽게 시작'}
+- "당신의 피부", "당신은" 같은 직역체도 금지. 한국어 자연체 우선.
 
 [데이터 기반 칭찬 — 실제 점수가 좋은 지표만 칭찬하세요. 억지 칭찬 금지]
 수분 60+: "수분감이 돋보이는 촉촉한 피부예요" / "글로우가 살아있어요" / "촉촉한 물광이 느껴져요" / "수분 밸런스가 잘 잡혀있어요"
@@ -161,7 +166,7 @@ export default async function handler(req, res) {
   if (!apiKey) return res.status(500).json({ error: 'API key not configured' });
 
   try {
-    const { current, previous, skinType, todayCount, stableSkinAge } = req.body;
+    const { current, previous, skinType, todayCount, stableSkinAge, nickname } = req.body;
     if (!current || !current.overallScore) {
       return res.status(400).json({ error: 'Current scores required' });
     }
@@ -182,6 +187,7 @@ export default async function handler(req, res) {
       todayCount: todayCount || 1,
       stableSkinAge,
       dayName, season, seasonTip, trend, style,
+      nickname: typeof nickname === 'string' && nickname.trim().length > 0 ? nickname.trim().slice(0, 20) : null,
     });
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {

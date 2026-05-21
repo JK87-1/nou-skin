@@ -514,6 +514,7 @@ export default function App() {
           skinType: finalScores.skinType,
           todayCount: todayBefore.length + 1,
           stableSkinAge: finalScores.differentPerson ? finalScores.skinAge : getStableSkinAge(),
+          nickname: (() => { try { return getProfile()?.nickname || null; } catch { return null; } })(),
         }),
       })
         .then(r => r.ok ? r.json() : null)
@@ -1876,7 +1877,7 @@ export default function App() {
                   </div>
                 )}
                 <p style={{ fontSize: 9, color: '#6B7F99', textAlign: 'center', marginTop: 10, marginBottom: 4, lineHeight: 1.4 }}>AI 추정치이며 의료 진단이 아닙니다</p>
-                <div style={{ fontSize: 8, color: '#6B7F99', textAlign: 'center', lineHeight: 1.4 }}>이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</div>
+                {/* 쿠팡 파트너스 안내는 맞춤 제품 추천(화장대) 아래로 이동 */}
               </div>
             )}
           </div>
