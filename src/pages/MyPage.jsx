@@ -17,7 +17,8 @@ import { getLatestRecord } from '../storage/SkinStorage';
 import { getGoal, saveGoal, clearGoal, getDaysRemaining, getGoalProgress, getOverallProgress, METRIC_META } from '../storage/GoalStorage';
 import { getAllPhotosRaw, restorePhotos } from '../storage/PhotoDB';
 import { MoonIcon, SunIcon, CameraIcon, SaveIcon, PastelIcon } from '../components/icons/PastelIcons';
-import { TERMS_OF_SERVICE, PRIVACY_POLICY, INQUIRY_FAQ, CONTACT_EMAIL } from '../legal/legalContent';
+import { TERMS_OF_SERVICE, PRIVACY_POLICY, BIOMETRIC_CONSENT, OVERSEAS_TRANSFER_CONSENT, INQUIRY_FAQ, CONTACT_EMAIL } from '../legal/legalContent';
+import SiteFooter from '../components/SiteFooter';
 
 export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasure }) {
   const [profile, setProfile] = useState(getProfile);
@@ -366,6 +367,8 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
         <SectionHeader label="정보" />
         <SettingsRow icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>} label="이용약관" onTap={() => setLegalPage('terms')} />
         <SettingsRow icon={icons.lock} label="개인정보 처리방침" onTap={() => setLegalPage('privacy')} />
+        <SettingsRow icon={icons.lock} label="생체정보 동의서" onTap={() => setLegalPage('biometric')} />
+        <SettingsRow icon={icons.lock} label="국외 이전 동의" onTap={() => setLegalPage('overseas')} />
         <SettingsRow icon={icons.message} label="문의하기" onTap={() => { setOpenFaqIndex(-1); setFaqOpen(true); }} />
 
         <input
@@ -388,11 +391,14 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           }}
         />
 
-        {/* Footer */}
-        <div style={{ padding: '12px 28px 40px', borderTop: '1px solid rgba(255,255,255,0.2)', marginTop: 16 }}>
+        {/* Version + Logout */}
+        <div style={{ padding: '12px 28px 8px', marginTop: 12 }}>
           <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12 }}>버전 1.0.2</div>
           <div onClick={() => showToast('로그아웃 기능 준비 중')} style={{ fontSize: 13, color: 'var(--text-muted)', cursor: 'pointer' }}>로그아웃</div>
         </div>
+
+        {/* 전자상거래법·정보통신망법 표시 의무 푸터 */}
+        <SiteFooter onShowLegal={(k) => setLegalPage(k)} />
       </div>
 
       {/* ===== Legal Document Sub-Page ===== */}
@@ -408,12 +414,22 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
             </div>
             <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
-              {legalPage === 'terms' ? '이용약관' : '개인정보 처리방침'}
+              {legalPage === 'terms' ? '이용약관'
+                : legalPage === 'privacy' ? '개인정보 처리방침'
+                : legalPage === 'biometric' ? '생체정보 동의서'
+                : legalPage === 'overseas' ? '국외 이전 동의'
+                : '약관'}
             </span>
           </div>
           <div style={{ flex: 1, overflowY: 'auto', padding: '25px 20px 40px', WebkitOverflowScrolling: 'touch' }}>
             {(() => {
-              const lines = (legalPage === 'terms' ? TERMS_OF_SERVICE : PRIVACY_POLICY).split('\n');
+              const legalTextMap = {
+                terms: TERMS_OF_SERVICE,
+                privacy: PRIVACY_POLICY,
+                biometric: BIOMETRIC_CONSENT,
+                overseas: OVERSEAS_TRANSFER_CONSENT,
+              };
+              const lines = (legalTextMap[legalPage] || TERMS_OF_SERVICE).split('\n');
               const elements = [];
               let i = 0;
               while (i < lines.length) {

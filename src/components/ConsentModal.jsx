@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { TERMS_OF_SERVICE, PRIVACY_POLICY, BIOMETRIC_CONSENT, SERVICE_NAME } from '../legal/legalContent';
+import { TERMS_OF_SERVICE, PRIVACY_POLICY, BIOMETRIC_CONSENT, OVERSEAS_TRANSFER_CONSENT, SERVICE_NAME } from '../legal/legalContent';
+import { recordConsent } from '../storage/ConsentLog';
 
 // 단순 마크다운 → React 노드 변환기. 외부 라이브러리 도입 회피.
 function renderMarkdown(text) {
@@ -24,7 +25,6 @@ function renderMarkdown(text) {
       return <div key={key} style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '3px 0', paddingLeft: 14, lineHeight: 1.6 }}>{line}</div>;
     }
     if (line === '') return <div key={key} style={{ height: 6 }} />;
-    // **bold** inline 처리
     const parts = line.split(/(\*\*[^*]+\*\*)/g);
     return (
       <p key={key} style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.75, margin: 0 }}>
@@ -43,16 +43,33 @@ export default function ConsentModal({ onAccept }) {
   const [agreedTerms, setAgreedTerms] = useState(false);
   const [agreedPrivacy, setAgreedPrivacy] = useState(false);
   const [agreedBiometric, setAgreedBiometric] = useState(false);
+  const [agreedOverseas, setAgreedOverseas] = useState(false);
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
 
-  const allAgreed = agreedTerms && agreedPrivacy && agreedBiometric;
+  const allAgreed = agreedTerms && agreedPrivacy && agreedBiometric && agreedOverseas && ageConfirmed;
+  const checkedCount = [agreedTerms, agreedPrivacy, agreedBiometric, agreedOverseas, ageConfirmed].filter(Boolean).length;
 
   const content = {
     terms: { title: '이용약관', text: TERMS_OF_SERVICE, agreed: agreedTerms, setAgreed: setAgreedTerms },
     privacy: { title: '개인정보 처리방침', text: PRIVACY_POLICY, agreed: agreedPrivacy, setAgreed: setAgreedPrivacy },
-    biometric: { title: '사진 분석 안내', text: BIOMETRIC_CONSENT, agreed: agreedBiometric, setAgreed: setAgreedBiometric },
+    biometric: { title: '생체정보 동의서', text: BIOMETRIC_CONSENT, agreed: agreedBiometric, setAgreed: setAgreedBiometric },
+    overseas: { title: '국외 이전 동의', text: OVERSEAS_TRANSFER_CONSENT, agreed: agreedOverseas, setAgreed: setAgreedOverseas },
   };
 
   const current = content[activeTab];
+
+  const handleAccept = () => {
+    if (!allAgreed) return;
+    // 동의 이력 영속화 — PIPA 입증 책임 회사 측
+    recordConsent({
+      terms: agreedTerms,
+      privacy: agreedPrivacy,
+      biometric: agreedBiometric,
+      overseas: agreedOverseas,
+      ageConfirmed,
+    });
+    onAccept?.();
+  };
 
   return (
     <div style={{
@@ -68,14 +85,18 @@ export default function ConsentModal({ onAccept }) {
         </h1>
       </header>
 
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--border, rgba(0,0,0,0.08))' }}>
+      {/* Tab Bar — 가로 스크롤 (4개) */}
+      <div style={{
+        display: 'flex', borderBottom: '1px solid var(--border, rgba(0,0,0,0.08))',
+        overflowX: 'auto', WebkitOverflowScrolling: 'touch',
+      }}>
         {Object.entries(content).map(([key, c]) => (
           <button
             key={key}
             onClick={() => setActiveTab(key)}
             style={{
-              flex: 1, padding: '12px 4px', background: 'none', border: 'none',
-              fontSize: 12, fontWeight: 600, fontFamily: 'inherit',
+              flex: '1 0 auto', padding: '12px 14px', background: 'none', border: 'none',
+              fontSize: 12, fontWeight: 600, fontFamily: 'inherit', whiteSpace: 'nowrap',
               color: activeTab === key ? 'var(--text-primary)' : 'var(--text-muted)',
               borderBottom: activeTab === key ? '2px solid #5BA8D6' : '2px solid transparent',
               cursor: 'pointer',
@@ -95,7 +116,8 @@ export default function ConsentModal({ onAccept }) {
         padding: '14px 20px 20px',
         background: '#ffffff',
       }}>
-        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, marginBottom: 12, cursor: 'pointer' }}>
+        {/* 현재 탭 동의 체크박스 */}
+        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, marginBottom: 8, cursor: 'pointer' }}>
           <input
             type="checkbox"
             checked={current.agreed}
@@ -106,9 +128,23 @@ export default function ConsentModal({ onAccept }) {
             <strong>(필수) {current.title}</strong>의 내용을 모두 확인하였으며 이에 동의합니다.
           </span>
         </label>
+
+        {/* 만 14세 이상 확인 — PIPA 제22조의2 */}
+        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, marginBottom: 12, cursor: 'pointer' }}>
+          <input
+            type="checkbox"
+            checked={ageConfirmed}
+            onChange={e => setAgeConfirmed(e.target.checked)}
+            style={{ marginTop: 2, accentColor: '#5BA8D6' }}
+          />
+          <span style={{ color: 'var(--text-primary)', lineHeight: 1.5 }}>
+            <strong>(필수)</strong> 본인은 <strong>만 14세 이상</strong>입니다. (만 14세 미만은 법정대리인의 동의가 필요합니다.)
+          </span>
+        </label>
+
         <button
           disabled={!allAgreed}
-          onClick={onAccept}
+          onClick={handleAccept}
           style={{
             width: '100%', padding: '14px', borderRadius: 12,
             background: allAgreed ? '#5BA8D6' : 'var(--border, rgba(0,0,0,0.1))',
@@ -118,7 +154,7 @@ export default function ConsentModal({ onAccept }) {
             transition: 'background 0.2s',
           }}
         >
-          {allAgreed ? '모두 동의하고 시작하기' : `세 가지 동의 항목을 모두 체크해주세요 (${[agreedTerms, agreedPrivacy, agreedBiometric].filter(Boolean).length}/3)`}
+          {allAgreed ? '모두 동의하고 시작하기' : `필수 동의 5개 중 ${checkedCount}개 체크`}
         </button>
       </div>
     </div>
