@@ -298,6 +298,15 @@ export default function CareRecommendation() {
         steps={nightSteps}
         totalProducts={nightStats.total}
       />
+
+      {/* 쿠팡 파트너스 안내 (전자상거래법 표시 의무) — 맞춤 제품 추천 아래에 작게 */}
+      <div style={{
+        fontSize: 9, color: 'var(--text-dim, #B0B8C1)',
+        textAlign: 'center', lineHeight: 1.5,
+        padding: '8px 12px 0', marginTop: 4,
+      }}>
+        이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
+      </div>
     </div>
   );
 }

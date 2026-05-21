@@ -554,6 +554,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
         darkCircleScore: r.darkCircleScore,
       })),
       profile: {
+        nickname: profile.nickname,
         birthYear: profile.birthYear,
         gender: profile.gender,
         skinType: profile.skinType,

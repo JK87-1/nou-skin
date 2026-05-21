@@ -267,7 +267,7 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
     return {
       currentResult: latest || null, history: recentHistory, changes,
       stableSkinAge: getStableSkinAge(),
-      profile: { birthYear: profile.birthYear, gender: profile.gender, skinType: profile.skinType },
+      profile: { nickname: profile.nickname, birthYear: profile.birthYear, gender: profile.gender, skinType: profile.skinType },
       products: getProductsWithUsageContext(),
       routineSnapshot: getRoutineSnapshot(),
       recentTrend: getRecentTrend(7),

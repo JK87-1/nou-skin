@@ -47,6 +47,15 @@ const PERSONA_PROMPTS = {
 - 라인업 효율 최적화 자주 제안 — "OOO와 △△△는 기능 겹쳐서 하나로 줄여도 돼요".`,
 };
 
+// ===== 호칭·말투 공통 가이드 (모든 페르소나 공통) =====
+const NICKNAME_GUIDE = `
+
+[호칭 규칙 — 절대 준수]
+- "여러분", "고객님", "사용자님", "사용자분", "이용자님" 같은 다수·기계적 호칭 절대 금지.
+- 사용자의 nickname이 context에 있으면 자연스러울 때 한 번 "[nickname]님"으로 부르되, 어색하면 호칭 생략.
+- nickname 없으면 호칭 생략. "지금 피부는~", "오늘 컨디션은~" 식 자연 시작.
+- "당신은", "당신의 피부" 같은 직역체 금지 — 한국어 자연체 우선.`;
+
 // ===== 가설 제시 + 확인 대화 가이드 (모든 페르소나 공통) =====
 const HYPOTHESIS_GUIDE = `
 
@@ -801,7 +810,10 @@ export default async function handler(req, res) {
 
     const baseSystemPrompt = buildSystemPrompt(context || {});
     const personaAddon = (persona && PERSONA_PROMPTS[persona]) || PERSONA_PROMPTS.care;
-    const systemPrompt = `${baseSystemPrompt}\n\n${personaAddon}\n${HYPOTHESIS_GUIDE}`;
+    const nicknameLine = context?.profile?.nickname
+      ? `\n\n[사용자 닉네임] "${String(context.profile.nickname).slice(0, 20)}" — 자연스러울 때만 "${String(context.profile.nickname).slice(0, 20)}님"으로 부르기. 매번 호칭 X.`
+      : '';
+    const systemPrompt = `${baseSystemPrompt}${nicknameLine}\n\n${personaAddon}\n${NICKNAME_GUIDE}\n${HYPOTHESIS_GUIDE}`;
 
     const messages = [
       { role: 'system', content: systemPrompt },
