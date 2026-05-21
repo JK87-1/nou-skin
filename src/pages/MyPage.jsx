@@ -395,8 +395,8 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           <div onClick={() => showToast('로그아웃 기능 준비 중')} style={{ fontSize: 13, color: 'var(--text-muted)', cursor: 'pointer' }}>로그아웃</div>
         </div>
 
-        {/* 전자상거래법·정보통신망법 표시 의무 푸터 */}
-        <SiteFooter onShowLegal={(k) => setLegalPage(k)} />
+        {/* 전자상거래법·정보통신망법 표시 의무 푸터 (사업자 정보·의료기기 고지·©) */}
+        <SiteFooter />
       </div>
 
       {/* ===== Legal Document Sub-Page ===== */}
