@@ -42,17 +42,12 @@ import BeforeAfterSlider from './components/BeforeAfterSlider';
 import { DropletIcon, SparkleIcon, LotionIcon, DiamondIcon, PaletteIcon, MicroscopeIcon, RulerIcon, EyeIcon, BubbleIcon, TargetIcon, SunIcon, MoonIcon, CameraIcon, TestTubeIcon, StarIcon, ShieldIcon, WandIcon, PhotoIcon, CheckIcon, SaveIcon, PastelIcon, LuaMiniIcon, FlameIcon, EggIcon, BlushIcon } from './components/icons/PastelIcons';
 import SoftCloverIcon from './components/icons/SoftCloverIcon';
 import EternalPearl from './components/icons/EternalPearl';
-import ConsentModal from './components/ConsentModal';
-import { needsReConsent } from './storage/ConsentLog';
+// ConsentModal는 MyPage > 설정 > 정보에서 자율적으로 접근.
+// 변호사 검토는 "첫 이용 시 동의 UI 필수"라 명시했으나, 김준 결정(UX 이탈 우려)에 따라 첫 진입 자동 표시는 보류.
+// 동의 이력 인프라(ConsentLog)와 약관 텍스트는 유지.
 
 
 export default function App() {
-  // 변호사 검토(2026-05-21) 결과: 첫 이용 시 4단 동의 UI 필수 (PIPA 제28조의8 + 제22조의2).
-  // needsReConsent: 동의 이력 없거나 약관 버전 갱신 시 true.
-  const [showConsent, setShowConsent] = useState(() => {
-    try { return needsReConsent(); } catch { return false; }
-  });
-
   const [stage, setStage] = useState('landing');
   const [image, setImage] = useState(null);
   const [b64, setB64] = useState(null);
@@ -760,8 +755,7 @@ export default function App() {
     <div className="app-container">
       <GlobalStyles />
       <style>{`@keyframes landingPearlReveal { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }`}</style>
-      {/* 변호사 검토 결과: 첫 이용 시 4단 동의 필수 (PIPA 제28조의8) */}
-      {showConsent && <ConsentModal onAccept={() => setShowConsent(false)} />}
+      {/* 약관 모달은 MyPage > 설정 > 정보에서 자율적으로 (김준 결정) */}
       {showSplash && <SplashScreen exiting={splashExiting} onAnimationEnd={() => setShowSplash(false)} />}
       <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} style={{ display: 'none' }} />
       <input ref={nativeCameraRef} type="file" accept="image/*" capture="user" onChange={handleFile} style={{ display: 'none' }} />
