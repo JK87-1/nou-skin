@@ -270,6 +270,7 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
       products: getProductsWithUsageContext(),
       routineSnapshot: getRoutineSnapshot(),
       recentTrend: getRecentTrend(7),
+      longTrend: getRecentTrend(30),
       userMemory: getMemoryContext(),
     };
   }, []);
