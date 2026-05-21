@@ -748,9 +748,8 @@ export default function RoutineTracker({ themeColors, onBack }) {
           </div>
 
           <div style={{
-            background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-            border: '1px solid rgba(255,255,255,0.3)', borderRadius: 20,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+            background: '#FFFFFF', borderRadius: 20,
+            boxShadow: '0 1px 4px rgba(0,0,0,0.03)',
             padding: '6px 0', marginBottom: 16,
           }}>
             {products.length === 0 ? (
@@ -790,9 +789,8 @@ export default function RoutineTracker({ themeColors, onBack }) {
           {/* Add Product Button */}
           <div onClick={() => setShowAddSheet(true)} style={{
             padding: '12px 24px', marginBottom: 16, cursor: 'pointer',
-            background: 'rgba(90,176,232,0.45)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-            border: '1px solid rgba(90,176,232,0.4)', borderRadius: 14,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+            background: '#5AB0E8', borderRadius: 14,
+            boxShadow: '0 1px 4px rgba(0,0,0,0.03)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
           }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round">

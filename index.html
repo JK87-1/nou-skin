@@ -48,7 +48,7 @@
     #gradient-bg {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       z-index: 0; pointer-events: none;
-      background: linear-gradient(to bottom, #ace2fc, #ffffff);
+      background: linear-gradient(to bottom, #ace2fc 0%, #ffffff 80%, #ffffff 100%);
     }
     #root { min-height: 100dvh; position: relative; z-index: 1; }
   </style>
@@ -80,7 +80,7 @@
       if (mode === 'light') {
         document.documentElement.setAttribute('data-theme', 'light');
         document.documentElement.style.backgroundColor = '#ace2fc';
-        if (gradBg) gradBg.style.background = 'linear-gradient(to bottom, #ace2fc, #ffffff)';
+        if (gradBg) gradBg.style.background = 'linear-gradient(to bottom, #ace2fc 0%, #ffffff 80%, #ffffff 100%)';
         document.querySelector('meta[name="theme-color"]').content = '#ace2fc';
       } else {
         document.documentElement.setAttribute('data-theme', 'dark');

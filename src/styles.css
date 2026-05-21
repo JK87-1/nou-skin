@@ -117,10 +117,10 @@
   --shadow-elevated: 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4);
   --shadow-float: 0 4px 16px rgba(0,0,0,0.08);
   /* Tab bar */
-  --tab-bg: rgba(255,255,255,0.25);
-  --tab-border: rgba(255,255,255,0.6);
+  --tab-bg: rgba(255,255,255,0.35);
+  --tab-border: rgba(255,255,255,0.3);
   --tab-inactive: rgba(0,0,0,0.3);
-  --tab-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 -2px 12px rgba(255,255,255,0.15);
+  --tab-shadow: 0 -4px 16px rgba(0,0,0,0.03), inset 0 1px 0 rgba(255,255,255,0.4);
   /* Misc */
   --bar-track: rgba(255,255,255,0.35);
   --glass-inset: none;
@@ -151,7 +151,7 @@
   --sheet-bg: #FFFFFF;
   --sheet-handle: #ddd;
   /* Progress */
-  --progress-track: rgba(255,255,255,0.35);
+  --progress-track: #F0F0F0;
   --progress-fill: linear-gradient(90deg, #5ab0e8, #89cef5);
   /* Semantic accent */
   --accent-success: #5ab0e8;
@@ -159,22 +159,22 @@
   --accent-streak: #F97316;
   --accent-streak-bg: rgba(249,115,22,0.08);
   /* Category / Tag */
-  --tag-bg: rgba(255,255,255,0.3);
+  --tag-bg: #F5F5F5;
   --tag-color: #6B7684;
   /* Routine ingredient highlight */
   --ingredient-accent: #aed8f7;
   /* Interactive states */
-  --item-bg: rgba(255,255,255,0.25);
-  --item-border: 1px solid rgba(255,255,255,0.3);
-  --item-hover-bg: rgba(255,255,255,0.4);
+  --item-bg: #F5F5F5;
+  --item-border: 1px solid #EBEBEB;
+  --item-hover-bg: #EFEFEF;
   /* Calendar / Weekly dots */
   --day-today-bg: #FFFFFF;
   --day-completed-bg: transparent;
   --day-default-bg: transparent;
   --day-today-accent: #89cef5;
   /* Hint / Context box */
-  --context-bg: rgba(137,206,245,0.04);
-  --context-border: 1px solid rgba(137,206,245,0.06);
+  --context-bg: #F2F8FC;
+  --context-border: 1px solid #E6F0F8;
 }
 
 /* Scroll reveal animations */
@@ -991,7 +991,7 @@
   display: none;
 }
 
-/* Center ambient glow — disabled for sky theme */
+/* Center ambient glow — disabled */
 .tab-bar::after {
   display: none;
 }
@@ -1567,19 +1567,19 @@
 
 /* Cards: glassmorphism */
 [data-theme="light"] .card {
-  background: rgba(255,255,255,0.35);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255,255,255,0.3);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4);
-  border-radius: 30px;
+  background: #FFFFFF;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: none;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+  border-radius: 20px;
 }
 [data-theme="light"] .glass-card {
-  background: rgba(255,255,255,0.35);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255,255,255,0.3);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4);
+  background: #FFFFFF;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: none;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
   border-radius: 20px;
   padding: 24px;
   margin: 0 0 12px;
@@ -1587,7 +1587,7 @@
 
 /* Card-flat: nested glass card */
 [data-theme="light"] .card-flat {
-  background: rgba(255,255,255,0.25);
+  background: #F5F5F5;
   border-radius: 16px;
   padding: 16px 18px;
 }
