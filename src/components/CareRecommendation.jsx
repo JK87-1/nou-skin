@@ -198,68 +198,76 @@ export default function CareRecommendation() {
         </div>
       </div>
 
-      {/* 과다 등록 가이드 */}
-      {hasManyProducts && (
-        <div style={{
-          padding: '12px 14px', marginBottom: 12,
-          background: 'rgba(255,200,120,0.18)',
-          border: '1px solid rgba(255,180,80,0.25)',
-          borderRadius: 14,
-          display: 'flex', gap: 10, alignItems: 'flex-start',
-        }}>
-          <span style={{ fontSize: 16, flexShrink: 0, lineHeight: 1.1 }}>💡</span>
-          <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.55 }}>
-            제품이 많아요. 각 단계에서 <strong style={{ color: 'var(--text-primary)' }}>2개까지만 매일</strong> 쓰고, 나머지는 <strong style={{ color: 'var(--text-primary)' }}>주 2~3회 가끔</strong> 발라주세요. 한꺼번에 다 바르면 영양 과다·각질 누적으로 피부톤이 칙칙해질 수 있어요.
-          </div>
-        </div>
-      )}
+      {/* 가이드 카드 — 가장 임팩트 큰 1개만 노출 (피로도 ↓)
+          우선순위: 충돌 high > medium > 과다 > low > 시너지 1개
+          상담사는 모든 정보 활용 — UI만 압축 */}
+      {(() => {
+        const sortedConflicts = [...(interactions.conflicts || [])].sort((a, b) => {
+          const order = { high: 0, medium: 1, low: 2 };
+          return (order[a.severity] ?? 9) - (order[b.severity] ?? 9);
+        });
+        const topConflict = sortedConflicts[0];
+        const hasUrgentConflict = topConflict && (topConflict.severity === 'high' || topConflict.severity === 'medium');
+        const topSynergy = (interactions.synergies || [])[0];
 
-      {/* 성분 충돌 경고 */}
-      {interactions.conflicts.length > 0 && interactions.conflicts.map(c => {
-        const sevColor = c.severity === 'high' ? 'rgba(232,140,140,0.25)'
-          : c.severity === 'medium' ? 'rgba(240,180,120,0.22)'
-          : 'rgba(240,210,140,0.18)';
-        const sevBorder = c.severity === 'high' ? 'rgba(220,100,100,0.35)'
-          : c.severity === 'medium' ? 'rgba(220,150,80,0.3)'
-          : 'rgba(220,180,80,0.25)';
+        // 우선순위 분기
+        let pick = null;
+        if (hasUrgentConflict) {
+          pick = {
+            type: 'conflict', severity: topConflict.severity,
+            icon: '⚠️',
+            title: topConflict.title,
+            advice: topConflict.advice,
+            bg: topConflict.severity === 'high' ? 'rgba(232,140,140,0.22)' : 'rgba(240,180,120,0.2)',
+            border: topConflict.severity === 'high' ? 'rgba(220,100,100,0.32)' : 'rgba(220,150,80,0.28)',
+          };
+        } else if (hasManyProducts) {
+          pick = {
+            type: 'overuse',
+            icon: '💡',
+            title: '제품이 많아요',
+            advice: '각 단계 2개까지만 매일, 나머지는 주 2~3회 가끔 발라주세요.',
+            bg: 'rgba(255,200,120,0.18)',
+            border: 'rgba(255,180,80,0.25)',
+          };
+        } else if (topConflict) {
+          pick = {
+            type: 'conflict-low', severity: 'low',
+            icon: '⚠️',
+            title: topConflict.title,
+            advice: topConflict.advice,
+            bg: 'rgba(240,210,140,0.18)',
+            border: 'rgba(220,180,80,0.25)',
+          };
+        } else if (topSynergy) {
+          pick = {
+            type: 'synergy',
+            icon: '✨',
+            title: topSynergy.title,
+            advice: topSynergy.advice,
+            bg: 'rgba(173,235,179,0.18)',
+            border: 'rgba(140,210,150,0.28)',
+          };
+        }
+
+        if (!pick) return null;
+
         return (
-          <div key={c.id} style={{
-            padding: '12px 14px', marginBottom: 10,
-            background: sevColor,
-            border: `1px solid ${sevBorder}`,
+          <div style={{
+            padding: '12px 14px', marginBottom: 14,
+            background: pick.bg,
+            border: `1px solid ${pick.border}`,
             borderRadius: 14,
             display: 'flex', gap: 10, alignItems: 'flex-start',
           }}>
-            <span style={{ fontSize: 15, flexShrink: 0, lineHeight: 1.1 }}>⚠️</span>
+            <span style={{ fontSize: 15, flexShrink: 0, lineHeight: 1.1 }}>{pick.icon}</span>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 3 }}>{c.title}</div>
-              <div style={{ fontSize: 11.5, color: 'var(--text-secondary)', lineHeight: 1.55 }}>{c.advice}</div>
-              {c.products.length > 0 && (
-                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
-                  대상: {c.products.join(' · ')}
-                </div>
-              )}
+              <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 3 }}>{pick.title}</div>
+              <div style={{ fontSize: 11.5, color: 'var(--text-secondary)', lineHeight: 1.55 }}>{pick.advice}</div>
             </div>
           </div>
         );
-      })}
-
-      {/* 성분 시너지 인사이트 */}
-      {interactions.synergies.length > 0 && interactions.synergies.slice(0, 2).map(s => (
-        <div key={s.id} style={{
-          padding: '12px 14px', marginBottom: 10,
-          background: 'rgba(173,235,179,0.18)',
-          border: '1px solid rgba(140,210,150,0.28)',
-          borderRadius: 14,
-          display: 'flex', gap: 10, alignItems: 'flex-start',
-        }}>
-          <span style={{ fontSize: 15, flexShrink: 0, lineHeight: 1.1 }}>✨</span>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 3 }}>{s.title}</div>
-            <div style={{ fontSize: 11.5, color: 'var(--text-secondary)', lineHeight: 1.55 }}>{s.advice}</div>
-          </div>
-        </div>
-      ))}
+      })()}
 
       <RoutineColumn
         icon="☀️"
