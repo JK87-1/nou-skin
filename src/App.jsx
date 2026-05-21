@@ -42,11 +42,16 @@ import BeforeAfterSlider from './components/BeforeAfterSlider';
 import { DropletIcon, SparkleIcon, LotionIcon, DiamondIcon, PaletteIcon, MicroscopeIcon, RulerIcon, EyeIcon, BubbleIcon, TargetIcon, SunIcon, MoonIcon, CameraIcon, TestTubeIcon, StarIcon, ShieldIcon, WandIcon, PhotoIcon, CheckIcon, SaveIcon, PastelIcon, LuaMiniIcon, FlameIcon, EggIcon, BlushIcon } from './components/icons/PastelIcons';
 import SoftCloverIcon from './components/icons/SoftCloverIcon';
 import EternalPearl from './components/icons/EternalPearl';
-// ConsentModal removed — legal docs moved to MyPage > 설정 > 정보
+import ConsentModal from './components/ConsentModal';
+import { needsReConsent } from './storage/ConsentLog';
 
 
 export default function App() {
-  // Legal consent modal removed — docs available in MyPage > 설정 > 정보
+  // 변호사 검토(2026-05-21) 결과: 첫 이용 시 4단 동의 UI 필수 (PIPA 제28조의8 + 제22조의2).
+  // needsReConsent: 동의 이력 없거나 약관 버전 갱신 시 true.
+  const [showConsent, setShowConsent] = useState(() => {
+    try { return needsReConsent(); } catch { return false; }
+  });
 
   const [stage, setStage] = useState('landing');
   const [image, setImage] = useState(null);
@@ -755,7 +760,8 @@ export default function App() {
     <div className="app-container">
       <GlobalStyles />
       <style>{`@keyframes landingPearlReveal { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }`}</style>
-      {/* Legal consent modal removed — docs in MyPage > 설정 > 정보 */}
+      {/* 변호사 검토 결과: 첫 이용 시 4단 동의 필수 (PIPA 제28조의8) */}
+      {showConsent && <ConsentModal onAccept={() => setShowConsent(false)} />}
       {showSplash && <SplashScreen exiting={splashExiting} onAnimationEnd={() => setShowSplash(false)} />}
       <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} style={{ display: 'none' }} />
       <input ref={nativeCameraRef} type="file" accept="image/*" capture="user" onChange={handleFile} style={{ display: 'none' }} />
