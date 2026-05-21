@@ -378,8 +378,18 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           }}
         />
 
-        {/* 통합 푸터 */}
-        <SiteFooter onLogout={() => showToast('로그아웃 기능 준비 중')} />
+        <div onClick={() => showToast('로그아웃 기능 준비 중')} style={{
+          display: 'flex', alignItems: 'center', gap: 16,
+          padding: '11px 28px', marginTop: 14, cursor: 'pointer',
+          WebkitTapHighlightColor: 'transparent',
+          color: 'var(--text-primary)',
+        }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <span style={{ fontSize: 15, fontWeight: 500 }}>로그아웃</span>
+        </div>
+
+        {/* 정보 블록 */}
+        <SiteFooter />
       </div>
 
       {/* ===== Legal Document Sub-Page ===== */}

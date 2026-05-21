@@ -345,6 +345,9 @@ export default function App() {
       setStage('landing');
       refreshLandingData();
     }
+    // 상태바 색상 동기화
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.content = tab === 'home' ? '#58aefe' : '#C5E3FF';
   }, []);
 
   const reset = useCallback(() => {
