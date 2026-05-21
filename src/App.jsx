@@ -28,7 +28,7 @@ import { syncSkinDataToServer } from './utils/pushNotification';
 import { getProfile, saveProfile, getDeviceId } from './storage/ProfileStorage';
 import GoalProgressCard from './components/GoalProgressCard';
 import SkinWeather from './components/SkinWeather';
-import WeatherChip from './components/WeatherChip';
+import WeatherChip, { WeatherIcon } from './components/WeatherChip';
 import { getWeatherData } from './storage/WeatherStorage';
 import { getGoal, updateGoalProgress } from './storage/GoalStorage';
 import { addXP, checkAndAwardBadges, incrementStat, getTotalXP, getLevel } from './storage/BadgeStorage';
@@ -455,7 +455,7 @@ export default function App() {
 
     if (finalScores.analysisMode === 'cv_only') {
       const stats = getAiFallbackStats();
-      console.error('🚨 AI 분석 실패 → CV-only fallback', {
+      console.error(' AI 분석 실패 → CV-only fallback', {
         누적_fallback: stats.fallbackTotal,
         누적_성공: stats.successTotal,
         마지막_사유: stats.lastReason,
@@ -693,11 +693,11 @@ export default function App() {
   }, [result]);
 
   const getAgeComment = (age) => {
-    if (age <= 20) return '놀라운 피부! 최고의 컨디션이에요 ✨';
-    if (age <= 24) return '건강하고 탄력 넘치는 피부 💛';
-    if (age <= 28) return '관리 잘 되고 있는 좋은 피부 😊';
-    if (age <= 33) return '조금만 더 신경 쓰면 완벽 💪';
-    return '지금부터 관리하면 충분히 좋아져요 🌱';
+    if (age <= 20) return '놀라운 피부! 최고의 컨디션이에요 ';
+    if (age <= 24) return '건강하고 탄력 넘치는 피부 ';
+    if (age <= 28) return '관리 잘 되고 있는 좋은 피부 ';
+    if (age <= 33) return '조금만 더 신경 쓰면 완벽 ';
+    return '지금부터 관리하면 충분히 좋아져요 ';
   };
 
   const getGrade = (score) => {
@@ -775,7 +775,7 @@ export default function App() {
             textAlign: 'center',
           }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}><ShieldIcon size={40} /></div>
-            <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>
+            <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 8 }}>
               데이터 복구 가능
             </div>
             <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: 20 }}>
@@ -821,14 +821,14 @@ export default function App() {
         <div style={{
           position: 'fixed', top: 12, left: 16, right: 16, zIndex: 1050,
           background: 'rgba(200, 200, 200, 0.1)',
-          backdropFilter: 'blur(10px)',
+          backdropFilter: 'none',
           padding: '16px 18px',
           display: 'flex', alignItems: 'center', gap: 12,
           borderRadius: 16,
           border: '0.5px solid rgba(255,255,255,0.6)',
           boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
         }}>
-          <span style={{ fontSize: 20, flexShrink: 0 }}>🔒</span>
+          <span style={{ fontSize: 20, flexShrink: 0 }}></span>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: '#333' }}>데이터 백업을 권장해요</div>
             <div style={{ fontSize: 11, color: '#8B95A1', marginTop: 2 }}>만약을 위해 백업 파일을 다운로드하세요</div>
@@ -917,9 +917,7 @@ export default function App() {
             }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
                 <span style={{ fontSize: 20, lineHeight: 1, flexShrink: 0, marginTop: 1 }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ADEBB3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-                  </svg>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="#ADEBB3"><path d="M12 2a1 1 0 011 1v10.586l2.293-2.293a1 1 0 011.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L11 13.586V3a1 1 0 011-1zM5 20a1 1 0 110 2H3a1 1 0 01-1-1v-4a1 1 0 112 0v3h1zm16 2a1 1 0 110-2h1v-3a1 1 0 112 0v4a1 1 0 01-1 1h-2z"/></svg>
                 </span>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>Safari 기록을 가져올 수 있어요</div>
@@ -955,15 +953,12 @@ export default function App() {
           {/* Header with Logo + Weather + Scan Chip */}
           <div style={{ padding: '28px 22px 20px', position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <WeatherChip onTap={() => setWeatherSheet(true)} />
-            <img src="/luasky.svg" alt="lua" style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', height: 30, objectFit: 'contain' }} />
             <div onClick={() => setShowHomeEdit(true)} style={{
               width: 34, height: 34, borderRadius: '50%', cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               WebkitTapHighlightColor: 'transparent',
             }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.8)" strokeWidth="1.8" strokeLinecap="round">
-                <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-              </svg>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
             </div>
           </div>
 
@@ -982,10 +977,10 @@ export default function App() {
             }}
           >
             <div onClick={openCamera} style={{ cursor: 'pointer' }}>
-              <EternalPearl size={192} animated colors={activeThemeColors} theme={colorMode} />
+              <EternalPearl size={250} animated colors={activeThemeColors} theme={colorMode} />
             </div>
             <div style={{ textAlign: 'center' }}>
-              <div onClick={openCamera} style={{ fontSize: 20, fontWeight: 600, letterSpacing: -0.3, color: '#ffffff', textShadow: '0 0 12px rgba(137,206,245,0.7), 0 0 30px rgba(137,206,245,0.4), 0 0 50px rgba(137,206,245,0.2)', animation: 'textBreathe 3s ease-in-out infinite', cursor: 'pointer' }}>탭 하여 피부를 분석하세요</div>
+              <div onClick={openCamera} style={{ fontSize: 20, fontWeight: 600, letterSpacing: -0.3, color: '#ffffff', textShadow: 'none', animation: 'textBreathe 3s ease-in-out infinite', cursor: 'pointer' }}>탭 하여 피부를 분석하세요</div>
               <div style={{ height: 18, overflow: 'hidden', marginTop: 15 }}>
                 <div style={{ animation: 'subtitleSlide 20s ease-in-out infinite' }}>
                   <div style={{ height: 18, lineHeight: '18px', fontSize: 13, color: 'rgba(0,0,0,0.35)' }}>당신의 피부를 더 깊이 이해해요</div>
@@ -996,8 +991,8 @@ export default function App() {
                 {['정면 셀카', '밝은 자연광', '맨 얼굴'].map(tag => (
                   <div key={tag} style={{
                     padding: '4px 10px', borderRadius: 50,
-                    background: 'rgba(255,255,255,0.25)',
-                    border: '1px solid rgba(255,255,255,0.2)',
+                    background: '#ffffff',
+                    border: 'none',
                     fontSize: 10, fontWeight: 500, color: 'rgba(0,0,0,0.35)',
                   }}>{tag}</div>
                 ))}
@@ -1023,9 +1018,9 @@ export default function App() {
               return (
                 <div key={cardKey} style={{
                   margin: '11px 20px 0', borderRadius: 20, padding: 20,
-                  background: 'transparent', border: '1px solid rgba(255,255,255,0.4)',
-                  backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)',
+                  background: 'transparent', border: 'none',
+                  backdropFilter: 'none', WebkitBackdropFilter: 'none',
+                  boxShadow: 'none',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(240,168,136,0.3))' }}><defs><linearGradient id="sparkCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#FFD4C0"/><stop offset="100%" stopColor="#F0A888"/></linearGradient></defs><path d="M14.504 8.522l-1.758 -4.032a.814 .814 0 0 0 -1.492 0l-1.759 4.032c-.19 .436 -.537 .784 -.973 .973l-4.032 1.759a.814 .814 0 0 0 0 1.492l4.033 1.758c.436 .19 .784 .538 .973 .974l1.759 4.033a.814 .814 0 0 0 1.492 0l1.758 -4.033c.19 -.436 .538 -.784 .974 -.974l4.033 -1.758a.814 .814 0 0 0 0 -1.492l-4.033 -1.759a1.88 1.88 0 0 1 -.974 -.973" fill="url(#sparkCard)" opacity="0.6"/></svg>
@@ -1059,13 +1054,13 @@ export default function App() {
               const humInfo = (v) => { if (v < 30) return { color: '#f59e0b', label: '매우낮음' }; if (v < 40) return { color: '#F0B870', label: '낮음' }; if (v <= 60) return { color: '#34d399', label: '적정' }; if (v <= 70) return { color: '#38bdf8', label: '높음' }; return { color: '#ADEBB3', label: '매우높음' }; };
               const airInfo = (v) => { if (v <= 30) return { color: '#34d399', label: '좋음' }; if (v <= 50) return { color: '#ADEBB3', label: '보통' }; if (v <= 80) return { color: '#F0B870', label: '나쁨' }; return { color: '#ef4444', label: '매우나쁨' }; };
               const uvInfo = (v) => { if (v <= 2) return { color: '#34d399', label: '낮음' }; if (v <= 5) return { color: '#F0B870', label: '보통' }; if (v <= 7) return { color: '#f97316', label: '높음' }; return { color: '#ef4444', label: '매우높음' }; };
-              const cb = { flex: 1, borderRadius: 16, padding: '14px 12px', background: 'rgba(255,255,255,0.35)' };
+              const cb = { flex: 1, borderRadius: 16, padding: '14px 12px', background: '#ffffff' };
               return (
                 <div key={cardKey} onClick={() => setWeatherSheet(true)} style={{
                   margin: '10px 20px 0', cursor: 'pointer', borderRadius: 20, padding: 20,
-                  background: 'transparent', border: '1px solid rgba(255,255,255,0.4)',
-                  backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)',
+                  background: 'transparent', border: 'none',
+                  backdropFilter: 'none', WebkitBackdropFilter: 'none',
+                  boxShadow: 'none',
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                     <div>
@@ -1082,7 +1077,7 @@ export default function App() {
                         <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
                       )}
                     </div>
-                    {_w && <span style={{ fontSize: 36 }}>{_w.conditionIcon}</span>}
+                    {_w && <WeatherIcon emoji={_w.conditionIcon} size={36} color="#58aefe" />}
                   </div>
                   <div style={{ display: 'flex', gap: 8 }}>
                     {[
@@ -1110,7 +1105,7 @@ export default function App() {
             if (cardKey === 'water') {
               const cupMl = 250, waterGoal = 8, waterMl = waterCups * cupMl;
               const rR = 22, rC = 2 * Math.PI * rR, fill = Math.min(waterCups / waterGoal, 1), dash = rC * fill;
-              const cs = { borderRadius: 20, padding: 20, cursor: 'pointer', background: 'transparent', border: '1px solid rgba(255,255,255,0.4)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 120 };
+              const cs = { borderRadius: 20, padding: 20, cursor: 'pointer', background: 'transparent', border: 'none', backdropFilter: 'none', WebkitBackdropFilter: 'none', boxShadow: 'none', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 120 };
               // Check if sleep is next in order for grid pairing
               const myIdx = homeCardOrder.indexOf('water');
               const sleepIdx = homeCardOrder.indexOf('sleep');
@@ -1210,7 +1205,7 @@ export default function App() {
               const sleepIdx = homeCardOrder.indexOf('sleep');
               if (homeCards.water && waterIdx === sleepIdx - 1) return null; // already rendered with water
               const sR = 22, sC = 2 * Math.PI * sR, sFill = sleepHours ? Math.min(sleepHours / 8, 1) : 0, sDash = sC * sFill;
-              const cs = { borderRadius: 20, padding: 20, cursor: 'pointer', background: 'transparent', border: '1px solid rgba(255,255,255,0.4)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 120 };
+              const cs = { borderRadius: 20, padding: 20, cursor: 'pointer', background: 'transparent', border: 'none', backdropFilter: 'none', WebkitBackdropFilter: 'none', boxShadow: 'none', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 120 };
               return (
                 <div key={cardKey} style={{ margin: '12px 20px 0' }}>
                   <div onClick={() => setShowSleepModal(true)} style={cs}>
@@ -1271,15 +1266,15 @@ export default function App() {
               <div onClick={() => setWeatherSheet(false)} style={{
                 position: 'fixed', inset: 0, zIndex: 200,
                 background: 'rgba(4,44,83,0.18)',
-                backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)',
+                backdropFilter: 'none', WebkitBackdropFilter: 'none',
                 opacity: 1, transition: 'opacity 200ms',
               }} />
               <div ref={weatherSheetRef} style={{
                 position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201,
                 height: '62%',
-                background: 'rgba(255,255,255,0.65)',
-                backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255,255,255,0.3)',
+                background: '#ffffff',
+                backdropFilter: 'none', WebkitBackdropFilter: 'none',
+                border: 'none',
                 borderRadius: '30px 30px 0 0',
                 boxShadow: '0 -8px 28px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.6)',
                 maxWidth: 430, margin: '0 auto',
@@ -1303,7 +1298,7 @@ export default function App() {
                     weatherDragY.current = null; weatherDragDelta.current = 0;
                   }}
                   style={{ display: 'flex', justifyContent: 'center', padding: '20px 0 20px', cursor: 'grab' }}>
-                  <div style={{ width: 47, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.15)' }} />
+                  <div style={{ width: 47, height: 4, borderRadius: 2, background: '#ececec' }} />
                 </div>
                 {/* Content */}
                 <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
@@ -1356,9 +1351,9 @@ export default function App() {
         const allGood = !hasWarning && !hasModerate;
         const isBlocked = false; // 사용자 통제권 존중 — 품질 부족해도 진행 가능
 
-        const checkIcon = <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1976D2" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
-        const modIcon = <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 20h20L12 2z"/></svg>;
-        const warnIcon = <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A32D2D" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>;
+        const checkIcon = <svg width="12" height="12" viewBox="0 0 24 24" fill="#1976D2"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.707 8.707l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 111.414-1.414L11 13.586l4.293-4.293a1 1 0 111.414 1.414z"/></svg>;
+        const modIcon = <svg width="12" height="12" viewBox="0 0 24 24" fill="#999"><path d="M12 1.67L1.21 21.5h21.57L12 1.67zm1 14.83h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>;
+        const warnIcon = <svg width="12" height="12" viewBox="0 0 24 24" fill="#A32D2D"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>;
         const statusIcon = (s) => s === 'good' ? checkIcon : s === 'moderate' ? modIcon : warnIcon;
 
         const QualityRow = ({ label, value, icon, isLast }) => (
@@ -1393,11 +1388,11 @@ export default function App() {
           <button onClick={reset} style={{
             position: 'absolute', top: 'calc(12px + env(safe-area-inset-top, 0px))', left: 12,
             width: 32, height: 32, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.92)', border: 'none',
+            background: '#ffffff', border: 'none',
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
             zIndex: 10,
           }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#042C53" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#042C53" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M5 12l6-6"/><path d="M5 12l6 6"/></svg>
           </button>
 
           {/* Status chip */}
@@ -1408,7 +1403,7 @@ export default function App() {
             borderRadius: 14, display: 'flex', alignItems: 'center', gap: 6, zIndex: 10,
           }}>
             {allGood
-              ? <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#7EC8E3" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              ? <svg width="10" height="10" viewBox="0 0 24 24" fill="#7EC8E3"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.707 8.707l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 111.414-1.414L11 13.586l4.293-4.293a1 1 0 111.414 1.414z"/></svg>
               : <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#A32D2D' }} />
             }
             <span style={{ color: '#fff', fontSize: 10, fontWeight: 500 }}>
@@ -1438,9 +1433,9 @@ export default function App() {
               ].map(({ label, s, v }) => (
                 <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                   <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: 10, fontWeight: 500 }}>{label}</span>
-                  {s === 'good' ? <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#7EC8E3" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                   : s === 'moderate' ? <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 20h20L12 2z"/></svg>
-                   : <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#A32D2D" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>}
+                  {s === 'good' ? <svg width="10" height="10" viewBox="0 0 24 24" fill="#7EC8E3"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.707 8.707l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 111.414-1.414L11 13.586l4.293-4.293a1 1 0 111.414 1.414z"/></svg>
+                   : s === 'moderate' ? <svg width="10" height="10" viewBox="0 0 24 24" fill="#999"><path d="M12 1.67L1.21 21.5h21.57L12 1.67zm1 14.83h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+                   : <svg width="10" height="10" viewBox="0 0 24 24" fill="#A32D2D"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>}
                   <span style={{
                     fontSize: 10, fontWeight: 400,
                     color: s === 'good' ? 'rgba(126,200,227,0.9)' : s === 'moderate' ? 'rgba(255,255,255,0.5)' : 'rgba(163,45,45,0.9)',
@@ -1463,7 +1458,7 @@ export default function App() {
               </button>
               <button onClick={allGood ? () => fileRef.current?.click() : () => setStage('camera')} style={{
                 width: '100%', height: 40, borderRadius: 14,
-                border: '1px solid rgba(255,255,255,0.4)',
+                border: 'none',
                 background: 'transparent',
                 color: 'rgba(255,255,255,0.85)', fontSize: 13, fontWeight: 500,
                 cursor: 'pointer', fontFamily: 'inherit',
@@ -1555,7 +1550,7 @@ export default function App() {
 
             {/* Progress bar */}
             <div style={{ width: '100%', maxWidth: 320 }}>
-              <div style={{ height: 2, borderRadius: 1, background: 'rgba(255,255,255,0.2)', overflow: 'hidden', marginBottom: 8 }}>
+              <div style={{ height: 2, borderRadius: 1, background: '#ffffff', overflow: 'hidden', marginBottom: 8 }}>
                 <div style={{
                   height: '100%', borderRadius: 1,
                   background: '#7EC8E3',
@@ -1604,7 +1599,7 @@ export default function App() {
               background: 'transparent', border: 'none', cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#042C53" strokeWidth="2.5" strokeLinecap="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#042C53" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M5 12l6-6"/><path d="M5 12l6 6"/></svg>
             </button>
             <div style={{ display: 'flex', gap: 6 }}>
               <button onClick={handleSave} disabled={saved} style={{
@@ -1613,9 +1608,9 @@ export default function App() {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 {saved ? (
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="#042C53" stroke="#042C53" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="#042C53"><path d="M14 2a5 5 0 015 5v14a1 1 0 01-1.555.832L12 18.202l-5.445 3.63A1 1 0 015 21V7a5 5 0 015-5h4z"/></svg>
                 ) : (
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#042C53" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#042C53" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 4h6a2 2 0 012 2v14l-5-3-5 3V6a2 2 0 012-2"/></svg>
                 )}
               </button>
               <button onClick={handleShare} style={{
@@ -1623,7 +1618,7 @@ export default function App() {
                 background: 'transparent', border: 'none', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#042C53" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#042C53" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 15a2 2 0 100-4 2 2 0 000 4z"/><path d="M18 6a2 2 0 100-4 2 2 0 000 4z"/><path d="M18 22a2 2 0 100-4 2 2 0 000 4z"/><path d="M7.7 14.3l8.6 4.4"/><path d="M16.3 5.7l-8.6 4.4"/></svg>
               </button>
             </div>
           </div>
@@ -1690,11 +1685,11 @@ export default function App() {
                 <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
                   <span style={{
                     fontSize: 14, fontWeight: 500, padding: '3px 12px', borderRadius: 8,
-                    background: 'rgba(255,255,255,0.18)', color: '#FFFFFF',
+                    background: '#ffffff', color: '#FFFFFF',
                   }}>{result.skinType}</span>
                   <span style={{
                     fontSize: 14, fontWeight: 500, padding: '3px 12px', borderRadius: 8,
-                    background: 'rgba(255,255,255,0.18)', color: '#FFFFFF',
+                    background: '#ffffff', color: '#FFFFFF',
                   }}>{result.skinAge}세</span>
                   {sigChange ? (
                     sigChange.diff !== 0 ? (
@@ -1706,13 +1701,13 @@ export default function App() {
                     ) : (
                       <span style={{
                         fontSize: 14, fontWeight: 500, padding: '3px 12px', borderRadius: 8,
-                        background: 'rgba(255,255,255,0.18)', color: '#FFFFFF',
+                        background: '#ffffff', color: '#FFFFFF',
                       }}>유지</span>
                     )
                   ) : (
                     <span style={{
                       fontSize: 14, fontWeight: 500, padding: '3px 12px', borderRadius: 8,
-                      background: 'rgba(255,255,255,0.18)', color: '#FFFFFF',
+                      background: '#ffffff', color: '#FFFFFF',
                     }}>첫 측정</span>
                   )}
                 </div>
@@ -1744,7 +1739,7 @@ export default function App() {
               <span style={{ fontSize: 13, fontWeight: 500, color: '#042C53' }}>컨디션 브리핑</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"
                 style={{ transition: 'transform 0.3s ease', transform: expandedSections.briefing ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                <polyline points="6 9 12 15 18 9" />
+                <path d="M6 9l6 6 6-6" />
               </svg>
             </button>
             {expandedSections.briefing && (
@@ -1818,7 +1813,7 @@ export default function App() {
               <span style={{ fontSize: 13, fontWeight: 500, color: '#042C53' }}>측정 정보</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"
                 style={{ transition: 'transform 0.3s ease', transform: expandedSections.meta ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                <polyline points="6 9 12 15 18 9" />
+                <path d="M6 9l6 6 6-6" />
               </svg>
             </button>
             {expandedSections.meta && (
@@ -1895,7 +1890,7 @@ export default function App() {
               <span style={{ fontSize: 13, fontWeight: 500, color: '#042C53' }}>지난 측정 대비 변화</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"
                 style={{ transition: 'transform 0.3s ease', transform: expandedSections.change ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                <polyline points="6 9 12 15 18 9" />
+                <path d="M6 9l6 6 6-6" />
               </svg>
             </button>
             {expandedSections.change && (
@@ -1961,7 +1956,7 @@ export default function App() {
               <span style={{ fontSize: 13, fontWeight: 500, color: '#042C53' }}>lua의 정밀 판독</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"
                 style={{ transition: 'transform 0.3s ease', transform: expandedSections.analysis ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                <polyline points="6 9 12 15 18 9" />
+                <path d="M6 9l6 6 6-6" />
               </svg>
             </button>
             {expandedSections.analysis && (
@@ -1982,7 +1977,7 @@ export default function App() {
                     border: '1px solid rgba(244,163,187,0.2)',
                     display: 'flex', alignItems: 'center', gap: 8,
                   }}>
-                    <span style={{ fontSize: 16, flexShrink: 0 }}>💄</span>
+                    <span style={{ fontSize: 16, flexShrink: 0 }}></span>
                     <div>
                       <div style={{ fontSize: 11, fontWeight: 600, color: '#f4a3bb', marginBottom: 1 }}>메이크업이 감지되었어요</div>
                       <div style={{ fontSize: 10, color: '#6B7F99', lineHeight: 1.4 }}>클렌징 후 다시 측정하면 더 정확한 피부 상태를 확인할 수 있어요</div>
@@ -2003,7 +1998,7 @@ export default function App() {
               <span style={{ fontSize: 13, fontWeight: 500, color: '#042C53' }}>전체 지표</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"
                 style={{ transition: 'transform 0.3s ease', transform: expandedSections.indicators ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                <polyline points="6 9 12 15 18 9" />
+                <path d="M6 9l6 6 6-6" />
               </svg>
             </button>
             {expandedSections.indicators && (
@@ -2056,7 +2051,7 @@ export default function App() {
               <span style={{ fontSize: 13, fontWeight: 500, color: '#042C53' }}>맞춤 케어 제안</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"
                 style={{ transition: 'transform 0.3s ease', transform: expandedSections.care ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                <polyline points="6 9 12 15 18 9" />
+                <path d="M6 9l6 6 6-6" />
               </svg>
             </button>
             {expandedSections.care && (
@@ -2155,7 +2150,7 @@ export default function App() {
                                 display: 'flex', alignItems: 'center', gap: 8,
                                 padding: '10px 12px',
                               }}>
-                                <span style={{ fontSize: 14, display: 'inline-flex' }}><PastelIcon emoji={catMeta?.icon || '✨'} size={14} /></span>
+                                <span style={{ fontSize: 14, display: 'inline-flex' }}><PastelIcon emoji={catMeta?.icon || ''} size={14} /></span>
                                 <div>
                                   <div style={{ fontSize: 12, fontWeight: 600, color: '#042C53' }}>{catMeta?.label}</div>
                                   {items[0]?.weakestMetric && (
@@ -2179,15 +2174,15 @@ export default function App() {
                                   </div>
                                   <div style={{ display: 'flex', gap: 8, marginTop: 3, fontSize: 9, color: '#6B7F99' }}>
                                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
-                                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8a3 3 0 013-3h12a3 3 0 013 3v8a3 3 0 01-3 3H6a3 3 0 01-3-3z"/><path d="M3 10h18"/></svg>
                                       {t.costRange}
                                     </span>
                                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
-                                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
                                       {t.downtime}
                                     </span>
                                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
-                                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19.933 13.041a8 8 0 11-9.925-8.788c3.899-1 7.935 1.007 9.425 4.747"/><path d="M20 4v5h-5"/></svg>
                                       {t.frequency}
                                     </span>
                                   </div>
@@ -2204,7 +2199,7 @@ export default function App() {
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                         marginTop: 8,
                       }}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v12a1 1 0 01-1 1H6l-3 3z"/></svg>
                         시술에 대해 루아에게 물어보기
                       </button>
                       <div style={{ fontSize: 8, color: '#6B7F99', textAlign: 'center', marginTop: 6, lineHeight: 1.4 }}>
@@ -2226,7 +2221,7 @@ export default function App() {
               boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
             }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="2.5" strokeLinecap="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19.933 13.041a8 8 0 11-9.925-8.788c3.899-1 7.935 1.007 9.425 4.747"/><path d="M20 4v5h-5"/></svg>
               다시 측정하기
             </button>
           </div>
@@ -2247,7 +2242,7 @@ export default function App() {
               fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
             }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v12a1 1 0 01-1 1H6l-3 3z"/></svg>
               lua에게 물어보기
             </button>
             <button onClick={handleSave} disabled={saved} style={{
@@ -2257,7 +2252,7 @@ export default function App() {
               fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
               boxShadow: saved ? 'none' : '0 2px 8px rgba(30, 144, 232, 0.25)',
             }}>
-              {saved ? '기록 완료 ✓' : '이 결과 기록하기'}
+              {saved ? '기록 완료 ' : '이 결과 기록하기'}
             </button>
           </div>
         </div>
@@ -2288,7 +2283,7 @@ export default function App() {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer',
           }}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #8B95A1)" strokeWidth="2.5" strokeLinecap="round" opacity="0.4"><path d="M6 9l6 6 6-6"/></svg>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #8B95A1)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.4"><path d="M6 9l6 6 6-6"/></svg>
           </div>
           <AiInsightCard
             onOpenChat={() => setFabChatOpen(true)}
@@ -2314,7 +2309,7 @@ export default function App() {
             position: 'relative',
             width: 58, height: 58, borderRadius: '50% 50% 8px 50%',
             background: 'linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(150,215,248,0.5) 100%)',
-            backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+            backdropFilter: 'none', WebkitBackdropFilter: 'none',
             border: 'none',
             boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -2327,14 +2322,14 @@ export default function App() {
             <div onClick={(e) => { e.stopPropagation(); localStorage.setItem('fab_hint_dismissed', '1'); }} style={{
               position: 'absolute', bottom: '100%', right: 0, marginBottom: 10,
               background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(240,240,240,0.85) 100%)',
-              backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+              backdropFilter: 'none', WebkitBackdropFilter: 'none',
               borderRadius: '30px 30px 4px 30px', padding: '9px 14px', whiteSpace: 'nowrap',
-              border: '1px solid rgba(255,255,255,0.5)',
+              border: 'none',
               boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
               animation: 'fabHintIn 0.5s ease-out 1.5s both, fabHintOut 0.4s ease-in 10s both',
               fontSize: 11, color: 'rgba(0,0,0,0.4)', fontWeight: 600, letterSpacing: -0.2,
             }}>
-              피부 고민을 물어봐 ✨
+              피부 고민을 물어봐 
             </div>
           )}
           {/* 빛 흐름 레이어 */}
@@ -2427,7 +2422,7 @@ export default function App() {
               maxWidth: 340,
             }}
           >
-            <div style={{ fontSize: 64, marginBottom: 16, animation: 'celebrate-bounce 0.6s ease' }}>🎉</div>
+            <div style={{ fontSize: 64, marginBottom: 16, animation: 'celebrate-bounce 0.6s ease' }}></div>
             <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>
               목표를 달성했어요!
             </div>
@@ -2531,7 +2526,7 @@ function WaterIntakeModal({ onClose, onUpdate }) {
         background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
-        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: '#ececec', margin: '0 auto 20px' }} />
 
         <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 20 }}>수분</div>
 
@@ -2631,7 +2626,7 @@ function SleepInputModal({ onClose, onUpdate }) {
         background: 'var(--bg-modal, #fff)', borderRadius: '24px 24px 0 0',
         padding: '24px 24px 40px', width: '100%', maxWidth: 420,
       }}>
-        <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--text-dim)', margin: '0 auto 20px', opacity: 0.3 }} />
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: '#ececec', margin: '0 auto 20px' }} />
 
         <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 6 }}>수면</div>
         <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 24 }}>
@@ -2736,12 +2731,12 @@ function SleepInputModal({ onClose, onUpdate }) {
 // ===== Home Edit Page =====
 function HomeEditPage({ cards, order, onToggle, onReorder, onClose }) {
   const META = {
-    metrics: { label: '피부 지표', desc: '수분 · 주름 · 탄력 · 모공', icon: '📊' },
-    weather: { label: '날씨', desc: '기온 · 습도 · 자외선', icon: '☁️' },
-    water: { label: '수분 섭취', desc: '하루 물 섭취량 기록', icon: '💧' },
-    sleep: { label: '수면', desc: '수면 시간 · 수면의 질 기록', icon: '🌙' },
-    insight: { label: 'lua 인사이트', desc: 'AI 피부 조언 카드', icon: '✨' },
-    goal: { label: '피부 목표', desc: '목표 달성 진행률', icon: '🎯' },
+    metrics: { label: '피부 지표', desc: '수분 · 주름 · 탄력 · 모공', icon: '' },
+    weather: { label: '날씨', desc: '기온 · 습도 · 자외선', icon: '' },
+    water: { label: '수분 섭취', desc: '하루 물 섭취량 기록', icon: '' },
+    sleep: { label: '수면', desc: '수면 시간 · 수면의 질 기록', icon: '' },
+    insight: { label: 'lua 인사이트', desc: 'AI 피부 조언 카드', icon: '' },
+    goal: { label: '피부 목표', desc: '목표 달성 진행률', icon: '' },
   };
 
   const [dragIdx, setDragIdx] = useState(null);
@@ -2778,10 +2773,12 @@ function HomeEditPage({ cards, order, onToggle, onReorder, onClose }) {
   };
 
   return (
+    <>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'linear-gradient(to bottom, #58aefe, #d7e9fa)' }} />
     <div style={{
       position: 'fixed', top: 0, right: 0, bottom: 0, left: 0, zIndex: 1000,
       width: '100%', maxWidth: 430, margin: '0 auto',
-      background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
+      background: 'linear-gradient(to bottom, #58aefe, #d7e9fa)',
       display: 'flex', flexDirection: 'column',
       overflowY: 'auto', WebkitOverflowScrolling: 'touch',
       animation: 'homeEditSlideIn 0.3s ease',
@@ -2793,9 +2790,7 @@ function HomeEditPage({ cards, order, onToggle, onReorder, onClose }) {
       {/* Header */}
       <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
         <div onClick={onClose} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
         </div>
         <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>홈 화면 편집</span>
       </div>
@@ -2844,7 +2839,7 @@ function HomeEditPage({ cards, order, onToggle, onReorder, onClose }) {
               </div>
               <div onClick={(e) => { e.stopPropagation(); onToggle(key); }} style={{
                 width: 48, height: 28, borderRadius: 14,
-                background: cards[key] ? '#89cef5' : 'rgba(0,0,0,0.08)',
+                background: cards[key] ? '#58aefe' : 'rgba(0,0,0,0.08)',
                 position: 'relative', cursor: 'pointer',
                 transition: 'background 0.2s ease', flexShrink: 0,
               }}>
@@ -2862,5 +2857,6 @@ function HomeEditPage({ cards, order, onToggle, onReorder, onClose }) {
         })}
       </div>
     </div>
+    </>
   );
 }

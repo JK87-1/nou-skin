@@ -82,7 +82,7 @@ function ProductItem({ product, matchScore, delay = 0 }) {
         fontSize: 18,
       }}>
         {product.tags?.[0]?.includes('히알루론') ? <DropletIcon size={18} /> :
-         product.tags?.[0]?.includes('비타민') ? '🍊' :
+         product.tags?.[0]?.includes('비타민') ? '' :
          product.tags?.[0]?.includes('레티놀') ? <SparkleIcon size={18} /> :
          product.tags?.[0]?.includes('나이아신') ? <TestTubeIcon size={18} /> :
          product.tags?.[0]?.includes('자외선') ? <SunIcon size={18} /> :
@@ -868,7 +868,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
               <defs>
                 <linearGradient id="luaStarGradSC" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#89cef5" />
-                  <stop offset="55%" stopColor="#ace2fc" />
+                  <stop offset="55%" stopColor="#58aefe" />
                   <stop offset="100%" stopColor="#cce8fb" />
                 </linearGradient>
               </defs>

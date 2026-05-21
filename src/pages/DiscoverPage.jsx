@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 import { getLatestRecord, getPreviousRecord, getRecordCount, getRecords, getTimeSeries, getAllThumbnailsAsync } from '../storage/SkinStorage';
 
 const glass = {
-  background: 'rgba(255,255,255,0.35)',
-  backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-  border: '1px solid rgba(255,255,255,0.3)',
-  boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+  background: 'rgba(255,255,255,0.5)',
+  backdropFilter: 'none', WebkitBackdropFilter: 'none',
+  border: 'none',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
   borderRadius: 20,
 };
 
@@ -22,10 +22,10 @@ const CHART_COLORS = ['#1E90E8', '#185FA5', '#7FB3E3', '#C5DEF5'];
 function getImpactFactors(metricKey, records) {
   if (records.length < 2) return [];
   return [
-    { name: '수분 섭취', type: 'habit', icon: '💧', impact: 76 },
-    { name: '수면 시간', type: 'habit', icon: '🌙', impact: 42 },
-    { name: '자외선 차단', type: 'habit', icon: '☀️', impact: 28 },
-    { name: '토너', type: 'product', icon: '💧', impact: -18 },
+    { name: '수분 섭취', type: 'habit', icon: '', impact: 76 },
+    { name: '수면 시간', type: 'habit', icon: '', impact: 42 },
+    { name: '자외선 차단', type: 'habit', icon: '', impact: 28 },
+    { name: '토너', type: 'product', icon: '', impact: -18 },
   ];
 }
 
@@ -239,7 +239,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                     </div>
                     <div style={{ width: 1, height: 32, background: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
                     <div style={{ width: 40, height: 40, borderRadius: 10, overflow: 'hidden', flexShrink: 0, background: 'rgba(255,255,255,0.2)' }}>
-                      {thumb ? <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>📷</div>}
+                      {thumb ? <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}></div>}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>

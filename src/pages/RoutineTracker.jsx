@@ -91,7 +91,7 @@ function SheetOverlay({ onClose, children }) {
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
       style={{
         position: 'fixed', inset: 0, zIndex: 9999,
-        background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)',
+        background: 'rgba(0,0,0,0.5)', backdropFilter: 'none',
         display: 'flex', alignItems: 'flex-end',
         animation: 'fadeIn 0.2s ease',
       }}
@@ -143,8 +143,8 @@ function CategorySelector({ value, onChange, accent }) {
 
 function TimeSlotSelector({ value, onChange, accent }) {
   const opts = [
-    { key: 'morning', label: '☀️ 아침' },
-    { key: 'night', label: '🌙 저녁' },
+    { key: 'morning', label: ' 아침' },
+    { key: 'night', label: ' 저녁' },
     { key: 'both', label: '아침+저녁' },
   ];
   return (
@@ -172,10 +172,10 @@ function AddProductSheet({ onClose, onPhoto, onManual, accent }) {
     <SheetOverlay onClose={onClose}>
       <div style={{ background: 'var(--sheet-bg)', padding: '24px 20px 40px' }}>
         <SheetHandle />
-        <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20 }}>제품 등록</div>
+        <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 20 }}>제품 등록</div>
         {[
-          { emoji: '📷', label: '사진으로 등록', desc: 'AI가 제품명과 성분을 자동 인식해요', action: onPhoto },
-          { emoji: '✏️', label: '직접 입력', desc: '제품 정보를 수동으로 입력해요', action: onManual },
+          { emoji: '', label: '사진으로 등록', desc: 'AI가 제품명과 성분을 자동 인식해요', action: onPhoto },
+          { emoji: '', label: '직접 입력', desc: '제품 정보를 수동으로 입력해요', action: onManual },
         ].map((opt, i) => (
           <div key={i} onClick={opt.action} style={{
             display: 'flex', alignItems: 'center', gap: 14, padding: '16px 14px',
@@ -301,7 +301,7 @@ function PhotoRegistrationFlow({ onClose, onSave, saving, accent }) {
         {/* 촬영 단계 */}
         {step === 'capture' && (
           <>
-            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>제품 사진 촬영</div>
+            <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 8 }}>제품 사진 촬영</div>
             <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>
               제품 라벨이 잘 보이도록 촬영해주세요
             </p>
@@ -309,8 +309,8 @@ function PhotoRegistrationFlow({ onClose, onSave, saving, accent }) {
             <input ref={albumRef} type="file" accept="image/*" onChange={handleFile} style={{ display: 'none' }} />
             <div style={{ display: 'flex', gap: 12 }}>
               {[
-                { label: '📷 카메라', ref: cameraRef },
-                { label: '🖼️ 앨범', ref: albumRef },
+                { label: ' 카메라', ref: cameraRef },
+                { label: ' 앨범', ref: albumRef },
               ].map((btn, i) => (
                 <button key={i} onClick={() => btn.ref.current?.click()} style={{
                   flex: 1, padding: '16px 0', borderRadius: 14, cursor: 'pointer',
@@ -349,7 +349,7 @@ function PhotoRegistrationFlow({ onClose, onSave, saving, accent }) {
         {/* 확인/수정 */}
         {step === 'confirm' && (
           <>
-            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 16 }}>제품 정보 확인</div>
+            <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 16 }}>제품 정보 확인</div>
 
             {error && (
               <div style={{ fontSize: 12, color: '#F0B870', background: 'rgba(251,191,36,0.1)', borderRadius: 10, padding: '10px 14px', marginBottom: 16 }}>
@@ -442,7 +442,7 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
     <SheetOverlay onClose={onClose}>
       <div style={{ background: 'var(--sheet-bg)', padding: '24px 20px calc(40px + env(safe-area-inset-bottom, 0px))' }}>
         <SheetHandle />
-        <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20 }}>제품 직접 입력</div>
+        <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 20 }}>제품 직접 입력</div>
 
         {[
           { label: '브랜드', key: 'brand', placeholder: '예: 코스알엑스' },
@@ -584,7 +584,7 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, accent }) {
           </>
         ) : (
           <>
-            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20 }}>제품 정보 수정</div>
+            <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 20 }}>제품 정보 수정</div>
 
             {[
               { label: '브랜드', key: 'brand' },
@@ -756,8 +756,8 @@ export default function RoutineTracker({ themeColors, onBack }) {
   };
 
   const sections = [
-    { key: 'products', label: '내 제품', icon: '🧴' },
-    { key: 'analysis', label: '효과 분석', icon: '📊' },
+    { key: 'products', label: '내 제품', icon: '' },
+    { key: 'analysis', label: '효과 분석', icon: '' },
   ];
 
   return (
@@ -775,7 +775,7 @@ export default function RoutineTracker({ themeColors, onBack }) {
               fontFamily: 'inherit', fontSize: 13, fontWeight: 600, textAlign: 'center',
               background: active ? 'rgba(255,255,255,0.5)' : 'transparent',
               color: active ? 'var(--text-primary)' : 'var(--text-muted)',
-              backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+              backdropFilter: 'none', WebkitBackdropFilter: 'none',
               border: '1px solid rgba(255,255,255,0.4)',
               boxShadow: active ? '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.3)' : 'inset 0 1px 0 rgba(255,255,255,0.3)',
               transition: 'all 0.2s',
@@ -808,7 +808,7 @@ export default function RoutineTracker({ themeColors, onBack }) {
                 const days = Math.max(0, Math.floor((Date.now() - new Date(p.startDate)) / 86400000));
                 return (
                   <div key={p.id} onClick={() => setSelectedProduct(p)} style={{
-                    background: 'rgba(255,255,255,0.25)', borderRadius: 14,
+                    background: '#ffffff', borderRadius: 14,
                     padding: 14, cursor: 'pointer',
                     display: 'flex', flexDirection: 'column',
                   }}>
@@ -1029,7 +1029,7 @@ export default function RoutineTracker({ themeColors, onBack }) {
                     border: 'var(--context-border)',
                   }}>
                     <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                      <span style={{ fontSize: 18, flexShrink: 0 }}>🤖</span>
+                      <span style={{ fontSize: 18, flexShrink: 0 }}></span>
                       <p style={{ fontSize: 13, lineHeight: 1.6, margin: 0, color: 'var(--text-secondary)' }}>{a.insight}</p>
                     </div>
                   </div>

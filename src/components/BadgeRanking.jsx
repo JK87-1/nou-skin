@@ -238,7 +238,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
                 cursor: 'pointer',
               }}
             >
-              <span style={{ fontSize: 16, color: 'var(--text-muted)' }}>{'⚙'}</span>
+              <span style={{ fontSize: 16, color: 'var(--text-muted)' }}>{''}</span>
             </button>
           )}
 
@@ -592,7 +592,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
           {/* Error */}
           {rankError && !rankLoading && (
             <div style={{ textAlign: 'center', padding: '40px 0' }}>
-              <div style={{ fontSize: 28, marginBottom: 12 }}>😥</div>
+              <div style={{ fontSize: 28, marginBottom: 12 }}></div>
               <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>랭킹을 불러올 수 없습니다</div>
               <button onClick={loadRanking} style={{
                 padding: '8px 24px', borderRadius: 12, border: `1px solid ${activeTheme.accent}4d`,
@@ -605,7 +605,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
           {/* Ranking Content */}
           {!rankLoading && !rankError && ranking.length === 0 && (
             <div style={{ textAlign: 'center', padding: '40px 0' }}>
-              <div style={{ fontSize: 28, marginBottom: 12 }}>🏅</div>
+              <div style={{ fontSize: 28, marginBottom: 12 }}></div>
               <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>아직 랭킹 데이터가 없어요</div>
               <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 4 }}>피부 측정을 하면 랭킹에 참여할 수 있어요!</div>
             </div>
@@ -618,11 +618,11 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
             marginBottom: 24, animation: 'brFadeInUp 0.5s ease 0.2s both',
           }}>
             {/* 2nd place */}
-            {ranking.length >= 2 && <PodiumCard user={ranking[1]} medal="🥈" accent={activeTheme.accent} />}
+            {ranking.length >= 2 && <PodiumCard user={ranking[1]} medal="" accent={activeTheme.accent} />}
             {/* 1st place */}
             {ranking.length >= 1 && <PodiumCard user={ranking[0]} medal={<TrophyIcon size={28} />} isFirst accent={activeTheme.accent} />}
             {/* 3rd place */}
-            {ranking.length >= 3 && <PodiumCard user={ranking[2]} medal="🥉" accent={activeTheme.accent} />}
+            {ranking.length >= 3 && <PodiumCard user={ranking[2]} medal="" accent={activeTheme.accent} />}
           </div>
 
           {/* 4th and below */}
@@ -689,7 +689,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
               animation: 'brFadeInUp 0.5s ease 0.4s both',
             }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span>📊</span> 나의 랭킹 분석
+                <span></span> 나의 랭킹 분석
               </div>
               <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
                 {[
@@ -726,7 +726,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
                     padding: 12, background: 'rgba(255,255,255,0.02)', borderRadius: 12,
                     fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6,
                   }}>
-                    💡 {above
+                     {above
                       ? `${myRank.rank - 1}위와 ${diff}점 차이예요.${weakest ? ` ${weakest.label} 점수를 올리면 이번 주 안에 순위를 올릴 수 있어요!` : ''}`
                       : '현재 1위예요! 이 상태를 유지해보세요!'
                     }
@@ -788,7 +788,7 @@ function PodiumCard({ user, medal, isFirst, accent = '#81E4BD' }) {
         border: user.isMe ? `2px solid ${accent}66` : 'none',
         overflow: 'hidden',
       }}>
-        {user.isMe && user.nickname ? user.nickname.charAt(0) : '👤'}
+        {user.isMe && user.nickname ? user.nickname.charAt(0) : ''}
       </div>
       <div style={{
         fontSize: isFirst ? 13 : 12, fontWeight: user.isMe ? 700 : 500,
@@ -919,7 +919,7 @@ function TitleSelectionSheet({ currentLevel, totalXP, activeTheme, selectedTitle
                   }}>사용 중</div>
                 )}
                 {earned && !isSelected && (
-                  <span style={{ fontSize: 10, color: '#34d399' }}>✓</span>
+                  <span style={{ fontSize: 10, color: '#34d399' }}></span>
                 )}
               </div>
             );
@@ -981,7 +981,7 @@ function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#81E4BD' 
             width: 32, height: 32, borderRadius: 10, border: '1px solid var(--border-subtle)',
             background: 'var(--bg-card)', color: 'var(--text-muted)', fontSize: 16,
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>✕</button>
+          }}></button>
         </div>
 
         {/* Category Tabs */}
@@ -1152,7 +1152,7 @@ function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#81E4BD' 
                     <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.4 }}>{detailBadge.desc}</div>
                     {detailBadge.earned && detailBadge.earnedDate && (
                       <div style={{ fontSize: 10, color: 'var(--text-dim)', marginTop: 4 }}>
-                        📅 {new Date(detailBadge.earnedDate).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })} 획득
+                         {new Date(detailBadge.earnedDate).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })} 획득
                       </div>
                     )}
                     {!detailBadge.earned && (
@@ -1183,7 +1183,7 @@ function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#81E4BD' 
                       cursor: 'pointer', fontFamily: 'inherit',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                     }}
-                  >📤 공유하기</button>
+                  > 공유하기</button>
                 )}
               </div>
             );
@@ -1221,8 +1221,8 @@ export function BadgeCelebration({ badge, onClose, accent = '#81E4BD' }) {
         }}
       >
         <div style={{ fontSize: 48, marginBottom: 12, display: 'flex', justifyContent: 'center' }}><PastelIcon emoji={badge.icon} size={48} /></div>
-        <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>
-          🎉 새 뱃지 획득!
+        <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 6 }}>
+           새 뱃지 획득!
         </div>
         <div style={{ fontSize: 16, fontWeight: 600, color: accent, marginBottom: 4 }}>
           {badge.name}

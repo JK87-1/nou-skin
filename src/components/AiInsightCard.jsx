@@ -25,7 +25,7 @@ export default function AiInsightCard({ onOpenChat, greeting, dateInfo }) {
   if (!latest) return null;
 
   let insight = '';
-  let icon = '💡';
+  let icon = '';
   let sub = '';
 
   const month = new Date().getMonth() + 1;
@@ -36,7 +36,7 @@ export default function AiInsightCard({ onOpenChat, greeting, dateInfo }) {
     const worsened = Object.values(changes).filter(c => !c.improved && Math.abs(c.diff) >= 3 && c.key !== 'overallScore');
 
     if (improved.length >= 3) {
-      icon = '🌟';
+      icon = '';
       const names = improved.slice(0, 3).map(c => c.label).join(', ');
       insight = pick([
         `${names} 등 ${improved.length}개가 같이 좋아지고 있어요. 지금 루틴이 잘 맞는 것 같아요!`,
@@ -49,7 +49,7 @@ export default function AiInsightCard({ onOpenChat, greeting, dateInfo }) {
       sub = pick(['지금처럼만 해주세요, 충분해요.', '이 흐름 놓치지 마세요!', '루틴 바꾸지 마세요, 지금이 딱이에요.']);
     } else if (worsened.length > 0) {
       const worst = worsened.sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff))[0];
-      icon = worst.icon || '🔍';
+      icon = worst.icon || '';
       const diffAbs = Math.abs(worst.diff);
       insight = pick([
         `${worst.label}가 ${diffAbs}점 떨어졌어요. ${worst.label === '수분도' ? '요즘 건조하지 않았나요? 수분 보충에 신경 써보세요.' : '최근 생활 패턴이 바뀐 건 없는지 한번 돌아보세요.'}`,
@@ -84,64 +84,16 @@ export default function AiInsightCard({ onOpenChat, greeting, dateInfo }) {
   return (
     <div onClick={onOpenChat} style={{
       padding: '16px 18px', cursor: 'pointer',
-      background: 'rgba(255,255,255,0.35)',
-      backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-      border: '1px solid rgba(255,255,255,0.3)',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
+      background: 'rgba(255,255,255,0.5)',
+      backdropFilter: 'none', WebkitBackdropFilter: 'none',
+      border: 'none',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
       borderRadius: '36px 36px 7px 36px',
     }}>
-      {/* 헤더 */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 21 }}>
-        {/* 좌측: 아이콘 + lua 텍스트 */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
-          <div style={{ position: 'relative' }}>
-            <div style={{
-              width: 52, height: 52, borderRadius: '50%',
-              background: 'linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(150,215,248,0.5) 100%)',
-              boxShadow: '0 0 0 1px rgba(255,255,255,0.4), 0 2px 6px rgba(0,0,0,0.06)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              position: 'relative', overflow: 'hidden',
-            }}>
-              <div style={{
-                position: 'absolute', top: 0, left: '-100%', width: '300%', height: '100%',
-                background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.25) 45%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0.25) 55%, transparent 70%)',
-                animation: 'fabShine 3.5s ease-in-out infinite',
-                pointerEvents: 'none',
-              }} />
-              <svg width="26" height="26" viewBox="0 0 24 24" style={{ filter: 'drop-shadow(0 1px 2px rgba(100,180,230,0.5))' }}>
-                <defs>
-                  <linearGradient id="insight-star-fill" x1="0.15" y1="0.05" x2="0.85" y2="0.95">
-                    <stop offset="0%" stopColor="#D6EEFB" />
-                    <stop offset="45%" stopColor="#a8d8f5" />
-                    <stop offset="100%" stopColor="#6bb8e8" />
-                  </linearGradient>
-                  <linearGradient id="insight-star-edge" x1="0.5" y1="0" x2="0.5" y2="1">
-                    <stop offset="0%" stopColor="#c8e8fa" />
-                    <stop offset="100%" stopColor="#5aaad8" />
-                  </linearGradient>
-                </defs>
-                <path fill="url(#insight-star-edge)" stroke="rgba(90,170,216,0.3)" strokeWidth="0.6" d="M10.48,23.25c-.15.41-.5.71-.86.75-.27.03-.78-.29-.9-.59l-1.53-4.02c-.48-1.26-1.41-2.1-2.67-2.58l-3.91-1.48c-.29-.11-.59-.51-.6-.76-.01-.39.23-.79.6-.93l3.9-1.49c1.27-.48,2.19-1.31,2.68-2.59l1.57-4.14c.08-.2.52-.44.74-.46.24-.02.77.21.86.46l1.57,4.14c.5,1.32,1.47,2.15,2.78,2.63l3.7,1.37c.31.11.66.55.67.83.02.42-.29.82-.68.97l-3.8,1.44c-1.26.48-2.2,1.32-2.67,2.58l-1.45,3.86Z"/>
-                <g transform="translate(0.3,0.3) scale(0.975)">
-                  <path fill="url(#insight-star-fill)" d="M10.48,23.25c-.15.41-.5.71-.86.75-.27.03-.78-.29-.9-.59l-1.53-4.02c-.48-1.26-1.41-2.1-2.67-2.58l-3.91-1.48c-.29-.11-.59-.51-.6-.76-.01-.39.23-.79.6-.93l3.9-1.49c1.27-.48,2.19-1.31,2.68-2.59l1.57-4.14c.08-.2.52-.44.74-.46.24-.02.77.21.86.46l1.57,4.14c.5,1.32,1.47,2.15,2.78,2.63l3.7,1.37c.31.11.66.55.67.83.02.42-.29.82-.68.97l-3.8,1.44c-1.26.48-2.2,1.32-2.67,2.58l-1.45,3.86Z"/>
-                </g>
-                <path fill="url(#insight-star-edge)" stroke="rgba(90,170,216,0.3)" strokeWidth="0.4" d="M21.48,6.29c-1.03.59-.9,2.91-2.01,2.98-1.23.08-.99-1.68-1.94-2.78-.77-.88-2.68-.63-2.74-1.78-.07-1.27,2.01-1.1,2.74-1.91.87-.95.73-2.72,1.78-2.8,1.29-.1.98,1.81,1.95,2.77.87.86,2.67.71,2.73,1.8.07,1.08-1.29,1.02-2.51,1.72Z"/>
-                <g transform="translate(0.15,0.15) scale(0.988)">
-                  <path fill="url(#insight-star-fill)" d="M21.48,6.29c-1.03.59-.9,2.91-2.01,2.98-1.23.08-.99-1.68-1.94-2.78-.77-.88-2.68-.63-2.74-1.78-.07-1.27,2.01-1.1,2.74-1.91.87-.95.73-2.72,1.78-2.8,1.29-.1.98,1.81,1.95,2.77.87.86,2.67.71,2.73,1.8.07,1.08-1.29,1.02-2.51,1.72Z"/>
-                </g>
-              </svg>
-            </div>
-            {/* 온라인 점 */}
-            <div style={{
-              position: 'absolute', bottom: 1, right: 1,
-              width: 8, height: 8, borderRadius: '50%',
-              background: '#89cef5',
-              border: '2px solid rgba(255,255,255,0.8)',
-              boxSizing: 'content-box',
-            }} />
-          </div>
-          <span style={{ fontSize: 13, fontWeight: 600, color: '#89cef5', marginTop: 4 }}>lua</span>
-        </div>
-        {/* 우측: 인사 + 본문 */}
+      {/* 본문 영역 */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: '#58aefe', fontFamily: "'Pretendard Variable', Pretendard, sans-serif", flexShrink: 0, lineHeight: 1.8 }}>lua</span>
+        {/* 본문 */}
         <div style={{ flex: 1, minWidth: 0 }}>
           {greeting && <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #191F28)', letterSpacing: -0.3, lineHeight: 1.8, marginBottom: 0 }}>{greeting}</div>}
           {/* 인사이트 본문 */}
@@ -193,11 +145,11 @@ export default function AiInsightCard({ onOpenChat, greeting, dateInfo }) {
 function getMetricIcon(latest) {
   const weakest = getWeakestMetric(latest);
   const iconMap = {
-    moisture: '💧', skinTone: '✨', wrinkleScore: '📐', poreScore: '🔬',
-    elasticityScore: '💎', pigmentationScore: '🎨', textureScore: '🧴',
-    darkCircleScore: '👁️', oilBalance: '🫧',
+    moisture: '', skinTone: '', wrinkleScore: '', poreScore: '',
+    elasticityScore: '', pigmentationScore: '', textureScore: '',
+    darkCircleScore: '', oilBalance: '',
   };
-  return iconMap[weakest.key] || '💡';
+  return iconMap[weakest.key] || '';
 }
 
 function getWeakestMetric(latest) {

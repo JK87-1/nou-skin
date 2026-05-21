@@ -459,7 +459,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
                 )}
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>나의 피부 여정</h2>
+                <h2 style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', margin: 0 }}>나의 피부 여정</h2>
                 <div style={{
                   display: 'flex', background: 'var(--bg-card)',
                   borderRadius: 10, padding: 3, gap: 2,
@@ -545,7 +545,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
                 <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 12 }}>측정 기록</div>
                 {records.length === 0 ? (
                   <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
-                    <div style={{ fontSize: 36, marginBottom: 8 }}>📸</div>
+                    <div style={{ fontSize: 36, marginBottom: 8 }}></div>
                     <div style={{ fontSize: 13 }}>아직 기록이 없어요</div>
                   </div>
                 ) : (
@@ -643,7 +643,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
               if (!firstRecord || !lastRecord || records.length < 2) {
                 return (
                   <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
-                    <div style={{ fontSize: 36, marginBottom: 8 }}>📊</div>
+                    <div style={{ fontSize: 36, marginBottom: 8 }}></div>
                     <div style={{ fontSize: 13 }}>2회 이상 측정하면 비교 분석을 볼 수 있어요</div>
                   </div>
                 );
@@ -1129,7 +1129,7 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
         {/* ① 앱 헤더 */}
         {/* 드래그 핸들 */}
         <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0 8px' }}>
-          <div style={{ width: 47, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.15)' }} />
+          <div style={{ width: 47, height: 4, borderRadius: 2, background: '#ececec' }} />
         </div>
 
         {/* ② 시그니처 카드 */}
@@ -1534,16 +1534,16 @@ function RoutineChecklist() {
 
   // Recommended routines (user picks from these)
   const recommendedRoutines = [
-    { id: '_water', name: '물 한 잔 마시기', icon: '💧' },
-    { id: '_wash', name: '세안', icon: '🧼' },
-    { id: '_sunscreen', name: '선크림 바르기', icon: '☀️' },
-    { id: '_toner', name: '토너 바르기', icon: '💧' },
-    { id: '_serum', name: '세럼 바르기', icon: '✨' },
-    { id: '_cream', name: '크림 바르기', icon: '🧴' },
-    { id: '_cleansing', name: '클렌징', icon: '🫧' },
-    { id: '_mask', name: '마스크팩', icon: '🎭' },
-    { id: '_vitamin', name: '비타민 먹기', icon: '💊' },
-    { id: '_stretch', name: '스트레칭', icon: '🧘' },
+    { id: '_water', name: '물 한 잔 마시기', icon: '' },
+    { id: '_wash', name: '세안', icon: '' },
+    { id: '_sunscreen', name: '선크림 바르기', icon: '' },
+    { id: '_toner', name: '토너 바르기', icon: '' },
+    { id: '_serum', name: '세럼 바르기', icon: '' },
+    { id: '_cream', name: '크림 바르기', icon: '' },
+    { id: '_cleansing', name: '클렌징', icon: '' },
+    { id: '_mask', name: '마스크팩', icon: '' },
+    { id: '_vitamin', name: '비타민 먹기', icon: '' },
+    { id: '_stretch', name: '스트레칭', icon: '' },
   ];
 
   // User-added routines (recommend + custom)
@@ -1560,7 +1560,7 @@ function RoutineChecklist() {
   };
 
   const addCustomRoutine = (name, targetMode) => {
-    const entry = { id: `_custom_${Date.now()}`, name, icon: '✦', type: 'custom', mode: targetMode };
+    const entry = { id: `_custom_${Date.now()}`, name, icon: '', type: 'custom', mode: targetMode };
     const updated = [...myRoutines, entry];
     localStorage.setItem('lua_my_routines', JSON.stringify(updated));
     setMyRoutines(updated);
@@ -1574,7 +1574,7 @@ function RoutineChecklist() {
 
   const allItemsRaw = [
     ...myRoutines.filter(r => r.mode === mode),
-    ...products.map(p => ({ id: p.id, name: `${p.brand} ${p.name}`, icon: '✨', type: 'product', category: p.category })),
+    ...products.map(p => ({ id: p.id, name: `${p.brand} ${p.name}`, icon: '', type: 'product', category: p.category })),
   ];
   // Only show items active today
   const allItems = allItemsRaw.filter(item => isActiveToday(item.id));
@@ -1658,7 +1658,7 @@ function RoutineChecklist() {
   const totalItems = allItems.length;
   const pct = totalItems > 0 ? Math.round((totalDone / totalItems) * 100) : 0;
 
-  const glass = { background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)', borderRadius: 20 };
+  const glass = { background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', borderRadius: 20 };
 
   // 주 단위 weekDays 빌더 — carousel용 3개 주(이전·현재·다음) 렌더에 재사용
   const buildWeek = (offset) => {
@@ -1812,17 +1812,17 @@ function RoutineChecklist() {
       {/* Morning / Day / Night Toggle */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
         {[
-          { key: 'morning', label: '☀️ 모닝' },
-          { key: 'day', label: '🌤️ 데이' },
-          { key: 'night', label: '🌙 나이트' },
+          { key: 'morning', label: ' 모닝' },
+          { key: 'day', label: ' 데이' },
+          { key: 'night', label: ' 나이트' },
         ].map(m => (
           <button key={m.key} onClick={() => setMode(m.key)} style={{
             flex: 1, padding: '12px 0', borderRadius: 14, cursor: 'pointer',
             fontFamily: 'inherit', fontSize: 13, fontWeight: 600, textAlign: 'center',
             background: mode === m.key ? 'rgba(255,255,255,0.5)' : 'transparent',
             color: mode === m.key ? 'var(--text-primary)' : 'var(--text-muted)',
-            backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-            border: '1px solid rgba(255,255,255,0.4)',
+            backdropFilter: 'none', WebkitBackdropFilter: 'none',
+            border: 'none',
             boxShadow: mode === m.key ? '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.3)' : 'inset 0 1px 0 rgba(255,255,255,0.3)',
             transition: 'all 0.2s',
           }}>{m.label}</button>
@@ -1872,9 +1872,9 @@ function RoutineChecklist() {
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2,
                   touchAction: 'none',
                 }}>
-                  <div style={{ width: 12, height: 2, borderRadius: 1, background: 'rgba(255,255,255,0.35)' }} />
-                  <div style={{ width: 12, height: 2, borderRadius: 1, background: 'rgba(255,255,255,0.35)' }} />
-                  <div style={{ width: 12, height: 2, borderRadius: 1, background: 'rgba(255,255,255,0.35)' }} />
+                  <div style={{ width: 12, height: 2, borderRadius: 1, background: '#ffffff' }} />
+                  <div style={{ width: 12, height: 2, borderRadius: 1, background: '#ffffff' }} />
+                  <div style={{ width: 12, height: 2, borderRadius: 1, background: '#ffffff' }} />
                 </div>
                 {/* Icon */}
                 <span style={{ fontSize: 18 }}>{item.icon}</span>
@@ -1910,11 +1910,11 @@ function RoutineChecklist() {
       {/* Routine Detail Modal */}
       {detailItem && createPortal(
         <>
-          <div onClick={() => setDetailItem(null)} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,44,83,0.18)', backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)' }} />
+          <div onClick={() => setDetailItem(null)} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,44,83,0.18)', backdropFilter: 'none', WebkitBackdropFilter: 'none' }} />
           <div style={{
             position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201,
-            background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-            border: '1px solid rgba(255,255,255,0.3)', borderRadius: '20px 20px 0 0',
+            background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none',
+            border: 'none', borderRadius: '20px 20px 0 0',
             boxShadow: '0 -8px 28px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.4)',
             paddingBottom: 'calc(env(safe-area-inset-bottom,0px) + 16px)',
             maxWidth: 430, margin: '0 auto',
@@ -1928,7 +1928,7 @@ function RoutineChecklist() {
                 <span style={{ fontSize: 20 }}>{detailItem.icon}</span>
                 <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>{detailItem.name}</span>
               </div>
-              <div onClick={() => setDetailItem(null)} style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+              <div onClick={() => setDetailItem(null)} style={{ width: 32, height: 32, borderRadius: '50%', background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </div>
             </div>
@@ -1965,8 +1965,8 @@ function RoutineChecklist() {
                     localStorage.setItem('lua_routine_days', JSON.stringify(next));
                     setDaySettings(next);
                   }} style={{
-                    flex: 1, padding: '8px 0', borderRadius: 10, border: '1px solid rgba(255,255,255,0.3)', cursor: 'pointer',
-                    background: 'rgba(255,255,255,0.4)', color: 'var(--text-primary)',
+                    flex: 1, padding: '8px 0', borderRadius: 10, border: 'none', cursor: 'pointer',
+                    background: '#ffffff', color: 'var(--text-primary)',
                     fontSize: 12, fontWeight: 500, fontFamily: 'inherit',
                   }}>{preset.label}</button>
                 ))}
@@ -1990,7 +1990,7 @@ function RoutineChecklist() {
       {/* Add Routine Button */}
       <div onClick={() => { setAddMode(mode); setAddModal(true); }} style={{
         padding: '12px 24px', marginBottom: 16, cursor: 'pointer',
-        background: 'rgba(90,176,232,0.45)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+        background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none',
         border: '1px solid rgba(90,176,232,0.4)', borderRadius: 14,
         boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
@@ -2004,11 +2004,11 @@ function RoutineChecklist() {
       {/* Add Routine Modal */}
       {addModal && createPortal(
         <>
-          <div onClick={() => setAddModal(false)} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,44,83,0.18)', backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)' }} />
+          <div onClick={() => setAddModal(false)} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,44,83,0.18)', backdropFilter: 'none', WebkitBackdropFilter: 'none' }} />
           <div style={{
             position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201,
-            background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-            border: '1px solid rgba(255,255,255,0.3)', borderRadius: '20px 20px 0 0',
+            background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none',
+            border: 'none', borderRadius: '20px 20px 0 0',
             boxShadow: '0 -8px 28px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.4)',
             paddingBottom: 'calc(env(safe-area-inset-bottom,0px) + 16px)',
             maxWidth: 430, maxHeight: '70vh', overflowY: 'auto', margin: '0 auto',
@@ -2020,21 +2020,21 @@ function RoutineChecklist() {
             </div>
             <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>케어 항목 추가</span>
-              <div onClick={() => setAddModal(false)} style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+              <div onClick={() => setAddModal(false)} style={{ width: 32, height: 32, borderRadius: '50%', background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </div>
             </div>
             <div style={{ padding: '0 16px' }}>
               {/* Mode selector */}
               <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-                {[{ key: 'morning', label: '☀️ 모닝' }, { key: 'day', label: '🌤️ 데이' }, { key: 'night', label: '🌙 나이트' }].map(m => (
+                {[{ key: 'morning', label: ' 모닝' }, { key: 'day', label: ' 데이' }, { key: 'night', label: ' 나이트' }].map(m => (
                   <button key={m.key} onClick={() => setAddMode(m.key)} style={{
                     flex: 1, padding: '10px 0', borderRadius: 12, cursor: 'pointer',
                     fontFamily: 'inherit', fontSize: 13, fontWeight: 600, textAlign: 'center',
                     background: addMode === m.key ? 'rgba(255,255,255,0.5)' : 'transparent',
                     color: addMode === m.key ? 'var(--text-primary)' : 'var(--text-muted)',
-                    backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-                    border: '1px solid rgba(255,255,255,0.4)',
+                    backdropFilter: 'none', WebkitBackdropFilter: 'none',
+                    border: 'none',
                     boxShadow: addMode === m.key ? '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.3)' : 'inset 0 1px 0 rgba(255,255,255,0.3)',
                   }}>{m.label}</button>
                 ))}
@@ -2059,7 +2059,7 @@ function RoutineChecklist() {
                     }}>
                       <span>{r.icon}</span>
                       <span>{r.name}</span>
-                      {added && <span style={{ fontSize: 10 }}>✓</span>}
+                      {added && <span style={{ fontSize: 10 }}></span>}
                     </div>
                   );
                 })}
@@ -2079,7 +2079,7 @@ function RoutineChecklist() {
                         return (
                           <div key={p.id} onClick={() => {
                             if (added) removeRoutine(pid, addMode);
-                            else addRoutine({ id: pid, name: `${p.brand} ${p.name}`, icon: '✨', type: 'product' }, addMode);
+                            else addRoutine({ id: pid, name: `${p.brand} ${p.name}`, icon: '', type: 'product' }, addMode);
                           }} style={{
                             padding: '8px 14px', borderRadius: 20, cursor: 'pointer',
                             fontSize: 12, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6,
@@ -2088,9 +2088,9 @@ function RoutineChecklist() {
                             border: added ? '1px solid rgba(137,206,245,0.3)' : '1px solid rgba(255,255,255,0.3)',
                             transition: 'all 0.2s',
                           }}>
-                            <span>✨</span>
+                            <span></span>
                             <span>{p.brand} {p.name}</span>
-                            {added && <span style={{ fontSize: 10 }}>✓</span>}
+                            {added && <span style={{ fontSize: 10 }}></span>}
                           </div>
                         );
                       })}
@@ -2108,7 +2108,7 @@ function RoutineChecklist() {
                   onKeyDown={e => { if (e.key === 'Enter' && customName.trim()) { addCustomRoutine(customName.trim(), addMode); setCustomName(''); } }}
                   placeholder="예: 유산균 먹기"
                   style={{
-                    flex: 1, background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.3)',
+                    flex: 1, background: '#ffffff', border: 'none',
                     borderRadius: 12, padding: '11px 14px', fontSize: 13, color: 'var(--text-primary)',
                     outline: 'none', fontFamily: 'inherit',
                   }}
@@ -2151,7 +2151,7 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
   const sleepH = habit.sleep_hours;
   const sunscreen = habit.sunscreen_applied;
 
-  const glass = { background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)', borderRadius: 20 };
+  const glass = { background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', borderRadius: 20 };
 
   const summaryParts = [];
   if (habit.water_amount) summaryParts.push(`수분 ${waterL}L`);
@@ -2165,7 +2165,7 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
       <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 500, marginTop: 8 }}>{label}</div>
       <div style={{ fontSize: 18, fontWeight: 500, color: 'var(--text-primary)', marginTop: 4 }}>{value}</div>
       <div style={{ fontSize: 9, marginTop: 1, color: metaHL ? 'var(--accent-primary)' : 'var(--text-muted)', fontWeight: metaHL ? 500 : 400 }}>{meta}</div>
-      <div style={{ marginTop: 8, height: 3, borderRadius: 1.5, background: 'rgba(255,255,255,0.25)', overflow: 'hidden' }}>
+      <div style={{ marginTop: 8, height: 3, borderRadius: 1.5, background: '#ffffff', overflow: 'hidden' }}>
         <div style={{ height: '100%', borderRadius: 1.5, background: 'var(--accent-primary)', width: `${Math.min(progress, 1) * 100}%`, transition: 'width 0.4s' }} />
       </div>
     </div>
@@ -2174,13 +2174,13 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
   const closeModal = () => setModal(null);
   const ModalWrap = ({ title, children }) => createPortal(
     <>
-      <div onClick={closeModal} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,44,83,0.18)', backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)' }} />
-      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201, background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '20px 20px 0 0', boxShadow: '0 -8px 28px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.4)', paddingBottom: 'calc(env(safe-area-inset-bottom,0px) + 16px)', maxWidth: 430, margin: '0 auto', animation: 'careSheetUp 280ms cubic-bezier(0.32,0.72,0,1) forwards' }}>
+      <div onClick={closeModal} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,44,83,0.18)', backdropFilter: 'none', WebkitBackdropFilter: 'none' }} />
+      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201, background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none', border: 'none', borderRadius: '20px 20px 0 0', boxShadow: '0 -8px 28px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.4)', paddingBottom: 'calc(env(safe-area-inset-bottom,0px) + 16px)', maxWidth: 430, margin: '0 auto', animation: 'careSheetUp 280ms cubic-bezier(0.32,0.72,0,1) forwards' }}>
         <style>{`@keyframes careSheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
         <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(137,206,245,0.4)' }} /></div>
         <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>{title}</span>
-          <button onClick={closeModal} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: 'rgba(255,255,255,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <button onClick={closeModal} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: '#ffffff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
@@ -2210,16 +2210,16 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
 
       {/* 습관 카드 3개 */}
       <div style={{ padding: '0 12px 12px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
-        <HabitCard icon="💧" label="수분" value={`${waterL}L`} meta={`목표 ${waterGoal/1000}L`} progress={(habit.water_amount||0)/waterGoal} onTap={() => setModal('water')} />
-        <HabitCard icon="🌙" label="수면" value={sleepH != null ? `${sleepH}h` : '—'} meta={sleepH != null ? '어젯밤' : '어젯밤 두기'} progress={sleepH != null ? sleepH/8 : 0} onTap={() => setModal('sleep')} />
-        <HabitCard icon="☀️" label="자외선" value={sunscreen === true ? '✓' : '—'} meta={sunscreen === true ? '선크림 챙김' : '아직'} metaHL={sunscreen === true} progress={sunscreen === true ? 1 : 0} onTap={() => setModal('sunscreen')} />
+        <HabitCard icon="" label="수분" value={`${waterL}L`} meta={`목표 ${waterGoal/1000}L`} progress={(habit.water_amount||0)/waterGoal} onTap={() => setModal('water')} />
+        <HabitCard icon="" label="수면" value={sleepH != null ? `${sleepH}h` : '—'} meta={sleepH != null ? '어젯밤' : '어젯밤 두기'} progress={sleepH != null ? sleepH/8 : 0} onTap={() => setModal('sleep')} />
+        <HabitCard icon="" label="자외선" value={sunscreen === true ? '' : '—'} meta={sunscreen === true ? '선크림 챙김' : '아직'} metaHL={sunscreen === true} progress={sunscreen === true ? 1 : 0} onTap={() => setModal('sunscreen')} />
       </div>
 
       {/* lua의 피부 발견 */}
       {recordCount >= 2 && (
         <div onClick={() => onOpenConsult?.()} style={{ padding: '0 16px 12px', cursor: 'pointer' }}>
           <div style={{ ...glass, padding: 14, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-            <div style={{ width: 20, height: 20, borderRadius: '50%', flexShrink: 0, background: 'linear-gradient(180deg, rgba(255,255,255,0.7), rgba(172,226,252,0.35))', border: '1px solid rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 20, height: 20, borderRadius: '50%', flexShrink: 0, background: 'linear-gradient(180deg, rgba(255,255,255,0.7), rgba(172,226,252,0.35))', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="10" height="10" viewBox="0 0 24 24"><path fill="#89cef5" d="M10.48,23.25c-.15.41-.5.71-.86.75-.27.03-.78-.29-.9-.59l-1.53-4.02c-.48-1.26-1.41-2.1-2.67-2.58l-3.91-1.48c-.29-.11-.59-.51-.6-.76-.01-.39.23-.79.6-.93l3.9-1.49c1.27-.48,2.19-1.31,2.68-2.59l1.57-4.14c.08-.2.52-.44.74-.46.24-.02.77.21.86.46l1.57,4.14c.5,1.32,1.47,2.15,2.78,2.63l3.7,1.37c.31.11.66.55.67.83.02.42-.29.82-.68.97l-3.8,1.44c-1.26.48-2.2,1.32-2.67,2.58l-1.45,3.86Z"/><path fill="#89cef5" d="M21.48,6.29c-1.03.59-.9,2.91-2.01,2.98-1.23.08-.99-1.68-1.94-2.78-.77-.88-2.68-.63-2.74-1.78-.07-1.27,2.01-1.1,2.74-1.91.87-.95.73-2.72,1.78-2.8,1.29-.1.98,1.81,1.95,2.77.87.86,2.67.71,2.73,1.8.07,1.08-1.29,1.02-2.51,1.72Z"/></svg>
             </div>
             <div style={{ flex: 1 }}>
@@ -2231,7 +2231,7 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
       )}
 
       {/* 영역 구분선 */}
-      <div style={{ height: 6, background: 'rgba(255,255,255,0.15)', margin: '8px 0 4px' }} />
+      <div style={{ height: 6, background: '#ffffff', margin: '8px 0 4px' }} />
 
       {/* 섹션 헤더: 화장품 */}
       <div style={{ padding: '6px 20px 8px', fontSize: 10, color: 'var(--text-muted)', fontWeight: 500, letterSpacing: 0.3, textTransform: 'uppercase' }}>화장품</div>
@@ -2239,7 +2239,7 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
       {/* 화장품 빈 상태 */}
       <div style={{ padding: '0 12px 12px' }}>
         <div style={{ ...glass, padding: '32px 16px', textAlign: 'center' }}>
-          <div style={{ fontSize: 40, opacity: 0.3, marginBottom: 8 }}>📦</div>
+          <div style={{ fontSize: 40, opacity: 0.3, marginBottom: 8 }}></div>
           <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 4 }}>아직 등록된 화장품이 없어요</div>
           <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 12 }}>지금 쓰는 화장품을 등록해보세요</div>
           <button onClick={() => onAddProduct?.()} style={{ background: 'var(--accent-primary)', color: '#fff', fontSize: 11, fontWeight: 500, padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>+ 추가하기</button>
@@ -2250,8 +2250,8 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
       {modal === 'add' && (
         <ModalWrap title="추가">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {[{ label: '수분 두기', icon: '💧', key: 'water' }, { label: '수면 두기', icon: '🌙', key: 'sleep' }, { label: '자외선 두기', icon: '☀️', key: 'sunscreen' }].map(item => (
-              <button key={item.key} onClick={() => setModal(item.key)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 20, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', textAlign: 'left' }}>
+            {[{ label: '수분 두기', icon: '', key: 'water' }, { label: '수면 두기', icon: '', key: 'sleep' }, { label: '자외선 두기', icon: '', key: 'sunscreen' }].map(item => (
+              <button key={item.key} onClick={() => setModal(item.key)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: '#ffffff', border: 'none', borderRadius: 20, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', textAlign: 'left' }}>
                 <span style={{ fontSize: 20 }}>{item.icon}</span>{item.label}
               </button>
             ))}
@@ -2271,7 +2271,7 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
                 ))}
               </div>
               <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>오늘 누적 · {(amt/1000).toFixed(1)}L / {waterGoal/1000}L</div>
-              <div style={{ marginTop: 6, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.25)', overflow: 'hidden' }}>
+              <div style={{ marginTop: 6, height: 4, borderRadius: 2, background: '#ffffff', overflow: 'hidden' }}>
                 <div style={{ height: '100%', borderRadius: 2, background: 'var(--accent-primary)', width: `${Math.min(amt/waterGoal,1)*100}%` }} />
               </div>
             </div>

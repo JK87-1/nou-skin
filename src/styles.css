@@ -95,32 +95,32 @@
   /* Surfaces — Sky glassmorphism */
   --bg-primary: transparent;
   --bg-secondary: transparent;
-  --bg-card: rgba(255,255,255,0.35);
-  --bg-card-hover: rgba(255,255,255,0.45);
+  --bg-card: rgba(255,255,255,0.5);
+  --bg-card-hover: rgba(255,255,255,0.5);
   --bg-card-solid: rgba(255,255,255,0.5);
   --bg-elevated: rgba(255,255,255,0.5);
   --bg-modal: #FFFFFF;
   --bg-modal-overlay: rgba(0,0,0,0.4);
   --bg-input: rgba(255,255,255,0.5);
-  /* Borders — glass style */
-  --border-subtle: rgba(255,255,255,0.3);
-  --border-light: rgba(255,255,255,0.25);
-  --border-separator: rgba(255,255,255,0.2);
+  /* Borders — no glass */
+  --border-subtle: transparent;
+  --border-light: transparent;
+  --border-separator: transparent;
   /* Text — Toss palette */
   --text-primary: #191F28;
   --text-secondary: #4E5968;
   --text-muted: #8B95A1;
   --text-dim: #B0B8C1;
   --text-disabled: #D1D6DB;
-  /* Shadows — glass style */
-  --shadow-card: 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4);
-  --shadow-elevated: 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4);
-  --shadow-float: 0 4px 16px rgba(0,0,0,0.08);
+  /* Shadows — subtle black 0.03 */
+  --shadow-card: 0 2px 8px rgba(0,0,0,0.03);
+  --shadow-elevated: 0 2px 8px rgba(0,0,0,0.03);
+  --shadow-float: 0 4px 16px rgba(0,0,0,0.03);
   /* Tab bar */
-  --tab-bg: rgba(255,255,255,0.35);
-  --tab-border: rgba(255,255,255,0.3);
+  --tab-bg: #ffffff;
+  --tab-border: transparent;
   --tab-inactive: rgba(0,0,0,0.3);
-  --tab-shadow: 0 -4px 16px rgba(0,0,0,0.03), inset 0 1px 0 rgba(255,255,255,0.4);
+  --tab-shadow: 0 -2px 8px rgba(0,0,0,0.03);
   /* Misc */
   --bar-track: rgba(255,255,255,0.35);
   --glass-inset: none;
@@ -149,7 +149,7 @@
 
   /* Sheet / Modal */
   --sheet-bg: #FFFFFF;
-  --sheet-handle: #ddd;
+  --sheet-handle: #ececec;
   /* Progress */
   --progress-track: #F0F0F0;
   --progress-fill: linear-gradient(90deg, #5ab0e8, #89cef5);
@@ -433,10 +433,10 @@
   border: none;
   border-radius: 20px;
   padding: 22px;
-  box-shadow: none;
+  box-shadow: var(--shadow-card);
   margin-bottom: 15px;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 /* Tags */
@@ -507,13 +507,13 @@
 /* Glass Card (Glassmorphism - Dark) */
 .glass-card {
   background: var(--bg-card);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border-subtle);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: none;
   border-radius: 30px;
   padding: 18px;
   margin-bottom: 14px;
-  box-shadow: var(--shadow-elevated), var(--glass-inset), var(--glass-accent-inset);
+  box-shadow: var(--shadow-elevated);
 }
 
 /* Gut-Brain-Skin Box */
@@ -967,8 +967,8 @@
 .tab-bar {
   position: fixed;
   bottom: 0;
-  left: -0.5%;
-  right: -0.5%;
+  left: 0;
+  right: 0;
   width: auto;
   max-width: 100%;
   padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -976,9 +976,9 @@
   align-items: center;
   justify-content: space-around;
   background: var(--tab-bg);
-  backdrop-filter: saturate(140%) blur(24px);
-  -webkit-backdrop-filter: saturate(140%) blur(24px);
-  border-top: 1px solid var(--tab-border);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-top: none;
   box-shadow: var(--tab-shadow);
   border-radius: 30px 30px 0 0;
   padding-left: 12px;
@@ -1332,8 +1332,8 @@
   border-radius: 20px;
   border: 1px solid rgba(137,206,245,0.25);
   background: var(--bg-card);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   color: var(--accent-primary);
   font-size: 13px;
   font-weight: 500;
@@ -1373,8 +1373,8 @@
   align-self: flex-start;
   margin-right: 8%;
   background: rgba(137,206,245,0.04);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border: 1px solid var(--border-light);
   border-left: 2px solid rgba(137,206,245,0.1);
   box-shadow: 0 2px 12px rgba(0,0,0,0.15);
@@ -1392,8 +1392,8 @@
   padding: 14px 20px;
   border-radius: 18px;
   background: var(--bg-card-hover);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border: 1px solid var(--border-subtle);
   border-bottom-left-radius: 6px;
   animation: fadeUp 0.3s ease-out;
@@ -1432,8 +1432,8 @@
   left: 16px;
   margin-bottom: 8px;
   background: rgba(30,30,40,0.95);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border: 1px solid var(--border-subtle);
   border-radius: 16px;
   box-shadow: 0 4px 24px rgba(0,0,0,0.4);
@@ -1567,19 +1567,19 @@
 
 /* Cards: glassmorphism */
 [data-theme="light"] .card {
-  background: #FFFFFF;
+  background: rgba(255,255,255,0.5);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   border: none;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
   border-radius: 20px;
 }
 [data-theme="light"] .glass-card {
-  background: #FFFFFF;
+  background: rgba(255,255,255,0.5);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   border: none;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
   border-radius: 20px;
   padding: 24px;
   margin: 0 0 12px;
@@ -1592,16 +1592,16 @@
   padding: 16px 18px;
 }
 
-/* Global glass effect for ALL card-like elements in light mode */
+/* Global glass effect removed for light mode */
 [data-theme="light"] [style*="--bg-card"] {
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
-  border: 1px solid rgba(255,255,255,0.3) !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03) !important;
 }
 [data-theme="light"] [style*="border-radius"][style*="background"] {
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 /* Section icon: 40x40 rounded square with tinted bg */
@@ -1638,8 +1638,8 @@
   font-weight: 500;
   background: transparent;
   border: 1px solid rgba(255,255,255,0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
 }
 [data-theme="light"] .segment-btn.active {
@@ -1647,8 +1647,8 @@
   color: #191F28;
   font-weight: 600;
   border: 1px solid rgba(255,255,255,0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.3);
 }
 
@@ -1668,8 +1668,8 @@
   background: rgba(255,255,255,0.4);
   border: 1px solid rgba(255,255,255,0.3);
   color: #4E5968;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 [data-theme="light"] .btn-secondary:active {
   background: rgba(255,255,255,0.6);
@@ -1701,8 +1701,8 @@
 }
 [data-theme="light"] .consult-chip {
   background: rgba(255,255,255,0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border: 1px solid rgba(255,255,255,0.3);
   border-radius: 12px;
   color: #4E5968;
@@ -1732,14 +1732,14 @@
 }
 [data-theme="light"] .consult-typing {
   background: rgba(255,255,255,0.3);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border: 1px solid rgba(255,255,255,0.3);
 }
 [data-theme="light"] .consult-attach-menu {
   background: rgba(255,255,255,0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border: 1px solid rgba(255,255,255,0.4);
   box-shadow: 0 4px 16px rgba(0,0,0,0.08);
 }
@@ -1757,15 +1757,15 @@
 [data-theme="light"] .gbs-box {
   background: rgba(255,255,255,0.25);
   border: 1px solid rgba(255,255,255,0.3);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 /* Trend bar */
 [data-theme="light"] .trend-bar {
   background: rgba(255,255,255,0.3);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border: 1px solid rgba(255,255,255,0.3);
 }
 [data-theme="light"] .trend-stat + .trend-stat::before {

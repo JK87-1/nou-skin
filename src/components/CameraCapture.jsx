@@ -151,7 +151,7 @@ function CameraErrorScreen({ reason, onFallback, onClose, onRetry, colorMode }) 
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 36,
       }}>
-        {isInsecure ? <LockIcon size={36} /> : isDenied ? '🚫' : <CameraIcon size={36} />}
+        {isInsecure ? <LockIcon size={36} /> : isDenied ? '' : <CameraIcon size={36} />}
       </div>
 
       <h2 style={{ color: 'var(--text-primary)', fontSize: 20, fontWeight: 700, marginBottom: 8 }}>
@@ -168,7 +168,7 @@ function CameraErrorScreen({ reason, onFallback, onClose, onRetry, colorMode }) 
             <p style={{ margin: '0 0 12px', textAlign: 'center' }}>브라우저 설정에서 카메라 권한을 허용한 후 [다시 시도]를 눌러주세요.</p>
             <div style={{ fontSize: 12, color: 'var(--text-dim)', lineHeight: 1.7, padding: '10px 14px', background: 'var(--context-bg)', borderRadius: 10 }}>
               <div><strong style={{ color: 'var(--text-secondary)' }}>iPhone Safari</strong>: 주소창 좌측 「ⓐⓐ」 → 웹사이트 설정 → 카메라 → 허용</div>
-              <div style={{ marginTop: 4 }}><strong style={{ color: 'var(--text-secondary)' }}>Android Chrome</strong>: 주소창 좌측 🔒 → 권한 → 카메라 허용</div>
+              <div style={{ marginTop: 4 }}><strong style={{ color: 'var(--text-secondary)' }}>Android Chrome</strong>: 주소창 좌측  → 권한 → 카메라 허용</div>
               <div style={{ marginTop: 4 }}><strong style={{ color: 'var(--text-secondary)' }}>PC 브라우저</strong>: 주소창 좌측 자물쇠/카메라 아이콘 → 허용</div>
             </div>
           </>

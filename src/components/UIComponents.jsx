@@ -199,7 +199,7 @@ export function DetailPage({ metricKey, value, onBack }) {
 
         {/* Score Ranges */}
         <div className="card">
-          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 14, color: 'var(--text-primary)' }}>📊 결과 해석</div>
+          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 14, color: 'var(--text-primary)' }}> 결과 해석</div>
           {data.ranges.map((r, i) => (
             <div key={i} style={{
               display: 'flex', alignItems: 'center', gap: 10,
@@ -235,7 +235,7 @@ export function DetailPage({ metricKey, value, onBack }) {
         {/* Gut-Brain-Skin */}
         <div className="gbs-box">
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-            <span style={{ fontSize: 20 }}>🧬</span>
+            <span style={{ fontSize: 20 }}></span>
             <span style={{ fontSize: 15, fontWeight: 700, color: '#ADEBB3' }}>장-뇌-피부 축 (Gut-Brain-Skin Axis)</span>
           </div>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.75, marginBottom: 10 }}>{data.gutBrainSkin}</p>
@@ -245,7 +245,7 @@ export function DetailPage({ metricKey, value, onBack }) {
         {/* Disclaimer */}
         <div style={{ padding: 14, background: 'var(--bg-card)', borderRadius: 14, marginBottom: 16 }}>
           <p style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.6 }}>
-            ⚠️ 루아 AI 비전 기반 추정치이며, 의료기기 정밀 측정과 차이가 있습니다.
+             루아 AI 비전 기반 추정치이며, 의료기기 정밀 측정과 차이가 있습니다.
             정확한 진단은 피부과 전문의와 상담해주세요.
           </p>
         </div>

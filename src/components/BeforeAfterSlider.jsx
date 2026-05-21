@@ -184,8 +184,8 @@ export default function BeforeAfterSlider() {
         {/* BEFORE label */}
         <div style={{
           position: 'absolute', top: 12, left: 12,
-          background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
+          background: 'rgba(0,0,0,0.55)', backdropFilter: 'none',
+          WebkitBackdropFilter: 'none',
           borderRadius: 8, padding: '4px 10px',
           zIndex: 5, pointerEvents: 'none',
         }}>
@@ -196,8 +196,8 @@ export default function BeforeAfterSlider() {
         {/* AFTER label */}
         <div style={{
           position: 'absolute', top: 12, right: 12,
-          background: 'rgba(240,144,112,0.75)', backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
+          background: 'rgba(240,144,112,0.75)', backdropFilter: 'none',
+          WebkitBackdropFilter: 'none',
           borderRadius: 8, padding: '4px 10px',
           zIndex: 5, pointerEvents: 'none',
         }}>
@@ -210,8 +210,8 @@ export default function BeforeAfterSlider() {
           <div style={{
             position: 'absolute', bottom: 12, left: '50%',
             transform: 'translateX(-50%)',
-            background: 'var(--bg-modal-overlay)', backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
+            background: 'var(--bg-modal-overlay)', backdropFilter: 'none',
+            WebkitBackdropFilter: 'none',
             borderRadius: 14, padding: '8px 20px',
             display: 'flex', gap: 20, alignItems: 'center',
             zIndex: 5, pointerEvents: 'none',

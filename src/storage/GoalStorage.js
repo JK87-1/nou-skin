@@ -3,15 +3,15 @@ import { getLatestRecord } from './SkinStorage';
 const GOAL_KEY = 'nou_skin_goal';
 
 const METRIC_META = [
-  { key: 'moisture', label: '수분도', icon: '💧' },
-  { key: 'skinTone', label: '피부톤', icon: '✨' },
-  { key: 'wrinkleScore', label: '주름', icon: '📐' },
-  { key: 'poreScore', label: '모공', icon: '🔬' },
-  { key: 'elasticityScore', label: '탄력', icon: '💎' },
-  { key: 'pigmentationScore', label: '색소', icon: '🎨' },
-  { key: 'textureScore', label: '피부결', icon: '🧴' },
-  { key: 'darkCircleScore', label: '다크서클', icon: '👁️' },
-  { key: 'oilBalance', label: '유분', icon: '🫧' },
+  { key: 'moisture', label: '수분도', icon: '' },
+  { key: 'skinTone', label: '피부톤', icon: '' },
+  { key: 'wrinkleScore', label: '주름', icon: '' },
+  { key: 'poreScore', label: '모공', icon: '' },
+  { key: 'elasticityScore', label: '탄력', icon: '' },
+  { key: 'pigmentationScore', label: '색소', icon: '' },
+  { key: 'textureScore', label: '피부결', icon: '' },
+  { key: 'darkCircleScore', label: '다크서클', icon: '' },
+  { key: 'oilBalance', label: '유분', icon: '' },
 ];
 
 export { METRIC_META };

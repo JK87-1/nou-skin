@@ -1,6 +1,6 @@
 /**
  * 메인 오브 — 구름처럼 부드럽게 퍼지는 효과 + 급격한 이동
- * 화이트 · 파스텔베이비핑크 · 파스텔베이비바이올렛 · 파스텔베이비스카이블루
+ * 화이트 · 밝은레몬 · 레몬 · 형광옐로우
  */
 import { useRef } from "react";
 
@@ -16,33 +16,33 @@ const orbStyles = `
 }
 .lua-blob-1 {
   width: 75%; height: 75%;
-  background: radial-gradient(circle, #FFFFFF, #FFB8C8);
+  background: radial-gradient(circle, #FFFFFF, #FFF9B0);
   top: 5%; left: 8%;
   animation: luaDrift1 4s ease-in-out infinite;
 }
 .lua-blob-2 {
   width: 65%; height: 65%;
-  background: radial-gradient(circle, #D8A8F0, #C090E0);
+  background: radial-gradient(circle, #FFE500, #FFD600);
   bottom: 5%; right: 5%;
   opacity: 0.9;
   animation: luaDrift2 5s ease-in-out infinite;
 }
 .lua-blob-3 {
   width: 55%; height: 55%;
-  background: radial-gradient(circle, #90C4F8, #70B0F0);
+  background: radial-gradient(circle, #FFEB3B, #FDD835);
   top: 38%; left: 30%;
   opacity: 0.85;
   animation: luaDrift3 3.5s ease-in-out infinite;
 }
 .lua-blob-4 {
   width: 60%; height: 60%;
-  background: radial-gradient(circle, #FFFFFF, #E0C8F0);
+  background: radial-gradient(circle, #FFF176, #FFEE58);
   top: 3%; right: 5%;
   animation: luaDrift4 4.5s ease-in-out infinite;
 }
 .lua-blob-5a {
   width: 80%; height: 25%;
-  background: radial-gradient(ellipse, rgba(255,150,180,0.4) 0%, rgba(255,150,180,0.18) 40%, transparent 70%);
+  background: radial-gradient(ellipse, rgba(200,251,220,0.35) 0%, rgba(200,251,220,0.15) 40%, transparent 70%);
   filter: blur(18px);
   -webkit-filter: blur(18px);
   top: -5%; left: 10%;
@@ -51,7 +51,7 @@ const orbStyles = `
 }
 .lua-blob-5b {
   width: 25%; height: 80%;
-  background: radial-gradient(ellipse, rgba(180,150,240,0.35) 0%, rgba(180,150,240,0.15) 40%, transparent 70%);
+  background: radial-gradient(ellipse, rgba(200,251,220,0.3) 0%, rgba(200,251,220,0.12) 40%, transparent 70%);
   filter: blur(18px);
   -webkit-filter: blur(18px);
   top: 10%; right: -5%;
@@ -60,7 +60,7 @@ const orbStyles = `
 }
 .lua-blob-5c {
   width: 80%; height: 25%;
-  background: radial-gradient(ellipse, rgba(140,190,250,0.38) 0%, rgba(140,190,250,0.16) 40%, transparent 70%);
+  background: radial-gradient(ellipse, rgba(200,251,220,0.32) 0%, rgba(200,251,220,0.13) 40%, transparent 70%);
   filter: blur(18px);
   -webkit-filter: blur(18px);
   bottom: -5%; left: 10%;
@@ -69,7 +69,7 @@ const orbStyles = `
 }
 .lua-blob-5d {
   width: 25%; height: 80%;
-  background: radial-gradient(ellipse, rgba(240,170,200,0.35) 0%, rgba(240,170,200,0.15) 40%, transparent 70%);
+  background: radial-gradient(ellipse, rgba(200,251,220,0.3) 0%, rgba(200,251,220,0.12) 40%, transparent 70%);
   filter: blur(18px);
   -webkit-filter: blur(18px);
   top: 10%; left: -5%;
@@ -146,6 +146,43 @@ export default function EternalPearl({ size = 280, animated = true }) {
         width: size, height: size,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
+        {/* 뒤쪽 확대 오브 */}
+        <div style={{
+          position: 'absolute',
+          width: size * 1.3, height: size * 1.3,
+          borderRadius: '50%',
+          overflow: 'hidden',
+          opacity: 0.25,
+          mask: 'radial-gradient(circle, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 70%)',
+          WebkitMask: 'radial-gradient(circle, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 70%)',
+          pointerEvents: 'none',
+        }}>
+          <div className="lua-orb" style={{
+            width: '100%', height: '100%', borderRadius: '50%',
+            background: 'linear-gradient(135deg, #FFFFFF, #FFE500)',
+            position: 'relative', overflow: 'hidden',
+          }}>
+            <div className="lua-blob lua-blob-3" style={{ animationDelay: '-3s' }} />
+            <div className="lua-blob lua-blob-1" style={{ animationDelay: '-5s' }} />
+            <div className="lua-blob lua-blob-4" style={{ animationDelay: '-2s' }} />
+            <div className="lua-blob lua-blob-2" style={{ animationDelay: '-7s' }} />
+            <div className="lua-blob lua-blob-5a" style={{ animationDelay: '-3s' }} />
+            <div className="lua-blob lua-blob-5b" style={{ animationDelay: '-5s' }} />
+            <div className="lua-blob lua-blob-5c" style={{ animationDelay: '-2s' }} />
+            <div className="lua-blob lua-blob-5d" style={{ animationDelay: '-6s' }} />
+          </div>
+        </div>
+
+        {/* 가장자리 글로우 — 메인 오브 바로 뒤 */}
+        <div style={{
+          position: 'absolute',
+          width: orbSize * 1.08, height: orbSize * 1.08,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(255,245,160,0.5) 40%, rgba(255,240,140,0.2) 65%, transparent 80%)',
+          filter: 'blur(8px)', WebkitFilter: 'blur(8px)',
+          pointerEvents: 'none',
+        }} />
+
         {/* 메인 오브 */}
         <div style={{
           width: orbSize, height: orbSize, borderRadius: '50%',
@@ -153,10 +190,9 @@ export default function EternalPearl({ size = 280, animated = true }) {
         }}>
           <div className="lua-orb" style={{
             width: orbSize, height: orbSize, borderRadius: '50%',
-            background: 'linear-gradient(135deg, #FFFFFF, #E8D0F0)',
+            background: 'linear-gradient(135deg, #FFFFFF, #FFE500)',
             position: 'relative', overflow: 'hidden',
-            mask: 'radial-gradient(circle, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 72%)',
-            WebkitMask: 'radial-gradient(circle, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 72%)',
+            clipPath: 'circle(50%)', WebkitClipPath: 'circle(50%)',
           }}>
             <div className="lua-blob lua-blob-1" />
             <div className="lua-blob lua-blob-2" />

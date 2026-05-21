@@ -1063,7 +1063,7 @@ function compareCalibration(metricArg) {
       const lin = Math.max(lo, Math.min(hi, Math.round(LEGACY_LINEAR_SCORE[metric](raw))));
       return { raw, calibrated: calib, legacyLinear: lin, delta: calib - lin };
     });
-    console.group(`📊 ${metric}  (clamp ${lo}–${hi})`);
+    console.group(` ${metric}  (clamp ${lo}–${hi})`);
     console.table(rows);
     console.groupEnd();
   }

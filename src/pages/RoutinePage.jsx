@@ -78,7 +78,7 @@ export default function RoutinePage() {
           borderRadius: 16, padding: '14px 16px', marginBottom: 20,
         }}>
           <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-            <span style={{ fontSize: 20, flexShrink: 0 }}>🤖</span>
+            <span style={{ fontSize: 20, flexShrink: 0 }}></span>
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
               {getContextMessage()}
             </p>
@@ -128,7 +128,7 @@ export default function RoutinePage() {
                   <div className="routine-step-num">STEP {step.step}</div>
                   <div className="routine-step-name">{step.name}</div>
                   <div className="routine-step-desc">{step.desc}</div>
-                  <div className="routine-step-time">⏱ {step.time}</div>
+                  <div className="routine-step-time"> {step.time}</div>
                 </div>
               </div>
             );

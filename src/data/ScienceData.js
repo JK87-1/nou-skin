@@ -5,7 +5,7 @@
 export const SCIENCE = {
 
   skinAge: {
-    icon: '🎂', title: '피부 나이', subtitle: 'Biological Skin Age',
+    icon: '', title: '피부 나이', subtitle: 'Biological Skin Age',
     color: '#FF6B35', gradient: 'linear-gradient(135deg, #FF8C42, #FF6B35)',
     hero: '10개 피부 지표를 종합 분석하여 실제 나이와 독립적인 생물학적 피부 나이를 추정합니다.',
     methodology: `LUA의 피부 나이는 10개 피부 지표의 가중 합산으로 산출됩니다.
@@ -48,7 +48,7 @@ export const SCIENCE = {
   },
 
   moisture: {
-    icon: '💧', title: '수분도', subtitle: 'Skin Hydration Level',
+    icon: '', title: '수분도', subtitle: 'Skin Hydration Level',
     color: '#A8DEFF', gradient: 'linear-gradient(135deg, #A8DEFF, #78C0EE)',
     hero: '피부 표면의 밝기 균일도(σ)를 실측하여 각질층의 수분 함유량을 간접적으로 평가합니다.',
     methodology: `LUA는 얼굴 각 영역의 밝기 표준편차(σ)를 직접 계산합니다.
@@ -78,7 +78,7 @@ Corneometer(각질층 전기 용량 수분 측정기)의 시각적 상관관계�
   },
 
   skinTone: {
-    icon: '✨', title: '피부톤', subtitle: 'Skin Tone & Luminosity',
+    icon: '', title: '피부톤', subtitle: 'Skin Tone & Luminosity',
     color: '#FFE082', gradient: 'linear-gradient(135deg, #FFE082, #F0C860)',
     hero: 'ITA°(Individual Typology Angle) 공식을 직접 적용하여 피부 밝기와 색소 균일도를 정량 측정합니다.',
     methodology: `ITA° = arctan((L* - 50) / b*) × 180/π
@@ -107,7 +107,7 @@ L*은 밝기, b*은 황색-청색 축. RGB 평균에서 근사값을 추출하�
   },
 
   trouble: {
-    icon: '🎯', title: '트러블', subtitle: 'Skin Trouble Detection',
+    icon: '', title: '트러블', subtitle: 'Skin Trouble Detection',
     color: '#FFB0B0', gradient: 'linear-gradient(135deg, #FFB0B0, #F08080)',
     hero: '적색 우세 픽셀(Red-Dominant Pixels)을 카운팅하여 염증·여드름·잡티를 감지합니다.',
     methodology: `각 픽셀에서 R > G×1.2 AND R > B×1.25 AND R > 95 AND (R-G) > 15 조건 검사.
@@ -134,7 +134,7 @@ L*은 밝기, b*은 황색-청색 축. RGB 평균에서 근사값을 추출하�
   },
 
   oilBalance: {
-    icon: '🫧', title: '유분 밸런스', subtitle: 'Sebum Balance Index',
+    icon: '', title: '유분 밸런스', subtitle: 'Sebum Balance Index',
     color: '#F0E0A8', gradient: 'linear-gradient(135deg, #F0E0A8, #E0D090)',
     hero: 'T존(이마+코)과 U존(볼+턱)의 하이라이트(번들거림) 비율을 비교하여 유수분 밸런스를 실측합니다.',
     methodology: `밝기 > 195 픽셀 = "하이라이트(번들거림)" 정의.
@@ -161,7 +161,7 @@ T존(이마+코) vs U존(볼+턱) 하이라이트 비율 비교로 유형을 판
   },
 
   wrinkles: {
-    icon: '📐', title: '주름', subtitle: 'Wrinkle Analysis',
+    icon: '', title: '주름', subtitle: 'Wrinkle Analysis',
     color: '#F5D0B8', gradient: 'linear-gradient(135deg, #F5D0B8, #E8C0A8)',
     hero: '이마 가로주름, 눈가 까마귀발, 팔자주름 3개 핵심 주름 존을 각각 분석하여 주름 심각도를 평가합니다.',
     methodology: `LUA는 주름 3개 핵심 영역에서 방향성 에지 검출(Directional Edge Detection)을 수행합니다.
@@ -193,7 +193,7 @@ T존(이마+코) vs U존(볼+턱) 하이라이트 비율 비교로 유형을 판
   },
 
   pores: {
-    icon: '🔬', title: '모공', subtitle: 'Pore Size Analysis',
+    icon: '', title: '모공', subtitle: 'Pore Size Analysis',
     color: '#E8D8C8', gradient: 'linear-gradient(135deg, #E8D8C8, #D8C8B8)',
     hero: '코와 볼의 마이크로 텍스처 분산을 실측하여 모공 크기와 밀도를 평가합니다.',
     methodology: `모공이 가장 눈에 띄는 코·볼에서 5×5 슬라이딩 윈도우 로컬 분산(Micro-Variance)을 측정합니다.
@@ -220,7 +220,7 @@ T존(이마+코) vs U존(볼+턱) 하이라이트 비율 비교로 유형을 판
   },
 
   elasticity: {
-    icon: '💎', title: '탄력', subtitle: 'Skin Elasticity & Firmness',
+    icon: '', title: '탄력', subtitle: 'Skin Elasticity & Firmness',
     color: '#FFD080', gradient: 'linear-gradient(135deg, #FFD080, #F0C060)',
     hero: '턱선(jawline)의 윤곽 선명도를 분석하여 피부 탄력과 처짐 정도를 평가합니다.',
     methodology: `턱선의 선명도는 피부 탄력의 가장 직관적인 시각 지표입니다.
@@ -250,7 +250,7 @@ T존(이마+코) vs U존(볼+턱) 하이라이트 비율 비교로 유형을 판
   },
 
   pigmentation: {
-    icon: '🎨', title: '색소 침착', subtitle: 'Pigmentation & Dark Spots',
+    icon: '', title: '색소 침착', subtitle: 'Pigmentation & Dark Spots',
     color: '#C0A890', gradient: 'linear-gradient(135deg, #C0A890, #B09880)',
     hero: '주변보다 유의미하게 어두운 픽셀 클러스터를 감지하여 기미·잡티·주근깨를 카운팅합니다.',
     methodology: `피부톤이 전체 밝기+균일도를 보는 반면, 색소는 국소적 어두운 반점(Dark Spots)을 감지합니다.
@@ -282,7 +282,7 @@ T존(이마+코) vs U존(볼+턱) 하이라이트 비율 비교로 유형을 판
   // ═══════════════════════════════════════
 
   texture: {
-    icon: '🧴', title: '피부결', subtitle: 'Skin Texture & Smoothness',
+    icon: '', title: '피부결', subtitle: 'Skin Texture & Smoothness',
     color: '#FFB0C8', gradient: 'linear-gradient(135deg, #FFB0C8, #F098B0)',
     hero: '3×3 Laplacian 에너지와 방향 구배 일관성을 측정하여 피부 표면의 매끄러움과 거칠기를 정량 평가합니다.',
     methodology: `피부결은 주름(저주파 큰 선)이나 모공(고주파 미세 점)과 다른 "중간 주파수" 영역입니다. 각질 들뜸, 울퉁불퉁함, 피부 표면의 전반적 매끄러움을 측정합니다.
@@ -320,7 +320,7 @@ LUA는 두 가지 독립적 분석을 수행합니다:
   },
 
   darkCircles: {
-    icon: '👁️', title: '다크서클', subtitle: 'Under-Eye Dark Circle Analysis',
+    icon: '', title: '다크서클', subtitle: 'Under-Eye Dark Circle Analysis',
     color: '#C8B8E8', gradient: 'linear-gradient(135deg, #C8B8E8, #B0A0D8)',
     hero: '눈 밑 삼각형 영역의 밝기·색조를 볼과 비교하여 다크서클의 심각도와 유형을 분석합니다.',
     methodology: `다크서클은 눈 밑(under-eye triangle)이 주변 볼보다 어둡고, 종종 푸르스름한 색조를 띠는 현상입니다.

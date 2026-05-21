@@ -195,28 +195,28 @@ export function getBadges() {
 
   return [
     {
-      id: 'streak7', icon: '🔥', name: '7일 연속',
+      id: 'streak7', icon: '', name: '7일 연속',
       description: '7일 연속 메인 미션 달성',
       achieved: effectiveStreak >= 7,
       progress: Math.min(1, effectiveStreak / 7),
       current: effectiveStreak, target: 7,
     },
     {
-      id: 'moisture10', icon: '💧', name: '수분 마스터',
+      id: 'moisture10', icon: '', name: '수분 마스터',
       description: '수분 관련 미션 10회 완료',
       achieved: moistureCount >= 10,
       progress: Math.min(1, moistureCount / 10),
       current: moistureCount, target: 10,
     },
     {
-      id: 'streak14', icon: '🌟', name: '14일 연속',
+      id: 'streak14', icon: '', name: '14일 연속',
       description: '14일 연속 메인 미션 달성',
       achieved: effectiveStreak >= 14,
       progress: Math.min(1, effectiveStreak / 14),
       current: effectiveStreak, target: 14,
     },
     {
-      id: 'allclear5', icon: '🏆', name: '올클리어',
+      id: 'allclear5', icon: '', name: '올클리어',
       description: '하루 전체 미션 완료 5회',
       achieved: allClearCount >= 5,
       progress: Math.min(1, allClearCount / 5),

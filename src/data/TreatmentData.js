@@ -6,12 +6,12 @@
  */
 
 export const TREATMENT_CATEGORIES = {
-  lifting:       { icon: '🏋️', label: '리프팅/탄력', color: '#FFD080' },
-  pigmentation:  { icon: '✨', label: '색소/미백',   color: '#C0A890' },
-  texture:       { icon: '🧴', label: '피부결/모공', color: '#FFB0C8' },
-  wrinkle:       { icon: '💉', label: '주름/볼륨',   color: '#F5D0B8' },
-  acne:          { icon: '🎯', label: '트러블',      color: '#FFB0B0' },
-  rejuvenation:  { icon: '💧', label: '재생/광채',   color: '#A8DEFF' },
+  lifting:       { icon: '', label: '리프팅/탄력', color: '#FFD080' },
+  pigmentation:  { icon: '', label: '색소/미백',   color: '#C0A890' },
+  texture:       { icon: '', label: '피부결/모공', color: '#FFB0C8' },
+  wrinkle:       { icon: '', label: '주름/볼륨',   color: '#F5D0B8' },
+  acne:          { icon: '', label: '트러블',      color: '#FFB0B0' },
+  rejuvenation:  { icon: '', label: '재생/광채',   color: '#A8DEFF' },
 };
 
 export const TREATMENTS = [
@@ -19,7 +19,7 @@ export const TREATMENTS = [
   {
     id: 'ultherapy', name: '울쎄라', nameEn: 'Ultherapy', category: 'lifting',
     mechanism: '고강도 집속초음파(HIFU)로 SMAS층까지 열 전달, 콜라겐 재생 유도',
-    icon: '🔥',
+    icon: '',
     triggers: [
       { metric: 'elasticityScore', threshold: 50, operator: '<' },
       { metric: 'wrinkleScore', threshold: 50, operator: '<' },
@@ -30,7 +30,7 @@ export const TREATMENTS = [
   {
     id: 'shurink', name: '슈링크', nameEn: 'Shurink', category: 'lifting',
     mechanism: '마이크로·매크로 집속초음파로 피부 탄력 개선',
-    icon: '🔥',
+    icon: '',
     triggers: [
       { metric: 'elasticityScore', threshold: 58, operator: '<' },
     ],
@@ -40,7 +40,7 @@ export const TREATMENTS = [
   {
     id: 'thermage', name: '써마지', nameEn: 'Thermage', category: 'lifting',
     mechanism: '모노폴라 RF로 전 피부층 타이트닝 및 콜라겐 리모델링',
-    icon: '🔥',
+    icon: '',
     triggers: [
       { metric: 'elasticityScore', threshold: 52, operator: '<' },
       { metric: 'wrinkleScore', threshold: 55, operator: '<' },
@@ -51,7 +51,7 @@ export const TREATMENTS = [
   {
     id: 'inmode', name: '인모드', nameEn: 'InMode', category: 'lifting',
     mechanism: '바이폴라 RF + 광에너지로 피부 탄력·윤곽 개선',
-    icon: '⚡',
+    icon: '',
     triggers: [
       { metric: 'elasticityScore', threshold: 58, operator: '<' },
       { metric: 'wrinkleScore', threshold: 60, operator: '<' },
@@ -64,7 +64,7 @@ export const TREATMENTS = [
   {
     id: 'laser-toning', name: '레이저토닝', nameEn: 'Laser Toning', category: 'pigmentation',
     mechanism: '저출력 Q-switched Nd:YAG 레이저로 멜라닌 분해',
-    icon: '✨',
+    icon: '',
     triggers: [
       { metric: 'pigmentationScore', threshold: 55, operator: '<' },
       { metric: 'skinTone', threshold: 58, operator: '<' },
@@ -75,7 +75,7 @@ export const TREATMENTS = [
   {
     id: 'pico-toning', name: '피코토닝', nameEn: 'Pico Toning', category: 'pigmentation',
     mechanism: '피코초 레이저로 깊은 색소까지 미세 분해',
-    icon: '✨',
+    icon: '',
     triggers: [
       { metric: 'pigmentationScore', threshold: 50, operator: '<' },
     ],
@@ -85,7 +85,7 @@ export const TREATMENTS = [
   {
     id: 'ipl', name: 'IPL', nameEn: 'IPL', category: 'pigmentation',
     mechanism: '광선치료로 잡티·홍조·혈관 확장 동시 개선',
-    icon: '💡',
+    icon: '',
     triggers: [
       { metric: 'pigmentationScore', threshold: 58, operator: '<' },
       { metric: 'skinTone', threshold: 55, operator: '<' },
@@ -98,7 +98,7 @@ export const TREATMENTS = [
   {
     id: 'fraxel', name: '프락셀', nameEn: 'Fraxel', category: 'texture',
     mechanism: '프랙셔널 레이저로 피부 리서페이싱 및 콜라겐 재생',
-    icon: '🔬',
+    icon: '',
     triggers: [
       { metric: 'textureScore', threshold: 50, operator: '<' },
       { metric: 'poreScore', threshold: 50, operator: '<' },
@@ -109,7 +109,7 @@ export const TREATMENTS = [
   {
     id: 'co2-fractional', name: 'CO2 프랙셔널', nameEn: 'CO2 Fractional', category: 'texture',
     mechanism: '절삭형 CO2 레이저로 흉터·모공·피부결 집중 개선',
-    icon: '🔬',
+    icon: '',
     triggers: [
       { metric: 'textureScore', threshold: 45, operator: '<' },
       { metric: 'poreScore', threshold: 45, operator: '<' },
@@ -120,7 +120,7 @@ export const TREATMENTS = [
   {
     id: 'mts', name: 'MTS', nameEn: 'Microneedling', category: 'texture',
     mechanism: '미세침으로 콜라겐 생성 유도, 모공·피부결 개선',
-    icon: '📌',
+    icon: '',
     triggers: [
       { metric: 'textureScore', threshold: 58, operator: '<' },
       { metric: 'poreScore', threshold: 55, operator: '<' },
@@ -131,7 +131,7 @@ export const TREATMENTS = [
   {
     id: 'aquapeel', name: '아쿠아필', nameEn: 'Hydrafacial', category: 'texture',
     mechanism: '수소수 필링 + 세럼 주입으로 모공 세정 및 보습',
-    icon: '🫧',
+    icon: '',
     triggers: [
       { metric: 'poreScore', threshold: 58, operator: '<' },
       { metric: 'moisture', threshold: 55, operator: '<' },
@@ -144,7 +144,7 @@ export const TREATMENTS = [
   {
     id: 'botox', name: '보톡스', nameEn: 'Botox', category: 'wrinkle',
     mechanism: '보툴리눔 톡신으로 표정 주름(이마·눈가·미간) 이완',
-    icon: '💉',
+    icon: '',
     triggers: [
       { metric: 'wrinkleScore', threshold: 55, operator: '<' },
     ],
@@ -154,7 +154,7 @@ export const TREATMENTS = [
   {
     id: 'filler', name: '필러', nameEn: 'Filler', category: 'wrinkle',
     mechanism: '히알루론산 필러로 볼륨 보충 및 깊은 주름 개선',
-    icon: '💉',
+    icon: '',
     triggers: [
       { metric: 'elasticityScore', threshold: 48, operator: '<' },
       { metric: 'wrinkleScore', threshold: 48, operator: '<' },
@@ -167,7 +167,7 @@ export const TREATMENTS = [
   {
     id: 'pdt', name: 'PDT', nameEn: 'Photodynamic Therapy', category: 'acne',
     mechanism: '광감작제 + 광 조사로 여드름균 제거 및 피지선 억제',
-    icon: '🎯',
+    icon: '',
     triggers: [
       { metric: 'troubleCount', threshold: 7, operator: '>' },
     ],
@@ -177,7 +177,7 @@ export const TREATMENTS = [
   {
     id: 'skin-botox', name: '스킨보톡스', nameEn: 'Skin Botox', category: 'acne',
     mechanism: '진피 내 미량 보톡스 주입으로 모공·피지 분비 조절',
-    icon: '💧',
+    icon: '',
     triggers: [
       { metric: 'oilBalance', threshold: 70, operator: '>' },
       { metric: 'poreScore', threshold: 50, operator: '<' },
@@ -190,7 +190,7 @@ export const TREATMENTS = [
   {
     id: 'skin-booster', name: '물광주사', nameEn: 'Skin Booster', category: 'rejuvenation',
     mechanism: 'HA + 비타민 칵테일 미세 주입으로 수분·윤기 개선',
-    icon: '💧',
+    icon: '',
     triggers: [
       { metric: 'moisture', threshold: 50, operator: '<' },
       { metric: 'textureScore', threshold: 55, operator: '<' },
@@ -201,7 +201,7 @@ export const TREATMENTS = [
   {
     id: 'pdrn', name: '연어주사', nameEn: 'PDRN', category: 'rejuvenation',
     mechanism: '폴리디옥시리보뉴클레오타이드로 손상 조직 재생 촉진',
-    icon: '🐟',
+    icon: '',
     triggers: [
       { metric: 'textureScore', threshold: 55, operator: '<' },
       { metric: 'elasticityScore', threshold: 55, operator: '<' },
@@ -212,7 +212,7 @@ export const TREATMENTS = [
   {
     id: 'exosome', name: '엑소좀', nameEn: 'Exosome', category: 'rejuvenation',
     mechanism: '세포외소포체로 세포 재생·항염·피부 장벽 강화',
-    icon: '🧬',
+    icon: '',
     triggers: [
       { metric: 'textureScore', threshold: 50, operator: '<' },
       { metric: 'elasticityScore', threshold: 50, operator: '<' },
@@ -223,7 +223,7 @@ export const TREATMENTS = [
   {
     id: 'prp', name: 'PRP', nameEn: 'PRP', category: 'rejuvenation',
     mechanism: '자가 혈소판 풍부 혈장으로 자연 재생 및 콜라겐 생성',
-    icon: '🩸',
+    icon: '',
     triggers: [
       { metric: 'textureScore', threshold: 55, operator: '<' },
       { metric: 'elasticityScore', threshold: 55, operator: '<' },

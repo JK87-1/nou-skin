@@ -51,9 +51,9 @@ function StarIcon({ size = 14 }) {
 
 // Glass style tokens
 const glass = {
-  background: 'rgba(255,255,255,0.35)',
-  backdropFilter: 'blur(16px)',
-  WebkitBackdropFilter: 'blur(16px)',
+  background: '#ffffff',
+  backdropFilter: 'none',
+  WebkitBackdropFilter: 'none',
   border: '1px solid rgba(255,255,255,0.3)',
   boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
 };
@@ -423,7 +423,7 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
       <div onClick={handleClose} style={{
         position: 'fixed', top: 'calc(-1 * env(safe-area-inset-top, 50px))', left: 0, right: 0, bottom: 0, zIndex: 200,
         background: 'rgba(4,44,83,0.12)',
-        backdropFilter: 'blur(2px)', WebkitBackdropFilter: 'blur(2px)',
+        backdropFilter: 'none', WebkitBackdropFilter: 'none',
         opacity: closing ? 0 : 1, transition: 'opacity 200ms',
       }} />
 
@@ -467,7 +467,7 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
         {/* Handle (드래그 닫기) */}
         <div onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
           style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 4px', cursor: 'grab' }}>
-          <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.1)' }} />
+          <div style={{ width: 40, height: 4, borderRadius: 2, background: '#ececec' }} />
         </div>
 
         {/* Gemini Flash Style Header — X(좌) · lua●(중앙) · 새 채팅(우) */}
@@ -547,7 +547,7 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
                 <defs>
                   <linearGradient id="luaStarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor="#89cef5" />
-                    <stop offset="55%" stopColor="#ace2fc" />
+                    <stop offset="55%" stopColor="#58aefe" />
                     <stop offset="100%" stopColor="#cce8fb" />
                   </linearGradient>
                 </defs>
@@ -697,7 +697,7 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
           {showAttachMenu && (
             <div onClick={(e) => e.stopPropagation()} style={{
               position: 'absolute', bottom: '100%', left: 14, marginBottom: 8,
-              ...glass, background: 'rgba(255,255,255,0.85)',
+              ...glass, background: '#ffffff',
               borderRadius: 22, overflow: 'hidden', zIndex: 10,
               boxShadow: '0 4px 24px rgba(0,0,0,0.12)',
             }}>

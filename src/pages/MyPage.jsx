@@ -36,7 +36,7 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
   const recentPhotos = records.slice(0, 5).map(r => ({ date: r.date, record: r, thumb: thumbs[String(r.id)] || thumbs[r.date] })).filter(p => p.thumb);
   const habitDays = (() => { let c = 0; for (let i = 0; i < localStorage.length; i++) { if (localStorage.key(i)?.startsWith('lua_habit_')) c++; } return c; })();
 
-  const glass = { background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)', borderRadius: 20 };
+  const glass = { background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', borderRadius: 20 };
 
   const showToast = (msg) => { setToastMsg(msg); setToast(true); setTimeout(() => setToast(false), 2500); };
   const update = (key, value) => { const next = saveProfile({ [key]: value }); setProfile(next); };
@@ -67,7 +67,7 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
           {/* Avatar */}
           <div style={{
             width: 86, height: 86, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
-            background: 'rgba(255,255,255,0.15)', border: '2px solid rgba(255,255,255,0.1)',
+            background: '#ffffff', border: '2px solid rgba(255,255,255,0.1)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             {profile.profileImage ? (
@@ -146,7 +146,7 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
                 );
               })}
               <div onClick={() => onMeasure?.()} style={{
-                aspectRatio: '1', borderRadius: 8, background: 'rgba(255,255,255,0.15)',
+                aspectRatio: '1', borderRadius: 8, background: '#ffffff',
                 border: '0.5px dashed rgba(137,206,245,0.4)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
               }}>
@@ -159,7 +159,7 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
 
       {contentMode === 'history' && (
         <div style={{ padding: '32px 16px', textAlign: 'center' }}>
-          <div style={{ fontSize: 40, opacity: 0.3, marginBottom: 8 }}>📊</div>
+          <div style={{ fontSize: 40, opacity: 0.3, marginBottom: 8 }}></div>
           <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 6 }}>곧 만나요</div>
           <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>측정 기록을 한 자리에 정돈해드릴게요</div>
         </div>
@@ -216,24 +216,24 @@ function BioEditModal({ bio, onSave, onClose }) {
   const [text, setText] = useState(bio);
   return (
     <>
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,44,83,0.18)', backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)' }} />
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,44,83,0.18)', backdropFilter: 'none', WebkitBackdropFilter: 'none' }} />
       <div style={{
         position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201,
-        background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-        border: '1px solid rgba(255,255,255,0.3)', borderRadius: '22px 22px 0 0',
+        background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none',
+        border: 'none', borderRadius: '22px 22px 0 0',
         boxShadow: '0 -8px 28px rgba(0,0,0,0.08)', padding: '0 0 calc(env(safe-area-inset-bottom,0px))',
         maxWidth: 430, margin: '0 auto', animation: 'slideUp 0.3s ease',
       }}>
         <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(137,206,245,0.4)' }} /></div>
         <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>자기소개</span>
-          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: 'rgba(255,255,255,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: '#ffffff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
         <div style={{ padding: '0 16px 16px' }}>
           <textarea value={text} onChange={e => setText(e.target.value.slice(0, 50))} placeholder="입력해주세요"
-            style={{ width: '100%', minHeight: 80, background: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 12, padding: '10px 14px', fontSize: 13, color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', resize: 'none', boxSizing: 'border-box' }} />
+            style={{ width: '100%', minHeight: 80, background: '#ffffff', border: 'none', borderRadius: 12, padding: '10px 14px', fontSize: 13, color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', resize: 'none', boxSizing: 'border-box' }} />
           <div style={{ textAlign: 'right', fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>{text.length}/50</div>
           <button onClick={() => onSave(text)} style={{ width: '100%', marginTop: 12, padding: 14, borderRadius: 10, border: 'none', background: 'var(--accent-primary, #89cef5)', color: '#fff', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>두기</button>
         </div>
@@ -312,7 +312,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
   return (
     <div style={{
       position: 'fixed', top: 0, right: 0, bottom: 0, left: 0, zIndex: 1000,
-      background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
+      background: 'linear-gradient(to bottom, #58aefe, #d7e9fa)',
     }}>
     <div style={{
       position: 'absolute', top: 0, bottom: 0, left: '50%', transform: 'translateX(-50%)',
@@ -405,7 +405,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
       {legalPage && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 1002, maxWidth: 430, margin: '0 auto',
-          background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
+          background: 'linear-gradient(to bottom, #58aefe, #d7e9fa)',
           display: 'flex', flexDirection: 'column',
           animation: 'settingsSlideIn 0.3s ease',
         }}>
@@ -491,7 +491,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
       {faqOpen && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 1002,
-          background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
+          background: 'linear-gradient(to bottom, #58aefe, #d7e9fa)',
           animation: 'settingsSlideIn 0.3s ease',
         }}>
         <div style={{
@@ -578,7 +578,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
       {editingProfile && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 1002, maxWidth: 430, margin: '0 auto',
-          background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
+          background: 'linear-gradient(to bottom, #58aefe, #d7e9fa)',
           display: 'flex', flexDirection: 'column',
           overflowY: 'auto', WebkitOverflowScrolling: 'touch',
           animation: 'settingsSlideIn 0.3s ease',
@@ -620,7 +620,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           </div>
 
           {/* Fields */}
-          <div style={{ margin: '0 16px', background: 'rgba(255,255,255,0.35)', borderRadius: 14, border: '1px solid rgba(255,255,255,0.3)' }}>
+          <div style={{ margin: '0 16px', background: '#ffffff', borderRadius: 14, border: 'none' }}>
             {[
               { label: '이름', value: profile.nickname, key: 'nickname', placeholder: '입력해주세요' },
               { label: '생년월일', value: profile.birthYear ? (profile.birthYear.includes('-') ? profile.birthYear.replace(/-/g, '.') : `${profile.birthYear}년생`) : '', key: 'birthYear', placeholder: '선택 안 함' },
@@ -648,7 +648,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               placeholder="입력해주세요"
               style={{
                 width: '100%', minHeight: 50, boxSizing: 'border-box',
-                background: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.3)',
+                background: '#ffffff', border: 'none',
                 borderRadius: 12, padding: '12px 14px', fontSize: 12, color: 'var(--text-primary)',
                 lineHeight: 1.5, outline: 'none', fontFamily: 'inherit', resize: 'none',
               }}
@@ -675,24 +675,24 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
             if (editField === 'nickname') {
               return (
                 <>
-                  <div onClick={closeField} style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(4,44,83,0.18)', backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)' }} />
+                  <div onClick={closeField} style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(4,44,83,0.18)', backdropFilter: 'none', WebkitBackdropFilter: 'none' }} />
                   <div style={{
                     position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 2001,
-                    background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-                    border: '1px solid rgba(255,255,255,0.3)', borderRadius: '22px 22px 0 0',
+                    background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none',
+                    border: 'none', borderRadius: '22px 22px 0 0',
                     boxShadow: '0 -8px 28px rgba(0,0,0,0.08)', padding: '0 0 calc(env(safe-area-inset-bottom,0px))',
                     maxWidth: 430, margin: '0 auto', animation: 'slideUp 0.3s ease',
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(137,206,245,0.4)' }} /></div>
                     <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>이름</span>
-                      <button onClick={closeField} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: 'rgba(255,255,255,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <button onClick={closeField} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: '#ffffff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                       </button>
                     </div>
                     <div style={{ padding: '0 16px 16px' }}>
                       <input type="text" value={editFieldValue} onChange={e => setEditFieldValue(e.target.value)} placeholder="이름을 입력하세요" maxLength={20} autoFocus
-                        style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 12, padding: '10px 14px', fontSize: 13, color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit' }} />
+                        style={{ width: '100%', boxSizing: 'border-box', background: '#ffffff', border: 'none', borderRadius: 12, padding: '10px 14px', fontSize: 13, color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit' }} />
                       <div style={{ textAlign: 'right', fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>{editFieldValue.length}/20</div>
                       <button onClick={saveField} style={{ width: '100%', marginTop: 12, padding: 14, borderRadius: 10, border: 'none', background: 'var(--accent-primary, #89cef5)', color: '#fff', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>저장</button>
                     </div>
@@ -715,18 +715,18 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               };
               return (
                 <>
-                  <div onClick={closeField} style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(4,44,83,0.18)', backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)' }} />
+                  <div onClick={closeField} style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(4,44,83,0.18)', backdropFilter: 'none', WebkitBackdropFilter: 'none' }} />
                   <div style={{
                     position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 2001,
-                    background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-                    border: '1px solid rgba(255,255,255,0.3)', borderRadius: '22px 22px 0 0',
+                    background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none',
+                    border: 'none', borderRadius: '22px 22px 0 0',
                     boxShadow: '0 -8px 28px rgba(0,0,0,0.08)', padding: '0 0 calc(env(safe-area-inset-bottom,0px))',
                     maxWidth: 430, margin: '0 auto', animation: 'slideUp 0.3s ease',
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(137,206,245,0.4)' }} /></div>
                     <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>생년월일</span>
-                      <button onClick={closeField} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: 'rgba(255,255,255,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <button onClick={closeField} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: '#ffffff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                       </button>
                     </div>
@@ -746,7 +746,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                         }}
                         style={{
                           width: '100%', padding: '10px 14px', borderRadius: 12, fontSize: 13,
-                          border: '1px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.35)',
+                          border: 'none', background: '#ffffff',
                           color: 'var(--text-primary)', fontFamily: 'inherit', boxSizing: 'border-box',
                           outline: 'none',
                         }}
@@ -761,12 +761,12 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
             if (editField === 'gender') {
               return (
                 <>
-                  <div onClick={closeField} style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(4,44,83,0.18)', backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)' }} />
-                  <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 2001, background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '22px 22px 0 0', padding: '0 0 calc(env(safe-area-inset-bottom,0px))', maxWidth: 430, margin: '0 auto', animation: 'settingsSlideIn 0.25s ease' }}>
+                  <div onClick={closeField} style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(4,44,83,0.18)', backdropFilter: 'none', WebkitBackdropFilter: 'none' }} />
+                  <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 2001, background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none', border: 'none', borderRadius: '22px 22px 0 0', padding: '0 0 calc(env(safe-area-inset-bottom,0px))', maxWidth: 430, margin: '0 auto', animation: 'settingsSlideIn 0.25s ease' }}>
                     <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(137,206,245,0.4)' }} /></div>
                     <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>성별</span>
-                      <div onClick={closeField} style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                      <div onClick={closeField} style={{ width: 32, height: 32, borderRadius: '50%', background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                       </div>
                     </div>
@@ -797,7 +797,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
       {editingSkin && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 1002, maxWidth: 430, margin: '0 auto',
-          background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
+          background: 'linear-gradient(to bottom, #58aefe, #d7e9fa)',
           display: 'flex', flexDirection: 'column',
           overflowY: 'auto', WebkitOverflowScrolling: 'touch',
           animation: 'settingsSlideIn 0.3s ease',
@@ -824,11 +824,11 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           {/* Skin type options */}
           <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             {[
-              { key: '건성', icon: '💧', desc: '세안 후 당기고 건조한 느낌이 자주 나요' },
-              { key: '지성', icon: '✨', desc: '전체적으로 유분이 많고 번들거림이 있어요' },
-              { key: '복합성', icon: '🌗', desc: 'T존은 유분, 볼은 건조한 편이에요' },
-              { key: '민감성', icon: '🌸', desc: '쉽게 자극받고 환절기에 트러블이 잘 나요' },
-              { key: '중성', icon: '🍃', desc: '특별히 건조하거나 유분이 많지 않아요' },
+              { key: '건성', icon: '', desc: '세안 후 당기고 건조한 느낌이 자주 나요' },
+              { key: '지성', icon: '', desc: '전체적으로 유분이 많고 번들거림이 있어요' },
+              { key: '복합성', icon: '', desc: 'T존은 유분, 볼은 건조한 편이에요' },
+              { key: '민감성', icon: '', desc: '쉽게 자극받고 환절기에 트러블이 잘 나요' },
+              { key: '중성', icon: '', desc: '특별히 건조하거나 유분이 많지 않아요' },
             ].map(opt => {
               const selected = profile.skinType === opt.key;
               return (
@@ -869,7 +869,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
       {backupGuide && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 1002,
-          background: 'linear-gradient(to bottom, #ace2fc, #ffffff)',
+          background: 'linear-gradient(to bottom, #58aefe, #d7e9fa)',
           animation: 'settingsSlideIn 0.3s ease',
         }}>
         <div style={{
@@ -1162,7 +1162,7 @@ function GoalSettingModal({ onClose, showToast }) {
             background: 'var(--bg-input)', color: 'var(--text-muted)',
             fontSize: 16, cursor: 'pointer', display: 'flex',
             alignItems: 'center', justifyContent: 'center',
-          }}>✕</button>
+          }}></button>
         </div>
 
         {/* Step indicator */}
@@ -1631,7 +1631,7 @@ function ReminderItem({ enabled, time, onToggle, onTimeChange, profile, tipEnabl
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 17, flexShrink: 0,
           background: 'rgba(240,144,112,0.08)',
-        }}>🔔</div>
+        }}></div>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>진단 리마인더</div>
           {enabled && (
@@ -1639,7 +1639,7 @@ function ReminderItem({ enabled, time, onToggle, onTimeChange, profile, tipEnabl
               onClick={() => setShowPicker(true)}
               style={{ fontSize: 11, color: '#ADEBB3', fontWeight: 400, marginTop: 2, cursor: 'pointer' }}
             >
-              {formatTime(time)} ✎
+              {formatTime(time)} 
             </div>
           )}
           {!enabled && (
@@ -1763,7 +1763,7 @@ function BeautyTipItem({ enabled, time, onToggle, onTimeChange, profile, reminde
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 17, flexShrink: 0,
           background: 'rgba(240,144,112,0.08)',
-        }}>💡</div>
+        }}></div>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>뷰티 팁 알림</div>
           {enabled ? (
@@ -1771,7 +1771,7 @@ function BeautyTipItem({ enabled, time, onToggle, onTimeChange, profile, reminde
               onClick={() => setShowPicker(true)}
               style={{ fontSize: 11, color: '#ADEBB3', fontWeight: 400, marginTop: 2, cursor: 'pointer' }}
             >
-              {formatTime(time)} ✎
+              {formatTime(time)} 
             </div>
           ) : (
             <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 300, marginTop: 2 }}>

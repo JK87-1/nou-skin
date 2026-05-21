@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { generateAlerts, getSeasonalTip, getScheduledNotifications } from '../data/EnvironmentAlertData';
 import { getWeatherData, saveWeatherData, isStale, getUserLocation, saveUserLocation } from '../storage/WeatherStorage';
 import { MicroscopeIcon, PastelIcon } from './icons/PastelIcons';
+import { WeatherIcon } from './WeatherChip';
 
 // ===== Fallback dummy data =====
 const DUMMY_WEATHER = {
@@ -142,19 +143,19 @@ export default function SkinWeather({ skinResult }) {
 
       {/* ── Header ── */}
       <div style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
         marginBottom: 16, animation: 'swFadeInUp 0.5s ease both',
+        position: 'relative',
       }}>
-        <div>
-          <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>오늘의 피부 날씨</div>
-        </div>
+        <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center' }}>오늘의 피부 날씨</div>
         {weather && (
           <div style={{
             display: 'flex', alignItems: 'center', gap: 4,
             background: 'var(--bg-card)', border: '1px solid var(--border-light)',
             borderRadius: 999, padding: '6px 14px', fontSize: 11, color: 'var(--text-secondary)',
+            marginTop: 8,
           }}>
-            📍 {weather.location}
+             {weather.location}
           </div>
         )}
       </div>
@@ -196,13 +197,13 @@ export default function SkinWeather({ skinResult }) {
               <span style={{ fontSize: 52, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>{weather.temp}</span>
               <span style={{ fontSize: 20, color: 'var(--text-muted)', marginTop: 6 }}>°C</span>
             </div>
-            <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ fontSize: 14 }}>{weather.conditionIcon}</span> {weather.condition}</div>
+            <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}><WeatherIcon emoji={weather.conditionIcon} size={16} color="var(--text-secondary)" /> {weather.condition}</div>
             <div style={{ fontSize: 12, color: 'var(--text-dim)', marginTop: 2 }}>최저 {weather.tempMin}° / 최고 {weather.tempMax}°</div>
             <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 2 }}>{weather.date}</div>
           </div>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 56, filter: 'drop-shadow(0 4px 12px rgba(56,189,248,0.2))', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {weather.conditionIcon}
+            <div style={{ filter: 'drop-shadow(0 4px 12px rgba(56,189,248,0.2))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <WeatherIcon emoji={weather.conditionIcon} size={56} color="#58aefe" />
             </div>
             <div style={{ fontSize: 10, color: 'var(--text-dim)', marginTop: 4 }}>바람 {weather.wind}km/h</div>
           </div>
@@ -219,7 +220,7 @@ export default function SkinWeather({ skinResult }) {
               animation: `swFadeIn 0.3s ease ${i * 0.08}s both`,
             }}>
               <div style={{ fontSize: 10, color: 'var(--text-dim)', marginBottom: 4 }}>{f.time}</div>
-              <div style={{ fontSize: 20, marginBottom: 2, display: 'flex', justifyContent: 'center' }}>{f.icon}</div>
+              <div style={{ marginBottom: 2, display: 'flex', justifyContent: 'center' }}><WeatherIcon emoji={f.icon} size={22} color="#58aefe" /></div>
               <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>{f.temp}°</div>
               {f.uv > 0 && (
                 <div style={{ fontSize: 9, color: uvColor(f.uv), marginTop: 2 }}>UV {f.uv}</div>
@@ -427,7 +428,7 @@ export default function SkinWeather({ skinResult }) {
                   animation: `swFadeInUp 0.3s ease ${i * 0.06}s both`,
                 }}>
                   <span style={{ fontSize: 13, color: 'var(--text-muted)', width: 22, flexShrink: 0 }}>{day.day}</span>
-                  <span style={{ fontSize: 22, width: 30, textAlign: 'center', flexShrink: 0, display: 'inline-flex', justifyContent: 'center' }}>{day.icon}</span>
+                  <span style={{ width: 30, textAlign: 'center', flexShrink: 0, display: 'inline-flex', justifyContent: 'center' }}><WeatherIcon emoji={day.icon} size={22} color="#58aefe" /></span>
                   {/* Temp range bar */}
                   <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ fontSize: 12, color: 'var(--text-dim)', width: 28, textAlign: 'right' }}>{day.min}°</span>

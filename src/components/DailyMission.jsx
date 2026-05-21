@@ -254,7 +254,7 @@ export default function DailyMission() {
             opacity: 0.4, display: 'flex', alignItems: 'center', gap: 12,
           }}>
             <div style={{ width: 32, height: 32, borderRadius: 10, background: 'var(--tag-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: 14, opacity: 0.5 }}>✦</span>
+              <span style={{ fontSize: 14, opacity: 0.5 }}></span>
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{b.title}</div>
@@ -468,7 +468,7 @@ export default function DailyMission() {
                 </div>
               )}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, position: 'relative', zIndex: 1 }}>
-                <span>🎉 메인 미션 완료! +{missions.main.xp} P 획득</span>
+                <span> 메인 미션 완료! +{missions.main.xp} P 획득</span>
                 <button onClick={(e) => { e.stopPropagation(); handleUndoMain(); }} style={{
                   background: 'var(--bg-input)', border: 'none',
                   borderRadius: 8, padding: '3px 10px', fontSize: 11, fontWeight: 600,
@@ -481,7 +481,7 @@ export default function DailyMission() {
           {/* Source info */}
           {missions.sourceScore !== null && (
             <div style={{ fontSize: 10, color: 'var(--text-dim)', marginTop: 8, textAlign: 'right' }}>
-              📊 {missions.sourceLabel} {missions.sourceScore}점 기반 추천
+               {missions.sourceLabel} {missions.sourceScore}점 기반 추천
             </div>
           )}
         </div>

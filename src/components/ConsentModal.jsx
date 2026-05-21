@@ -102,7 +102,7 @@ export default function ConsentModal({ onAccept }) {
               cursor: 'pointer',
             }}
           >
-            {c.title}{c.agreed ? ' ✓' : ''}
+            {c.title}{c.agreed ? ' ' : ''}
           </button>
         ))}
       </div>
