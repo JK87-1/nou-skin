@@ -380,6 +380,43 @@ function buildSystemPrompt(context) {
     routineRecContext = lines.join('\n');
   }
 
+  // ===== 등록 제품 성분 충돌·시너지 =====
+  let interactionContext = '';
+  if (context.productInteractions) {
+    const pi = context.productInteractions;
+    const lines = [];
+    if (pi.conflicts?.length > 0) {
+      lines.push('\n\n[등록 제품 성분 충돌 — 사용자가 안 물어도 자연 안내]');
+      for (const c of pi.conflicts) {
+        lines.push(`• [${c.severity}] ${c.title}: ${c.advice}`);
+        if (c.products?.length > 0) lines.push(`  대상: ${c.products.join(' / ')}`);
+      }
+    }
+    if (pi.synergies?.length > 0) {
+      lines.push('\n[등록 제품 성분 시너지 — 강점 확인용]');
+      for (const s of pi.synergies.slice(0, 3)) {
+        lines.push(`• ${s.title}: ${s.advice}`);
+      }
+    }
+    if (pi.overuse?.length > 0) {
+      lines.push('\n[카테고리 과다 등록]');
+      for (const o of pi.overuse) {
+        lines.push(`• ${o.category} ${o.count}종: ${o.advice}`);
+      }
+    }
+    if (lines.length > 0) {
+      lines.push('');
+      lines.push('[충돌·시너지 활용 룰]');
+      lines.push('- 충돌은 안전·자극 관련이라 사용자가 묻지 않아도 자연스럽게 한 번 짚어주세요.');
+      lines.push('  · severity=high → "꼭 시간대 나눠 발라주세요"');
+      lines.push('  · severity=medium → "가능하면 시간대 나누는 게 좋아요"');
+      lines.push('  · severity=low → "민감하면 시간대 나눠보세요" (선택)');
+      lines.push('- 시너지는 등록 라인업 칭찬 + 효과 강조로 자연 인용. "지금 라인업이 보습 시너지가 좋네요" 식.');
+      lines.push('- 충돌·시너지 정보를 답변에 한 번에 다 늘어놓지 말고, 사용자 질문 맥락에 가장 관련 있는 1개만.');
+      interactionContext = lines.join('\n');
+    }
+  }
+
   let changeContext = '';
   if (context.changes) {
     const c = context.changes;
@@ -533,7 +570,7 @@ ${context.currentResult.troubleBreakdown ? `troubleBreakdown 데이터를 받았
 - 결절·낭종(깊은 큰 트러블): 피부과 권유. 비전문 치료 위험.
 ※ 답변에서 "트러블이 있네요" 같은 두루뭉술 표현 금지. 종류별 카운트를 자연 인용해서 "화이트헤드가 ${context.currentResult.troubleBreakdown.whitehead || 0}개 보이는데..." 식으로 정밀하게 짚어주세요.
 ※ 가장 많은 종류 1~2개에 집중. 0개는 언급 X.` : 'troubleBreakdown 데이터 없음 — 종류별 분류 안 됨'}` : '분석 데이터 없음'}
-${historyContext}${changeContext}${todayContext}${productContext}${trendContext}${longTrendContext}${memoryContext}${routineContext}${routineRecContext}
+${historyContext}${changeContext}${todayContext}${productContext}${trendContext}${longTrendContext}${memoryContext}${routineContext}${routineRecContext}${interactionContext}
 
 [계절 기반 조언 - 현재 ${season}]
 ${seasonalTips[season]}
