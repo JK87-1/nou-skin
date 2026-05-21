@@ -14,7 +14,7 @@ export default function SiteFooter() {
     <div style={{
       padding: '0 28px calc(80px + env(safe-area-inset-bottom, 0px))',
       marginTop: 44,
-      fontSize: 11, color: c, lineHeight: 1.8,
+      fontSize: 12, color: c, lineHeight: 1.8,
     }}>
       © 2026 {COMPANY_INFO.name} · v1.0.2<br />
       본 서비스는 의료 행위가 아닙니다.<br />
@@ -22,7 +22,7 @@ export default function SiteFooter() {
         onClick={() => setExpanded(v => !v)}
         style={{
           background: 'none', border: 'none', padding: 0, marginTop: 2,
-          fontSize: 11, color: c, cursor: 'pointer',
+          fontSize: 12, color: c, cursor: 'pointer',
           display: 'inline-flex', alignItems: 'center', gap: 3,
           fontFamily: 'inherit',
         }}
@@ -34,13 +34,19 @@ export default function SiteFooter() {
         </svg>
       </button>
       {expanded && (
-        <div style={{ marginTop: 6 }}>
-          {COMPANY_INFO.name} · 대표 {COMPANY_INFO.ceo}<br />
-          사업자등록번호 {COMPANY_INFO.bizNumber}<br />
-          통신판매업 {COMPANY_INFO.ecommerceLicense}<br />
-          {COMPANY_INFO.address}<br />
-          {COMPANY_INFO.phone} · {COMPANY_INFO.email}<br />
-          개인정보 보호책임자 {DPO_INFO.name} ({DPO_INFO.title})
+        <div style={{ marginTop: 6, display: 'flex', flexWrap: 'wrap', gap: '0 4px' }}>
+          {[
+            COMPANY_INFO.name,
+            `대표 ${COMPANY_INFO.ceo}`,
+            `사업자등록번호 ${COMPANY_INFO.bizNumber}`,
+            `통신판매업 ${COMPANY_INFO.ecommerceLicense}`,
+            COMPANY_INFO.address,
+            COMPANY_INFO.phone,
+            COMPANY_INFO.email,
+            `개인정보 보호책임자 ${DPO_INFO.name}`,
+          ].map((item, i, arr) => (
+            <span key={i} style={{ whiteSpace: 'nowrap' }}>{item}{i < arr.length - 1 ? ' · ' : ''}</span>
+          ))}
         </div>
       )}
     </div>
