@@ -282,6 +282,7 @@ export function getProductsWithUsageContext() {
       category: p.category,
       timeSlot: p.timeSlot, // 'morning' | 'night' | 'both'
       ingredients: p.ingredients,
+      ingredientsConfidence: p.ingredientsConfidence, // 'known' | 'estimated' | undefined
       startDate: p.startDate,
       daysSinceRegistered,        // 등록 후 N일 — 효과 평가 시점 판단
       todayUsedMorning,           // 오늘 아침 체크

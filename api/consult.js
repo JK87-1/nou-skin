@@ -160,7 +160,15 @@ function buildSystemPrompt(context) {
         const ing = typeof p.ingredients === 'string'
           ? p.ingredients
           : (Array.isArray(p.ingredients) ? p.ingredients.join(', ') : '');
-        if (ing) parts.push(`성분: ${ing.slice(0, 250)}`);
+        if (ing) {
+          // 자동 검색된 성분(추정/확실)인지 표시 — 신뢰도 차등 활용
+          const confTag = p.ingredientsConfidence === 'known' ? '✓공식'
+            : p.ingredientsConfidence === 'estimated' ? '~추정'
+            : '';
+          parts.push(`성분${confTag ? `(${confTag})` : ''}: ${ing.slice(0, 250)}`);
+        }
+      } else {
+        parts.push('성분: (정보 없음)');
       }
       return '• ' + parts.join(' · ');
     };
@@ -232,7 +240,16 @@ function buildSystemPrompt(context) {
 1. "지금 쓰는 OOO에 [성분]이 들어있어서 [메트릭] 점수에 이미 기여하고 있어요" — 강점 확인
 2. "[메트릭] 점수가 [N]점인데 라인업에 [성분]이 없네요. [제품 카테고리]가 빈 자리예요" — 공백 짚기
 3. "OOO를 [N일] 쓰셨는데 [메트릭] 점수가 [변화]했어요" — 효과 평가
-4. "[메트릭A] + [메트릭B] 동시 케어엔 [성분]이 효율적이에요. 지금은 따로 쓰는 OOO와 △△△ 대신 하나로 묶을 수도 있어요" — 효율 최적화`;
+4. "[메트릭A] + [메트릭B] 동시 케어엔 [성분]이 효율적이에요. 지금은 따로 쓰는 OOO와 △△△ 대신 하나로 묶을 수도 있어요" — 효율 최적화
+
+[성분 신뢰도 표시 활용]
+각 제품 성분 옆에 다음 태그가 붙어있을 수 있습니다:
+- "성분(✓공식)" — 사용자가 직접 입력했거나 외부 공식 정보. 신뢰도 높음, 단정적 표현 OK.
+- "성분(~추정)" — GPT가 브랜드·이름으로 추정한 일반 성분. 정확하지 않을 수 있음, 답변 시 "~성분이 들어 있을 가능성이 높아요" "~계열로 알려진 제품이에요" 같이 부드럽게.
+- "성분: (정보 없음)" — 성분 정보가 전혀 없음. 분석에서 제외하거나, 카테고리·이름으로 일반적 성분 추정해 "보통 이런 제품엔 ~성분이 들어가요" 식으로 보조 정보만.
+
+성분 정보 없는 제품도 카테고리(예: 세럼·크림·선크림)로 일반 케어 역할은 짚어줄 수 있습니다.
+다만 "이 제품에 [구체 성분]이 들어있다"고 단정하지 마세요 — confidence 태그에 맞춰 표현하세요.`;
   }
 
   // ===== 최근 추세 컨텍스트 — Proactive Insights 핵심 =====

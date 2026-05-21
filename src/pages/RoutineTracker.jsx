@@ -717,8 +717,7 @@ export default function RoutineTracker({ themeColors, onBack }) {
   const handleSaveProduct = async (formData) => {
     setSaving(true);
     try {
-      // 수동 등록일 때만 네이버 쇼핑에서 누끼 이미지 가져오기
-      // (사진 등록은 PhotoRegistrationFlow에서 이미 보정 완료)
+      // 1) 누끼 이미지 — 네이버 쇼핑 (수동 등록일 때만)
       if (!formData.imageThumb && formData.brand && formData.name) {
         try {
           const info = await fetchProductInfo(formData.brand, formData.name);
@@ -727,6 +726,33 @@ export default function RoutineTracker({ themeColors, onBack }) {
             if (thumb) formData = { ...formData, imageThumb: thumb };
           }
         } catch { /* 실패 시 기존 데이터 유지 */ }
+      }
+
+      // 2) 성분 자동 검색 — ingredients 비어 있고 브랜드·이름 있을 때만 (GPT 기반 추정)
+      const hasIngredients = (typeof formData.ingredients === 'string' && formData.ingredients.trim().length > 0)
+        || (Array.isArray(formData.ingredients) && formData.ingredients.length > 0);
+      if (!hasIngredients && (formData.brand || formData.name)) {
+        try {
+          const resp = await fetch('/api/product-ingredients', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              brand: formData.brand || '',
+              name: formData.name || '',
+              category: formData.category || '',
+            }),
+          });
+          if (resp.ok) {
+            const data = await resp.json();
+            if (Array.isArray(data.ingredients) && data.ingredients.length > 0) {
+              formData = {
+                ...formData,
+                ingredients: data.ingredients,
+                ingredientsConfidence: data.confidence || 'estimated', // 'known' | 'estimated'
+              };
+            }
+          }
+        } catch { /* 실패 시 ingredients 없이 저장 */ }
       }
 
       const updated = saveProduct(formData);
