@@ -367,8 +367,6 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
         <SectionHeader label="정보" />
         <SettingsRow icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>} label="이용약관" onTap={() => setLegalPage('terms')} />
         <SettingsRow icon={icons.lock} label="개인정보 처리방침" onTap={() => setLegalPage('privacy')} />
-        <SettingsRow icon={icons.lock} label="생체정보 동의서" onTap={() => setLegalPage('biometric')} />
-        <SettingsRow icon={icons.lock} label="국외 이전 동의" onTap={() => setLegalPage('overseas')} />
         <SettingsRow icon={icons.message} label="문의하기" onTap={() => { setOpenFaqIndex(-1); setFaqOpen(true); }} />
 
         <input

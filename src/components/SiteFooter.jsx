@@ -26,15 +26,11 @@ export default function SiteFooter({ onShowLegal }) {
       marginTop: 12,
       fontFamily: 'inherit',
     }}>
-      {/* 약관 링크 row — 항상 노출 */}
+      {/* 약관 링크 row — 항상 노출 (생체정보·국외 이전은 처리방침에 통합) */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 14px', marginBottom: 14, fontSize: 12 }}>
         <button onClick={() => onShowLegal?.('terms')} style={linkBtnStyle}>이용약관</button>
         <span style={dotStyle}>·</span>
         <button onClick={() => onShowLegal?.('privacy')} style={{ ...linkBtnStyle, fontWeight: 600 }}>개인정보 처리방침</button>
-        <span style={dotStyle}>·</span>
-        <button onClick={() => onShowLegal?.('biometric')} style={linkBtnStyle}>생체정보 동의서</button>
-        <span style={dotStyle}>·</span>
-        <button onClick={() => onShowLegal?.('overseas')} style={linkBtnStyle}>국외 이전 동의</button>
       </div>
 
       {/* 사업자 정보 — expand 토글 */}
