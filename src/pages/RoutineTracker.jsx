@@ -639,12 +639,57 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, accent }) {
 
 // ===== MAIN COMPONENT =====
 
+// 날짜 헬퍼 — selectedDate state용
+function dateToStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+function todayStrLocal() {
+  return dateToStr(new Date());
+}
+function formatDateLabel(dateStr) {
+  if (dateStr === todayStrLocal()) return '오늘';
+  const d = new Date(dateStr + 'T12:00:00');
+  const today = new Date();
+  const diff = Math.floor((today.setHours(0,0,0,0) - new Date(dateStr + 'T00:00:00').getTime()) / 86400000);
+  if (diff === 1) return '어제';
+  if (diff === 2) return '그제';
+  const days = ['일','월','화','수','목','금','토'];
+  return `${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+}
+
 export default function RoutineTracker({ themeColors, onBack }) {
   const [section, setSection] = useState('products');
   const [products, setProducts] = useState(() => getProducts());
   const [routineMode, setRoutineMode] = useState(new Date().getHours() >= 18 ? 'night' : 'morning');
+  const [selectedDate, setSelectedDate] = useState(() => todayStrLocal());
   const [checks, setChecks] = useState(() => getTrackerChecks());
   const [analyses, setAnalyses] = useState([]);
+
+  // selectedDate 변경 시 checks 동기화
+  useEffect(() => {
+    setChecks(getTrackerChecks(selectedDate));
+  }, [selectedDate]);
+
+  const isToday = selectedDate === todayStrLocal();
+  const canGoPrev = (() => {
+    const d = new Date(selectedDate + 'T12:00:00');
+    const diff = Math.floor((Date.now() - d.getTime()) / 86400000);
+    return diff < 60; // 60일 retention
+  })();
+  const goPrev = () => {
+    const d = new Date(selectedDate + 'T12:00:00');
+    d.setDate(d.getDate() - 1);
+    setSelectedDate(dateToStr(d));
+  };
+  const goNext = () => {
+    const d = new Date(selectedDate + 'T12:00:00');
+    d.setDate(d.getDate() + 1);
+    const next = dateToStr(d);
+    // 미래 불가
+    if (next > todayStrLocal()) return;
+    setSelectedDate(next);
+  };
+  const goToday = () => setSelectedDate(todayStrLocal());
 
   // Sheets
   const [showAddSheet, setShowAddSheet] = useState(false);
@@ -655,9 +700,9 @@ export default function RoutineTracker({ themeColors, onBack }) {
   const accent = themeColors?.accent || '#89cef5';
   const getCat = (cat) => TRACKER_CATEGORIES[cat] || TRACKER_CATEGORIES['기타'];
 
-  // 루틴 데이터
+  // 루틴 데이터 — selectedDate 기준
   const modeProducts = getProductsForMode(routineMode);
-  const progress = getTrackerProgress(routineMode);
+  const progress = getTrackerProgress(routineMode, selectedDate);
   const weekly = getTrackerWeekly();
 
   // 효과 분석 로드
@@ -706,7 +751,7 @@ export default function RoutineTracker({ themeColors, onBack }) {
   };
 
   const handleToggleCheck = (productId) => {
-    const updated = toggleTrackerCheck(routineMode, productId);
+    const updated = toggleTrackerCheck(routineMode, productId, selectedDate);
     setChecks(updated);
   };
 

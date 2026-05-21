@@ -6,9 +6,11 @@
 import { getRecords } from './SkinStorage';
 
 const PRODUCTS_KEY = 'nou_tracker_products';
-const CHECKS_KEY = 'nou_tracker_checks';
-const HISTORY_KEY = 'nou_tracker_history';
+const CHECKS_KEY = 'nou_tracker_checks';     // 호환성: 오늘 체크만 빠르게 (기존 사용처 유지)
+const HISTORY_KEY = 'nou_tracker_history';   // 일자별 집계(완료/부분)
+const DAILY_CHECKS_KEY = 'nou_tracker_daily'; // 일자별 개별 제품 체크 — 과거 날짜 수정용
 const MAX_PRODUCTS = 20;
+const HISTORY_RETENTION_DAYS = 60; // 케어 캘린더에서 거슬러 올라갈 수 있는 기간
 
 // ===== 카테고리 =====
 
@@ -89,27 +91,72 @@ export function getProductsForMode(mode) {
 
 // ===== 일일 체크 =====
 
-export function getTrackerChecks() {
+/**
+ * 일자별 체크 조회. dateStr 없으면 오늘.
+ * 오늘은 CHECKS_KEY(기존)와 DAILY_CHECKS_KEY 양쪽에서 병합 — 기존 데이터 호환.
+ */
+export function getTrackerChecks(dateStr) {
+  const date = dateStr || getTodayStr();
+
+  // 오늘 — 기존 CHECKS_KEY 우선 (호환)
+  if (date === getTodayStr()) {
+    try {
+      const raw = JSON.parse(localStorage.getItem(CHECKS_KEY) || '{}');
+      if (raw.date === date) return raw;
+    } catch {}
+  }
+
+  // 그 외 — DAILY_CHECKS_KEY
   try {
-    const raw = JSON.parse(localStorage.getItem(CHECKS_KEY) || '{}');
-    if (raw.date !== getTodayStr()) {
-      return { date: getTodayStr(), morning: {}, night: {} };
-    }
-    return raw;
-  } catch { return { date: getTodayStr(), morning: {}, night: {} }; }
+    const daily = JSON.parse(localStorage.getItem(DAILY_CHECKS_KEY) || '{}');
+    const entry = daily[date];
+    return {
+      date,
+      morning: entry?.morning || {},
+      night: entry?.night || {},
+    };
+  } catch {
+    return { date, morning: {}, night: {} };
+  }
 }
 
-export function toggleTrackerCheck(mode, productId) {
-  const checks = getTrackerChecks();
+function saveDailyChecks(date, checks) {
+  try {
+    const daily = JSON.parse(localStorage.getItem(DAILY_CHECKS_KEY) || '{}');
+    daily[date] = {
+      morning: { ...(checks.morning || {}) },
+      night: { ...(checks.night || {}) },
+    };
+    // retention 적용 — 오래된 날짜부터 삭제
+    const keys = Object.keys(daily).sort();
+    while (keys.length > HISTORY_RETENTION_DAYS) {
+      delete daily[keys.shift()];
+    }
+    localStorage.setItem(DAILY_CHECKS_KEY, JSON.stringify(daily));
+  } catch { /* ignore */ }
+}
+
+/**
+ * 제품 체크 토글. dateStr 없으면 오늘.
+ * 오늘은 CHECKS_KEY + DAILY_CHECKS_KEY 양쪽 저장 (기존 호환). 과거는 DAILY_CHECKS_KEY만.
+ */
+export function toggleTrackerCheck(mode, productId, dateStr) {
+  const date = dateStr || getTodayStr();
+  const checks = getTrackerChecks(date);
   checks[mode][productId] = !checks[mode][productId];
-  checks.date = getTodayStr();
-  localStorage.setItem(CHECKS_KEY, JSON.stringify(checks));
+  checks.date = date;
+
+  // 오늘은 기존 CHECKS_KEY에도 저장 (consult.js getProductsWithUsageContext 호환)
+  if (date === getTodayStr()) {
+    try { localStorage.setItem(CHECKS_KEY, JSON.stringify(checks)); } catch {}
+  }
+  saveDailyChecks(date, checks);
   updateHistory(checks);
   return checks;
 }
 
-export function getTrackerProgress(mode) {
-  const checks = getTrackerChecks();
+export function getTrackerProgress(mode, dateStr) {
+  const checks = getTrackerChecks(dateStr);
   const products = getProductsForMode(mode);
   const done = products.filter(p => checks[mode][p.id]).length;
   return { done, total: products.length };
@@ -134,9 +181,9 @@ function updateHistory(checks) {
       partial: (mornDone + nightDone) > 0,
     };
 
-    // 30일분만 유지
+    // retention 적용
     const keys = Object.keys(history).sort();
-    while (keys.length > 30) {
+    while (keys.length > HISTORY_RETENTION_DAYS) {
       delete history[keys.shift()];
     }
     localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
@@ -169,7 +216,39 @@ export function getTrackerWeekly() {
 // ===== 상담사용 종합 컨텍스트 (AI 뷰티 에이전트) =====
 
 /**
- * 등록 제품 + 오늘 아침/저녁 체크 여부 + 등록 후 경과일.
+ * 특정 제품의 최근 N일 사용 기록을 일자별로 반환.
+ * 상담사 prompt에서 "오늘 미체크여도 어제·그제 사용 인지" 위해 사용.
+ */
+export function getProductRecentUsage(productId, days = 7) {
+  const out = [];
+  let daily = {};
+  try { daily = JSON.parse(localStorage.getItem(DAILY_CHECKS_KEY) || '{}'); } catch {}
+
+  // 오늘 체크는 CHECKS_KEY에서 별도로 (호환)
+  let todayChecks = null;
+  try {
+    const raw = JSON.parse(localStorage.getItem(CHECKS_KEY) || '{}');
+    if (raw.date === getTodayStr()) todayChecks = raw;
+  } catch {}
+
+  const today = new Date();
+  for (let i = 0; i < days; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const isToday = dateStr === getTodayStr();
+    const entry = isToday && todayChecks ? todayChecks : daily[dateStr];
+    out.push({
+      date: dateStr,
+      morning: !!entry?.morning?.[productId],
+      night: !!entry?.night?.[productId],
+    });
+  }
+  return out; // 최신 → 과거 순
+}
+
+/**
+ * 등록 제품 + 오늘 아침/저녁 체크 여부 + 등록 후 경과일 + 최근 7일 사용 패턴.
  * consult API에 보낼 products 컨텍스트로 사용.
  */
 export function getProductsWithUsageContext() {
@@ -189,6 +268,14 @@ export function getProductsWithUsageContext() {
     else if (p.timeSlot === 'night') usedToday = todayUsedNight;
     else usedToday = todayUsedMorning || todayUsedNight; // both: 둘 중 하나라도
 
+    // 최근 7일 사용 패턴 — "어제·그제 발랐는지" 인지용
+    const recent7 = getProductRecentUsage(p.id, 7);
+    const usedDaysIn7 = recent7.filter(d => d.morning || d.night).length;
+    const lastUsedDate = recent7.find(d => d.morning || d.night)?.date || null;
+    const daysSinceLastUsed = lastUsedDate
+      ? Math.floor((now - new Date(lastUsedDate + 'T12:00:00').getTime()) / 86400000)
+      : null;
+
     return {
       brand: p.brand,
       name: p.name,
@@ -200,6 +287,10 @@ export function getProductsWithUsageContext() {
       todayUsedMorning,           // 오늘 아침 체크
       todayUsedNight,             // 오늘 저녁 체크
       usedToday,                  // 시간대 기준 오늘 사용 여부
+      recent7,                    // 최근 7일 [{date, morning, night}, ...] 최신 → 과거
+      usedDaysIn7,                // 최근 7일 중 사용한 일수
+      lastUsedDate,               // 마지막 사용 일자 (없으면 null)
+      daysSinceLastUsed,          // 마지막 사용 후 경과일
     };
   });
 }

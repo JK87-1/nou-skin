@@ -139,6 +139,23 @@ function buildSystemPrompt(context) {
         parts.push(`${m}/${n}`);
       }
 
+      // 최근 7일 사용 패턴 — 오늘 미체크여도 어제·그제 발랐는지 인지하도록
+      if (Array.isArray(p.recent7) && p.recent7.length > 0) {
+        // recent7는 최신 → 과거 순. 오늘부터 6일 전까지.
+        const pattern = p.recent7.map(d => (d.morning || d.night) ? '●' : '·').join('');
+        // 형식: ●·●·●·● (오늘→과거)
+        parts.push(`최근7일 ${pattern}(오늘→과거)`);
+        if (typeof p.usedDaysIn7 === 'number') parts.push(`주 ${p.usedDaysIn7}/7회`);
+        if (p.daysSinceLastUsed != null) {
+          if (p.daysSinceLastUsed === 0) parts.push('마지막=오늘');
+          else if (p.daysSinceLastUsed === 1) parts.push('마지막=어제');
+          else if (p.daysSinceLastUsed === 2) parts.push('마지막=그제');
+          else parts.push(`마지막=${p.daysSinceLastUsed}일 전`);
+        } else {
+          parts.push('마지막 사용=없음');
+        }
+      }
+
       if (p.ingredients) {
         const ing = typeof p.ingredients === 'string'
           ? p.ingredients
@@ -171,6 +188,18 @@ function buildSystemPrompt(context) {
 - ✅ 표시는 오늘 실제로 발랐다는 뜻. ⛔ 는 등록은 했지만 오늘 안 발랐다는 뜻.
   · 사용자가 "오늘 뭐 발랐어?" 류 질문 시 ✅ 항목만 정확히 답변. ⛔ 항목은 "등록은 했지만 오늘은 안 쓰셨네요" 안내.
   · 측정 결과가 안 좋은데 핵심 제품이 ⛔라면 그게 원인일 수 있음을 부드럽게 짚어주세요.
+
+[최근 7일 사용 패턴 — 매우 중요]
+- "최근7일 ●·●·●·●(오늘→과거)" 표기는 매일 사용 여부. ● = 사용함, · = 미사용. 왼쪽이 오늘.
+- "주 N/7회"는 최근 7일 동안 사용한 일수. "마지막=어제/그제/N일 전"은 마지막 사용 시점.
+- ⛔ 오늘 미사용이라도 마지막=어제·그제면 "꾸준히 쓰시는 중"으로 인식하세요. "안 바른 걸로" 단정 X.
+  · 예: 오늘 ⛔이지만 주 5/7회·마지막=어제 → "어제까지 꾸준히 쓰고 계셨네요. 오늘은 깜빡하신 것 같은데" 식의 따뜻한 톤.
+  · 사용자가 "어제 OOO 발랐어"라고 말하면, recent7 데이터로 그 사실을 확인해서 자연스럽게 받기.
+- 사용 빈도 패턴 활용:
+  · 주 6~7회 = 꾸준 사용자. 효과 평가 신뢰도 높음.
+  · 주 3~5회 = 보통. 더 자주 쓰면 효과 더 볼 거란 권유 가능.
+  · 주 0~2회 또는 마지막=N일 전(N>3) = 거의 미사용. 사용 의미 다시 짚어주기.
+- ⛔ 오늘이지만 마지막 사용이 3일 이상 전이라면 그게 "측정 결과 안 좋은" 진짜 원인일 가능성 큼.
 - 사용자의 현재 피부 점수와 사용 중인 제품 성분을 항상 cross-check 하세요
 - 자연스러운 인용 예: "지금 쓰고 계신 OOO에 나이아신아마이드가 들어있어서 색소(48점) 케어에 도움되고 있어요"
 - 누락된 카테고리 자연스럽게 안내 (예: 자외선 차단제 없음 → "차단제는 아직 안 쓰시는 것 같은데, 색소 케어엔 꼭 필요해요")
