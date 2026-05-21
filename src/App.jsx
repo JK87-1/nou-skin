@@ -7,6 +7,7 @@ import { callVisionAI, hybridMerge, hasBaseline, getAiFallbackStats, clearAiFall
 import { estimateAge, preload as preloadAge } from './engine/FaceAgeEstimator';
 import { preload as preloadLandmarker } from './engine/FaceLandmarker';
 import { AnimatedNumber, ScoreRing, MetricBar, Tag, DetailPage } from './components/UIComponents';
+import TroubleBreakdownCard from './components/TroubleBreakdownCard';
 import CameraCapture from './components/CameraCapture';
 import { saveRecord, updateRecord, getRecords, getNextMeasurementInfo, getChanges, generateShareText, getLatestRecord, hasTodayRecord, saveThumbnail, saveComparisonPhoto, getTodayRecords, getStableSkinAge, findRecentPrimaryRecord } from './storage/SkinStorage';
 import { migrateFromLocalStorage } from './storage/PhotoDB';
@@ -2018,6 +2019,8 @@ export default function App() {
                 <MetricBar label="트러블" value={Math.max(0, 100 - result.troubleCount * 8.5)} unit="점" icon={<TargetIcon size={14} />} color="#FFB0B0" delay={180}
                   description={`${result.troubleCount}개 | ${result.troubleCount <= 2 ? '깨끗' : result.troubleCount <= 5 ? '경증' : '집중관리'}`}
                   onClick={() => openDetail('trouble')} />
+                {/* 5종 분류 시각화 — 백엔드 troubleBreakdown 데이터 노출 */}
+                <TroubleBreakdownCard breakdown={result.troubleBreakdown} />
                 <MetricBar label="다크서클" value={result.darkCircleScore} unit="점" icon={<EyeIcon size={18} />} color="#C8B8E8" delay={240}
                   description={result.darkCircleScore >= 70 ? '눈 밑 밝음' : result.darkCircleScore >= 45 ? '아이크림 추천' : '다크서클 집중 관리'}
                   onClick={() => openDetail('darkCircles')} />
