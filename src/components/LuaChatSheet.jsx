@@ -3,7 +3,7 @@ import { getRecords, getSmoothedChanges, getChanges, getLatestRecord, getStableS
 import { getProfile } from '../storage/ProfileStorage';
 import { compressImage } from '../engine/PixelAnalysis';
 import { getProductsWithUsageContext, getRoutineSnapshot, getProducts } from '../storage/TrackerStorage';
-import { buildRoutineRecommendation, serializeRoutineForPrompt } from '../utils/routineBuilder';
+import { buildRoutineRecommendation, serializeRoutineForPrompt, detectInteractions, serializeInteractionsForPrompt } from '../utils/routineBuilder';
 import { getMemoryContext, recordUserMessage } from '../storage/UserMemoryStorage';
 import { Capacitor } from '@capacitor/core';
 import { Keyboard } from '@capacitor/keyboard';
@@ -274,6 +274,7 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
       longTrend: getRecentTrend(30),
       userMemory: getMemoryContext(),
       routineRecommendation: serializeRoutineForPrompt(buildRoutineRecommendation(latest, getProducts())),
+      productInteractions: serializeInteractionsForPrompt(detectInteractions(getProducts())),
     };
   }, []);
 

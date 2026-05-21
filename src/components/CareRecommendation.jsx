@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { getLatestRecord } from '../storage/SkinStorage';
 import { getProducts, TRACKER_CATEGORIES } from '../storage/TrackerStorage';
-import { buildRoutineRecommendation } from '../utils/routineBuilder';
+import { buildRoutineRecommendation, detectInteractions } from '../utils/routineBuilder';
 
 /**
  * CareRecommendation — 등록한 화장품을 피부 데이터 기반으로 표준 스킨케어 순서대로 정렬.
@@ -137,6 +137,8 @@ export default function CareRecommendation() {
     };
   }, [userProducts, result]);
 
+  const interactions = useMemo(() => detectInteractions(userProducts), [userProducts]);
+
   // 빈 상태
   if (userProducts.length === 0) {
     return (
@@ -199,7 +201,7 @@ export default function CareRecommendation() {
       {/* 과다 등록 가이드 */}
       {hasManyProducts && (
         <div style={{
-          padding: '12px 14px', marginBottom: 16,
+          padding: '12px 14px', marginBottom: 12,
           background: 'rgba(255,200,120,0.18)',
           border: '1px solid rgba(255,180,80,0.25)',
           borderRadius: 14,
@@ -211,6 +213,53 @@ export default function CareRecommendation() {
           </div>
         </div>
       )}
+
+      {/* 성분 충돌 경고 */}
+      {interactions.conflicts.length > 0 && interactions.conflicts.map(c => {
+        const sevColor = c.severity === 'high' ? 'rgba(232,140,140,0.25)'
+          : c.severity === 'medium' ? 'rgba(240,180,120,0.22)'
+          : 'rgba(240,210,140,0.18)';
+        const sevBorder = c.severity === 'high' ? 'rgba(220,100,100,0.35)'
+          : c.severity === 'medium' ? 'rgba(220,150,80,0.3)'
+          : 'rgba(220,180,80,0.25)';
+        return (
+          <div key={c.id} style={{
+            padding: '12px 14px', marginBottom: 10,
+            background: sevColor,
+            border: `1px solid ${sevBorder}`,
+            borderRadius: 14,
+            display: 'flex', gap: 10, alignItems: 'flex-start',
+          }}>
+            <span style={{ fontSize: 15, flexShrink: 0, lineHeight: 1.1 }}>⚠️</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 3 }}>{c.title}</div>
+              <div style={{ fontSize: 11.5, color: 'var(--text-secondary)', lineHeight: 1.55 }}>{c.advice}</div>
+              {c.products.length > 0 && (
+                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>
+                  대상: {c.products.join(' · ')}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
+
+      {/* 성분 시너지 인사이트 */}
+      {interactions.synergies.length > 0 && interactions.synergies.slice(0, 2).map(s => (
+        <div key={s.id} style={{
+          padding: '12px 14px', marginBottom: 10,
+          background: 'rgba(173,235,179,0.18)',
+          border: '1px solid rgba(140,210,150,0.28)',
+          borderRadius: 14,
+          display: 'flex', gap: 10, alignItems: 'flex-start',
+        }}>
+          <span style={{ fontSize: 15, flexShrink: 0, lineHeight: 1.1 }}>✨</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 3 }}>{s.title}</div>
+            <div style={{ fontSize: 11.5, color: 'var(--text-secondary)', lineHeight: 1.55 }}>{s.advice}</div>
+          </div>
+        </div>
+      ))}
 
       <RoutineColumn
         icon="☀️"

@@ -6,7 +6,7 @@ import { compressImage } from '../engine/PixelAnalysis';
 import { incrementStat, addXP, checkAndAwardBadges } from '../storage/BadgeStorage';
 import { PRODUCTS, CATEGORY_META, getProductsByCategory, calcMatchScore } from '../data/ProductCatalog';
 import { getProducts, getProductsWithUsageContext, getRoutineSnapshot } from '../storage/TrackerStorage';
-import { buildRoutineRecommendation, serializeRoutineForPrompt } from '../utils/routineBuilder';
+import { buildRoutineRecommendation, serializeRoutineForPrompt, detectInteractions, serializeInteractionsForPrompt } from '../utils/routineBuilder';
 import { getMemoryContext, recordUserMessage } from '../storage/UserMemoryStorage';
 import { Capacitor } from '@capacitor/core';
 import { Keyboard } from '@capacitor/keyboard';
@@ -564,6 +564,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
       longTrend: getRecentTrend(30),
       userMemory: getMemoryContext(),
       routineRecommendation: serializeRoutineForPrompt(buildRoutineRecommendation(result, getProducts())),
+      productInteractions: serializeInteractionsForPrompt(detectInteractions(getProducts())),
     };
   }, [result]);
 
