@@ -55,7 +55,7 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           WebkitTapHighlightColor: 'transparent',
         }}>
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0f0f0f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path strokeWidth="0" d="M0 0h24v24H0z" fill="none" /><path d="M4 6l16 0" /><path d="M4 12l16 0" /><path d="M4 18l16 0" />
           </svg>
         </div>
@@ -87,7 +87,7 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
               { key: 'record', iconSrc: '/memo.svg', label: '기록', count: daysTogether },
             ].map(t => {
               const active = contentMode === t.key;
-              const itemColor = active ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0.5)';
+              const itemColor = active ? '#0f0f0f' : 'rgba(15,15,15,0.4)';
               return (
                 <div key={t.key} onClick={() => setContentMode(t.key)} style={{
                   background: 'transparent', borderRadius: 10, padding: '10px 4px',
@@ -104,8 +104,8 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
 
         {/* Text below avatar */}
         <div style={{ paddingTop: 4 }}>
-          <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,1)' }}>{profile.nickname || 'user'}</div>
-          <div onClick={() => setBioModal(true)} style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 6, marginBottom: 20, cursor: 'pointer' }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: '#0f0f0f' }}>{profile.nickname || 'user'}</div>
+          <div onClick={() => setBioModal(true)} style={{ fontSize: 12, color: 'rgba(15,15,15,0.4)', marginTop: 6, marginBottom: 20, cursor: 'pointer' }}>
             {profile.bio || '자기소개'}
           </div>
         </div>
@@ -292,13 +292,13 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
   );
 
   const SectionHeader = ({ label }) => (
-    <div style={{ padding: '14px 28px 6px', fontSize: 11, fontWeight: 400, color: 'var(--text-dim, #B0B8C1)', letterSpacing: 0.5 }}>{label}</div>
+    <div style={{ padding: '18px 28px 6px', fontSize: 12, fontWeight: 600, color: 'rgba(0,0,0,0.35)', letterSpacing: 0.8 }}>{label}</div>
   );
 
   return (
     <div style={{
       position: 'fixed', top: 0, right: 0, bottom: 0, left: 0, zIndex: 1000,
-      background: 'linear-gradient(to bottom, #58aefe, #d7e9fa)',
+      background: 'linear-gradient(180deg, #C5E3FF 0%, #F1F7FD 100%)',
     }}>
     <div style={{
       position: 'absolute', top: 0, bottom: 0, left: '50%', transform: 'translateX(-50%)',
@@ -309,6 +309,9 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
     }}>
       <style>{`
         @keyframes settingsSlideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        .legal-table-scroll::-webkit-scrollbar { height: 4px; }
+        .legal-table-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.04); border-radius: 2px; }
+        .legal-table-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 2px; }
       `}</style>
 
       {/* Header */}
@@ -375,21 +378,15 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           }}
         />
 
-        {/* Version + Logout */}
-        <div style={{ padding: '12px 28px 8px', marginTop: 12 }}>
-          <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12 }}>버전 1.0.2</div>
-          <div onClick={() => showToast('로그아웃 기능 준비 중')} style={{ fontSize: 13, color: 'var(--text-muted)', cursor: 'pointer' }}>로그아웃</div>
-        </div>
-
-        {/* 전자상거래법·정보통신망법 표시 의무 푸터 (사업자 정보·의료기기 고지·©) */}
-        <SiteFooter />
+        {/* 통합 푸터 */}
+        <SiteFooter onLogout={() => showToast('로그아웃 기능 준비 중')} />
       </div>
 
       {/* ===== Legal Document Sub-Page ===== */}
       {legalPage && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 1002, maxWidth: 430, margin: '0 auto',
-          background: 'linear-gradient(to bottom, #58aefe, #d7e9fa)',
+          background: 'linear-gradient(180deg, #C5E3FF 0%, #F1F7FD 100%)',
           display: 'flex', flexDirection: 'column',
           animation: 'settingsSlideIn 0.3s ease',
         }}>
@@ -427,19 +424,26 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                     i++;
                   }
                   const headerCells = tableLines[0].split('|').filter(c => c.trim()).map(c => c.trim());
-                  const dataRows = tableLines.filter((l, idx) => idx > 1).map(l => l.split('|').filter(c => c.trim() !== '' && !/^-+$/.test(c.trim())).map(c => c.trim()));
+                  const dataRows = tableLines.filter((l, idx) => idx > 1).map(l => {
+                    const cells = l.split('|').slice(1); // 선두 빈 요소 제거
+                    if (cells.length > 0 && cells[cells.length - 1].trim() === '') cells.pop(); // 후미 빈 요소 제거
+                    const trimmed = cells.map(c => c.trim());
+                    // 헤더 열 개수에 맞춰 부족하면 빈 셀 추가
+                    while (trimmed.length < headerCells.length) trimmed.push('');
+                    return trimmed;
+                  }).filter(row => !row.every(c => /^-+$/.test(c) || c === ''));
                   elements.push(
-                    <div key={key} style={{ overflowX: 'auto', margin: '10px 0', borderRadius: 5, border: '1px solid rgba(0,0,0,0.08)' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                    <div key={key} style={{ overflowX: 'auto', margin: '10px 0', borderRadius: 5, border: '1px solid rgba(0,0,0,0.08)', WebkitOverflowScrolling: 'touch' }} className="legal-table-scroll">
+                      <table style={{ minWidth: 520, borderCollapse: 'collapse', fontSize: 12 }}>
                         <thead>
                           <tr style={{ background: 'rgba(91,168,214,0.1)' }}>
-                            {headerCells.map((c, j) => <th key={j} style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 600, color: 'var(--text-primary)', borderBottom: '1px solid rgba(0,0,0,0.08)', borderRight: j < headerCells.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none' }}>{c}</th>)}
+                            {headerCells.map((c, j) => <th key={j} style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 600, color: 'var(--text-primary)', borderBottom: '1px solid rgba(0,0,0,0.1)', borderRight: j < headerCells.length - 1 ? '1px solid rgba(0,0,0,0.1)' : 'none', whiteSpace: 'nowrap' }}>{c}</th>)}
                           </tr>
                         </thead>
                         <tbody>
                           {dataRows.map((row, ri) => (
                             <tr key={ri}>
-                              {row.map((c, ci) => <td key={ci} style={{ padding: '7px 10px', color: 'var(--text-secondary)', borderBottom: ri < dataRows.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none', borderRight: ci < row.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none' }}>{c}</td>)}
+                              {row.map((c, ci) => <td key={ci} style={{ padding: '7px 12px', color: 'var(--text-secondary)', borderBottom: ri < dataRows.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none', borderRight: ci < row.length - 1 ? '1px solid rgba(0,0,0,0.1)' : 'none', whiteSpace: 'nowrap' }}>{c}</td>)}
                             </tr>
                           ))}
                         </tbody>
@@ -475,7 +479,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
       {faqOpen && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 1002,
-          background: 'linear-gradient(to bottom, #58aefe, #d7e9fa)',
+          background: 'linear-gradient(180deg, #C5E3FF 0%, #F1F7FD 100%)',
           animation: 'settingsSlideIn 0.3s ease',
         }}>
         <div style={{
@@ -562,7 +566,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
       {editingProfile && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 1002, maxWidth: 430, margin: '0 auto',
-          background: 'linear-gradient(to bottom, #58aefe, #d7e9fa)',
+          background: 'linear-gradient(180deg, #C5E3FF 0%, #F1F7FD 100%)',
           display: 'flex', flexDirection: 'column',
           overflowY: 'auto', WebkitOverflowScrolling: 'touch',
           animation: 'settingsSlideIn 0.3s ease',
@@ -781,7 +785,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
       {editingSkin && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 1002, maxWidth: 430, margin: '0 auto',
-          background: 'linear-gradient(to bottom, #58aefe, #d7e9fa)',
+          background: 'linear-gradient(180deg, #C5E3FF 0%, #F1F7FD 100%)',
           display: 'flex', flexDirection: 'column',
           overflowY: 'auto', WebkitOverflowScrolling: 'touch',
           animation: 'settingsSlideIn 0.3s ease',
@@ -853,7 +857,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
       {backupGuide && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 1002,
-          background: 'linear-gradient(to bottom, #58aefe, #d7e9fa)',
+          background: 'linear-gradient(180deg, #C5E3FF 0%, #F1F7FD 100%)',
           animation: 'settingsSlideIn 0.3s ease',
         }}>
         <div style={{

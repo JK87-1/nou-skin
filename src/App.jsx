@@ -878,20 +878,30 @@ export default function App() {
         />
       )}
 
+      {/* ===== 탭별 배경 (PC에서도 전체 커버) ===== */}
+      {(activeTab === 'history' || activeTab === 'care1' || activeTab === 'discover' || activeTab === 'my') && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: -1, pointerEvents: 'none',
+          background: 'linear-gradient(180deg, #C5E3FF 0%, #F1F7FD 100%)',
+        }} />
+      )}
+
       {/* ===== HISTORY PAGE (gallery + insights merged) ===== */}
       {activeTab === 'history' && (
         <HistoryPage onBack={goToLanding} onMeasure={openCamera} onOpenConsult={() => setFabChatOpen(true)} onAddProduct={() => { setActiveTab('home'); setStage('routineTracker'); }} initialMode={historyInitMode} />
       )}
 
-
-
       {activeTab === 'care1' && (
         <RoutineTracker colorMode={colorMode} themeColors={activeThemeColors} onBack={() => setActiveTab('home')} />
       )}
 
-      {activeTab === 'discover' && <DiscoverPage onMeasure={openCamera} onOpenConsult={() => setFabChatOpen(true)} />}
+      {activeTab === 'discover' && (
+        <DiscoverPage onMeasure={openCamera} onOpenConsult={() => setFabChatOpen(true)} />
+      )}
 
-      {activeTab === 'my' && <MyPage colorMode={colorMode} setColorMode={setColorMode} onThemeChange={setActiveThemeId} onMeasure={openCamera} />}
+      {activeTab === 'my' && (
+        <MyPage colorMode={colorMode} setColorMode={setColorMode} onThemeChange={setActiveThemeId} onMeasure={openCamera} />
+      )}
 
       {/* ===== HOME TAB (stage-based sub-flow) ===== */}
       {activeTab === 'home' && <>
