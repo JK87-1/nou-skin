@@ -214,7 +214,7 @@ function getAllowedDelta(daysSinceBaseline) {
   return 15;
 }
 
-function stabilizeScores(scores, baselineResult, baselineTimestamp) {
+function stabilizeScores(scores, baselineResult, baselineTimestamp, deviceInfo) {
   if (!baselineResult) return scores;
 
   // Different person detection: average absolute diff across all metrics
@@ -232,14 +232,28 @@ function stabilizeScores(scores, baselineResult, baselineTimestamp) {
   const now = Date.now();
   const elapsed = baselineTimestamp ? now - baselineTimestamp : 0;
   const daysSince = elapsed / 86400000;
-  const maxDelta = getAllowedDelta(daysSince);
+  let maxDelta = getAllowedDelta(daysSince);
+
+  // ===== 크로스 디바이스 anchor 강화 =====
+  // face descriptor가 same(동일인 확정) + 다른 디바이스에서 측정 시
+  // → 디바이스 차이가 점수에 미친 영향을 강하게 흡수해야 함.
+  // → maxDelta를 1/3로 축소(±2~5만 허용) + baseline weighted average 적용.
+  const crossDevice = deviceInfo?.faceMatch === 'same' && deviceInfo?.differentDevice === true;
+  if (crossDevice) {
+    maxDelta = Math.max(2, Math.round(maxDelta / 3));
+  }
 
   const stabilized = { ...scores };
   for (const key of SCORE_KEYS) {
     const current = scores[key];
     const baseline = baselineResult[key];
     if (typeof current === 'number' && typeof baseline === 'number') {
-      const diff = current - baseline;
+      let workingCurrent = current;
+      // 크로스 디바이스이면 weighted average — baseline 60% + new 40%
+      if (crossDevice) {
+        workingCurrent = Math.round(baseline * 0.6 + current * 0.4);
+      }
+      const diff = workingCurrent - baseline;
       // 트러블만 비대칭: 트러블 점수가 떨어지는 방향(=실제 트러블 증가)은 자유 허용.
       // baseline에 anchor돼서 새로 생긴 트러블이 감지 안 되는 문제 방지.
       // 점수가 오르는 방향(=실제 트러블 감소)은 stabilization 유지.
@@ -463,7 +477,7 @@ export default async function handler(req, res) {
     // Stabilize ALL metrics against baseline (skip for different person)
     const effectiveBaseline = gptSaysDifferent ? null : (baselineResult || null);
     const effectiveTimestamp = gptSaysDifferent ? null : (baselineTimestamp || null);
-    const stabilized = stabilizeScores(merged, effectiveBaseline, effectiveTimestamp);
+    const stabilized = stabilizeScores(merged, effectiveBaseline, effectiveTimestamp, deviceInfo);
     for (const key of SCORE_KEYS) {
       merged[key] = stabilized[key];
     }

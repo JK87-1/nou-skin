@@ -16,8 +16,10 @@
  *  - "표준 사진" 같진 않음. 단지 디바이스 간 차이 줄임.
  */
 
-const SOFTNESS = 0.7; // 보정 강도 (1.0=full)
+const SOFTNESS = 0.95; // 보정 강도 (1.0=full) — 디바이스 차이 흡수 위해 거의 full
 const TARGET_BRIGHTNESS = 135; // 표준 평균 밝기 (0~255)
+const EXPOSURE_MIN = 0.5;
+const EXPOSURE_MAX = 2.0;
 
 function clip(v) { return v < 0 ? 0 : v > 255 ? 255 : v; }
 
@@ -25,9 +27,9 @@ function clip(v) { return v < 0 ? 0 : v > 255 ? 255 : v; }
  * 정규화 통계 — debug용 (보정 전후 RGB·brightness).
  */
 function computeStats(data, w, h) {
-  // 중앙 60% 영역 (얼굴 위주, 배경/옷 영향 줄임)
-  const x0 = Math.floor(w * 0.2), x1 = Math.floor(w * 0.8);
-  const y0 = Math.floor(h * 0.2), y1 = Math.floor(h * 0.8);
+  // 중앙 45% 영역 (얼굴 중심 — 머리카락·옷·배경 영향 거의 제거)
+  const x0 = Math.floor(w * 0.275), x1 = Math.floor(w * 0.725);
+  const y0 = Math.floor(h * 0.275), y1 = Math.floor(h * 0.725);
   let sumR = 0, sumG = 0, sumB = 0, n = 0;
   for (let y = y0; y < y1; y += 4) {
     for (let x = x0; x < x1; x += 4) {
@@ -76,9 +78,9 @@ export async function normalizeImageBase64(base64) {
 
         // === 2. Auto-exposure ===
         // 평균 밝기를 TARGET_BRIGHTNESS로 부드럽게(sqrt) 보정.
-        // 너무 어둡거나 너무 밝은 사진은 보정 폭 제한 (0.6~1.7).
+        // 보정 폭 0.5~2.0 (강한 카메라 차이 흡수).
         const rawExpFactor = TARGET_BRIGHTNESS / Math.max(gray, 1);
-        const expFactor = Math.max(0.6, Math.min(1.7, Math.pow(rawExpFactor, SOFTNESS)));
+        const expFactor = Math.max(EXPOSURE_MIN, Math.min(EXPOSURE_MAX, Math.pow(rawExpFactor, SOFTNESS)));
 
         const fR = sR * expFactor;
         const fG = sG * expFactor;
