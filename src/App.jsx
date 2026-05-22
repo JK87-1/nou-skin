@@ -1880,6 +1880,29 @@ export default function App() {
                     <div style={{ fontSize: 9, color: '#6B7F99', lineHeight: 1.5 }}>네트워크 또는 분석 서버 일시 지연으로 기본 분석(CV)으로 처리됐어요. 잠시 후 다시 측정하면 보통 정상 복귀됩니다.</div>
                   </div>
                 )}
+                {/* 측정 정확도 디버그 (베타 임시) — 디바이스·얼굴 매칭·정규화 통계 */}
+                {result?.measureDebug && (() => {
+                  const d = result.measureDebug;
+                  const matchEmoji = d.faceMatch === 'same' ? '✓ 동일인'
+                    : d.faceMatch === 'different' ? '✗ 다른 사람'
+                    : d.faceMatch === 'ambiguous' ? '? 모호'
+                    : '— 비교 안 함';
+                  const sameDevText = d.sameDevice === true ? '같은 폰' : d.sameDevice === false ? '다른 폰' : '첫 측정';
+                  return (
+                    <div style={{
+                      marginTop: 8, padding: '8px 10px', borderRadius: 10,
+                      background: 'rgba(100,116,139,0.06)', border: '1px solid rgba(100,116,139,0.15)',
+                      fontSize: 9, color: '#6B7F99', lineHeight: 1.6,
+                    }}>
+                      <div style={{ fontWeight: 600, marginBottom: 2 }}>측정 정확도 디버그 (베타 임시)</div>
+                      <div>디바이스: {d.device} ({sameDevText})</div>
+                      <div>얼굴 매칭: {matchEmoji}{d.faceDistance != null ? ` · distance ${d.faceDistance}` : ''}</div>
+                      {d.normalize && (
+                        <div>정규화: 밝기 {d.normalize.before.brightness}→{d.normalize.after.brightness} · exposure {d.normalize.factors.exposure}</div>
+                      )}
+                    </div>
+                  );
+                })()}
                 {result?.outlierWarning && (
                   <div style={{
                     marginTop: 8, padding: '8px 10px', borderRadius: 10,
