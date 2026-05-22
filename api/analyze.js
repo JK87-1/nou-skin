@@ -202,7 +202,8 @@ function median(arr) {
  * Time-based stabilization.
  * Allowed delta grows with days since baseline was created:
  *   same day: ±3, 1-2d: ±5, 3-5d: ±7, 1w: ±10, 2w: ±13, 1m+: ±15
- * Different person detection: average diff > 15 → skip stabilization.
+ * Different person detection: average diff > 25 → skip stabilization.
+ * (15 → 25로 상향. 디바이스·조명 차이로 점수가 20점 가까이 튀어도 동일인 가능성 우선.)
  */
 function getAllowedDelta(daysSinceBaseline) {
   if (daysSinceBaseline < 1) return 3;
@@ -225,7 +226,7 @@ function stabilizeScores(scores, baselineResult, baselineTimestamp) {
     }
   }
   const avgDiff = counted > 0 ? totalDiff / counted : 0;
-  if (avgDiff > 15) return scores; // Different person
+  if (avgDiff > 25) return scores; // Different person (15→25, 디바이스 차이 흡수)
 
   // Time-based allowed delta
   const now = Date.now();
@@ -293,17 +294,36 @@ function parseAIResponse(text) {
   } catch { return null; }
 }
 
-async function callGPT(apiKey, newImage, seed, baselineImage, baselineResult) {
+async function callGPT(apiKey, newImage, seed, baselineImage, baselineResult, deviceInfo) {
   const userContent = [];
+
+  const deviceHint = deviceInfo?.differentDevice
+    ? '\n\n[중요] 두 사진은 서로 다른 디바이스(다른 폰·카메라)로 촬영됐을 가능성이 큽니다. 디바이스마다 색온도·노출·화이트밸런스가 다르므로 점수 차이가 크게 보여도 그건 디바이스 차이일 수 있어요. 점수가 아닌 **얼굴 윤곽·이목구비·특징**으로만 동일인 판별하세요.'
+    : '';
 
   if (baselineImage && baselineResult) {
     // ===== Dual-image comparison mode =====
     userContent.push({
       type: 'text',
-      text: `[중요] 먼저 두 사진이 동일 인물인지 판별하세요.
-- 동일 인물이면: 기준 점수(${JSON.stringify(baselineResult)})에 앵커하여 일관성 있게 분석하세요. 조명/각도 차이로 인한 점수 변동은 최소화하세요.
-- 다른 인물이면: 기준 점수를 완전히 무시하고 두 번째 사진만 독립적으로 분석하세요. "differentPerson":true를 JSON에 포함하세요.
-첫 번째 사진=기준 사진, 두 번째 사진=오늘 촬영한 사진입니다.`,
+      text: `[동일인 판별 — 매우 중요. 점수가 아닌 얼굴로 판별하세요]
+첫 번째 사진=기준, 두 번째 사진=오늘. 다음 순서로 판별:
+
+1) **얼굴 특징 기반 동일인 판별 (우선)**:
+   - 눈 모양·크기·간격, 코 형태(콧대·콧방울), 입술 두께, 턱선·얼굴 윤곽, 광대·이마 비율
+   - 눈썹 모양·털 흐름, 점·흉터 등 영구 특징
+   - 위 특징이 일치하면 **동일인**. 점수 차이 무시.
+
+2) **점수 차이는 보조 신호** (단독 판별 X):
+   - 점수가 20점 이상 크게 달라도 디바이스·조명·메이크업 차이일 수 있음
+   - 점수가 비슷해도 다른 사람일 수 있음
+
+3) 명확히 다른 사람일 때만 "differentPerson":true:
+   - 얼굴 윤곽·이목구비가 명확히 다른 경우만
+   - 애매하면 false 우선 (동일인 가정)
+
+판별 후:
+- 동일인이면: 기준 점수(${JSON.stringify(baselineResult)})에 앵커. 조명/각도/디바이스 차이로 인한 점수 변동 최소화. 단 진짜 피부 변화는 반영.
+- 다른 인물이면: 기준 점수 무시, 두 번째 사진만 독립 분석.${deviceHint}`,
     });
     userContent.push({
       type: 'image_url',
@@ -339,7 +359,7 @@ async function callGPT(apiKey, newImage, seed, baselineImage, baselineResult) {
       messages: [
         {
           role: 'system',
-          content: 'You are a dermatologist-level AI skin analyzer. Be consistent and deterministic. CRITICAL: First determine if the two photos show the SAME person or DIFFERENT people. If DIFFERENT people, completely ignore baseline scores and analyze the new photo independently — set "differentPerson":true in output. If SAME person, anchor to baseline scores and only deviate for genuine skin changes, not lighting/angle differences. Output JSON between ---JSON_START--- and ---JSON_END--- markers.',
+          content: 'You are a dermatologist-level AI skin analyzer. Be consistent and deterministic. CRITICAL: Identify SAME vs DIFFERENT person by FACIAL FEATURES (eye shape, nose, lips, jawline, eyebrow shape, permanent marks like moles/scars) — NOT by score difference. Score differences of 20+ points across photos are USUALLY device/lighting differences, not person differences. Default to SAME person when uncertain. Only mark "differentPerson":true when facial features are clearly different. If DIFFERENT people, ignore baseline scores. If SAME person, anchor to baseline scores and minimize variation from lighting/angle/device differences. Output JSON between ---JSON_START--- and ---JSON_END--- markers.',
         },
         { role: 'user', content: userContent },
       ],
@@ -370,7 +390,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { image, baselineImage, baselineResult, baselineTimestamp } = req.body;
+    const { image, baselineImage, baselineResult, baselineTimestamp, currentDevice, differentDevice, baselineDevice } = req.body;
+    const deviceInfo = {
+      currentDevice: currentDevice || null,
+      baselineDevice: baselineDevice || null,
+      differentDevice: !!differentDevice,
+    };
 
     if (!image) return res.status(400).json({ error: 'No image provided' });
 
@@ -391,7 +416,7 @@ export default async function handler(req, res) {
     // 3x parallel API calls with different seeds → median
     const seeds = [12345, 67890, 24680];
     const results = await Promise.all(
-      seeds.map(s => callGPT(apiKey, image, s, baselineImage || null, baselineResult || null))
+      seeds.map(s => callGPT(apiKey, image, s, baselineImage || null, baselineResult || null, deviceInfo))
     );
     const valid = results.filter(r => r !== null);
 
