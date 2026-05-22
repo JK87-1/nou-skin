@@ -7,6 +7,7 @@
  */
 
 import { getDeviceFingerprint, isSameDevice } from '../utils/deviceFingerprint';
+import { extractDescriptorFromBase64, descriptorDistance, classifyDistance, preload as preloadFaceDescriptor } from './FaceDescriptor';
 
 const AI_TIMEOUT_MS = 60000; // 2 images + 3 parallel calls need more time
 
@@ -15,6 +16,7 @@ const PRIMARY_IMAGE_KEY = 'baselineImage';
 const PRIMARY_RESULT_KEY = 'baselineResult';
 const PRIMARY_TIMESTAMP_KEY = 'baselineTimestamp';
 const PRIMARY_DEVICE_KEY = 'baselineDevice'; // fingerprint hash
+const PRIMARY_DESCRIPTOR_KEY = 'baselineDescriptor'; // face embedding 128차원 (JSON array)
 const SECONDARY_RESULT_KEY = 'secondaryBaselineResult';
 const SECONDARY_TIMESTAMP_KEY = 'secondaryBaselineTimestamp';
 
@@ -32,7 +34,12 @@ export function getBaseline() {
     if (!image || !resultStr) return null;
     const timestamp = parseInt(localStorage.getItem(PRIMARY_TIMESTAMP_KEY) || '0', 10);
     const device = localStorage.getItem(PRIMARY_DEVICE_KEY) || null;
-    return { image, result: JSON.parse(resultStr), timestamp, device };
+    let descriptor = null;
+    try {
+      const ds = localStorage.getItem(PRIMARY_DESCRIPTOR_KEY);
+      if (ds) descriptor = JSON.parse(ds);
+    } catch {}
+    return { image, result: JSON.parse(resultStr), timestamp, device, descriptor };
   } catch { return null; }
 }
 
@@ -59,13 +66,17 @@ function getSecondaryBaseline() {
   } catch { return null; }
 }
 
-export function saveBaseline(image, result) {
+export function saveBaseline(image, result, descriptor) {
   try {
     localStorage.setItem(PRIMARY_IMAGE_KEY, image);
     localStorage.setItem(PRIMARY_RESULT_KEY, JSON.stringify(result));
     localStorage.setItem(PRIMARY_TIMESTAMP_KEY, String(Date.now()));
     // 측정 디바이스 fingerprint 저장 — 다음 측정 시 같은 디바이스인지 판단
     try { localStorage.setItem(PRIMARY_DEVICE_KEY, getDeviceFingerprint().hash); } catch {}
+    // Face descriptor (128차원 embedding) — 디바이스 무관 동일인 판별의 정수
+    if (Array.isArray(descriptor) && descriptor.length > 0) {
+      try { localStorage.setItem(PRIMARY_DESCRIPTOR_KEY, JSON.stringify(descriptor)); } catch {}
+    }
   } catch (e) { console.warn('Baseline save failed:', e); }
 }
 
@@ -274,24 +285,54 @@ export async function callVisionAI(base64Image, landmarks) {
   // Crop face region
   const faceImage = await cropFace(base64Image, landmarks);
 
-  // Load baseline for comparison — 같은 디바이스에서 측정된 baseline만 사용
-  // 다른 디바이스(다른 폰·카메라)에서 측정된 baseline은 색온도·노출 차이로 부정확한 anchor가 됨
+  // ===== Phase 2: Face descriptor 임베딩 (디바이스·조명 무관 동일인 판단의 정수) =====
+  // 3초 timeout. 첫 측정 또는 모델 미로드 시 null 반환. 다음 측정부터 자연 활용.
   const rawBaseline = getBaseline();
   const currentDevice = getDeviceFingerprint();
-  const baseline = rawBaseline && (!rawBaseline.device || isSameDevice(rawBaseline.device, currentDevice.hash))
-    ? rawBaseline
-    : null;
+
+  const newDescriptor = await Promise.race([
+    extractDescriptorFromBase64(faceImage),
+    new Promise(resolve => setTimeout(() => resolve(null), 3000)),
+  ]);
+
+  let faceMatch = null; // 'same' | 'different' | 'ambiguous' | 'no_baseline_descriptor' | null
+  let descDistance = null;
+  if (newDescriptor && rawBaseline?.descriptor) {
+    descDistance = descriptorDistance(newDescriptor, rawBaseline.descriptor);
+    faceMatch = classifyDistance(descDistance);
+    console.log('[FaceDescriptor]', { distance: descDistance?.toFixed(3), match: faceMatch });
+  }
+
+  // baseline anchor 결정 — face descriptor 우선, device fingerprint fallback
+  // 1) face descriptor 'same' → 디바이스 무관 anchor
+  // 2) 'ambiguous' or descriptor 없음 + 같은 device → anchor
+  // 3) 'different' → anchor 안 함
+  // 4) 다른 device + descriptor 없음 → anchor 안 함
+  let baseline = null;
+  let differentDevice = false;
+  if (rawBaseline) {
+    if (faceMatch === 'same') {
+      baseline = rawBaseline; // 얼굴 같음 — 디바이스 무관 anchor
+    } else if (faceMatch === 'different') {
+      baseline = null; // 다른 사람 확정
+    } else {
+      // ambiguous or descriptor 없음 — device로 판단
+      const sameDevice = !rawBaseline.device || isSameDevice(rawBaseline.device, currentDevice.hash);
+      if (sameDevice) baseline = rawBaseline;
+      else differentDevice = true;
+    }
+  }
   const isFirstAnalysis = !baseline;
-  const differentDevice = !!rawBaseline && !!baseline === false; // baseline 있었지만 다른 디바이스라 무시
 
   try {
     const body = { image: faceImage, currentDevice: currentDevice.hash };
+    if (faceMatch) body.faceMatch = faceMatch;
+    if (descDistance != null) body.faceDistance = Number(descDistance.toFixed(3));
     if (!isFirstAnalysis) {
       body.baselineImage = baseline.image;
       body.baselineResult = baseline.result;
       body.baselineTimestamp = baseline.timestamp || 0;
     } else if (differentDevice) {
-      // baseline은 있지만 다른 디바이스 — 서버에 알려서 prompt에 활용
       body.differentDevice = true;
       body.baselineDevice = rawBaseline.device;
     }
@@ -347,13 +388,13 @@ export async function callVisionAI(base64Image, landmarks) {
       console.log('Client backup: score deviation detected different person');
     }
     if (isFirstAnalysis) {
-      // First ever analysis: save as primary baseline
+      // First ever analysis: save as primary baseline (descriptor 함께)
       const baselineScores = {};
       for (const key of GPT_SCORE_KEYS) {
         if (typeof parsed[key] === 'number') baselineScores[key] = parsed[key];
       }
-      saveBaseline(faceImage, baselineScores);
-      console.log('Primary baseline saved (first analysis)');
+      saveBaseline(faceImage, baselineScores, newDescriptor);
+      console.log('Primary baseline saved (first analysis, descriptor:', !!newDescriptor, ')');
     } else if (isDifferentPerson) {
       // Different person detected by GPT:
       // Do NOT apply any client-side stabilization — use raw AI scores as-is.
@@ -365,10 +406,14 @@ export async function callVisionAI(base64Image, landmarks) {
       const baselineDate = new Date(baseline.timestamp).toISOString().slice(0, 10);
       const todayDate = new Date().toISOString().slice(0, 10);
       if (baselineDate !== todayDate) {
-        // New day: drift baseline toward current scores
+        // New day: drift baseline toward current scores. descriptor도 기존 우선·새 descriptor 보조.
         const drifted = driftBaseline(baseline.result, parsed);
-        saveBaseline(baseline.image, drifted);
+        saveBaseline(baseline.image, drifted, baseline.descriptor || newDescriptor);
         console.log('Primary baseline drifted (new day)');
+      } else if (!baseline.descriptor && newDescriptor) {
+        // descriptor 없던 옛 baseline에 신규 descriptor 보강
+        saveBaseline(baseline.image, baseline.result, newDescriptor);
+        console.log('Primary baseline descriptor backfilled');
       } else {
         console.log('Same-day repeat: baseline kept stable');
       }

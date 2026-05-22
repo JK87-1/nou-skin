@@ -301,6 +301,11 @@ async function callGPT(apiKey, newImage, seed, baselineImage, baselineResult, de
     ? '\n\n[중요] 두 사진은 서로 다른 디바이스(다른 폰·카메라)로 촬영됐을 가능성이 큽니다. 디바이스마다 색온도·노출·화이트밸런스가 다르므로 점수 차이가 크게 보여도 그건 디바이스 차이일 수 있어요. 점수가 아닌 **얼굴 윤곽·이목구비·특징**으로만 동일인 판별하세요.'
     : '';
 
+  // Face descriptor 결과를 prompt에 명시 — 동일인 판단을 GPT가 결정론적으로 따르도록
+  const faceMatchHint = deviceInfo?.faceMatch
+    ? `\n\n[얼굴 임베딩 분석 결과 — 우선 참고]\nFace descriptor distance: ${deviceInfo.faceDistance ?? '?'}\n결론: ${deviceInfo.faceMatch === 'same' ? '**동일인 확정** (distance < 0.5). 점수 차이가 크더라도 동일인으로 처리하세요. differentPerson=false.' : deviceInfo.faceMatch === 'different' ? '**다른 사람 확정** (distance > 0.6). 점수가 비슷해도 다른 사람이에요. differentPerson=true.' : '**모호** (distance 0.5~0.6). 얼굴 특징으로 직접 판단하세요.'}`
+    : '';
+
   if (baselineImage && baselineResult) {
     // ===== Dual-image comparison mode =====
     userContent.push({
@@ -323,7 +328,7 @@ async function callGPT(apiKey, newImage, seed, baselineImage, baselineResult, de
 
 판별 후:
 - 동일인이면: 기준 점수(${JSON.stringify(baselineResult)})에 앵커. 조명/각도/디바이스 차이로 인한 점수 변동 최소화. 단 진짜 피부 변화는 반영.
-- 다른 인물이면: 기준 점수 무시, 두 번째 사진만 독립 분석.${deviceHint}`,
+- 다른 인물이면: 기준 점수 무시, 두 번째 사진만 독립 분석.${deviceHint}${faceMatchHint}`,
     });
     userContent.push({
       type: 'image_url',
@@ -390,11 +395,13 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { image, baselineImage, baselineResult, baselineTimestamp, currentDevice, differentDevice, baselineDevice } = req.body;
+    const { image, baselineImage, baselineResult, baselineTimestamp, currentDevice, differentDevice, baselineDevice, faceMatch, faceDistance } = req.body;
     const deviceInfo = {
       currentDevice: currentDevice || null,
       baselineDevice: baselineDevice || null,
       differentDevice: !!differentDevice,
+      faceMatch: faceMatch || null, // 'same' | 'different' | 'ambiguous' | null
+      faceDistance: typeof faceDistance === 'number' ? faceDistance : null,
     };
 
     if (!image) return res.status(400).json({ error: 'No image provided' });
