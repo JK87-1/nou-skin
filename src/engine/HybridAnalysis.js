@@ -8,6 +8,7 @@
 
 import { getDeviceFingerprint, isSameDevice } from '../utils/deviceFingerprint';
 import { extractDescriptorFromBase64, descriptorDistance, classifyDistance, preload as preloadFaceDescriptor } from './FaceDescriptor';
+import { normalizeImageBase64 } from './ImageNormalizer';
 
 const AI_TIMEOUT_MS = 60000; // 2 images + 3 parallel calls need more time
 
@@ -282,14 +283,30 @@ const GPT_SCORE_KEYS = [
  * @returns {object|null} AI scores object (app keys) or null on failure
  */
 export async function callVisionAI(base64Image, landmarks) {
-  // Crop face region
-  const faceImage = await cropFace(base64Image, landmarks);
+  // 1) Crop face region
+  const croppedImage = await cropFace(base64Image, landmarks);
+
+  // 2) Phase 3: 카메라 정규화 — 디바이스 색온도·노출 차이 흡수
+  // 같은 얼굴·다른 폰에서도 정규화된 이미지가 비슷하게 보이도록.
+  let faceImage = croppedImage;
+  let normalizeStats = null;
+  try {
+    const norm = await normalizeImageBase64(croppedImage);
+    if (norm?.normalizedBase64) {
+      faceImage = norm.normalizedBase64;
+      normalizeStats = norm.stats;
+      if (normalizeStats) {
+        console.log('[ImageNormalizer]', JSON.stringify(normalizeStats));
+      }
+    }
+  } catch (e) { console.warn('[ImageNormalizer] failed, raw image used:', e); }
 
   // ===== Phase 2: Face descriptor 임베딩 (디바이스·조명 무관 동일인 판단의 정수) =====
   // 3초 timeout. 첫 측정 또는 모델 미로드 시 null 반환. 다음 측정부터 자연 활용.
   const rawBaseline = getBaseline();
   const currentDevice = getDeviceFingerprint();
 
+  // descriptor는 정규화 이미지 사용 — 디바이스 차이 흡수 후 임베딩
   const newDescriptor = await Promise.race([
     extractDescriptorFromBase64(faceImage),
     new Promise(resolve => setTimeout(() => resolve(null), 3000)),
@@ -432,6 +449,18 @@ export async function callVisionAI(base64Image, landmarks) {
       mapped.troubleBreakdown = parsed.troubleBreakdown;
     }
 
+    // 측정 디버그 정보 — 디바이스 일관성·face match·이미지 정규화 통계
+    mapped.measureDebug = {
+      device: currentDevice.label,
+      deviceHash: currentDevice.hash.slice(0, 6),
+      baselineDevice: rawBaseline?.device ? rawBaseline.device.slice(0, 6) : null,
+      sameDevice: rawBaseline?.device ? isSameDevice(rawBaseline.device, currentDevice.hash) : null,
+      faceMatch,
+      faceDistance: descDistance != null ? +descDistance.toFixed(3) : null,
+      hadBaselineDescriptor: !!rawBaseline?.descriptor,
+      normalize: normalizeStats,
+    };
+
     recordAiSuccess();
     return mapped;
   } catch (e) {
@@ -553,6 +582,8 @@ export function hybridMerge(cv, ai) {
   if (typeof ai.confidence === 'number') result.confidence = ai.confidence;
   if (ai.makeupDetected) result.makeupDetected = true;
   if (ai.differentPerson) result.differentPerson = true;
+  // 측정 디버그 — 디바이스·face match·정규화 통계
+  if (ai.measureDebug) result.measureDebug = ai.measureDebug;
 
   // troubleBreakdown — 5종 분류를 결과에 보존 (UI는 박수진 정밀 작업에 일임)
   if (ai.troubleBreakdown && typeof ai.troubleBreakdown === 'object') {

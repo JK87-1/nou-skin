@@ -53,6 +53,8 @@ export function saveRecord(result) {
     // 트러블 5종 분류 (whitehead·blackhead·papule·pustule·nodule). UI는 박수진 정밀 작업 영역.
     ...(result.troubleBreakdown && typeof result.troubleBreakdown === 'object'
       ? { troubleBreakdown: result.troubleBreakdown } : {}),
+    // 측정 디버그 — 디바이스·face match·정규화 (베타 임시)
+    ...(result.measureDebug ? { measureDebug: result.measureDebug } : {}),
     // Tag records from different people so comparisons only use same-person records
     ...(result.differentPerson ? { differentPerson: true } : {}),
   };
