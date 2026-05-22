@@ -966,13 +966,13 @@ export default function App() {
           <div style={{ height: 'calc(100dvh - 72px)', display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
           {/* Header with Logo + Weather Chip */}
           {/* Header with Logo + Weather + Scan Chip */}
-          <div style={{ padding: '28px 22px 20px', position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ padding: '28px 28px 20px', position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <WeatherChip onTap={() => setWeatherSheet(true)} />
             <div onClick={() => setShowHomeEdit(true)} style={{
               width: 34, height: 34, borderRadius: '50%', cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               WebkitTapHighlightColor: 'transparent',
-              marginRight: 14,
+              marginRight: 0,
             }}>
               <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeWidth="0" d="M0 0h24v24H0z" fill="none" /><path d="M4 6l16 0" /><path d="M4 12l16 0" /><path d="M4 18l16 0" /></svg>
             </div>

@@ -106,7 +106,7 @@ export default function WeatherChip({ onTap }) {
       onClick={(e) => { e.stopPropagation(); onTap?.(); }}
       style={{
         display: 'flex', alignItems: 'center', gap: 8,
-        padding: '8px 14px 8px 10px',
+        padding: '8px 14px 8px 0',
         background: 'transparent',
         border: 'none',
         borderRadius: '50px', cursor: 'pointer',
@@ -116,8 +116,8 @@ export default function WeatherChip({ onTap }) {
         transition: 'background 0.2s',
       }}
     >
+      <WeatherIcon emoji={weather.conditionIcon} size={26} color="#ffffff" />
       <span style={{ fontSize: 15, fontWeight: 700, color: '#ffffff', lineHeight: 1 }}>{weather.temp}°</span>
-      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', lineHeight: 1 }}>{weather.condition || '맑음'}</span>
     </div>
   );
 }
