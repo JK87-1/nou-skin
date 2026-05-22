@@ -996,21 +996,19 @@ export default function App() {
               <EternalPearl size={250} animated colors={activeThemeColors} theme={colorMode} />
             </div>
             <div style={{ textAlign: 'center' }}>
-              <div onClick={openCamera} style={{ fontSize: 20, fontWeight: 600, letterSpacing: -0.3, color: '#ffffff', textShadow: 'none', animation: 'textBreathe 3s ease-in-out infinite', cursor: 'pointer' }}>탭 하여 피부를 분석하세요</div>
-              <div style={{ height: 18, overflow: 'hidden', marginTop: 15 }}>
-                <div style={{ animation: 'subtitleSlide 20s ease-in-out infinite' }}>
-                  <div style={{ height: 18, lineHeight: '18px', fontSize: 13, color: 'rgba(0,0,0,0.35)' }}>당신의 피부를 더 깊이 이해해요</div>
-                  <div style={{ height: 18, lineHeight: '18px', fontSize: 13, color: 'rgba(0,0,0,0.35)' }}>AI가 10개 지표를 정밀 분석해줘요</div>
+              <div onClick={openCamera} style={{ height: 28, overflow: 'hidden', cursor: 'pointer' }}>
+                <div style={{ animation: 'heroTextSlide 21s ease-in-out infinite' }}>
+                  {['탭 하여 피부를 분석하세요', 'AI가 10개 지표를 정밀 분석해줘요', '당신의 피부를 더 깊이 이해해요', '탭 하여 피부를 분석하세요'].map((text, i) => (
+                    <div key={i} style={{ height: 28, lineHeight: '28px', fontSize: (i === 0 || i === 3) ? 20 : i === 2 ? 19 : 18, fontWeight: 600, letterSpacing: -0.3, color: '#ffffff', textShadow: 'none' }}>{text}</div>
+                  ))}
                 </div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 28 }}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 14, marginTop: 28 }}>
                 {['정면 셀카', '밝은 자연광', '맨 얼굴'].map(tag => (
-                  <div key={tag} style={{
-                    padding: '4px 10px', borderRadius: 50,
-                    background: '#ffffff',
-                    border: 'none',
-                    fontSize: 10, fontWeight: 500, color: 'rgba(0,0,0,0.35)',
-                  }}>{tag}</div>
+                  <div key={tag} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.7)', textShadow: '0 1px 8px rgba(0,0,0,0.15)'}}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="16 8.5 10.5 14.5 8 12"/></svg>
+                    {tag}
+                  </div>
                 ))}
               </div>
             </div>
@@ -1615,7 +1613,7 @@ export default function App() {
               background: 'transparent', border: 'none', cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#042C53" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M5 12l6-6"/><path d="M5 12l6 6"/></svg>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#042C53" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M5 12l6-6"/><path d="M5 12l6 6"/></svg>
             </button>
             <div style={{ display: 'flex', gap: 6 }}>
               <button onClick={handleSave} disabled={saved} style={{
@@ -2262,7 +2260,7 @@ export default function App() {
               boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
             }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19.933 13.041a8 8 0 11-9.925-8.788c3.899-1 7.935 1.007 9.425 4.747"/><path d="M20 4v5h-5"/></svg>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M19.933 13.041a8 8 0 11-9.925-8.788c3.899-1 7.935 1.007 9.425 4.747"/><path d="M20 4v5h-5"/></svg>
               다시 측정하기
             </button>
           </div>
@@ -2324,7 +2322,7 @@ export default function App() {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer',
           }}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #8B95A1)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.4"><path d="M6 9l6 6 6-6"/></svg>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #8B95A1)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" opacity="0.4"><path d="M6 9l6 6 6-6"/></svg>
           </div>
           <AiInsightCard
             onOpenChat={() => setFabChatOpen(true)}
@@ -2348,11 +2346,8 @@ export default function App() {
           onClick={() => { if (insightCollapsed && activeTab === 'home' && stage === 'landing') { setInsightCollapsed(false); } else { setFabChatOpen(true); localStorage.setItem('fab_hint_dismissed', '1'); } }}
           style={{
             position: 'relative',
-            width: 58, height: 58, borderRadius: '50% 50% 8px 50%',
-            background: 'linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(150,215,248,0.5) 100%)',
-            backdropFilter: 'none', WebkitBackdropFilter: 'none',
-            border: 'none',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
+            width: 58, height: 58,
+            background: 'none', border: 'none',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer', zIndex: 90,
             animation: 'fabFloat 3s ease-in-out infinite',
@@ -2370,46 +2365,20 @@ export default function App() {
               animation: 'fabHintIn 0.5s ease-out 1.5s both, fabHintOut 0.4s ease-in 10s both',
               fontSize: 11, color: 'rgba(0,0,0,0.4)', fontWeight: 600, letterSpacing: -0.2,
             }}>
-              피부 고민을 물어봐 
+              피부 고민을 물어봐
             </div>
           )}
-          {/* luastar with orb blob colors — clip-path 방식 */}
+          {/* luastar — 글로우 + mask 분리 */}
           <div style={{
             position: 'relative', width: 34, height: 34, zIndex: 1,
             animation: 'fabStarTwinkle 2.5s ease-in-out infinite',
-            filter: 'drop-shadow(0 2px 4px rgba(100,180,230,0.4))',
+            filter: 'drop-shadow(0 0 10px rgba(160,200,240,0.9)) drop-shadow(0 0 25px rgba(160,200,240,0.7)) drop-shadow(0 0 50px rgba(160,200,240,0.5)) drop-shadow(0 0 80px rgba(160,200,240,0.3))',
           }}>
-            <svg width="0" height="0" style={{ position: 'absolute' }}>
-              <defs>
-                <clipPath id="fab-luastar-clip" clipPathUnits="objectBoundingBox">
-                  <path d="M0.441,0.997c-0.021,0.007-0.043,0.001-0.059-0.014c-0.014-0.013-0.025-0.03-0.03-0.048l-0.018-0.055c-0.009-0.029-0.017-0.056-0.031-0.083c-0.029-0.057-0.077-0.099-0.137-0.12l-0.071-0.02c-0.032-0.009-0.07-0.024-0.086-0.053c-0.012-0.023-0.011-0.048,0.004-0.069c0.024-0.034,0.07-0.046,0.109-0.058l0.052-0.015c0.036-0.011,0.068-0.031,0.094-0.058l0.01-0.012c0.022-0.026,0.036-0.058,0.046-0.092l0.015-0.06c0.009-0.035,0.025-0.074,0.059-0.086c0.021-0.007,0.043-0.002,0.059,0.014c0.04,0.037,0.037,0.107,0.063,0.165c0.012,0.027,0.027,0.052,0.049,0.071c0.041,0.038,0.073,0.047,0.12,0.065l0.054,0.021c0.015,0.006,0.028,0.016,0.038,0.029c0.019,0.025,0.019,0.058,0,0.083c-0.013,0.017-0.031,0.029-0.051,0.037l-0.061,0.025c-0.049,0.02-0.091,0.054-0.118,0.101c-0.013,0.023-0.023,0.046-0.029,0.072l-0.013,0.056c-0.01,0.041-0.026,0.09-0.067,0.104Z" />
-                  <path d="M0.881,0.302c-0.009,0.027-0.019,0.058-0.051,0.056c-0.011-0.001-0.021-0.007-0.029-0.018c-0.014-0.022-0.017-0.054-0.041-0.083c-0.029-0.035-0.062-0.035-0.084-0.053c-0.009-0.007-0.015-0.016-0.015-0.027c0-0.011,0.004-0.021,0.012-0.029c0.018-0.018,0.053-0.021,0.079-0.048c0.029-0.03,0.03-0.064,0.047-0.085c0.012-0.015,0.033-0.021,0.049-0.01c0.022,0.015,0.025,0.048,0.042,0.074c0.015,0.025,0.039,0.041,0.066,0.051c0.011,0.004,0.021,0.009,0.03,0.017c0.012,0.011,0.017,0.03,0.008,0.044c-0.008,0.013-0.02,0.02-0.033,0.025c-0.044,0.017-0.067,0.039-0.081,0.086Z" />
-                </clipPath>
-              </defs>
-            </svg>
-            {/* Blob 컨테이너 — luastar 형태로 클리핑 */}
-            <div style={{
+            <img src="/luastar.svg" alt="" style={{
               width: '100%', height: '100%',
-              clipPath: 'url(#fab-luastar-clip)',
-              WebkitClipPath: 'url(#fab-luastar-clip)',
-              position: 'relative', overflow: 'hidden',
-              background: '#ffffff',
-            }}>
-              {/* 흰색 베이스 — 중심부 전체 커버 */}
-              <div style={{ position: 'absolute', inset: 0, background: '#FFFFFF' }} />
-              {/* 테두리 은은한 색상 blob */}
-              <div style={{ position: 'absolute', width: '50%', height: '50%', top: '-10%', left: '-5%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,184,200,0.45), transparent)', filter: 'blur(6px)', animation: 'fabBlob1 4s ease-in-out infinite' }} />
-              <div style={{ position: 'absolute', width: '45%', height: '45%', bottom: '-5%', right: '-5%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(216,168,240,0.4), transparent)', filter: 'blur(6px)', animation: 'fabBlob2 5s ease-in-out infinite' }} />
-              <div style={{ position: 'absolute', width: '40%', height: '40%', bottom: '-5%', left: '10%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(144,196,248,0.35), transparent)', filter: 'blur(6px)', animation: 'fabBlob3 3.5s ease-in-out infinite' }} />
-              <div style={{ position: 'absolute', width: '45%', height: '45%', top: '-5%', right: '5%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(224,200,240,0.35), transparent)', filter: 'blur(6px)', animation: 'fabBlob4 4.5s ease-in-out infinite' }} />
-            </div>
+              filter: 'brightness(0) invert(1)',
+            }} />
           </div>
-          <style>{`
-            @keyframes fabBlob1 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(8%,6%) scale(1.05); } }
-            @keyframes fabBlob2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-6%,-8%) scale(1.08); } }
-            @keyframes fabBlob3 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(5%,-5%) scale(0.95); } }
-            @keyframes fabBlob4 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-8%,5%) scale(1.03); } }
-          `}</style>
         </div>
         </div>
       )}
