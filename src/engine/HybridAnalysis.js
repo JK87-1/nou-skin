@@ -6,12 +6,15 @@
  * Falls back to CV-only if AI call fails.
  */
 
+import { getDeviceFingerprint, isSameDevice } from '../utils/deviceFingerprint';
+
 const AI_TIMEOUT_MS = 60000; // 2 images + 3 parallel calls need more time
 
 // ===== BASELINE STORAGE (primary + secondary) =====
 const PRIMARY_IMAGE_KEY = 'baselineImage';
 const PRIMARY_RESULT_KEY = 'baselineResult';
 const PRIMARY_TIMESTAMP_KEY = 'baselineTimestamp';
+const PRIMARY_DEVICE_KEY = 'baselineDevice'; // fingerprint hash
 const SECONDARY_RESULT_KEY = 'secondaryBaselineResult';
 const SECONDARY_TIMESTAMP_KEY = 'secondaryBaselineTimestamp';
 
@@ -28,8 +31,23 @@ export function getBaseline() {
     const resultStr = localStorage.getItem(PRIMARY_RESULT_KEY);
     if (!image || !resultStr) return null;
     const timestamp = parseInt(localStorage.getItem(PRIMARY_TIMESTAMP_KEY) || '0', 10);
-    return { image, result: JSON.parse(resultStr), timestamp };
+    const device = localStorage.getItem(PRIMARY_DEVICE_KEY) || null;
+    return { image, result: JSON.parse(resultStr), timestamp, device };
   } catch { return null; }
+}
+
+/**
+ * 현재 측정 디바이스에 한정된 baseline.
+ * baseline이 다른 디바이스에서 저장됐다면 null 반환 → anchor 안 함.
+ * 같은 디바이스면 그대로 사용.
+ */
+export function getBaselineForCurrentDevice() {
+  const b = getBaseline();
+  if (!b) return null;
+  if (!b.device) return b; // 옛 baseline (디바이스 정보 없음) — 호환 위해 사용
+  const current = getDeviceFingerprint().hash;
+  if (isSameDevice(b.device, current)) return b;
+  return null; // 다른 디바이스 — anchor X
 }
 
 function getSecondaryBaseline() {
@@ -46,6 +64,8 @@ export function saveBaseline(image, result) {
     localStorage.setItem(PRIMARY_IMAGE_KEY, image);
     localStorage.setItem(PRIMARY_RESULT_KEY, JSON.stringify(result));
     localStorage.setItem(PRIMARY_TIMESTAMP_KEY, String(Date.now()));
+    // 측정 디바이스 fingerprint 저장 — 다음 측정 시 같은 디바이스인지 판단
+    try { localStorage.setItem(PRIMARY_DEVICE_KEY, getDeviceFingerprint().hash); } catch {}
   } catch (e) { console.warn('Baseline save failed:', e); }
 }
 
@@ -92,7 +112,9 @@ function clientStabilize(scores, baseline, daysSince) {
 }
 
 /**
- * Check if two score sets belong to the same person (avgDiff < 15).
+/**
+ * Check if two score sets belong to the same person (avgDiff < 25).
+ * (15 → 25로 상향. 디바이스·조명 차이로 점수 변동 큰 경우 동일인 가정 유지.)
  */
 function isSamePersonScores(a, b) {
   let total = 0, count = 0;
@@ -102,7 +124,7 @@ function isSamePersonScores(a, b) {
       count++;
     }
   }
-  return count > 0 && (total / count) < 15;
+  return count > 0 && (total / count) < 25;
 }
 
 export function clearBaseline() {
@@ -252,16 +274,26 @@ export async function callVisionAI(base64Image, landmarks) {
   // Crop face region
   const faceImage = await cropFace(base64Image, landmarks);
 
-  // Load baseline for comparison
-  const baseline = getBaseline();
+  // Load baseline for comparison — 같은 디바이스에서 측정된 baseline만 사용
+  // 다른 디바이스(다른 폰·카메라)에서 측정된 baseline은 색온도·노출 차이로 부정확한 anchor가 됨
+  const rawBaseline = getBaseline();
+  const currentDevice = getDeviceFingerprint();
+  const baseline = rawBaseline && (!rawBaseline.device || isSameDevice(rawBaseline.device, currentDevice.hash))
+    ? rawBaseline
+    : null;
   const isFirstAnalysis = !baseline;
+  const differentDevice = !!rawBaseline && !!baseline === false; // baseline 있었지만 다른 디바이스라 무시
 
   try {
-    const body = { image: faceImage };
+    const body = { image: faceImage, currentDevice: currentDevice.hash };
     if (!isFirstAnalysis) {
       body.baselineImage = baseline.image;
       body.baselineResult = baseline.result;
       body.baselineTimestamp = baseline.timestamp || 0;
+    } else if (differentDevice) {
+      // baseline은 있지만 다른 디바이스 — 서버에 알려서 prompt에 활용
+      body.differentDevice = true;
+      body.baselineDevice = rawBaseline.device;
     }
 
     const resp = await Promise.race([
