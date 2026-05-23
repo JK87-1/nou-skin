@@ -264,8 +264,8 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
         const sy = (img.height - min) / 2;
         ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
         const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-        saveProfile({ profileImage: dataUrl });
-        setProfile(p => ({ ...p, profileImage: dataUrl }));
+        const next = saveProfile({ profileImage: dataUrl });
+        setProfile(next);
       };
       img.src = reader.result;
     };
