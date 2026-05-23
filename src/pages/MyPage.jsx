@@ -245,6 +245,107 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
   const [backupGuide, setBackupGuide] = useState(null);
   const fileInputRef = useRef(null);
 
+  // ── Push notification state ──
+  const [reminderEnabled, setReminderEnabled] = useState(false);
+  const [reminderTime, setReminderTime] = useState('08:00');
+  const [tipEnabled, setTipEnabled] = useState(false);
+  const [tipTime, setTipTime] = useState('20:00');
+  const [pushSubscribing, setPushSubscribing] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(null); // 'reminder' | 'tip' | null
+
+  useEffect(() => {
+    // Restore saved push settings from localStorage
+    const saved = localStorage.getItem('lua_push_settings');
+    if (saved) {
+      try {
+        const s = JSON.parse(saved);
+        if (s.reminderEnabled) setReminderEnabled(true);
+        if (s.reminderTime) setReminderTime(s.reminderTime);
+        if (s.tipEnabled) setTipEnabled(true);
+        if (s.tipTime) setTipTime(s.tipTime);
+      } catch {}
+    }
+  }, []);
+
+  const savePushSettings = (re, rt, te, tt) => {
+    localStorage.setItem('lua_push_settings', JSON.stringify({
+      reminderEnabled: re, reminderTime: rt, tipEnabled: te, tipTime: tt,
+    }));
+  };
+
+  const handleReminderToggle = async () => {
+    if (!reminderEnabled) {
+      if (!isPushSupported()) { showToast('이 브라우저에서는 알림을 지원하지 않아요'); return; }
+      if (isIOS() && !isStandalone()) { showToast('홈 화면에 추가한 후 알림을 설정할 수 있어요'); return; }
+      if (getPermissionState() === 'denied') { showToast('알림이 차단되어 있어요. 설정에서 허용해주세요'); return; }
+      setPushSubscribing(true);
+      try {
+        const subscription = await subscribeToPush();
+        if (!subscription) { showToast('알림 권한을 허용해주세요'); return; }
+        const ok = await saveSubscriptionToServer(subscription, reminderTime, profile?.nickname);
+        if (ok) { setReminderEnabled(true); savePushSettings(true, reminderTime, tipEnabled, tipTime); showToast('진단 리마인더가 설정되었어요!'); }
+        else { showToast('알림 등록에 실패했어요'); }
+      } catch { showToast('알림 설정 중 오류가 발생했어요'); }
+      finally { setPushSubscribing(false); }
+    } else {
+      if (!tipEnabled) await unsubscribeFromPush();
+      setReminderEnabled(false);
+      savePushSettings(false, reminderTime, tipEnabled, tipTime);
+      showToast('진단 리마인더가 해제되었어요');
+    }
+  };
+
+  const handleTipToggle = async () => {
+    if (!tipEnabled) {
+      if (!isPushSupported()) { showToast('이 브라우저에서는 알림을 지원하지 않아요'); return; }
+      if (isIOS() && !isStandalone()) { showToast('홈 화면에 추가한 후 알림을 설정할 수 있어요'); return; }
+      if (getPermissionState() === 'denied') { showToast('알림이 차단되어 있어요. 설정에서 허용해주세요'); return; }
+      setPushSubscribing(true);
+      try {
+        let subscription = await (await navigator.serviceWorker.ready).pushManager.getSubscription();
+        if (!subscription) {
+          subscription = await subscribeToPush();
+          if (!subscription) { showToast('알림 권한을 허용해주세요'); return; }
+          await saveSubscriptionToServer(subscription, reminderTime, profile?.nickname);
+        }
+        const ok = await updateTipSettings(true, tipTime);
+        if (ok) {
+          setTipEnabled(true); savePushSettings(reminderEnabled, reminderTime, true, tipTime);
+          const latest = getLatestRecord();
+          if (latest) syncSkinDataToServer(latest, profile).catch(() => {});
+          showToast('뷰티 팁 알림이 설정되었어요!');
+        } else { showToast('설정에 실패했어요'); }
+      } catch { showToast('설정 중 오류가 발생했어요'); }
+      finally { setPushSubscribing(false); }
+    } else {
+      await updateTipSettings(false, tipTime);
+      if (!reminderEnabled) await unsubscribeFromPush();
+      setTipEnabled(false);
+      savePushSettings(reminderEnabled, reminderTime, false, tipTime);
+      showToast('뷰티 팁 알림이 해제되었어요');
+    }
+  };
+
+  const handleReminderTimeChange = async (newTime) => {
+    setReminderTime(newTime); setShowTimePicker(null);
+    savePushSettings(reminderEnabled, newTime, tipEnabled, tipTime);
+    if (reminderEnabled) await updateReminderTime(newTime, profile?.nickname);
+  };
+
+  const handleTipTimeChange = async (newTime) => {
+    setTipTime(newTime); setShowTimePicker(null);
+    savePushSettings(reminderEnabled, reminderTime, tipEnabled, newTime);
+    if (tipEnabled) await updateTipSettings(true, newTime);
+  };
+
+  const formatPushTime = (t) => {
+    const [h, m] = t.split(':');
+    const hour = parseInt(h);
+    const ampm = hour < 12 ? '오전' : '오후';
+    const h12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    return `${ampm} ${h12}:${m.padStart(2, '0')}`;
+  };
+
   const currentYear = new Date().getFullYear();
   const age = profile.birthYear ? currentYear - parseInt(profile.birthYear) : null;
 
@@ -331,6 +432,73 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
         <SectionHeader label="프로필" />
         <SettingsRow icon={icons.user} label="프로필" right={profile.nickname || '사용자'} onTap={() => setEditingProfile(true)} />
         <SettingsRow icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M19 3h-4a2 2 0 0 0 -2 2v12a4 4 0 0 0 8 0v-12a2 2 0 0 0 -2 -2" /><path d="M13 7.35l-2 -2a2 2 0 0 0 -2.828 0l-2.828 2.828a2 2 0 0 0 0 2.828l9 9" /><path d="M7.3 13h-2.3a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h12" /><path d="M17 17l0 .01" /></svg>} label="피부 타입" right={profile.skinType || '미설정'} onTap={() => setEditingSkin(true)} />
+
+        <SectionHeader label="알림" />
+        {/* 진단 리마인더 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '11px 28px' }}>
+          <span style={{ color: 'var(--text-secondary)', display: 'flex' }}>{icons.bell}</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 15, fontWeight: 400, color: 'var(--text-primary)' }}>진단 리마인더</div>
+            {reminderEnabled ? (
+              <div onClick={() => setShowTimePicker('reminder')} style={{ fontSize: 12, color: '#ADEBB3', marginTop: 2, cursor: 'pointer' }}>
+                매일 {formatPushTime(reminderTime)}
+              </div>
+            ) : (
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>매일 피부 측정을 알려드려요</div>
+            )}
+          </div>
+          <div onClick={pushSubscribing ? undefined : handleReminderToggle} style={{
+            width: 44, height: 26, borderRadius: 13,
+            background: reminderEnabled ? '#ADEBB3' : 'rgba(255,255,255,0.15)',
+            position: 'relative', flexShrink: 0,
+            cursor: pushSubscribing ? 'wait' : 'pointer',
+            transition: 'background 0.3s',
+            opacity: pushSubscribing ? 0.6 : 1,
+          }}>
+            <div style={{
+              position: 'absolute', top: 3, left: reminderEnabled ? 21 : 3,
+              width: 20, height: 20, borderRadius: '50%',
+              background: '#e0e0e8', transition: 'left 0.3s',
+            }} />
+          </div>
+        </div>
+        {/* 뷰티 팁 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '11px 28px' }}>
+          <span style={{ color: 'var(--text-secondary)', display: 'flex' }}>{icons.bulb}</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 15, fontWeight: 400, color: 'var(--text-primary)' }}>뷰티 팁</div>
+            {tipEnabled ? (
+              <div onClick={() => setShowTimePicker('tip')} style={{ fontSize: 12, color: '#ADEBB3', marginTop: 2, cursor: 'pointer' }}>
+                매일 {formatPushTime(tipTime)}
+              </div>
+            ) : (
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>내 피부 맞춤 뷰티 팁을 받아보세요</div>
+            )}
+          </div>
+          <div onClick={pushSubscribing ? undefined : handleTipToggle} style={{
+            width: 44, height: 26, borderRadius: 13,
+            background: tipEnabled ? '#ADEBB3' : 'rgba(255,255,255,0.15)',
+            position: 'relative', flexShrink: 0,
+            cursor: pushSubscribing ? 'wait' : 'pointer',
+            transition: 'background 0.3s',
+            opacity: pushSubscribing ? 0.6 : 1,
+          }}>
+            <div style={{
+              position: 'absolute', top: 3, left: tipEnabled ? 21 : 3,
+              width: 20, height: 20, borderRadius: '50%',
+              background: '#e0e0e8', transition: 'left 0.3s',
+            }} />
+          </div>
+        </div>
+
+        {showTimePicker && createPortal(
+          <TimePicker
+            value={showTimePicker === 'reminder' ? reminderTime : tipTime}
+            onChange={showTimePicker === 'reminder' ? handleReminderTimeChange : handleTipTimeChange}
+            onClose={() => setShowTimePicker(null)}
+          />,
+          document.body,
+        )}
 
         <SectionHeader label="앱 설정" />
         <SettingsRow icon={icons.sun} label="화면 모드" />
