@@ -123,6 +123,8 @@ export default function App() {
   const [showCelebration, setShowCelebration] = useState(false);
   const [conditionBriefing, setConditionBriefing] = useState(null);
   const [briefingLoading, setBriefingLoading] = useState(false);
+  const [autoInsight, setAutoInsight] = useState(null);
+  const [autoInsightLoading, setAutoInsightLoading] = useState(false);
   const [celebrateBadge, setCelebrateBadge] = useState(null);
   const [showSplash, setShowSplash] = useState(true);
   const [splashExiting, setSplashExiting] = useState(false);
@@ -443,7 +445,7 @@ export default function App() {
   const startAnalysis = useCallback(async () => {
     if (!pixelData) return;
     clearCompressCache(); // Prevent cross-person contamination from cached compressed images
-    setStage('analyzing'); setProgress(0); setSaved(false); setConditionBriefing(null); setBriefingLoading(false);
+    setStage('analyzing'); setProgress(0); setSaved(false); setConditionBriefing(null); setBriefingLoading(false); setAutoInsight(null); setAutoInsightLoading(false);
     const pi = setInterval(() => { setProgress(p => {
       if (p >= 92) { clearInterval(pi); return 92; }
       // Slow start, steady middle, slow finish
@@ -548,6 +550,44 @@ export default function App() {
           }
         })
         .catch(() => {});
+
+      // 자동 인사이트 — 측정 데이터 + 등록 제품 + 라이프스타일 cross-check
+      // 백그라운드 비동기. 실패 silent.
+      setAutoInsightLoading(true);
+      (async () => {
+        try {
+          const [{ getProductsWithUsageContext }, { getRecentTrend, getChanges }, { getMemoryContext }] = await Promise.all([
+            import('./storage/TrackerStorage'),
+            import('./storage/SkinStorage'),
+            import('./storage/UserMemoryStorage'),
+          ]);
+          const products = (() => { try { return getProductsWithUsageContext(); } catch { return []; } })();
+          const recentTrend = (() => { try { return getRecentTrend(7); } catch { return null; } })();
+          const changes = (() => { try { return getChanges(); } catch { return null; } })();
+          const memory = (() => { try { return getMemoryContext(); } catch { return null; } })();
+          const resp = await fetch('/api/measure-insight', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              current: finalScores,
+              previous: prevRecord || null,
+              changes,
+              products,
+              lifestyle: memory?.lifestyle || [],
+              recentTrend,
+              nickname: (() => { try { return getProfile()?.nickname || null; } catch { return null; } })(),
+            }),
+          });
+          if (resp.ok) {
+            const data = await resp.json();
+            if (data?.hasInsight) {
+              setAutoInsight(data);
+              if (recordId) updateRecord(recordId, { autoInsight: data });
+            }
+          }
+        } catch { /* silent */ }
+        setAutoInsightLoading(false);
+      })();
       if (recordId) {
         setSaved(true);
         setShowSaveToast(true);
@@ -1869,6 +1909,67 @@ export default function App() {
               </div>
             )}
           </div>
+
+          {/* ═══════ Section: AI 자동 인사이트 (컨디션 브리핑 다음) ═══════ */}
+          {(autoInsight || autoInsightLoading) && (() => {
+            if (autoInsightLoading && !autoInsight) {
+              return (
+                <div style={{
+                  margin: '0 14px 10px',
+                  background: 'linear-gradient(135deg, rgba(88,174,254,0.10), rgba(138,196,254,0.08))',
+                  border: '1px solid rgba(88,174,254,0.25)',
+                  borderRadius: 14, padding: '14px 16px',
+                  display: 'flex', gap: 10, alignItems: 'center',
+                }}>
+                  <div style={{
+                    width: 14, height: 14, borderRadius: '50%',
+                    border: '2px solid rgba(88,174,254,0.3)',
+                    borderTopColor: '#58aefe',
+                    animation: 'autoInsightSpin 0.9s linear infinite',
+                  }} />
+                  <span style={{ fontSize: 12, color: '#3D7CA8', fontWeight: 600 }}>AI가 변화 원인 분석 중…</span>
+                  <style>{`@keyframes autoInsightSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
+                </div>
+              );
+            }
+            const sev = autoInsight.severity;
+            const palette = sev === 'attention'
+              ? { bg: 'rgba(255,180,80,0.14)', border: 'rgba(255,180,80,0.35)', accent: '#C26A0F', dot: '#F0A030' }
+              : sev === 'good'
+              ? { bg: 'rgba(160,220,170,0.16)', border: 'rgba(140,200,150,0.38)', accent: '#2E7D44', dot: '#5BB872' }
+              : { bg: 'rgba(88,174,254,0.10)', border: 'rgba(88,174,254,0.28)', accent: '#3D7CA8', dot: '#58aefe' };
+            return (
+              <div style={{
+                margin: '0 14px 10px',
+                background: palette.bg,
+                border: `1px solid ${palette.border}`,
+                borderRadius: 14, padding: '14px 16px',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: palette.dot, flexShrink: 0 }} />
+                  <div style={{ fontSize: 11, fontWeight: 700, color: palette.accent, letterSpacing: 0.3 }}>AI 자동 인사이트</div>
+                </div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#042C53', marginBottom: 6, lineHeight: 1.4 }}>
+                  {autoInsight.headline}
+                </div>
+                {autoInsight.cause && (
+                  <div style={{ fontSize: 12.5, color: '#374E66', lineHeight: 1.6, marginBottom: 8, wordBreak: 'keep-all' }}>
+                    {autoInsight.cause}
+                  </div>
+                )}
+                {autoInsight.action && (
+                  <div style={{
+                    fontSize: 12, color: palette.accent, fontWeight: 600,
+                    background: 'rgba(255,255,255,0.55)',
+                    padding: '8px 10px', borderRadius: 10,
+                    lineHeight: 1.55, wordBreak: 'keep-all',
+                  }}>
+                    💡 {autoInsight.action}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* ═══════ Section: 측정 정보 (컨디션 브리핑 바로 아래) ═══════ */}
           <div style={{ margin: '0 14px 10px', background: '#FFFFFF', borderRadius: 14, boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)', overflow: 'hidden' }}>
