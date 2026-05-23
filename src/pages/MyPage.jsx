@@ -241,6 +241,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
   const [goalModalOpen, setGoalModalOpen] = useState(false);
   const [baselineExists, setBaselineExists] = useState(() => hasBaseline());
   const [restoreConfirm, setRestoreConfirm] = useState(null);
+  const [baselineResetConfirm, setBaselineResetConfirm] = useState(false);
   const [restoring, setRestoring] = useState(false);
   const [backupGuide, setBackupGuide] = useState(null);
   const fileInputRef = useRef(null);
@@ -564,6 +565,11 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           } catch { showToast('백업 준비 중 오류가 발생했어요'); }
         }} />
         <SettingsRow icon={icons.upload} label="데이터 복원" onTap={() => fileInputRef.current?.click()} />
+        <SettingsRow
+          icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><polyline points="21 3 21 8 16 8"/><polyline points="3 21 3 16 8 16"/></svg>}
+          label="측정 기준 재설정"
+          onTap={() => setBaselineResetConfirm(true)}
+        />
 
         <SectionHeader label="정보" />
         <SettingsRow icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>} label="이용약관" onTap={() => setLegalPage('terms')} />
@@ -1244,6 +1250,71 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                 <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>데이터를 복원하고 있어요...</div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Baseline Reset Confirm — 측정 기준 재설정 */}
+      {baselineResetConfirm && (
+        <div
+          onClick={() => setBaselineResetConfirm(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 1001,
+            background: 'var(--bg-modal-overlay)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 24,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 360,
+              background: 'var(--bg-modal)', borderRadius: 24, padding: 24,
+              border: '1px solid var(--border-subtle)',
+            }}
+          >
+            <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>
+              측정 기준 재설정
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16, lineHeight: 1.7 }}>
+              지금까지의 측정 기준점(baseline)을 삭제해요.<br />
+              <span style={{ color: 'var(--text-secondary)' }}>
+                다음 <strong style={{ color: '#5BA8D6' }}>3회 측정의 평균</strong>으로 더 정확한 새 기준이 만들어집니다.
+              </span>
+              <br /><br />
+              <span style={{ fontSize: 11, color: 'var(--text-dim)' }}>
+                기존 측정 기록·사진은 그대로 유지돼요. 동일인 인식·디바이스 기억만 초기화됩니다.
+              </span>
+            </div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button
+                onClick={() => setBaselineResetConfirm(false)}
+                style={{
+                  flex: 1, padding: 12, borderRadius: 14, border: '1px solid var(--border-subtle)',
+                  background: 'transparent', color: 'var(--text-muted)', fontSize: 14, fontWeight: 500,
+                  cursor: 'pointer', fontFamily: 'inherit',
+                }}
+              >취소</button>
+              <button
+                onClick={() => {
+                  try { clearBaseline(); } catch {}
+                  // 측정 가이드 다시 보이도록
+                  try {
+                    const m = require('../components/MeasurementGuide');
+                    if (m?.resetMeasureGuideDismiss) m.resetMeasureGuideDismiss();
+                  } catch {}
+                  try { localStorage.removeItem('nou_measure_guide_dismissed'); } catch {}
+                  setBaselineResetConfirm(false);
+                  showToast('측정 기준이 재설정됐어요. 다음 3회 측정으로 새 기준이 만들어져요.');
+                }}
+                style={{
+                  flex: 1, padding: 12, borderRadius: 14, border: 'none',
+                  background: '#5BA8D6', color: '#fff',
+                  fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                  boxShadow: '0 2px 8px rgba(91,168,214,0.28)',
+                }}
+              >재설정</button>
+            </div>
           </div>
         </div>
       )}
