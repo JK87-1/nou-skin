@@ -436,7 +436,6 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
         <SectionHeader label="앱 설정" />
         <SettingsRow icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6" /><path d="M9 17v1a3 3 0 0 0 6 0v-1" /></svg>} label="알림" right={reminderEnabled || tipEnabled ? '켜짐' : '꺼짐'} onTap={() => setShowTimePicker('page')} />
         <SettingsRow icon={icons.sun} label="화면 모드" />
-        <SettingsRow icon={icons.globe} label="언어" />
 
         {/* ── 알림 설정 서브페이지 ── */}
         {showTimePicker === 'page' && (
