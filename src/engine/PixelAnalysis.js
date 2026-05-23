@@ -136,6 +136,17 @@ export function compressImage(dataUrl, maxSize = 768, quality = 0.85) {
 
 // ===== PHOTO QUALITY GATE =====
 // Checks brightness and sharpness before analysis to warn users about poor photos.
+/** 사용자 친화 한국어 메시지 매핑 */
+export const QUALITY_ISSUE_LABELS = {
+  too_dark:        { title: '너무 어두워요',        advice: '자연광이 있는 창가로 이동해주세요.' },
+  too_bright:      { title: '너무 밝아요',          advice: '직사광선·강한 조명을 피해주세요.' },
+  blurry:          { title: '사진이 흐려요',         advice: '폰을 고정하고 다시 촬영해주세요.' },
+  no_face:         { title: '얼굴이 인식되지 않아요', advice: '얼굴을 가이드 안에 정면으로 맞춰주세요.' },
+  face_too_small:  { title: '얼굴이 작아요',         advice: '폰을 더 가까이 (30cm 권장).' },
+  face_yawed:      { title: '얼굴이 옆으로 돌아갔어요', advice: '카메라를 정면으로 응시해주세요.' },
+  face_tilted:     { title: '얼굴이 기울어져 있어요', advice: '머리를 똑바로 세워주세요.' },
+};
+
 export function checkPhotoQuality(dataUrl, landmarks) {
   return new Promise(resolve => {
     const img = new Image();
@@ -197,19 +208,37 @@ export function checkPhotoQuality(dataUrl, landmarks) {
         rollTilt = Math.abs(leftEyeOuter.y - rightEyeOuter.y) / eyeSpan;
       }
 
+      // 임계 정상화 — 기존 150/152 좁은 범위 버그 수정.
+      // brightness 정상: 70~190 (너무 어둡거나 과노출은 fail).
+      // critical 케이스(측정 차단)와 warning(주의) 분리.
       const issues = [];
-      if (brightness < 150) issues.push('too_dark');
-      if (brightness > 152) issues.push('too_bright');
-      if (sharpness < 18) issues.push('blurry');
-      if (landmarks && landmarks.length >= 468 && faceRatio < 0.08) issues.push('face_too_small');
-      if (!landmarks || landmarks.length < 468) issues.push('no_face');
-      // 얼굴 회전: yaw 0.08 초과(정면 기준 약 ±8°) 또는 roll 0.05 초과(약 ±3°)면 경고
-      if (landmarks && landmarks.length >= 468) {
-        if (yawAsymmetry > 0.08) issues.push('face_yawed');
+      const critical = []; // 측정 차단 수준
+      if (brightness < 70) critical.push('too_dark');
+      else if (brightness < 95) issues.push('too_dark');
+      if (brightness > 210) critical.push('too_bright');
+      else if (brightness > 190) issues.push('too_bright');
+
+      if (sharpness < 8) critical.push('blurry');
+      else if (sharpness < 14) issues.push('blurry');
+
+      if (!landmarks || landmarks.length < 468) critical.push('no_face');
+      else {
+        if (faceRatio < 0.05) critical.push('face_too_small');
+        else if (faceRatio < 0.08) issues.push('face_too_small');
+
+        // 얼굴 회전: yaw 0.12 초과 critical, 0.08 warning. roll 0.08 critical, 0.05 warning.
+        if (yawAsymmetry > 0.12) critical.push('face_yawed');
+        else if (yawAsymmetry > 0.08) issues.push('face_yawed');
+        if (rollTilt > 0.08) critical.push('face_tilted');
         else if (rollTilt > 0.05) issues.push('face_tilted');
       }
 
-      resolve({ passed: issues.length === 0, brightness, sharpness, faceRatio, yawAsymmetry, rollTilt, issues });
+      resolve({
+        passed: critical.length === 0 && issues.length === 0,
+        passable: critical.length === 0, // critical 아니면 측정 가능 (warning만)
+        critical,
+        brightness, sharpness, faceRatio, yawAsymmetry, rollTilt, issues,
+      });
     };
     img.onerror = () => resolve({ passed: true, brightness: 128, sharpness: 10, faceRatio: 0, issues: [] });
     img.src = dataUrl;
