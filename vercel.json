@@ -20,7 +20,7 @@
     },
     {
       "path": "/api/push-send?test=1",
-      "schedule": "50 5 * * *"
+      "schedule": "10 6 * * *"
     }
   ]
 }
