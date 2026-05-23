@@ -214,7 +214,7 @@ function getAllowedDelta(daysSinceBaseline) {
   return 15;
 }
 
-function stabilizeScores(scores, baselineResult, baselineTimestamp, deviceInfo) {
+function stabilizeScores(scores, baselineResult, baselineTimestamp, deviceInfo, metricSpreads) {
   if (!baselineResult) return scores;
 
   // Different person detection: average absolute diff across all metrics
@@ -254,11 +254,16 @@ function stabilizeScores(scores, baselineResult, baselineTimestamp, deviceInfo) 
         workingCurrent = Math.round(baseline * 0.6 + current * 0.4);
       }
       const diff = workingCurrent - baseline;
+      // 해당 메트릭의 3x spread가 크면 (>12) maxDelta를 1/2로 — GPT가 흔들리는 메트릭은 더 강한 anchor
+      const spread = metricSpreads?.[key];
+      const adjustedMax = typeof spread === 'number' && spread > 12
+        ? Math.max(2, Math.round(maxDelta / 2))
+        : maxDelta;
       // 트러블만 비대칭: 트러블 점수가 떨어지는 방향(=실제 트러블 증가)은 자유 허용.
       // baseline에 anchor돼서 새로 생긴 트러블이 감지 안 되는 문제 방지.
       // 점수가 오르는 방향(=실제 트러블 감소)은 stabilization 유지.
-      const lower = key === 'troubleCount' ? -100 : -maxDelta;
-      const upper = maxDelta;
+      const lower = key === 'troubleCount' ? -100 : -adjustedMax;
+      const upper = adjustedMax;
       const clamped = Math.max(lower, Math.min(upper, diff));
       stabilized[key] = baseline + clamped;
     }
@@ -447,8 +452,14 @@ export default async function handler(req, res) {
     }
 
     const merged = { ...valid[0] };
+    // 3x 결과 분산 (각 메트릭의 max-min). 분산 클수록 측정 노이즈 ↑.
+    const metricSpreads = {};
     if (valid.length >= 2) {
       for (const key of SCORE_KEYS) {
+        const vals = valid.map(r => r[key]).filter(v => typeof v === 'number');
+        if (vals.length >= 2) {
+          metricSpreads[key] = Math.max(...vals) - Math.min(...vals);
+        }
         merged[key] = median(valid.map(r => r[key]));
       }
       const breakdown = { whitehead: 0, blackhead: 0, papule: 0, pustule: 0, nodule: 0 };
@@ -459,6 +470,19 @@ export default async function handler(req, res) {
     } else {
       merged.troubleBreakdown = normalizeBreakdown(merged.troubleBreakdown);
     }
+
+    // 전체 측정 신뢰도 — 메트릭 평균 분산 기반
+    const spreadVals = Object.values(metricSpreads);
+    const avgSpread = spreadVals.length > 0 ? spreadVals.reduce((a, b) => a + b, 0) / spreadVals.length : 0;
+    const maxSpread = spreadVals.length > 0 ? Math.max(...spreadVals) : 0;
+    let confidence; // 'high' | 'medium' | 'low'
+    if (avgSpread < 6 && maxSpread < 12) confidence = 'high';
+    else if (avgSpread < 12 && maxSpread < 22) confidence = 'medium';
+    else confidence = 'low';
+    merged.measurementConfidence = confidence;
+    merged.metricSpreads = metricSpreads;
+    merged.avgSpread = +avgSpread.toFixed(1);
+    merged.maxSpread = maxSpread;
     // Pick analysis from a random valid response for diversity
     const analysisSource = valid[Math.floor(Math.random() * valid.length)];
     merged.analysis = analysisSource.analysis || { summary: '', details: [] };
@@ -477,7 +501,7 @@ export default async function handler(req, res) {
     // Stabilize ALL metrics against baseline (skip for different person)
     const effectiveBaseline = gptSaysDifferent ? null : (baselineResult || null);
     const effectiveTimestamp = gptSaysDifferent ? null : (baselineTimestamp || null);
-    const stabilized = stabilizeScores(merged, effectiveBaseline, effectiveTimestamp, deviceInfo);
+    const stabilized = stabilizeScores(merged, effectiveBaseline, effectiveTimestamp, deviceInfo, metricSpreads);
     for (const key of SCORE_KEYS) {
       merged[key] = stabilized[key];
     }
