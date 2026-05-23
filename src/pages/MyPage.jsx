@@ -434,7 +434,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
         <SettingsRow icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M19 3h-4a2 2 0 0 0 -2 2v12a4 4 0 0 0 8 0v-12a2 2 0 0 0 -2 -2" /><path d="M13 7.35l-2 -2a2 2 0 0 0 -2.828 0l-2.828 2.828a2 2 0 0 0 0 2.828l9 9" /><path d="M7.3 13h-2.3a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h12" /><path d="M17 17l0 .01" /></svg>} label="피부 타입" right={profile.skinType || '미설정'} onTap={() => setEditingSkin(true)} />
 
         <SectionHeader label="앱 설정" />
-        <SettingsRow icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 6h-3a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-9a2 2 0 0 0 -2 -2h-3" /><path d="M12 15h.01" /><path d="M9.5 6a2.5 2.5 0 1 1 5 0a2.5 2.5 0 0 1 -5 0" /></svg>} label="알림" right={reminderEnabled || tipEnabled ? '켜짐' : '꺼짐'} onTap={() => setShowTimePicker('page')} />
+        <SettingsRow icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6" /><path d="M9 17v1a3 3 0 0 0 6 0v-1" /></svg>} label="알림" right={reminderEnabled || tipEnabled ? '켜짐' : '꺼짐'} onTap={() => setShowTimePicker('page')} />
         <SettingsRow icon={icons.sun} label="화면 모드" />
         <SettingsRow icon={icons.globe} label="언어" />
 
