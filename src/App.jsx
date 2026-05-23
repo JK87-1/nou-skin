@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import GlobalStyles from './design/GlobalStyles';
-import { compressImage, clearCompressCache, analyzePixels, pixelsToScores, generateDemoScores, checkPhotoQuality, generateSmartAdvice } from './engine/PixelAnalysis';
+import { compressImage, clearCompressCache, analyzePixels, pixelsToScores, generateDemoScores, checkPhotoQuality, generateSmartAdvice, QUALITY_ISSUE_LABELS } from './engine/PixelAnalysis';
 import { detectLandmarks } from './engine/FaceLandmarker';
 import { callVisionAI, hybridMerge, hasBaseline, getAiFallbackStats, clearAiFallbackStats } from './engine/HybridAnalysis';
 import { estimateAge, preload as preloadAge } from './engine/FaceAgeEstimator';
@@ -1381,7 +1381,8 @@ export default function App() {
         const hasWarning = [frontal, lighting, sharp, regions].some(r => r.status === 'warning');
         const hasModerate = [frontal, lighting, sharp, regions].some(r => r.status === 'moderate');
         const allGood = !hasWarning && !hasModerate;
-        const isBlocked = false; // 사용자 통제권 존중 — 품질 부족해도 진행 가능
+        // critical(측정 불가능 수준) 있으면 차단. warning만 있으면 진행 가능.
+        const isBlocked = q.passable === false;
 
         const checkIcon = <svg width="12" height="12" viewBox="0 0 24 24" fill="#1976D2"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.707 8.707l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 111.414-1.414L11 13.586l4.293-4.293a1 1 0 111.414 1.414z"/></svg>;
         const modIcon = <svg width="12" height="12" viewBox="0 0 24 24" fill="#999"><path d="M12 1.67L1.21 21.5h21.57L12 1.67zm1 14.83h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>;
@@ -1476,6 +1477,27 @@ export default function App() {
               ))}
             </div>
 
+            {/* Critical 안내 — 측정 차단 사유 명확히 */}
+            {isBlocked && q.critical?.length > 0 && (
+              <div style={{
+                width: '100%', padding: '12px 14px', marginBottom: 12,
+                background: 'rgba(220,80,80,0.18)',
+                border: '1px solid rgba(220,80,80,0.32)',
+                borderRadius: 12,
+                display: 'flex', gap: 10, alignItems: 'flex-start',
+              }}>
+                <span style={{ fontSize: 16, flexShrink: 0, lineHeight: 1.1 }}>⚠️</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 12.5, fontWeight: 700, color: '#fff', marginBottom: 3 }}>
+                    {QUALITY_ISSUE_LABELS[q.critical[0]]?.title || '재촬영이 필요해요'}
+                  </div>
+                  <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.92)', lineHeight: 1.5 }}>
+                    {QUALITY_ISSUE_LABELS[q.critical[0]]?.advice || '다시 촬영해주세요.'}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* CTA buttons */}
             <div style={{ width: '100%' }}>
               <button onClick={isBlocked ? undefined : startAnalysis} disabled={isBlocked} style={{
@@ -1486,7 +1508,9 @@ export default function App() {
                 cursor: isBlocked ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
                 marginBottom: 8,
               }}>
-                {allGood ? 'AI 피부 분석 시작' : '이대로 분석하기'}
+                {isBlocked ? '재촬영이 필요해요'
+                  : allGood ? 'AI 피부 분석 시작'
+                  : '이대로 분석하기'}
               </button>
               <button onClick={allGood ? () => fileRef.current?.click() : () => setStage('camera')} style={{
                 width: '100%', height: 40, borderRadius: 14,
