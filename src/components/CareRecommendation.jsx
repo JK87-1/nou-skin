@@ -45,7 +45,7 @@ function ProductRow({ product, priority }) {
         </div>
         {product.matchedMetrics.length > 0 ? (
           <div style={{ fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5, marginTop: 3 }}>
-            <strong style={{ color: '#5BA8D6' }}>{product.matchedMetrics[0].ingredients[0]}</strong>
+            <strong style={{ color: '#6598ef' }}>{product.matchedMetrics[0].ingredients[0]}</strong>
             {` · ${product.matchedMetrics[0].label} 케어`}
             {product.matchedMetrics.length > 1 && (
               <span style={{ color: 'var(--text-muted)' }}> +{product.matchedMetrics.length - 1}</span>
@@ -56,8 +56,8 @@ function ProductRow({ product, priority }) {
       <div style={{ display: 'flex', alignItems: 'flex-start' }}>
         <span style={{
           fontSize: 10, fontWeight: 600,
-          color: isOccasional ? 'var(--text-muted)' : '#5BA8D6',
-          background: isOccasional ? 'rgba(0,0,0,0.05)' : 'rgba(137,206,245,0.18)',
+          color: isOccasional ? 'var(--text-muted)' : '#6598ef',
+          background: isOccasional ? 'rgba(0,0,0,0.05)' : 'rgba(101,152,239,0.18)',
           borderRadius: 10, padding: '3px 8px', whiteSpace: 'nowrap',
         }}>{isOccasional ? '가끔' : '매일'}</span>
       </div>
@@ -76,7 +76,7 @@ function StepBlock({ stepDef }) {
           width: 22, height: 22, borderRadius: '50%',
           background: 'rgba(137,206,245,0.25)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 11, fontWeight: 700, color: '#5BA8D6',
+          fontSize: 11, fontWeight: 700, color: '#6598ef',
           flexShrink: 0,
         }}>{stepDef.step}</div>
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -194,8 +194,8 @@ export default function CareRecommendation() {
             당신의 피부에 맞는 루틴
           </div>
           <span style={{
-            fontSize: 10, fontWeight: 600, color: '#5BA8D6',
-            background: 'rgba(137,206,245,0.18)', borderRadius: 8,
+            fontSize: 10, fontWeight: 600, color: '#6598ef',
+            background: 'rgba(101,152,239,0.18)', borderRadius: 8,
             padding: '3px 8px', letterSpacing: -0.1,
           }}>표준 정렬</span>
         </div>
@@ -203,7 +203,7 @@ export default function CareRecommendation() {
           등록한 화장품을 표준 순서대로 정리했어요.
           {result?.overallScore != null && ` 종합 ${result.overallScore}점 기준 매칭도 높은 순.`}
         </div>
-        <div style={{ fontSize: 11.5, color: '#5BA8D6', lineHeight: 1.55, marginTop: 6, fontWeight: 500 }}>
+        <div style={{ fontSize: 11.5, color: '#6598ef', lineHeight: 1.55, marginTop: 6, fontWeight: 500 }}>
           내 피부 별 맞춤 추천은 상담으로 진행해보세요.
         </div>
       </div>

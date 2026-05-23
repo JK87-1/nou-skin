@@ -205,7 +205,7 @@ export default function SkinWeather({ skinResult }) {
           </div>
           <div style={{ textAlign: 'center' }}>
             <div style={{ filter: 'drop-shadow(0 4px 12px rgba(56,189,248,0.2))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <WeatherIcon emoji={weather.conditionIcon} size={56} color="#58aefe" />
+              <WeatherIcon emoji={weather.conditionIcon} size={56} color="#6598ef" />
             </div>
             <div style={{ fontSize: 10, color: 'var(--text-dim)', marginTop: 4 }}>바람 {weather.wind}km/h</div>
           </div>
@@ -222,7 +222,7 @@ export default function SkinWeather({ skinResult }) {
               animation: `swFadeIn 0.3s ease ${i * 0.08}s both`,
             }}>
               <div style={{ fontSize: 10, color: 'var(--text-dim)', marginBottom: 4 }}>{f.time}</div>
-              <div style={{ marginBottom: 2, display: 'flex', justifyContent: 'center' }}><WeatherIcon emoji={f.icon} size={22} color="#58aefe" /></div>
+              <div style={{ marginBottom: 2, display: 'flex', justifyContent: 'center' }}><WeatherIcon emoji={f.icon} size={22} color="#6598ef" /></div>
               <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>{f.temp}°</div>
               {f.uv > 0 && (
                 <div style={{ fontSize: 9, color: uvColor(f.uv), marginTop: 2 }}>UV {f.uv}</div>
@@ -434,7 +434,7 @@ export default function SkinWeather({ skinResult }) {
                   animation: `swFadeInUp 0.3s ease ${i * 0.06}s both`,
                 }}>
                   <span style={{ fontSize: 13, color: 'var(--text-muted)', width: 22, flexShrink: 0 }}>{day.day}</span>
-                  <span style={{ width: 30, textAlign: 'center', flexShrink: 0, display: 'inline-flex', justifyContent: 'center' }}><WeatherIcon emoji={day.icon} size={22} color="#58aefe" /></span>
+                  <span style={{ width: 30, textAlign: 'center', flexShrink: 0, display: 'inline-flex', justifyContent: 'center' }}><WeatherIcon emoji={day.icon} size={22} color="#6598ef" /></span>
                   {/* Temp range bar */}
                   <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ fontSize: 12, color: 'var(--text-dim)', width: 28, textAlign: 'right' }}>{day.min}°</span>

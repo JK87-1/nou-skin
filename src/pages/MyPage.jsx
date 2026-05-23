@@ -661,7 +661,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                     <div key={key} style={{ overflowX: 'auto', margin: '10px 0', borderRadius: 5, border: '1px solid rgba(0,0,0,0.08)', WebkitOverflowScrolling: 'touch' }} className="legal-table-scroll">
                       <table style={{ minWidth: 520, borderCollapse: 'collapse', fontSize: 12 }}>
                         <thead>
-                          <tr style={{ background: 'rgba(91,168,214,0.1)' }}>
+                          <tr style={{ background: 'rgba(101,152,239,0.1)' }}>
                             {headerCells.map((c, j) => <th key={j} style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 600, color: 'var(--text-primary)', borderBottom: '1px solid rgba(0,0,0,0.1)', borderRight: j < headerCells.length - 1 ? '1px solid rgba(0,0,0,0.1)' : 'none', whiteSpace: 'nowrap' }}>{c}</th>)}
                           </tr>
                         </thead>
@@ -771,7 +771,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                 onClick={() => window.open(`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('[루아 문의]')}`, '_blank')}
                 style={{
                   width: '100%', padding: '12px', borderRadius: 10,
-                  border: 'none', background: 'rgba(91,168,214,0.1)', color: '#5BA8D6',
+                  border: 'none', background: 'rgba(101,152,239,0.1)', color: '#6598ef',
                   fontSize: 14, fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
@@ -1150,7 +1150,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               }}
               style={{
                 width: '100%', padding: '12px', borderRadius: 10,
-                border: 'none', background: 'rgba(91,168,214,0.1)', color: '#5BA8D6',
+                border: 'none', background: 'rgba(101,152,239,0.1)', color: '#6598ef',
                 fontSize: 14, fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
@@ -1274,7 +1274,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16, lineHeight: 1.7 }}>
               지금까지의 측정 기준점(baseline)을 삭제해요.<br />
               <span style={{ color: 'var(--text-secondary)' }}>
-                다음 <strong style={{ color: '#5BA8D6' }}>3회 측정의 평균</strong>으로 더 정확한 새 기준이 만들어집니다.
+                다음 <strong style={{ color: '#6598ef' }}>3회 측정의 평균</strong>으로 더 정확한 새 기준이 만들어집니다.
               </span>
               <br /><br />
               <span style={{ fontSize: 11, color: 'var(--text-dim)' }}>
@@ -1304,9 +1304,9 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                 }}
                 style={{
                   flex: 1, padding: 12, borderRadius: 14, border: 'none',
-                  background: '#5BA8D6', color: '#fff',
+                  background: '#6598ef', color: '#fff',
                   fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-                  boxShadow: '0 2px 8px rgba(91,168,214,0.28)',
+                  boxShadow: '0 2px 8px rgba(101,152,239,0.28)',
                 }}
               >재설정</button>
             </div>
