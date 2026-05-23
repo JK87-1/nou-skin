@@ -18,6 +18,8 @@ const PRIMARY_RESULT_KEY = 'baselineResult';
 const PRIMARY_TIMESTAMP_KEY = 'baselineTimestamp';
 const PRIMARY_DEVICE_KEY = 'baselineDevice'; // fingerprint hash
 const PRIMARY_DESCRIPTOR_KEY = 'baselineDescriptor'; // face embedding 128차원 (JSON array)
+const PRIMARY_BUILDING_KEY = 'baselineBuildingScores'; // baseline 구축 중 점수 history (1~3개 측정)
+const BASELINE_BUILD_COUNT = 3; // 평균 baseline을 만들기 위한 측정 횟수
 const SECONDARY_RESULT_KEY = 'secondaryBaselineResult';
 const SECONDARY_TIMESTAMP_KEY = 'secondaryBaselineTimestamp';
 
@@ -36,12 +38,50 @@ export function getBaseline() {
     const timestamp = parseInt(localStorage.getItem(PRIMARY_TIMESTAMP_KEY) || '0', 10);
     const device = localStorage.getItem(PRIMARY_DEVICE_KEY) || null;
     let descriptor = null;
+    let building = null;
     try {
       const ds = localStorage.getItem(PRIMARY_DESCRIPTOR_KEY);
       if (ds) descriptor = JSON.parse(ds);
     } catch {}
-    return { image, result: JSON.parse(resultStr), timestamp, device, descriptor };
+    try {
+      const bs = localStorage.getItem(PRIMARY_BUILDING_KEY);
+      if (bs) building = JSON.parse(bs);
+    } catch {}
+    return { image, result: JSON.parse(resultStr), timestamp, device, descriptor, building };
   } catch { return null; }
+}
+
+/** baseline 구축 진행 정보 — UI 표시용 */
+export function getBaselineBuildingState() {
+  const b = getBaseline();
+  if (!b) return { stage: 'none', count: 0, target: BASELINE_BUILD_COUNT };
+  const count = (b.building?.length || 0) + 1; // baseline 첫 측정 1 + 추가 측정
+  if (count >= BASELINE_BUILD_COUNT) return { stage: 'complete', count: BASELINE_BUILD_COUNT, target: BASELINE_BUILD_COUNT };
+  return { stage: 'building', count, target: BASELINE_BUILD_COUNT };
+}
+
+function saveBaselineBuilding(scores) {
+  try {
+    const existing = JSON.parse(localStorage.getItem(PRIMARY_BUILDING_KEY) || '[]');
+    existing.push(scores);
+    if (existing.length > BASELINE_BUILD_COUNT * 2) existing.splice(0, existing.length - BASELINE_BUILD_COUNT * 2);
+    localStorage.setItem(PRIMARY_BUILDING_KEY, JSON.stringify(existing));
+  } catch {}
+}
+
+function clearBaselineBuilding() {
+  try { localStorage.removeItem(PRIMARY_BUILDING_KEY); } catch {}
+}
+
+function averageScores(scoresArray) {
+  const out = {};
+  for (const key of GPT_SCORE_KEYS) {
+    const vals = scoresArray.map(s => s?.[key]).filter(v => typeof v === 'number');
+    if (vals.length > 0) {
+      out[key] = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
+    }
+  }
+  return out;
 }
 
 /**
@@ -404,14 +444,17 @@ export async function callVisionAI(base64Image, landmarks) {
       parsed.differentPerson = true;
       console.log('Client backup: score deviation detected different person');
     }
+    // 현재 측정에서 추출한 핵심 점수 — building 누적·평균에 사용
+    const currentScores = {};
+    for (const key of GPT_SCORE_KEYS) {
+      if (typeof parsed[key] === 'number') currentScores[key] = parsed[key];
+    }
+
     if (isFirstAnalysis) {
-      // First ever analysis: save as primary baseline (descriptor 함께)
-      const baselineScores = {};
-      for (const key of GPT_SCORE_KEYS) {
-        if (typeof parsed[key] === 'number') baselineScores[key] = parsed[key];
-      }
-      saveBaseline(faceImage, baselineScores, newDescriptor);
-      console.log('Primary baseline saved (first analysis, descriptor:', !!newDescriptor, ')');
+      // 첫 측정: baseline 시작. 추가 측정 2회 더 받아 평균으로 정밀화.
+      saveBaseline(faceImage, currentScores, newDescriptor);
+      clearBaselineBuilding(); // 시작 시 reset
+      console.log('Primary baseline saved (1/3, descriptor:', !!newDescriptor, ')');
     } else if (isDifferentPerson) {
       // Different person detected by GPT:
       // Do NOT apply any client-side stabilization — use raw AI scores as-is.
@@ -419,20 +462,38 @@ export async function callVisionAI(base64Image, landmarks) {
       saveSecondaryBaseline(parsed);
       console.log('Different person detected — raw scores used, saved as secondary baseline');
     } else {
-      // Same primary person: drift primary baseline (only once per day)
-      const baselineDate = new Date(baseline.timestamp).toISOString().slice(0, 10);
-      const todayDate = new Date().toISOString().slice(0, 10);
-      if (baselineDate !== todayDate) {
-        // New day: drift baseline toward current scores. descriptor도 기존 우선·새 descriptor 보조.
-        const drifted = driftBaseline(baseline.result, parsed);
-        saveBaseline(baseline.image, drifted, baseline.descriptor || newDescriptor);
-        console.log('Primary baseline drifted (new day)');
-      } else if (!baseline.descriptor && newDescriptor) {
-        // descriptor 없던 옛 baseline에 신규 descriptor 보강
-        saveBaseline(baseline.image, baseline.result, newDescriptor);
-        console.log('Primary baseline descriptor backfilled');
+      // 같은 사람 — baseline 구축 중인지 완성됐는지 분기
+      const buildingLen = baseline.building?.length || 0;
+      const totalCount = buildingLen + 1; // baseline 첫 측정 + building
+
+      if (totalCount < BASELINE_BUILD_COUNT) {
+        // 평균 baseline 구축 중. 점수 누적.
+        saveBaselineBuilding(currentScores);
+        const nextCount = totalCount + 1;
+        if (nextCount >= BASELINE_BUILD_COUNT) {
+          // BASELINE_BUILD_COUNT번째 측정 — 평균 baseline 완성
+          const allScores = [baseline.result, ...(baseline.building || []), currentScores];
+          const avg = averageScores(allScores);
+          saveBaseline(baseline.image, avg, baseline.descriptor || newDescriptor);
+          clearBaselineBuilding();
+          console.log(`Primary baseline finalized (${BASELINE_BUILD_COUNT}-shot average)`);
+        } else {
+          console.log(`Baseline building ${nextCount}/${BASELINE_BUILD_COUNT}`);
+        }
       } else {
-        console.log('Same-day repeat: baseline kept stable');
+        // 평균 baseline 완성 — 일반 drift
+        const baselineDate = new Date(baseline.timestamp).toISOString().slice(0, 10);
+        const todayDate = new Date().toISOString().slice(0, 10);
+        if (baselineDate !== todayDate) {
+          const drifted = driftBaseline(baseline.result, parsed);
+          saveBaseline(baseline.image, drifted, baseline.descriptor || newDescriptor);
+          console.log('Primary baseline drifted (new day)');
+        } else if (!baseline.descriptor && newDescriptor) {
+          saveBaseline(baseline.image, baseline.result, newDescriptor);
+          console.log('Primary baseline descriptor backfilled');
+        } else {
+          console.log('Same-day repeat: baseline kept stable');
+        }
       }
     }
 
@@ -449,7 +510,10 @@ export async function callVisionAI(base64Image, landmarks) {
       mapped.troubleBreakdown = parsed.troubleBreakdown;
     }
 
-    // 측정 디버그 정보 — 디바이스 일관성·face match·이미지 정규화 통계
+    // baseline 구축 진행 상태 (3회 평균 baseline의 진행도)
+    const buildState = getBaselineBuildingState();
+
+    // 측정 디버그 정보 — 디바이스 일관성·face match·이미지 정규화 통계·baseline 구축
     mapped.measureDebug = {
       device: currentDevice.label,
       deviceHash: currentDevice.hash.slice(0, 6),
@@ -459,6 +523,7 @@ export async function callVisionAI(base64Image, landmarks) {
       faceDistance: descDistance != null ? +descDistance.toFixed(3) : null,
       hadBaselineDescriptor: !!rawBaseline?.descriptor,
       normalize: normalizeStats,
+      baselineBuild: buildState,
     };
 
     recordAiSuccess();

@@ -1940,6 +1940,11 @@ export default function App() {
                       {d.normalize && (
                         <div>정규화: 밝기 {d.normalize.before.brightness}→{d.normalize.after.brightness} · exposure {d.normalize.factors.exposure}</div>
                       )}
+                      {d.baselineBuild?.stage === 'building' && (
+                        <div style={{ color: '#5BA8D6', fontWeight: 600 }}>
+                          기준 구축 중 ({d.baselineBuild.count}/{d.baselineBuild.target}) — {d.baselineBuild.target}회 측정 평균으로 정확한 기준점 만들어요
+                        </div>
+                      )}
                     </div>
                   );
                 })()}
