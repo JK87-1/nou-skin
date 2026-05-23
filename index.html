@@ -2,8 +2,8 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content" />
-  <meta name="theme-color" content="#F7F8FA" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content, viewport-fit=cover" />
+  <meta name="theme-color" content="#58aefe" />
   <meta name="description" content="AI가 비추는 당신의 건강 리듬. 피부 분석부터 웰니스까지." />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -50,7 +50,7 @@
       z-index: 0; pointer-events: none;
       background: linear-gradient(to bottom, #58aefe 0%, #d7e9fa 80%, #d7e9fa 100%);
     }
-    #root { min-height: 100dvh; position: relative; z-index: 1; }
+    #root { min-height: 100dvh; position: relative; z-index: 1; padding-top: env(safe-area-inset-top); }
   </style>
 </head>
 <body>
@@ -81,7 +81,7 @@
         document.documentElement.setAttribute('data-theme', 'light');
         document.documentElement.style.backgroundColor = '#58aefe';
         if (gradBg) gradBg.style.background = 'linear-gradient(to bottom, #58aefe 0%, #d7e9fa 80%, #d7e9fa 100%)';
-        document.querySelector('meta[name="theme-color"]').content = '#C5E3FF';
+        document.querySelector('meta[name="theme-color"]').content = '#58aefe';
       } else {
         document.documentElement.setAttribute('data-theme', 'dark');
         document.documentElement.style.backgroundColor = '#0a1222';

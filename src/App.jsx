@@ -164,9 +164,17 @@ export default function App() {
     const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg-primary').trim() || (colorMode === 'light' ? '#F7F8FA' : '#000000');
     document.body.style.background = bg;
     document.body.style.color = colorMode === 'light' ? '#191F28' : '#f0f0f5';
+    // theme-color: 배터리 영역이 배경과 자연스럽게 이어지도록
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.content = colorMode === 'light' ? '#C5E3FF' : '#0a1222';
-  }, [colorMode]);
+    if (meta) {
+      if (colorMode === 'light') {
+        const hasOverlay = activeTab !== 'home';
+        meta.content = hasOverlay ? '#C5E3FF' : '#58aefe';
+      } else {
+        meta.content = '#0a1222';
+      }
+    }
+  }, [colorMode, activeTab]);
 
   const setColorMode = useCallback((mode) => {
     setColorModeState(mode);
