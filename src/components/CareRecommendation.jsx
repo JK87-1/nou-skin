@@ -8,6 +8,17 @@ import { buildRoutineRecommendation, detectInteractions } from '../utils/routine
  * 로직은 src/utils/routineBuilder.js에 일원화 (consult API context와 공유).
  */
 
+// ===== Tabler Icons (Filled) =====
+const TI = ({ children, size = 18 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="#6598ef" stroke="none">{children}</svg>;
+const IconBottle = ({ size }) => <TI size={size}><path d="M13 2a1 1 0 0 1 .993 .883l.007 .117v1h1a1 1 0 0 1 .993 .883l.007 .117v1.5a3.5 3.5 0 0 1 -1.336 2.753l-.164 .131v8.116a2.5 2.5 0 0 1 -2.336 2.495l-.164 .005h-2a2.5 2.5 0 0 1 -2.495 -2.336l-.005 -.164v-8.116a3.5 3.5 0 0 1 -1.455 -2.644l-.04 -.24l-.005 -.216v-1.5a1 1 0 0 1 .883 -.993l.117 -.007h1v-1a1 1 0 0 1 .883 -.993l.117 -.007h2z" /></TI>;
+const IconSearch = ({ size }) => <TI size={size}><path d="M17 3.34a10 10 0 1 1 -14.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 14.995 -8.336zm-5 2.66a1 1 0 0 0 -.993 .883l-.007 .117v3h-3a1 1 0 0 0 -.117 1.993l.117 .007h3v3a1 1 0 0 0 1.993 .117l.007 -.117v-3h3a1 1 0 0 0 .117 -1.993l-.117 -.007h-3v-3a1 1 0 0 0 -1 -1z" /></TI>;
+const IconAlert = ({ size }) => <TI size={size}><path d="M12 1.67c.955 0 1.845 .467 2.39 1.247l.105 .16l8.114 13.548a2.914 2.914 0 0 1 -2.307 4.363l-.195 .012h-16.214a2.914 2.914 0 0 1 -2.513 -4.4l8.114 -13.548a2.914 2.914 0 0 1 2.506 -1.382zm.01 13.33l-.127 .007a1 1 0 0 0 0 1.986l.117 .007l.127 -.007a1 1 0 0 0 0 -1.986l-.117 -.007zm-.01 -7a1 1 0 0 0 -.993 .883l-.007 .117v4l.007 .117a1 1 0 0 0 1.986 0l.007 -.117v-4l-.007 -.117a1 1 0 0 0 -.993 -.883z" /></TI>;
+const IconBulb = ({ size }) => <TI size={size}><path d="M4 11a1 1 0 0 1 .117 1.993l-.117 .007h-1a1 1 0 0 1 -.117 -1.993l.117 -.007h1zm16 0a1 1 0 0 1 .117 1.993l-.117 .007h-1a1 1 0 0 1 -.117 -1.993l.117 -.007h1zm-2.834 -6.304l.094 .083l.7 .7a1 1 0 0 1 -1.32 1.497l-.094 -.083l-.7 -.7a1 1 0 0 1 1.218 -1.567l.102 .07zm-11.332 0a1 1 0 0 1 .083 1.32l-.083 .094l-.7 .7a1 1 0 0 1 -1.497 -1.32l.083 -.094l.7 -.7a1 1 0 0 1 1.414 0zM12 2a1 1 0 0 1 .993 .883l.007 .117v1a1 1 0 0 1 -1.993 .117l-.007 -.117v-1a1 1 0 0 1 1 -1zm2 12h-4l-.15 .005a2 2 0 0 0 -1.844 1.838l-.006 .157v2l.005 .15a2 2 0 0 0 1.838 1.844l.157 .006h4l.15 -.005a2 2 0 0 0 1.844 -1.838l.006 -.157v-2l-.005 -.15a2 2 0 0 0 -1.838 -1.844l-.157 -.006zm-2 -10a6 6 0 0 1 5.996 5.775l.004 .225a6 6 0 0 1 -2.639 4.963l-.361 .237v.8l-.005 .15a2 2 0 0 0 -1.838 1.844l-.157 .006h-2l-.15 -.005a2 2 0 0 0 -1.844 -1.838l-.006 -.157v-.8a6 6 0 0 1 -2.996 -5l-.004 -.225a6 6 0 0 1 6 -6z" /></TI>;
+const IconSparkles = ({ size }) => <TI size={size}><path d="M10.5 2l1.67 4.83l4.83 1.67l-4.83 1.67l-1.67 4.83l-1.67 -4.83l-4.83 -1.67l4.83 -1.67l1.67 -4.83z" /><path d="M17.5 13l1 2.5l2.5 1l-2.5 1l-1 2.5l-1 -2.5l-2.5 -1l2.5 -1l1 -2.5z" /></TI>;
+const IconSunrise = ({ size }) => <TI size={size}><path d="M12 19a1 1 0 0 1 .993 .883l.007 .117v1a1 1 0 0 1 -1.993 .117l-.007 -.117v-1a1 1 0 0 1 1 -1z" /><path d="M18.313 16.91l.094 .083l.7 .7a1 1 0 0 1 -1.32 1.497l-.094 -.083l-.7 -.7a1 1 0 0 1 1.218 -1.567l.102 .07z" /><path d="M7.007 16.993a1 1 0 0 1 .083 1.32l-.083 .094l-.7 .7a1 1 0 0 1 -1.497 -1.32l.083 -.094l.7 -.7a1 1 0 0 1 1.414 0z" /><path d="M4 11a1 1 0 0 1 .117 1.993l-.117 .007h-1a1 1 0 0 1 -.117 -1.993l.117 -.007h1z" /><path d="M21 11a1 1 0 0 1 .117 1.993l-.117 .007h-1a1 1 0 0 1 -.117 -1.993l.117 -.007h1z" /><path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" /></TI>;
+const IconMoon = ({ size }) => <TI size={size}><path d="M12 1.992a10 10 0 1 1 -9.874 11.628c-.051 -.4 .182 -.756 .559 -.879c.345 -.113 .73 .005 .938 .281a6 6 0 0 0 8.373 1.328a6 6 0 0 0 2.272 -7.723a.746 .746 0 0 1 .271 -.942a.75 .75 0 0 1 .983 .071a10.002 10.002 0 0 1 -3.522 7.863z" /></TI>;
+const IconTarget = ({ size }) => <TI size={size}><path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10 -10 10s-10 -4.477 -10 -10s4.477 -10 10 -10zm0 4a6 6 0 1 0 0 12a6 6 0 0 0 0 -12zm0 3a3 3 0 1 1 0 6a3 3 0 0 1 0 -6z" /></TI>;
+
 // ===== UI 컴포넌트 =====
 
 function ProductRow({ product, priority }) {
@@ -109,7 +120,7 @@ function RoutineColumn({ icon, title, subtitle, steps, totalProducts, dailyCount
     <div style={{ marginBottom: 22 }}>
       <div style={{ padding: '0 4px', marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-          <span style={{ fontSize: 18 }}>{icon}</span>
+          <span style={{ display: 'flex', alignItems: 'center' }}>{icon}</span>
           <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: -0.2 }}>{title}</span>
           <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{totalProducts}개</span>
         </div>
@@ -150,7 +161,7 @@ export default function CareRecommendation() {
         borderRadius: 18, textAlign: 'center',
         boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
       }}>
-        <div style={{ fontSize: 30, marginBottom: 10 }}>🧴</div>
+        <div style={{ marginBottom: 10 }}><IconBottle size={30} /></div>
         <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
           먼저 화장품을 등록해주세요
         </div>
@@ -171,7 +182,7 @@ export default function CareRecommendation() {
         borderRadius: 18, textAlign: 'center',
         boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
       }}>
-        <div style={{ fontSize: 28, marginBottom: 8 }}>🤔</div>
+        <div style={{ marginBottom: 8 }}><IconSearch size={28} /></div>
         <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
           제품 카테고리를 확인해주세요
         </div>
@@ -225,7 +236,7 @@ export default function CareRecommendation() {
         if (hasUrgentConflict) {
           pick = {
             type: 'conflict', severity: topConflict.severity,
-            icon: '⚠️',
+            icon: <IconAlert size={15} />,
             title: topConflict.title,
             advice: topConflict.advice,
             bg: topConflict.severity === 'high' ? 'rgba(232,140,140,0.22)' : 'rgba(240,180,120,0.2)',
@@ -234,7 +245,7 @@ export default function CareRecommendation() {
         } else if (hasManyProducts) {
           pick = {
             type: 'overuse',
-            icon: '💡',
+            icon: <IconBulb size={15} />,
             title: '제품이 많아요',
             advice: '각 단계 2개까지만 매일, 나머지는 주 2~3회 가끔 발라주세요.',
             bg: 'rgba(255,200,120,0.18)',
@@ -243,7 +254,7 @@ export default function CareRecommendation() {
         } else if (topConflict) {
           pick = {
             type: 'conflict-low', severity: 'low',
-            icon: '⚠️',
+            icon: <IconAlert size={15} />,
             title: topConflict.title,
             advice: topConflict.advice,
             bg: 'rgba(240,210,140,0.18)',
@@ -252,7 +263,7 @@ export default function CareRecommendation() {
         } else if (topSynergy) {
           pick = {
             type: 'synergy',
-            icon: '✨',
+            icon: <IconSparkles size={15} />,
             title: topSynergy.title,
             advice: topSynergy.advice,
             bg: 'rgba(173,235,179,0.18)',
@@ -270,7 +281,7 @@ export default function CareRecommendation() {
             borderRadius: 14,
             display: 'flex', gap: 10, alignItems: 'flex-start',
           }}>
-            <span style={{ fontSize: 15, flexShrink: 0, lineHeight: 1.1 }}>{pick.icon}</span>
+            <span style={{ flexShrink: 0, lineHeight: 1.1, display: 'flex' }}>{pick.icon}</span>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 3 }}>{pick.title}</div>
               <div style={{ fontSize: 11.5, color: 'var(--text-secondary)', lineHeight: 1.55 }}>{pick.advice}</div>
@@ -280,7 +291,7 @@ export default function CareRecommendation() {
       })()}
 
       <RoutineColumn
-        icon="☀️"
+        icon={<IconSunrise size={18} />}
         title="아침 루틴"
         subtitle={morningStats.occasional > 0
           ? `매일 ${morningStats.daily}개 · 가끔 ${morningStats.occasional}개`
@@ -290,7 +301,7 @@ export default function CareRecommendation() {
       />
 
       <RoutineColumn
-        icon="🌙"
+        icon={<IconMoon size={18} />}
         title="저녁 루틴"
         subtitle={nightStats.occasional > 0
           ? `매일 ${nightStats.daily}개 · 가끔 ${nightStats.occasional}개`

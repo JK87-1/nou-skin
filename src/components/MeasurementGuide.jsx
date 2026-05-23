@@ -117,7 +117,7 @@ export default function MeasurementGuide({ onStart, onClose }) {
             border: '1px solid rgba(101,152,239,0.3)',
             borderRadius: 14,
           }}>
-            <span style={{ fontSize: 18, flexShrink: 0, lineHeight: 1.1 }}>🎯</span>
+            <span style={{ flexShrink: 0, display: 'flex' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="#6598ef" stroke="none"><path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10 -10 10s-10 -4.477 -10 -10s4.477 -10 10 -10zm0 4a6 6 0 1 0 0 12a6 6 0 0 0 0 -12zm0 3a3 3 0 1 1 0 6a3 3 0 0 1 0 -6z" /></svg></span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{
                 fontSize: 12.5, fontWeight: 700, color: '#6598ef',

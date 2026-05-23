@@ -1537,7 +1537,7 @@ export default function App() {
                 borderRadius: 12,
                 display: 'flex', gap: 10, alignItems: 'flex-start',
               }}>
-                <span style={{ fontSize: 16, flexShrink: 0, lineHeight: 1.1 }}>⚠️</span>
+                <span style={{ flexShrink: 0, display: 'flex' }}><svg width="16" height="16" viewBox="0 0 24 24" fill="#6598ef" stroke="none"><path d="M12 1.67c.955 0 1.845 .467 2.39 1.247l.105 .16l8.114 13.548a2.914 2.914 0 0 1 -2.307 4.363l-.195 .012h-16.214a2.914 2.914 0 0 1 -2.513 -4.4l8.114 -13.548a2.914 2.914 0 0 1 2.506 -1.382zm.01 13.33l-.127 .007a1 1 0 0 0 0 1.986l.117 .007l.127 -.007a1 1 0 0 0 0 -1.986l-.117 -.007zm-.01 -7a1 1 0 0 0 -.993 .883l-.007 .117v4l.007 .117a1 1 0 0 0 1.986 0l.007 -.117v-4l-.007 -.117a1 1 0 0 0 -.993 -.883z" /></svg></span>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 12.5, fontWeight: 700, color: '#fff', marginBottom: 3 }}>
                     {QUALITY_ISSUE_LABELS[q.critical[0]]?.title || '재촬영이 필요해요'}
@@ -1964,7 +1964,7 @@ export default function App() {
                     padding: '8px 10px', borderRadius: 10,
                     lineHeight: 1.55, wordBreak: 'keep-all',
                   }}>
-                    💡 {autoInsight.action}
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#6598ef" stroke="none" style={{ verticalAlign: 'middle', marginRight: 4 }}><path d="M4 11a1 1 0 0 1 .117 1.993l-.117 .007h-1a1 1 0 0 1 -.117 -1.993l.117 -.007h1zm16 0a1 1 0 0 1 .117 1.993l-.117 .007h-1a1 1 0 0 1 -.117 -1.993l.117 -.007h1zm-2.834 -6.304l.094 .083l.7 .7a1 1 0 0 1 -1.32 1.497l-.094 -.083l-.7 -.7a1 1 0 0 1 1.218 -1.567l.102 .07zm-11.332 0a1 1 0 0 1 .083 1.32l-.083 .094l-.7 .7a1 1 0 0 1 -1.497 -1.32l.083 -.094l.7 -.7a1 1 0 0 1 1.414 0zM12 2a1 1 0 0 1 .993 .883l.007 .117v1a1 1 0 0 1 -1.993 .117l-.007 -.117v-1a1 1 0 0 1 1 -1zm2 12h-4a2 2 0 0 0 -2 2v2a2 2 0 0 0 2 2h4a2 2 0 0 0 2 -2v-2a2 2 0 0 0 -2 -2zm-2 -10a6 6 0 0 1 6 6a6 6 0 0 1 -3 5.2v.8a2 2 0 0 0 -2 2h-2a2 2 0 0 0 -2 -2v-.8a6 6 0 0 1 -3 -5.2a6 6 0 0 1 6 -6z" /></svg>{autoInsight.action}
                   </div>
                 )}
               </div>
