@@ -74,8 +74,12 @@ export default function MeasurementGuide({ onStart, onClose }) {
   const [dontShowAgain, setDontShowAgain] = useState(false);
   const buildState = (() => { try { return getBaselineBuildingState(); } catch { return null; } })();
   const isBuilding = buildState?.stage === 'none' || buildState?.stage === 'building';
-  const buildCount = buildState?.count || 0;
   const buildTarget = buildState?.target || 3;
+  // modal은 측정 "직전"에 표시 — 이번에 할 측정의 회차를 보여줘야 자연.
+  // buildState.count = "이미 완료한 측정 횟수" → 다음 측정은 count + 1.
+  const upcomingShot = !buildState || buildState.stage === 'none'
+    ? 1
+    : Math.min((buildState.count || 0) + 1, buildTarget);
 
   const handleStart = () => {
     if (dontShowAgain) {
@@ -123,7 +127,7 @@ export default function MeasurementGuide({ onStart, onClose }) {
                 fontSize: 12.5, fontWeight: 700, color: '#6598ef',
                 marginBottom: 3, letterSpacing: -0.1,
               }}>
-                기준점 구축 중 ({buildCount}/{buildTarget})
+                기준점 구축 중 ({upcomingShot}/{buildTarget})
               </div>
               <div style={{
                 fontSize: 11.5, color: 'var(--text-secondary, #4A4E58)',
