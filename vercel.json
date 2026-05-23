@@ -9,6 +9,14 @@
     {
       "path": "/api/healthcheck",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/push-send",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/push-tips",
+      "schedule": "0 * * * *"
     }
   ]
 }
