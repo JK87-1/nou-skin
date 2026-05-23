@@ -141,25 +141,6 @@ export default function SkinWeather({ skinResult }) {
         .sw-hide-scroll { scrollbar-width: none; }
       `}</style>
 
-      {/* ── Header ── */}
-      <div style={{
-        display: 'flex', flexDirection: 'column', alignItems: 'center',
-        marginBottom: 16, animation: 'swFadeInUp 0.5s ease both',
-        position: 'relative',
-      }}>
-        <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center' }}>오늘의 피부 날씨</div>
-        {weather && (
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 4,
-            background: 'var(--bg-card)', border: '1px solid var(--border-light)',
-            borderRadius: 999, padding: '6px 14px', fontSize: 11, color: 'var(--text-secondary)',
-            marginTop: 8,
-          }}>
-             {weather.location}
-          </div>
-        )}
-      </div>
-
       {/* ── Loading Skeleton ── */}
       {loading && (
         <div style={{ animation: 'swFadeInUp 0.3s ease both' }}>
