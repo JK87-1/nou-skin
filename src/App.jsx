@@ -1015,9 +1015,10 @@ export default function App() {
           {/* ② 피부 분석 버튼 */}
           <div
             style={{
-              margin: '14px 20px 0',
-              padding: '60px 24px 48px',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 48,
+              flex: 1,
+              margin: '0 20px',
+              padding: '0 24px',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 40,
             }}
           >
             <div onClick={openCamera} style={{ cursor: 'pointer' }}>
