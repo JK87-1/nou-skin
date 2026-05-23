@@ -433,76 +433,121 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
         <SettingsRow icon={icons.user} label="프로필" right={profile.nickname || '사용자'} onTap={() => setEditingProfile(true)} />
         <SettingsRow icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M19 3h-4a2 2 0 0 0 -2 2v12a4 4 0 0 0 8 0v-12a2 2 0 0 0 -2 -2" /><path d="M13 7.35l-2 -2a2 2 0 0 0 -2.828 0l-2.828 2.828a2 2 0 0 0 0 2.828l9 9" /><path d="M7.3 13h-2.3a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h12" /><path d="M17 17l0 .01" /></svg>} label="피부 타입" right={profile.skinType || '미설정'} onTap={() => setEditingSkin(true)} />
 
-        <SectionHeader label="알림" />
-        {/* 진단 리마인더 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '11px 28px' }}>
-          <span style={{ color: 'var(--text-secondary)', display: 'flex' }}>{icons.bell}</span>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 15, fontWeight: 400, color: 'var(--text-primary)' }}>진단 리마인더</div>
-            {reminderEnabled ? (
-              <div onClick={() => setShowTimePicker('reminder')} style={{ fontSize: 12, color: '#ADEBB3', marginTop: 2, cursor: 'pointer' }}>
-                매일 {formatPushTime(reminderTime)}
-              </div>
-            ) : (
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>매일 피부 측정을 알려드려요</div>
-            )}
-          </div>
-          <div onClick={pushSubscribing ? undefined : handleReminderToggle} style={{
-            width: 44, height: 26, borderRadius: 13,
-            background: reminderEnabled ? '#ADEBB3' : 'rgba(255,255,255,0.15)',
-            position: 'relative', flexShrink: 0,
-            cursor: pushSubscribing ? 'wait' : 'pointer',
-            transition: 'background 0.3s',
-            opacity: pushSubscribing ? 0.6 : 1,
-          }}>
-            <div style={{
-              position: 'absolute', top: 3, left: reminderEnabled ? 21 : 3,
-              width: 20, height: 20, borderRadius: '50%',
-              background: '#e0e0e8', transition: 'left 0.3s',
-            }} />
-          </div>
-        </div>
-        {/* 뷰티 팁 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '11px 28px' }}>
-          <span style={{ color: 'var(--text-secondary)', display: 'flex' }}>{icons.bulb}</span>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 15, fontWeight: 400, color: 'var(--text-primary)' }}>뷰티 팁</div>
-            {tipEnabled ? (
-              <div onClick={() => setShowTimePicker('tip')} style={{ fontSize: 12, color: '#ADEBB3', marginTop: 2, cursor: 'pointer' }}>
-                매일 {formatPushTime(tipTime)}
-              </div>
-            ) : (
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>내 피부 맞춤 뷰티 팁을 받아보세요</div>
-            )}
-          </div>
-          <div onClick={pushSubscribing ? undefined : handleTipToggle} style={{
-            width: 44, height: 26, borderRadius: 13,
-            background: tipEnabled ? '#ADEBB3' : 'rgba(255,255,255,0.15)',
-            position: 'relative', flexShrink: 0,
-            cursor: pushSubscribing ? 'wait' : 'pointer',
-            transition: 'background 0.3s',
-            opacity: pushSubscribing ? 0.6 : 1,
-          }}>
-            <div style={{
-              position: 'absolute', top: 3, left: tipEnabled ? 21 : 3,
-              width: 20, height: 20, borderRadius: '50%',
-              background: '#e0e0e8', transition: 'left 0.3s',
-            }} />
-          </div>
-        </div>
+        <SectionHeader label="앱 설정" />
+        <SettingsRow icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 6h-3a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-9a2 2 0 0 0 -2 -2h-3" /><path d="M12 15h.01" /><path d="M9.5 6a2.5 2.5 0 1 1 5 0a2.5 2.5 0 0 1 -5 0" /></svg>} label="알림" right={reminderEnabled || tipEnabled ? '켜짐' : '꺼짐'} onTap={() => setShowTimePicker('page')} />
+        <SettingsRow icon={icons.sun} label="화면 모드" />
+        <SettingsRow icon={icons.globe} label="언어" />
 
-        {showTimePicker && createPortal(
+        {/* ── 알림 설정 서브페이지 ── */}
+        {showTimePicker === 'page' && (
+          <div style={{
+            position: 'fixed', top: 0, right: 0, bottom: 0, left: 0, zIndex: 1100,
+            background: 'linear-gradient(180deg, #C5E3FF 0%, #F1F7FD 100%)',
+          }}>
+          <div style={{
+            position: 'absolute', top: 0, bottom: 0, left: '50%', transform: 'translateX(-50%)',
+            width: '100%', maxWidth: 430,
+            display: 'flex', flexDirection: 'column',
+            overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+            animation: 'settingsSlideIn 0.3s ease',
+          }}>
+            {/* Header */}
+            <div style={{
+              display: 'flex', alignItems: 'center', padding: '54px 20px 12px',
+              position: 'relative',
+            }}>
+              <div onClick={() => setShowTimePicker(null)} style={{ cursor: 'pointer', padding: 4 }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+              </div>
+              <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>알림</span>
+            </div>
+
+            <div style={{ flex: 1, padding: '8px 0' }}>
+              {/* 진단 리마인더 */}
+              <div style={{ padding: '16px 28px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>진단 리마인더</div>
+                  <div onClick={pushSubscribing ? undefined : handleReminderToggle} style={{
+                    width: 44, height: 26, borderRadius: 13,
+                    background: reminderEnabled ? '#ADEBB3' : 'rgba(0,0,0,0.12)',
+                    position: 'relative', flexShrink: 0,
+                    cursor: pushSubscribing ? 'wait' : 'pointer',
+                    transition: 'background 0.3s',
+                    opacity: pushSubscribing ? 0.6 : 1,
+                  }}>
+                    <div style={{
+                      position: 'absolute', top: 3, left: reminderEnabled ? 21 : 3,
+                      width: 20, height: 20, borderRadius: '50%',
+                      background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                      transition: 'left 0.3s',
+                    }} />
+                  </div>
+                </div>
+                <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 10 }}>
+                  매일 설정한 시간에 피부 측정을 알려드려요
+                </div>
+                {reminderEnabled && (
+                  <div onClick={() => setShowTimePicker('reminder')} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '10px 14px', borderRadius: 12,
+                    background: 'rgba(255,255,255,0.6)', cursor: 'pointer',
+                  }}>
+                    <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>알림 시간</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: '#4a9eff' }}>{formatPushTime(reminderTime)}</span>
+                  </div>
+                )}
+              </div>
+
+              <div style={{ height: 1, background: 'rgba(0,0,0,0.06)', margin: '0 28px' }} />
+
+              {/* 뷰티 팁 */}
+              <div style={{ padding: '16px 28px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>뷰티 팁</div>
+                  <div onClick={pushSubscribing ? undefined : handleTipToggle} style={{
+                    width: 44, height: 26, borderRadius: 13,
+                    background: tipEnabled ? '#ADEBB3' : 'rgba(0,0,0,0.12)',
+                    position: 'relative', flexShrink: 0,
+                    cursor: pushSubscribing ? 'wait' : 'pointer',
+                    transition: 'background 0.3s',
+                    opacity: pushSubscribing ? 0.6 : 1,
+                  }}>
+                    <div style={{
+                      position: 'absolute', top: 3, left: tipEnabled ? 21 : 3,
+                      width: 20, height: 20, borderRadius: '50%',
+                      background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                      transition: 'left 0.3s',
+                    }} />
+                  </div>
+                </div>
+                <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 10 }}>
+                  내 피부 데이터에 맞는 뷰티 팁을 매일 받아보세요
+                </div>
+                {tipEnabled && (
+                  <div onClick={() => setShowTimePicker('tip')} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '10px 14px', borderRadius: 12,
+                    background: 'rgba(255,255,255,0.6)', cursor: 'pointer',
+                  }}>
+                    <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>알림 시간</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: '#4a9eff' }}>{formatPushTime(tipTime)}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          </div>
+        )}
+
+        {/* TimePicker portal for reminder/tip */}
+        {(showTimePicker === 'reminder' || showTimePicker === 'tip') && createPortal(
           <TimePicker
             value={showTimePicker === 'reminder' ? reminderTime : tipTime}
             onChange={showTimePicker === 'reminder' ? handleReminderTimeChange : handleTipTimeChange}
-            onClose={() => setShowTimePicker(null)}
+            onClose={() => setShowTimePicker('page')}
           />,
           document.body,
         )}
-
-        <SectionHeader label="앱 설정" />
-        <SettingsRow icon={icons.sun} label="화면 모드" />
-        <SettingsRow icon={icons.globe} label="언어" />
 
         <SectionHeader label="데이터 관리" />
         <SettingsRow icon={icons.download} label="데이터 백업" onTap={async () => {
