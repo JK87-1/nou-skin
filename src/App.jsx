@@ -167,14 +167,16 @@ export default function App() {
     // theme-color: 배터리 영역이 배경과 자연스럽게 이어지도록
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) {
-      if (colorMode === 'light') {
+      if (showSplash) {
+        meta.content = '#ffffff';
+      } else if (colorMode === 'light') {
         const hasOverlay = activeTab !== 'home';
         meta.content = hasOverlay ? '#C5E3FF' : '#58aefe';
       } else {
         meta.content = '#0a1222';
       }
     }
-  }, [colorMode, activeTab]);
+  }, [colorMode, activeTab, showSplash]);
 
   const setColorMode = useCallback((mode) => {
     setColorModeState(mode);
