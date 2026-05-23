@@ -1932,21 +1932,63 @@ function RoutineChecklist() {
                 background: isOver ? 'rgba(101,152,239,0.1)' : 'transparent',
                 transition: 'opacity 0.2s, background 0.15s',
               }}>
-                {/* Drag handle — 정렬 모드에서만 명확. 일반 모드는 거의 보이지 않음 */}
-                {reorderMode ? (
-                  <div onTouchStart={(e) => handleDragStart(i, e)} style={{
-                    width: 28, height: 36, flexShrink: 0, cursor: 'grab',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3,
-                    touchAction: 'none',
-                    background: 'rgba(101,152,239,0.16)',
-                    border: '1px solid rgba(101,152,239,0.32)',
-                    borderRadius: 8,
-                  }}>
-                    <div style={{ width: 14, height: 2.5, borderRadius: 1.5, background: '#6598ef' }} />
-                    <div style={{ width: 14, height: 2.5, borderRadius: 1.5, background: '#6598ef' }} />
-                    <div style={{ width: 14, height: 2.5, borderRadius: 1.5, background: '#6598ef' }} />
-                  </div>
-                ) : null}
+                {/* 정렬 모드 — 위/아래 화살표 버튼 (iOS에서 가장 확실) */}
+                {reorderMode ? (() => {
+                  const modeItems = myRoutines.filter(r => r.mode === mode);
+                  const fromIdx = modeItems.findIndex(r => r.id === item.id);
+                  const canUp = fromIdx > 0;
+                  const canDown = fromIdx >= 0 && fromIdx < modeItems.length - 1;
+                  return (
+                    <div style={{
+                      display: 'flex', flexDirection: 'column', gap: 4, flexShrink: 0,
+                    }}>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!canUp) return;
+                          hapticLight();
+                          reorderRoutines(fromIdx, fromIdx - 1);
+                        }}
+                        disabled={!canUp}
+                        aria-label="위로"
+                        style={{
+                          width: 30, height: 24, border: 'none', borderRadius: 6,
+                          background: canUp ? 'rgba(101,152,239,0.18)' : 'rgba(0,0,0,0.04)',
+                          color: canUp ? '#6598ef' : 'rgba(0,0,0,0.18)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          cursor: canUp ? 'pointer' : 'default', padding: 0,
+                          fontFamily: 'inherit',
+                        }}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="18 15 12 9 6 15"/>
+                        </svg>
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!canDown) return;
+                          hapticLight();
+                          reorderRoutines(fromIdx, fromIdx + 1);
+                        }}
+                        disabled={!canDown}
+                        aria-label="아래로"
+                        style={{
+                          width: 30, height: 24, border: 'none', borderRadius: 6,
+                          background: canDown ? 'rgba(101,152,239,0.18)' : 'rgba(0,0,0,0.04)',
+                          color: canDown ? '#6598ef' : 'rgba(0,0,0,0.18)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          cursor: canDown ? 'pointer' : 'default', padding: 0,
+                          fontFamily: 'inherit',
+                        }}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                      </button>
+                    </div>
+                  );
+                })() : null}
                 {/* Icon */}
                 <span style={{ fontSize: 18 }}>{item.icon}</span>
                 {/* Name */}
