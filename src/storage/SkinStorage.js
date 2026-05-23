@@ -55,6 +55,8 @@ export function saveRecord(result) {
       ? { troubleBreakdown: result.troubleBreakdown } : {}),
     // 측정 디버그 — 디바이스·face match·정규화 (베타 임시)
     ...(result.measureDebug ? { measureDebug: result.measureDebug } : {}),
+    // AI 자동 인사이트 (측정 후 GPT 추론 결과)
+    ...(result.autoInsight ? { autoInsight: result.autoInsight } : {}),
     // Tag records from different people so comparisons only use same-person records
     ...(result.differentPerson ? { differentPerson: true } : {}),
   };
