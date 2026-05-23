@@ -473,6 +473,10 @@ export async function callVisionAI(base64Image, landmarks) {
       if (typeof parsed[key] === 'number') currentScores[key] = parsed[key];
     }
 
+    // 이번 측정으로 3회 평균 baseline이 완성됐는지 — modal 트리거용
+    let baselineJustCompleted = false;
+    let baselineCompletedAvg = null;
+
     if (isFirstAnalysis) {
       // 첫 측정: baseline 시작. 추가 측정 2회 더 받아 평균으로 정밀화.
       // opts.built=false로 이전 built flag 잔재 제거.
@@ -500,6 +504,8 @@ export async function callVisionAI(base64Image, landmarks) {
           const avg = averageScores(allScores);
           saveBaseline(baseline.image, avg, baseline.descriptor || newDescriptor, { built: true });
           clearBaselineBuilding();
+          baselineJustCompleted = true;
+          baselineCompletedAvg = avg;
           console.log(`Primary baseline finalized (${BASELINE_BUILD_COUNT}-shot average)`);
         } else {
           console.log(`Baseline building ${nextCount}/${BASELINE_BUILD_COUNT}`);
@@ -551,6 +557,8 @@ export async function callVisionAI(base64Image, landmarks) {
       baselineBuild: buildState,
       isDifferentPerson, // 진짜 different 판정됐는지 — false면 정상 누적
       buildingLength: updatedBaseline?.building?.length || 0,
+      baselineJustCompleted, // 이번 측정으로 3회 평균 baseline 완성됨
+      baselineCompletedAvg: baselineJustCompleted ? baselineCompletedAvg : null,
     };
 
     recordAiSuccess();
