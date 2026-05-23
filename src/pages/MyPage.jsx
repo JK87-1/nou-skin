@@ -452,12 +452,9 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
             animation: 'settingsSlideIn 0.3s ease',
           }}>
             {/* Header */}
-            <div style={{
-              display: 'flex', alignItems: 'center', padding: '54px 20px 12px',
-              position: 'relative',
-            }}>
-              <div onClick={() => setShowTimePicker(null)} style={{ cursor: 'pointer', padding: 4 }}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+            <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+              <div onClick={() => setShowTimePicker(null)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
               </div>
               <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>알림</span>
             </div>
@@ -618,9 +615,9 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           display: 'flex', flexDirection: 'column',
           animation: 'settingsSlideIn 0.3s ease',
         }}>
-          <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 16px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+          <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
             <div onClick={() => setLegalPage(null)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
             </div>
             <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
               {legalPage === 'terms' ? '이용약관'
@@ -715,13 +712,11 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           width: '100%', maxWidth: 430,
           display: 'flex', flexDirection: 'column',
         }}>
-          <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 16px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+          <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
             <div onClick={() => setFaqOpen(false)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
             </div>
-            <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
-              문의하기
-            </span>
+            <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>문의하기</span>
           </div>
 
           <div style={{ flex: 1, overflowY: 'auto', padding: '25px 16px 40px', WebkitOverflowScrolling: 'touch' }}>
@@ -799,11 +794,11 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           overflowY: 'auto', WebkitOverflowScrolling: 'touch',
           animation: 'settingsSlideIn 0.3s ease',
         }}>
-          <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 16px 12px', display: 'flex', alignItems: 'center', position: 'relative' }}>
+          <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
             <div onClick={() => setEditingProfile(false)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
             </div>
-            <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.2 }}>프로필</span>
+            <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>프로필</span>
           </div>
 
           {/* Avatar */}
@@ -1018,11 +1013,11 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           overflowY: 'auto', WebkitOverflowScrolling: 'touch',
           animation: 'settingsSlideIn 0.3s ease',
         }}>
-          <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 16px 12px', display: 'flex', alignItems: 'center', position: 'relative' }}>
+          <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
             <div onClick={() => setEditingSkin(false)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
             </div>
-            <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.2 }}>피부 타입</span>
+            <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>피부 타입</span>
           </div>
 
           {/* Intro */}
@@ -1093,9 +1088,9 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           width: '100%', maxWidth: 430,
           display: 'flex', flexDirection: 'column',
         }}>
-          <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 16px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+          <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
             <div onClick={() => setBackupGuide(null)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
             </div>
             <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>데이터 백업</span>
           </div>
