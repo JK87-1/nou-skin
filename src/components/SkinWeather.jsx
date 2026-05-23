@@ -18,11 +18,11 @@ const DUMMY_WEATHER = {
   airQuality: 45, airLabel: '보통',
   fineDust: 45, ultraFineDust: 28,
   forecast: [
-    { time: '09시', icon: '☀️', temp: 1, uv: 2 },
-    { time: '12시', icon: '☀️', temp: 7, uv: 4 },
-    { time: '15시', icon: '⛅', temp: 8, uv: 3 },
-    { time: '18시', icon: '⛅', temp: 5, uv: 1 },
-    { time: '21시', icon: '🌙', temp: 2, uv: 0 },
+    { time: '09시', icon: '☀️', temp: 1, uv: 2, rain: 0 },
+    { time: '12시', icon: '☀️', temp: 7, uv: 4, rain: 5 },
+    { time: '15시', icon: '⛅', temp: 8, uv: 3, rain: 10 },
+    { time: '18시', icon: '⛅', temp: 5, uv: 1, rain: 20 },
+    { time: '21시', icon: '🌙', temp: 2, uv: 0, rain: 15 },
   ],
   weekForecast: [
     { day: '월', icon: '☀️', min: -2, max: 8, humidity: 30 },
@@ -34,32 +34,68 @@ const DUMMY_WEATHER = {
 };
 
 // ===== Helper functions =====
+function formatTimeAMPM(t) {
+  const m = t.match(/(\d+)/);
+  if (!m) return t;
+  const h = parseInt(m[1], 10);
+  if (h === 0) return '12AM';
+  if (h < 12) return `${h}AM`;
+  if (h === 12) return '12PM';
+  return `${h - 12}PM`;
+}
 function uvColor(val) {
-  if (val <= 2) return '#34d399';
-  if (val <= 5) return '#F0B870';
-  if (val <= 7) return '#f97316';
-  return '#ef4444';
+  if (val <= 2) return '#A8D4FA';   // 밝은 하늘 — 좋음
+  if (val <= 5) return '#6598EF';   // 블루 — 보통
+  if (val <= 7) return '#4A7ACD';   // 딥블루 — 주의
+  return '#3558A8';                 // 네이비 — 위험
+}
+
+function uvToSpf(val) {
+  if (val <= 2) return { spf: '15', label: '낮음' };
+  if (val <= 5) return { spf: '30', label: '보통' };
+  if (val <= 7) return { spf: '50', label: '높음' };
+  return { spf: '50+', label: '매우 높음' };
 }
 
 function humidityInfo(val) {
-  if (val < 30) return { color: '#f59e0b', label: '매우 낮음' };
-  if (val < 40) return { color: '#F0B870', label: '낮음' };
-  if (val <= 60) return { color: '#34d399', label: '적정' };
-  if (val <= 70) return { color: '#38bdf8', label: '높음' };
-  return { color: '#ADEBB3', label: '매우 높음' };
+  if (val < 30) return { color: '#3558A8', label: '매우 낮음' };   // 네이비 — 위험
+  if (val < 40) return { color: '#4A7ACD', label: '낮음' };        // 딥블루 — 주의
+  if (val <= 60) return { color: '#A8D4FA', label: '적정' };       // 밝은 하늘 — 좋음
+  if (val <= 70) return { color: '#4A7ACD', label: '높음' };       // 딥블루 — 주의
+  return { color: '#3558A8', label: '매우 높음' };                 // 네이비 — 위험
 }
 
 function airInfo(val) {
-  if (val <= 30) return { color: '#34d399', label: '좋음' };
-  if (val <= 50) return { color: '#ADEBB3', label: '보통' };
-  if (val <= 80) return { color: '#F0B870', label: '나쁨' };
-  return { color: '#ef4444', label: '매우나쁨' };
+  if (val <= 30) return { color: '#A8D4FA', label: '좋음' };       // 밝은 하늘
+  if (val <= 50) return { color: '#6598EF', label: '보통' };       // 블루
+  if (val <= 80) return { color: '#4A7ACD', label: '나쁨' };       // 딥블루
+  return { color: '#3558A8', label: '매우나쁨' };                  // 네이비
 }
 
 function weekHumidityTag(h) {
-  if (h < 40) return { label: '건조주의', color: '#f59e0b' };
-  if (h <= 70) return { label: '적정', color: '#34d399' };
-  return { label: '습함', color: '#38bdf8' };
+  if (h < 40) return { label: '건조주의', color: '#4A7ACD' };      // 딥블루 — 주의
+  if (h <= 70) return { label: '적정', color: '#A8D4FA' };         // 밝은 하늘 — 좋음
+  return { label: '습함', color: '#4A7ACD' };                     // 딥블루 — 주의
+}
+
+// Meteocons animated weather icons — CDN
+const METEOCONS_BASE = 'https://cdn.meteocons.com/3.0.0-next.10/svg/fill';
+const METEOCONS_MAP = {
+  '☀️': 'clear-day',
+  '🌙': 'clear-night',
+  '⛅': 'partly-cloudy-day',
+  '🌤': 'partly-cloudy-day',
+  '☁️': 'overcast',
+  '🌧': 'overcast-rain',
+  '🌨': 'overcast-snow',
+  '🌦': 'partly-cloudy-day-rain',
+  '⛈': 'thunderstorms-day-rain',
+  '🌫': 'fog',
+};
+
+function WeatherIconFilled({ emoji, size = 24 }) {
+  const name = METEOCONS_MAP[emoji] || 'overcast';
+  return <img src={`${METEOCONS_BASE}/${name}.svg`} width={size} height={size} alt="" style={{ display: 'inline-block', flexShrink: 0 }} />;
 }
 
 // ===== Main Component =====
@@ -132,6 +168,7 @@ export default function SkinWeather({ skinResult }) {
   return (
     <div style={{ padding: '0 20px 24px' }}>
       <style>{`
+        @keyframes weatherSlideIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }
         @keyframes swShimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
         @keyframes swFadeInUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes swFadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -157,86 +194,41 @@ export default function SkinWeather({ skinResult }) {
 
       {weather && !loading && <>
 
-      {/* ── Weather Overview Card ── */}
-      <div style={{
-        background: 'linear-gradient(180deg, rgba(135,206,235,0.5) 0%, rgba(255,255,255,0.42) 100%)',
-        backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-        borderRadius: 18, border: '1px solid rgba(255,255,255,0.4)', padding: 20,
-        boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
-        position: 'relative', overflow: 'hidden',
-        marginBottom: 12, animation: 'swFadeInUp 0.5s ease 0.05s both',
-      }}>
-        {/* Glow */}
-        <div style={{
-          position: 'absolute', top: -30, right: -30, width: 140, height: 140,
-          background: 'transparent',
-          pointerEvents: 'none',
-        }} />
+      {/* ── Weather Overview ── */}
+      <div style={{ marginBottom: 16, animation: 'swFadeInUp 0.5s ease 0.05s both' }}>
+        {/* 날짜 */}
+        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', marginBottom: 16, textAlign: 'center' }}>{weather.date}</div>
 
-        {/* Top row */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative' }}>
+        {/* 온도 + 상태 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, padding: '0 12px' }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-              <span style={{ fontSize: 52, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>{weather.temp}</span>
-              <span style={{ fontSize: 20, color: 'var(--text-muted)', marginTop: 6 }}>°C</span>
+            <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+              <span style={{ fontSize: 56, fontWeight: 700, color: '#fff', lineHeight: 1, letterSpacing: -2 }}>{weather.temp}°</span>
             </div>
-            <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}><WeatherIcon emoji={weather.conditionIcon} size={16} color="var(--text-secondary)" /> {weather.condition}</div>
-            <div style={{ fontSize: 12, color: 'var(--text-dim)', marginTop: 2 }}>최저 {weather.tempMin}° / 최고 {weather.tempMax}°</div>
-            <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 2 }}>{weather.date}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, marginBottom: 18 }}>
+              <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)', fontWeight: 500 }}>{weather.condition}</span>
+              <span style={{ fontSize: 16, fontWeight: 600, color: 'rgba(255,255,255,0.8)' }}>{weather.tempMax}° / {weather.tempMin}°</span>
+            </div>
           </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ filter: 'drop-shadow(0 4px 12px rgba(56,189,248,0.2))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <WeatherIcon emoji={weather.conditionIcon} size={56} color="#6598ef" />
-            </div>
-            <div style={{ fontSize: 10, color: 'var(--text-dim)', marginTop: 4 }}>바람 {weather.wind}km/h</div>
+          <div style={{ marginLeft: 'auto', textAlign: 'center' }}>
+            <WeatherIconFilled emoji={weather.conditionIcon} size={66} />
           </div>
         </div>
 
-        {/* Hourly forecast */}
-        <div style={{
-          borderTop: '1px solid var(--border-light)', paddingTop: 14, marginTop: 18,
-          display: 'flex',
-        }}>
-          {(weather.forecast || []).map((f, i) => (
-            <div key={i} style={{
-              flex: 1, textAlign: 'center',
-              animation: `swFadeIn 0.3s ease ${i * 0.08}s both`,
-            }}>
-              <div style={{ fontSize: 10, color: 'var(--text-dim)', marginBottom: 4 }}>{f.time}</div>
-              <div style={{ marginBottom: 2, display: 'flex', justifyContent: 'center' }}><WeatherIcon emoji={f.icon} size={22} color="#6598ef" /></div>
-              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>{f.temp}°</div>
-              {f.uv > 0 && (
-                <div style={{ fontSize: 9, color: uvColor(f.uv), marginTop: 2 }}>UV {f.uv}</div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Environment Indicators ── */}
+        {/* ── Environment Indicators ── */}
       <div style={{
-        display: 'flex', gap: 8, marginBottom: 16,
-        animation: 'swFadeInUp 0.5s ease 0.1s both',
+        display: 'flex', justifyContent: 'space-around', marginBottom: 20,
+        padding: '0 16px', animation: 'swFadeInUp 0.5s ease 0.1s both',
       }}>
         {/* Humidity */}
         {(() => {
           const hi = humidityInfo(weather.humidity);
           return (
-            <div style={{
-              flex: 1, padding: 14, borderRadius: 18,
-              background: 'rgba(255,255,255,0.42)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-              border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>습도</span>
-                <span style={{
-                  fontSize: 9, fontWeight: 600, color: hi.color,
-                  background: `${hi.color}15`, padding: '2px 6px', borderRadius: 6,
-                }}>{hi.label}</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
-                <span style={{ fontSize: 24, fontWeight: 700, color: hi.color, filter: 'brightness(0.7)' }}>{weather.humidity}</span>
-                <span style={{ fontSize: 12, color: 'var(--text-dim)', marginBottom: 2 }}>%</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6.8 11a6 6 0 1 0 10.396 0l-5.197 -8l-5.2 8z" /></svg>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>{weather.humidity}<span style={{ fontSize: 11, fontWeight: 400 }}>%</span></div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)' }}>습도 · {hi.label}</div>
               </div>
             </div>
           );
@@ -246,44 +238,110 @@ export default function SkinWeather({ skinResult }) {
         {(() => {
           const ai = airInfo(weather.airQuality);
           return (
-            <div style={{
-              flex: 1, padding: 14, borderRadius: 18,
-              background: 'rgba(255,255,255,0.42)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-              border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>미세먼지</span>
-                <span style={{
-                  fontSize: 9, fontWeight: 600, color: ai.color,
-                  background: `${ai.color}15`, padding: '2px 6px', borderRadius: 6,
-                }}>{ai.label}</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
-                <span style={{ fontSize: 24, fontWeight: 700, color: ai.color, filter: 'brightness(0.7)' }}>{weather.airQuality}</span>
-                <span style={{ fontSize: 9, color: 'var(--text-dim)', marginBottom: 3, marginLeft: 2 }}>AQI</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3.5 9.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M8.5 4.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M8.5 14.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M3.5 19.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M13.5 9.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M18.5 4.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M13.5 19.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M18.5 14.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /></svg>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>{weather.airQuality}<span style={{ fontSize: 10, fontWeight: 400, marginLeft: 2 }}>AQI</span></div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)' }}>미세먼지 · {ai.label}</div>
               </div>
             </div>
           );
         })()}
 
         {/* UV */}
-        <div style={{
-          flex: 1, padding: 14, borderRadius: 18,
-          background: 'rgba(255,255,255,0.42)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-          border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>자외선</span>
-            <span style={{
-              fontSize: 9, fontWeight: 600, color: uvColor(weather.uv),
-              background: `${uvColor(weather.uv)}15`, padding: '2px 6px', borderRadius: 6,
-            }}>{weather.uvLabel}</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'baseline' }}>
-            <span style={{ fontSize: 24, fontWeight: 700, color: uvColor(weather.uv), filter: 'brightness(0.7)' }}>{weather.uv}</span>
-            <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-dim)', opacity: 0.35 }}>/10</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h1m16 0h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7m-9.7 5.7a4 4 0 1 1 8 0" /><path d="M12 4v-1" /><path d="M13 16l2 5h1l2 -5" /><path d="M6 16v3a2 2 0 1 0 4 0v-3" /></svg>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>{weather.uv}<span style={{ fontSize: 11, fontWeight: 400 }}>/10</span></div>
+            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)' }}>자외선 · {weather.uvLabel}</div>
           </div>
         </div>
+      </div>
+
+        {/* 시간별 예보 */}
+        {(() => {
+          const fc = weather.forecast || [];
+          const temps = fc.map(f => f.temp);
+          const minT = Math.min(...temps);
+          const maxT = Math.max(...temps);
+          const range = maxT - minT || 1;
+          const graphH = 32;
+          const count = fc.length;
+          // SVG 포인트 계산 — 각 시간대 중앙에 정렬
+          const points = fc.map((f, i) => {
+            const x = ((i + 0.5) / count) * 100;
+            const y = graphH - ((f.temp - minT) / range) * (graphH - 4) - 2;
+            return { x, y };
+          });
+          // 부드러운 곡선 path 생성
+          const curvePath = points.reduce((acc, p, i) => {
+            if (i === 0) return `M${p.x},${p.y}`;
+            const prev = points[i - 1];
+            const cpx1 = prev.x + (p.x - prev.x) * 0.4;
+            const cpx2 = p.x - (p.x - prev.x) * 0.4;
+            return `${acc} C${cpx1},${prev.y} ${cpx2},${p.y} ${p.x},${p.y}`;
+          }, '');
+
+          return (
+            <div style={{
+              background: 'rgba(34,113,208,0.05)',
+              borderRadius: 16, padding: '14px 16px',
+            }}>
+              {/* 시간 */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                {fc.map((f, i) => (
+                  <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: 11, color: 'rgba(255,255,255,0.6)', fontWeight: 500 }}>
+                    {formatTimeAMPM(f.time)}
+                  </div>
+                ))}
+              </div>
+              {/* 아이콘 */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                {fc.map((f, i) => (
+                  <div key={i} style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+                    <WeatherIconFilled emoji={f.icon} size={26} />
+                  </div>
+                ))}
+              </div>
+              {/* 온도 */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                {fc.map((f, i) => (
+                  <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: 15, fontWeight: 600, color: '#fff' }}>
+                    {f.temp}°
+                  </div>
+                ))}
+              </div>
+              {/* 온도 그래프 */}
+              <div style={{ marginBottom: 10 }}>
+                <svg width="100%" viewBox={`0 0 ${count * 60} 40`} style={{ display: 'block' }}>
+                  {(() => {
+                    const w = count * 60;
+                    const h = 40;
+                    const pad = 6;
+                    const pts = fc.map((f, i) => ({
+                      x: (i + 0.5) / count * w,
+                      y: h - pad - ((f.temp - minT) / range) * (h - pad * 2),
+                    }));
+                    const d = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
+                    return <>
+                      <path d={d} fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeLinecap="round" />
+                      {pts.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="3" fill="#fff" />)}
+                    </>;
+                  })()}
+                </svg>
+              </div>
+              {/* 비 확률 */}
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                {fc.map((f, i) => (
+                  <div key={i} style={{ flex: 1, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="rgba(255,255,255,0.5)" stroke="none"><path d="M6.8 11a6 6 0 1 0 10.396 0l-5.197 -8l-5.2 8z" /></svg>
+                    <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)' }}>{f.rain ?? 0}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* ── Skin Alerts ── */}
@@ -294,7 +352,7 @@ export default function SkinWeather({ skinResult }) {
             {highCount > 0 && (
               <span style={{
                 fontSize: 10, fontWeight: 700, color: '#fff',
-                background: '#ef4444', borderRadius: 10, padding: '2px 7px',
+                background: '#3558A8', borderRadius: 10, padding: '2px 7px',
                 minWidth: 18, textAlign: 'center',
               }}>{highCount}</span>
             )}
@@ -332,7 +390,7 @@ export default function SkinWeather({ skinResult }) {
                       <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{alert.title}</span>
                       {alert.priority === 'high' && (
                         <div style={{
-                          width: 7, height: 7, borderRadius: '50%', background: '#ef4444', flexShrink: 0,
+                          width: 7, height: 7, borderRadius: '50%', background: '#3558A8', flexShrink: 0,
                           animation: 'swPulse 2s ease-in-out infinite',
                         }} />
                       )}
@@ -380,7 +438,7 @@ export default function SkinWeather({ skinResult }) {
       {!skinResult && (
         <div style={{
           padding: 16, borderRadius: 18,
-          background: 'rgba(240,144,112,0.06)', border: '1px solid rgba(240,144,112,0.1)',
+          background: 'rgba(101,152,239,0.06)', border: '1px solid rgba(101,152,239,0.1)',
           marginBottom: 16, textAlign: 'center',
           animation: 'swFadeInUp 0.5s ease 0.15s both',
         }}>
@@ -397,9 +455,7 @@ export default function SkinWeather({ skinResult }) {
             5일간 피부 환경 예보
           </div>
           <div style={{
-            background: 'rgba(255,255,255,0.42)', borderRadius: 18,
-            backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-            border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+            background: 'rgba(34,113,208,0.05)', borderRadius: 16,
             padding: 6,
           }}>
             {weather.weekForecast.map((day, i) => {
@@ -425,7 +481,7 @@ export default function SkinWeather({ skinResult }) {
                     }}>
                       <div style={{
                         position: 'absolute', height: '100%', borderRadius: 2,
-                        background: '#d0d0d0',
+                        background: '#b7dafb',
                         left: `${Math.max(0, Math.min(barLeft, 85))}%`,
                         width: `${Math.min(barWidth, 100 - barLeft)}%`,
                       }} />
@@ -497,7 +553,7 @@ export default function SkinWeather({ skinResult }) {
             }}>
               <div style={{
                 width: 8, height: 8, borderRadius: '50%', flexShrink: 0, marginTop: 4,
-                background: i === 0 ? '#ADEBB3' : 'rgba(255,255,255,0.1)',
+                background: i === 0 ? '#6598EF' : 'rgba(255,255,255,0.1)',
               }} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>{n.title}</div>

@@ -1375,53 +1375,34 @@ export default function App() {
 
           </div>{/* end first screen wrapper */}
 
-          {/* Weather Bottom Sheet — rendered via portal */}
-          {weatherSheet && createPortal(
-            <>
-              <div onClick={() => setWeatherSheet(false)} style={{
-                position: 'fixed', inset: 0, zIndex: 200,
-                background: 'rgba(4,44,83,0.18)',
-                backdropFilter: 'none', WebkitBackdropFilter: 'none',
-                opacity: 1, transition: 'opacity 200ms',
-              }} />
-              <div ref={weatherSheetRef} style={{
-                position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201,
-                height: '62%',
-                background: '#ffffff',
-                backdropFilter: 'none', WebkitBackdropFilter: 'none',
-                border: 'none',
-                borderRadius: '30px 30px 0 0',
-                boxShadow: '0 -8px 28px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.6)',
-                maxWidth: 430, margin: '0 auto',
-                display: 'flex', flexDirection: 'column',
-                animation: 'weatherSheetSlideUp 280ms cubic-bezier(0.32,0.72,0,1) forwards',
-              }}>
-                <style>{`
-                  @keyframes weatherSheetSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-                `}</style>
-                {/* Handle */}
-                <div
-                  onTouchStart={(e) => { weatherDragY.current = e.touches[0].clientY; }}
-                  onTouchMove={(e) => {
-                    if (weatherDragY.current === null) return;
-                    const delta = e.touches[0].clientY - weatherDragY.current;
-                    if (delta > 0) { weatherDragDelta.current = delta; if (weatherSheetRef.current) weatherSheetRef.current.style.transform = `translateY(${delta}px)`; }
-                  }}
-                  onTouchEnd={() => {
-                    if (weatherDragDelta.current > 120) { setWeatherSheet(false); }
-                    else if (weatherSheetRef.current) { weatherSheetRef.current.style.transition = 'transform 0.2s ease'; weatherSheetRef.current.style.transform = 'translateY(0)'; setTimeout(() => { if (weatherSheetRef.current) weatherSheetRef.current.style.transition = ''; }, 200); }
-                    weatherDragY.current = null; weatherDragDelta.current = 0;
-                  }}
-                  style={{ display: 'flex', justifyContent: 'center', padding: '20px 0 20px', cursor: 'grab' }}>
-                  <div style={{ width: 47, height: 4, borderRadius: 2, background: '#ececec' }} />
+          {/* Weather Full Page */}
+          {weatherSheet && (
+            <div style={{
+              position: 'fixed', inset: 0, zIndex: 200,
+              background: 'linear-gradient(to bottom, #58aefe 0%, #d7e9fa 80%, #d7e9fa 100%)',
+              display: 'flex', flexDirection: 'column',
+              animation: 'weatherSlideIn 0.3s cubic-bezier(0.32,0.72,0,1) both',
+            }}>
+            <div style={{
+              position: 'relative', width: '100%', maxWidth: 430, margin: '0 auto',
+              flex: 1, display: 'flex', flexDirection: 'column',
+            }}>
+              {/* Header */}
+              <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+                <div onClick={() => setWeatherSheet(false)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
                 </div>
-                {/* Content */}
-                <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
-                  <SkinWeather skinResult={getLatestRecord()} />
+                <div style={{ position: 'absolute', left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+                  <svg width="16" height="16" viewBox="0 0 256 256" fill="#fff" stroke="none"><path d="M128,16a88.1,88.1,0,0,0-88,88c0,31.4,14.51,64.68,42,96.25a254.19,254.19,0,0,0,41.45,38.3,8,8,0,0,0,9.18,0A254.19,254.19,0,0,0,174,200.25c27.45-31.57,42-64.85,42-96.25A88.1,88.1,0,0,0,128,16Zm0,56a48,48,0,1,1-48,48A48,48,0,0,1,128,72Z" /></svg>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>{(() => { try { const w = JSON.parse(localStorage.getItem('nou_weather_data')); return w?.location || '서울'; } catch { return '서울'; } })()}</span>
                 </div>
               </div>
-            </>,
-            document.body,
+              {/* Content */}
+              <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', paddingTop: 2 }}>
+                <SkinWeather skinResult={getLatestRecord()} />
+              </div>
+            </div>
+            </div>
           )}
         </div>
       )}
