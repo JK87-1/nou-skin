@@ -45,10 +45,10 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
   const initial = (profile.nickname || '?')[0].toUpperCase();
 
   return (
-    <div style={{ minHeight: '100dvh', paddingBottom: 100 }}>
+    <div style={{ minHeight: '100dvh', paddingBottom: 80 }}>
 
       {/* ① 헤더 (noa style) */}
-      <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 8px) 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ width: 34 }} />
         <div onClick={() => setSettingsOpen(true)} style={{
           width: 34, height: 34, borderRadius: '50%', cursor: 'pointer',
