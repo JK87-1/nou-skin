@@ -8,6 +8,7 @@ import { estimateAge, preload as preloadAge } from './engine/FaceAgeEstimator';
 import { preload as preloadLandmarker } from './engine/FaceLandmarker';
 import { AnimatedNumber, ScoreRing, MetricBar, Tag, DetailPage } from './components/UIComponents';
 import TroubleBreakdownCard from './components/TroubleBreakdownCard';
+import MeasurementGuide, { isMeasureGuideDismissed } from './components/MeasurementGuide';
 import CameraCapture from './components/CameraCapture';
 import { saveRecord, updateRecord, getRecords, getNextMeasurementInfo, getChanges, generateShareText, getLatestRecord, hasTodayRecord, saveThumbnail, saveComparisonPhoto, getTodayRecords, getStableSkinAge, findRecentPrimaryRecord } from './storage/SkinStorage';
 import { migrateFromLocalStorage } from './storage/PhotoDB';
@@ -389,16 +390,28 @@ export default function App() {
     e.target.value = '';
   }, []);
 
-  // Smart camera opener: Face ID guide on secure context, native camera on HTTP mobile
-  const openCamera = useCallback(() => {
+  // 표준 측정 가이드 modal — 진짜 카메라 진입 전 한 단계 추가.
+  const [measureGuideOpen, setMeasureGuideOpen] = useState(false);
+
+  // 가이드 dismiss 후 실제 카메라 진입
+  const proceedToCamera = useCallback(() => {
+    setMeasureGuideOpen(false);
     setActiveTab('home');
     if (window.isSecureContext && navigator.mediaDevices?.getUserMedia) {
       setStage('camera');
     } else {
-      // Mobile HTTP: open native camera via <input capture="user">
       nativeCameraRef.current?.click();
     }
   }, []);
+
+  // Smart camera opener: 가이드 dismiss됐으면 바로 카메라, 아니면 가이드 모달
+  const openCamera = useCallback(() => {
+    if (isMeasureGuideDismissed()) {
+      proceedToCamera();
+    } else {
+      setMeasureGuideOpen(true);
+    }
+  }, [proceedToCamera]);
 
   const handleCameraCapture = useCallback(async (dataUrl, lm) => {
     setImage(dataUrl);
@@ -762,6 +775,14 @@ export default function App() {
       <style>{`@keyframes landingPearlReveal { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }`}</style>
       {/* 약관 모달은 MyPage > 설정 > 정보에서 자율적으로 (김준 결정) */}
       {showSplash && <SplashScreen exiting={splashExiting} onAnimationEnd={() => setShowSplash(false)} />}
+
+      {/* 표준 측정 가이드 modal — 정확도 향상 핵심 */}
+      {measureGuideOpen && (
+        <MeasurementGuide
+          onStart={proceedToCamera}
+          onClose={() => setMeasureGuideOpen(false)}
+        />
+      )}
       <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} style={{ display: 'none' }} />
       <input ref={nativeCameraRef} type="file" accept="image/*" capture="user" onChange={handleFile} style={{ display: 'none' }} />
 
