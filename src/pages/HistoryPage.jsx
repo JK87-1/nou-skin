@@ -29,8 +29,8 @@ import { getProfile } from '../storage/ProfileStorage';
 import AiInsightCard from '../components/AiInsightCard';
 import BeforeAfterSlider from '../components/BeforeAfterSlider';
 import DailyMission from '../components/DailyMission';
-import { getProducts, getProductsForMode, getTrackerChecks, toggleTrackerCheck, getTrackerProgress } from '../storage/TrackerStorage';
-import { hapticLight, hapticSelection } from '../utils/haptics';
+import { getProducts, getProductsForMode, getTrackerChecks, toggleTrackerCheck, getTrackerProgress, bulkToggleCheck } from '../storage/TrackerStorage';
+import { hapticLight, hapticSelection, hapticMedium } from '../utils/haptics';
 // CareRecommendation은 화장대(RoutineTracker)로 이동됨
 import { ChartIcon, CameraIcon, MicroscopeIcon, SparkleIcon, DiamondIcon, DropletIcon, RulerIcon, PaletteIcon, LotionIcon, EyeIcon, BubbleIcon, TargetIcon, ClockIcon, LuaMiniIcon } from '../components/icons/PastelIcons';
 
@@ -1583,6 +1583,7 @@ function RoutineChecklist() {
   // Drag to reorder
   const [dragIdx, setDragIdx] = useState(null);
   const [dragOverIdx, setDragOverIdx] = useState(null);
+  const [reorderMode, setReorderMode] = useState(false);
   const dragStartY = useRef(null);
   const dragItemHeight = useRef(50);
 
@@ -1830,7 +1831,7 @@ function RoutineChecklist() {
         ))}
       </div>
 
-      {/* Progress */}
+      {/* Progress + 일괄 체크·정렬 controls */}
       <div style={{ ...glass, padding: '14px 18px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 14 }}>
         <div style={{ position: 'relative', width: 44, height: 44, flexShrink: 0 }}>
           <svg width="44" height="44" viewBox="0 0 44 44">
@@ -1841,11 +1842,75 @@ function RoutineChecklist() {
           </svg>
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--text-primary)' }}>{pct}%</div>
         </div>
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{mode === 'morning' ? '모닝' : mode === 'day' ? '데이' : '나이트'} 케어 달성률</div>
           <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{totalDone} / {totalItems} 완료</div>
         </div>
+        {/* 정렬 모드 토글 */}
+        {allItems.length >= 2 && (
+          <button
+            onClick={() => { hapticLight(); setReorderMode(v => !v); }}
+            aria-label={reorderMode ? '정렬 완료' : '정렬 모드'}
+            style={{
+              width: 36, height: 36, borderRadius: 10,
+              background: reorderMode ? 'rgba(101,152,239,0.22)' : 'rgba(255,255,255,0.4)',
+              border: reorderMode ? '1px solid rgba(101,152,239,0.45)' : '1px solid rgba(255,255,255,0.45)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', flexShrink: 0,
+              transition: 'background 0.15s, border 0.15s',
+            }}
+          >
+            {reorderMode ? (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#6598ef"><path d="M5 12l5 5L20 7" stroke="#6598ef" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="11" y2="18"/>
+              </svg>
+            )}
+          </button>
+        )}
       </div>
+
+      {/* 일괄 체크 — 큰 CTA. 모두 체크 시 색 변경 */}
+      {allItems.length > 0 && !reorderMode && (() => {
+        const allChecked = totalDone === totalItems && totalItems > 0;
+        return (
+          <button
+            onClick={() => {
+              hapticMedium();
+              const result = bulkToggleCheck(mode === 'day' ? 'morning' : mode, selectedDate);
+              setChecks(result.checks);
+            }}
+            style={{
+              width: '100%', padding: '12px 16px', marginBottom: 16,
+              background: allChecked ? 'rgba(101,152,239,0.18)' : 'linear-gradient(135deg, #6598ef, #8ac4fe)',
+              border: allChecked ? '1px solid rgba(101,152,239,0.4)' : 'none',
+              borderRadius: 14,
+              color: allChecked ? '#3D7CA8' : '#fff',
+              fontSize: 14, fontWeight: 700, letterSpacing: -0.2,
+              cursor: 'pointer', fontFamily: 'inherit',
+              boxShadow: allChecked ? 'none' : '0 4px 14px rgba(101,152,239,0.28)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            }}
+          >
+            {allChecked ? (
+              <>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3D7CA8" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/>
+                </svg>
+                <span>모두 체크 해제</span>
+              </>
+            ) : (
+              <>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12l5 5L20 7"/>
+                </svg>
+                <span>오늘 모두 발랐어요</span>
+              </>
+            )}
+          </button>
+        );
+      })()}
 
       {/* Checklist */}
       <div onTouchMove={handleDragMove} onTouchEnd={handleDragEnd} style={{ ...glass, padding: '6px 0', marginBottom: 16 }}>
@@ -1867,16 +1932,21 @@ function RoutineChecklist() {
                 background: isOver ? 'rgba(101,152,239,0.1)' : 'transparent',
                 transition: 'opacity 0.2s, background 0.15s',
               }}>
-                {/* Drag handle */}
-                <div onTouchStart={(e) => handleDragStart(i, e)} style={{
-                  width: 20, height: 30, flexShrink: 0, cursor: 'grab',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2,
-                  touchAction: 'none',
-                }}>
-                  <div style={{ width: 12, height: 2, borderRadius: 1, background: '#ffffff' }} />
-                  <div style={{ width: 12, height: 2, borderRadius: 1, background: '#ffffff' }} />
-                  <div style={{ width: 12, height: 2, borderRadius: 1, background: '#ffffff' }} />
-                </div>
+                {/* Drag handle — 정렬 모드에서만 명확. 일반 모드는 거의 보이지 않음 */}
+                {reorderMode ? (
+                  <div onTouchStart={(e) => handleDragStart(i, e)} style={{
+                    width: 28, height: 36, flexShrink: 0, cursor: 'grab',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3,
+                    touchAction: 'none',
+                    background: 'rgba(101,152,239,0.16)',
+                    border: '1px solid rgba(101,152,239,0.32)',
+                    borderRadius: 8,
+                  }}>
+                    <div style={{ width: 14, height: 2.5, borderRadius: 1.5, background: '#6598ef' }} />
+                    <div style={{ width: 14, height: 2.5, borderRadius: 1.5, background: '#6598ef' }} />
+                    <div style={{ width: 14, height: 2.5, borderRadius: 1.5, background: '#6598ef' }} />
+                  </div>
+                ) : null}
                 {/* Icon */}
                 <span style={{ fontSize: 18 }}>{item.icon}</span>
                 {/* Name */}
