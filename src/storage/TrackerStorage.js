@@ -162,6 +162,114 @@ export function getTrackerProgress(mode, dateStr) {
   return { done, total: products.length };
 }
 
+/**
+ * 일괄 체크/해제 — 한 클릭으로 모든 제품 체크.
+ * mode: 'morning' | 'night' | 'all' (둘 다)
+ * dateStr 없으면 오늘. 이미 모두 체크돼 있으면 해제.
+ */
+export function bulkToggleCheck(mode, dateStr) {
+  const date = dateStr || getTodayStr();
+  const checks = getTrackerChecks(date);
+  const targets = mode === 'all' ? ['morning', 'night'] : [mode];
+
+  // 현재 상태 점검 — 다 체크되어 있으면 해제, 아니면 모두 체크
+  let allChecked = true;
+  for (const m of targets) {
+    const products = getProductsForMode(m);
+    for (const p of products) {
+      if (!checks[m]?.[p.id]) { allChecked = false; break; }
+    }
+    if (!allChecked) break;
+  }
+
+  const next = { ...checks, date };
+  for (const m of targets) {
+    next[m] = { ...(next[m] || {}) };
+    const products = getProductsForMode(m);
+    for (const p of products) {
+      next[m][p.id] = !allChecked; // 모두 체크돼 있으면 해제, 아니면 모두 체크
+    }
+  }
+
+  if (date === getTodayStr()) {
+    try { localStorage.setItem(CHECKS_KEY, JSON.stringify(next)); } catch {}
+  }
+  saveDailyChecks(date, next);
+  updateHistory(next);
+  return { checks: next, action: allChecked ? 'cleared' : 'checked' };
+}
+
+/**
+ * 등록 제품의 매일 자동 체크 모드 토글.
+ * autoCheck=true이면 매일 첫 진입 시 자동으로 체크됨.
+ */
+export function setProductAutoCheck(productId, enabled) {
+  const products = getProducts();
+  const idx = products.findIndex(p => p.id === productId);
+  if (idx < 0) return null;
+  products[idx] = { ...products[idx], autoCheck: !!enabled };
+  try { localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products)); } catch {}
+  return products[idx];
+}
+
+/**
+ * 매일 첫 진입 시 호출 — autoCheck 활성 제품들 자동 체크.
+ * 이미 오늘 처리된 경우 skip (재호출 무해).
+ */
+const AUTO_CHECK_LAST_KEY = 'nou_tracker_autocheck_last';
+export function runAutoCheckIfNeeded() {
+  try {
+    const today = getTodayStr();
+    const last = localStorage.getItem(AUTO_CHECK_LAST_KEY);
+    if (last === today) return { ran: false, reason: 'already_today' };
+
+    const products = getProducts();
+    const autoProducts = products.filter(p => p.autoCheck === true);
+    if (autoProducts.length === 0) {
+      localStorage.setItem(AUTO_CHECK_LAST_KEY, today);
+      return { ran: false, reason: 'no_auto_products' };
+    }
+
+    const checks = getTrackerChecks(today);
+    const next = { ...checks, date: today, morning: { ...(checks.morning || {}) }, night: { ...(checks.night || {}) } };
+    let count = 0;
+    for (const p of autoProducts) {
+      if (p.timeSlot === 'morning' || p.timeSlot === 'both') {
+        if (!next.morning[p.id]) { next.morning[p.id] = true; count++; }
+      }
+      if (p.timeSlot === 'night' || p.timeSlot === 'both') {
+        if (!next.night[p.id]) { next.night[p.id] = true; count++; }
+      }
+    }
+    if (count > 0) {
+      try { localStorage.setItem(CHECKS_KEY, JSON.stringify(next)); } catch {}
+      saveDailyChecks(today, next);
+      updateHistory(next);
+    }
+    localStorage.setItem(AUTO_CHECK_LAST_KEY, today);
+    return { ran: true, count };
+  } catch (e) {
+    return { ran: false, reason: 'error', error: e.message };
+  }
+}
+
+/**
+ * 제품 순서 변경 — drag·정렬 모드 결과 적용.
+ * orderedIds: 새 순서의 제품 ID 배열
+ */
+export function reorderProducts(orderedIds) {
+  if (!Array.isArray(orderedIds)) return getProducts();
+  const products = getProducts();
+  const map = new Map(products.map(p => [p.id, p]));
+  const reordered = orderedIds.map(id => map.get(id)).filter(Boolean);
+  // 누락된 제품(혹시) 끝에 추가
+  for (const p of products) {
+    if (!orderedIds.includes(p.id)) reordered.push(p);
+  }
+  try { localStorage.setItem(PRODUCTS_KEY, JSON.stringify(reordered)); } catch {}
+  return reordered;
+}
+
 // ===== 주간 히스토리 =====
 
 function updateHistory(checks) {

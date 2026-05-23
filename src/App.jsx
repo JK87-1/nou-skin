@@ -143,6 +143,19 @@ export default function App() {
   const [activeThemeId, setActiveThemeId] = useState(() => getProfile().activeTheme || null);
 
   // AI fallback 디버그 헬퍼 — 콘솔에서 window.__aiFallbackStats() 호출
+  // 매일 첫 진입 시 자동 체크 실행 — autoCheck=true 제품들 일괄 체크
+  useEffect(() => {
+    (async () => {
+      try {
+        const { runAutoCheckIfNeeded } = await import('./storage/TrackerStorage');
+        const result = runAutoCheckIfNeeded();
+        if (result.ran && result.count > 0) {
+          console.log(`[AutoCheck] ${result.count}개 제품 자동 체크 완료`);
+        }
+      } catch {}
+    })();
+  }, []);
+
   useEffect(() => {
     window.__aiFallbackStats = () => {
       const s = getAiFallbackStats();
