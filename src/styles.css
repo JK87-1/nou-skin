@@ -1057,7 +1057,7 @@
 }
 
 .tab-bar-spacer {
-  height: calc(64px + env(safe-area-inset-bottom, 0px));
+  height: 64px;
   flex-shrink: 0;
   pointer-events: none;
 }
