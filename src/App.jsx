@@ -994,7 +994,7 @@ export default function App() {
           <div style={{ height: 'calc(100dvh - 72px)', display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
           {/* Header with Logo + Weather Chip */}
           {/* Header with Logo + Weather + Scan Chip */}
-          <div style={{ padding: '28px 28px 20px', position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ padding: '16px 28px 20px', position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <WeatherChip onTap={() => setWeatherSheet(true)} />
             <div onClick={() => setShowHomeEdit(true)} style={{
               width: 34, height: 34, borderRadius: '50%', cursor: 'pointer',
