@@ -163,9 +163,16 @@ export default function App() {
     const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg-primary').trim() || (colorMode === 'light' ? '#F7F8FA' : '#000000');
     document.body.style.background = bg;
     document.body.style.color = colorMode === 'light' ? '#191F28' : '#f0f0f5';
+    // theme-color: 탭별 배경 상단색에 맞춰 설정
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.content = bg;
-  }, [colorMode]);
+    if (meta) {
+      if (colorMode === 'light') {
+        meta.content = activeTab === 'my' ? '#C5E3FF' : '#58aefe';
+      } else {
+        meta.content = '#0a1222';
+      }
+    }
+  }, [colorMode, activeTab]);
 
   const setColorMode = useCallback((mode) => {
     setColorModeState(mode);
@@ -345,9 +352,14 @@ export default function App() {
       setStage('landing');
       refreshLandingData();
     }
-    // 상태바 색상 동기화
+    // 탭 전환 시 배터리 영역(theme-color) 배경색 맞춤
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.content = tab === 'home' ? '#58aefe' : '#C5E3FF';
+    if (meta) {
+      const mode = document.documentElement.getAttribute('data-theme') || 'light';
+      if (mode === 'light') {
+        meta.content = tab === 'my' ? '#C5E3FF' : '#58aefe';
+      }
+    }
   }, []);
 
   const reset = useCallback(() => {
