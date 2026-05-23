@@ -9,6 +9,7 @@ import { preload as preloadLandmarker } from './engine/FaceLandmarker';
 import { AnimatedNumber, ScoreRing, MetricBar, Tag, DetailPage } from './components/UIComponents';
 import TroubleBreakdownCard from './components/TroubleBreakdownCard';
 import MeasurementGuide, { isMeasureGuideDismissed } from './components/MeasurementGuide';
+import BaselineCompleteModal from './components/BaselineCompleteModal';
 import CameraCapture from './components/CameraCapture';
 import { saveRecord, updateRecord, getRecords, getNextMeasurementInfo, getChanges, generateShareText, getLatestRecord, hasTodayRecord, saveThumbnail, saveComparisonPhoto, getTodayRecords, getStableSkinAge, findRecentPrimaryRecord } from './storage/SkinStorage';
 import { migrateFromLocalStorage } from './storage/PhotoDB';
@@ -125,6 +126,8 @@ export default function App() {
   const [briefingLoading, setBriefingLoading] = useState(false);
   const [autoInsight, setAutoInsight] = useState(null);
   const [autoInsightLoading, setAutoInsightLoading] = useState(false);
+  const [baselineCompleteOpen, setBaselineCompleteOpen] = useState(false);
+  const [baselineCompleteAvg, setBaselineCompleteAvg] = useState(null);
   const [celebrateBadge, setCelebrateBadge] = useState(null);
   const [showSplash, setShowSplash] = useState(true);
   const [splashExiting, setSplashExiting] = useState(false);
@@ -520,6 +523,14 @@ export default function App() {
       setBriefingLoading(false);
       setResult(finalScores); setStage('result');
 
+      // 🎉 3회 평균 baseline 완성 시 축하 modal 트리거 (애플 setup 완료 톤)
+      if (finalScores?.measureDebug?.baselineJustCompleted) {
+        const avg = finalScores.measureDebug.baselineCompletedAvg?.overallScore || finalScores.overallScore;
+        setBaselineCompleteAvg(avg);
+        // 결과 stage 진입 후 살짝 텀 두고 modal — 측정 결과를 먼저 보여준 다음 축하
+        setTimeout(() => setBaselineCompleteOpen(true), 1100);
+      }
+
       // Update saved record with advice + briefing
       if (recordId) {
         updateRecord(recordId, {
@@ -828,6 +839,14 @@ export default function App() {
         <MeasurementGuide
           onStart={proceedToCamera}
           onClose={() => setMeasureGuideOpen(false)}
+        />
+      )}
+
+      {/* 🎉 3회 baseline 완성 축하 modal */}
+      {baselineCompleteOpen && (
+        <BaselineCompleteModal
+          avgScore={baselineCompleteAvg}
+          onClose={() => setBaselineCompleteOpen(false)}
         />
       )}
       <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} style={{ display: 'none' }} />
@@ -1957,9 +1976,31 @@ export default function App() {
                   background: 'rgba(255,255,255,0.55)',
                   padding: '8px 10px', borderRadius: 10,
                   wordBreak: 'keep-all',
+                  marginBottom: 12,
                 }}>
                   💡 정확한 기준점을 위해 <strong>같은 조명·환경·시간대</strong>에서 측정해주세요. 완성되면 추후 모든 측정이 안정적으로 추적돼요.
                 </div>
+
+                {/* 큰 CTA — 다음 측정 시작 (애플 setup 흐름) */}
+                <button
+                  onClick={() => openCamera()}
+                  style={{
+                    width: '100%', padding: '14px',
+                    background: 'linear-gradient(135deg, #6598ef, #8ac4fe)',
+                    border: 'none', borderRadius: 14,
+                    color: '#fff', fontSize: 15, fontWeight: 700,
+                    cursor: 'pointer', fontFamily: 'inherit',
+                    boxShadow: '0 6px 18px rgba(101,152,239,0.32)',
+                    letterSpacing: -0.2,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M23 19a2 2 0 0 1 -2 2H3a2 2 0 0 1 -2 -2V8a2 2 0 0 1 2 -2h4l2 -3h6l2 3h4a2 2 0 0 1 2 2z" />
+                    <circle cx="12" cy="13" r="4" />
+                  </svg>
+                  {remaining === 1 ? '마지막 측정 시작' : `${b.count + 1}회차 측정 시작`}
+                </button>
 
                 {/* isDifferentPerson 안내 — building 끊긴 경우 */}
                 {result.measureDebug.isDifferentPerson && (
