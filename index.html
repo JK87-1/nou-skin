@@ -34,7 +34,7 @@
   <link rel="stylesheet" href="https://static.toss.im/tps/others.css" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { background-color: #C5E3FF; }
+    html { background-color: #58aefe; }
     body {
       font-family: 'Pretendard Variable', 'Pretendard', 'Noto Sans KR', 'Apple SD Gothic Neo', -apple-system, BlinkMacSystemFont, sans-serif;
       background: transparent;
@@ -48,7 +48,7 @@
     #gradient-bg {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       z-index: 0; pointer-events: none;
-      background: linear-gradient(to bottom, #C5E3FF 0%, #d7e9fa 80%, #d7e9fa 100%);
+      background: linear-gradient(to bottom, #58aefe 0%, #d7e9fa 80%, #d7e9fa 100%);
     }
     #root { min-height: 100dvh; position: relative; z-index: 1; }
   </style>
@@ -79,8 +79,8 @@
       var gradBg = document.getElementById('gradient-bg');
       if (mode === 'light') {
         document.documentElement.setAttribute('data-theme', 'light');
-        document.documentElement.style.backgroundColor = '#C5E3FF';
-        if (gradBg) gradBg.style.background = 'linear-gradient(to bottom, #C5E3FF 0%, #d7e9fa 80%, #d7e9fa 100%)';
+        document.documentElement.style.backgroundColor = '#58aefe';
+        if (gradBg) gradBg.style.background = 'linear-gradient(to bottom, #58aefe 0%, #d7e9fa 80%, #d7e9fa 100%)';
         document.querySelector('meta[name="theme-color"]').content = '#C5E3FF';
       } else {
         document.documentElement.setAttribute('data-theme', 'dark');
