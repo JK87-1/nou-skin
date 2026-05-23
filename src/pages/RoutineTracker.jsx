@@ -947,7 +947,7 @@ export default function RoutineTracker({ themeColors, onBack }) {
           {/* Add Product Button */}
           <div onClick={() => setShowAddSheet(true)} style={{
             padding: '12px 24px', marginBottom: 16, cursor: 'pointer',
-            background: '#5AB0E8', borderRadius: 18,
+            background: '#6598ef', borderRadius: 18,
             backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
             boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
