@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { hapticLight } from '../utils/haptics';
+import { getBaselineBuildingState } from '../engine/HybridAnalysis';
 
 /**
  * MeasurementGuide — 측정 직전 표준 가이드 modal.
@@ -71,6 +72,10 @@ const TIPS = [
 
 export default function MeasurementGuide({ onStart, onClose }) {
   const [dontShowAgain, setDontShowAgain] = useState(false);
+  const buildState = (() => { try { return getBaselineBuildingState(); } catch { return null; } })();
+  const isBuilding = buildState?.stage === 'none' || buildState?.stage === 'building';
+  const buildCount = buildState?.count || 0;
+  const buildTarget = buildState?.target || 3;
 
   const handleStart = () => {
     if (dontShowAgain) {
@@ -102,6 +107,33 @@ export default function MeasurementGuide({ onStart, onClose }) {
       }}>
         {/* Handle */}
         <div style={{ width: 38, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.12)', margin: '0 auto 14px' }} />
+
+        {/* Baseline 구축 중 강조 카드 — 첫 3회 측정 사용자만 */}
+        {isBuilding && (
+          <div style={{
+            display: 'flex', alignItems: 'flex-start', gap: 10,
+            padding: '12px 14px', marginBottom: 16,
+            background: 'linear-gradient(135deg, rgba(91,168,214,0.14), rgba(91,168,214,0.06))',
+            border: '1px solid rgba(91,168,214,0.3)',
+            borderRadius: 14,
+          }}>
+            <span style={{ fontSize: 18, flexShrink: 0, lineHeight: 1.1 }}>🎯</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{
+                fontSize: 12.5, fontWeight: 700, color: '#3D7CA8',
+                marginBottom: 3, letterSpacing: -0.1,
+              }}>
+                기준점 구축 중 ({buildCount}/{buildTarget})
+              </div>
+              <div style={{
+                fontSize: 11.5, color: 'var(--text-secondary, #4A4E58)',
+                lineHeight: 1.55, wordBreak: 'keep-all',
+              }}>
+                {buildTarget}회 측정 평균으로 정확한 기준이 만들어져요. 이 {buildTarget}회는 <strong>꼭 같은 조명·환경·시간대</strong>에서 측정해주세요.
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 18 }}>
@@ -147,20 +179,22 @@ export default function MeasurementGuide({ onStart, onClose }) {
           ))}
         </div>
 
-        {/* "다음부터 안 보기" */}
-        <label style={{
-          display: 'flex', alignItems: 'center', gap: 8,
-          fontSize: 12, color: 'var(--text-muted)', marginBottom: 14,
-          cursor: 'pointer', userSelect: 'none',
-        }}>
-          <input
-            type="checkbox"
-            checked={dontShowAgain}
-            onChange={e => setDontShowAgain(e.target.checked)}
-            style={{ accentColor: '#5BA8D6' }}
-          />
-          <span>다음부터 이 안내 안 보기</span>
-        </label>
+        {/* "다음부터 안 보기" — baseline 구축 중에는 표시 X (모든 3회 가이드 받아야) */}
+        {!isBuilding && (
+          <label style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            fontSize: 12, color: 'var(--text-muted)', marginBottom: 14,
+            cursor: 'pointer', userSelect: 'none',
+          }}>
+            <input
+              type="checkbox"
+              checked={dontShowAgain}
+              onChange={e => setDontShowAgain(e.target.checked)}
+              style={{ accentColor: '#5BA8D6' }}
+            />
+            <span>다음부터 이 안내 안 보기</span>
+          </label>
+        )}
 
         {/* Buttons */}
         <div style={{ display: 'flex', gap: 8 }}>
