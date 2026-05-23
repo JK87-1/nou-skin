@@ -44,8 +44,10 @@ const IconDroplet = () => (
 );
 
 const IconForbid = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill={IC} stroke="none">
-    <path d="M17 3.34a10 10 0 1 1 -14.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 14.995 -8.336zm-7.387 4.87a1 1 0 0 0 -1.32 1.497l6 6l.094 .083a1 1 0 0 0 1.32 -1.497l-6 -6z" />
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={IC} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 21a9 9 0 0 0 9 -9a9 9 0 0 0 -9 -9a9 9 0 0 0 -9 9a9 9 0 0 0 9 9" />
+    <path d="M9 8l6 8" />
+    <path d="M15 8l-6 8" />
   </svg>
 );
 
