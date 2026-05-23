@@ -104,6 +104,58 @@ Fallbacks:
 
 위 규칙을 모든 코드 변경 작업에 자동 적용해주세요.
 
+## 아이콘 & 컬러 규칙
+
+### 아이콘
+- 이모지(☀️💧🚫 등) 및 Apple SF Symbols 사용 금지
+- 모든 아이콘은 **Tabler Icons** 사용 (https://tabler.io/icons)
+- Filled 스타일 우선, 필요시 Outline 사용
+- 패키지 설치 없이 **인라인 SVG**로 삽입 (공식 GitHub raw 소스에서 path 복사)
+- 다중 path 아이콘은 반드시 개별 `<path>`로 분리 (단일 path에 합치면 깨짐)
+
+### LUA 컬러 팔레트
+
+**Sky Gradient (홈 배경 — 위→아래 5단계)**
+
+| 토큰 | HEX | 용도 |
+|---|---|---|
+| Sky 100 | `#58aefe` | 그라디언트 최상단, **포인트 컬러 (기본)** |
+| Sky 200 | `#78bdfd` | 상단 25% |
+| Sky 300 | `#98ccfc` | 중간 50% |
+| Sky 400 | `#b7dafb` | 하단 75% |
+| Sky 500 | `#d7e9fa` | 그라디언트 최하단 |
+
+**Sub-page Gradient (화장대~마이 배경)**
+
+| HEX | 용도 |
+|---|---|
+| `#C5E3FF` | 서브 그라디언트 상단 |
+| `#F1F7FD` | 서브 그라디언트 하단 |
+
+**Pearl Orb (원형 오브 코어 4색)**
+
+| 이름 | 중심 → 가장자리 |
+|---|---|
+| Pearl White-Pink | `#FFFFFF` → `#FFB8C8` |
+| Pearl Violet | `#D8A8F0` → `#C090E0` |
+| Pearl Sky | `#90C4F8` → `#70B0F0` |
+| Pearl Lavender | `#FFFFFF` → `#E0C8F0` |
+
+**Pearl Orb (웨이브 글로우 4색)**
+
+| 이름 | 컬러 |
+|---|---|
+| Glow Pink | `rgba(255,150,180)` |
+| Glow Violet | `rgba(180,150,240)` |
+| Glow Sky | `rgba(140,190,250)` |
+| Glow Rose | `rgba(240,170,200)` |
+
+### 포인트 컬러 사용 기준
+- 아이콘 fill, 버튼 배경, 체크박스 accent, 헤더 포인트 텍스트 → `#58aefe` (Sky 100)
+- 버튼 그라디언트 → `#58aefe → #8ac4fe`
+- 테두리·배경 힌트 → `rgba(88,174,254, 0.18)`
+- 그림자 → `rgba(88,174,254, 0.32)`
+
 ## Conventions
 
 - Inline styles extensively in JSX; CSS classes for reusable patterns (glass-card, tab-bar, orb animations)
