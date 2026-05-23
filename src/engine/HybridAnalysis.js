@@ -459,6 +459,14 @@ export async function callVisionAI(base64Image, landmarks) {
       parsed.differentPerson = true;
       console.log('Client backup: score deviation detected different person');
     }
+    // 🛡 Face descriptor 'same' 확정이면 differentPerson 강제 false.
+    // 얼굴 임베딩이 동일인이면 GPT가 다른 사람으로 잘못 판정해도 baseline 누적 유지.
+    // 3회 평균 baseline 구축이 GPT 변동으로 끊기는 문제 해결.
+    if (faceMatch === 'same' && isDifferentPerson) {
+      isDifferentPerson = false;
+      parsed.differentPerson = false;
+      console.log('[FaceDescriptor override] same person confirmed by embedding, forcing isDifferentPerson=false');
+    }
     // 현재 측정에서 추출한 핵심 점수 — building 누적·평균에 사용
     const currentScores = {};
     for (const key of GPT_SCORE_KEYS) {
@@ -528,8 +536,9 @@ export async function callVisionAI(base64Image, landmarks) {
 
     // baseline 구축 진행 상태 (3회 평균 baseline의 진행도)
     const buildState = getBaselineBuildingState();
+    const updatedBaseline = getBaseline(); // 최신 (방금 저장한 거 반영)
 
-    // 측정 디버그 정보 — 디바이스 일관성·face match·이미지 정규화 통계·baseline 구축
+    // 측정 디버그 정보 — 디바이스·face match·정규화·baseline 구축 진행
     mapped.measureDebug = {
       device: currentDevice.label,
       deviceHash: currentDevice.hash.slice(0, 6),
@@ -540,6 +549,8 @@ export async function callVisionAI(base64Image, landmarks) {
       hadBaselineDescriptor: !!rawBaseline?.descriptor,
       normalize: normalizeStats,
       baselineBuild: buildState,
+      isDifferentPerson, // 진짜 different 판정됐는지 — false면 정상 누적
+      buildingLength: updatedBaseline?.building?.length || 0,
     };
 
     recordAiSuccess();

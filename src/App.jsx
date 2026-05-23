@@ -1910,6 +1910,72 @@ export default function App() {
             )}
           </div>
 
+          {/* ═══════ Section: 기준점 구축 진행 안내 — 첫 3회 측정 사용자 ═══════ */}
+          {result?.measureDebug?.baselineBuild?.stage === 'building' && (() => {
+            const b = result.measureDebug.baselineBuild;
+            const remaining = Math.max(0, b.target - b.count);
+            const isComplete = b.count >= b.target;
+            return (
+              <div style={{
+                margin: '0 14px 10px',
+                background: 'linear-gradient(135deg, rgba(101,152,239,0.12), rgba(101,152,239,0.05))',
+                border: '1px solid rgba(101,152,239,0.32)',
+                borderRadius: 14, padding: '14px 16px',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                  <div style={{
+                    width: 32, height: 32, borderRadius: '50%',
+                    background: 'rgba(101,152,239,0.18)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0,
+                  }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#6598ef"><path d="M12 2a10 10 0 1 1 0 20a10 10 0 0 1 0 -20zm0 4a6 6 0 1 0 0 12a6 6 0 0 0 0 -12zm0 3a3 3 0 1 1 0 6a3 3 0 0 1 0 -6z"/></svg>
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#6598ef', letterSpacing: 0.3, marginBottom: 2 }}>기준점 구축 중</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: '#042C53', letterSpacing: -0.2 }}>
+                      {b.count}회 완료 · {remaining}회 더 측정해주세요
+                    </div>
+                  </div>
+                </div>
+
+                {/* Progress dots */}
+                <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                  {Array.from({ length: b.target }).map((_, i) => (
+                    <div key={i} style={{
+                      flex: 1, height: 6, borderRadius: 3,
+                      background: i < b.count
+                        ? 'linear-gradient(90deg, #6598ef, #8ac4fe)'
+                        : 'rgba(101,152,239,0.18)',
+                      transition: 'background 0.4s',
+                    }} />
+                  ))}
+                </div>
+
+                <div style={{
+                  fontSize: 12, color: '#374E66', lineHeight: 1.6,
+                  background: 'rgba(255,255,255,0.55)',
+                  padding: '8px 10px', borderRadius: 10,
+                  wordBreak: 'keep-all',
+                }}>
+                  💡 정확한 기준점을 위해 <strong>같은 조명·환경·시간대</strong>에서 측정해주세요. 완성되면 추후 모든 측정이 안정적으로 추적돼요.
+                </div>
+
+                {/* isDifferentPerson 안내 — building 끊긴 경우 */}
+                {result.measureDebug.isDifferentPerson && (
+                  <div style={{
+                    marginTop: 10, padding: '8px 10px', borderRadius: 10,
+                    background: 'rgba(255,180,80,0.16)',
+                    border: '1px solid rgba(255,180,80,0.32)',
+                    fontSize: 11.5, color: '#A86A0F', lineHeight: 1.55,
+                  }}>
+                    ⚠️ 이번 측정은 동일인 인식이 약했어요. 다음 측정 시 정면·자연광에서 시도해주세요.
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           {/* ═══════ Section: AI 자동 인사이트 (컨디션 브리핑 다음) ═══════ */}
           {(autoInsight || autoInsightLoading) && (() => {
             if (autoInsightLoading && !autoInsight) {
