@@ -1577,8 +1577,34 @@ function RoutineChecklist() {
     ...myRoutines.filter(r => r.mode === mode),
     ...products.map(p => ({ id: p.id, name: `${p.brand} ${p.name}`, icon: '', type: 'product', category: p.category })),
   ];
+
+  // ===== 자동 표준 정렬 (스킨케어 순서) =====
+  // 클렌저 → 토너 → 에센스 → 세럼 → 크림 → 선크림 → 마스크팩 → 기타
+  // 같은 카테고리 내에서는 등록 순서(원본 인덱스) 유지
+  const CATEGORY_ORDER = ['클렌저', '토너', '에센스', '세럼', '크림', '선크림', '마스크팩', '기타'];
+  const inferCategory = (item) => {
+    if (item.category && CATEGORY_ORDER.includes(item.category)) return item.category;
+    const text = `${item.name || ''} ${item.id || ''}`;
+    if (/클렌저|클렌징|폼|워시|cleans/i.test(text) || item.id === '_wash') return '클렌저';
+    if (/토너|toner|스킨/.test(text) && !/선|크림/.test(text)) return '토너';
+    if (/에센스|essence/i.test(text)) return '에센스';
+    if (/세럼|serum|앰플/i.test(text)) return '세럼';
+    if (/선크림|sunscreen|spf|자외선|선블록/i.test(text) || item.id === '_sun') return '선크림';
+    if (/마스크|mask|팩/i.test(text) || item.id === '_mask') return '마스크팩';
+    if (/크림|cream|로션|lotion|모이스/i.test(text) || item.id === '_moist') return '크림';
+    if (item.id === '_water') return '토너';
+    return '기타';
+  };
+  const allItemsSorted = allItemsRaw
+    .map((item, originalIdx) => ({ item, originalIdx, catRank: CATEGORY_ORDER.indexOf(inferCategory(item)) }))
+    .sort((a, b) => {
+      if (a.catRank !== b.catRank) return a.catRank - b.catRank;
+      return a.originalIdx - b.originalIdx;
+    })
+    .map(x => x.item);
+
   // Only show items active today
-  const allItems = allItemsRaw.filter(item => isActiveToday(item.id));
+  const allItems = allItemsSorted.filter(item => isActiveToday(item.id));
 
   // Drag to reorder
   const [dragIdx, setDragIdx] = useState(null);
@@ -1846,33 +1872,10 @@ function RoutineChecklist() {
           <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{mode === 'morning' ? '모닝' : mode === 'day' ? '데이' : '나이트'} 케어 달성률</div>
           <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{totalDone} / {totalItems} 완료</div>
         </div>
-        {/* 정렬 모드 토글 */}
-        {allItems.length >= 2 && (
-          <button
-            onClick={() => { hapticLight(); setReorderMode(v => !v); }}
-            aria-label={reorderMode ? '정렬 완료' : '정렬 모드'}
-            style={{
-              width: 36, height: 36, borderRadius: 10,
-              background: reorderMode ? 'rgba(101,152,239,0.22)' : 'rgba(255,255,255,0.4)',
-              border: reorderMode ? '1px solid rgba(101,152,239,0.45)' : '1px solid rgba(255,255,255,0.45)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', flexShrink: 0,
-              transition: 'background 0.15s, border 0.15s',
-            }}
-          >
-            {reorderMode ? (
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="#6598ef"><path d="M5 12l5 5L20 7" stroke="#6598ef" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
-            ) : (
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="11" y2="18"/>
-              </svg>
-            )}
-          </button>
-        )}
       </div>
 
       {/* 일괄 체크 — 큰 CTA. 모두 체크 시 색 변경 */}
-      {allItems.length > 0 && !reorderMode && (() => {
+      {allItems.length > 0 && (() => {
         const allChecked = totalDone === totalItems && totalItems > 0;
         return (
           <button
@@ -1932,63 +1935,14 @@ function RoutineChecklist() {
                 background: isOver ? 'rgba(101,152,239,0.1)' : 'transparent',
                 transition: 'opacity 0.2s, background 0.15s',
               }}>
-                {/* 정렬 모드 — 위/아래 화살표 버튼 (iOS에서 가장 확실) */}
-                {reorderMode ? (() => {
-                  const modeItems = myRoutines.filter(r => r.mode === mode);
-                  const fromIdx = modeItems.findIndex(r => r.id === item.id);
-                  const canUp = fromIdx > 0;
-                  const canDown = fromIdx >= 0 && fromIdx < modeItems.length - 1;
-                  return (
-                    <div style={{
-                      display: 'flex', flexDirection: 'column', gap: 4, flexShrink: 0,
-                    }}>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (!canUp) return;
-                          hapticLight();
-                          reorderRoutines(fromIdx, fromIdx - 1);
-                        }}
-                        disabled={!canUp}
-                        aria-label="위로"
-                        style={{
-                          width: 30, height: 24, border: 'none', borderRadius: 6,
-                          background: canUp ? 'rgba(101,152,239,0.18)' : 'rgba(0,0,0,0.04)',
-                          color: canUp ? '#6598ef' : 'rgba(0,0,0,0.18)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          cursor: canUp ? 'pointer' : 'default', padding: 0,
-                          fontFamily: 'inherit',
-                        }}
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="18 15 12 9 6 15"/>
-                        </svg>
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (!canDown) return;
-                          hapticLight();
-                          reorderRoutines(fromIdx, fromIdx + 1);
-                        }}
-                        disabled={!canDown}
-                        aria-label="아래로"
-                        style={{
-                          width: 30, height: 24, border: 'none', borderRadius: 6,
-                          background: canDown ? 'rgba(101,152,239,0.18)' : 'rgba(0,0,0,0.04)',
-                          color: canDown ? '#6598ef' : 'rgba(0,0,0,0.18)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          cursor: canDown ? 'pointer' : 'default', padding: 0,
-                          fontFamily: 'inherit',
-                        }}
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="6 9 12 15 18 9"/>
-                        </svg>
-                      </button>
-                    </div>
-                  );
-                })() : null}
+                {/* 순서 번호 — 자동 표준 정렬 (클렌저→토너→...→선크림) */}
+                <div style={{
+                  width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+                  background: 'rgba(101,152,239,0.14)',
+                  color: '#6598ef', fontSize: 11, fontWeight: 700,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontFamily: 'inherit',
+                }}>{i + 1}</div>
                 {/* Icon */}
                 <span style={{ fontSize: 18 }}>{item.icon}</span>
                 {/* Name */}
