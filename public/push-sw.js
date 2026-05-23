@@ -18,6 +18,10 @@ self.addEventListener('push', (event) => {
     title = data.title || '오늘의 뷰티 팁';
     tag = 'lua-beauty-tip';
     url = data.url || '/';
+  } else if (type === 'weather') {
+    title = data.title || '피부 날씨 알림';
+    tag = 'lua-weather';
+    url = data.url || '/';
   } else {
     title = data.title || '피부 측정 리마인더';
     tag = 'lua-reminder';

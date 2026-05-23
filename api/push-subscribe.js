@@ -54,7 +54,7 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'PUT') {
-      const { endpoint, tipEnabled, tipTime, skinData, skinType, skinConcerns, sensitivity, reminderTime, nickname, goalMetrics } = req.body;
+      const { endpoint, tipEnabled, tipTime, skinData, skinType, skinConcerns, sensitivity, reminderTime, nickname, goalMetrics, weatherEnabled, weatherLat, weatherLon } = req.body;
       if (!endpoint) return res.status(400).json({ error: 'Endpoint required' });
 
       const hash = hashEndpoint(endpoint);
@@ -76,6 +76,9 @@ export default async function handler(req, res) {
       if (goalMetrics) {
         updates.goalMetrics = typeof goalMetrics === 'string' ? goalMetrics : JSON.stringify(goalMetrics);
       }
+      if (weatherEnabled !== undefined) updates.weatherEnabled = String(weatherEnabled);
+      if (weatherLat !== undefined) updates.weatherLat = String(weatherLat);
+      if (weatherLon !== undefined) updates.weatherLon = String(weatherLon);
 
       if (Object.keys(updates).length > 0) {
         await redis.hset(`push:sub:${hash}`, updates);
@@ -92,7 +95,7 @@ export default async function handler(req, res) {
 
       // Check if tip is still enabled — if so, only clear reminder fields
       const sub = await redis.hgetall(`push:sub:${hash}`);
-      if (sub && sub.tipEnabled === 'true') {
+      if (sub && (sub.tipEnabled === 'true' || sub.weatherEnabled === 'true')) {
         await redis.hset(`push:sub:${hash}`, { reminderTime: '' });
         return res.status(200).json({ ok: true, kept: true });
       }

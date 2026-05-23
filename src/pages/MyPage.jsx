@@ -11,11 +11,12 @@ import {
   isPushSupported, isStandalone, isIOS, getPermissionState,
   subscribeToPush, saveSubscriptionToServer,
   unsubscribeFromPush, updateReminderTime,
-  updateTipSettings, syncSkinDataToServer,
+  updateTipSettings, updateWeatherSettings, syncSkinDataToServer,
 } from '../utils/pushNotification';
 import { getLatestRecord } from '../storage/SkinStorage';
 import { getGoal, saveGoal, clearGoal, getDaysRemaining, getGoalProgress, getOverallProgress, METRIC_META } from '../storage/GoalStorage';
 import { getAllPhotosRaw, restorePhotos } from '../storage/PhotoDB';
+import { getUserLocation } from '../storage/WeatherStorage';
 import { MoonIcon, SunIcon, CameraIcon, SaveIcon, PastelIcon } from '../components/icons/PastelIcons';
 import { TERMS_OF_SERVICE, PRIVACY_POLICY, BIOMETRIC_CONSENT, OVERSEAS_TRANSFER_CONSENT, INQUIRY_FAQ, CONTACT_EMAIL } from '../legal/legalContent';
 import SiteFooter from '../components/SiteFooter';
@@ -278,6 +279,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
   const [reminderTime, setReminderTime] = useState('08:00');
   const [tipEnabled, setTipEnabled] = useState(false);
   const [tipTime, setTipTime] = useState('20:00');
+  const [weatherEnabled, setWeatherEnabled] = useState(false);
   const [pushSubscribing, setPushSubscribing] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(null); // 'reminder' | 'tip' | null
 
@@ -291,13 +293,14 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
         if (s.reminderTime) setReminderTime(s.reminderTime);
         if (s.tipEnabled) setTipEnabled(true);
         if (s.tipTime) setTipTime(s.tipTime);
+        if (s.weatherEnabled) setWeatherEnabled(true);
       } catch {}
     }
   }, []);
 
-  const savePushSettings = (re, rt, te, tt) => {
+  const savePushSettings = (re, rt, te, tt, we) => {
     localStorage.setItem('lua_push_settings', JSON.stringify({
-      reminderEnabled: re, reminderTime: rt, tipEnabled: te, tipTime: tt,
+      reminderEnabled: re, reminderTime: rt, tipEnabled: te, tipTime: tt, weatherEnabled: we !== undefined ? we : weatherEnabled,
     }));
   };
 
@@ -316,7 +319,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
       } catch { showToast('알림 설정 중 오류가 발생했어요'); }
       finally { setPushSubscribing(false); }
     } else {
-      if (!tipEnabled) await unsubscribeFromPush();
+      if (!tipEnabled && !weatherEnabled) await unsubscribeFromPush();
       setReminderEnabled(false);
       savePushSettings(false, reminderTime, tipEnabled, tipTime);
       showToast('진단 리마인더가 해제되었어요');
@@ -347,7 +350,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
       finally { setPushSubscribing(false); }
     } else {
       await updateTipSettings(false, tipTime);
-      if (!reminderEnabled) await unsubscribeFromPush();
+      if (!reminderEnabled && !weatherEnabled) await unsubscribeFromPush();
       setTipEnabled(false);
       savePushSettings(reminderEnabled, reminderTime, false, tipTime);
       showToast('뷰티 팁 알림이 해제되었어요');
@@ -364,6 +367,49 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
     setTipTime(newTime); setShowTimePicker(null);
     savePushSettings(reminderEnabled, reminderTime, tipEnabled, newTime);
     if (tipEnabled) await updateTipSettings(true, newTime);
+  };
+
+  const handleWeatherToggle = async () => {
+    if (!weatherEnabled) {
+      if (!isPushSupported()) { showToast('이 브라우저에서는 알림을 지원하지 않아요'); return; }
+      if (isIOS() && !isStandalone()) { showToast('홈 화면에 추가한 후 알림을 설정할 수 있어요'); return; }
+      if (getPermissionState() === 'denied') { showToast('알림이 차단되어 있어요. 설정에서 허용해주세요'); return; }
+      setPushSubscribing(true);
+      try {
+        let subscription = await (await navigator.serviceWorker.ready).pushManager.getSubscription();
+        if (!subscription) {
+          subscription = await subscribeToPush();
+          if (!subscription) { showToast('알림 권한을 허용해주세요'); return; }
+          await saveSubscriptionToServer(subscription, reminderTime, profile?.nickname);
+        }
+        // Get location from saved or request
+        let loc = getUserLocation();
+        if (!loc) {
+          try {
+            const pos = await new Promise((resolve, reject) =>
+              navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 })
+            );
+            loc = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+          } catch {
+            showToast('위치 권한이 필요해요. 설정에서 허용해주세요');
+            return;
+          }
+        }
+        const ok = await updateWeatherSettings(true, loc.lat, loc.lon);
+        if (ok) {
+          setWeatherEnabled(true);
+          savePushSettings(reminderEnabled, reminderTime, tipEnabled, tipTime, true);
+          showToast('피부 날씨 알림이 설정되었어요!');
+        } else { showToast('설정에 실패했어요'); }
+      } catch { showToast('설정 중 오류가 발생했어요'); }
+      finally { setPushSubscribing(false); }
+    } else {
+      await updateWeatherSettings(false, 0, 0);
+      if (!reminderEnabled && !tipEnabled) await unsubscribeFromPush();
+      setWeatherEnabled(false);
+      savePushSettings(reminderEnabled, reminderTime, tipEnabled, tipTime, false);
+      showToast('피부 날씨 알림이 해제되었어요');
+    }
   };
 
   const formatPushTime = (t) => {
@@ -462,7 +508,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
         <SettingsRow icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M19 3h-4a2 2 0 0 0 -2 2v12a4 4 0 0 0 8 0v-12a2 2 0 0 0 -2 -2" /><path d="M13 7.35l-2 -2a2 2 0 0 0 -2.828 0l-2.828 2.828a2 2 0 0 0 0 2.828l9 9" /><path d="M7.3 13h-2.3a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h12" /><path d="M17 17l0 .01" /></svg>} label="피부 타입" right={profile.skinType || '미설정'} onTap={() => setEditingSkin(true)} />
 
         <SectionHeader label="앱 설정" />
-        <SettingsRow icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6" /><path d="M9 17v1a3 3 0 0 0 6 0v-1" /></svg>} label="알림" right={reminderEnabled || tipEnabled ? '켜짐' : '꺼짐'} onTap={() => setShowTimePicker('page')} />
+        <SettingsRow icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6" /><path d="M9 17v1a3 3 0 0 0 6 0v-1" /></svg>} label="알림" right={reminderEnabled || tipEnabled || weatherEnabled ? '켜짐' : '꺼짐'} onTap={() => setShowTimePicker('page')} />
         <SettingsRow icon={icons.sun} label="화면 모드" />
 
         {/* ── 알림 설정 서브페이지 ── */}
@@ -557,6 +603,33 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                     <span style={{ fontSize: 13, fontWeight: 600, color: '#4a9eff' }}>{formatPushTime(tipTime)}</span>
                   </div>
                 )}
+              </div>
+
+              <div style={{ height: 1, background: 'rgba(0,0,0,0.06)', margin: '0 28px' }} />
+
+              {/* 피부 날씨 알림 */}
+              <div style={{ padding: '16px 28px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>피부 날씨 알림</div>
+                  <div onClick={pushSubscribing ? undefined : handleWeatherToggle} style={{
+                    width: 44, height: 26, borderRadius: 13,
+                    background: weatherEnabled ? '#ADEBB3' : 'rgba(0,0,0,0.12)',
+                    position: 'relative', flexShrink: 0,
+                    cursor: pushSubscribing ? 'wait' : 'pointer',
+                    transition: 'background 0.3s',
+                    opacity: pushSubscribing ? 0.6 : 1,
+                  }}>
+                    <div style={{
+                      position: 'absolute', top: 3, left: weatherEnabled ? 21 : 3,
+                      width: 20, height: 20, borderRadius: '50%',
+                      background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                      transition: 'left 0.3s',
+                    }} />
+                  </div>
+                </div>
+                <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                  날씨에 따라 선크림, 수분 보충 등을 알려드려요
+                </div>
               </div>
             </div>
           </div>

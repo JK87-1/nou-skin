@@ -115,6 +115,24 @@ export async function updateTipSettings(tipEnabled, tipTime) {
   return response.ok;
 }
 
+export async function updateWeatherSettings(weatherEnabled, lat, lon) {
+  const registration = await navigator.serviceWorker.ready;
+  const subscription = await registration.pushManager.getSubscription();
+  if (!subscription) return false;
+
+  const response = await fetch('/api/push-subscribe', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      endpoint: subscription.endpoint,
+      weatherEnabled,
+      weatherLat: lat,
+      weatherLon: lon,
+    }),
+  });
+  return response.ok;
+}
+
 export async function syncSkinDataToServer(skinData, profile, goalMetrics) {
   const registration = await navigator.serviceWorker.ready;
   const subscription = await registration.pushManager.getSubscription();
