@@ -19,6 +19,7 @@ const PRIMARY_TIMESTAMP_KEY = 'baselineTimestamp';
 const PRIMARY_DEVICE_KEY = 'baselineDevice'; // fingerprint hash
 const PRIMARY_DESCRIPTOR_KEY = 'baselineDescriptor'; // face embedding 128차원 (JSON array)
 const PRIMARY_BUILDING_KEY = 'baselineBuildingScores'; // baseline 구축 중 점수 history (1~3개 측정)
+const PRIMARY_BUILT_KEY = 'baselineBuilt'; // 평균 baseline 완성 flag ('1' = complete)
 const BASELINE_BUILD_COUNT = 3; // 평균 baseline을 만들기 위한 측정 횟수
 const SECONDARY_RESULT_KEY = 'secondaryBaselineResult';
 const SECONDARY_TIMESTAMP_KEY = 'secondaryBaselineTimestamp';
@@ -47,7 +48,8 @@ export function getBaseline() {
       const bs = localStorage.getItem(PRIMARY_BUILDING_KEY);
       if (bs) building = JSON.parse(bs);
     } catch {}
-    return { image, result: JSON.parse(resultStr), timestamp, device, descriptor, building };
+    const built = localStorage.getItem(PRIMARY_BUILT_KEY) === '1';
+    return { image, result: JSON.parse(resultStr), timestamp, device, descriptor, building, built };
   } catch { return null; }
 }
 
@@ -55,6 +57,8 @@ export function getBaseline() {
 export function getBaselineBuildingState() {
   const b = getBaseline();
   if (!b) return { stage: 'none', count: 0, target: BASELINE_BUILD_COUNT };
+  // 평균 baseline이 이미 완성됐으면 (built flag) — complete 영구 표시.
+  if (b.built) return { stage: 'complete', count: BASELINE_BUILD_COUNT, target: BASELINE_BUILD_COUNT };
   const count = (b.building?.length || 0) + 1; // baseline 첫 측정 1 + 추가 측정
   if (count >= BASELINE_BUILD_COUNT) return { stage: 'complete', count: BASELINE_BUILD_COUNT, target: BASELINE_BUILD_COUNT };
   return { stage: 'building', count, target: BASELINE_BUILD_COUNT };
@@ -107,7 +111,7 @@ function getSecondaryBaseline() {
   } catch { return null; }
 }
 
-export function saveBaseline(image, result, descriptor) {
+export function saveBaseline(image, result, descriptor, opts) {
   try {
     localStorage.setItem(PRIMARY_IMAGE_KEY, image);
     localStorage.setItem(PRIMARY_RESULT_KEY, JSON.stringify(result));
@@ -117,6 +121,13 @@ export function saveBaseline(image, result, descriptor) {
     // Face descriptor (128차원 embedding) — 디바이스 무관 동일인 판별의 정수
     if (Array.isArray(descriptor) && descriptor.length > 0) {
       try { localStorage.setItem(PRIMARY_DESCRIPTOR_KEY, JSON.stringify(descriptor)); } catch {}
+    }
+    // 평균 baseline 완성 시 built flag (영구) — 다음 진입에 다시 1/3 안 됨
+    if (opts && opts.built === true) {
+      try { localStorage.setItem(PRIMARY_BUILT_KEY, '1'); } catch {}
+    } else if (opts && opts.built === false) {
+      // 첫 baseline 저장 시 명시적 reset — 이전 잔재 제거
+      try { localStorage.removeItem(PRIMARY_BUILT_KEY); } catch {}
     }
   } catch (e) { console.warn('Baseline save failed:', e); }
 }
@@ -183,6 +194,10 @@ export function clearBaseline() {
   localStorage.removeItem(PRIMARY_IMAGE_KEY);
   localStorage.removeItem(PRIMARY_RESULT_KEY);
   localStorage.removeItem(PRIMARY_TIMESTAMP_KEY);
+  localStorage.removeItem(PRIMARY_DEVICE_KEY);
+  localStorage.removeItem(PRIMARY_DESCRIPTOR_KEY);
+  localStorage.removeItem(PRIMARY_BUILDING_KEY);
+  localStorage.removeItem(PRIMARY_BUILT_KEY);
   localStorage.removeItem(SECONDARY_RESULT_KEY);
   localStorage.removeItem(SECONDARY_TIMESTAMP_KEY);
 }
@@ -452,7 +467,8 @@ export async function callVisionAI(base64Image, landmarks) {
 
     if (isFirstAnalysis) {
       // 첫 측정: baseline 시작. 추가 측정 2회 더 받아 평균으로 정밀화.
-      saveBaseline(faceImage, currentScores, newDescriptor);
+      // opts.built=false로 이전 built flag 잔재 제거.
+      saveBaseline(faceImage, currentScores, newDescriptor, { built: false });
       clearBaselineBuilding(); // 시작 시 reset
       console.log('Primary baseline saved (1/3, descriptor:', !!newDescriptor, ')');
     } else if (isDifferentPerson) {
@@ -471,10 +487,10 @@ export async function callVisionAI(base64Image, landmarks) {
         saveBaselineBuilding(currentScores);
         const nextCount = totalCount + 1;
         if (nextCount >= BASELINE_BUILD_COUNT) {
-          // BASELINE_BUILD_COUNT번째 측정 — 평균 baseline 완성
+          // BASELINE_BUILD_COUNT번째 측정 — 평균 baseline 완성 + built flag 영구 마킹
           const allScores = [baseline.result, ...(baseline.building || []), currentScores];
           const avg = averageScores(allScores);
-          saveBaseline(baseline.image, avg, baseline.descriptor || newDescriptor);
+          saveBaseline(baseline.image, avg, baseline.descriptor || newDescriptor, { built: true });
           clearBaselineBuilding();
           console.log(`Primary baseline finalized (${BASELINE_BUILD_COUNT}-shot average)`);
         } else {
