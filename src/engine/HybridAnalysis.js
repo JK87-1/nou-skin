@@ -584,6 +584,15 @@ export function hybridMerge(cv, ai) {
   if (ai.differentPerson) result.differentPerson = true;
   // 측정 디버그 — 디바이스·face match·정규화 통계
   if (ai.measureDebug) result.measureDebug = ai.measureDebug;
+  // 측정 신뢰도 — GPT 3x 결과 분산 기반 (high/medium/low)
+  if (ai.measurementConfidence) {
+    result.measurementConfidence = ai.measurementConfidence;
+    // UI용 0~100 매핑 (기존 confidence 필드 활용)
+    const confidenceMap = { high: 92, medium: 72, low: 55 };
+    result.confidence = confidenceMap[ai.measurementConfidence] ?? 80;
+  }
+  if (typeof ai.avgSpread === 'number') result.avgSpread = ai.avgSpread;
+  if (typeof ai.maxSpread === 'number') result.maxSpread = ai.maxSpread;
 
   // troubleBreakdown — 5종 분류를 결과에 보존 (UI는 박수진 정밀 작업에 일임)
   if (ai.troubleBreakdown && typeof ai.troubleBreakdown === 'object') {
