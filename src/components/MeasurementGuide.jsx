@@ -23,7 +23,7 @@ export function resetMeasureGuideDismiss() {
 // Tabler Icons (Filled) — inline SVG
 const TablerIcon = ({ d, color = '#5BA8D6' }) => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill={color} stroke="none">
-    <path d={d} />
+    <path fillRule="evenodd" d={d} />
   </svg>
 );
 
