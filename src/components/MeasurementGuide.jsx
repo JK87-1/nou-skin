@@ -22,7 +22,7 @@ export function resetMeasureGuideDismiss() {
 }
 
 // Tabler Icons (Filled) — 공식 소스 SVG
-const IC = '#5BA8D6';
+const IC = '#58aefe';
 
 const IconSun = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill={IC} stroke="none">
@@ -113,14 +113,14 @@ export default function MeasurementGuide({ onStart, onClose }) {
           <div style={{
             display: 'flex', alignItems: 'flex-start', gap: 10,
             padding: '12px 14px', marginBottom: 16,
-            background: 'linear-gradient(135deg, rgba(91,168,214,0.14), rgba(91,168,214,0.06))',
-            border: '1px solid rgba(91,168,214,0.3)',
+            background: 'linear-gradient(135deg, rgba(88,174,254,0.14), rgba(88,174,254,0.06))',
+            border: '1px solid rgba(88,174,254,0.3)',
             borderRadius: 14,
           }}>
             <span style={{ fontSize: 18, flexShrink: 0, lineHeight: 1.1 }}>🎯</span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{
-                fontSize: 12.5, fontWeight: 700, color: '#3D7CA8',
+                fontSize: 12.5, fontWeight: 700, color: '#58aefe',
                 marginBottom: 3, letterSpacing: -0.1,
               }}>
                 기준점 구축 중 ({buildCount}/{buildTarget})
@@ -139,7 +139,7 @@ export default function MeasurementGuide({ onStart, onClose }) {
         <div style={{ textAlign: 'center', marginBottom: 18 }}>
           <div style={{
             fontSize: 11, fontWeight: 700, letterSpacing: 0.5,
-            color: '#5BA8D6', marginBottom: 4, textTransform: 'uppercase',
+            color: '#58aefe', marginBottom: 4, textTransform: 'uppercase',
           }}>정확한 측정을 위해</div>
           <h2 style={{
             fontSize: 19, fontWeight: 700, color: 'var(--text-primary, #191F28)',
@@ -158,7 +158,7 @@ export default function MeasurementGuide({ onStart, onClose }) {
               display: 'flex', gap: 12, alignItems: 'flex-start',
               padding: '11px 14px',
               background: 'rgba(255,255,255,0.7)',
-              border: '1px solid rgba(137,206,245,0.18)',
+              border: '1px solid rgba(88,174,254,0.18)',
               borderRadius: 14,
             }}>
               <div style={{
@@ -190,7 +190,7 @@ export default function MeasurementGuide({ onStart, onClose }) {
               type="checkbox"
               checked={dontShowAgain}
               onChange={e => setDontShowAgain(e.target.checked)}
-              style={{ accentColor: '#5BA8D6' }}
+              style={{ accentColor: '#58aefe' }}
             />
             <span>다음부터 이 안내 안 보기</span>
           </label>
@@ -211,11 +211,11 @@ export default function MeasurementGuide({ onStart, onClose }) {
             onClick={handleStart}
             style={{
               flex: 1, padding: '13px',
-              background: 'linear-gradient(135deg, #5BA8D6, #4F94C0)',
+              background: 'linear-gradient(135deg, #58aefe, #8ac4fe)',
               border: 'none', borderRadius: 14,
               fontSize: 14, fontWeight: 700, color: '#fff',
               cursor: 'pointer', fontFamily: 'inherit',
-              boxShadow: '0 4px 14px rgba(91,168,214,0.32)',
+              boxShadow: '0 4px 14px rgba(88,174,254,0.32)',
             }}
           >지금 측정 시작</button>
         </div>
