@@ -245,6 +245,33 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
   const [restoring, setRestoring] = useState(false);
   const [backupGuide, setBackupGuide] = useState(null);
   const fileInputRef = useRef(null);
+  const profilePhotoRef = useRef(null);
+
+  const handleProfilePhoto = useCallback((e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const size = 256;
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        const min = Math.min(img.width, img.height);
+        const sx = (img.width - min) / 2;
+        const sy = (img.height - min) / 2;
+        ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        saveProfile({ profileImage: dataUrl });
+        setProfile(p => ({ ...p, profileImage: dataUrl }));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  }, []);
 
   // ── Push notification state ──
   const [reminderEnabled, setReminderEnabled] = useState(false);
@@ -814,7 +841,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                   : <span style={{ fontSize: 34, fontWeight: 500, color: 'var(--text-muted)', letterSpacing: -0.6 }}>{(profile.nickname || '?')[0].toUpperCase()}</span>
                 }
               </div>
-              <div style={{
+              <div onClick={() => profilePhotoRef.current?.click()} style={{
                 position: 'absolute', bottom: -2, right: -2,
                 width: 28, height: 28, borderRadius: '50%',
                 background: 'var(--accent-primary, #6598ef)', border: '2px solid #EAF4FB',
@@ -825,7 +852,8 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                 </svg>
               </div>
             </div>
-            <div onClick={() => {}} style={{ fontSize: 10.5, color: 'var(--accent-primary, #6598ef)', fontWeight: 500, marginTop: 12, cursor: 'pointer' }}>
+            <input ref={profilePhotoRef} type="file" accept="image/*" onChange={handleProfilePhoto} style={{ display: 'none' }} />
+            <div onClick={() => profilePhotoRef.current?.click()} style={{ fontSize: 10.5, color: 'var(--accent-primary, #6598ef)', fontWeight: 500, marginTop: 12, cursor: 'pointer' }}>
               {profile.profileImage ? '사진 변경' : '사진 추가'}
             </div>
           </div>
