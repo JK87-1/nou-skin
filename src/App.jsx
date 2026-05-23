@@ -991,7 +991,7 @@ export default function App() {
             </div>
           )}
           {/* First screen — fills full viewport */}
-          <div style={{ height: 'calc(100dvh - 72px)', display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
+          <div style={{ height: 'calc(100svh - 72px)', display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
           {/* Header with Logo + Weather Chip */}
           {/* Header with Logo + Weather + Scan Chip */}
           <div style={{ padding: '16px 28px 20px', position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -1016,8 +1016,8 @@ export default function App() {
           <div
             style={{
               margin: '14px 20px 0',
-              padding: '100px 24px 88px',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 70,
+              padding: '60px 24px 48px',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 48,
             }}
           >
             <div onClick={openCamera} style={{ cursor: 'pointer' }}>
