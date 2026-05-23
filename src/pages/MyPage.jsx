@@ -45,10 +45,10 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
   const initial = (profile.nickname || '?')[0].toUpperCase();
 
   return (
-    <div style={{ minHeight: '100dvh', paddingBottom: 80 }}>
+    <div style={{ minHeight: '100dvh', paddingBottom: 64 }}>
 
       {/* ① 헤더 (noa style) */}
-      <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 8px) 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ padding: 'env(safe-area-inset-top,0px) 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ width: 34 }} />
         <div onClick={() => setSettingsOpen(true)} style={{
           width: 34, height: 34, borderRadius: '50%', cursor: 'pointer',
@@ -118,7 +118,7 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
             <div style={{ padding: '32px 16px', textAlign: 'center' }}>
                 <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 4 }}>측정한 셀카가 여기에 쌓여요</div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 12 }}>첫 측정을 시작해보세요</div>
-                <button onClick={() => onMeasure?.()} style={{ background: 'var(--accent-primary, #89cef5)', color: '#fff', fontSize: 11, fontWeight: 500, padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>첫 측정 시작</button>
+                <button onClick={() => onMeasure?.()} style={{ background: 'var(--accent-primary, #6598ef)', color: '#fff', fontSize: 11, fontWeight: 500, padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>첫 측정 시작</button>
             </div>
           ) : (
             <div className="photo-grid" style={{ padding: '0 16px 12px' }}>
@@ -191,7 +191,7 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
 
       {/* Toast */}
       {toast && (
-        <div style={{ position: 'fixed', bottom: 100, left: '50%', transform: 'translateX(-50%)', background: 'var(--accent-primary, #89cef5)', color: '#fff', padding: '10px 24px', borderRadius: 20, fontSize: 13, fontWeight: 500, zIndex: 999, animation: 'fadeIn 0.2s ease' }}>{toastMsg}</div>
+        <div style={{ position: 'fixed', bottom: 100, left: '50%', transform: 'translateX(-50%)', background: 'var(--accent-primary, #6598ef)', color: '#fff', padding: '10px 24px', borderRadius: 20, fontSize: 13, fontWeight: 500, zIndex: 999, animation: 'fadeIn 0.2s ease' }}>{toastMsg}</div>
       )}
     </div>
   );
@@ -210,7 +210,7 @@ function BioEditModal({ bio, onSave, onClose }) {
         boxShadow: '0 -8px 28px rgba(0,0,0,0.08)', padding: '0 0 calc(env(safe-area-inset-bottom,0px))',
         maxWidth: 430, margin: '0 auto', animation: 'slideUp 0.3s ease',
       }}>
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(137,206,245,0.4)' }} /></div>
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(101,152,239,0.4)' }} /></div>
         <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>자기소개</span>
           <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: '#ffffff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -221,7 +221,7 @@ function BioEditModal({ bio, onSave, onClose }) {
           <textarea value={text} onChange={e => setText(e.target.value.slice(0, 50))} placeholder="입력해주세요"
             style={{ width: '100%', minHeight: 80, background: '#ffffff', border: 'none', borderRadius: 12, padding: '10px 14px', fontSize: 13, color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', resize: 'none', boxSizing: 'border-box' }} />
           <div style={{ textAlign: 'right', fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>{text.length}/50</div>
-          <button onClick={() => onSave(text)} style={{ width: '100%', marginTop: 12, padding: 14, borderRadius: 10, border: 'none', background: 'var(--accent-primary, #89cef5)', color: '#fff', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>두기</button>
+          <button onClick={() => onSave(text)} style={{ width: '100%', marginTop: 12, padding: 14, borderRadius: 10, border: 'none', background: 'var(--accent-primary, #6598ef)', color: '#fff', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>두기</button>
         </div>
       </div>
     </>
@@ -817,7 +817,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               <div style={{
                 position: 'absolute', bottom: -2, right: -2,
                 width: 28, height: 28, borderRadius: '50%',
-                background: 'var(--accent-primary, #89cef5)', border: '2px solid #EAF4FB',
+                background: 'var(--accent-primary, #6598ef)', border: '2px solid #EAF4FB',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
               }}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -825,7 +825,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                 </svg>
               </div>
             </div>
-            <div onClick={() => {}} style={{ fontSize: 10.5, color: 'var(--accent-primary, #89cef5)', fontWeight: 500, marginTop: 12, cursor: 'pointer' }}>
+            <div onClick={() => {}} style={{ fontSize: 10.5, color: 'var(--accent-primary, #6598ef)', fontWeight: 500, marginTop: 12, cursor: 'pointer' }}>
               {profile.profileImage ? '사진 변경' : '사진 추가'}
             </div>
           </div>
@@ -873,7 +873,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           <div style={{ padding: '16px 16px calc(16px + env(safe-area-inset-bottom,0px))' }}>
             <button onClick={() => { showToast('저장되었어요'); setEditingProfile(false); }} style={{
               width: '100%', padding: 14, borderRadius: 12, border: 'none',
-              background: 'var(--accent-primary, #89cef5)', color: '#fff', fontSize: 14, fontWeight: 500,
+              background: 'var(--accent-primary, #6598ef)', color: '#fff', fontSize: 14, fontWeight: 500,
               letterSpacing: -0.2, cursor: 'pointer', fontFamily: 'inherit',
             }}>저장</button>
           </div>
@@ -894,7 +894,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                     boxShadow: '0 -8px 28px rgba(0,0,0,0.08)', padding: '0 0 calc(env(safe-area-inset-bottom,0px))',
                     maxWidth: 430, margin: '0 auto', animation: 'slideUp 0.3s ease',
                   }}>
-                    <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(137,206,245,0.4)' }} /></div>
+                    <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(101,152,239,0.4)' }} /></div>
                     <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>이름</span>
                       <button onClick={closeField} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: '#ffffff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -905,7 +905,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                       <input type="text" value={editFieldValue} onChange={e => setEditFieldValue(e.target.value)} placeholder="이름을 입력하세요" maxLength={20} autoFocus
                         style={{ width: '100%', boxSizing: 'border-box', background: '#ffffff', border: 'none', borderRadius: 12, padding: '10px 14px', fontSize: 13, color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit' }} />
                       <div style={{ textAlign: 'right', fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>{editFieldValue.length}/20</div>
-                      <button onClick={saveField} style={{ width: '100%', marginTop: 12, padding: 14, borderRadius: 10, border: 'none', background: 'var(--accent-primary, #89cef5)', color: '#fff', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>저장</button>
+                      <button onClick={saveField} style={{ width: '100%', marginTop: 12, padding: 14, borderRadius: 10, border: 'none', background: 'var(--accent-primary, #6598ef)', color: '#fff', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>저장</button>
                     </div>
                   </div>
                 </>
@@ -934,7 +934,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                     boxShadow: '0 -8px 28px rgba(0,0,0,0.08)', padding: '0 0 calc(env(safe-area-inset-bottom,0px))',
                     maxWidth: 430, margin: '0 auto', animation: 'slideUp 0.3s ease',
                   }}>
-                    <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(137,206,245,0.4)' }} /></div>
+                    <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(101,152,239,0.4)' }} /></div>
                     <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>생년월일</span>
                       <button onClick={closeField} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: '#ffffff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -974,7 +974,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                 <>
                   <div onClick={closeField} style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(4,44,83,0.18)', backdropFilter: 'none', WebkitBackdropFilter: 'none' }} />
                   <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 2001, background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none', border: 'none', borderRadius: '22px 22px 0 0', padding: '0 0 calc(env(safe-area-inset-bottom,0px))', maxWidth: 430, margin: '0 auto', animation: 'settingsSlideIn 0.25s ease' }}>
-                    <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(137,206,245,0.4)' }} /></div>
+                    <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(101,152,239,0.4)' }} /></div>
                     <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>성별</span>
                       <div onClick={closeField} style={{ width: 32, height: 32, borderRadius: '50%', background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
@@ -988,9 +988,9 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                           <div key={g} onClick={() => { setEditFieldValue(g); update('gender', g); closeField(); }} style={{
                             flex: 1, padding: '14px 0', borderRadius: 12, cursor: 'pointer', textAlign: 'center',
                             fontSize: 14, fontWeight: 500,
-                            background: selected ? 'rgba(137,206,245,0.12)' : 'rgba(255,255,255,0.4)',
+                            background: selected ? 'rgba(101,152,239,0.12)' : 'rgba(255,255,255,0.4)',
                             color: selected ? 'var(--accent-primary)' : 'var(--text-primary)',
-                            border: selected ? '1px solid var(--accent-primary, #89cef5)' : '1px solid rgba(255,255,255,0.3)',
+                            border: selected ? '1px solid var(--accent-primary, #6598ef)' : '1px solid rgba(255,255,255,0.3)',
                           }}>{g}</div>
                         );
                       })}
@@ -1045,8 +1045,8 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               return (
                 <div key={opt.key} onClick={() => update('skinType', opt.key)} style={{
                   padding: '14px 16px', borderRadius: 14, cursor: 'pointer',
-                  background: selected ? 'rgba(137,206,245,0.12)' : 'rgba(255,255,255,0.35)',
-                  border: selected ? '1px solid var(--accent-primary, #89cef5)' : '1px solid rgba(255,255,255,0.3)',
+                  background: selected ? 'rgba(101,152,239,0.12)' : 'rgba(255,255,255,0.35)',
+                  border: selected ? '1px solid var(--accent-primary, #6598ef)' : '1px solid rgba(255,255,255,0.3)',
                   display: 'flex', alignItems: 'center', gap: 12, transition: 'all 0.2s',
                 }}>
                   <div style={{
@@ -1058,7 +1058,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                     <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginTop: 2, lineHeight: 1.4 }}>{opt.desc}</div>
                   </div>
                   {selected && (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #89cef5)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #6598ef)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                   )}
                 </div>
               );
@@ -1069,7 +1069,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           <div style={{ padding: '16px 16px calc(16px + env(safe-area-inset-bottom,0px))' }}>
             <button onClick={() => { showToast('저장되었어요'); setEditingSkin(false); }} style={{
               width: '100%', padding: 14, borderRadius: 12, border: 'none',
-              background: 'var(--accent-primary, #89cef5)', color: '#fff', fontSize: 14, fontWeight: 500,
+              background: 'var(--accent-primary, #6598ef)', color: '#fff', fontSize: 14, fontWeight: 500,
               letterSpacing: -0.2, cursor: 'pointer', fontFamily: 'inherit',
             }}>저장</button>
           </div>

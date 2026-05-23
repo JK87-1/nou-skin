@@ -698,7 +698,7 @@ export default function RoutineTracker({ themeColors, onBack }) {
   const [showManualForm, setShowManualForm] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
-  const accent = themeColors?.accent || '#89cef5';
+  const accent = themeColors?.accent || '#6598ef';
   const getCat = (cat) => TRACKER_CATEGORIES[cat] || TRACKER_CATEGORIES['기타'];
 
   // 루틴 데이터 — selectedDate 기준
@@ -861,7 +861,7 @@ export default function RoutineTracker({ themeColors, onBack }) {
           <span style={{
             display: 'inline-block', width: 12, height: 12, borderRadius: '50%',
             border: '2px solid rgba(255,255,255,0.3)',
-            borderTopColor: '#89cef5',
+            borderTopColor: '#6598ef',
             animation: 'ingredientSpin 0.9s linear infinite',
           }} />
           <span>{backfillProgress.done < backfillProgress.total
@@ -1081,7 +1081,7 @@ export default function RoutineTracker({ themeColors, onBack }) {
           ) : (
             analyses.map((a, idx) => {
               const cat = getCat(a.category);
-              const confColor = a.confidence === '높음' ? '#5ab0e8' : a.confidence === '보통' ? '#F0B870' : '#8888a0';
+              const confColor = a.confidence === '높음' ? '#85b0f5' : a.confidence === '보통' ? '#F0B870' : '#8888a0';
               return (
                 <div key={a.productId} className="card" style={{ padding: 20, marginBottom: 16, animation: `breatheIn 0.5s ease ${idx * 0.15}s both` }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
@@ -1105,11 +1105,11 @@ export default function RoutineTracker({ themeColors, onBack }) {
                         {a.metrics.map((m, mi) => (
                           <div key={mi} style={{
                             display: 'flex', alignItems: 'center', gap: 4, borderRadius: 10, padding: '6px 12px',
-                            background: m.improved ? 'rgba(137,206,245,0.1)' : 'rgba(239,68,68,0.1)',
-                            border: `1px solid ${m.improved ? 'rgba(137,206,245,0.2)' : 'rgba(239,68,68,0.2)'}`,
+                            background: m.improved ? 'rgba(101,152,239,0.1)' : 'rgba(239,68,68,0.1)',
+                            border: `1px solid ${m.improved ? 'rgba(101,152,239,0.2)' : 'rgba(239,68,68,0.2)'}`,
                           }}>
                             <span style={{ fontSize: 12, color: 'var(--tag-color)' }}>{m.label}</span>
-                            <span style={{ fontSize: 14, fontWeight: 700, color: m.improved ? '#5ab0e8' : '#ef4444' }}>
+                            <span style={{ fontSize: 14, fontWeight: 700, color: m.improved ? '#85b0f5' : '#ef4444' }}>
                               {m.improved ? '↑' : '↓'}{m.diff}
                             </span>
                           </div>

@@ -76,7 +76,7 @@ const LEVEL_TITLES = [
 const THEMES = [
   // ── 기본 (Lv 1~8) ─────────────────────────────────────────
   // ── 라이트모드 ──────────────────────────────────────────────
-  { id: 'morningLight',    name: 'Morning Light',    kr: '모닝 라이트',      mode: 'light', accent: '#89cef5', sub: '#aed8f7', pearl: ['#F0F7FE', '#aed8f7', '#89cef5'], cloverTheme: 'morningLight',    desc: '맑은 하늘의 청량한 빛' },
+  { id: 'morningLight',    name: 'Morning Light',    kr: '모닝 라이트',      mode: 'light', accent: '#6598ef', sub: '#a8c8f8', pearl: ['#F0F7FE', '#a8c8f8', '#6598ef'], cloverTheme: 'morningLight',    desc: '맑은 하늘의 청량한 빛' },
   { id: 'springBlossom',   name: 'Spring Blossom',   kr: '스프링 블라썸',    mode: 'light', accent: '#E890B0', sub: '#BAE6FD', pearl: ['#FFF0F5', '#F4A8C8', '#A8D8F0'], cloverTheme: 'springBlossom',   desc: '봄꽃의 신비로운 개화' },
   // ── 다크모드 ────────────────────────────────────────────────
   { id: 'midnightMoon',    name: 'Midnight Moon',    kr: '미드나이트 문',    mode: 'dark',  accent: '#9AC8E8', sub: '#FFF5E8', pearl: ['#FFF5E8', '#9AC8E8', '#1A2A40'], cloverTheme: 'midnightMoon',    desc: '달빛 아래 고요한 밤' },

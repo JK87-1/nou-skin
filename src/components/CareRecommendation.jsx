@@ -74,7 +74,7 @@ function StepBlock({ stepDef }) {
       }}>
         <div style={{
           width: 22, height: 22, borderRadius: '50%',
-          background: 'rgba(137,206,245,0.25)',
+          background: 'rgba(101,152,239,0.25)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 11, fontWeight: 700, color: '#6598ef',
           flexShrink: 0,

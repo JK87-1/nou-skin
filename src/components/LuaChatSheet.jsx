@@ -549,7 +549,7 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
               <svg width="56" height="56" viewBox="0 0 56 56" fill="none" aria-hidden>
                 <defs>
                   <linearGradient id="luaStarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#89cef5" />
+                    <stop offset="0%" stopColor="#6598ef" />
                     <stop offset="55%" stopColor="#58aefe" />
                     <stop offset="100%" stopColor="#cce8fb" />
                   </linearGradient>
@@ -639,7 +639,7 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 2px', height: 24 }}>
               {[0, 1, 2].map(j => (
                 <div key={j} style={{
-                  width: 6, height: 6, borderRadius: '50%', background: '#89cef5',
+                  width: 6, height: 6, borderRadius: '50%', background: '#6598ef',
                   animation: `luaDot 1.2s ease-in-out ${j * 0.24}s infinite`,
                 }} />
               ))}
@@ -672,14 +672,14 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
             {pendingImages.length < MAX_IMAGES && (
               <button onClick={() => albumInputRef.current?.click()} style={{
                 width: 72, height: 72, borderRadius: 12,
-                border: '2px dashed rgba(137,206,245,0.4)', background: 'rgba(137,206,245,0.08)',
+                border: '2px dashed rgba(101,152,239,0.4)', background: 'rgba(101,152,239,0.08)',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 cursor: 'pointer', gap: 2, flexShrink: 0,
               }}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#89cef5" strokeWidth="2" strokeLinecap="round">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round">
                   <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                 </svg>
-                <span style={{ fontSize: 10, color: '#89cef5', fontWeight: 600 }}>추가</span>
+                <span style={{ fontSize: 10, color: '#6598ef', fontWeight: 600 }}>추가</span>
               </button>
             )}
             <span style={{ fontSize: 12, color: 'var(--text-muted, #8B95A1)', width: '100%' }}>
@@ -709,7 +709,7 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
                 border: 'none', background: 'none', width: '100%', fontSize: 14, fontWeight: 500,
                 color: 'var(--text-primary, #191F28)', cursor: 'pointer', fontFamily: 'inherit',
               }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#89cef5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/>
                 </svg>
                 카메라로 촬영
@@ -720,7 +720,7 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
                 color: 'var(--text-primary, #191F28)', cursor: 'pointer', fontFamily: 'inherit',
                 borderTop: '1px solid rgba(255,255,255,0.3)',
               }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#89cef5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
                 </svg>
                 앨범에서 선택
@@ -777,13 +777,13 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
                 className="gem-input-btn"
                 style={{
                   width: 40, height: 40, borderRadius: '50%', border: 'none',
-                  background: isListening ? 'rgba(137,206,245,0.2)' : 'transparent',
+                  background: isListening ? 'rgba(101,152,239,0.2)' : 'transparent',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   cursor: 'pointer', flexShrink: 0,
                   opacity: isLoading ? 0.5 : 1, transition: 'background 0.15s',
                 }}
               >
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={isListening ? '#89cef5' : '#5F6368'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={isListening ? '#6598ef' : '#5F6368'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="9" y="2" width="6" height="11" rx="3"/><path d="M19 10v1a7 7 0 01-14 0v-1"/><line x1="12" y1="19" x2="12" y2="22"/>
                 </svg>
               </button>
@@ -796,7 +796,7 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
               className="gem-input-btn"
               style={{
                 width: 40, height: 40, borderRadius: '50%', border: 'none',
-                background: canSend ? '#1F1F1F' : 'rgba(137,206,245,0.18)',
+                background: canSend ? '#1F1F1F' : 'rgba(101,152,239,0.18)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: canSend ? 'pointer' : 'pointer',
                 flexShrink: 0, transition: 'background 0.2s',

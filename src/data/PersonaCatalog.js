@@ -13,7 +13,7 @@ export const PERSONAS = [
     label: '루아 케어',
     short: '케어',
     tagline: '친한 친구처럼 편하게',
-    accent: '#89cef5',
+    accent: '#6598ef',
     welcomeMessage: '안녕하세요, 오늘 피부는 어떠세요? 편하게 물어봐주세요.',
     systemPromptAddon: `[페르소나: 루아 케어 — 친구톤 일상 상담]
 - 친한 언니/오빠처럼 따뜻하게 공감하는 톤. 사용자 감정을 먼저 받아주고 분석 들어가세요.

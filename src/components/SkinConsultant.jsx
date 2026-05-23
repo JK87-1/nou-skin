@@ -871,7 +871,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
             <svg width="56" height="56" viewBox="0 0 56 56" fill="none" aria-hidden>
               <defs>
                 <linearGradient id="luaStarGradSC" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#89cef5" />
+                  <stop offset="0%" stopColor="#6598ef" />
                   <stop offset="55%" stopColor="#58aefe" />
                   <stop offset="100%" stopColor="#cce8fb" />
                 </linearGradient>

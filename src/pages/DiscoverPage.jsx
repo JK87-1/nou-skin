@@ -97,7 +97,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
               }}>
                 <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 8 }}>첫 측정을 해볼까요?</div>
                 <button style={{
-                  background: 'var(--accent-primary, #89cef5)', color: '#fff', fontSize: 13, fontWeight: 500,
+                  background: 'var(--accent-primary, #6598ef)', color: '#fff', fontSize: 13, fontWeight: 500,
                   padding: '10px 24px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: 'inherit',
                 }}>측정 시작</button>
               </div>
@@ -200,12 +200,12 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                       }
                       return d;
                     })()}
-                    fill="none" stroke="var(--accent-primary, #89cef5)" strokeWidth="2.5" strokeLinecap="round"
+                    fill="none" stroke="var(--accent-primary, #6598ef)" strokeWidth="2.5" strokeLinecap="round"
                   />
                   {series.map((s, i) => {
                     const x = series.length === 1 ? 160 : (i / (series.length - 1)) * 300 + 10;
                     const y = 110 - ((s.value - minV) / (maxV - minV)) * 100 + 5;
-                    return <circle key={i} cx={x} cy={y} r="3.5" fill="var(--accent-primary, #89cef5)" />;
+                    return <circle key={i} cx={x} cy={y} r="3.5" fill="var(--accent-primary, #6598ef)" />;
                   })}
                 </svg>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 10px 0' }}>
@@ -270,7 +270,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                 {[{ k: '7d', l: '7일' }, { k: '4w', l: '4주' }, { k: '3m', l: '3개월' }].map(p => (
                   <button key={p.k} onClick={() => setPeriod(p.k)} style={{
                     padding: '4px 10px', borderRadius: 10, border: period === p.k ? 'none' : '1px solid rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 500,
-                    background: period === p.k ? 'var(--accent-primary, #89cef5)' : 'rgba(255,255,255,0.4)',
+                    background: period === p.k ? 'var(--accent-primary, #6598ef)' : 'rgba(255,255,255,0.4)',
                     color: period === p.k ? '#fff' : 'var(--text-muted)',
                     cursor: 'pointer', fontFamily: 'inherit',
                   }}>{p.l}</button>
@@ -374,7 +374,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                       <div style={{ marginTop: 5, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.25)', position: 'relative' }}>
                         <div style={{ position: 'absolute', left: '50%', top: -2, width: 1, height: 8, background: 'rgba(255,255,255,0.4)' }} />
                         {f.impact > 0 ? (
-                          <div style={{ position: 'absolute', left: '50%', top: 0, height: '100%', borderRadius: 2, background: 'var(--accent-primary, #89cef5)', width: `${Math.min(Math.abs(f.impact), 100) / 2}%` }} />
+                          <div style={{ position: 'absolute', left: '50%', top: 0, height: '100%', borderRadius: 2, background: 'var(--accent-primary, #6598ef)', width: `${Math.min(Math.abs(f.impact), 100) / 2}%` }} />
                         ) : (
                           <div style={{ position: 'absolute', right: '50%', top: 0, height: '100%', borderRadius: 2, background: confidence === '낮음' ? '#888' : '#E24B4A', width: `${Math.min(Math.abs(f.impact), 100) / 2}%` }} />
                         )}
@@ -421,11 +421,11 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                     border: '1px solid rgba(255,255,255,0.5)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}>
-                    <svg width="10" height="10" viewBox="0 0 642.82 626.11"><path fill="#89cef5" d="M283.39,624.22c-13.36,4.42-27.68.92-38.02-8.6-9.11-8.38-15.79-18.59-19.6-30.36l-11.25-34.71c-5.84-18.02-11.19-35.37-19.86-52.19-18.55-35.99-49.68-62.09-88.22-74.84l-45.43-12.53c-20.65-5.69-45.02-14.73-55.55-33.29-8-14.1-7.19-30.1,2.36-43.17,15.69-21.46,45.08-28.92,69.82-36.01l33.43-9.58c23.08-6.61,43.51-19.41,60.62-36.34l6.6-7.54c14.35-16.41,23.14-36.5,29.38-57.47l9.51-37.53c5.57-21.99,16.02-46.39,38.05-53.68,13.7-4.53,27.46-1.11,38.03,8.53,25.63,23.39,23.97,67.31,40.45,103.36,7.76,16.97,17.54,32.27,31.25,44.71,26.31,23.86,47.15,29.48,77.44,40.68l34.98,12.94c9.87,3.65,18.18,10.09,24.64,18.27,12.32,15.61,12.46,36.51-.08,52.12-8.57,10.67-20.09,17.86-32.88,22.95l-39.33,15.63c-31.62,12.57-58.51,33.68-76.08,63.01-8.47,14.15-14.81,29.08-18.72,45.21l-8.59,35.37c-6.3,25.94-16.47,56.3-42.95,65.05Z"/><path fill="#89cef5" d="M566.24,189.1c-5.51,17.06-12.16,36.33-32.49,34.81-7.19-.54-13.8-4.68-18.36-11.36-9.25-13.54-10.94-33.95-26.05-51.79-18.62-21.99-39.93-22.15-53.83-33-5.85-4.57-9.56-10.02-9.84-16.78-.29-6.71,2.52-12.91,7.73-17.86,11.76-11.16,34.28-13.3,50.87-29.99,18.41-18.52,19.4-40.08,30.52-53.45,7.88-9.48,21.11-12.94,31.78-6.11,14.26,9.13,16.25,29.81,26.68,46.23,9.89,15.56,25.11,25.51,42.3,31.79,7.15,2.61,13.57,5.63,19.28,10.64,7.73,6.79,10.69,18.67,5.07,27.55-4.96,7.84-12.96,12.22-21.47,15.47-28.52,10.89-42.75,24.6-52.2,53.84Z"/></svg>
+                    <svg width="10" height="10" viewBox="0 0 642.82 626.11"><path fill="#6598ef" d="M283.39,624.22c-13.36,4.42-27.68.92-38.02-8.6-9.11-8.38-15.79-18.59-19.6-30.36l-11.25-34.71c-5.84-18.02-11.19-35.37-19.86-52.19-18.55-35.99-49.68-62.09-88.22-74.84l-45.43-12.53c-20.65-5.69-45.02-14.73-55.55-33.29-8-14.1-7.19-30.1,2.36-43.17,15.69-21.46,45.08-28.92,69.82-36.01l33.43-9.58c23.08-6.61,43.51-19.41,60.62-36.34l6.6-7.54c14.35-16.41,23.14-36.5,29.38-57.47l9.51-37.53c5.57-21.99,16.02-46.39,38.05-53.68,13.7-4.53,27.46-1.11,38.03,8.53,25.63,23.39,23.97,67.31,40.45,103.36,7.76,16.97,17.54,32.27,31.25,44.71,26.31,23.86,47.15,29.48,77.44,40.68l34.98,12.94c9.87,3.65,18.18,10.09,24.64,18.27,12.32,15.61,12.46,36.51-.08,52.12-8.57,10.67-20.09,17.86-32.88,22.95l-39.33,15.63c-31.62,12.57-58.51,33.68-76.08,63.01-8.47,14.15-14.81,29.08-18.72,45.21l-8.59,35.37c-6.3,25.94-16.47,56.3-42.95,65.05Z"/><path fill="#6598ef" d="M566.24,189.1c-5.51,17.06-12.16,36.33-32.49,34.81-7.19-.54-13.8-4.68-18.36-11.36-9.25-13.54-10.94-33.95-26.05-51.79-18.62-21.99-39.93-22.15-53.83-33-5.85-4.57-9.56-10.02-9.84-16.78-.29-6.71,2.52-12.91,7.73-17.86,11.76-11.16,34.28-13.3,50.87-29.99,18.41-18.52,19.4-40.08,30.52-53.45,7.88-9.48,21.11-12.94,31.78-6.11,14.26,9.13,16.25,29.81,26.68,46.23,9.89,15.56,25.11,25.51,42.3,31.79,7.15,2.61,13.57,5.63,19.28,10.64,7.73,6.79,10.69,18.67,5.07,27.55-4.96,7.84-12.96,12.22-21.47,15.47-28.52,10.89-42.75,24.6-52.2,53.84Z"/></svg>
                   </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 11.5, color: 'var(--text-primary)', lineHeight: 1.5 }}>{d.text}</div>
-                    <span style={{ display: 'inline-block', marginTop: 5, fontSize: 9, fontWeight: 500, padding: '2px 7px', borderRadius: 8, background: 'rgba(137,206,245,0.15)', color: 'var(--accent-primary)' }}>{d.tag}</span>
+                    <span style={{ display: 'inline-block', marginTop: 5, fontSize: 9, fontWeight: 500, padding: '2px 7px', borderRadius: 8, background: 'rgba(101,152,239,0.15)', color: 'var(--accent-primary)' }}>{d.tag}</span>
                   </div>
                 </div>
               ))

@@ -1120,7 +1120,7 @@ export default function App() {
                             <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{val !== null ? val : '—'}</span>
                             <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>점</span>
                           </div>
-                          <div style={{ fontSize: 10, marginTop: 4, minHeight: 14, color: diff === null ? 'var(--text-muted)' : diff > 0 ? 'var(--accent-primary, #89cef5)' : diff < 0 ? '#e05545' : 'var(--text-muted)' }}>
+                          <div style={{ fontSize: 10, marginTop: 4, minHeight: 14, color: diff === null ? 'var(--text-muted)' : diff > 0 ? 'var(--accent-primary, #6598ef)' : diff < 0 ? '#e05545' : 'var(--text-muted)' }}>
                             {m.label}{diff !== null && diff !== 0 ? ` ${Math.abs(diff)}${diff > 0 ? '▲' : '▼'}` : ''}
                           </div>
                         </div>
@@ -1148,7 +1148,7 @@ export default function App() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(137,206,245,0.3))' }}><defs><linearGradient id="weatherCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#B8E4F8"/><stop offset="100%" stopColor="#6AB4E0"/></linearGradient></defs><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" fill="url(#weatherCard)" opacity="0.6"/></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(101,152,239,0.3))' }}><defs><linearGradient id="weatherCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#B8E4F8"/><stop offset="100%" stopColor="#6AB4E0"/></linearGradient></defs><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" fill="url(#weatherCard)" opacity="0.6"/></svg>
                         <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>날씨</span>
                       </div>
                       {_w ? (
@@ -1209,7 +1209,7 @@ export default function App() {
                             <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{waterCups > 0 ? waterMl.toLocaleString() : '—'}</span>
                             <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>ml</span>
                           </div>
-                          <div style={{ fontSize: 10, color: waterCups > 0 ? (waterCups >= waterGoal ? '#22C55E' : 'var(--text-muted)') : 'var(--accent-primary, #89cef5)', marginTop: 4, minHeight: 14 }}>
+                          <div style={{ fontSize: 10, color: waterCups > 0 ? (waterCups >= waterGoal ? '#22C55E' : 'var(--text-muted)') : 'var(--accent-primary, #6598ef)', marginTop: 4, minHeight: 14 }}>
                             {waterCups > 0 ? (waterCups >= waterGoal ? '목표 달성!' : `${((waterGoal - waterCups) * cupMl).toLocaleString()}ml 남음`) : '기록하기'}
                           </div>
                         </div>
@@ -1244,7 +1244,7 @@ export default function App() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
                           <div>
                             <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
-                            <div style={{ fontSize: 10, color: 'var(--accent-primary, #89cef5)', marginTop: 4, minHeight: 14 }}>기록하기</div>
+                            <div style={{ fontSize: 10, color: 'var(--accent-primary, #6598ef)', marginTop: 4, minHeight: 14 }}>기록하기</div>
                           </div>
                           <svg width="52" height="52" viewBox="0 0 52 52"><circle cx="26" cy="26" r={sR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" /></svg>
                         </div>
@@ -1267,7 +1267,7 @@ export default function App() {
                           <span style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{waterCups > 0 ? (waterCups * 250).toLocaleString() : '—'}</span>
                           <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>ml</span>
                         </div>
-                        <div style={{ fontSize: 10, color: waterCups > 0 ? (waterCups >= 8 ? '#22C55E' : 'var(--text-muted)') : 'var(--accent-primary, #89cef5)', marginTop: 4, minHeight: 14 }}>
+                        <div style={{ fontSize: 10, color: waterCups > 0 ? (waterCups >= 8 ? '#22C55E' : 'var(--text-muted)') : 'var(--accent-primary, #6598ef)', marginTop: 4, minHeight: 14 }}>
                           {waterCups > 0 ? (waterCups >= 8 ? '목표 달성!' : `${((8 - waterCups) * 250).toLocaleString()}ml 남음`) : '기록하기'}
                         </div>
                       </div>
@@ -1315,7 +1315,7 @@ export default function App() {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
                         <div>
                           <div style={{ fontSize: 26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
-                          <div style={{ fontSize: 10, color: 'var(--accent-primary, #89cef5)', marginTop: 4, minHeight: 14 }}>기록하기</div>
+                          <div style={{ fontSize: 10, color: 'var(--accent-primary, #6598ef)', marginTop: 4, minHeight: 14 }}>기록하기</div>
                         </div>
                         <svg width="52" height="52" viewBox="0 0 52 52"><circle cx="26" cy="26" r={sR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" /></svg>
                       </div>
@@ -2749,7 +2749,7 @@ function WaterIntakeModal({ onClose, onUpdate }) {
 
         <button onClick={onUpdate} style={{
           width: '100%', padding: '14px 0', borderRadius: 'var(--btn-radius)',
-          border: 'none', background: goalReached ? '#22C55E' : 'var(--accent-primary, #89cef5)',
+          border: 'none', background: goalReached ? '#22C55E' : 'var(--accent-primary, #6598ef)',
           color: '#fff', fontSize: 14, fontWeight: 600,
           cursor: 'pointer', fontFamily: 'inherit',
         }}>완료</button>
@@ -2985,8 +2985,8 @@ function HomeEditPage({ cards, order, onToggle, onReorder, onClose }) {
               style={{
                 display: 'flex', alignItems: 'center', gap: 12,
                 padding: '14px 20px 14px 12px',
-                background: isDragging ? 'rgba(137,206,245,0.1)' : isOver ? 'rgba(137,206,245,0.05)' : 'transparent',
-                borderTop: isOver ? '2px solid #89cef5' : '2px solid transparent',
+                background: isDragging ? 'rgba(101,152,239,0.1)' : isOver ? 'rgba(101,152,239,0.05)' : 'transparent',
+                borderTop: isOver ? '2px solid #6598ef' : '2px solid transparent',
                 transition: 'background 0.15s',
                 WebkitTapHighlightColor: 'transparent',
               }}
