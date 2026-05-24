@@ -296,6 +296,20 @@ export const KOREAN_PRODUCTS = [
   { brand: '아이오페', name: '바이오 에센스 인텐시브 컨디셔닝', category: '에센스', timeSlot: 'both', ingredients: ['효모 발효 추출물'], volume: '168ml' },
   { brand: '이니스프리', name: '레티놀 시카 안티에이징 앰플', category: '세럼', timeSlot: 'night', ingredients: ['레티놀', '센텔라'], volume: '20ml' },
   { brand: '라네즈', name: '네오 페이셜 마스크', category: '마스크팩', timeSlot: 'night', ingredients: ['콜라겐', '히알루론산'], volume: '17g' },
+
+  // ===== 바르헤 (barhe) =====
+  { brand: '바르헤', name: '글루타치온 화이트닝 크림 인 에센스', category: '에센스', timeSlot: 'both', ingredients: ['글루타치온', '나이아신아마이드'], volume: '50ml' },
+  { brand: '바르헤', name: '글루타치온 미백 세럼', category: '세럼', timeSlot: 'both', ingredients: ['글루타치온', '비타민C'], volume: '50ml' },
+  { brand: '바르헤', name: '콜라겐 부스팅 크림', category: '크림', timeSlot: 'both', ingredients: ['콜라겐', '펩타이드'], volume: '50ml' },
+
+  // ===== 브이티 코스메틱 (브이티) — 추가 =====
+  { brand: '브이티코스메틱', name: '브이티 피디알엔 광채 크림', category: '에센스', timeSlot: 'both', ingredients: ['PDRN', '나이아신아마이드'], volume: '50ml' },
+  { brand: '브이티코스메틱', name: '브이티 시카 데일리 수딩 마스크', category: '마스크팩', timeSlot: 'both', ingredients: ['센텔라'], volume: '30매' },
+
+  // ===== 바이오더마 (Bioderma) =====
+  { brand: '바이오더마', name: '센시비오 H2O 미셀라 워터', category: '클렌저', timeSlot: 'both', ingredients: ['글리세린'], volume: '500ml' },
+  { brand: '바이오더마', name: '아토덤 피피 PP밤', category: '크림', timeSlot: 'both', ingredients: ['아토덤'], volume: '30ml' },
+  { brand: '바이오더마', name: '하이드라비오 H2O 미셀라 워터', category: '클렌저', timeSlot: 'both', ingredients: ['글리세린', '히알루론산'], volume: '500ml' },
 ];
 
 // 사용자가 가장 자주 등록할 만한 인기 brand·제품 — 첫 화장대 진입 시 image URL 백그라운드 prefetch 대상.

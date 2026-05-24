@@ -1265,6 +1265,7 @@ export default function RoutineTracker({ themeColors, onBack }) {
   const thumbBackfillRef = useRef(false);
 
   // 누끼 이미지 없는 제품을 마운트 시 백그라운드로 보강 (채팅 카드 적용 등 thumb 없이 들어온 제품 cover)
+  // 1차: brand+name 매칭. 2차 fallback: brand만으로 + 카테고리 키워드.
   useEffect(() => {
     if (thumbBackfillRef.current) return;
     const targets = products.filter(p => !p.imageThumb && (p.brand || p.name));
@@ -1275,19 +1276,35 @@ export default function RoutineTracker({ themeColors, onBack }) {
       for (let i = 0; i < targets.length; i++) {
         if (cancelled) return;
         const t = targets[i];
+        let image = null;
         try {
-          const info = await fetchProductInfo(t.brand, t.name, { fast: true });
-          if (info?.image) {
+          // 1차 — 정확 매칭
+          const info1 = await fetchProductInfo(t.brand, t.name, { fast: true });
+          if (info1?.image) image = info1.image;
+        } catch {}
+        // 2차 — brand + 카테고리 (1차 실패 시)
+        if (!image && t.brand) {
+          try {
+            const info2 = await fetchProductInfo(t.brand, t.category || '', { fast: true });
+            if (info2?.image) image = info2.image;
+          } catch {}
+        }
+        // 3차 — brand만 (브랜드 인지도 있는 인디 브랜드 케어)
+        if (!image && t.brand) {
+          try {
+            const info3 = await fetchProductInfo(t.brand, '', { fast: true });
+            if (info3?.image) image = info3.image;
+          } catch {}
+        }
+        if (image && !cancelled) {
+          try {
             const { setProductThumb } = await import('../storage/ImageStore');
-            await setProductThumb(t.id, info.image);
-            if (!cancelled) {
-              setProducts(prev => prev.map(p => p.id === t.id ? { ...p, imageThumb: info.image } : p));
-              window.dispatchEvent(new CustomEvent('lua:tracker-products-changed'));
-            }
-          }
-        } catch { /* skip */ }
-        // stagger
-        if (i < targets.length - 1) await new Promise(r => setTimeout(r, 250));
+            await setProductThumb(t.id, image);
+            setProducts(prev => prev.map(p => p.id === t.id ? { ...p, imageThumb: image } : p));
+            window.dispatchEvent(new CustomEvent('lua:tracker-products-changed'));
+          } catch {}
+        }
+        if (i < targets.length - 1) await new Promise(r => setTimeout(r, 200));
       }
     })();
     return () => { cancelled = true; };
