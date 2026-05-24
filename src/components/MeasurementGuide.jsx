@@ -213,7 +213,7 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
 
         {/* ④ 시퀀스 리스트 */}
         <div style={{
-          flex: 1, padding: '24px 28px 0',
+          flex: 1, padding: '50px 28px 0',
           display: 'flex', flexDirection: 'column', gap: 0,
         }}>
           {CONDITIONS.map((c, i) => {
