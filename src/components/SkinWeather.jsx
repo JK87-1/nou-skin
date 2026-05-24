@@ -362,7 +362,7 @@ export default function SkinWeather({ skinResult }) {
 
       {/* ── Skin Alerts ── */}
       {alerts.length > 0 && (
-        <div style={{ marginBottom: 16, animation: 'swFadeInUp 0.5s ease 0.15s both' }}>
+        <div style={{ marginBottom: 16, animation: 'swFadeInUp 0.5s ease 0.15s both', background: 'rgba(34,113,208,0.02)', borderRadius: 18, padding: '16px 16px 8px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
             <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>내 피부 맞춤 알림</span>
             {highCount > 0 && (
@@ -518,6 +518,7 @@ export default function SkinWeather({ skinResult }) {
       {/* ── Seasonal Guide ── */}
       <div style={{
         borderRadius: 18, padding: 18,
+        background: 'rgba(34,113,208,0.02)',
         marginBottom: 16, animation: 'swFadeInUp 0.5s ease 0.3s both',
       }}>
         <div style={{ marginBottom: 12 }}>
@@ -559,7 +560,7 @@ export default function SkinWeather({ skinResult }) {
         };
         const nextIdx = notifications.findIndex(n => parseNotifHour(n.time) > nowHour);
         return (
-        <div style={{ marginBottom: 8, animation: 'swFadeInUp 0.5s ease 0.4s both', borderRadius: 18, padding: 16 }}>
+        <div style={{ marginBottom: 8, animation: 'swFadeInUp 0.5s ease 0.4s both', background: 'rgba(34,113,208,0.02)', borderRadius: 18, padding: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>오늘 예정된 알림</div>
             {weatherEnabled ? (
