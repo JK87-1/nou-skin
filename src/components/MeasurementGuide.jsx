@@ -241,13 +241,13 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
                 style={{
                   padding: '16px 16px',
                   marginBottom: i < CONDITIONS.length - 1 ? 15 : 0,
-                  background: 'rgba(34,113,208,0.1)',
+                  background: 'rgba(34,113,208,0.05)',
                   borderRadius: 16,
                   animation: isFullSequence ? `mgCondIn 400ms cubic-bezier(0.32,0.72,0,1) both` : 'none',
                 }}
               >
                 {/* 아이콘 + 제목 / 부제목 / 설명 */}
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 15 }}>
                   <div style={{
                     width: 23, height: 23,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
