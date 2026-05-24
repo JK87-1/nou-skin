@@ -358,14 +358,14 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
   };
 
   const handleReminderTimeChange = async (newTime) => {
-    setReminderTime(newTime); setShowTimePicker(null);
-    savePushSettings(reminderEnabled, newTime, tipEnabled, tipTime);
+    setReminderTime(newTime); setShowTimePicker('page');
+    savePushSettings(reminderEnabled, newTime, tipEnabled, tipTime, weatherEnabled);
     if (reminderEnabled) await updateReminderTime(newTime, profile?.nickname);
   };
 
   const handleTipTimeChange = async (newTime) => {
-    setTipTime(newTime); setShowTimePicker(null);
-    savePushSettings(reminderEnabled, reminderTime, tipEnabled, newTime);
+    setTipTime(newTime); setShowTimePicker('page');
+    savePushSettings(reminderEnabled, reminderTime, tipEnabled, newTime, weatherEnabled);
     if (tipEnabled) await updateTipSettings(true, newTime);
   };
 
@@ -2190,141 +2190,56 @@ function BeautyTipItem({ enabled, time, onToggle, onTimeChange, profile, reminde
 }
 
 function TimePicker({ value, onChange, onClose }) {
-  const [h, m] = value.split(':').map(Number);
-  const [ampm, setAmpm] = useState(h < 12 ? 'AM' : 'PM');
-  const [hour, setHour] = useState(h === 0 ? 12 : h > 12 ? h - 12 : h);
-  const [minute, setMinute] = useState(m);
+  const currentH = parseInt(value.split(':')[0]);
 
-  const hourRef = useRef(null);
-  const minRef = useRef(null);
-
-  const ITEM_H = 44;
-  const hours = Array.from({ length: 12 }, (_, i) => i + 1);
-  const minutes = Array.from({ length: 60 }, (_, i) => i);
-
-  useEffect(() => {
-    if (hourRef.current) {
-      hourRef.current.scrollTop = (hour - 1) * ITEM_H;
-    }
-    if (minRef.current) {
-      minRef.current.scrollTop = minute * ITEM_H;
-    }
-  }, []);
-
-  const handleScroll = useCallback((ref, items, setter) => {
-    const el = ref.current;
-    if (!el) return;
-    const idx = Math.round(el.scrollTop / ITEM_H);
-    const clamped = Math.max(0, Math.min(idx, items.length - 1));
-    setter(items[clamped]);
-  }, []);
-
-  const handleConfirm = () => {
-    let h24 = hour;
-    if (ampm === 'AM' && hour === 12) h24 = 0;
-    else if (ampm === 'PM' && hour !== 12) h24 = hour + 12;
-    onChange(`${String(h24).padStart(2, '0')}:${String(minute).padStart(2, '0')}`);
-  };
-
-  const colStyle = {
-    height: ITEM_H * 3, overflow: 'hidden', overflowY: 'auto',
-    scrollSnapType: 'y mandatory', WebkitOverflowScrolling: 'touch',
-    scrollbarWidth: 'none', msOverflowStyle: 'none',
-    flex: 1, position: 'relative',
-  };
-
-  const itemStyle = (active) => ({
-    height: ITEM_H, display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontSize: active ? 22 : 16, fontWeight: active ? 600 : 300,
-    color: active ? '#ADEBB3' : 'var(--text-dim)',
-    scrollSnapAlign: 'center', transition: 'all 0.15s',
-    cursor: 'pointer',
-  });
+  const times = [];
+  for (let i = 0; i < 24; i++) {
+    const ampm = i < 12 ? '오전' : '오후';
+    const h12 = i === 0 ? 12 : i > 12 ? i - 12 : i;
+    times.push({ h24: i, label: `${ampm} ${h12}:00` });
+  }
 
   return (
     <div
       onClick={onClose}
       style={{
-        position: 'fixed', inset: 0, zIndex: 1100,
-        background: 'var(--bg-modal-overlay)',
+        position: 'fixed', inset: 0, zIndex: 1200,
+        background: 'rgba(0,0,0,0.35)',
         display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-        animation: 'fadeIn 0.2s ease',
       }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxWidth: 430,
-          background: 'var(--bg-modal)', borderRadius: '24px 24px 0 0',
-          padding: '20px 20px calc(20px + env(safe-area-inset-bottom, 0px))',
-          animation: 'slideUp 0.3s ease',
+          background: '#fff', borderRadius: '20px 20px 0 0',
+          padding: '16px 0 calc(16px + env(safe-area-inset-bottom, 0px))',
+          maxHeight: '50vh', display: 'flex', flexDirection: 'column',
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <span onClick={onClose} style={{ fontSize: 14, color: 'var(--text-muted)', cursor: 'pointer', fontWeight: 400 }}>취소</span>
-          <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>알림 시간</span>
-          <span onClick={handleConfirm} style={{ fontSize: 14, color: '#ADEBB3', cursor: 'pointer', fontWeight: 600 }}>확인</span>
+        <div style={{ padding: '0 20px 12px', fontSize: 15, fontWeight: 600, color: '#1a1a1a', borderBottom: '1px solid #f0f0f0' }}>
+          알림 시간
         </div>
-
-        <div style={{
-          display: 'flex', alignItems: 'flex-start', gap: 0,
-          background: 'var(--bg-card)', borderRadius: 20, overflow: 'hidden',
-          border: '1px solid var(--border-light)',
-          position: 'relative',
-        }}>
-          <div style={{
-            position: 'absolute', left: 8, right: 8,
-            top: ITEM_H, height: ITEM_H,
-            background: 'rgba(240,144,112,0.08)', borderRadius: 12,
-            pointerEvents: 'none', zIndex: 0,
-          }} />
-
-          <div style={{ width: 64, height: ITEM_H * 3, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: ITEM_H, zIndex: 1 }}>
-            {['AM', 'PM'].map((v) => (
-              <div
-                key={v}
-                onClick={() => setAmpm(v)}
-                style={{
-                  height: ITEM_H, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: ampm === v ? 18 : 15, fontWeight: ampm === v ? 600 : 300,
-                  color: ampm === v ? '#ADEBB3' : 'var(--text-dim)',
-                  cursor: 'pointer', transition: 'all 0.15s',
-                }}
-              >{v === 'AM' ? '오전' : '오후'}</div>
-            ))}
-          </div>
-
-          <div
-            ref={hourRef}
-            onScroll={() => handleScroll(hourRef, hours, setHour)}
-            className="hide-scrollbar"
-            style={{ ...colStyle, zIndex: 1 }}
-          >
-            <div style={{ height: ITEM_H }} />
-            {hours.map((h) => (
-              <div key={h} style={itemStyle(h === hour)}
-                onClick={() => { setHour(h); if (hourRef.current) hourRef.current.scrollTo({ top: (h - 1) * ITEM_H, behavior: 'smooth' }); }}
-              >{h}</div>
-            ))}
-            <div style={{ height: ITEM_H }} />
-          </div>
-
-          <div style={{ fontSize: 22, fontWeight: 600, color: '#ADEBB3', zIndex: 1 }}>:</div>
-
-          <div
-            ref={minRef}
-            onScroll={() => handleScroll(minRef, minutes, setMinute)}
-            className="hide-scrollbar"
-            style={{ ...colStyle, zIndex: 1 }}
-          >
-            <div style={{ height: ITEM_H }} />
-            {minutes.map((m) => (
-              <div key={m} style={itemStyle(m === minute)}
-                onClick={() => { setMinute(m); if (minRef.current) minRef.current.scrollTo({ top: m * ITEM_H, behavior: 'smooth' }); }}
-              >{String(m).padStart(2, '0')}</div>
-            ))}
-            <div style={{ height: ITEM_H }} />
-          </div>
+        <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          {times.map((t) => (
+            <div
+              key={t.h24}
+              onClick={() => onChange(`${String(t.h24).padStart(2, '0')}:00`)}
+              style={{
+                padding: '14px 24px',
+                fontSize: 15, color: t.h24 === currentH ? '#4a9eff' : '#333',
+                fontWeight: t.h24 === currentH ? 600 : 400,
+                background: t.h24 === currentH ? 'rgba(74,158,255,0.06)' : 'transparent',
+                cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              }}
+            >
+              {t.label}
+              {t.h24 === currentH && (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4a9eff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              )}
+            </div>
+          ))}
         </div>
       </div>
     </div>
