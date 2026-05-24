@@ -48,12 +48,10 @@ const COPY = {
 // ── 조건 리스트 ──
 const CONDITIONS = [
   {
-    step: '하나',
-    title: '조명',
-    desc: '환한 곳에서',
-    note: '낮이면 자연광, 밤이면 환한 실내.',
+    title: '자연광',
+    desc: '창가·낮시간 자연광이 가장 정확해요. 밤이면 환한 실내도 괜찮아요',
     icon: (
-      <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
         <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
         <path d="M9.7 17l4.6 0" />
@@ -61,25 +59,42 @@ const CONDITIONS = [
     ),
   },
   {
-    step: '둘',
-    title: '피부',
-    desc: '맨 얼굴로',
-    note: '세안 후, 메이크업 없이.',
+    title: '세안 직후',
+    desc: '메이크업·잔여 유분 제거 후 5분 안에 측정',
     icon: (
-      <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M6.8 11a6 6 0 1 0 10.396 0l-5.197 -8l-5.2 8z" />
       </svg>
     ),
   },
   {
-    step: '셋',
-    title: '자세',
-    desc: '정면, 편안한 표정',
-    note: '화면 가이드에 맞추어주세요.',
+    title: '메이크업 없이',
+    desc: '베이스·컨실러는 점수를 가려요. 진짜 피부로 측정',
     icon: (
-      <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+        <path d="M14.5 9.5l-5 5" /><path d="M9.5 9.5l5 5" />
+      </svg>
+    ),
+  },
+  {
+    title: '정면 30cm',
+    desc: '얼굴이 화면 가이드에 맞도록. 너무 가깝거나 멀면 X',
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M5 7h1a2 2 0 0 0 2 -2a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2" />
         <path d="M9 13a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+      </svg>
+    ),
+  },
+  {
+    title: '자연스러운 표정',
+    desc: '입 다물고 편안하게. 미소·찡그림은 주름 점수에 영향',
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+        <path d="M9 10l.01 0" /><path d="M15 10l.01 0" />
+        <path d="M9.5 15a3.5 3.5 0 0 0 5 0" />
       </svg>
     ),
   },
@@ -114,13 +129,13 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
   useEffect(() => {
     if (!isFullSequence) return;
 
-    const delays = [800, 1000, 2200, 1000]; // 0→1, 1→2, 2→3, 3→4
+    const delays = [600, 800, 800, 800, 800, 600]; // 0→1, 1→2, 2→3, 3→4, 4→5, 5→CTA
     let currentStep = 0;
 
     const advance = () => {
       currentStep++;
       setSeqStep(currentStep);
-      if (currentStep >= 4) {
+      if (currentStep >= 6) {
         setCtaReady(true);
         return;
       }
@@ -133,11 +148,11 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
 
   // 탭으로 시퀀스 가속
   const handleTapAccelerate = () => {
-    if (seqStep >= 4) return;
+    if (seqStep >= 6) return;
     clearTimeout(seqTimerRef.current);
     const next = seqStep + 1;
     setSeqStep(next);
-    if (next >= 4) setCtaReady(true);
+    if (next >= 6) setCtaReady(true);
   };
 
   const handleStart = () => {
@@ -227,7 +242,7 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
 
         {/* ④ 시퀀스 리스트 */}
         <div style={{
-          flex: 1, padding: '85px 28px 0',
+          flex: 1, padding: '60px 28px 0',
           display: 'flex', flexDirection: 'column', gap: 0,
         }}>
           {CONDITIONS.map((c, i) => {
@@ -239,36 +254,27 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
               <div
                 key={i}
                 style={{
-                  padding: '16px 16px',
-                  marginBottom: i < CONDITIONS.length - 1 ? 15 : 0,
-                  background: 'rgba(34,113,208,0.05)',
-                  borderRadius: 16,
+                  padding: '18px 0',
                   animation: isFullSequence ? `mgCondIn 400ms cubic-bezier(0.32,0.72,0,1) both` : 'none',
                 }}
               >
-                {/* 아이콘 + 제목 / 부제목 / 설명 */}
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 15 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
                   <div style={{
-                    width: 23, height: 23,
+                    width: 24, height: 24,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    flexShrink: 0, marginTop: 2,
+                    flexShrink: 0, marginTop: 1, opacity: 0.85,
                   }}>{c.icon}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
-                      fontSize: 13, fontWeight: 500, letterSpacing: -0.1,
-                      color: 'rgba(255,255,255,0.7)', marginBottom: 3,
+                      fontSize: 17, fontWeight: 700, letterSpacing: -0.2,
+                      color: 'white', marginBottom: 4,
                     }}>{c.title}</div>
                     <div style={{
-                      fontSize: 18, fontWeight: 600, lineHeight: 1.55, letterSpacing: -0.2,
-                      color: 'white', marginBottom: 2,
-                    }}>{c.desc}</div>
-                    <div style={{
                       fontSize: 13, lineHeight: 1.55,
-                      color: 'rgba(0,0,0,0.4)',
-                    }}>{c.note}</div>
+                      color: 'rgba(255,255,255,0.65)',
+                    }}>{c.desc}</div>
                   </div>
                 </div>
-
               </div>
             );
           })}
