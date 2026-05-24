@@ -27,9 +27,9 @@ export function resetMeasureGuideDismiss() {
 const COPY = {
   1: {
     header: '처음 마주하는 자리',
-    eyebrow: '정확한 측정을 위해',
-    headline: '측정 환경을 맞춰주세요',
-    sub: '같은 환경에서 측정해야\n변화를 정확히 추적할 수 있어요',
+    eyebrow: '',
+    headline: '정확한 추적을 위한 첫 단계',
+    sub: '매번 같은 환경일 때, 피부의 변화가 올바르게 보여요.',
   },
   2: {
     header: '두 번째 비춤',
