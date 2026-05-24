@@ -17,7 +17,7 @@ import ProductRegisteredModal from '../components/ProductRegisteredModal';
 import { hapticLight } from '../utils/haptics';
 import { getAllProductThumbs, migrateThumbsFromLocalStorage } from '../storage/ImageStore';
 import { PRODUCTS } from '../data/ProductCatalog';
-import { KOREAN_PRODUCTS } from '../data/KoreanProducts';
+import { KOREAN_PRODUCTS, POPULAR_KOREAN_PRODUCTS } from '../data/KoreanProducts';
 
 // 네이버 쇼핑에서 제품 누끼 이미지 + 정확한 브랜드명 검색.
 // fast=true (자동완성용): URL만 반환, base64 다운로드 없이 ~500ms 빠름.
@@ -1176,6 +1176,29 @@ export default function RoutineTracker({ themeColors, onBack }) {
     return () => window.removeEventListener('lua:tracker-products-changed', onChanged);
   }, []);
 
+  // 첫 마운트 시 인기 한국 화장품 image URL을 백그라운드로 prefetch → 자동완성 캐시 채움
+  const prefetchDoneRef = useRef(false);
+  useEffect(() => {
+    if (prefetchDoneRef.current) return;
+    prefetchDoneRef.current = true;
+    // 진입 직후 1.5초 뒤 시작 (사용자 첫 화면 우선)
+    const startTimer = setTimeout(() => {
+      const targets = POPULAR_KOREAN_PRODUCTS
+        .filter(p => getImgFromCache(p.brand, p.name) === undefined)
+        .slice(0, 40);
+      // stagger 150ms — 네이버 API rate limit 회피
+      targets.forEach((p, i) => {
+        setTimeout(async () => {
+          try {
+            const info = await fetchProductInfo(p.brand, p.name, { fast: true });
+            setImgCache(p.brand, p.name, info?.image || null);
+          } catch {}
+        }, i * 150);
+      });
+    }, 1500);
+    return () => clearTimeout(startTimer);
+  }, []);
+
   // 첫 마운트 시 중복 제품(같은 brand+name) 자동 정리 — 과거에 채팅 카드 다중 클릭 등으로 쌓인 데이터 cleanup
   const dedupeDoneRef = useRef(false);
   useEffect(() => {
@@ -1464,9 +1487,24 @@ export default function RoutineTracker({ themeColors, onBack }) {
                     display: 'flex', flexDirection: 'column',
                   }}>
                     {p.imageThumb ? (
-                      <img src={p.imageThumb} alt="" style={{ width: 44, height: 44, borderRadius: 12, objectFit: 'cover', marginBottom: 10 }} />
+                      <img
+                        src={p.imageThumb}
+                        alt=""
+                        style={{ width: 44, height: 44, borderRadius: 12, objectFit: 'cover', marginBottom: 10, background: '#fff' }}
+                        onError={(e) => {
+                          // 깨진 URL이면 placeholder div로 교체
+                          const parent = e.currentTarget.parentNode;
+                          if (parent) {
+                            const fallback = document.createElement('div');
+                            fallback.style.cssText = 'width:44px;height:44px;border-radius:12px;margin-bottom:10px;display:flex;align-items:center;justify-content:center;font-size:22px;background:rgba(101,152,239,0.08);';
+                            fallback.textContent = cat.emoji || '';
+                            parent.insertBefore(fallback, e.currentTarget);
+                            e.currentTarget.remove();
+                          }
+                        }}
+                      />
                     ) : (
-                      <div style={{ width: 44, height: 44, borderRadius: 12, marginBottom: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>
+                      <div style={{ width: 44, height: 44, borderRadius: 12, marginBottom: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, background: 'rgba(101,152,239,0.08)' }}>
                         {cat.emoji}
                       </div>
                     )}

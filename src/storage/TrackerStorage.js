@@ -58,7 +58,9 @@ export function getProduct(id) {
 }
 
 function normKey(brand, name) {
-  return `${(brand || '').replace(/\s+/g, '').toLowerCase()}|${(name || '').replace(/\s+/g, '').toLowerCase()}`;
+  // 공백·하이픈·점·괄호·플러스·콤마 등 다양한 구분자 모두 제거 → 사용자가 다른 표기로 같은 제품을 등록해도 매칭됨
+  const norm = (s) => (s || '').replace(/[\s\-_·.,+/\\()\[\]{}!?'"`~@#$%^&*=:;]+/g, '').toLowerCase();
+  return norm(brand) + '|' + norm(name);
 }
 
 export function saveProduct(product, opts = {}) {

@@ -1,6 +1,8 @@
 // 한국 화장품 시장에서 자주 등록되는 인기 브랜드·제품 데이터셋.
 // 자동완성 즉시 매칭(0ms)용. 정확도 우선으로 검증된 제품만 큐레이션.
 // 부족한 결과는 GPT 검색으로 보강됨.
+//
+// 첫 화장대 진입 시 백그라운드로 인기 subset의 image URL을 prefetch해 캐시 → 자동완성 즉각 thumb 표시.
 
 export const KOREAN_PRODUCTS = [
   // ===== 토리든 =====
@@ -295,3 +297,12 @@ export const KOREAN_PRODUCTS = [
   { brand: '이니스프리', name: '레티놀 시카 안티에이징 앰플', category: '세럼', timeSlot: 'night', ingredients: ['레티놀', '센텔라'], volume: '20ml' },
   { brand: '라네즈', name: '네오 페이셜 마스크', category: '마스크팩', timeSlot: 'night', ingredients: ['콜라겐', '히알루론산'], volume: '17g' },
 ];
+
+// 사용자가 가장 자주 등록할 만한 인기 brand·제품 — 첫 화장대 진입 시 image URL 백그라운드 prefetch 대상.
+// 캡처에서 보인 브랜드 + 데이터셋에서 카테고리 다양하게 핵심만 추림.
+export const POPULAR_KOREAN_PRODUCTS = KOREAN_PRODUCTS.filter(p =>
+  ['토리든', '코스알엑스', '닥터자르트', '셀퓨전씨', '앰플엔', '메디힐', '라네즈', '설화수',
+   '이니스프리', '라로슈포제', '세타필', '닥터지', '메디큐브', '바이오힐 보', 'VT',
+   '피지오겔', '더마팩토리', '라운드랩', 'CNP Laboratory', 'AHC',
+   '에스트라', '마녀공장', '닥터마티노', '시카팜', '바이오힐 보'].includes(p.brand)
+).slice(0, 50);

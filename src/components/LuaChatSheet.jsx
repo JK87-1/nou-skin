@@ -98,9 +98,9 @@ function extractApplyRoutine(text) {
   return { cleanText, routine: { morning, night } };
 }
 
-// 같은 제품(name+brand 일치)이 이미 등록됐는지 체크
+// 같은 제품(name+brand 일치)이 이미 등록됐는지 체크 — TrackerStorage.normKey와 동일 규칙
 function findExistingTrackerProduct(existing, item) {
-  const norm = (s) => (s || '').replace(/\s+/g, '').toLowerCase();
+  const norm = (s) => (s || '').replace(/[\s\-_·.,+/\\()\[\]{}!?'"`~@#$%^&*=:;]+/g, '').toLowerCase();
   const itemKey = norm(item.brand) + '|' + norm(item.name);
   return existing.find(p => norm(p.brand) + '|' + norm(p.name) === itemKey);
 }
