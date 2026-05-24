@@ -1388,7 +1388,7 @@ export default function App() {
               flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden',
             }}>
               {/* Header */}
-              <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+              <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
                 <div onClick={() => setWeatherSheet(false)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
                 </div>
