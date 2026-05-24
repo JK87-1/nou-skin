@@ -1,14 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { hapticLight } from '../utils/haptics';
 import { getBaselineBuildingState } from '../engine/HybridAnalysis';
+import EternalPearl from './icons/EternalPearl';
 
 /**
- * MeasurementGuide — 측정 직전 표준 가이드 modal.
+ * MeasurementGuide — 측정 온보딩 풀스크린.
  *
- * 같은 환경에서 측정하지 않으면 점수가 들쑥날쑥한 문제 해결.
- * 사용자가 매번 같은 5가지 조건을 지키도록 시각적 안내.
- *
- * "다시 보지 않기" 체크 시 localStorage에 저장.
+ * 분기 로직:
+ * - baseline_count = 0 → 1/3 풀버전 (시퀀스 애니메이션)
+ * - baseline_count = 1 → 2/3 단계 4 즉시
+ * - baseline_count = 2 → 3/3 단계 4 즉시
+ * - baseline_count >= 3 → 미표시 (App.jsx에서 처리)
+ * - trigger_source = "settings_reset" → 1/3부터 다시
  */
 
 const GUIDE_DISMISS_KEY = 'nou_measure_guide_dismissed';
@@ -21,207 +24,323 @@ export function resetMeasureGuideDismiss() {
   try { localStorage.removeItem(GUIDE_DISMISS_KEY); } catch {}
 }
 
-// Tabler Icons (Filled) — 공식 소스 SVG
-const IC = '#6598ef';
+// ── 단계별 카피 ──
+const COPY = {
+  1: {
+    header: '처음 마주하는 자리',
+    eyebrow: '정확한 측정을 위해',
+    headline: '측정 환경을\n맞춰주세요',
+    sub: '같은 환경에서 측정해야\n변화를 정확히 추적할 수 있어요',
+  },
+  2: {
+    header: '두 번째 비춤',
+    eyebrow: '같은 환경 기억하시죠',
+    headline: '한 번 더\n비춰주세요',
+    sub: '첫 측정과 같은 조건이\n가장 정확한 기준을 만들어요',
+  },
+  3: {
+    header: '마지막 한 번',
+    eyebrow: '곧 기준점이 완성돼요',
+    headline: '마지막으로\n비춰주세요',
+    sub: '이 세 번이\n나만의 기준점이 돼요',
+  },
+};
 
-const IconSun = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill={IC} stroke="none">
-    <path d="M12 19a1 1 0 0 1 .993 .883l.007 .117v1a1 1 0 0 1 -1.993 .117l-.007 -.117v-1a1 1 0 0 1 1 -1z" />
-    <path d="M18.313 16.91l.094 .083l.7 .7a1 1 0 0 1 -1.32 1.497l-.094 -.083l-.7 -.7a1 1 0 0 1 1.218 -1.567l.102 .07z" />
-    <path d="M7.007 16.993a1 1 0 0 1 .083 1.32l-.083 .094l-.7 .7a1 1 0 0 1 -1.497 -1.32l.083 -.094l.7 -.7a1 1 0 0 1 1.414 0z" />
-    <path d="M4 11a1 1 0 0 1 .117 1.993l-.117 .007h-1a1 1 0 0 1 -.117 -1.993l.117 -.007h1z" />
-    <path d="M21 11a1 1 0 0 1 .117 1.993l-.117 .007h-1a1 1 0 0 1 -.117 -1.993l.117 -.007h1z" />
-    <path d="M6.213 4.81l.094 .083l.7 .7a1 1 0 0 1 -1.32 1.497l-.094 -.083l-.7 -.7a1 1 0 0 1 1.217 -1.567l.102 .07z" />
-    <path d="M19.107 4.893a1 1 0 0 1 .083 1.32l-.083 .094l-.7 .7a1 1 0 0 1 -1.497 -1.32l.083 -.094l.7 -.7a1 1 0 0 1 1.414 0z" />
-    <path d="M12 2a1 1 0 0 1 .993 .883l.007 .117v1a1 1 0 0 1 -1.993 .117l-.007 -.117v-1a1 1 0 0 1 1 -1z" />
-    <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
-  </svg>
-);
-
-const IconDroplet = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill={IC} stroke="none">
-    <path d="M10.708 2.372a2.382 2.382 0 0 0 -.71 .686l-4.892 7.26c-1.981 3.314 -1.22 7.466 1.767 9.882c2.969 2.402 7.286 2.402 10.254 0c2.987 -2.416 3.748 -6.569 1.795 -9.836l-4.919 -7.306c-.722 -1.075 -2.192 -1.376 -3.295 -.686z" />
-  </svg>
-);
-
-const IconForbid = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill={IC} stroke="none">
-    <path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10 -10 10s-10 -4.477 -10 -10s4.477 -10 10 -10m3.6 5.2a1 1 0 0 0 -1.4 .2l-2.2 2.933l-2.2 -2.933a1 1 0 1 0 -1.6 1.2l2.55 3.4l-2.55 3.4a1 1 0 1 0 1.6 1.2l2.2 -2.933l2.2 2.933a1 1 0 0 0 1.6 -1.2l-2.55 -3.4l2.55 -3.4a1 1 0 0 0 -.2 -1.4" />
-  </svg>
-);
-
-const IconCamera = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill={IC} stroke="none">
-    <path d="M15 3a2 2 0 0 1 1.995 1.85l.005 .15a1 1 0 0 0 .883 .993l.117 .007h1a3 3 0 0 1 2.995 2.824l.005 .176v9a3 3 0 0 1 -2.824 2.995l-.176 .005h-14a3 3 0 0 1 -2.995 -2.824l-.005 -.176v-9a3 3 0 0 1 2.824 -2.995l.176 -.005h1a1 1 0 0 0 1 -1a2 2 0 0 1 1.85 -1.995l.15 -.005h6zm-3 7a3 3 0 0 0 -2.985 2.698l-.011 .152l-.004 .15l.004 .15a3 3 0 1 0 2.996 -3.15z" />
-  </svg>
-);
-
-const IconSmile = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill={IC} stroke="none">
-    <path d="M17 3.34a10 10 0 1 1 -14.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 14.995 -8.336zm-1.8 10.946a1 1 0 0 0 -1.414 .014a2.5 2.5 0 0 1 -3.572 0a1 1 0 0 0 -1.428 1.4a4.5 4.5 0 0 0 6.428 0a1 1 0 0 0 -.014 -1.414zm-6.19 -5.286l-.127 .007a1 1 0 0 0 .117 1.993l.127 -.007a1 1 0 0 0 -.117 -1.993zm6 0l-.127 .007a1 1 0 0 0 .117 1.993l.127 -.007a1 1 0 0 0 -.117 -1.993z" />
-  </svg>
-);
-
-const TIPS = [
-  { icon: <IconSun />,     title: '자연광',         desc: '창가·낮시간 자연광이 가장 정확. 형광등·전구는 점수 왜곡' },
-  { icon: <IconDroplet />,  title: '세안 직후',       desc: '메이크업·잔여 유분 제거 후 5분 안에 측정' },
-  { icon: <IconForbid />,   title: '메이크업 없이',   desc: '베이스·컨실러는 점수 가림. 진짜 피부 측정' },
-  { icon: <IconCamera />,   title: '정면 30cm',       desc: '얼굴이 화면 가이드에 맞도록. 너무 가깝거나 멀면 X' },
-  { icon: <IconSmile />,    title: '자연스러운 표정', desc: '입 다물고 편안하게. 미소·찡그림은 주름 점수 영향' },
+// ── 조건 리스트 ──
+const CONDITIONS = [
+  {
+    step: '하나',
+    title: '조명',
+    desc: '자연광이 가장 좋아요',
+    note: '창가 · 낮시간이 정확해요.\n형광등 · 전구는 점수에 영향을 줘요.',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
+        <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
+        <path d="M9.7 17l4.6 0" />
+      </svg>
+    ),
+  },
+  {
+    step: '둘',
+    title: '피부',
+    desc: '맨 얼굴로 측정해요',
+    note: '세안 후 5분 안에.\n메이크업 · 선크림은 점수를 가려요.',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M7.502 4a.882 .882 0 0 0 -.247 .03l-.004 .002l-.004 .002a.862 .862 0 0 0 -.21 .106c-.063 .042 -.12 .09 -.17 .144l-.745 .745a7.468 7.468 0 0 0 -2.122 5.228a7.468 7.468 0 0 0 2.122 5.228l6.879 6.879a.882 .882 0 0 0 1.248 0l6.879 -6.879a7.468 7.468 0 0 0 2.122 -5.228a7.468 7.468 0 0 0 -2.122 -5.228l-.745 -.745a.862 .862 0 0 0 -.586 -.243h-.001a.862 .862 0 0 0 -.586 .243l-3.94 3.94a1.128 1.128 0 0 1 -1.593 0l-3.94 -3.94a.862 .862 0 0 0 -.17 -.144a.862 .862 0 0 0 -.21 -.106l-.004 -.002z" />
+      </svg>
+    ),
+  },
+  {
+    step: '셋',
+    title: '자세',
+    desc: '정면 · 30cm · 편안하게',
+    note: '화면 가이드에 얼굴을 맞추세요.\n미소나 찡그림은 주름 점수에 영향을 줘요.',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M5 7h1a2 2 0 0 0 2 -2a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2" />
+        <path d="M9 13a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+      </svg>
+    ),
+  },
 ];
 
-export default function MeasurementGuide({ onStart, onClose }) {
-  const [dontShowAgain, setDontShowAgain] = useState(false);
+export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
   const buildState = (() => { try { return getBaselineBuildingState(); } catch { return null; } })();
-  const isBuilding = buildState?.stage === 'none' || buildState?.stage === 'building';
-  const buildTarget = buildState?.target || 3;
-  // modal은 측정 "직전"에 표시 — 이번에 할 측정의 회차를 보여줘야 자연.
-  // buildState.count = "이미 완료한 측정 횟수" → 다음 측정은 count + 1.
-  const upcomingShot = !buildState || buildState.stage === 'none'
-    ? 1
-    : Math.min((buildState.count || 0) + 1, buildTarget);
+
+  // baseline_count 결정
+  let baselineCount = 0;
+  if (buildState) {
+    if (buildState.stage === 'none') baselineCount = 0;
+    else if (buildState.stage === 'building') baselineCount = buildState.count || 0;
+    else if (buildState.stage === 'complete') baselineCount = 3;
+  }
+
+  // settings_reset이면 1/3부터
+  if (triggerSource === 'settings_reset') baselineCount = 0;
+
+  const step = Math.min(baselineCount + 1, 3); // 1, 2, or 3
+  const copy = COPY[step];
+
+  // 2/3, 3/3은 시퀀스 스킵 → 단계 4(전체 표시) 즉시
+  const isFullSequence = baselineCount === 0;
+
+  // 시퀀스 상태: 0=시작, 1=하나, 2=둘, 3=셋, 4=전체
+  const [seqStep, setSeqStep] = useState(isFullSequence ? 0 : 4);
+  const [ctaReady, setCtaReady] = useState(!isFullSequence);
+  const seqTimerRef = useRef(null);
+
+  // 풀 시퀀스 자동 진행
+  useEffect(() => {
+    if (!isFullSequence) return;
+
+    const delays = [800, 2200, 2200, 2200]; // 0→1, 1→2, 2→3, 3→4
+    let currentStep = 0;
+
+    const advance = () => {
+      currentStep++;
+      setSeqStep(currentStep);
+      if (currentStep >= 4) {
+        setCtaReady(true);
+        return;
+      }
+      seqTimerRef.current = setTimeout(advance, delays[currentStep]);
+    };
+
+    seqTimerRef.current = setTimeout(advance, delays[0]);
+    return () => clearTimeout(seqTimerRef.current);
+  }, [isFullSequence]);
+
+  // 탭으로 시퀀스 가속
+  const handleTapAccelerate = () => {
+    if (seqStep >= 4) return;
+    clearTimeout(seqTimerRef.current);
+    const next = seqStep + 1;
+    setSeqStep(next);
+    if (next >= 4) setCtaReady(true);
+  };
 
   const handleStart = () => {
-    if (dontShowAgain) {
-      try { localStorage.setItem(GUIDE_DISMISS_KEY, '1'); } catch {}
-    }
+    if (!ctaReady) return;
     hapticLight();
     onStart?.();
   };
 
+  const handleSkip = () => {
+    hapticLight();
+    onClose?.();
+  };
+
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 9000,
-      background: 'rgba(15,20,30,0.55)',
-      backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
-      display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-      animation: 'guideFadeIn 200ms ease-out',
-    }}>
+    <div
+      onClick={handleTapAccelerate}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 9000,
+        background: 'linear-gradient(180deg, #58aefe 0%, #8ec5f8 33%, #b8dafb 66%, #d7e9fa 100%)',
+        display: 'flex', flexDirection: 'column',
+        animation: 'mgFadeIn 300ms ease-out',
+        overflow: 'hidden',
+      }}
+    >
       <style>{`
-        @keyframes guideFadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes guideSlideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes mgFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes mgSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes mgCondIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
+
       <div style={{
-        width: '100%', maxWidth: 460,
-        background: 'linear-gradient(180deg, #ffffff 0%, #f4f8fc 100%)',
-        borderRadius: '24px 24px 0 0',
-        padding: '22px 22px calc(20px + env(safe-area-inset-bottom, 0px))',
-        boxShadow: '0 -12px 36px rgba(0,0,0,0.12)',
-        animation: 'guideSlideUp 280ms cubic-bezier(0.32,0.72,0,1)',
+        flex: 1, display: 'flex', flexDirection: 'column',
+        maxWidth: 430, width: '100%', margin: '0 auto',
+        position: 'relative',
       }}>
-        {/* Handle */}
-        <div style={{ width: 38, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.12)', margin: '0 auto 14px' }} />
 
-        {/* Baseline 구축 중 강조 카드 — 첫 3회 측정 사용자만 */}
-        {isBuilding && (
-          <div style={{
-            display: 'flex', alignItems: 'flex-start', gap: 10,
-            padding: '12px 14px', marginBottom: 16,
-            background: 'linear-gradient(135deg, rgba(101,152,239,0.14), rgba(101,152,239,0.06))',
-            border: '1px solid rgba(101,152,239,0.3)',
-            borderRadius: 14,
-          }}>
-            <span style={{ flexShrink: 0, display: 'flex' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="#6598ef" stroke="none"><path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10 -10 10s-10 -4.477 -10 -10s4.477 -10 10 -10zm0 4a6 6 0 1 0 0 12a6 6 0 0 0 0 -12zm0 3a3 3 0 1 1 0 6a3 3 0 0 1 0 -6z" /></svg></span>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{
-                fontSize: 12.5, fontWeight: 700, color: '#6598ef',
-                marginBottom: 3, letterSpacing: -0.1,
-              }}>
-                기준점 구축 중 ({upcomingShot}/{buildTarget})
-              </div>
-              <div style={{
-                fontSize: 11.5, color: 'var(--text-secondary, #4A4E58)',
-                lineHeight: 1.55, wordBreak: 'keep-all',
-              }}>
-                {buildTarget}회 측정 평균으로 정확한 기준이 만들어져요. 이 {buildTarget}회는 <strong>꼭 같은 조명·환경·시간대</strong>에서 측정해주세요.
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: 18 }}>
-          <div style={{
-            fontSize: 11, fontWeight: 700, letterSpacing: 0.5,
-            color: '#6598ef', marginBottom: 4, textTransform: 'uppercase',
-          }}>정확한 측정을 위해</div>
-          <h2 style={{
-            fontSize: 19, fontWeight: 700, color: 'var(--text-primary, #191F28)',
-            margin: 0, letterSpacing: -0.3,
-          }}>측정 환경을 맞춰주세요</h2>
-          <p style={{
-            fontSize: 12, color: 'var(--text-muted, #8B95A1)',
-            margin: '6px 0 0', lineHeight: 1.5, wordBreak: 'keep-all',
-          }}>같은 환경에서 측정해야 추세를 정확히 추적할 수 있어요.</p>
+        {/* ① 건너뛰기 */}
+        <div style={{
+          padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0',
+          display: 'flex', justifyContent: 'flex-end',
+        }}>
+          <button
+            onClick={(e) => { e.stopPropagation(); handleSkip(); }}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontSize: 12, fontWeight: 500, letterSpacing: -0.1,
+              color: 'rgba(255,255,255,0.85)', fontFamily: 'inherit',
+              padding: '8px 4px', minWidth: 44, minHeight: 44,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >건너뛰기</button>
         </div>
 
-        {/* Tips */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 18 }}>
-          {TIPS.map((t, i) => (
-            <div key={i} style={{
-              display: 'flex', gap: 12, alignItems: 'flex-start',
-              padding: '11px 14px',
-              background: 'rgba(255,255,255,0.7)',
-              border: '1px solid rgba(101,152,239,0.18)',
-              borderRadius: 14,
-            }}>
-              <div style={{
-                flexShrink: 0, width: 32,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>{t.icon}</div>
-              <div style={{ flex: 1, minWidth: 0 }}>
+        {/* ② 헤더: 오브 + 진행 정보 */}
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          padding: '8px 20px 0',
+          animation: 'mgSlideUp 500ms ease 100ms both',
+        }}>
+          {/* 오브 */}
+          <div style={{ marginBottom: 12 }}>
+            <EternalPearl size={120} animated />
+          </div>
+
+          {/* 진행 라벨 */}
+          <div style={{
+            fontSize: 10, fontWeight: 500, letterSpacing: 1.2,
+            color: 'rgba(255,255,255,0.85)',
+            textTransform: 'uppercase', marginBottom: 4,
+          }}>기준점 {step} / 3</div>
+
+          {/* 헤더 헤드라인 */}
+          <div style={{
+            fontSize: 15, fontWeight: 500, letterSpacing: -0.2,
+            color: 'white', textShadow: '0 1px 2px rgba(0,0,0,0.05)',
+          }}>{copy.header}</div>
+        </div>
+
+        {/* ③ 헤드라인 블록 */}
+        <div style={{
+          textAlign: 'center', padding: '20px 28px 0',
+          animation: 'mgSlideUp 500ms ease 200ms both',
+        }}>
+          {/* eyebrow */}
+          <div style={{
+            fontSize: 11, fontWeight: 500, letterSpacing: 0.4,
+            color: 'rgba(255,255,255,0.85)', marginBottom: 8,
+          }}>{copy.eyebrow}</div>
+
+          {/* 메인 헤드라인 */}
+          <h1 style={{
+            fontSize: 22, fontWeight: 600, letterSpacing: -0.4, lineHeight: 1.3,
+            color: 'white', margin: 0, whiteSpace: 'pre-line',
+            textShadow: '0 1px 2px rgba(0,0,0,0.05)',
+          }}>{copy.headline}</h1>
+
+          {/* 보조 카피 */}
+          <p style={{
+            fontSize: 12, lineHeight: 1.55,
+            color: 'rgba(255,255,255,0.78)',
+            margin: '10px 0 0', whiteSpace: 'pre-line',
+          }}>{copy.sub}</p>
+        </div>
+
+        {/* ④ 시퀀스 리스트 */}
+        <div style={{
+          flex: 1, padding: '24px 28px 0',
+          display: 'flex', flexDirection: 'column', gap: 0,
+        }}>
+          {CONDITIONS.map((c, i) => {
+            const condIdx = i + 1;
+            const visible = seqStep >= condIdx;
+            if (!visible) return null;
+
+            return (
+              <div
+                key={i}
+                style={{
+                  padding: '14px 0',
+                  borderBottom: i < CONDITIONS.length - 1 ? '1px solid rgba(255,255,255,0.22)' : 'none',
+                  animation: isFullSequence ? `mgCondIn 400ms cubic-bezier(0.32,0.72,0,1) both` : 'none',
+                }}
+              >
+                {/* 단계 라벨 */}
                 <div style={{
-                  fontSize: 13.5, fontWeight: 700, color: 'var(--text-primary, #191F28)',
-                  marginBottom: 1, letterSpacing: -0.1,
-                }}>{t.title}</div>
+                  fontSize: 10, fontWeight: 500, letterSpacing: 0.4,
+                  color: 'rgba(255,255,255,0.7)', marginBottom: 6,
+                }}>{c.step}</div>
+
+                {/* 아이콘 + 제목 + 설명 */}
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                  <div style={{
+                    width: 32, height: 32, borderRadius: 10,
+                    background: 'rgba(255,255,255,0.15)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0, marginTop: 1,
+                  }}>{c.icon}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontSize: 15, fontWeight: 600, letterSpacing: -0.2,
+                      color: 'white', marginBottom: 3,
+                    }}>{c.title}</div>
+                    <div style={{
+                      fontSize: 11.5, lineHeight: 1.55,
+                      color: 'rgba(255,255,255,0.78)',
+                    }}>{c.desc}</div>
+                  </div>
+                </div>
+
+                {/* 노트 */}
                 <div style={{
-                  fontSize: 11.5, color: 'var(--text-secondary, #4A4E58)',
-                  lineHeight: 1.5, wordBreak: 'keep-all',
-                }}>{t.desc}</div>
+                  marginTop: 8, marginLeft: 42,
+                  paddingLeft: 10,
+                  borderLeft: '2px solid rgba(255,255,255,0.5)',
+                }}>
+                  <div style={{
+                    fontSize: 11, lineHeight: 1.5,
+                    color: 'rgba(255,255,255,0.88)',
+                    whiteSpace: 'pre-line',
+                  }}>{c.note}</div>
+                </div>
               </div>
-            </div>
+            );
+          })}
+        </div>
+
+        {/* ⑤ 점 인디케이터 */}
+        <div style={{
+          display: 'flex', justifyContent: 'center', gap: 6,
+          padding: '16px 0 12px',
+        }}>
+          {[1, 2, 3].map(d => (
+            <div key={d} style={{
+              width: d === step ? 18 : 6, height: 6,
+              borderRadius: 3,
+              background: d === step ? 'white' : 'rgba(255,255,255,0.35)',
+              transition: 'all 300ms ease',
+            }} />
           ))}
         </div>
 
-        {/* "다음부터 안 보기" — baseline 구축 중에는 표시 X (모든 3회 가이드 받아야) */}
-        {!isBuilding && (
-          <label style={{
-            display: 'flex', alignItems: 'center', gap: 8,
-            fontSize: 12, color: 'var(--text-muted)', marginBottom: 14,
-            cursor: 'pointer', userSelect: 'none',
-          }}>
-            <input
-              type="checkbox"
-              checked={dontShowAgain}
-              onChange={e => setDontShowAgain(e.target.checked)}
-              style={{ accentColor: '#6598ef' }}
-            />
-            <span>다음부터 이 안내 안 보기</span>
-          </label>
-        )}
-
-        {/* Buttons */}
-        <div style={{ display: 'flex', gap: 8 }}>
+        {/* ⑥ CTA */}
+        <div style={{
+          padding: '0 28px calc(env(safe-area-inset-bottom, 0px) + 20px)',
+        }}>
           <button
-            onClick={onClose}
+            onClick={(e) => { e.stopPropagation(); handleStart(); }}
+            disabled={!ctaReady}
             style={{
-              flex: '0 0 30%', padding: '13px',
-              background: 'transparent', border: '1px solid rgba(0,0,0,0.1)',
-              borderRadius: 14, fontSize: 14, fontWeight: 600,
-              color: 'var(--text-muted)', cursor: 'pointer', fontFamily: 'inherit',
+              width: '100%', padding: '16px',
+              borderRadius: 16, border: 'none',
+              background: ctaReady ? 'white' : 'rgba(255,255,255,0.22)',
+              color: ctaReady ? '#1E90E8' : 'rgba(255,255,255,0.6)',
+              fontSize: 15,
+              fontWeight: ctaReady ? 600 : 500,
+              letterSpacing: -0.2,
+              cursor: ctaReady ? 'pointer' : 'default',
+              fontFamily: 'inherit',
+              transition: 'all 300ms ease',
+              minHeight: 52,
             }}
-          >나중에</button>
-          <button
-            onClick={handleStart}
-            style={{
-              flex: 1, padding: '13px',
-              background: 'linear-gradient(135deg, #6598ef, #85b0f5)',
-              border: 'none', borderRadius: 14,
-              fontSize: 14, fontWeight: 700, color: '#fff',
-              cursor: 'pointer', fontFamily: 'inherit',
-              boxShadow: '0 4px 14px rgba(101,152,239,0.32)',
-            }}
-          >지금 측정 시작</button>
+          >측정 시작</button>
         </div>
       </div>
     </div>

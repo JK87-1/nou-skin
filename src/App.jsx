@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import GlobalStyles from './design/GlobalStyles';
 import { compressImage, clearCompressCache, analyzePixels, pixelsToScores, generateDemoScores, checkPhotoQuality, generateSmartAdvice, QUALITY_ISSUE_LABELS } from './engine/PixelAnalysis';
 import { detectLandmarks } from './engine/FaceLandmarker';
-import { callVisionAI, hybridMerge, hasBaseline, getAiFallbackStats, clearAiFallbackStats } from './engine/HybridAnalysis';
+import { callVisionAI, hybridMerge, hasBaseline, getBaselineBuildingState, getAiFallbackStats, clearAiFallbackStats } from './engine/HybridAnalysis';
 import { estimateAge, preload as preloadAge } from './engine/FaceAgeEstimator';
 import { preload as preloadLandmarker } from './engine/FaceLandmarker';
 import { AnimatedNumber, ScoreRing, MetricBar, Tag, DetailPage } from './components/UIComponents';
@@ -429,9 +429,13 @@ export default function App() {
     }
   }, []);
 
-  // Smart camera opener: 가이드 dismiss됐으면 바로 카메라, 아니면 가이드 모달
+  // Smart camera opener: baseline 완료 or dismiss됐으면 바로 카메라, 아니면 온보딩
   const openCamera = useCallback(() => {
-    if (isMeasureGuideDismissed()) {
+    const bs = (() => { try { return getBaselineBuildingState(); } catch { return null; } })();
+    if (bs?.stage === 'complete' && isMeasureGuideDismissed()) {
+      proceedToCamera();
+    } else if (bs?.stage === 'complete') {
+      // baseline 완료 후에는 가이드 안 보임
       proceedToCamera();
     } else {
       setMeasureGuideOpen(true);
