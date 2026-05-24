@@ -239,11 +239,11 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
                   }}>{c.icon}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
-                      fontSize: 15, fontWeight: 600, letterSpacing: -0.2,
+                      fontSize: 19.5, fontWeight: 600, letterSpacing: -0.2,
                       color: 'white', marginBottom: 3,
                     }}>{c.title}</div>
                     <div style={{
-                      fontSize: 11.5, lineHeight: 1.55,
+                      fontSize: 15, lineHeight: 1.55,
                       color: 'rgba(255,255,255,0.78)',
                     }}>{c.desc}</div>
                   </div>
@@ -256,7 +256,7 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
                   borderLeft: '2px solid rgba(255,255,255,0.5)',
                 }}>
                   <div style={{
-                    fontSize: 11, lineHeight: 1.5,
+                    fontSize: 14.3, lineHeight: 1.5,
                     color: 'rgba(255,255,255,0.88)',
                     whiteSpace: 'pre-line',
                   }}>{c.note}</div>
