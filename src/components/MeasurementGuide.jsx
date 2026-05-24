@@ -177,9 +177,10 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
         {/* ① 헤더: 타이틀 */}
         <div style={{
           padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0',
+          textAlign: 'center',
         }}>
           <div style={{
-            fontSize: 17, fontWeight: 700, letterSpacing: -0.3,
+            fontSize: 14, fontWeight: 600,
             color: 'white', textShadow: '0 1px 2px rgba(0,0,0,0.05)',
           }}>나의 피부 측정 기준 만들기</div>
         </div>
