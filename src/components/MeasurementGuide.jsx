@@ -262,12 +262,6 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
                   animation: isFullSequence ? `mgCondIn 400ms cubic-bezier(0.32,0.72,0,1) both` : 'none',
                 }}
               >
-                {/* 단계 라벨 */}
-                <div style={{
-                  fontSize: 10, fontWeight: 500, letterSpacing: 0.4,
-                  color: 'rgba(255,255,255,0.7)', marginBottom: 6,
-                }}>{c.step}</div>
-
                 {/* 아이콘 + 제목 + 설명 */}
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                   <div style={{
