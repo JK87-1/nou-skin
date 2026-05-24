@@ -50,8 +50,8 @@ const CONDITIONS = [
   {
     step: '하나',
     title: '조명',
-    desc: '낮의 햇살이나 밝은 실내에서',
-    note: '창가 옆 자연광이나 환한 조명이 좋아요.',
+    desc: '환한 곳에서',
+    note: '낮이면 자연광, 밤이면 환한 실내.',
     icon: (
       <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
@@ -63,8 +63,8 @@ const CONDITIONS = [
   {
     step: '둘',
     title: '피부',
-    desc: '맑은 맨 얼굴 상태로',
-    note: '세안 후 5분 안, 스킨케어 전에 찍어주세요.',
+    desc: '맨 얼굴로',
+    note: '세안 후, 메이크업 없이.',
     icon: (
       <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M6.8 11a6 6 0 1 0 10.396 0l-5.197 -8l-5.2 8z" />
@@ -74,8 +74,8 @@ const CONDITIONS = [
   {
     step: '셋',
     title: '자세',
-    desc: '정면 30cm, 편안한 표정으로',
-    note: '화면 가이드에 맞추어 긴장을 툭 풀어주세요.',
+    desc: '정면, 편안한 표정',
+    note: '화면 가이드에 맞추어주세요.',
     icon: (
       <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M5 7h1a2 2 0 0 0 2 -2a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2" />
