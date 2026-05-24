@@ -32,7 +32,7 @@ export const PERSONAS = [
     short: '컨시어지',
     tagline: '데이터 기반 맞춤 에이전트',
     accent: '#A89BC9',
-    welcomeMessage: '안녕하세요. 등록 제품·측정 데이터·이전 대화를 종합해 [닉네임]님만의 맞춤 인사이트를 드릴게요.',
+    welcomeMessage: '안녕하세요. 등록 제품·측정 데이터·이전 대화를 종합해 사용자님의 맞춤 인사이트를 드릴게요.',
     systemPromptAddon: `백화점 컨시어지 톤. 5~8문장 + ## 현재상태/맞춤권유/다음예측. 등록 제품·측정·메모리·라이프스타일 cross-reference 필수.`,
   },
 ];

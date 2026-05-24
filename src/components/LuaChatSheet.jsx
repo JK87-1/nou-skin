@@ -16,6 +16,48 @@ function getGreetingMsg() {
   return '안녕하세요, 당신의 피부 상담사 루아에요. 궁금한 점이 있으면 편하게 물어보세요!';
 }
 
+// 빈 채팅 진입 시 중앙 큰 문구 — 페르소나·시간대 기반 + 랜덤. Gemini 톤.
+function pickEmptyPrompt(personaId) {
+  const hour = new Date().getHours();
+  const isMorning = hour >= 5 && hour < 11;
+  const isAfternoon = hour >= 11 && hour < 17;
+  const isEvening = hour >= 17 && hour < 22;
+  const isLateNight = hour >= 22 || hour < 5;
+
+  const CARE = [
+    '오늘 피부는 어떤가요?',
+    '편하게 얘기해 주세요',
+    '오늘 컨디션 어때요?',
+    isMorning ? '오늘 아침 피부 어때요?' : null,
+    isEvening ? '오늘 하루 피부는요?' : null,
+    isLateNight ? '잠들기 전, 마음 쓰이는 부분 있어요?' : null,
+    '요즘 신경 쓰이는 부분 있어요?',
+    '오늘 어떤 게 가장 궁금해요?',
+    '루틴 짜는 거 도와드릴까요?',
+  ];
+  const CLINIC = [
+    '어떤 부분을 진료해드릴까요?',
+    '오늘 정밀 분석이 필요한 부분이 있나요?',
+    '진단이 필요하신 증상이 있으세요?',
+    isMorning ? '아침 피부 상태에 대해 진료받고 싶은 부분이 있나요?' : null,
+    isEvening ? '오늘 저녁 어떤 부분을 진료해드릴까요?' : null,
+    '측정 결과 중 자세히 알고 싶은 항목이 있나요?',
+    '성분·기전 관련 궁금한 게 있으세요?',
+  ];
+  const CONCIERGE = [
+    '오늘 어떤 인사이트를 도와드릴까요?',
+    '등록 제품과 측정 데이터를 종합해드릴게요',
+    '오늘 가장 궁금한 부분이 있나요?',
+    isMorning ? '오늘 아침 루틴, 어떻게 짜드릴까요?' : null,
+    isEvening ? '저녁 루틴 점검해드릴까요?' : null,
+    '맞춤 루틴이 필요하신가요?',
+    '제품 라인업 최적화가 필요하시면 말씀해주세요',
+  ];
+
+  const pool = (personaId === 'clinic' ? CLINIC : personaId === 'concierge' ? CONCIERGE : CARE).filter(Boolean);
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
 // ===== AI 응답에서 [APPLY_ROUTINE] JSON 블록 추출 =====
 const TRACKER_CATEGORY_SET = new Set(['클렌저','토너','에센스','세럼','크림','선크림','마스크팩','기타']);
 function extractApplyRoutine(text) {
@@ -186,6 +228,11 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
   const [appliedRoutineKeys, setAppliedRoutineKeys] = useState(() => new Set());
   const applyingRef = useRef(new Set()); // 동기 잠금 — React state 비동기로 인한 중복 호출 방지
   const [toast, setToast] = useState(null); // { text, action: { label, onClick } | null }
+  const [emptyPrompt, setEmptyPrompt] = useState(() => pickEmptyPrompt(getActivePersonaId()));
+  // sheet open되거나 페르소나 바뀔 때 새 문구 픽
+  useEffect(() => {
+    setEmptyPrompt(pickEmptyPrompt(personaId));
+  }, [open, personaId]);
 
   const showToast = useCallback((text, action = null) => {
     setToast({ text, action });
@@ -492,13 +539,10 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
       setPersonaPickerOpen(false);
       return;
     }
+    // 페르소나만 전환 — 진행 중 대화는 그대로 유지 (사용자가 자연스럽게 톤만 바꿔서 이어감)
     setActivePersonaId(id);
     setPersonaId(id);
     setPersonaPickerOpen(false);
-    const p = getPersonaById(id);
-    setMessages([{ role: 'assistant', content: p.welcomeMessage, timestamp: Date.now() }]);
-    setInput('');
-    setPendingImages([]);
   }, [personaId]);
 
   const canSend = (input.trim() || pendingImages.length > 0) && !isLoading;
@@ -690,7 +734,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
                 fontFamily: 'var(--font-display), Pretendard, -apple-system, sans-serif',
                 maxWidth: 320,
               }}>
-                오늘 피부는 어떤가요?
+                {emptyPrompt}
               </div>
             </div>
           ) : (
