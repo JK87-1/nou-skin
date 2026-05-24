@@ -9,7 +9,7 @@ const PRODUCTS_KEY = 'nou_tracker_products';
 const CHECKS_KEY = 'nou_tracker_checks';     // 호환성: 오늘 체크만 빠르게 (기존 사용처 유지)
 const HISTORY_KEY = 'nou_tracker_history';   // 일자별 집계(완료/부분)
 const DAILY_CHECKS_KEY = 'nou_tracker_daily'; // 일자별 개별 제품 체크 — 과거 날짜 수정용
-const MAX_PRODUCTS = 20;
+const MAX_PRODUCTS = 30;
 const HISTORY_RETENTION_DAYS = 60; // 케어 캘린더에서 거슬러 올라갈 수 있는 기간
 
 // ===== 카테고리 =====
@@ -52,7 +52,7 @@ export function saveProduct(product) {
   if (idx >= 0) {
     products[idx] = { ...products[idx], ...product };
   } else {
-    if (products.length >= MAX_PRODUCTS) throw new Error('최대 20개까지 등록할 수 있어요.');
+    if (products.length >= MAX_PRODUCTS) throw new Error(`최대 ${MAX_PRODUCTS}개까지 등록할 수 있어요.`);
     const newProduct = {
       id: String(Date.now()),
       brand: '',
