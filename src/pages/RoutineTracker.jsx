@@ -10,7 +10,7 @@ import {
   TRACKER_CATEGORIES, getProducts, saveProduct, deleteProduct,
   getProductsForMode, getTrackerChecks, toggleTrackerCheck,
   getTrackerProgress, getTrackerWeekly,
-  computeAllCorrelations, compressProductThumb,
+  computeAllCorrelations, compressProductThumb, dedupeProductsByName,
 } from '../storage/TrackerStorage';
 import CareRecommendation from '../components/CareRecommendation';
 import ProductRegisteredModal from '../components/ProductRegisteredModal';
@@ -1097,6 +1097,20 @@ export default function RoutineTracker({ themeColors, onBack }) {
   // 제품 저장 핸들러 (누끼 이미지 먼저 가져온 후 저장)
   const [saving, setSaving] = useState(false);
   const [justRegistered, setJustRegistered] = useState(null); // { product, totalCount } — 등록 완료 모달
+  const [dedupeToast, setDedupeToast] = useState(null); // 첫 마운트 시 중복 정리됐을 때 알림
+
+  // 첫 마운트 시 중복 제품(같은 brand+name) 자동 정리 — 과거에 채팅 카드 다중 클릭 등으로 쌓인 데이터 cleanup
+  const dedupeDoneRef = useRef(false);
+  useEffect(() => {
+    if (dedupeDoneRef.current) return;
+    dedupeDoneRef.current = true;
+    const { products: cleaned, removed } = dedupeProductsByName();
+    if (removed > 0) {
+      setProducts(cleaned);
+      setDedupeToast(`중복 등록된 ${removed}개 자동 정리됐어요`);
+      setTimeout(() => setDedupeToast(null), 3000);
+    }
+  }, []);
 
   // ===== 기존 제품 성분 자동 보강 (백그라운드 순차) =====
   // ingredients가 비어있는 등록 제품에 대해 /api/product-ingredients를 순차 호출.
@@ -1588,6 +1602,21 @@ export default function RoutineTracker({ themeColors, onBack }) {
           totalCount={justRegistered.totalCount}
           onClose={() => setJustRegistered(null)}
         />
+      )}
+      {dedupeToast && (
+        <div style={{
+          position: 'fixed', left: '50%', bottom: 'calc(110px + env(safe-area-inset-bottom,0px))',
+          transform: 'translateX(-50%)',
+          background: '#1F2937', color: '#fff',
+          padding: '12px 18px', borderRadius: 22,
+          fontSize: 13.5, fontWeight: 600, letterSpacing: -0.2,
+          boxShadow: '0 8px 28px rgba(0,0,0,0.28)',
+          zIndex: 10500, pointerEvents: 'none', maxWidth: '86vw', textAlign: 'center',
+          animation: 'dedupeRise 220ms ease-out',
+        }}>
+          <style>{`@keyframes dedupeRise { from { opacity:0; transform: translate(-50%, 8px); } to { opacity:1; transform: translate(-50%, 0); } }`}</style>
+          {dedupeToast}
+        </div>
       )}
     </div>
   );

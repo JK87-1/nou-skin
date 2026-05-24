@@ -183,6 +183,7 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
   const [personaId, setPersonaId] = useState(() => getActivePersonaId());
   const [personaPickerOpen, setPersonaPickerOpen] = useState(false);
   const [appliedRoutineKeys, setAppliedRoutineKeys] = useState(() => new Set());
+  const applyingRef = useRef(new Set()); // 동기 잠금 — React state 비동기로 인한 중복 호출 방지
   const [toast, setToast] = useState(null);
 
   const showToast = useCallback((text) => {
@@ -192,6 +193,9 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
 
   const handleApplyRoutine = useCallback((messageKey, routine) => {
     if (!routine) return;
+    // 동기 잠금: 이미 적용 중이거나 적용 완료된 카드는 즉시 차단
+    if (applyingRef.current.has(messageKey)) return;
+    applyingRef.current.add(messageKey);
     const existing = getProducts();
     const all = [...(routine.morning || []), ...(routine.night || [])];
     // dedupe by brand+name (block-level)

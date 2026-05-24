@@ -46,15 +46,34 @@ export function getProduct(id) {
   return getProducts().find(p => p.id === id) || null;
 }
 
-export function saveProduct(product) {
+function normKey(brand, name) {
+  return `${(brand || '').replace(/\s+/g, '').toLowerCase()}|${(name || '').replace(/\s+/g, '').toLowerCase()}`;
+}
+
+export function saveProduct(product, opts = {}) {
   const products = getProducts();
   const idx = products.findIndex(p => p.id === product.id);
   if (idx >= 0) {
     products[idx] = { ...products[idx], ...product };
   } else {
+    // 신규 등록 시 같은 brand+name이 이미 있으면 기본은 추가 X (중복 방지).
+    // 사용자가 명시적으로 같은 이름 등록 의도면 opts.allowDuplicate=true 전달.
+    const dupIdx = products.findIndex(p => normKey(p.brand, p.name) === normKey(product.brand, product.name));
+    if (dupIdx >= 0 && !opts.allowDuplicate) {
+      // 기존 제품 보강 (imageThumb·ingredients가 비어 있고 새 값 있으면 채움)
+      const existing = products[dupIdx];
+      products[dupIdx] = {
+        ...existing,
+        imageThumb: existing.imageThumb || product.imageThumb || null,
+        ingredients: existing.ingredients || product.ingredients || null,
+        category: existing.category && existing.category !== '기타' ? existing.category : (product.category || existing.category),
+      };
+      localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
+      return products;
+    }
     if (products.length >= MAX_PRODUCTS) throw new Error(`최대 ${MAX_PRODUCTS}개까지 등록할 수 있어요.`);
     const newProduct = {
-      id: String(Date.now()),
+      id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
       brand: '',
       name: '',
       category: '기타',
@@ -68,6 +87,28 @@ export function saveProduct(product) {
   }
   localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
   return products;
+}
+
+/**
+ * 기존 등록 제품에서 같은 brand+name 중복 제거.
+ * 첫 마운트 마이그레이션용 — 가장 먼저 등록된 것만 남기고 나머지 archive.
+ * 반환: { products: 최종 배열, removed: 제거된 개수 }
+ */
+export function dedupeProductsByName() {
+  const products = getProducts();
+  const seen = new Set();
+  const out = [];
+  let removed = 0;
+  for (const p of products) {
+    const key = normKey(p.brand, p.name);
+    if (seen.has(key)) { removed++; continue; }
+    seen.add(key);
+    out.push(p);
+  }
+  if (removed > 0) {
+    localStorage.setItem(PRODUCTS_KEY, JSON.stringify(out));
+  }
+  return { products: out, removed };
 }
 
 export function deleteProduct(id) {
