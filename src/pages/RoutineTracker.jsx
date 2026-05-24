@@ -1260,7 +1260,10 @@ export default function RoutineTracker({ themeColors, onBack }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // 첫 마운트 1회만
 
+  const savingRef = useRef(false); // 동기 잠금 — setSaving 비동기로 인한 중복 호출 차단
   const handleSaveProduct = async (formData) => {
+    if (savingRef.current) return; // 진행 중인 등록 있으면 두 번째 클릭 무시
+    savingRef.current = true;
     setSaving(true);
     try {
       // 1) 누끼 이미지 — 네이버 쇼핑 (수동 등록일 때만)
@@ -1326,6 +1329,7 @@ export default function RoutineTracker({ themeColors, onBack }) {
       alert(err.message || '제품 저장에 실패했어요.');
     }
     setSaving(false);
+    savingRef.current = false;
   };
 
   const handleEditProduct = (formData) => {

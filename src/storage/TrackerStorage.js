@@ -79,15 +79,17 @@ export function saveProduct(product, opts = {}) {
     // 사용자가 명시적으로 같은 이름 등록 의도면 opts.allowDuplicate=true 전달.
     const dupIdx = products.findIndex(p => normKey(p.brand, p.name) === normKey(product.brand, product.name));
     if (dupIdx >= 0 && !opts.allowDuplicate) {
-      // 기존 제품 보강 (imageThumb·ingredients가 비어 있고 새 값 있으면 채움)
+      // 기존 제품 보강 (ingredients가 비어 있고 새 값 있으면 채움)
       const existing = products[dupIdx];
       products[dupIdx] = {
         ...existing,
-        imageThumb: existing.imageThumb || product.imageThumb || null,
         ingredients: existing.ingredients || product.ingredients || null,
         category: existing.category && existing.category !== '기타' ? existing.category : (product.category || existing.category),
       };
       localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
+      // pendingThumb가 있고 기존에 IDB thumb 없었으면 기존 제품 id로 저장
+      if (pendingThumb) setProductThumb(existing.id, pendingThumb);
+      emitProductsChanged();
       return products;
     }
     if (products.length >= MAX_PRODUCTS) throw new Error(`최대 ${MAX_PRODUCTS}개까지 등록할 수 있어요.`);
