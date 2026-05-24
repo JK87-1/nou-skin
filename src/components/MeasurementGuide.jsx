@@ -226,7 +226,7 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
                 key={i}
                 style={{
                   padding: '16px 16px',
-                  marginBottom: i < CONDITIONS.length - 1 ? 10 : 0,
+                  marginBottom: i < CONDITIONS.length - 1 ? 15 : 0,
                   background: 'rgba(34,113,208,0.05)',
                   borderRadius: 16,
                   animation: isFullSequence ? `mgCondIn 400ms cubic-bezier(0.32,0.72,0,1) both` : 'none',
