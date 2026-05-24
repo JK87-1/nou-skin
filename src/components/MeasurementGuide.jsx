@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { hapticLight } from '../utils/haptics';
 import { getBaselineBuildingState } from '../engine/HybridAnalysis';
+import EternalPearl from './icons/EternalPearl';
 
 /**
  * MeasurementGuide — 측정 온보딩 풀스크린.
@@ -28,8 +29,8 @@ const COPY = {
   1: {
     header: '처음 마주하는 자리',
     eyebrow: '',
-    headline: '정확한 변화 추적을 위해',
-    sub: '매번 같은 환경에서 측정해주세요',
+    headline: '정확한 변화추적을 위해',
+    sub: '같은 환경에서 측정해주세요.',
   },
   2: {
     header: '두 번째 비춤',
@@ -179,8 +180,10 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
     >
       <style>{`
         @keyframes mgFadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes mgSlideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes mgCondIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes mgSlideUp { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes mgCondIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes mgCtaFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes mgCtaPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
       `}</style>
 
       <div style={{
@@ -189,60 +192,52 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
         position: 'relative',
       }}>
 
-        {/* ① 상단 여백 */}
-        <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0' }} />
-
-        {/* ② 점 인디케이터 */}
-        <div style={{
-          display: 'flex', flexDirection: 'column', alignItems: 'center',
-          padding: '4px 0 0',
-        }}>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
-            {[1, 2, 3].map(d => (
-              <div key={d} style={{
-                width: 8, height: 8,
-                borderRadius: '50%',
-                background: d <= step ? 'white' : 'transparent',
-                border: d <= step ? '1.5px solid white' : '1.5px solid rgba(255,255,255,0.4)',
-                transition: 'all 300ms ease',
-              }} />
-            ))}
+        {/* ① 상단 쉐브론 + 점 인디케이터 */}
+        <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', alignItems: 'center' }}>
+          <div onClick={(e) => { e.stopPropagation(); handleSkip(); }} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
           </div>
-          <div style={{
-            fontSize: 10, fontWeight: 500,
-            color: 'rgba(255,255,255,0.7)', letterSpacing: 0.2,
-          }}>{step} / 3번째 측정</div>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 4 }}>
+              {[1, 2, 3].map(d => (
+                <div key={d} style={{
+                  width: 8, height: 8,
+                  borderRadius: '50%',
+                  background: d <= step ? 'white' : 'transparent',
+                  border: d <= step ? '1.5px solid white' : '1.5px solid rgba(255,255,255,0.4)',
+                  transition: 'all 300ms ease',
+                }} />
+              ))}
+            </div>
+            <div style={{
+              fontSize: 10, fontWeight: 500,
+              color: 'rgba(255,255,255,0.7)', letterSpacing: 0.2,
+            }}>{step} / 3번째 측정</div>
+          </div>
+          <div style={{ width: 36 }} />
         </div>
 
         {/* ③ 헤드라인 블록 */}
         <div style={{
-          textAlign: 'center', padding: '65px 28px 0',
+          textAlign: 'center', padding: '50px 28px 0',
           animation: 'mgSlideUp 500ms ease 200ms both',
         }}>
-          {/* eyebrow */}
           <div style={{
-            fontSize: 11, fontWeight: 500, letterSpacing: 0.4,
-            color: 'rgba(255,255,255,0.85)', marginBottom: 8,
-          }}>{copy.eyebrow}</div>
-
-          {/* 메인 헤드라인 */}
-          <h1 style={{
-            fontSize: 22, fontWeight: 600, letterSpacing: -0.4, lineHeight: 1.3,
-            color: 'white', margin: 0, whiteSpace: 'pre-line',
+            fontSize: 20, fontWeight: 600, letterSpacing: -0.3, lineHeight: 1.4,
+            color: 'white',
             textShadow: '0 1px 2px rgba(0,0,0,0.05)',
-          }}>{copy.headline}</h1>
-
-          {/* 보조 카피 */}
-          <p style={{
-            fontSize: 12, lineHeight: 1.55,
-            color: 'rgba(255,255,255,0.78)',
-            margin: '10px 0 0', whiteSpace: 'pre-line',
-          }}>{copy.sub}</p>
+          }}>{copy.headline}</div>
+          <div style={{
+            fontSize: 20, fontWeight: 600, letterSpacing: -0.3, lineHeight: 1.4,
+            color: 'white',
+            textShadow: '0 1px 2px rgba(0,0,0,0.05)',
+          }}>{copy.sub}</div>
         </div>
 
         {/* ④ 시퀀스 리스트 */}
         <div style={{
-          flex: 1, padding: '60px 28px 0',
+          padding: '0 28px',
+          marginTop: 63,
           display: 'flex', flexDirection: 'column', gap: 0,
         }}>
           {CONDITIONS.map((c, i) => {
@@ -254,7 +249,7 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
               <div
                 key={i}
                 style={{
-                  padding: '18px 0',
+                  padding: '12px 0',
                   animation: isFullSequence ? `mgCondIn 600ms ease both` : 'none',
                 }}
               >
@@ -262,16 +257,16 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
                   <div style={{
                     width: 24, height: 24,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    flexShrink: 0, marginTop: 1, opacity: 0.85,
+                    flexShrink: 0, marginTop: 1, marginLeft: 20, opacity: 0.85,
                   }}>{c.icon}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
-                      fontSize: 17, fontWeight: 700, letterSpacing: -0.2,
+                      fontSize: 18, fontWeight: 700, letterSpacing: -0.2,
                       color: 'white', marginBottom: 4,
                     }}>{c.title}</div>
                     <div style={{
-                      fontSize: 13, lineHeight: 1.55,
-                      color: 'rgba(255,255,255,0.65)',
+                      fontSize: 14, lineHeight: 1.5,
+                      color: 'rgba(255,255,255,0.6)',
                     }}>{c.desc}</div>
                   </div>
                 </div>
@@ -282,37 +277,17 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
 
         {/* ⑥ CTA + 건너뛰기 */}
         {ctaReady && <div style={{
-          padding: '0 28px calc(env(safe-area-inset-bottom, 0px) + 12px)',
+          padding: '0 28px calc(env(safe-area-inset-bottom, 0px) + 28px)',
           display: 'flex', flexDirection: 'column', alignItems: 'center',
-          animation: 'mgCondIn 600ms ease both',
+          animation: 'mgCtaFadeIn 1500ms ease-out both',
         }}>
-          <button
+          {/* Pearl Orb CTA */}
+          <div
             onClick={(e) => { e.stopPropagation(); handleStart(); }}
-            disabled={!ctaReady}
-            style={{
-              width: '100%', padding: '16px',
-              borderRadius: 16, border: 'none',
-              background: ctaReady ? 'white' : 'rgba(255,255,255,0.22)',
-              color: ctaReady ? '#1E90E8' : 'rgba(255,255,255,0.6)',
-              fontSize: 18,
-              fontWeight: ctaReady ? 600 : 500,
-              letterSpacing: -0.2,
-              cursor: ctaReady ? 'pointer' : 'default',
-              fontFamily: 'inherit',
-              transition: 'all 300ms ease',
-              minHeight: 52,
-            }}
-          >측정 시작</button>
-          <button
-            onClick={(e) => { e.stopPropagation(); handleSkip(); }}
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              fontSize: 11, fontWeight: 400,
-              color: 'rgba(0,0,0,0.1)', fontFamily: 'inherit',
-              padding: '12px 16px',
-              minHeight: 36,
-            }}
-          >건너뛰기</button>
+            style={{ cursor: 'pointer', marginTop: 68, animation: 'mgCtaPulse 3s ease-in-out 1s infinite' }}
+          >
+            <EternalPearl size={156} animated />
+          </div>
         </div>}
       </div>
     </div>

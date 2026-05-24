@@ -137,6 +137,9 @@ const orbStyles = `
 
 export default function EternalPearl({ size = 280, animated = true }) {
   const orbSize = Math.round(size * 0.85);
+  const scale = size / 280;
+  const blobBlur = Math.round(24 * scale);
+  const glowBlur = Math.round(18 * scale);
 
   return (
     <>
@@ -158,14 +161,14 @@ export default function EternalPearl({ size = 280, animated = true }) {
             mask: 'radial-gradient(circle, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 72%)',
             WebkitMask: 'radial-gradient(circle, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 72%)',
           }}>
-            <div className="lua-blob lua-blob-1" />
-            <div className="lua-blob lua-blob-2" />
-            <div className="lua-blob lua-blob-3" />
-            <div className="lua-blob lua-blob-4" />
-            <div className="lua-blob lua-blob-5a" />
-            <div className="lua-blob lua-blob-5b" />
-            <div className="lua-blob lua-blob-5c" />
-            <div className="lua-blob lua-blob-5d" />
+            <div className="lua-blob lua-blob-1" style={{ filter: `blur(${blobBlur}px)`, WebkitFilter: `blur(${blobBlur}px)` }} />
+            <div className="lua-blob lua-blob-2" style={{ filter: `blur(${blobBlur}px)`, WebkitFilter: `blur(${blobBlur}px)` }} />
+            <div className="lua-blob lua-blob-3" style={{ filter: `blur(${blobBlur}px)`, WebkitFilter: `blur(${blobBlur}px)` }} />
+            <div className="lua-blob lua-blob-4" style={{ filter: `blur(${blobBlur}px)`, WebkitFilter: `blur(${blobBlur}px)` }} />
+            <div className="lua-blob lua-blob-5a" style={{ filter: `blur(${glowBlur}px)`, WebkitFilter: `blur(${glowBlur}px)` }} />
+            <div className="lua-blob lua-blob-5b" style={{ filter: `blur(${glowBlur}px)`, WebkitFilter: `blur(${glowBlur}px)` }} />
+            <div className="lua-blob lua-blob-5c" style={{ filter: `blur(${glowBlur}px)`, WebkitFilter: `blur(${glowBlur}px)` }} />
+            <div className="lua-blob lua-blob-5d" style={{ filter: `blur(${glowBlur}px)`, WebkitFilter: `blur(${glowBlur}px)` }} />
           </div>
         </div>
       </div>
