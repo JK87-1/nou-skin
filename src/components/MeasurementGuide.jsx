@@ -174,12 +174,8 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
         position: 'relative',
       }}>
 
-        {/* ① 헤더: 뒤로가기 */}
-        <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', alignItems: 'center' }}>
-          <div onClick={(e) => { e.stopPropagation(); handleSkip(); }} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-          </div>
-        </div>
+        {/* ① 상단 여백 */}
+        <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0' }} />
 
         {/* ② 점 인디케이터 */}
         <div style={{
