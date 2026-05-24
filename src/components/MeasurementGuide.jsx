@@ -114,7 +114,7 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
   useEffect(() => {
     if (!isFullSequence) return;
 
-    const delays = [800, 2200, 2200, 2200]; // 0→1, 1→2, 2→3, 3→4
+    const delays = [800, 1000, 2200, 1000]; // 0→1, 1→2, 2→3, 3→4
     let currentStep = 0;
 
     const advance = () => {
