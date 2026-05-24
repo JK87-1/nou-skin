@@ -40,6 +40,24 @@ self.addEventListener('push', (event) => {
     },
   };
 
+  // 서버 푸시(weather 타입) 도착 시 로컬 스케줄러와 중복 방지
+  if (type === 'weather') {
+    const now = new Date();
+    const hour = now.getHours();
+    const today = now.toISOString().split('T')[0];
+    // 클라이언트 localStorage에 기록 (서비스워커에서는 직접 접근 불가 → postMessage)
+    event.waitUntil(
+      self.registration.showNotification(title, options).then(() => {
+        return self.clients.matchAll({ type: 'window' }).then((clients) => {
+          clients.forEach((client) => {
+            client.postMessage({ type: 'weather-push-received', hour, date: today });
+          });
+        });
+      })
+    );
+    return;
+  }
+
   event.waitUntil(self.registration.showNotification(title, options));
 });
 
