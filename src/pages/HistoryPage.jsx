@@ -1524,17 +1524,33 @@ function RoutineChecklist() {
 
   // (thumb 백그라운드 보강은 RoutineTracker(화장대) 마운트 시에만 처리 — 그쪽에서 IDB에 저장하면 케어도 자동 반영)
 
-  // 케어 row 삭제 핸들러 — 추천 루틴이면 removeRoutine, 등록 제품이면 deleteProduct
+  // 케어 row 삭제 — 두 storage 모두 안전하게 처리 (type 매칭 오류로 누락되는 케이스 방지)
   const handleSwipeDelete = (item) => {
-    if (item.type === 'product') {
-      deleteProduct(item.id);
-      // products는 매 render 시 getProductsForMode로 다시 fetch되므로 force re-render만
-      forceTick(t => t + 1);
-    } else {
-      const updated = myRoutines.filter(r => !(r.id === item.id && r.mode === mode));
-      localStorage.setItem('lua_my_routines', JSON.stringify(updated));
-      setMyRoutines(updated);
-    }
+    // 1) TrackerStorage products에서 시도
+    try { deleteProduct(item.id); } catch {}
+    // 2) myRoutines에서도 같은 id 모두 제거 (mode 무관 — 다른 mode에 남아있어도 클린업)
+    try {
+      const raw = JSON.parse(localStorage.getItem('lua_my_routines') || '[]');
+      const cleaned = raw.filter(r => r.id !== item.id);
+      if (cleaned.length !== raw.length) {
+        localStorage.setItem('lua_my_routines', JSON.stringify(cleaned));
+        setMyRoutines(cleaned);
+      }
+    } catch {}
+    // 3) manual order에서도 제거
+    try {
+      const orderMap = JSON.parse(localStorage.getItem('lua_care_manual_order') || '{}');
+      let changed = false;
+      Object.keys(orderMap).forEach(m => {
+        const before = orderMap[m]?.length || 0;
+        if (Array.isArray(orderMap[m])) {
+          orderMap[m] = orderMap[m].filter(id => id !== item.id);
+          if (orderMap[m].length !== before) changed = true;
+        }
+      });
+      if (changed) localStorage.setItem('lua_care_manual_order', JSON.stringify(orderMap));
+    } catch {}
+    forceTick(t => t + 1);
   };
 
   // 순서 변경 — 사용자 manual order를 localStorage에 저장. allItems 정렬 시 우선 적용.
