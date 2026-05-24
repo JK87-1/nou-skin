@@ -1,5 +1,15 @@
+import { useCallback } from 'react';
+
 export default function TabBar({ activeTab, onTabChange, themeColors, colorMode }) {
   const c = (active) => active ? '#0f0f0f' : '#d0d0d0';
+  const tabBarRef = useCallback((node) => {
+    if (node) {
+      const update = () => document.documentElement.style.setProperty('--tab-bar-h', node.offsetHeight + 'px');
+      update();
+      const ro = new ResizeObserver(update);
+      ro.observe(node);
+    }
+  }, []);
 
   const leftTabs = [
     {
@@ -69,7 +79,7 @@ export default function TabBar({ activeTab, onTabChange, themeColors, colorMode 
   );
 
   return (
-    <nav className="tab-bar">
+    <nav className="tab-bar" ref={tabBarRef}>
       {leftTabs.map(renderTab)}
       {rightTabs.map(renderTab)}
     </nav>
