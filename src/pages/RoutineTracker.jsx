@@ -569,8 +569,7 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
         });
         if (lastQueryRef.current !== q) return;
         if (!r.ok || !r.body) {
-          const data = await r.json().catch(() => ({}));
-          setSearchError(data.error || '검색에 실패했어요');
+          setSearchError(local.length > 0 ? '' : 'AI 검색이 잠깐 안 돼요. 그대로 입력해도 등록돼요.');
           setSearchLoading(false);
           return;
         }
@@ -593,7 +592,8 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
             let evt;
             try { evt = JSON.parse(dataStr); } catch { continue; }
             if (evt.error) {
-              setSearchError(evt.error);
+              // raw OpenAI 에러 노출 X. 로컬 결과 있으면 에러 자체 숨김
+              setSearchError(local.length > 0 ? '' : 'AI 검색이 잠깐 안 돼요. 그대로 입력해도 등록돼요.');
               continue;
             }
             if (evt.product) {
@@ -611,7 +611,7 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
         setSearchLoading(false);
       } catch (e) {
         if (lastQueryRef.current !== q) return;
-        setSearchError('네트워크 오류로 검색이 안 됐어요');
+        setSearchError(local.length > 0 ? '' : '네트워크가 잠깐 불안정해요. 그대로 입력해도 돼요.');
         setSearchLoading(false);
       }
     }, 180);
