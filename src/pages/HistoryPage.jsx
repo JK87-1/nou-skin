@@ -31,6 +31,7 @@ import BeforeAfterSlider from '../components/BeforeAfterSlider';
 import DailyMission from '../components/DailyMission';
 import { getProducts, getProductsForMode, getTrackerChecks, toggleTrackerCheck, getTrackerProgress, bulkToggleCheck, deleteProduct } from '../storage/TrackerStorage';
 import SwipeableRow from '../components/SwipeableRow';
+import { getAllProductThumbs } from '../storage/ImageStore';
 import { hapticLight, hapticSelection, hapticMedium } from '../utils/haptics';
 // CareRecommendation은 화장대(RoutineTracker)로 이동됨
 import { ChartIcon, CameraIcon, MicroscopeIcon, SparkleIcon, DiamondIcon, DropletIcon, RulerIcon, PaletteIcon, LotionIcon, EyeIcon, BubbleIcon, TargetIcon, ClockIcon, LuaMiniIcon } from '../components/icons/PastelIcons';
@@ -1503,6 +1504,22 @@ function RoutineChecklist() {
   const [detailItem, setDetailItem] = useState(null); // item being configured
   const [, forceTick] = useState(0); // 채팅 카드에서 제품 등록 시 강제 re-render trigger
   const [openSwipeRowId, setOpenSwipeRowId] = useState(null); // 현재 열린 swipe row (한 번에 하나)
+  const [thumbMap, setThumbMap] = useState(() => new Map()); // IDB 누끼 이미지
+
+  // IDB에서 product thumb 로드 + 등록 변경 이벤트 시 새로 받음
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const map = await getAllProductThumbs();
+        if (!cancelled) setThumbMap(map);
+      } catch {}
+    };
+    load();
+    const onChanged = () => load();
+    window.addEventListener('lua:tracker-products-changed', onChanged);
+    return () => { cancelled = true; window.removeEventListener('lua:tracker-products-changed', onChanged); };
+  }, []);
 
   // 케어 row 삭제 핸들러 — 추천 루틴이면 removeRoutine, 등록 제품이면 deleteProduct
   const handleSwipeDelete = (item) => {
@@ -1620,7 +1637,14 @@ function RoutineChecklist() {
 
   const allItemsRaw = [
     ...myRoutines.filter(r => r.mode === mode),
-    ...products.map(p => ({ id: p.id, name: `${p.brand} ${p.name}`, icon: '', type: 'product', category: p.category })),
+    ...products.map(p => ({
+      id: p.id,
+      name: `${p.brand} ${p.name}`,
+      icon: '',
+      type: 'product',
+      category: p.category,
+      imageThumb: p.imageThumb || thumbMap.get(String(p.id)) || null,
+    })),
   ];
 
   // ===== 자동 표준 정렬 (스킨케어 순서) =====
@@ -2010,7 +2034,26 @@ function RoutineChecklist() {
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontFamily: 'inherit',
                   }}>{i + 1}</div>
-                  <span style={{ fontSize: 18 }}>{item.icon}</span>
+                  {/* 누끼 이미지(등록 제품) 또는 카테고리 아이콘/이모지 */}
+                  {item.imageThumb ? (
+                    <img
+                      src={item.imageThumb}
+                      alt=""
+                      style={{ width: 32, height: 32, borderRadius: 8, objectFit: 'cover', flexShrink: 0, background: '#fff' }}
+                      onError={(e) => {
+                        const parent = e.currentTarget.parentNode;
+                        if (parent) {
+                          const fb = document.createElement('div');
+                          fb.style.cssText = 'width:32px;height:32px;border-radius:8px;background:rgba(101,152,239,0.1);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;';
+                          fb.textContent = '';
+                          parent.insertBefore(fb, e.currentTarget);
+                          e.currentTarget.remove();
+                        }
+                      }}
+                    />
+                  ) : (
+                    <span style={{ fontSize: 18, width: 22, textAlign: 'center', flexShrink: 0 }}>{item.icon}</span>
+                  )}
                   <div onClick={() => setDetailItem(item)} style={{ flex: 1, cursor: 'pointer' }}>
                     <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', textDecoration: checked ? 'line-through' : 'none' }}>{item.name}</div>
                     <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>

@@ -10,10 +10,11 @@ import {
   TRACKER_CATEGORIES, getProducts, saveProduct, deleteProduct,
   getProductsForMode, getTrackerChecks, toggleTrackerCheck,
   getTrackerProgress, getTrackerWeekly,
-  computeAllCorrelations, compressProductThumb, dedupeProductsByName,
+  computeAllCorrelations, compressProductThumb, dedupeProductsByName, reorderProducts,
 } from '../storage/TrackerStorage';
 import CareRecommendation from '../components/CareRecommendation';
 import ProductRegisteredModal from '../components/ProductRegisteredModal';
+import SwipeableRow from '../components/SwipeableRow';
 import { hapticLight } from '../utils/haptics';
 import { getAllProductThumbs, migrateThumbsFromLocalStorage } from '../storage/ImageStore';
 import { PRODUCTS } from '../data/ProductCatalog';
@@ -1153,6 +1154,28 @@ export default function RoutineTracker({ themeColors, onBack }) {
   const [refreshSpinning, setRefreshSpinning] = useState(false);
   const routineRef = useRef(null);
   const addBtnRef = useRef(null);
+  const [openSwipeRowId, setOpenSwipeRowId] = useState(null);
+
+  // 화장대 카드 좌/우 스와이프 핸들러
+  const handleProductSwipeDelete = (id) => {
+    const updated = deleteProduct(id);
+    setProducts(updated.map(p => ({ ...p, imageThumb: p.imageThumb || null })));
+    setOpenSwipeRowId(null);
+  };
+  const handleProductSwipeMove = (id, direction) => {
+    const ids = products.map(p => p.id);
+    const idx = ids.indexOf(id);
+    if (idx < 0) return;
+    const target = direction === 'up' ? idx - 1 : idx + 1;
+    if (target < 0 || target >= ids.length) return;
+    const reordered = [...ids];
+    [reordered[idx], reordered[target]] = [reordered[target], reordered[idx]];
+    const updated = reorderProducts(reordered);
+    // IDB thumb hydrate
+    getAllProductThumbs().then(map => {
+      setProducts(updated.map(p => ({ ...p, imageThumb: map.get(String(p.id)) || null })));
+    });
+  };
 
   // 등록·삭제·수정 시 펼친 루틴 자동 갱신 (refreshKey ↑) — 사용자가 명시적으로 새로고침 안 눌러도 즉시 반영
   const lastProductSignatureRef = useRef('');
@@ -1474,11 +1497,20 @@ export default function RoutineTracker({ themeColors, onBack }) {
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, padding: 10 }}>
-              {products.map((p) => {
+              {products.map((p, pIdx) => {
                 const cat = getCat(p.category);
                 const days = Math.max(0, Math.floor((Date.now() - new Date(p.startDate)) / 86400000));
                 return (
-                  <div key={p.id} onClick={() => setSelectedProduct(p)} style={{
+                <div key={p.id} style={{ borderRadius: 18, overflow: 'hidden' }}>
+                <SwipeableRow
+                  rowId={p.id}
+                  openRowId={openSwipeRowId}
+                  setOpenRowId={setOpenSwipeRowId}
+                  onDelete={() => handleProductSwipeDelete(p.id)}
+                  onMoveUp={pIdx > 0 ? () => handleProductSwipeMove(p.id, 'up') : null}
+                  onMoveDown={pIdx < products.length - 1 ? () => handleProductSwipeMove(p.id, 'down') : null}
+                >
+                  <div onClick={() => setSelectedProduct(p)} style={{
                     background: 'rgba(255,255,255,0.42)', borderRadius: 18,
                     backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
                     border: '1px solid rgba(255,255,255,0.4)',
@@ -1514,6 +1546,8 @@ export default function RoutineTracker({ themeColors, onBack }) {
                       {p.category} · {days}일째
                     </div>
                   </div>
+                </SwipeableRow>
+                </div>
                 );
               })}
               </div>
