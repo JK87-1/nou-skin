@@ -14,6 +14,7 @@ import {
 } from '../storage/TrackerStorage';
 import CareRecommendation from '../components/CareRecommendation';
 import { PRODUCTS } from '../data/ProductCatalog';
+import { KOREAN_PRODUCTS } from '../data/KoreanProducts';
 
 // 네이버 쇼핑에서 제품 누끼 이미지 + 정확한 브랜드명 검색
 async function fetchProductInfo(brand, name) {
@@ -471,30 +472,62 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
   const lastQueryRef = useRef('');
   const cacheRef = useRef(new Map()); // query → results
 
-  // 로컬 매칭 — ProductCatalog + 사용자 기존 등록 제품
+  // 로컬 매칭 — KOREAN_PRODUCTS + ProductCatalog. 0ms 즉시 응답.
+  // 매칭 점수: brand 정확(100) > brand 시작(60) > brand 포함(40) > name 포함(20)
   const localMatch = (q) => {
-    const lq = q.replace(/\s+/g, '').toLowerCase();
+    const norm = (s) => (s || '').replace(/\s+/g, '').toLowerCase();
+    const lq = norm(q);
     if (lq.length < 1) return [];
-    const out = [];
+    const scored = [];
     const seen = new Set();
-    // ProductCatalog
-    for (const p of PRODUCTS) {
-      const hay = `${p.brand}${p.name}`.replace(/\s+/g, '').toLowerCase();
-      if (!hay.includes(lq)) continue;
+
+    const score = (brand, name) => {
+      const nb = norm(brand);
+      const nn = norm(name);
+      const nbn = nb + nn;
+      if (nb === lq) return 100;
+      if (nb.startsWith(lq)) return 80;
+      if (nb.includes(lq)) return 60;
+      if (nn.includes(lq)) return 40;
+      if (nbn.includes(lq)) return 20;
+      return 0;
+    };
+
+    // 우선순위 1: 한국 인기 제품 데이터셋
+    for (const p of KOREAN_PRODUCTS) {
+      const s = score(p.brand, p.name);
+      if (s === 0) continue;
       const key = `${p.brand}|${p.name}`;
       if (seen.has(key)) continue;
       seen.add(key);
-      out.push({
+      scored.push({
+        ...p,
+        source: 'local',
+        _score: s,
+      });
+    }
+
+    // 우선순위 2: ProductCatalog (보조)
+    for (const p of PRODUCTS) {
+      const s = score(p.brand, p.name);
+      if (s === 0) continue;
+      const key = `${p.brand}|${p.name}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      scored.push({
         brand: p.brand,
         name: p.name,
-        category: '기타', // ProductCatalog category는 추천용이라 tracker category와 다름
+        category: '기타',
         timeSlot: 'both',
         ingredients: (p.tags || []).slice(0, 4),
         volume: p.volume || '',
         source: 'local',
+        _score: s - 5,
       });
     }
-    return out.slice(0, 6);
+
+    scored.sort((a, b) => b._score - a._score);
+    return scored.slice(0, 8).map(({ _score, ...rest }) => rest);
   };
 
   // GPT 검색 (디바운스). 입력 즉시 skeleton 표시 → GPT 응답 도착 시 swap.
