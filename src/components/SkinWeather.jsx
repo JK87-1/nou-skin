@@ -454,7 +454,6 @@ export default function SkinWeather({ skinResult }) {
       {!skinResult && (
         <div style={{
           padding: 16, borderRadius: 18,
-          background: 'rgba(101,152,239,0.06)', border: '1px solid rgba(101,152,239,0.1)',
           marginBottom: 16, textAlign: 'center',
           animation: 'swFadeInUp 0.5s ease 0.15s both',
         }}>
@@ -518,16 +517,12 @@ export default function SkinWeather({ skinResult }) {
 
       {/* ── Seasonal Guide ── */}
       <div style={{
-        background: 'rgba(255,255,255,0.42)',
-        backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-        borderRadius: 18, border: '1px solid rgba(255,255,255,0.4)', padding: 18,
-        boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+        borderRadius: 18, padding: 18,
         marginBottom: 16, animation: 'swFadeInUp 0.5s ease 0.3s both',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
           <div style={{
             width: 32, height: 32, borderRadius: 10, fontSize: 18,
-            background: 'transparent',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}><PastelIcon emoji={seasonal.icon} size={18} /></div>
           <div>
@@ -570,7 +565,7 @@ export default function SkinWeather({ skinResult }) {
         };
         const nextIdx = notifications.findIndex(n => parseNotifHour(n.time) > nowHour);
         return (
-        <div style={{ marginBottom: 8, animation: 'swFadeInUp 0.5s ease 0.4s both', background: 'rgba(255,255,255,0.42)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', borderRadius: 18, padding: 16 }}>
+        <div style={{ marginBottom: 8, animation: 'swFadeInUp 0.5s ease 0.4s both', borderRadius: 18, padding: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>오늘 예정된 알림</div>
             {weatherEnabled ? (
