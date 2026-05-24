@@ -187,7 +187,7 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
 
         {/* ③ 헤드라인 블록 */}
         <div style={{
-          textAlign: 'center', padding: '20px 28px 0',
+          textAlign: 'center', padding: '50px 28px 0',
           animation: 'mgSlideUp 500ms ease 200ms both',
         }}>
           {/* eyebrow */}
