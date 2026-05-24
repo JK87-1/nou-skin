@@ -13,6 +13,7 @@ import {
   computeAllCorrelations, compressProductThumb,
 } from '../storage/TrackerStorage';
 import CareRecommendation from '../components/CareRecommendation';
+import { PRODUCTS } from '../data/ProductCatalog';
 
 // 네이버 쇼핑에서 제품 누끼 이미지 + 정확한 브랜드명 검색
 async function fetchProductInfo(brand, name) {
@@ -431,6 +432,123 @@ function PhotoRegistrationFlow({ onClose, onSave, saving, accent }) {
 
 function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
   const [form, setForm] = useState({ brand: '', name: '', category: '기타', timeSlot: 'both' });
+  const [activeField, setActiveField] = useState(null); // 'brand' | 'name'
+  const [searchQuery, setSearchQuery] = useState('');
+  const [suggestions, setSuggestions] = useState([]); // [{brand,name,category,timeSlot,ingredients,volume,source}]
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState('');
+  const userSelectedRef = useRef(false);
+  const lastQueryRef = useRef('');
+  const cacheRef = useRef(new Map()); // query → results
+
+  // 로컬 매칭 — ProductCatalog + 사용자 기존 등록 제품
+  const localMatch = (q) => {
+    const lq = q.replace(/\s+/g, '').toLowerCase();
+    if (lq.length < 1) return [];
+    const out = [];
+    const seen = new Set();
+    // ProductCatalog
+    for (const p of PRODUCTS) {
+      const hay = `${p.brand}${p.name}`.replace(/\s+/g, '').toLowerCase();
+      if (!hay.includes(lq)) continue;
+      const key = `${p.brand}|${p.name}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({
+        brand: p.brand,
+        name: p.name,
+        category: '기타', // ProductCatalog category는 추천용이라 tracker category와 다름
+        timeSlot: 'both',
+        ingredients: (p.tags || []).slice(0, 4),
+        volume: p.volume || '',
+        source: 'local',
+      });
+    }
+    return out.slice(0, 6);
+  };
+
+  // GPT 검색 (디바운스)
+  useEffect(() => {
+    const q = searchQuery.trim();
+    if (q.length < 2) { setSuggestions([]); setSearchError(''); return; }
+    if (userSelectedRef.current) { userSelectedRef.current = false; return; }
+
+    // 로컬 즉시 매칭
+    const local = localMatch(q);
+
+    // 캐시 확인
+    if (cacheRef.current.has(q)) {
+      const gpt = cacheRef.current.get(q);
+      setSuggestions(mergeSuggestions(local, gpt));
+      setSearchLoading(false);
+      setSearchError('');
+      return;
+    }
+
+    setSuggestions(local);
+    setSearchLoading(true);
+    setSearchError('');
+    const t = setTimeout(async () => {
+      lastQueryRef.current = q;
+      try {
+        const r = await fetch('/api/product-search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: q }),
+        });
+        const data = await r.json().catch(() => ({}));
+        if (lastQueryRef.current !== q) return; // 이미 다음 query로 넘어감
+        if (!r.ok) {
+          setSearchError(data.error || '검색에 실패했어요');
+          setSearchLoading(false);
+          return;
+        }
+        const gpt = (data.products || []).map(p => ({ ...p, source: 'gpt' }));
+        cacheRef.current.set(q, gpt);
+        setSuggestions(mergeSuggestions(local, gpt));
+        setSearchLoading(false);
+      } catch (e) {
+        if (lastQueryRef.current !== q) return;
+        setSearchError('네트워크 오류로 검색이 안 됐어요');
+        setSearchLoading(false);
+      }
+    }, 450);
+    return () => clearTimeout(t);
+  }, [searchQuery]);
+
+  function mergeSuggestions(local, gpt) {
+    const seen = new Set();
+    const out = [];
+    for (const list of [local, gpt]) {
+      for (const p of list) {
+        const key = `${(p.brand || '').toLowerCase()}|${(p.name || '').toLowerCase()}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push(p);
+      }
+    }
+    return out.slice(0, 10);
+  }
+
+  // 필드 입력 시 검색 query 업데이트
+  const onFieldChange = (key, value) => {
+    setForm(prev => ({ ...prev, [key]: value }));
+    if (key === 'brand') setSearchQuery(value);
+    else if (key === 'name') setSearchQuery(`${form.brand} ${value}`.trim());
+  };
+
+  const onSuggestionClick = (s) => {
+    userSelectedRef.current = true;
+    setForm({
+      brand: s.brand,
+      name: s.name,
+      category: s.category,
+      timeSlot: s.timeSlot,
+    });
+    setSuggestions([]);
+    setActiveField(null);
+    setSearchQuery('');
+  };
 
   const handleSave = () => {
     if (!form.brand.trim() || !form.name.trim() || saving) return;
@@ -438,16 +556,20 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
   };
 
   const canSave = form.brand.trim() && form.name.trim() && !saving;
+  const showSuggestions = activeField && (suggestions.length > 0 || searchLoading || searchError);
 
   return (
     <SheetOverlay onClose={onClose}>
       <div style={{ background: 'var(--sheet-bg)', padding: '24px 20px calc(40px + env(safe-area-inset-bottom, 0px))' }}>
         <SheetHandle />
-        <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 20 }}>제품 직접 입력</div>
+        <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 6 }}>제품 직접 입력</div>
+        <div style={{ fontSize: 11.5, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 16, letterSpacing: -0.1 }}>
+          브랜드명만 입력해도 관련 제품이 자동으로 떠요
+        </div>
 
         {[
-          { label: '브랜드', key: 'brand', placeholder: '예: 코스알엑스' },
-          { label: '제품명', key: 'name', placeholder: '예: 히알루론산 세럼' },
+          { label: '브랜드', key: 'brand', placeholder: '예: 토리든, 코스알엑스, 셀퓨전씨' },
+          { label: '제품명', key: 'name', placeholder: '예: 다이브인 저분자 히알루론산 토너' },
         ].map(f => (
           <div key={f.key} style={{ marginBottom: 14 }}>
             <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tag-color)', marginBottom: 6 }}>{f.label}</div>
@@ -455,7 +577,9 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
               type="text"
               autoComplete="off"
               value={form[f.key]}
-              onChange={e => setForm(prev => ({ ...prev, [f.key]: e.target.value }))}
+              onChange={e => onFieldChange(f.key, e.target.value)}
+              onFocus={() => setActiveField(f.key)}
+              onBlur={() => setTimeout(() => setActiveField(null), 200)}
               placeholder={f.placeholder}
               style={{
                 width: '100%', padding: '12px 14px', borderRadius: 12, fontSize: 16,
@@ -467,6 +591,65 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
             />
           </div>
         ))}
+
+        {showSuggestions && (
+          <div style={{
+            marginTop: -4, marginBottom: 14,
+            border: 'var(--item-border)', borderRadius: 12,
+            background: 'var(--item-bg)',
+            maxHeight: 300, overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch',
+          }}>
+            {searchLoading && suggestions.length === 0 && (
+              <div style={{ padding: '14px 16px', fontSize: 12.5, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite' }}>
+                  <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/>
+                </svg>
+                <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+                관련 제품 검색 중...
+              </div>
+            )}
+            {searchError && !searchLoading && (
+              <div style={{ padding: '12px 16px', fontSize: 12, color: 'var(--text-muted)' }}>{searchError}</div>
+            )}
+            {suggestions.map((s, i) => (
+              <button
+                key={`${s.brand}-${s.name}-${i}`}
+                type="button"
+                onMouseDown={e => e.preventDefault()}
+                onClick={() => onSuggestionClick(s)}
+                style={{
+                  width: '100%', textAlign: 'left',
+                  padding: '11px 14px',
+                  background: 'transparent', border: 'none',
+                  borderTop: i > 0 ? '1px solid rgba(255,255,255,0.08)' : 'none',
+                  cursor: 'pointer', fontFamily: 'inherit',
+                  color: 'var(--text-primary)',
+                  display: 'flex', flexDirection: 'column', gap: 2,
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: accent }}>{s.brand}</span>
+                  <span style={{
+                    fontSize: 9.5, padding: '1px 5px', borderRadius: 4,
+                    background: 'rgba(101,152,239,0.14)', color: '#6598ef', fontWeight: 600,
+                  }}>{s.category}</span>
+                  {s.source === 'gpt' && (
+                    <span style={{ fontSize: 9, color: 'var(--text-muted)', marginLeft: 'auto' }}>AI 검색</span>
+                  )}
+                </div>
+                <div style={{ fontSize: 13.5, color: 'var(--text-primary)', letterSpacing: -0.1 }}>{s.name}</div>
+                {(s.volume || (s.ingredients && s.ingredients.length > 0)) && (
+                  <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginTop: 2 }}>
+                    {s.volume && <span>{s.volume}</span>}
+                    {s.volume && s.ingredients && s.ingredients.length > 0 && <span> · </span>}
+                    {s.ingredients && s.ingredients.length > 0 && <span>{s.ingredients.slice(0, 3).join(', ')}</span>}
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
 
         <div style={{ marginBottom: 14 }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tag-color)', marginBottom: 6 }}>카테고리</div>
