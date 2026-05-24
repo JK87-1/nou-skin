@@ -265,18 +265,6 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
                   </div>
                 </div>
 
-                {/* 노트 */}
-                <div style={{
-                  marginTop: 8, marginLeft: 33,
-                  paddingLeft: 10,
-                  borderLeft: '2px solid rgba(255,255,255,0.5)',
-                }}>
-                  <div style={{
-                    fontSize: 12.9, lineHeight: 1.5,
-                    color: 'rgba(255,255,255,0.88)',
-                    whiteSpace: 'pre-line',
-                  }}>{c.note}</div>
-                </div>
               </div>
             );
           })}
