@@ -47,27 +47,76 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { query } = req.body || {};
+    const { query, mode, brand: brandHint } = req.body || {};
     const q = String(query || '').trim();
+    const m = mode === 'brand' || mode === 'name' ? mode : 'any';
+    const brandCtx = String(brandHint || '').trim();
     if (q.length < 2) {
       return res.status(400).json({ error: '검색어가 너무 짧아요 (2자 이상)' });
     }
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) return res.status(500).json({ error: 'API key not configured' });
 
-    const prompt = `한국 화장품 "${q}" 매칭 제품 5개를 한 줄에 하나씩 JSON으로 출력.
+    // mode 별 prompt 분기 — 사용자 의도에 따라 검색 정밀도 ↑
+    let prompt;
+    if (m === 'brand') {
+      // 사용자가 brand input에 검색어 입력 → 그 브랜드의 대표 제품 5개 (다른 브랜드 절대 X)
+      prompt = `한국 화장품 브랜드 "${q}"의 대표 제품 5개를 한 줄에 하나씩 JSON으로 출력.
 
-각 줄: 단일 JSON 객체. JSON 배열 X, 코드블록 X, 설명 X, 한 줄에 하나만.
+엄격한 규칙:
+- brand 필드는 정확히 "${q}" 또는 그 브랜드의 한국·영문 공식 표기여야 함. 다른 브랜드 절대 출력 X.
+- 그 브랜드의 카테고리 다양하게(토너·세럼·크림·선크림 등 섞어서).
+- "${q}"라는 이름의 브랜드를 알지 못하면 빈 출력.
+- 같은 카테고리 안에서는 가장 인기 제품 1개만.
+
+각 줄: 단일 JSON 객체. JSON 배열 X, 코드블록 X, 설명 X.
 
 형식:
 {"brand":"토리든","name":"다이브인 저분자 히알루론산 토너","category":"토너","timeSlot":"both","ingredients":["저분자 히알루론산","판테놀"],"volume":"300ml"}
-{"brand":"토리든","name":"다이브인 저분자 히알루론산 세럼","category":"세럼","timeSlot":"both","ingredients":["저분자 히알루론산"],"volume":"50ml"}
 
 규칙:
-- 실제 유통 제품만. 알 수 없으면 출력 X.
 - category: 클렌저|토너|에센스|세럼|크림|선크림|마스크팩|기타
 - timeSlot: morning|night|both
 - ingredients: 핵심 2~4개`;
+    } else if (m === 'name' && brandCtx) {
+      // brand가 이미 채워져 있고 사용자가 name input에 키워드 추가 → 그 브랜드 안에서 키워드 매칭
+      prompt = `한국 화장품 브랜드 "${brandCtx}"의 제품 중 "${q.replace(brandCtx, '').trim() || q}" 키워드와 매칭되는 제품 5개를 한 줄에 하나씩 JSON으로 출력.
+
+엄격한 규칙:
+- brand 필드는 반드시 "${brandCtx}". 다른 브랜드 출력 절대 X.
+- 키워드가 카테고리(토너·세럼 등)면 그 카테고리 제품만.
+- 키워드가 성분(히알루론산·레티놀 등)이면 그 성분 함유 제품만.
+- 매칭 없으면 빈 출력.
+
+형식:
+{"brand":"${brandCtx}","name":"...","category":"...","timeSlot":"both","ingredients":["..."],"volume":"..."}
+
+각 줄 단일 JSON. category: 클렌저|토너|에센스|세럼|크림|선크림|마스크팩|기타. timeSlot: morning|night|both. ingredients: 핵심 2~4개.`;
+    } else if (m === 'name') {
+      // name 키워드만 — 카테고리·성분 매칭 위주
+      prompt = `한국 화장품에서 "${q}" 키워드와 매칭되는 제품 5개를 한 줄에 하나씩 JSON으로 출력.
+
+해석 순서:
+1. 카테고리 키워드(토너·세럼·크림·선크림 등)면 인기 브랜드의 그 카테고리 제품 다양하게.
+2. 성분(히알루론산·레티놀·BHA·시카 등)이면 그 성분 함유 제품 다양하게.
+3. 제품명 일부면 매칭되는 정확한 제품들.
+
+각 줄 단일 JSON. JSON 배열 X.
+
+형식:
+{"brand":"토리든","name":"다이브인 저분자 히알루론산 토너","category":"토너","timeSlot":"both","ingredients":["히알루론산"],"volume":"300ml"}
+
+category: 클렌저|토너|에센스|세럼|크림|선크림|마스크팩|기타. timeSlot: morning|night|both. ingredients: 핵심 2~4개.`;
+    } else {
+      prompt = `한국 화장품 "${q}" 매칭 제품 5개를 한 줄에 하나씩 JSON으로 출력.
+
+각 줄: 단일 JSON 객체. JSON 배열 X.
+
+형식:
+{"brand":"토리든","name":"다이브인 저분자 히알루론산 토너","category":"토너","timeSlot":"both","ingredients":["저분자 히알루론산"],"volume":"300ml"}
+
+규칙: 실제 유통 제품만. category: 클렌저|토너|에센스|세럼|크림|선크림|마스크팩|기타. timeSlot: morning|night|both. ingredients: 핵심 2~4개.`;
+    }
 
     // SSE 헤더
     res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');

@@ -578,11 +578,15 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
 
     const t = setTimeout(async () => {
       lastQueryRef.current = q;
+      const mode = activeFieldRef.current === 'brand' ? 'brand'
+                 : activeFieldRef.current === 'name' ? 'name'
+                 : 'any';
+      const brandHint = form.brand?.trim() || '';
       try {
         const r = await fetch('/api/product-search', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query: q }),
+          body: JSON.stringify({ query: q, mode, brand: mode === 'name' ? brandHint : '' }),
         });
         if (lastQueryRef.current !== q) return;
         if (!r.ok || !r.body) {
@@ -615,6 +619,19 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
             }
             if (evt.product) {
               const p = { ...evt.product, source: 'gpt' };
+              // strict 필터 — 사용자 의도 보호
+              const norm = (s) => (s || '').replace(/\s+/g, '').toLowerCase();
+              if (mode === 'brand') {
+                // brand input — GPT 결과 중 검색어와 brand가 강하게 일치하는 것만
+                const nq = norm(q);
+                const nb = norm(p.brand);
+                if (!(nb === nq || nb.startsWith(nq) || nq.startsWith(nb) || nb.includes(nq) || nq.includes(nb))) {
+                  continue; // skip
+                }
+              } else if (mode === 'name' && brandHint) {
+                // name input + brand 명시 — brand 정확히 일치 외에는 skip
+                if (norm(p.brand) !== norm(brandHint)) continue;
+              }
               gptProducts.push(p);
               // 도착 즉시 화면에 반영
               setSuggestions(prev => {
@@ -689,11 +706,20 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
   }, [suggestions]);
 
   // 필드 입력 시 검색 query 업데이트
+  // 사용자 의도 시그널: brand input에 친 거면 brand-only 검색, name이면 name 키워드 검색.
+  // 검색 요청에 mode + brandHint 전달 → GPT가 다른 브랜드 섞지 않음.
   const onFieldChange = (key, value) => {
     setForm(prev => ({ ...prev, [key]: value }));
-    if (key === 'brand') setSearchQuery(value);
-    else if (key === 'name') setSearchQuery(`${form.brand} ${value}`.trim());
+    if (key === 'brand') {
+      setSearchQuery(value);
+    } else if (key === 'name') {
+      // brand가 채워져 있으면 brand + name 합쳐 검색, 비어있으면 name만
+      const composed = form.brand ? `${form.brand} ${value}`.trim() : value.trim();
+      setSearchQuery(composed);
+    }
   };
+  const activeFieldRef = useRef(activeField);
+  useEffect(() => { activeFieldRef.current = activeField; }, [activeField]);
 
   const onSuggestionClick = (s) => {
     userSelectedRef.current = true;

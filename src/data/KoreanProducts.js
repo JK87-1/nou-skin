@@ -173,4 +173,125 @@ export const KOREAN_PRODUCTS = [
   // ===== AHC =====
   { brand: 'AHC', name: '아이크림 포 페이스', category: '크림', timeSlot: 'both', ingredients: ['펩타이드'], volume: '30ml' },
   { brand: 'AHC', name: '하이드라 비타민 토너', category: '토너', timeSlot: 'both', ingredients: ['비타민', '히알루론산'], volume: '100ml' },
+
+  // ===== 피지오겔 (Physiogel) =====
+  { brand: '피지오겔', name: '데일리 모이스쳐 페이셜 로션', category: '크림', timeSlot: 'both', ingredients: ['DMS 콤플렉스', '글리세린'], volume: '200ml' },
+  { brand: '피지오겔', name: '데일리 모이스쳐 페이셜 크림', category: '크림', timeSlot: 'both', ingredients: ['DMS 콤플렉스'], volume: '75ml' },
+  { brand: '피지오겔', name: 'DMT UV 페이셜 선 SPF50+', category: '선크림', timeSlot: 'morning', ingredients: ['DMS 콤플렉스', '징크옥사이드'], volume: '40ml' },
+  { brand: '피지오겔', name: '레드 수딩 AI 모이스쳐라이저', category: '크림', timeSlot: 'both', ingredients: ['글리세린', '판테놀'], volume: '80ml' },
+
+  // ===== 더마팩토리 (Derma Factory) =====
+  { brand: '더마팩토리', name: '히알루론 1% 세럼', category: '세럼', timeSlot: 'both', ingredients: ['히알루론산 1%'], volume: '30ml' },
+  { brand: '더마팩토리', name: '나이아신아마이드 20% 세럼', category: '세럼', timeSlot: 'both', ingredients: ['나이아신아마이드 20%'], volume: '30ml' },
+  { brand: '더마팩토리', name: '레티놀 0.3% 세럼', category: '세럼', timeSlot: 'night', ingredients: ['레티놀 0.3%'], volume: '30ml' },
+  { brand: '더마팩토리', name: '센텔라 100% 토너', category: '토너', timeSlot: 'both', ingredients: ['센텔라 아시아티카 100%'], volume: '300ml' },
+
+  // ===== 라운드랩 (Round Lab) =====
+  { brand: '라운드랩', name: '독도 1025 토너', category: '토너', timeSlot: 'both', ingredients: ['미네랄', '판테놀'], volume: '300ml' },
+  { brand: '라운드랩', name: '자작나무 수분 크림', category: '크림', timeSlot: 'both', ingredients: ['자작나무 수액', '히알루론산'], volume: '80ml' },
+  { brand: '라운드랩', name: '자작나무 수분 선크림', category: '선크림', timeSlot: 'morning', ingredients: ['자작나무 수액'], volume: '50ml' },
+  { brand: '라운드랩', name: '광동 약콩 수분 크림', category: '크림', timeSlot: 'both', ingredients: ['광동 약콩', '히알루론산'], volume: '80ml' },
+
+  // ===== 시카팜 =====
+  { brand: '시카팜', name: '시카팜 카밍 인텐시브 크림', category: '크림', timeSlot: 'both', ingredients: ['센텔라', '판테놀'], volume: '50ml' },
+  { brand: '시카팜', name: '시카팜 수딩 토너', category: '토너', timeSlot: 'both', ingredients: ['센텔라'], volume: '200ml' },
+
+  // ===== 셀바이오템 (Sel·Vio·Tem)? skip — 검증 안됨 =====
+
+  // ===== 닥터알엑스 (Dr.RX) — Olive Young 자체 =====
+  { brand: '웨이크메이크', name: '컬러풀 무드 인 액자 6스타일 컬러팔레트', category: '기타', timeSlot: 'both', ingredients: [], volume: '8.4g' },
+
+  // ===== 어반디케이? skip 메이크업 위주 =====
+
+  // ===== 미장센 (Mise-en-scène) — 헤어 위주 skip =====
+
+  // ===== 닥터마티노 — 이미 있음 =====
+  { brand: '닥터마티노', name: '레티놀 콜라겐 부스팅 크림', category: '크림', timeSlot: 'night', ingredients: ['레티놀', '콜라겐'], volume: '50ml' },
+
+  // ===== 어글로우 추가 (Aglow) =====
+  { brand: '어글로우', name: '슬리피 콜라겐 글로우 마스크', category: '마스크팩', timeSlot: 'night', ingredients: ['콜라겐', '히알루론산'], volume: '50ml' },
+
+  // ===== 메디큐브 추가 (Medicube) =====
+  { brand: '메디큐브', name: 'PDRN 핑크 원샷 앰플', category: '세럼', timeSlot: 'night', ingredients: ['PDRN', '나이아신아마이드'], volume: '15ml' },
+  { brand: '메디큐브', name: 'Deep 모공 클렌징 폼', category: '클렌저', timeSlot: 'both', ingredients: ['BHA', '판테놀'], volume: '120ml' },
+  { brand: '메디큐브', name: '에이지-알 부스팅 프로젝트 앰플', category: '세럼', timeSlot: 'night', ingredients: ['콜라겐', '펩타이드'], volume: '30ml' },
+
+  // ===== 이드라 (Iddra) — skip 검증 안됨 =====
+
+  // ===== 라쥬 (LaJou) — skip =====
+
+  // ===== 셀퓨전씨 추가 =====
+  { brand: '셀퓨전씨', name: '레이저 선스크린 50 SPF50+ (튜브)', category: '선크림', timeSlot: 'morning', ingredients: ['징크옥사이드', '판테놀'], volume: '50ml' },
+
+  // ===== 메디힐 추가 =====
+  { brand: '메디힐', name: '바이오 셀룰로오스 마스크', category: '마스크팩', timeSlot: 'both', ingredients: ['바이오 셀룰로오스'], volume: '25ml' },
+
+  // ===== VT 추가 =====
+  { brand: 'VT', name: 'Pro Cica Mild Foaming Cleanser', category: '클렌저', timeSlot: 'both', ingredients: ['센텔라', '판테놀'], volume: '150ml' },
+  { brand: 'VT', name: '시카 데일리 수딩 패드', category: '토너', timeSlot: 'both', ingredients: ['센텔라', '나이아신아마이드'], volume: '170ml(60매)' },
+
+  // ===== 닥터지 추가 (Dr.G) =====
+  { brand: '닥터지', name: '레드 블레미쉬 클리어 수딩 액티브 앰플', category: '세럼', timeSlot: 'both', ingredients: ['센텔라', '나이아신아마이드'], volume: '30ml' },
+
+  // ===== 닥터자르트 추가 =====
+  { brand: '닥터자르트', name: '시카페어 타이거 그라스 캡슐 인 크림', category: '크림', timeSlot: 'both', ingredients: ['센텔라RX'], volume: '50ml' },
+
+  // ===== 더샘 (the SAEM) =====
+  { brand: '더샘', name: '셀로벗 베리어 시크릿 미라클 토너', category: '토너', timeSlot: 'both', ingredients: ['세라마이드'], volume: '200ml' },
+  { brand: '더샘', name: '오버 액션 토끼 비비크림', category: '기타', timeSlot: 'morning', ingredients: ['SPF42'], volume: '50ml' },
+
+  // ===== 네이처리퍼블릭 추가 =====
+  { brand: '네이처리퍼블릭', name: '진생 로얄 실크 워터리 크림', category: '크림', timeSlot: 'both', ingredients: ['홍삼', '실크 펩타이드'], volume: '60ml' },
+
+  // ===== 한율 추가 =====
+  { brand: '한율', name: '히알루론 시카 인 캡슐 크림', category: '크림', timeSlot: 'both', ingredients: ['히알루론산', '센텔라'], volume: '50ml' },
+
+  // ===== 클리오 (Clio) — 메이크업 위주, 스킨케어 일부 =====
+  { brand: '클리오', name: '킬커버 매트 광채 쿠션', category: '기타', timeSlot: 'morning', ingredients: ['SPF50'], volume: '15g x 2' },
+
+  // ===== 페리페라 (Peripera) — 메이크업 위주 — skip =====
+
+  // ===== 어울이 시카 (Avoul Cica) — skip 검증 안됨 =====
+
+  // ===== 시드물 (Sidmool) =====
+  { brand: '시드물', name: '세이지 진정 보습 토너', category: '토너', timeSlot: 'both', ingredients: ['세이지', '히알루론산'], volume: '200ml' },
+
+  // ===== 마녀공장 (Manyo Factory) =====
+  { brand: '마녀공장', name: '퓨어 클렌징 오일', category: '클렌저', timeSlot: 'night', ingredients: ['올리브 오일', '시어버터'], volume: '200ml' },
+  { brand: '마녀공장', name: '바이팜 이드라 모이스처라이징 토너', category: '토너', timeSlot: 'both', ingredients: ['바이팜', '히알루론산'], volume: '210ml' },
+  { brand: '마녀공장', name: '바이팜 이드라 모이스처라이징 크림', category: '크림', timeSlot: 'both', ingredients: ['바이팜', '세라마이드'], volume: '50ml' },
+
+  // ===== 셀퓨전씨 - 다른 라인업 =====
+  { brand: '셀퓨전씨', name: '엑스퍼트 트리플 화이트 토너', category: '토너', timeSlot: 'both', ingredients: ['알부틴', '비타민C'], volume: '150ml' },
+
+  // ===== 에스트라 추가 =====
+  { brand: '에스트라', name: '아토베리어 365 모이스처라이저', category: '크림', timeSlot: 'both', ingredients: ['MLE 콤플렉스'], volume: '200ml' },
+  { brand: '에스트라', name: '리제덤 365 RX 크림', category: '크림', timeSlot: 'both', ingredients: ['리제덤'], volume: '50ml' },
+
+  // ===== 어떠한 (Otd) 등 마이너 — skip =====
+
+  // ===== 토니모리 추가 =====
+  { brand: '토니모리', name: '본 차이나 화이트닝 인텐스 세럼', category: '세럼', timeSlot: 'both', ingredients: ['나이아신아마이드'], volume: '50ml' },
+
+  // ===== 록시땅 추가 =====
+  { brand: '록시땅', name: '시어 풋 크림', category: '기타', timeSlot: 'both', ingredients: ['시어버터'], volume: '150ml' },
+
+  // ===== 이솝 (Aesop) =====
+  { brand: '이솝', name: '내추럴 모이스처라이징 페이셜 크림', category: '크림', timeSlot: 'both', ingredients: ['샌달우드', '카모마일'], volume: '60ml' },
+
+  // ===== 비욘드 (Beyond) =====
+  { brand: '비욘드', name: '레이스 시카 카밍 토너', category: '토너', timeSlot: 'both', ingredients: ['센텔라'], volume: '160ml' },
+
+  // ===== 미장센 (Miselen / 메이크업 측 일부) — skip =====
+
+  // ===== 바이오힐 보 추가 =====
+  { brand: '바이오힐 보', name: '콜라겐 리프트 앰플', category: '세럼', timeSlot: 'both', ingredients: ['콜라겐', '펩타이드'], volume: '30ml' },
+
+  // ===== 닥터마티노 추가 =====
+  { brand: '닥터마티노', name: '글로우 비타민 앰플', category: '세럼', timeSlot: 'morning', ingredients: ['비타민C', '나이아신아마이드'], volume: '30ml' },
+
+  // ===== 그 외 인기 — 어딘가 빠진 것 =====
+  { brand: '아이오페', name: '바이오 에센스 인텐시브 컨디셔닝', category: '에센스', timeSlot: 'both', ingredients: ['효모 발효 추출물'], volume: '168ml' },
+  { brand: '이니스프리', name: '레티놀 시카 안티에이징 앰플', category: '세럼', timeSlot: 'night', ingredients: ['레티놀', '센텔라'], volume: '20ml' },
+  { brand: '라네즈', name: '네오 페이셜 마스크', category: '마스크팩', timeSlot: 'night', ingredients: ['콜라겐', '히알루론산'], volume: '17g' },
 ];
