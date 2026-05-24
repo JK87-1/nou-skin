@@ -255,11 +255,11 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
                   }}>{c.icon}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
-                      fontSize: 17.5, fontWeight: 600, letterSpacing: -0.2,
-                      color: 'white', marginBottom: 3,
+                      fontSize: 13, fontWeight: 500, letterSpacing: -0.1,
+                      color: 'rgba(255,255,255,0.7)', marginBottom: 3,
                     }}>{c.title}</div>
                     <div style={{
-                      fontSize: 15, fontWeight: 500, lineHeight: 1.55,
+                      fontSize: 18, fontWeight: 600, lineHeight: 1.55, letterSpacing: -0.2,
                       color: 'white', marginBottom: 2,
                     }}>{c.desc}</div>
                     <div style={{
