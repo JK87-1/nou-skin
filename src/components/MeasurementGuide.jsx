@@ -174,11 +174,15 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
         position: 'relative',
       }}>
 
-        {/* ① 건너뛰기 */}
+        {/* ① 헤더: 타이틀 + 건너뛰기 */}
         <div style={{
           padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0',
-          display: 'flex', justifyContent: 'flex-end',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
+          <div style={{
+            fontSize: 17, fontWeight: 700, letterSpacing: -0.3,
+            color: 'white', textShadow: '0 1px 2px rgba(0,0,0,0.05)',
+          }}>나의 피부 측정 기준 만들기</div>
           <button
             onClick={(e) => { e.stopPropagation(); handleSkip(); }}
             style={{
@@ -189,26 +193,6 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
           >건너뛰기</button>
-        </div>
-
-        {/* ② 헤더: 오브 + 진행 정보 */}
-        <div style={{
-          display: 'flex', flexDirection: 'column', alignItems: 'center',
-          padding: '8px 20px 0',
-          animation: 'mgSlideUp 500ms ease 100ms both',
-        }}>
-          {/* 진행 라벨 */}
-          <div style={{
-            fontSize: 10, fontWeight: 500, letterSpacing: 1.2,
-            color: 'rgba(255,255,255,0.85)',
-            textTransform: 'uppercase', marginBottom: 4,
-          }}>기준점 {step} / 3</div>
-
-          {/* 헤더 헤드라인 */}
-          <div style={{
-            fontSize: 15, fontWeight: 500, letterSpacing: -0.2,
-            color: 'white', textShadow: '0 1px 2px rgba(0,0,0,0.05)',
-          }}>{copy.header}</div>
         </div>
 
         {/* ③ 헤드라인 블록 */}
