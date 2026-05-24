@@ -179,8 +179,8 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
     >
       <style>{`
         @keyframes mgFadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes mgSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes mgCondIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes mgSlideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes mgCondIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
 
       <div style={{
@@ -255,7 +255,7 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
                 key={i}
                 style={{
                   padding: '18px 0',
-                  animation: isFullSequence ? `mgCondIn 400ms cubic-bezier(0.32,0.72,0,1) both` : 'none',
+                  animation: isFullSequence ? `mgCondIn 600ms ease both` : 'none',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
@@ -284,7 +284,7 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
         {ctaReady && <div style={{
           padding: '0 28px calc(env(safe-area-inset-bottom, 0px) + 12px)',
           display: 'flex', flexDirection: 'column', alignItems: 'center',
-          animation: 'mgCondIn 400ms cubic-bezier(0.32,0.72,0,1) both',
+          animation: 'mgCondIn 600ms ease both',
         }}>
           <button
             onClick={(e) => { e.stopPropagation(); handleStart(); }}
