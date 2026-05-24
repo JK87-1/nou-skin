@@ -1522,47 +1522,7 @@ function RoutineChecklist() {
     return () => { cancelled = true; window.removeEventListener('lua:tracker-products-changed', onChanged); };
   }, []);
 
-  // 누끼 이미지 없는 등록 제품을 백그라운드로 보강 (채팅 카드 적용 등으로 thumb 없는 케이스 자가치유)
-  // products 변수는 컴포넌트 아래쪽에서 정의되므로 effect 안에서 직접 getProducts() 호출.
-  useEffect(() => {
-    if (thumbBackfillRef.current) return;
-    if (thumbMap.size === 0) {
-      // 아직 thumbMap 로드 전 — 다음 사이클에 재시도
-      return;
-    }
-    let allProducts = [];
-    try { allProducts = getProducts(); } catch { return; }
-    const targets = allProducts.filter(p => !thumbMap.get(String(p.id)) && (p.brand || p.name));
-    if (targets.length === 0) return;
-    thumbBackfillRef.current = true;
-    let cancelled = false;
-    (async () => {
-      for (let i = 0; i < targets.length; i++) {
-        if (cancelled) return;
-        const t = targets[i];
-        try {
-          const resp = await fetch('/api/product-image', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ brand: t.brand || '', name: t.name || '', query: `${t.brand} ${t.name}`.trim(), fast: true }),
-          });
-          if (resp.ok) {
-            const data = await resp.json();
-            if (data.image) {
-              const { setProductThumb } = await import('../storage/ImageStore');
-              await setProductThumb(t.id, data.image);
-              if (!cancelled) {
-                setThumbMap(prev => { const next = new Map(prev); next.set(String(t.id), data.image); return next; });
-              }
-            }
-          }
-        } catch { /* skip */ }
-        if (i < targets.length - 1) await new Promise(r => setTimeout(r, 250));
-      }
-    })();
-    return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [thumbMap]);
+  // (thumb 백그라운드 보강은 RoutineTracker(화장대) 마운트 시에만 처리 — 그쪽에서 IDB에 저장하면 케어도 자동 반영)
 
   // 케어 row 삭제 핸들러 — 추천 루틴이면 removeRoutine, 등록 제품이면 deleteProduct
   const handleSwipeDelete = (item) => {
