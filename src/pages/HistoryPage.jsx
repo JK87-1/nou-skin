@@ -29,7 +29,8 @@ import { getProfile } from '../storage/ProfileStorage';
 import AiInsightCard from '../components/AiInsightCard';
 import BeforeAfterSlider from '../components/BeforeAfterSlider';
 import DailyMission from '../components/DailyMission';
-import { getProducts, getProductsForMode, getTrackerChecks, toggleTrackerCheck, getTrackerProgress, bulkToggleCheck } from '../storage/TrackerStorage';
+import { getProducts, getProductsForMode, getTrackerChecks, toggleTrackerCheck, getTrackerProgress, bulkToggleCheck, deleteProduct } from '../storage/TrackerStorage';
+import SwipeableRow from '../components/SwipeableRow';
 import { hapticLight, hapticSelection, hapticMedium } from '../utils/haptics';
 // CareRecommendation은 화장대(RoutineTracker)로 이동됨
 import { ChartIcon, CameraIcon, MicroscopeIcon, SparkleIcon, DiamondIcon, DropletIcon, RulerIcon, PaletteIcon, LotionIcon, EyeIcon, BubbleIcon, TargetIcon, ClockIcon, LuaMiniIcon } from '../components/icons/PastelIcons';
@@ -1501,6 +1502,42 @@ function RoutineChecklist() {
   const [customName, setCustomName] = useState('');
   const [detailItem, setDetailItem] = useState(null); // item being configured
   const [, forceTick] = useState(0); // 채팅 카드에서 제품 등록 시 강제 re-render trigger
+  const [openSwipeRowId, setOpenSwipeRowId] = useState(null); // 현재 열린 swipe row (한 번에 하나)
+
+  // 케어 row 삭제 핸들러 — 추천 루틴이면 removeRoutine, 등록 제품이면 deleteProduct
+  const handleSwipeDelete = (item) => {
+    if (item.type === 'product') {
+      deleteProduct(item.id);
+      // products는 매 render 시 getProductsForMode로 다시 fetch되므로 force re-render만
+      forceTick(t => t + 1);
+    } else {
+      const updated = myRoutines.filter(r => !(r.id === item.id && r.mode === mode));
+      localStorage.setItem('lua_my_routines', JSON.stringify(updated));
+      setMyRoutines(updated);
+    }
+  };
+
+  // 순서 변경 — 사용자 manual order를 localStorage에 저장. allItems 정렬 시 우선 적용.
+  const ORDER_KEY = 'lua_care_manual_order';
+  const getManualOrder = () => {
+    try { return JSON.parse(localStorage.getItem(ORDER_KEY) || '{}'); } catch { return {}; }
+  };
+  const saveManualOrder = (orderMap) => {
+    localStorage.setItem(ORDER_KEY, JSON.stringify(orderMap));
+    forceTick(t => t + 1);
+  };
+  const handleSwipeMove = (item, allItemsList, direction) => {
+    const ids = allItemsList.map(i => i.id);
+    const idx = ids.indexOf(item.id);
+    if (idx < 0) return;
+    const target = direction === 'up' ? idx - 1 : idx + 1;
+    if (target < 0 || target >= ids.length) return;
+    const reordered = [...ids];
+    [reordered[idx], reordered[target]] = [reordered[target], reordered[idx]];
+    const orderMap = getManualOrder();
+    orderMap[mode] = reordered;
+    saveManualOrder(orderMap);
+  };
 
   // 채팅에서 saveProduct 등 호출 시 즉시 케어 화면 갱신
   useEffect(() => {
@@ -1603,13 +1640,27 @@ function RoutineChecklist() {
     if (item.id === '_water') return '토너';
     return '기타';
   };
-  const allItemsSorted = allItemsRaw
-    .map((item, originalIdx) => ({ item, originalIdx, catRank: CATEGORY_ORDER.indexOf(inferCategory(item)) }))
-    .sort((a, b) => {
-      if (a.catRank !== b.catRank) return a.catRank - b.catRank;
-      return a.originalIdx - b.originalIdx;
-    })
-    .map(x => x.item);
+  // 사용자가 수동으로 정한 순서가 있으면 우선 (mode별)
+  const manualOrder = (() => {
+    try { return JSON.parse(localStorage.getItem('lua_care_manual_order') || '{}')[mode] || null; } catch { return null; }
+  })();
+  let allItemsSorted;
+  if (manualOrder && Array.isArray(manualOrder)) {
+    const byId = new Map(allItemsRaw.map(i => [i.id, i]));
+    const ordered = manualOrder.map(id => byId.get(id)).filter(Boolean);
+    // 새로 등록된 (manual order에 없는) 항목은 자동 표준 정렬 규칙으로 뒤에 붙임
+    const remaining = allItemsRaw
+      .filter(i => !manualOrder.includes(i.id))
+      .map((item, originalIdx) => ({ item, originalIdx, catRank: CATEGORY_ORDER.indexOf(inferCategory(item)) }))
+      .sort((a, b) => (a.catRank !== b.catRank) ? a.catRank - b.catRank : a.originalIdx - b.originalIdx)
+      .map(x => x.item);
+    allItemsSorted = [...ordered, ...remaining];
+  } else {
+    allItemsSorted = allItemsRaw
+      .map((item, originalIdx) => ({ item, originalIdx, catRank: CATEGORY_ORDER.indexOf(inferCategory(item)) }))
+      .sort((a, b) => (a.catRank !== b.catRank) ? a.catRank - b.catRank : a.originalIdx - b.originalIdx)
+      .map(x => x.item);
+  }
 
   // Only show items active today
   const allItems = allItemsSorted.filter(item => isActiveToday(item.id));
@@ -1935,48 +1986,54 @@ function RoutineChecklist() {
             const isDragging = dragIdx === i;
             const isOver = dragOverIdx === i && dragIdx !== null && dragIdx !== i;
             return (
-              <div key={item.id} style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                padding: '13px 14px 13px 14px',
-                borderTop: i > 0 ? '1px solid rgba(255,255,255,0.15)' : 'none',
-                opacity: isDragging ? 0.4 : checked ? 0.5 : 1,
-                background: isOver ? 'rgba(101,152,239,0.1)' : 'transparent',
-                transition: 'opacity 0.2s, background 0.15s',
-              }}>
-                {/* 순서 번호 — 자동 표준 정렬 (클렌저→토너→...→선크림) */}
+              <SwipeableRow
+                key={item.id}
+                rowId={item.id}
+                openRowId={openSwipeRowId}
+                setOpenRowId={setOpenSwipeRowId}
+                onDelete={() => handleSwipeDelete(item)}
+                onMoveUp={i > 0 ? () => handleSwipeMove(item, allItems, 'up') : null}
+                onMoveDown={i < allItems.length - 1 ? () => handleSwipeMove(item, allItems, 'down') : null}
+              >
                 <div style={{
-                  width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
-                  background: 'rgba(101,152,239,0.14)',
-                  color: '#6598ef', fontSize: 11, fontWeight: 700,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontFamily: 'inherit',
-                }}>{i + 1}</div>
-                {/* Icon */}
-                <span style={{ fontSize: 18 }}>{item.icon}</span>
-                {/* Name */}
-                <div onClick={() => setDetailItem(item)} style={{ flex: 1, cursor: 'pointer' }}>
-                  <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', textDecoration: checked ? 'line-through' : 'none' }}>{item.name}</div>
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>
-                    {(() => {
-                      const days = getItemDays(item.id);
-                      const allDays = days.every(Boolean);
-                      if (allDays) return '매일';
-                      const active = days.map((d, idx) => d ? dayLabels[idx] : null).filter(Boolean);
-                      return active.length > 0 ? active.join(' · ') : '비활성';
-                    })()}
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '13px 14px 13px 14px',
+                  borderTop: i > 0 ? '1px solid rgba(255,255,255,0.15)' : 'none',
+                  opacity: isDragging ? 0.4 : checked ? 0.5 : 1,
+                  background: isOver ? 'rgba(101,152,239,0.1)' : 'rgba(255,255,255,0.0)',
+                  transition: 'opacity 0.2s, background 0.15s',
+                }}>
+                  <div style={{
+                    width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+                    background: 'rgba(101,152,239,0.14)',
+                    color: '#6598ef', fontSize: 11, fontWeight: 700,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: 'inherit',
+                  }}>{i + 1}</div>
+                  <span style={{ fontSize: 18 }}>{item.icon}</span>
+                  <div onClick={() => setDetailItem(item)} style={{ flex: 1, cursor: 'pointer' }}>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', textDecoration: checked ? 'line-through' : 'none' }}>{item.name}</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>
+                      {(() => {
+                        const days = getItemDays(item.id);
+                        const allDays = days.every(Boolean);
+                        if (allDays) return '매일';
+                        const active = days.map((d, idx) => d ? dayLabels[idx] : null).filter(Boolean);
+                        return active.length > 0 ? active.join(' · ') : '비활성';
+                      })()}
+                    </div>
+                  </div>
+                  <div onClick={(e) => { e.stopPropagation(); handleToggle(item.id); }} style={{
+                    width: 24, height: 24, borderRadius: 8, flexShrink: 0, cursor: 'pointer',
+                    border: checked ? 'none' : '2px solid rgba(255,255,255,0.4)',
+                    background: checked ? 'var(--accent-primary, #6598ef)' : 'transparent',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: 'all 0.2s',
+                  }}>
+                    {checked && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
                   </div>
                 </div>
-                {/* Checkbox (right side) */}
-                <div onClick={(e) => { e.stopPropagation(); handleToggle(item.id); }} style={{
-                  width: 24, height: 24, borderRadius: 8, flexShrink: 0, cursor: 'pointer',
-                  border: checked ? 'none' : '2px solid rgba(255,255,255,0.4)',
-                  background: checked ? 'var(--accent-primary, #6598ef)' : 'transparent',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  transition: 'all 0.2s',
-                }}>
-                  {checked && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
-                </div>
-              </div>
+              </SwipeableRow>
             );
           })
         )}
