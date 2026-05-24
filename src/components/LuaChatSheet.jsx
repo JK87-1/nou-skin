@@ -3,7 +3,7 @@ import { getRecords, getSmoothedChanges, getChanges, getLatestRecord, getStableS
 import { getProfile } from '../storage/ProfileStorage';
 import { compressImage } from '../engine/PixelAnalysis';
 import { getProductsWithUsageContext, getRoutineSnapshot, getProducts, saveProduct as saveTrackerProduct } from '../storage/TrackerStorage';
-import { saveConsultSession, loadConsultSession, clearConsultSession } from '../storage/ConsultStorage';
+import { saveConsultSession, loadConsultSession, clearConsultSession, purgeLegacyConsultSession } from '../storage/ConsultStorage';
 import { buildRoutineRecommendation, serializeRoutineForPrompt, detectInteractions, serializeInteractionsForPrompt } from '../utils/routineBuilder';
 import { getMemoryContext, recordUserMessage } from '../storage/UserMemoryStorage';
 import { Capacitor } from '@capacitor/core';
@@ -305,19 +305,18 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
   const dragDelta = useRef(0);
   const MAX_IMAGES = 3;
 
+  // 첫 마운트 1회: 이전 단일 세션 키 정리 (페르소나 구분 없는 옛 데이터)
+  useEffect(() => { purgeLegacyConsultSession(); }, []);
+
   useEffect(() => {
     if (open) {
       setClosing(false);
-      // 이전 대화 복원 (오늘 세션만, 어제 이전은 자동 만료)
+      // 페르소나별 별도 세션 복원
       if (initialContext?.message) {
         setMessages([{ role: 'assistant', content: initialContext.message, timestamp: Date.now() }]);
       } else {
-        const prev = loadConsultSession();
-        if (prev && Array.isArray(prev) && prev.length > 0) {
-          setMessages(prev);
-        } else {
-          setMessages([]);
-        }
+        const prev = loadConsultSession(personaId);
+        setMessages(prev && Array.isArray(prev) && prev.length > 0 ? prev : []);
       }
       const meta = document.querySelector('meta[name="theme-color"]');
       if (meta) { meta._prev = meta.content; meta.content = '#85b5cc'; }
@@ -325,14 +324,14 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
       const meta = document.querySelector('meta[name="theme-color"]');
       if (meta && meta._prev) { meta.content = meta._prev; delete meta._prev; }
     }
-  }, [open, initialContext]);
+  }, [open, initialContext, personaId]);
 
-  // 메시지 변경 시 자동 저장 (debounce 없음 — 매 변경 즉시 저장. 작은 데이터라 부담 적음)
+  // 메시지 변경 시 자동 저장 — 현재 페르소나 슬롯에 저장
   useEffect(() => {
     if (!open) return;
     if (messages.length === 0) return;
-    saveConsultSession(messages);
-  }, [messages, open]);
+    saveConsultSession(messages, personaId);
+  }, [messages, open, personaId]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -686,7 +685,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
             </svg>
           </button>
 
-          <button onClick={() => { clearConsultSession(); setMessages([]); setInput(''); setPendingImages([]); applyingRef.current = new Set(); }} aria-label="새 채팅" className="gem-btn" style={{
+          <button onClick={() => { clearConsultSession(personaId); setMessages([]); setInput(''); setPendingImages([]); applyingRef.current = new Set(); }} aria-label="새 채팅" className="gem-btn" style={{
             width: 44, height: 44, borderRadius: 22,
             background: '#ffffff',
             border: '1.5px dashed rgba(0,0,0,0.18)',
