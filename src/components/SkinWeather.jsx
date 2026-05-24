@@ -197,7 +197,7 @@ export default function SkinWeather({ skinResult }) {
       {/* ── Weather Overview ── */}
       <div style={{ marginBottom: 16, animation: 'swFadeInUp 0.5s ease 0.05s both' }}>
         {/* 날짜 */}
-        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', marginBottom: 16, textAlign: 'center' }}>{weather.date}</div>
+        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', marginBottom: 16, textAlign: 'center' }}>{weather.date} · {weather.condition}</div>
 
         {/* 온도 + 상태 */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, padding: '0 12px' }}>
@@ -206,12 +206,11 @@ export default function SkinWeather({ skinResult }) {
               <span style={{ fontSize: 56, fontWeight: 700, color: '#fff', lineHeight: 1, letterSpacing: -2 }}>{weather.temp}°</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, marginBottom: 18 }}>
-              <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)', fontWeight: 500 }}>{weather.condition}</span>
               <span style={{ fontSize: 16, fontWeight: 600, color: 'rgba(255,255,255,0.8)' }}>{weather.tempMax}° / {weather.tempMin}°</span>
             </div>
           </div>
           <div style={{ marginLeft: 'auto', textAlign: 'center' }}>
-            <WeatherIconFilled emoji={weather.conditionIcon} size={66} />
+            <WeatherIconFilled emoji={weather.conditionIcon} size={80} />
           </div>
         </div>
 
@@ -489,8 +488,8 @@ export default function SkinWeather({ skinResult }) {
                     <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 600, width: 28 }}>{day.max}°</span>
                   </div>
                   <span style={{
-                    fontSize: 9, fontWeight: 600, color: ht.color,
-                    background: `${ht.color}12`, padding: '2px 6px', borderRadius: 6,
+                    fontSize: 9, fontWeight: 600, color: '#fff',
+                    background: `${ht.color}30`, padding: '2px 6px', borderRadius: 6,
                     flexShrink: 0,
                   }}>{ht.label}</span>
                 </div>
