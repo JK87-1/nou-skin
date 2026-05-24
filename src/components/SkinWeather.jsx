@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { generateAlerts, getSeasonalTip, getScheduledNotifications } from '../data/EnvironmentAlertData';
 import { getWeatherData, saveWeatherData, isStale, getUserLocation, saveUserLocation } from '../storage/WeatherStorage';
+import { scheduleWeatherNotifications, clearWeatherTimers } from '../utils/weatherNotificationScheduler';
 import { MicroscopeIcon, PastelIcon } from './icons/PastelIcons';
 import { WeatherIcon } from './WeatherChip';
 
@@ -165,6 +166,14 @@ export default function SkinWeather({ skinResult }) {
   const notifications = weather ? getScheduledNotifications(weather, skinProfile) : [];
   const highCount = alerts.filter(a => a.priority === 'high').length;
 
+  // 날씨 알림 로컬 스케줄링 — 앱이 열려있을 때 시간대별 알림 자동 발송
+  useEffect(() => {
+    if (notifications.length > 0) {
+      scheduleWeatherNotifications(notifications);
+    }
+    return () => clearWeatherTimers();
+  }, [weather]); // weather가 바뀔 때 재스케줄링
+
   return (
     <div style={{ padding: '0 20px 24px' }}>
       <style>{`
@@ -200,18 +209,12 @@ export default function SkinWeather({ skinResult }) {
         <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', marginBottom: 16, textAlign: 'center' }}>{weather.date} · {weather.condition}</div>
 
         {/* 온도 + 상태 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, padding: '0 12px' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-              <span style={{ fontSize: 56, fontWeight: 700, color: '#fff', lineHeight: 1, letterSpacing: -2 }}>{weather.temp}°</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, marginBottom: 18 }}>
-              <span style={{ fontSize: 16, fontWeight: 600, color: 'rgba(255,255,255,0.8)' }}>{weather.tempMax}° / {weather.tempMin}°</span>
-            </div>
-          </div>
-          <div style={{ marginLeft: 'auto', textAlign: 'center' }}>
-            <WeatherIconFilled emoji={weather.conditionIcon} size={80} />
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, padding: '0 16px' }}>
+          <span style={{ fontSize: 80, fontWeight: 500, color: '#fff', lineHeight: 1, letterSpacing: -3 }}>{weather.temp}°</span>
+          <WeatherIconFilled emoji={weather.conditionIcon} size={80} />
+        </div>
+        <div style={{ padding: '0 16px', marginBottom: 20 }}>
+          <span style={{ fontSize: 16, fontWeight: 600, color: 'rgba(255,255,255,0.8)' }}>{weather.tempMax}° / {weather.tempMin}°</span>
         </div>
 
         {/* ── Environment Indicators ── */}
@@ -536,33 +539,65 @@ export default function SkinWeather({ skinResult }) {
       </div>
 
       {/* ── Scheduled Notifications ── */}
-      {notifications.length > 0 && (
+      {notifications.length > 0 && (() => {
+        let weatherEnabled = false;
+        try {
+          const ps = JSON.parse(localStorage.getItem('lua_push_settings') || '{}');
+          weatherEnabled = !!ps.weatherEnabled;
+        } catch {}
+        const nowHour = new Date().getHours();
+        const parseNotifHour = (timeStr) => {
+          const match = timeStr.match(/(\d+):(\d+)/);
+          if (!match) return 0;
+          const h = parseInt(match[1]);
+          if (timeStr.includes('오후') && h !== 12) return h + 12;
+          if (timeStr.includes('오전') && h === 12) return 0;
+          return h;
+        };
+        const nextIdx = notifications.findIndex(n => parseNotifHour(n.time) > nowHour);
+        return (
         <div style={{ marginBottom: 8, animation: 'swFadeInUp 0.5s ease 0.4s both', background: 'rgba(255,255,255,0.42)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', borderRadius: 18, padding: 16 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 12 }}>
-            오늘 예정된 알림
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>오늘 예정된 알림</div>
+            {weatherEnabled ? (
+              <span style={{ fontSize: 10, fontWeight: 600, color: '#6598EF', background: 'rgba(101,152,239,0.1)', padding: '3px 8px', borderRadius: 8 }}>알림 ON</span>
+            ) : (
+              <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-dim)', background: 'rgba(255,255,255,0.08)', padding: '3px 8px', borderRadius: 8 }}>알림 OFF</span>
+            )}
           </div>
-          {notifications.map((n, i) => (
+          {!weatherEnabled && (
+            <div style={{ padding: '10px 14px', borderRadius: 12, marginBottom: 10, background: 'rgba(101,152,239,0.08)', border: '1px solid rgba(101,152,239,0.12)', fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+              마이 &gt; 알림 설정에서 피부 날씨 알림을 켜면 시간대별로 알림을 받을 수 있어요
+            </div>
+          )}
+          {notifications.map((n, i) => {
+            const h = parseNotifHour(n.time);
+            const isPast = h <= nowHour;
+            const isNext = i === nextIdx;
+            return (
             <div key={i} style={{
               display: 'flex', alignItems: 'flex-start', gap: 12,
               padding: '12px 14px', borderRadius: 14,
-              opacity: i === 0 ? 1 : 0.5,
-              background: i === 0 ? '#FFFFFF' : 'transparent',
+              opacity: isPast ? 0.35 : isNext ? 1 : 0.6,
+              background: isNext ? '#FFFFFF' : 'transparent',
               marginBottom: 4,
               animation: `swFadeInUp 0.3s ease ${0.4 + i * 0.06}s both`,
             }}>
               <div style={{
                 width: 8, height: 8, borderRadius: '50%', flexShrink: 0, marginTop: 4,
-                background: i === 0 ? '#6598EF' : 'rgba(255,255,255,0.1)',
+                background: isPast ? 'rgba(101,152,239,0.3)' : isNext ? '#6598EF' : 'rgba(255,255,255,0.15)',
               }} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>{n.title}</div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', textDecoration: isPast ? 'line-through' : 'none' }}>{n.title}</div>
                 <div style={{ fontSize: 10, color: 'var(--text-dim)', marginTop: 1 }}>{n.body}</div>
               </div>
-              <span style={{ fontSize: 10, color: 'var(--text-dim)', flexShrink: 0 }}>{n.time}</span>
+              <span style={{ fontSize: 10, color: isPast ? 'var(--text-dim)' : 'var(--text-muted)', flexShrink: 0 }}>{isPast ? '완료' : n.time}</span>
             </div>
-          ))}
+            );
+          })}
         </div>
-      )}
+        );
+      })()}
 
       </>}
     </div>
