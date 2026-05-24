@@ -482,6 +482,8 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
   // multi-token 매칭: 사용자가 "피지오겔 토너"·"수분 세럼" 같이 여러 키워드를 쳐도 매칭.
   // 각 토큰이 brand·name·category·ingredients 어디든 들어가면 점수.
   // 모든 토큰을 만족해야 매칭(AND).
+  // 정렬: score 우선 → 인기 brand 우선 → brand 다양성 dedup(한 brand 최대 2개).
+  const POPULAR_BRAND_SET = new Set(POPULAR_KOREAN_PRODUCTS.map(p => p.brand));
   const localMatch = (q) => {
     const norm = (s) => (s || '').replace(/\s+/g, '').toLowerCase();
     const tokens = (q || '')
@@ -519,23 +521,26 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
     const scored = [];
     const seen = new Set();
 
-    // 우선순위 1: 한국 인기 제품 데이터셋 (카테고리·성분 풍부)
+    // 우선순위 1: 한국 인기 제품 데이터셋
     for (const p of KOREAN_PRODUCTS) {
       const s = scoreProduct(p.brand, p.name, p.category, p.ingredients);
       if (s === 0) continue;
       const key = `${p.brand}|${p.name}`;
       if (seen.has(key)) continue;
       seen.add(key);
-      scored.push({ ...p, source: 'local', _score: s });
+      // 인기 brand boost — 같은 점수일 때 인기 brand가 위로
+      const popBoost = POPULAR_BRAND_SET.has(p.brand) ? 10 : 0;
+      scored.push({ ...p, source: 'local', _score: s + popBoost });
     }
 
-    // 우선순위 2: ProductCatalog (보조 — tags를 ingredients 자리에)
+    // 우선순위 2: ProductCatalog (보조)
     for (const p of PRODUCTS) {
       const s = scoreProduct(p.brand, p.name, '기타', p.tags);
       if (s === 0) continue;
       const key = `${p.brand}|${p.name}`;
       if (seen.has(key)) continue;
       seen.add(key);
+      const popBoost = POPULAR_BRAND_SET.has(p.brand) ? 10 : 0;
       scored.push({
         brand: p.brand,
         name: p.name,
@@ -544,12 +549,24 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
         ingredients: (p.tags || []).slice(0, 4),
         volume: p.volume || '',
         source: 'local',
-        _score: s - 5,
+        _score: s + popBoost - 5,
       });
     }
 
     scored.sort((a, b) => b._score - a._score);
-    return scored.slice(0, 8).map(({ _score, ...rest }) => rest);
+
+    // brand 다양성 — 한 brand 최대 2개 (사용자가 인기순으로 다양한 brand 보고 싶음)
+    const brandCount = new Map();
+    const diverse = [];
+    for (const p of scored) {
+      const c = brandCount.get(p.brand) || 0;
+      if (c >= 2) continue;
+      brandCount.set(p.brand, c + 1);
+      diverse.push(p);
+      if (diverse.length >= 10) break;
+    }
+
+    return diverse.map(({ _score, ...rest }) => rest);
   };
 
   // GPT 검색 (디바운스). 입력 즉시 skeleton 표시 → GPT 응답 도착 시 swap.
