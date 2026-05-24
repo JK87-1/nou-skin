@@ -177,6 +177,28 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
         {/* ① 상단 여백 */}
         <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0' }} />
 
+        {/* ② 점 인디케이터 */}
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          padding: '4px 0 0',
+        }}>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+            {[1, 2, 3].map(d => (
+              <div key={d} style={{
+                width: 8, height: 8,
+                borderRadius: '50%',
+                background: d <= step ? 'white' : 'transparent',
+                border: d <= step ? '1.5px solid white' : '1.5px solid rgba(255,255,255,0.4)',
+                transition: 'all 300ms ease',
+              }} />
+            ))}
+          </div>
+          <div style={{
+            fontSize: 10, fontWeight: 500,
+            color: 'rgba(255,255,255,0.7)', letterSpacing: 0.2,
+          }}>{step} / 3번째 측정</div>
+        </div>
+
         {/* ③ 헤드라인 블록 */}
         <div style={{
           textAlign: 'center', padding: '50px 28px 0',
@@ -258,21 +280,6 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
               </div>
             );
           })}
-        </div>
-
-        {/* ⑤ 점 인디케이터 */}
-        <div style={{
-          display: 'flex', justifyContent: 'center', gap: 6,
-          padding: '16px 0 12px',
-        }}>
-          {[1, 2, 3].map(d => (
-            <div key={d} style={{
-              width: d === step ? 18 : 6, height: 6,
-              borderRadius: 3,
-              background: d === step ? 'white' : 'rgba(255,255,255,0.35)',
-              transition: 'all 300ms ease',
-            }} />
-          ))}
         </div>
 
         {/* ⑥ CTA + 건너뛰기 */}
