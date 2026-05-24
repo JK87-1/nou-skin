@@ -565,23 +565,54 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ query: q }),
         });
-        const data = await r.json().catch(() => ({}));
         if (lastQueryRef.current !== q) return;
-        if (!r.ok) {
+        if (!r.ok || !r.body) {
+          const data = await r.json().catch(() => ({}));
           setSearchError(data.error || '검색에 실패했어요');
           setSearchLoading(false);
           return;
         }
-        const gpt = (data.products || []).map(p => ({ ...p, source: 'gpt' }));
-        cacheRef.current.set(q, gpt);
-        setSuggestions(mergeSuggestions(local, gpt));
+        const reader = r.body.getReader();
+        const decoder = new TextDecoder();
+        let buf = '';
+        const gptProducts = [];
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          if (lastQueryRef.current !== q) { try { reader.cancel(); } catch {}; return; }
+          buf += decoder.decode(value, { stream: true });
+          const lines = buf.split('\n');
+          buf = lines.pop() || '';
+          for (const ln of lines) {
+            const trimmed = ln.trim();
+            if (!trimmed.startsWith('data:')) continue;
+            const dataStr = trimmed.slice(5).trim();
+            if (!dataStr || dataStr === '[DONE]') continue;
+            let evt;
+            try { evt = JSON.parse(dataStr); } catch { continue; }
+            if (evt.error) {
+              setSearchError(evt.error);
+              continue;
+            }
+            if (evt.product) {
+              const p = { ...evt.product, source: 'gpt' };
+              gptProducts.push(p);
+              // 도착 즉시 화면에 반영
+              setSuggestions(prev => {
+                const merged = mergeSuggestions(local, gptProducts);
+                return merged;
+              });
+            }
+          }
+        }
+        cacheRef.current.set(q, gptProducts);
         setSearchLoading(false);
       } catch (e) {
         if (lastQueryRef.current !== q) return;
         setSearchError('네트워크 오류로 검색이 안 됐어요');
         setSearchLoading(false);
       }
-    }, 200);
+    }, 180);
     return () => clearTimeout(t);
   }, [searchQuery]);
 
