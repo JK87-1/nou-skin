@@ -53,7 +53,7 @@ const CONDITIONS = [
     desc: '낮의 햇살이나 밝은 실내가 좋아요',
     note: '창가 옆 자연광이나 밤 시간의 환한 조명이 정확해요.\n빛이 한쪽으로만 쏠리지 않도록 균일하게 비춰주세요.',
     icon: (
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
         <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
         <path d="M9.7 17l4.6 0" />
@@ -66,7 +66,7 @@ const CONDITIONS = [
     desc: '맑은 맨 얼굴로 준비해 주세요',
     note: '세안 후 5분 안, 스킨케어 전이 가장 좋아요.\n피부 속 고유의 결을 그대로 들여다볼 수 있게 도와주세요.',
     icon: (
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M6.8 11a6 6 0 1 0 10.396 0l-5.197 -8l-5.2 8z" />
       </svg>
     ),
@@ -77,7 +77,7 @@ const CONDITIONS = [
     desc: '정면 · 30cm · 가장 편안한 표정으로',
     note: '화면 가이드에 맞추어 얼굴의 긴장을 툭 풀어주세요.\n편안하게 이완된 표정일 때 가장 정밀한 분석이 가능해요.',
     icon: (
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M5 7h1a2 2 0 0 0 2 -2a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2" />
         <path d="M9 13a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
       </svg>
@@ -226,24 +226,24 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
                 key={i}
                 style={{
                   padding: '14px 0',
-                  borderBottom: i < CONDITIONS.length - 1 ? '1px solid rgba(255,255,255,0.22)' : 'none',
+                  borderBottom: i < CONDITIONS.length - 1 ? '1px dashed rgba(255,255,255,0.22)' : 'none',
                   animation: isFullSequence ? `mgCondIn 400ms cubic-bezier(0.32,0.72,0,1) both` : 'none',
                 }}
               >
                 {/* 아이콘 + 제목 + 설명 */}
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                   <div style={{
-                    width: 26, height: 26,
+                    width: 23, height: 23,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     flexShrink: 0, marginTop: 2,
                   }}>{c.icon}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
-                      fontSize: 19.5, fontWeight: 600, letterSpacing: -0.2,
+                      fontSize: 17.5, fontWeight: 600, letterSpacing: -0.2,
                       color: 'white', marginBottom: 3,
                     }}>{c.title}</div>
                     <div style={{
-                      fontSize: 15, lineHeight: 1.55,
+                      fontSize: 13.5, lineHeight: 1.55,
                       color: 'rgba(255,255,255,0.78)',
                     }}>{c.desc}</div>
                   </div>
@@ -251,12 +251,12 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
 
                 {/* 노트 */}
                 <div style={{
-                  marginTop: 8, marginLeft: 30,
+                  marginTop: 8, marginLeft: 33,
                   paddingLeft: 10,
                   borderLeft: '2px solid rgba(255,255,255,0.5)',
                 }}>
                   <div style={{
-                    fontSize: 14.3, lineHeight: 1.5,
+                    fontSize: 12.9, lineHeight: 1.5,
                     color: 'rgba(255,255,255,0.88)',
                     whiteSpace: 'pre-line',
                   }}>{c.note}</div>
