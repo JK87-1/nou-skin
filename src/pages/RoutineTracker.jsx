@@ -430,11 +430,41 @@ function PhotoRegistrationFlow({ onClose, onSave, saving, accent }) {
 
 // ===== 수동 등록 폼 =====
 
+// ===== 제품 누끼 이미지 캐시 (localStorage, 30일) =====
+const IMG_CACHE_KEY = 'lua_product_img_cache_v1';
+const IMG_CACHE_TTL = 30 * 86400 * 1000;
+function getImgFromCache(brand, name) {
+  try {
+    const cache = JSON.parse(localStorage.getItem(IMG_CACHE_KEY) || '{}');
+    const key = `${(brand || '').toLowerCase()}|${(name || '').toLowerCase()}`;
+    const hit = cache[key];
+    if (!hit) return undefined;
+    if (Date.now() - hit.at > IMG_CACHE_TTL) return undefined;
+    return hit.image; // null도 valid cache (이미지 없음 확정)
+  } catch { return undefined; }
+}
+function setImgCache(brand, name, image) {
+  try {
+    const cache = JSON.parse(localStorage.getItem(IMG_CACHE_KEY) || '{}');
+    const key = `${(brand || '').toLowerCase()}|${(name || '').toLowerCase()}`;
+    cache[key] = { image: image || null, at: Date.now() };
+    // 최근 200개만 유지
+    const entries = Object.entries(cache);
+    if (entries.length > 200) {
+      entries.sort((a, b) => (b[1].at || 0) - (a[1].at || 0));
+      const trimmed = Object.fromEntries(entries.slice(0, 200));
+      localStorage.setItem(IMG_CACHE_KEY, JSON.stringify(trimmed));
+    } else {
+      localStorage.setItem(IMG_CACHE_KEY, JSON.stringify(cache));
+    }
+  } catch {}
+}
+
 function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
   const [form, setForm] = useState({ brand: '', name: '', category: '기타', timeSlot: 'both' });
   const [activeField, setActiveField] = useState(null); // 'brand' | 'name'
   const [searchQuery, setSearchQuery] = useState('');
-  const [suggestions, setSuggestions] = useState([]); // [{brand,name,category,timeSlot,ingredients,volume,source}]
+  const [suggestions, setSuggestions] = useState([]); // [{brand,name,category,timeSlot,ingredients,volume,source,image,imgLoading}]
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState('');
   const userSelectedRef = useRef(false);
@@ -524,11 +554,50 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
         const key = `${(p.brand || '').toLowerCase()}|${(p.name || '').toLowerCase()}`;
         if (seen.has(key)) continue;
         seen.add(key);
-        out.push(p);
+        const cached = getImgFromCache(p.brand, p.name);
+        out.push({
+          ...p,
+          image: cached !== undefined ? cached : null,
+          imgLoading: cached === undefined,
+        });
       }
     }
     return out.slice(0, 10);
   }
+
+  // 진행 중 fetch 중복 방지
+  const inflightRef = useRef(new Set());
+  // suggestions가 바뀔 때마다 imgLoading=true인 것들에 대해 비동기 이미지 fetch
+  useEffect(() => {
+    const targets = suggestions.filter(s => {
+      const key = `${s.brand}|${s.name}`;
+      return s.imgLoading && !inflightRef.current.has(key);
+    });
+    if (targets.length === 0) return;
+    const fetchOne = async (s) => {
+      const key = `${s.brand}|${s.name}`;
+      inflightRef.current.add(key);
+      try {
+        const info = await fetchProductInfo(s.brand, s.name);
+        const image = info?.image || null;
+        setImgCache(s.brand, s.name, image);
+        setSuggestions(prev => prev.map(p =>
+          p.brand === s.brand && p.name === s.name
+            ? { ...p, image, imgLoading: false }
+            : p
+        ));
+      } catch {
+        setSuggestions(prev => prev.map(p =>
+          p.brand === s.brand && p.name === s.name
+            ? { ...p, image: null, imgLoading: false }
+            : p
+        ));
+      } finally {
+        inflightRef.current.delete(key);
+      }
+    };
+    targets.slice(0, 6).forEach(fetchOne);
+  }, [suggestions]);
 
   // 필드 입력 시 검색 query 업데이트
   const onFieldChange = (key, value) => {
@@ -544,6 +613,10 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
       name: s.name,
       category: s.category,
       timeSlot: s.timeSlot,
+      imageThumb: s.image || null,
+      ingredients: s.ingredients && s.ingredients.length > 0
+        ? { known: [], estimated: s.ingredients, source: s.source === 'gpt' ? 'gpt' : 'catalog' }
+        : null,
     });
     setSuggestions([]);
     setActiveField(null);
@@ -625,27 +698,61 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
                   borderTop: i > 0 ? '1px solid rgba(255,255,255,0.08)' : 'none',
                   cursor: 'pointer', fontFamily: 'inherit',
                   color: 'var(--text-primary)',
-                  display: 'flex', flexDirection: 'column', gap: 2,
+                  display: 'flex', gap: 12, alignItems: 'center',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: accent }}>{s.brand}</span>
-                  <span style={{
-                    fontSize: 9.5, padding: '1px 5px', borderRadius: 4,
-                    background: 'rgba(101,152,239,0.14)', color: '#6598ef', fontWeight: 600,
-                  }}>{s.category}</span>
-                  {s.source === 'gpt' && (
-                    <span style={{ fontSize: 9, color: 'var(--text-muted)', marginLeft: 'auto' }}>AI 검색</span>
+                {/* 누끼 이미지 thumbnail */}
+                <div style={{
+                  width: 52, height: 52, borderRadius: 10, flexShrink: 0,
+                  background: '#FFFFFF',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  overflow: 'hidden',
+                  position: 'relative',
+                }}>
+                  {s.image ? (
+                    <img src={s.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                  ) : s.imgLoading ? (
+                    <div style={{
+                      width: '70%', height: '70%', borderRadius: 8,
+                      background: 'linear-gradient(90deg, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.04) 100%)',
+                      backgroundSize: '200% 100%',
+                      animation: 'shimmer 1.2s ease-in-out infinite',
+                    }} />
+                  ) : (
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C8CDD3" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="6" y="3" width="12" height="18" rx="2"/><line x1="9" y1="8" x2="15" y2="8"/>
+                    </svg>
+                  )}
+                  <style>{`@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
+                </div>
+                {/* 텍스트 */}
+                <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: accent }}>{s.brand}</span>
+                    <span style={{
+                      fontSize: 9.5, padding: '1px 5px', borderRadius: 4,
+                      background: 'rgba(101,152,239,0.14)', color: '#6598ef', fontWeight: 600,
+                    }}>{s.category}</span>
+                    {s.source === 'gpt' && (
+                      <span style={{ fontSize: 9, color: 'var(--text-muted)', marginLeft: 'auto' }}>AI 검색</span>
+                    )}
+                  </div>
+                  <div style={{
+                    fontSize: 13.5, color: 'var(--text-primary)', letterSpacing: -0.1,
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  }}>{s.name}</div>
+                  {(s.volume || (s.ingredients && s.ingredients.length > 0)) && (
+                    <div style={{
+                      fontSize: 10.5, color: 'var(--text-muted)',
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>
+                      {s.volume && <span>{s.volume}</span>}
+                      {s.volume && s.ingredients && s.ingredients.length > 0 && <span> · </span>}
+                      {s.ingredients && s.ingredients.length > 0 && <span>{s.ingredients.slice(0, 3).join(', ')}</span>}
+                    </div>
                   )}
                 </div>
-                <div style={{ fontSize: 13.5, color: 'var(--text-primary)', letterSpacing: -0.1 }}>{s.name}</div>
-                {(s.volume || (s.ingredients && s.ingredients.length > 0)) && (
-                  <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginTop: 2 }}>
-                    {s.volume && <span>{s.volume}</span>}
-                    {s.volume && s.ingredients && s.ingredients.length > 0 && <span> · </span>}
-                    {s.ingredients && s.ingredients.length > 0 && <span>{s.ingredients.slice(0, 3).join(', ')}</span>}
-                  </div>
-                )}
               </button>
             ))}
           </div>
