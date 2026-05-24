@@ -1505,6 +1505,7 @@ function RoutineChecklist() {
   const [, forceTick] = useState(0); // 채팅 카드에서 제품 등록 시 강제 re-render trigger
   const [openSwipeRowId, setOpenSwipeRowId] = useState(null); // 현재 열린 swipe row (한 번에 하나)
   const [thumbMap, setThumbMap] = useState(() => new Map()); // IDB 누끼 이미지
+  const thumbBackfillRef = useRef(false);
 
   // IDB에서 product thumb 로드 + 등록 변경 이벤트 시 새로 받음
   useEffect(() => {
@@ -1520,6 +1521,42 @@ function RoutineChecklist() {
     window.addEventListener('lua:tracker-products-changed', onChanged);
     return () => { cancelled = true; window.removeEventListener('lua:tracker-products-changed', onChanged); };
   }, []);
+
+  // 누끼 이미지 없는 등록 제품을 백그라운드로 보강 (채팅 카드 적용 등으로 thumb 없는 케이스 자가치유)
+  useEffect(() => {
+    if (thumbBackfillRef.current) return;
+    if (thumbMap.size === 0 && products.length > 0) return; // thumbMap 로드 대기
+    const targets = products.filter(p => !thumbMap.get(String(p.id)) && (p.brand || p.name));
+    if (targets.length === 0) return;
+    thumbBackfillRef.current = true;
+    let cancelled = false;
+    (async () => {
+      for (let i = 0; i < targets.length; i++) {
+        if (cancelled) return;
+        const t = targets[i];
+        try {
+          const resp = await fetch('/api/product-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ brand: t.brand || '', name: t.name || '', query: `${t.brand} ${t.name}`.trim(), fast: true }),
+          });
+          if (resp.ok) {
+            const data = await resp.json();
+            if (data.image) {
+              const { setProductThumb } = await import('../storage/ImageStore');
+              await setProductThumb(t.id, data.image);
+              if (!cancelled) {
+                setThumbMap(prev => { const next = new Map(prev); next.set(String(t.id), data.image); return next; });
+              }
+            }
+          }
+        } catch { /* skip */ }
+        if (i < targets.length - 1) await new Promise(r => setTimeout(r, 250));
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [thumbMap, products.length]);
 
   // 케어 row 삭제 핸들러 — 추천 루틴이면 removeRoutine, 등록 제품이면 deleteProduct
   const handleSwipeDelete = (item) => {

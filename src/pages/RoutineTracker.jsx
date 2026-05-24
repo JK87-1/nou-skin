@@ -1262,6 +1262,37 @@ export default function RoutineTracker({ themeColors, onBack }) {
   // 첫 진입 시 1회만. rate limit·서버 부하 고려해 1초 간격.
   const [backfillProgress, setBackfillProgress] = useState(null); // null | { done, total }
   const backfillStartedRef = useRef(false);
+  const thumbBackfillRef = useRef(false);
+
+  // 누끼 이미지 없는 제품을 마운트 시 백그라운드로 보강 (채팅 카드 적용 등 thumb 없이 들어온 제품 cover)
+  useEffect(() => {
+    if (thumbBackfillRef.current) return;
+    const targets = products.filter(p => !p.imageThumb && (p.brand || p.name));
+    if (targets.length === 0) return;
+    thumbBackfillRef.current = true;
+    let cancelled = false;
+    (async () => {
+      for (let i = 0; i < targets.length; i++) {
+        if (cancelled) return;
+        const t = targets[i];
+        try {
+          const info = await fetchProductInfo(t.brand, t.name, { fast: true });
+          if (info?.image) {
+            const { setProductThumb } = await import('../storage/ImageStore');
+            await setProductThumb(t.id, info.image);
+            if (!cancelled) {
+              setProducts(prev => prev.map(p => p.id === t.id ? { ...p, imageThumb: info.image } : p));
+              window.dispatchEvent(new CustomEvent('lua:tracker-products-changed'));
+            }
+          }
+        } catch { /* skip */ }
+        // stagger
+        if (i < targets.length - 1) await new Promise(r => setTimeout(r, 250));
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [products.length]);
 
   useEffect(() => {
     if (backfillStartedRef.current) return;
