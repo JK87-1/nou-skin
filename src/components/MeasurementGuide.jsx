@@ -281,9 +281,10 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
         </div>
 
         {/* ⑥ CTA + 건너뛰기 */}
-        <div style={{
+        {ctaReady && <div style={{
           padding: '0 28px calc(env(safe-area-inset-bottom, 0px) + 12px)',
           display: 'flex', flexDirection: 'column', alignItems: 'center',
+          animation: 'mgCondIn 400ms cubic-bezier(0.32,0.72,0,1) both',
         }}>
           <button
             onClick={(e) => { e.stopPropagation(); handleStart(); }}
@@ -312,7 +313,7 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
               minHeight: 36,
             }}
           >건너뛰기</button>
-        </div>
+        </div>}
       </div>
     </div>
   );
