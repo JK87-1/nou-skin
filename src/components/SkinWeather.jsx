@@ -96,7 +96,21 @@ const METEOCONS_MAP = {
 
 function WeatherIconFilled({ emoji, size = 24 }) {
   const name = METEOCONS_MAP[emoji] || 'overcast';
-  return <img src={`${METEOCONS_BASE}/${name}.svg`} width={size} height={size} alt="" style={{ display: 'inline-block', flexShrink: 0 }} />;
+  const url = `${METEOCONS_BASE}/${name}.svg`;
+  // 큰 사이즈에서는 object 태그 사용 (img는 iOS에서 SVG 애니메이션/렌더링 깨짐)
+  if (size >= 40) {
+    return (
+      <object
+        data={url}
+        type="image/svg+xml"
+        width={size}
+        height={size}
+        style={{ display: 'inline-block', flexShrink: 0, pointerEvents: 'none' }}
+        aria-hidden="true"
+      />
+    );
+  }
+  return <img src={url} width={size} height={size} alt="" style={{ display: 'inline-block', flexShrink: 0 }} />;
 }
 
 // ===== Main Component =====
