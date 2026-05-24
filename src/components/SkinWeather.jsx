@@ -454,6 +454,7 @@ export default function SkinWeather({ skinResult }) {
       {!skinResult && (
         <div style={{
           padding: 16, borderRadius: 18,
+          background: 'rgba(34,113,208,0.02)',
           marginBottom: 16, textAlign: 'center',
           animation: 'swFadeInUp 0.5s ease 0.15s both',
         }}>
