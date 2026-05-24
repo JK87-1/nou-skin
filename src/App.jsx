@@ -2597,7 +2597,7 @@ export default function App() {
       {showTabBar && (!(homeCards.insight && activeTab === 'home' && stage === 'landing' && getLatestRecord()) || insightCollapsed) && (
         <div style={{
           position: 'fixed',
-          bottom: 'calc(76px + env(safe-area-inset-bottom, 0px) + 36px)',
+          bottom: 'calc(76px + env(safe-area-inset-bottom, 0px) + 18px)',
           right: 21,
           zIndex: 90,
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,

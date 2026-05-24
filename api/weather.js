@@ -132,8 +132,17 @@ export default async function handler(req, res) {
     const seasonFactor = [0.4, 0.5, 0.7, 0.85, 0.95, 1.0, 1.0, 0.95, 0.8, 0.6, 0.45, 0.35][month];
     const estimatedUV = Math.round(11 * solarFactor * cloudFactor * seasonFactor);
 
-    // 3-hour forecast (next 5 entries)
-    const forecastList = (forecast.list || []).slice(0, 5).map((f) => {
+    // 3-hour forecast — 현재 시간대 슬롯부터 시작 (총 5개)
+    // 현재 시간의 3시간 블록 시작점 (예: 1:30 PM → 12:00 PM)
+    const currentBlockHour = Math.floor(hour / 3) * 3;
+    const currentBlockLabel = `${String(currentBlockHour).padStart(2, '0')}시`;
+    const currentEntry = {
+      time: currentBlockLabel,
+      icon: cond.icon,
+      temp: Math.round(weather.main.temp),
+      uv: estimatedUV,
+    };
+    const futureEntries = (forecast.list || []).slice(0, 4).map((f) => {
       const fNight = f.dt > weather.sys.sunset || f.dt < weather.sys.sunrise;
       const fCond = getCondition(f.weather?.[0]?.main || 'Clear', fNight);
       const fKST = toKST(f.dt);
@@ -147,6 +156,7 @@ export default async function handler(req, res) {
         uv: Math.round(11 * fSolar * fCloud * seasonFactor),
       };
     });
+    const forecastList = [currentEntry, ...futureEntries];
 
     // 5-day forecast (aggregate by day, KST-based)
     const todayKey = kstDateKey(now);
@@ -183,12 +193,20 @@ export default async function handler(req, res) {
       locationName = g.local_names?.ko || g.name || locationName;
     }
 
+    // 오늘 하루 최고/최저 — forecast에서 오늘 날짜 항목 + 현재 기온 포함
+    const todayTemps = [weather.main.temp];
+    for (const f of forecast.list || []) {
+      if (kstDateKey(f.dt) === todayKey) {
+        todayTemps.push(f.main.temp);
+      }
+    }
+
     const result = {
       location: locationName,
       date: formatKoreanDate(weather.dt),
       temp: Math.round(weather.main.temp),
-      tempMin: Math.round(weather.main.temp_min),
-      tempMax: Math.round(weather.main.temp_max),
+      tempMin: Math.round(Math.min(...todayTemps)),
+      tempMax: Math.round(Math.max(...todayTemps)),
       condition: cond.label,
       conditionIcon: cond.icon,
       humidity: weather.main.humidity,
