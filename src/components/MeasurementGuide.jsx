@@ -75,7 +75,7 @@ const CONDITIONS = [
     step: '셋',
     title: '자세',
     desc: '정면 · 30cm · 가장 편안한 표정으로',
-    note: '화면 가이드에 맞추어 얼굴의 긴장을 툭 풀어주세요.\n편안하게 이완된 표정일 때 가장 정밀한 분석이 가능해요.',
+    note: '화면 가이드에 맞추어 얼굴의 긴장을 풀어주세요.\n편안하게 이완된 표정일 때 가장 정밀한 분석이 가능해요.',
     icon: (
       <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M5 7h1a2 2 0 0 0 2 -2a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2" />
