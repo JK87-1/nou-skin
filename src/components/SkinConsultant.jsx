@@ -5,7 +5,7 @@ import { saveConsultSession, loadConsultSession, clearConsultSession } from '../
 import { compressImage } from '../engine/PixelAnalysis';
 import { incrementStat, addXP, checkAndAwardBadges } from '../storage/BadgeStorage';
 import { PRODUCTS, CATEGORY_META, getProductsByCategory, calcMatchScore } from '../data/ProductCatalog';
-import { getProducts, getProductsWithUsageContext, getRoutineSnapshot } from '../storage/TrackerStorage';
+import { getProducts, getProductsWithUsageContext, getRoutineSnapshot, saveProduct as saveTrackerProduct } from '../storage/TrackerStorage';
 import { buildRoutineRecommendation, serializeRoutineForPrompt, detectInteractions, serializeInteractionsForPrompt } from '../utils/routineBuilder';
 import { getMemoryContext, recordUserMessage } from '../storage/UserMemoryStorage';
 import { Capacitor } from '@capacitor/core';
@@ -37,6 +37,36 @@ function extractRecommendTags(text) {
     .trim();
 
   return { cleanText, categories: categories.slice(0, 2) };
+}
+
+/** Extract [APPLY_ROUTINE]{...}[/APPLY_ROUTINE] JSON block — return parsed routine or null. */
+const TRACKER_CATEGORY_SET = new Set(['클렌저','토너','에센스','세럼','크림','선크림','마스크팩','기타']);
+function extractApplyRoutine(text) {
+  if (!text) return { cleanText: text, routine: null };
+  const re = /\[APPLY_ROUTINE\]\s*([\s\S]*?)\s*\[\/APPLY_ROUTINE\]/;
+  const m = text.match(re);
+  if (!m) return { cleanText: text, routine: null };
+  let parsed = null;
+  try { parsed = JSON.parse(m[1]); } catch { parsed = null; }
+  const cleanText = text.replace(re, '').trim();
+  if (!parsed || typeof parsed !== 'object') return { cleanText, routine: null };
+
+  const sanitize = (arr) => Array.isArray(arr) ? arr
+    .filter(x => x && typeof x === 'object' && typeof x.name === 'string' && x.name.trim())
+    .map(x => ({
+      name: String(x.name).trim().slice(0, 60),
+      brand: typeof x.brand === 'string' ? x.brand.trim().slice(0, 40) : '',
+      category: TRACKER_CATEGORY_SET.has(x.category) ? x.category : '기타',
+      timeSlot: ['morning','night','both'].includes(x.timeSlot) ? x.timeSlot : 'both',
+      ingredients: typeof x.ingredients === 'string' ? x.ingredients.trim().slice(0, 120) : '',
+    }))
+    .slice(0, 12)
+    : [];
+
+  const morning = sanitize(parsed.morning);
+  const night = sanitize(parsed.night);
+  if (morning.length === 0 && night.length === 0) return { cleanText, routine: null };
+  return { cleanText, routine: { morning, night } };
 }
 
 /** Score ring SVG — small circular progress */

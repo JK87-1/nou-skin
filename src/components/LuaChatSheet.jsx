@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { getRecords, getSmoothedChanges, getChanges, getLatestRecord, getStableSkinAge, getRecentTrend } from '../storage/SkinStorage';
 import { getProfile } from '../storage/ProfileStorage';
 import { compressImage } from '../engine/PixelAnalysis';
-import { getProductsWithUsageContext, getRoutineSnapshot, getProducts } from '../storage/TrackerStorage';
+import { getProductsWithUsageContext, getRoutineSnapshot, getProducts, saveProduct as saveTrackerProduct } from '../storage/TrackerStorage';
 import { buildRoutineRecommendation, serializeRoutineForPrompt, detectInteractions, serializeInteractionsForPrompt } from '../utils/routineBuilder';
 import { getMemoryContext, recordUserMessage } from '../storage/UserMemoryStorage';
 import { Capacitor } from '@capacitor/core';
@@ -13,6 +13,43 @@ import PersonaPicker from './PersonaPicker';
 
 function getGreetingMsg() {
   return '안녕하세요, 당신의 피부 상담사 루아에요. 궁금한 점이 있으면 편하게 물어보세요!';
+}
+
+// ===== AI 응답에서 [APPLY_ROUTINE] JSON 블록 추출 =====
+const TRACKER_CATEGORY_SET = new Set(['클렌저','토너','에센스','세럼','크림','선크림','마스크팩','기타']);
+function extractApplyRoutine(text) {
+  if (!text) return { cleanText: text, routine: null };
+  const re = /\[APPLY_ROUTINE\]\s*([\s\S]*?)\s*\[\/APPLY_ROUTINE\]/;
+  const m = text.match(re);
+  if (!m) return { cleanText: text, routine: null };
+  let parsed = null;
+  try { parsed = JSON.parse(m[1]); } catch { parsed = null; }
+  const cleanText = text.replace(re, '').trim();
+  if (!parsed || typeof parsed !== 'object') return { cleanText, routine: null };
+
+  const sanitize = (arr) => Array.isArray(arr) ? arr
+    .filter(x => x && typeof x === 'object' && typeof x.name === 'string' && x.name.trim())
+    .map(x => ({
+      name: String(x.name).trim().slice(0, 60),
+      brand: typeof x.brand === 'string' ? x.brand.trim().slice(0, 40) : '',
+      category: TRACKER_CATEGORY_SET.has(x.category) ? x.category : '기타',
+      timeSlot: ['morning','night','both'].includes(x.timeSlot) ? x.timeSlot : 'both',
+      ingredients: typeof x.ingredients === 'string' ? x.ingredients.trim().slice(0, 120) : '',
+    }))
+    .slice(0, 12)
+    : [];
+
+  const morning = sanitize(parsed.morning);
+  const night = sanitize(parsed.night);
+  if (morning.length === 0 && night.length === 0) return { cleanText, routine: null };
+  return { cleanText, routine: { morning, night } };
+}
+
+// 같은 제품(name+brand 일치)이 이미 등록됐는지 체크
+function findExistingTrackerProduct(existing, item) {
+  const norm = (s) => (s || '').replace(/\s+/g, '').toLowerCase();
+  const itemKey = norm(item.brand) + '|' + norm(item.name);
+  return existing.find(p => norm(p.brand) + '|' + norm(p.name) === itemKey);
 }
 
 function formatTime(ts) {
@@ -135,6 +172,51 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [personaId, setPersonaId] = useState(() => getActivePersonaId());
   const [personaPickerOpen, setPersonaPickerOpen] = useState(false);
+  const [appliedRoutineKeys, setAppliedRoutineKeys] = useState(() => new Set());
+  const [toast, setToast] = useState(null);
+
+  const showToast = useCallback((text) => {
+    setToast(text);
+    setTimeout(() => setToast(null), 2600);
+  }, []);
+
+  const handleApplyRoutine = useCallback((messageKey, routine) => {
+    if (!routine) return;
+    const existing = getProducts();
+    const all = [...(routine.morning || []), ...(routine.night || [])];
+    // dedupe by brand+name (block-level)
+    const seen = new Set();
+    const items = [];
+    for (const it of all) {
+      const k = `${(it.brand || '').toLowerCase()}|${(it.name || '').toLowerCase()}`;
+      if (seen.has(k)) continue;
+      seen.add(k);
+      items.push(it);
+    }
+    let added = 0, skipped = 0;
+    for (const it of items) {
+      const existed = findExistingTrackerProduct(existing, it);
+      if (existed) { skipped++; continue; }
+      try {
+        saveTrackerProduct({
+          brand: it.brand || '',
+          name: it.name,
+          category: it.category,
+          timeSlot: it.timeSlot,
+          ingredients: it.ingredients ? { known: [], estimated: it.ingredients.split(',').map(s => s.trim()).filter(Boolean), source: 'consult' } : null,
+        });
+        added++;
+      } catch (e) {
+        // 20개 초과 등
+        showToast(e.message || '등록 중 문제가 생겼어요');
+        return;
+      }
+    }
+    setAppliedRoutineKeys(prev => new Set(prev).add(messageKey));
+    if (added > 0 && skipped > 0) showToast(`${added}개 등록 · ${skipped}개는 이미 있음`);
+    else if (added > 0) showToast(`${added}개 제품을 케어에 등록했어요`);
+    else if (skipped > 0) showToast(`이미 모두 등록된 제품이에요`);
+  }, [showToast]);
   const persona = getPersonaById(personaId);
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
@@ -577,10 +659,20 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
             const isLast = i === messages.length - 1;
 
             if (isLua) {
+              const { cleanText, routine } = extractApplyRoutine(msg.content);
+              const messageKey = msg.timestamp ? `t-${msg.timestamp}` : `i-${i}`;
+              const isApplied = appliedRoutineKeys.has(messageKey);
               // Gemini 스타일: 버블 없음. 평문 마크다운만. 답변 아래 액션 row.
               return (
                 <div key={i} style={{ padding: '10px 2px 4px', fontSize: 16 }}>
-                  {renderChatMarkdown(msg.content)}
+                  {renderChatMarkdown(cleanText)}
+                  {routine && (
+                    <ApplyRoutineCard
+                      routine={routine}
+                      applied={isApplied}
+                      onApply={() => handleApplyRoutine(messageKey, routine)}
+                    />
+                  )}
                   {!isLoading || !isLast ? (
                     <div style={{ display: 'flex', gap: 18, alignItems: 'center', marginTop: 14, paddingTop: 2 }}>
                       <button className="gem-act" aria-label="좋아요" onClick={() => {}}>
@@ -819,6 +911,119 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
           </div>
         </div>
       </div>
+
+      {/* Toast — 케어 등록 결과 */}
+      {toast && (
+        <div style={{
+          position: 'fixed', left: '50%', bottom: 'calc(120px + env(safe-area-inset-bottom,0px))',
+          transform: 'translateX(-50%)',
+          background: '#1F2937', color: '#fff',
+          padding: '12px 18px', borderRadius: 22,
+          fontSize: 13.5, fontWeight: 600, letterSpacing: -0.2,
+          boxShadow: '0 8px 28px rgba(0,0,0,0.28)',
+          zIndex: 10500,
+          pointerEvents: 'none',
+          animation: 'toastRise 220ms ease-out',
+          maxWidth: '86vw', textAlign: 'center',
+        }}>
+          <style>{`@keyframes toastRise { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }`}</style>
+          {toast}
+        </div>
+      )}
     </>
+  );
+}
+
+// ===== 상담 응답에 첨부되는 "이 루틴 케어에 적용" 카드 =====
+function ApplyRoutineCard({ routine, applied, onApply }) {
+  const allItems = [
+    ...routine.morning.map(it => ({ ...it, _slot: 'morning' })),
+    ...routine.night.map(it => ({ ...it, _slot: 'night' })),
+  ];
+  // dedupe by brand+name
+  const seen = new Set();
+  const display = [];
+  for (const it of allItems) {
+    const k = `${(it.brand || '').toLowerCase()}|${it.name.toLowerCase()}`;
+    if (seen.has(k)) continue;
+    seen.add(k);
+    display.push(it);
+  }
+  const total = display.length;
+
+  return (
+    <div style={{
+      marginTop: 14,
+      background: applied ? 'rgba(101,152,239,0.08)' : 'linear-gradient(180deg, #F4F8FF 0%, #EAF1FE 100%)',
+      border: '1px solid rgba(101,152,239,0.32)',
+      borderRadius: 18,
+      padding: '14px 16px',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+        </svg>
+        <div style={{ fontSize: 13.5, fontWeight: 700, color: '#1F2937', letterSpacing: -0.2 }}>이 루틴 케어에 적용</div>
+      </div>
+      <div style={{ marginBottom: 12 }}>
+        {['morning', 'night'].map((slot) => {
+          const items = display.filter(d => slot === 'morning' ? (d._slot === 'morning' || d.timeSlot === 'both') : (d._slot === 'night' || d.timeSlot === 'both'));
+          // 위에서 dedupe 했으므로 양쪽에 같은 _slot 기준으로만
+          const slotItems = display.filter(d => d._slot === slot);
+          if (slotItems.length === 0) return null;
+          return (
+            <div key={slot} style={{ marginBottom: 6 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#6598ef', letterSpacing: 0.5, marginBottom: 4 }}>
+                {slot === 'morning' ? '아침' : '저녁'} · {slotItems.length}개
+              </div>
+              {slotItems.map((it, idx) => (
+                <div key={idx} style={{
+                  display: 'flex', alignItems: 'baseline', gap: 6,
+                  fontSize: 12.5, color: '#374151', lineHeight: 1.55,
+                  padding: '2px 0',
+                }}>
+                  <span style={{
+                    fontSize: 10, fontWeight: 700, color: '#6598ef',
+                    background: 'rgba(101,152,239,0.14)',
+                    padding: '1px 6px', borderRadius: 6,
+                    flexShrink: 0, marginRight: 2,
+                  }}>{it.category}</span>
+                  <span style={{ color: '#1F2937' }}>
+                    {it.brand && <strong style={{ fontWeight: 600 }}>{it.brand}</strong>} {it.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          );
+        })}
+      </div>
+      <button
+        onClick={onApply}
+        disabled={applied}
+        style={{
+          width: '100%', padding: '12px 14px',
+          background: applied ? 'rgba(101,152,239,0.18)' : 'linear-gradient(135deg, #6598ef, #8ac4fe)',
+          border: 'none', borderRadius: 12,
+          color: applied ? '#3D7CA8' : '#fff',
+          fontSize: 14, fontWeight: 700, letterSpacing: -0.2,
+          cursor: applied ? 'default' : 'pointer',
+          boxShadow: applied ? 'none' : '0 4px 14px rgba(101,152,239,0.28)',
+          fontFamily: 'inherit',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+        }}
+      >
+        {applied ? (
+          <>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3D7CA8" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7"/></svg>
+            <span>케어에 적용됨</span>
+          </>
+        ) : (
+          <>
+            <span>케어에 {total}개 등록</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </>
+        )}
+      </button>
+    </div>
   );
 }
