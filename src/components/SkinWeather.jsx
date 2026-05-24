@@ -520,15 +520,9 @@ export default function SkinWeather({ skinResult }) {
         borderRadius: 18, padding: 18,
         marginBottom: 16, animation: 'swFadeInUp 0.5s ease 0.3s both',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-          <div style={{
-            width: 32, height: 32, borderRadius: 10, fontSize: 18,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}><PastelIcon emoji={seasonal.icon} size={18} /></div>
-          <div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{seasonal.title}</div>
-            <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{seasonal.season} 시즌 가이드</div>
-          </div>
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{seasonal.title}</div>
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{seasonal.season} 시즌 가이드</div>
         </div>
         <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 14 }}>
           {seasonal.content}
