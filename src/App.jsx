@@ -2675,7 +2675,11 @@ export default function App() {
       )}
 
       {/* ===== LUA CHAT SHEET (Global) ===== */}
-      <LuaChatSheet open={fabChatOpen} onClose={() => setFabChatOpen(false)} />
+      <LuaChatSheet
+        open={fabChatOpen}
+        onClose={() => setFabChatOpen(false)}
+        onNavigateCare={() => { setFabChatOpen(false); goToHistory(); }}
+      />
 
       {/* ===== TAB BAR ===== */}
       {showTabBar && <TabBar activeTab={activeTab} onTabChange={switchTab} onMeasure={openCamera} themeColors={activeThemeColors} colorMode={colorMode} />}

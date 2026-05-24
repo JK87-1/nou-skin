@@ -170,7 +170,7 @@ function renderChatMarkdown(text) {
   });
 }
 
-export default function LuaChatSheet({ open, onClose, initialContext }) {
+export default function LuaChatSheet({ open, onClose, initialContext, onNavigateCare }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -184,21 +184,21 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
   const [personaPickerOpen, setPersonaPickerOpen] = useState(false);
   const [appliedRoutineKeys, setAppliedRoutineKeys] = useState(() => new Set());
   const applyingRef = useRef(new Set()); // 동기 잠금 — React state 비동기로 인한 중복 호출 방지
-  const [toast, setToast] = useState(null);
+  const [toast, setToast] = useState(null); // { text, action: { label, onClick } | null }
 
-  const showToast = useCallback((text) => {
-    setToast(text);
-    setTimeout(() => setToast(null), 2600);
+  const showToast = useCallback((text, action = null) => {
+    setToast({ text, action });
+    setTimeout(() => setToast(null), action ? 4200 : 2600);
   }, []);
 
   const handleApplyRoutine = useCallback((messageKey, routine) => {
     if (!routine) return;
-    // 동기 잠금: 이미 적용 중이거나 적용 완료된 카드는 즉시 차단
     if (applyingRef.current.has(messageKey)) return;
     applyingRef.current.add(messageKey);
+
     const existing = getProducts();
     const all = [...(routine.morning || []), ...(routine.night || [])];
-    // dedupe by brand+name (block-level)
+    // block-level dedup by brand+name
     const seen = new Set();
     const items = [];
     for (const it of all) {
@@ -207,30 +207,45 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
       seen.add(k);
       items.push(it);
     }
+
     let added = 0, skipped = 0;
     for (const it of items) {
+      // ingredients sanitize — string·array 둘 다 처리
+      let ingObj = null;
+      if (it.ingredients) {
+        const arr = Array.isArray(it.ingredients)
+          ? it.ingredients.map(s => String(s).trim()).filter(Boolean)
+          : String(it.ingredients).split(',').map(s => s.trim()).filter(Boolean);
+        if (arr.length > 0) ingObj = { known: [], estimated: arr, source: 'consult' };
+      }
       const existed = findExistingTrackerProduct(existing, it);
-      if (existed) { skipped++; continue; }
       try {
+        // 항상 saveProduct 호출 — TrackerStorage가 자동 dedup 또는 신규 push.
+        // dedup이 작동하면 기존 정보 보강만 되고 added 카운트엔 반영 안 함.
         saveTrackerProduct({
           brand: it.brand || '',
           name: it.name,
           category: it.category,
-          timeSlot: it.timeSlot,
-          ingredients: it.ingredients ? { known: [], estimated: it.ingredients.split(',').map(s => s.trim()).filter(Boolean), source: 'consult' } : null,
+          timeSlot: it.timeSlot || 'both',
+          ingredients: ingObj,
         });
-        added++;
+        if (existed) skipped++;
+        else added++;
       } catch (e) {
-        // 20개 초과 등
         showToast(e.message || '등록 중 문제가 생겼어요');
         return;
       }
     }
     setAppliedRoutineKeys(prev => new Set(prev).add(messageKey));
-    if (added > 0 && skipped > 0) showToast(`${added}개 등록 · ${skipped}개는 이미 있음`);
-    else if (added > 0) showToast(`${added}개 제품을 케어에 등록했어요`);
-    else if (skipped > 0) showToast(`이미 모두 등록된 제품이에요`);
-  }, [showToast]);
+
+    // 토스트 + "케어에서 확인" 액션
+    if (added > 0) {
+      const msg = skipped > 0 ? `${added}개 등록 · ${skipped}개는 이미 있음` : `${added}개 제품을 케어에 등록했어요`;
+      showToast(msg, onNavigateCare ? { label: '케어에서 확인', onClick: onNavigateCare } : null);
+    } else if (skipped > 0) {
+      showToast(`이미 케어에 모두 등록되어 있어요`, onNavigateCare ? { label: '케어에서 확인', onClick: onNavigateCare } : null);
+    }
+  }, [showToast, onNavigateCare]);
   const persona = getPersonaById(personaId);
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
@@ -932,16 +947,29 @@ export default function LuaChatSheet({ open, onClose, initialContext }) {
           position: 'fixed', left: '50%', bottom: 'calc(120px + env(safe-area-inset-bottom,0px))',
           transform: 'translateX(-50%)',
           background: '#1F2937', color: '#fff',
-          padding: '12px 18px', borderRadius: 22,
+          padding: toast.action ? '10px 10px 10px 18px' : '12px 18px',
+          borderRadius: 22,
           fontSize: 13.5, fontWeight: 600, letterSpacing: -0.2,
           boxShadow: '0 8px 28px rgba(0,0,0,0.28)',
           zIndex: 10500,
-          pointerEvents: 'none',
           animation: 'toastRise 220ms ease-out',
-          maxWidth: '86vw', textAlign: 'center',
+          maxWidth: '86vw',
+          display: 'flex', alignItems: 'center', gap: 10,
         }}>
           <style>{`@keyframes toastRise { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }`}</style>
-          {toast}
+          <span style={{ pointerEvents: 'none' }}>{toast.text}</span>
+          {toast.action && (
+            <button
+              onClick={() => { try { toast.action.onClick(); } catch {}; setToast(null); }}
+              style={{
+                background: 'rgba(255,255,255,0.16)',
+                border: 'none', borderRadius: 16,
+                padding: '7px 13px', color: '#A8C9F5',
+                fontSize: 12.5, fontWeight: 700, letterSpacing: -0.2,
+                cursor: 'pointer', fontFamily: 'inherit',
+              }}
+            >{toast.action.label}</button>
+          )}
         </div>
       )}
     </>
