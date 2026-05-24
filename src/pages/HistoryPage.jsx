@@ -1523,10 +1523,16 @@ function RoutineChecklist() {
   }, []);
 
   // 누끼 이미지 없는 등록 제품을 백그라운드로 보강 (채팅 카드 적용 등으로 thumb 없는 케이스 자가치유)
+  // products 변수는 컴포넌트 아래쪽에서 정의되므로 effect 안에서 직접 getProducts() 호출.
   useEffect(() => {
     if (thumbBackfillRef.current) return;
-    if (thumbMap.size === 0 && products.length > 0) return; // thumbMap 로드 대기
-    const targets = products.filter(p => !thumbMap.get(String(p.id)) && (p.brand || p.name));
+    if (thumbMap.size === 0) {
+      // 아직 thumbMap 로드 전 — 다음 사이클에 재시도
+      return;
+    }
+    let allProducts = [];
+    try { allProducts = getProducts(); } catch { return; }
+    const targets = allProducts.filter(p => !thumbMap.get(String(p.id)) && (p.brand || p.name));
     if (targets.length === 0) return;
     thumbBackfillRef.current = true;
     let cancelled = false;
@@ -1556,7 +1562,7 @@ function RoutineChecklist() {
     })();
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [thumbMap, products.length]);
+  }, [thumbMap]);
 
   // 케어 row 삭제 핸들러 — 추천 루틴이면 removeRoutine, 등록 제품이면 deleteProduct
   const handleSwipeDelete = (item) => {
