@@ -53,7 +53,7 @@ const CONDITIONS = [
     desc: '자연광이 가장 좋아요',
     note: '창가 · 낮시간이 정확해요.\n형광등 · 전구는 점수에 영향을 줘요.',
     icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
         <path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" />
         <path d="M9.7 17l4.6 0" />
@@ -66,7 +66,7 @@ const CONDITIONS = [
     desc: '맨 얼굴로 측정해요',
     note: '세안 후 5분 안에.\n메이크업 · 선크림은 점수를 가려요.',
     icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M6.8 11a6 6 0 1 0 10.396 0l-5.197 -8l-5.2 8z" />
       </svg>
     ),
@@ -77,7 +77,7 @@ const CONDITIONS = [
     desc: '정면 · 30cm · 편안하게',
     note: '화면 가이드에 얼굴을 맞추세요.\n미소나 찡그림은 주름 점수에 영향을 줘요.',
     icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M5 7h1a2 2 0 0 0 2 -2a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2" />
         <path d="M9 13a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
       </svg>
@@ -233,7 +233,7 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
                 {/* 아이콘 + 제목 + 설명 */}
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                   <div style={{
-                    width: 20, height: 20,
+                    width: 26, height: 26,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     flexShrink: 0, marginTop: 2,
                   }}>{c.icon}</div>
