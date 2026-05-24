@@ -294,7 +294,7 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
               borderRadius: 16, border: 'none',
               background: ctaReady ? 'white' : 'rgba(255,255,255,0.22)',
               color: ctaReady ? '#1E90E8' : 'rgba(255,255,255,0.6)',
-              fontSize: 15,
+              fontSize: 18,
               fontWeight: ctaReady ? 600 : 500,
               letterSpacing: -0.2,
               cursor: ctaReady ? 'pointer' : 'default',
