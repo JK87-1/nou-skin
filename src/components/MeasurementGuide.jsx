@@ -174,16 +174,8 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
         position: 'relative',
       }}>
 
-        {/* ① 헤더: 타이틀 */}
-        <div style={{
-          padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0',
-          textAlign: 'center',
-        }}>
-          <div style={{
-            fontSize: 14, fontWeight: 600,
-            color: 'white', textShadow: '0 1px 2px rgba(0,0,0,0.05)',
-          }}>나의 피부 측정 기준 만들기</div>
-        </div>
+        {/* ① 상단 여백 */}
+        <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0' }} />
 
         {/* ③ 헤드라인 블록 */}
         <div style={{
@@ -310,7 +302,7 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
               fontSize: 11, fontWeight: 400,
-              color: 'rgba(255,255,255,0.6)', fontFamily: 'inherit',
+              color: 'rgba(0,0,0,0.1)', fontFamily: 'inherit',
               padding: '12px 16px',
               minHeight: 36,
             }}
