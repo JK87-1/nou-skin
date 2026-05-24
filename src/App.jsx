@@ -1385,7 +1385,7 @@ export default function App() {
             }}>
             <div style={{
               position: 'relative', width: '100%', maxWidth: 430, margin: '0 auto',
-              flex: 1, display: 'flex', flexDirection: 'column',
+              flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden',
             }}>
               {/* Header */}
               <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
