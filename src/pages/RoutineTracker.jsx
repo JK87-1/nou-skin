@@ -497,16 +497,16 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
     return out.slice(0, 6);
   };
 
-  // GPT 검색 (디바운스)
+  // GPT 검색 (디바운스). 입력 즉시 skeleton 표시 → GPT 응답 도착 시 swap.
   useEffect(() => {
     const q = searchQuery.trim();
-    if (q.length < 2) { setSuggestions([]); setSearchError(''); return; }
+    if (q.length < 2) { setSuggestions([]); setSearchError(''); setSearchLoading(false); return; }
     if (userSelectedRef.current) { userSelectedRef.current = false; return; }
 
     // 로컬 즉시 매칭
     const local = localMatch(q);
 
-    // 캐시 확인
+    // 캐시 확인 — 즉각 반환 (0ms)
     if (cacheRef.current.has(q)) {
       const gpt = cacheRef.current.get(q);
       setSuggestions(mergeSuggestions(local, gpt));
@@ -515,9 +515,15 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
       return;
     }
 
-    setSuggestions(local);
+    // 입력 즉시: 로컬 매칭 + skeleton 카드들로 즉각 노출
+    if (local.length > 0) {
+      setSuggestions(local);
+    } else {
+      setSuggestions([]);
+    }
     setSearchLoading(true);
     setSearchError('');
+
     const t = setTimeout(async () => {
       lastQueryRef.current = q;
       try {
@@ -527,7 +533,7 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
           body: JSON.stringify({ query: q }),
         });
         const data = await r.json().catch(() => ({}));
-        if (lastQueryRef.current !== q) return; // 이미 다음 query로 넘어감
+        if (lastQueryRef.current !== q) return;
         if (!r.ok) {
           setSearchError(data.error || '검색에 실패했어요');
           setSearchLoading(false);
@@ -542,7 +548,7 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
         setSearchError('네트워크 오류로 검색이 안 됐어요');
         setSearchLoading(false);
       }
-    }, 450);
+    }, 200);
     return () => clearTimeout(t);
   }, [searchQuery]);
 
@@ -673,14 +679,36 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
             maxHeight: 300, overflowY: 'auto',
             WebkitOverflowScrolling: 'touch',
           }}>
-            {searchLoading && suggestions.length === 0 && (
-              <div style={{ padding: '14px 16px', fontSize: 12.5, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite' }}>
-                  <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/>
-                </svg>
-                <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
-                관련 제품 검색 중...
-              </div>
+            {/* 입력 즉시 skeleton 카드 5개 (이미 매칭된 로컬 결과 아래로 누적) */}
+            {searchLoading && (
+              [...Array(Math.max(0, 5 - suggestions.length))].map((_, k) => (
+                <div key={`sk-${k}`} style={{
+                  padding: '11px 14px',
+                  borderTop: (suggestions.length + k) > 0 ? '1px solid rgba(255,255,255,0.08)' : 'none',
+                  display: 'flex', gap: 12, alignItems: 'center',
+                }}>
+                  <div style={{
+                    width: 52, height: 52, borderRadius: 10, flexShrink: 0,
+                    background: 'linear-gradient(90deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.05) 100%)',
+                    backgroundSize: '200% 100%',
+                    animation: `shimmer 1.2s ease-in-out infinite ${k * 0.08}s`,
+                  }} />
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <div style={{
+                      width: '40%', height: 11, borderRadius: 4,
+                      background: 'linear-gradient(90deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.05) 100%)',
+                      backgroundSize: '200% 100%',
+                      animation: `shimmer 1.2s ease-in-out infinite ${k * 0.08}s`,
+                    }} />
+                    <div style={{
+                      width: '78%', height: 13, borderRadius: 4,
+                      background: 'linear-gradient(90deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.05) 100%)',
+                      backgroundSize: '200% 100%',
+                      animation: `shimmer 1.2s ease-in-out infinite ${k * 0.08 + 0.04}s`,
+                    }} />
+                  </div>
+                </div>
+              ))
             )}
             {searchError && !searchLoading && (
               <div style={{ padding: '12px 16px', fontSize: 12, color: 'var(--text-muted)' }}>{searchError}</div>
