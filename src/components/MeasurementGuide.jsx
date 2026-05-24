@@ -246,7 +246,7 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
                   animation: isFullSequence ? `mgCondIn 400ms cubic-bezier(0.32,0.72,0,1) both` : 'none',
                 }}
               >
-                {/* 아이콘 + 제목 + 설명 */}
+                {/* 아이콘 + 제목 / 부제목 / 설명 */}
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                   <div style={{
                     width: 23, height: 23,
@@ -259,9 +259,13 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
                       color: 'white', marginBottom: 3,
                     }}>{c.title}</div>
                     <div style={{
-                      fontSize: 13.5, lineHeight: 1.55,
-                      color: 'rgba(255,255,255,0.78)',
+                      fontSize: 13.5, fontWeight: 500, lineHeight: 1.55,
+                      color: 'rgba(255,255,255,0.85)', marginBottom: 2,
                     }}>{c.desc}</div>
+                    <div style={{
+                      fontSize: 12, lineHeight: 1.55,
+                      color: 'rgba(255,255,255,0.6)',
+                    }}>{c.note}</div>
                   </div>
                 </div>
 
