@@ -153,27 +153,68 @@ function buildBlocks({ author, area, statusInfo, message, extra }) {
   ];
 }
 
-// 7) 캘린더 DB에 행 추가 (루아 캘린더)
+// 7) 캘린더 DB에 행 추가 또는 append (하루 1페이지 룰)
+//    - 같은 날(KST) "본 사이트 반영"으로 시작하는 데일리 통합 페이지가 있으면 → 그 페이지에 callout block append
+//    - 없으면 → 새 데일리 통합 페이지 생성 (title은 첫 메시지로, 이후 호출은 append)
 async function addCalendarEntry({ env, author, area, statusInfo, message, extra }) {
-  if (!env.NOTION_CALENDAR_DB_ID) return; // 캘린더 ID 없으면 skip
-  const title = `${area.label} — ${message}`;
-  const richTitle = [{ type: "text", text: { content: title } }];
+  if (!env.NOTION_CALENDAR_DB_ID) return;
 
   // 한국 시간 기준 오늘 날짜 (YYYY-MM-DD)
   const kstDate = new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
-  const body = {
-    parent: { database_id: env.NOTION_CALENDAR_DB_ID },
-    icon: { type: "emoji", emoji: statusInfo.icon },
-    properties: {
-      Name: { title: richTitle },
-      Date: { date: { start: kstDate } },
-    },
-    children: buildBlocks({ author, area, statusInfo, message, extra }),
-  };
+  // 1) 같은 날 데일리 통합 페이지 검색 (title prefix: "데일리 진척 —")
+  const DAILY_PREFIX = "데일리 진척 — ";
+  let existingPageId = null;
+  try {
+    const query = await callNotion(
+      "POST",
+      `/v1/databases/${env.NOTION_CALENDAR_DB_ID}/query`,
+      {
+        page_size: 50,
+        filter: { property: "Date", date: { equals: kstDate } },
+      },
+      env.NOTION_TOKEN
+    );
+    for (const p of query.results || []) {
+      const title = (p.properties?.Name?.title || []).map(x => x.plain_text).join("");
+      if (title.startsWith(DAILY_PREFIX)) {
+        existingPageId = p.id;
+        break;
+      }
+    }
+  } catch (e) {
+    console.error("⚠️ 페이지 검색 실패:", e.message);
+  }
+
+  const blocks = buildBlocks({ author, area, statusInfo, message, extra });
 
   try {
-    await callNotion("POST", "/v1/pages", body, env.NOTION_TOKEN);
+    if (existingPageId) {
+      // append children to existing daily page
+      await callNotion(
+        "PATCH",
+        `/v1/blocks/${existingPageId}/children`,
+        { children: blocks },
+        env.NOTION_TOKEN
+      );
+    } else {
+      // create new daily page
+      const dailyTitle = `${DAILY_PREFIX}${message}`;
+      await callNotion(
+        "POST",
+        "/v1/pages",
+        {
+          parent: { database_id: env.NOTION_CALENDAR_DB_ID },
+          icon: { type: "emoji", emoji: statusInfo.icon },
+          properties: {
+            Name: { title: [{ type: "text", text: { content: dailyTitle } }] },
+            Date: { date: { start: kstDate } },
+          },
+          children: blocks,
+        },
+        env.NOTION_TOKEN
+      );
+    }
     return true;
   } catch (e) {
     console.error("⚠️ 캘린더 기록 실패:", e.message);
