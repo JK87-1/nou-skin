@@ -19,12 +19,22 @@ function getGreetingMsg() {
 const TRACKER_CATEGORY_SET = new Set(['클렌저','토너','에센스','세럼','크림','선크림','마스크팩','기타']);
 function extractApplyRoutine(text) {
   if (!text) return { cleanText: text, routine: null };
-  const re = /\[APPLY_ROUTINE\]\s*([\s\S]*?)\s*\[\/APPLY_ROUTINE\]/;
-  const m = text.match(re);
-  if (!m) return { cleanText: text, routine: null };
+  const startIdx = text.indexOf('[APPLY_ROUTINE]');
+  if (startIdx === -1) return { cleanText: text, routine: null };
+
+  // 시작 태그가 발견된 순간부터는 무조건 hide — 스트리밍 중 닫는 태그가
+  // 아직 안 왔어도 사용자에게 raw JSON이 노출되지 않게 한다.
+  const endMarker = '[/APPLY_ROUTINE]';
+  const endIdx = text.indexOf(endMarker, startIdx);
+  const head = text.slice(0, startIdx).trim();
+  const tail = endIdx !== -1 ? text.slice(endIdx + endMarker.length).trim() : '';
+  const cleanText = tail ? `${head}\n\n${tail}` : head;
+
+  if (endIdx === -1) return { cleanText, routine: null };
+
+  const jsonStr = text.slice(startIdx + '[APPLY_ROUTINE]'.length, endIdx).trim();
   let parsed = null;
-  try { parsed = JSON.parse(m[1]); } catch { parsed = null; }
-  const cleanText = text.replace(re, '').trim();
+  try { parsed = JSON.parse(jsonStr); } catch { parsed = null; }
   if (!parsed || typeof parsed !== 'object') return { cleanText, routine: null };
 
   const sanitize = (arr) => Array.isArray(arr) ? arr
