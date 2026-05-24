@@ -13,6 +13,7 @@ import {
   computeAllCorrelations, compressProductThumb,
 } from '../storage/TrackerStorage';
 import CareRecommendation from '../components/CareRecommendation';
+import ProductRegisteredModal from '../components/ProductRegisteredModal';
 import { PRODUCTS } from '../data/ProductCatalog';
 import { KOREAN_PRODUCTS } from '../data/KoreanProducts';
 
@@ -1095,6 +1096,7 @@ export default function RoutineTracker({ themeColors, onBack }) {
 
   // 제품 저장 핸들러 (누끼 이미지 먼저 가져온 후 저장)
   const [saving, setSaving] = useState(false);
+  const [justRegistered, setJustRegistered] = useState(null); // { product, totalCount } — 등록 완료 모달
 
   // ===== 기존 제품 성분 자동 보강 (백그라운드 순차) =====
   // ingredients가 비어있는 등록 제품에 대해 /api/product-ingredients를 순차 호출.
@@ -1194,6 +1196,13 @@ export default function RoutineTracker({ themeColors, onBack }) {
       setProducts(updated);
       setShowPhotoFlow(false);
       setShowManualForm(false);
+      // 방금 저장된 제품 찾기 — edit이면 같은 id, 신규면 마지막 push
+      const savedProduct = formData.id
+        ? updated.find(p => p.id === formData.id)
+        : updated[updated.length - 1];
+      if (savedProduct) {
+        setJustRegistered({ product: savedProduct, totalCount: updated.length });
+      }
     } catch (err) {
       alert(err.message || '제품 저장에 실패했어요.');
     }
@@ -1571,6 +1580,13 @@ export default function RoutineTracker({ themeColors, onBack }) {
           onEdit={handleEditProduct}
           onDelete={handleDeleteProduct}
           accent={accent}
+        />
+      )}
+      {justRegistered && (
+        <ProductRegisteredModal
+          product={justRegistered.product}
+          totalCount={justRegistered.totalCount}
+          onClose={() => setJustRegistered(null)}
         />
       )}
     </div>
