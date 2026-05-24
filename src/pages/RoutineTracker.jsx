@@ -19,17 +19,19 @@ import { getAllProductThumbs, migrateThumbsFromLocalStorage } from '../storage/I
 import { PRODUCTS } from '../data/ProductCatalog';
 import { KOREAN_PRODUCTS } from '../data/KoreanProducts';
 
-// 네이버 쇼핑에서 제품 누끼 이미지 + 정확한 브랜드명 검색
-async function fetchProductInfo(brand, name) {
+// 네이버 쇼핑에서 제품 누끼 이미지 + 정확한 브랜드명 검색.
+// fast=true (자동완성용): URL만 반환, base64 다운로드 없이 ~500ms 빠름.
+// 미지정 (등록 영구 저장용): base64로 안정 저장.
+async function fetchProductInfo(brand, name, opts = {}) {
   try {
     const query = `${brand} ${name}`.trim();
     if (!query) return null;
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 8000);
+    const timer = setTimeout(() => controller.abort(), opts.fast ? 4000 : 8000);
     const res = await fetch('/api/product-image', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query, brand, name }),
+      body: JSON.stringify({ query, brand, name, fast: !!opts.fast }),
       signal: controller.signal,
     });
     clearTimeout(timer);
@@ -673,7 +675,8 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
 
   // 진행 중 fetch 중복 방지
   const inflightRef = useRef(new Set());
-  // suggestions가 바뀔 때마다 imgLoading=true인 것들에 대해 비동기 이미지 fetch
+  // suggestions가 바뀔 때마다 imgLoading=true인 것들에 대해 비동기 이미지 fetch.
+  // fast=true 모드 — URL만 받아서 즉시 표시 (base64 다운로드 X). 등록 시점엔 별도로 안정 경로로 다시 받음.
   useEffect(() => {
     const targets = suggestions.filter(s => {
       const key = `${s.brand}|${s.name}`;
@@ -684,7 +687,7 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
       const key = `${s.brand}|${s.name}`;
       inflightRef.current.add(key);
       try {
-        const info = await fetchProductInfo(s.brand, s.name);
+        const info = await fetchProductInfo(s.brand, s.name, { fast: true });
         const image = info?.image || null;
         setImgCache(s.brand, s.name, image);
         setSuggestions(prev => prev.map(p =>
@@ -702,7 +705,8 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
         inflightRef.current.delete(key);
       }
     };
-    targets.slice(0, 6).forEach(fetchOne);
+    // 첫 5개 우선 fetch (화면에 보이는 것), 나머지 background
+    targets.slice(0, 8).forEach(fetchOne);
   }, [suggestions]);
 
   // 필드 입력 시 검색 query 업데이트

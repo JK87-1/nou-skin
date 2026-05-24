@@ -104,35 +104,43 @@ export default async function handler(req, res) {
   const clientSecret = process.env.NAVER_CLIENT_SECRET;
   if (!clientId || !clientSecret) return res.status(200).json({ image: null });
 
+  // 자동완성 등 빠른 경로(fast=true)는 base64 proxy 건너뛰고 URL만 반환.
+  // 등록 후 영구 저장용(fast 미지정)은 base64로 안정 저장.
+  const fast = !!req.body?.fast;
+
   try {
-    // 전략 1+2: 원본 쿼리 & "화장품" 키워드 추가 (병렬 실행)
-    const [items1, items2] = await Promise.all([
-      searchShop(q, clientId, clientSecret),
-      searchShop(`${q} 화장품`, clientId, clientSecret),
-    ]);
+    // 첫 검색: 원본 쿼리 1번만 (시간 ↓). 매칭 약하면 추가 시도.
+    const items1 = await searchShop(q, clientId, clientSecret);
+    let { item: best, score: bestScore } = pickBest(items1, b, n);
 
-    let allItems = [...items1, ...items2];
-    let { item: best, score: bestScore } = pickBest(allItems, b, n);
-
-    // 전략 3: 제품명만으로 검색 (브랜드 인식 오류 대응)
-    if (bestScore < 30 && n && n !== q) {
-      const items3 = await searchShop(n, clientId, clientSecret);
-      const { item: candidate, score: candScore } = pickBest(items3, b, n);
-      if (candScore > bestScore) { best = candidate; bestScore = candScore; }
-    }
-
-    // 전략 4: 브랜드 + 카테고리 (제품명 인식 오류 대응)
-    if (bestScore < 20 && b) {
-      const items4 = await searchShop(`${b} 스킨케어`, clientId, clientSecret);
-      const { item: candidate, score: candScore } = pickBest(items4, b, n);
-      if (candScore > bestScore) { best = candidate; bestScore = candScore; }
+    // 매칭 점수 약하면 1번 추가 검색 — 화장품 키워드
+    if (bestScore < 30) {
+      const items2 = await searchShop(`${q} 화장품`, clientId, clientSecret);
+      const cand = pickBest(items2, b, n);
+      if (cand.score > bestScore) { best = cand.item; bestScore = cand.score; }
     }
 
     if (!best) return res.status(200).json({ image: null });
 
-    const image = await proxyImage(best.image);
-    if (!image) return res.status(200).json({ image: null });
+    // 빠른 경로: URL 그대로 반환 (네이버 쇼핑 CDN은 직접 img 태그 로드 가능 + CORS 문제 거의 없음)
+    if (fast) {
+      return res.status(200).json({
+        image: best.image,
+        brand: clean(best.brand) || null,
+        title: clean(best.title) || null,
+      });
+    }
 
+    // 안정 경로: base64 proxy (등록 영구 저장용)
+    const image = await proxyImage(best.image);
+    if (!image) {
+      // proxy 실패해도 URL은 반환 — 클라이언트가 자체 처리
+      return res.status(200).json({
+        image: best.image,
+        brand: clean(best.brand) || null,
+        title: clean(best.title) || null,
+      });
+    }
     return res.status(200).json({
       image,
       brand: clean(best.brand) || null,
