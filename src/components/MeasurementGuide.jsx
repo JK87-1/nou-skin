@@ -174,25 +174,14 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
         position: 'relative',
       }}>
 
-        {/* ① 헤더: 타이틀 + 건너뛰기 */}
+        {/* ① 헤더: 타이틀 */}
         <div style={{
           padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
           <div style={{
             fontSize: 17, fontWeight: 700, letterSpacing: -0.3,
             color: 'white', textShadow: '0 1px 2px rgba(0,0,0,0.05)',
           }}>나의 피부 측정 기준 만들기</div>
-          <button
-            onClick={(e) => { e.stopPropagation(); handleSkip(); }}
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              fontSize: 12, fontWeight: 500, letterSpacing: -0.1,
-              color: 'rgba(255,255,255,0.85)', fontFamily: 'inherit',
-              padding: '8px 4px', minWidth: 44, minHeight: 44,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}
-          >건너뛰기</button>
         </div>
 
         {/* ③ 헤드라인 블록 */}
@@ -291,9 +280,10 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
           ))}
         </div>
 
-        {/* ⑥ CTA */}
+        {/* ⑥ CTA + 건너뛰기 */}
         <div style={{
-          padding: '0 28px calc(env(safe-area-inset-bottom, 0px) + 20px)',
+          padding: '0 28px calc(env(safe-area-inset-bottom, 0px) + 12px)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
         }}>
           <button
             onClick={(e) => { e.stopPropagation(); handleStart(); }}
@@ -312,6 +302,16 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
               minHeight: 52,
             }}
           >측정 시작</button>
+          <button
+            onClick={(e) => { e.stopPropagation(); handleSkip(); }}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontSize: 11, fontWeight: 400,
+              color: 'rgba(255,255,255,0.6)', fontFamily: 'inherit',
+              padding: '12px 16px',
+              minHeight: 36,
+            }}
+          >건너뛰기</button>
         </div>
       </div>
     </div>
