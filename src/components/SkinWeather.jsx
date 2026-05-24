@@ -227,7 +227,7 @@ export default function SkinWeather({ skinResult }) {
           <span style={{ fontSize: 80, fontWeight: 500, color: '#fff', lineHeight: 1, letterSpacing: -3 }}>{weather.temp}°</span>
           <WeatherIconFilled emoji={weather.conditionIcon} size={80} />
         </div>
-        <div style={{ padding: '0 16px', marginBottom: 20 }}>
+        <div style={{ padding: '0 16px', marginBottom: 40 }}>
           <span style={{ fontSize: 16, fontWeight: 600, color: 'rgba(255,255,255,0.8)' }}>{weather.tempMax}° / {weather.tempMin}°</span>
         </div>
 
