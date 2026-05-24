@@ -259,12 +259,12 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
                       color: 'white', marginBottom: 3,
                     }}>{c.title}</div>
                     <div style={{
-                      fontSize: 13.5, fontWeight: 500, lineHeight: 1.55,
-                      color: 'rgba(255,255,255,0.85)', marginBottom: 2,
+                      fontSize: 15, fontWeight: 500, lineHeight: 1.55,
+                      color: 'white', marginBottom: 2,
                     }}>{c.desc}</div>
                     <div style={{
-                      fontSize: 12, lineHeight: 1.55,
-                      color: 'rgba(255,255,255,0.6)',
+                      fontSize: 13, lineHeight: 1.55,
+                      color: 'rgba(0,0,0,0.4)',
                     }}>{c.note}</div>
                   </div>
                 </div>
