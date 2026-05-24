@@ -6,6 +6,16 @@
 import { getRecords } from './SkinStorage';
 import { setProductThumb, deleteProductThumb } from './ImageStore';
 
+// 제품 목록 변경 이벤트 — saveProduct·deleteProduct·dedupe 등 변경 직후 발생.
+// 같은 탭 내에선 storage 이벤트가 자동으로 안 뜨므로 직접 dispatch.
+function emitProductsChanged() {
+  try {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('lua:tracker-products-changed'));
+    }
+  } catch {}
+}
+
 const PRODUCTS_KEY = 'nou_tracker_products';
 const CHECKS_KEY = 'nou_tracker_checks';     // 호환성: 오늘 체크만 빠르게 (기존 사용처 유지)
 const HISTORY_KEY = 'nou_tracker_history';   // 일자별 집계(완료/부분)
@@ -122,6 +132,7 @@ export function saveProduct(product, opts = {}) {
   // IDB 쪽 thumb 저장 (비동기 fire-and-forget)
   const saved = products.find(p => p.id === product.id) || products[products.length - 1];
   if (pendingThumb && saved) setProductThumb(saved.id, pendingThumb);
+  emitProductsChanged();
   return products;
 }
 
@@ -157,6 +168,7 @@ export function deleteProduct(id) {
   localStorage.setItem(CHECKS_KEY, JSON.stringify(checks));
   // IDB thumb 삭제 (비동기 fire-and-forget)
   deleteProductThumb(id);
+  emitProductsChanged();
   return products;
 }
 

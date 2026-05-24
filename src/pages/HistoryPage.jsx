@@ -1500,6 +1500,14 @@ function RoutineChecklist() {
   const [addMode, setAddMode] = useState('morning');
   const [customName, setCustomName] = useState('');
   const [detailItem, setDetailItem] = useState(null); // item being configured
+  const [, forceTick] = useState(0); // 채팅 카드에서 제품 등록 시 강제 re-render trigger
+
+  // 채팅에서 saveProduct 등 호출 시 즉시 케어 화면 갱신
+  useEffect(() => {
+    const onChanged = () => forceTick(t => t + 1);
+    window.addEventListener('lua:tracker-products-changed', onChanged);
+    return () => window.removeEventListener('lua:tracker-products-changed', onChanged);
+  }, []);
 
   // selectedDate 변경 시 checks 동기화
   useEffect(() => {

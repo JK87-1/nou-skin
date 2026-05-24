@@ -1161,6 +1161,17 @@ export default function RoutineTracker({ themeColors, onBack }) {
     }
   }, [products, routineExpanded]);
 
+  // 채팅 카드 등에서 saveProduct 호출 시 즉시 화장대 갱신
+  useEffect(() => {
+    const onChanged = async () => {
+      const fresh = getProducts();
+      const map = await getAllProductThumbs();
+      setProducts(fresh.map(p => ({ ...p, imageThumb: map.get(String(p.id)) || null })));
+    };
+    window.addEventListener('lua:tracker-products-changed', onChanged);
+    return () => window.removeEventListener('lua:tracker-products-changed', onChanged);
+  }, []);
+
   // 첫 마운트 시 중복 제품(같은 brand+name) 자동 정리 — 과거에 채팅 카드 다중 클릭 등으로 쌓인 데이터 cleanup
   const dedupeDoneRef = useRef(false);
   useEffect(() => {
