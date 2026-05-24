@@ -49,7 +49,7 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
     <div style={{ minHeight: '100dvh', paddingBottom: 64 }}>
 
       {/* ① 헤더 (noa style) */}
-      <div style={{ padding: 'env(safe-area-inset-top,0px) 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ padding: '0 18px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ width: 34 }} />
         <div onClick={() => setSettingsOpen(true)} style={{
           width: 34, height: 34, borderRadius: '50%', cursor: 'pointer',
@@ -490,7 +490,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
       `}</style>
 
       {/* Header */}
-      <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+      <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
         <div onClick={onClose} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 18l-6-6 6-6" />
@@ -525,7 +525,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
             animation: 'settingsSlideIn 0.3s ease',
           }}>
             {/* Header */}
-            <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+            <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
               <div onClick={() => setShowTimePicker(null)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
               </div>
@@ -715,7 +715,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           display: 'flex', flexDirection: 'column',
           animation: 'settingsSlideIn 0.3s ease',
         }}>
-          <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+          <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
             <div onClick={() => setLegalPage(null)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
             </div>
@@ -812,7 +812,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           width: '100%', maxWidth: 430,
           display: 'flex', flexDirection: 'column',
         }}>
-          <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+          <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
             <div onClick={() => setFaqOpen(false)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
             </div>
@@ -894,7 +894,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           overflowY: 'auto', WebkitOverflowScrolling: 'touch',
           animation: 'settingsSlideIn 0.3s ease',
         }}>
-          <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+          <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
             <div onClick={() => setEditingProfile(false)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
             </div>
@@ -1114,7 +1114,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           overflowY: 'auto', WebkitOverflowScrolling: 'touch',
           animation: 'settingsSlideIn 0.3s ease',
         }}>
-          <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+          <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
             <div onClick={() => setEditingSkin(false)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
             </div>
@@ -1189,7 +1189,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           width: '100%', maxWidth: 430,
           display: 'flex', flexDirection: 'column',
         }}>
-          <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+          <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
             <div onClick={() => setBackupGuide(null)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
             </div>

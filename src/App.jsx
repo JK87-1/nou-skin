@@ -1388,7 +1388,7 @@ export default function App() {
               flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden',
             }}>
               {/* Header */}
-              <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+              <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
                 <div onClick={() => setWeatherSheet(false)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
                 </div>
@@ -2570,7 +2570,7 @@ export default function App() {
       {homeCards.insight && showTabBar && activeTab === 'home' && stage === 'landing' && getLatestRecord() && !insightCollapsed && (
         <div style={{
           position: 'fixed',
-          bottom: 'calc(76px + env(safe-area-inset-bottom, 0px) + 32px)',
+          bottom: 'calc(var(--tab-bar-h, 64px) + 10px)',
           left: 20, right: 20,
           zIndex: 90,
           animation: 'insightFloat 3s ease-in-out infinite',
@@ -2597,7 +2597,7 @@ export default function App() {
       {showTabBar && (!(homeCards.insight && activeTab === 'home' && stage === 'landing' && getLatestRecord()) || insightCollapsed) && (
         <div style={{
           position: 'fixed',
-          bottom: 'calc(76px + env(safe-area-inset-bottom, 0px) + 18px)',
+          bottom: 'calc(var(--tab-bar-h, 64px) + 18px)',
           right: 21,
           zIndex: 90,
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
@@ -3060,7 +3060,7 @@ function HomeEditPage({ cards, order, onToggle, onReorder, onClose }) {
       `}</style>
 
       {/* Header */}
-      <div style={{ padding: 'calc(env(safe-area-inset-top,0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+      <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
         <div onClick={onClose} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
         </div>

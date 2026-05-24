@@ -34,7 +34,7 @@
   <link rel="stylesheet" href="https://static.toss.im/tps/others.css" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { background-color: #58aefe; }
+    html { background: linear-gradient(to bottom, #58aefe 0%, #d7e9fa 80%, #d7e9fa 100%); min-height: 100%; }
     body {
       font-family: 'Pretendard Variable', 'Pretendard', 'Noto Sans KR', 'Apple SD Gothic Neo', -apple-system, BlinkMacSystemFont, sans-serif;
       background: transparent;
@@ -50,7 +50,7 @@
       z-index: 0; pointer-events: none;
       background: linear-gradient(to bottom, #58aefe 0%, #d7e9fa 80%, #d7e9fa 100%);
     }
-    #root { min-height: 100dvh; position: relative; z-index: 1; }
+    #root { min-height: 100dvh; position: relative; z-index: 1; padding-top: env(safe-area-inset-top); }
   </style>
 </head>
 <body>
@@ -79,12 +79,12 @@
       var gradBg = document.getElementById('gradient-bg');
       if (mode === 'light') {
         document.documentElement.setAttribute('data-theme', 'light');
-        document.documentElement.style.backgroundColor = '#58aefe';
+        document.documentElement.style.background = 'linear-gradient(to bottom, #58aefe 0%, #d7e9fa 80%, #d7e9fa 100%)';
         if (gradBg) gradBg.style.background = 'linear-gradient(to bottom, #58aefe 0%, #d7e9fa 80%, #d7e9fa 100%)';
         document.querySelector('meta[name="theme-color"]').content = '#ffffff';
       } else {
         document.documentElement.setAttribute('data-theme', 'dark');
-        document.documentElement.style.backgroundColor = '#0a1222';
+        document.documentElement.style.background = '#0a1222';
         document.body.style.background = 'transparent';
         document.body.style.color = '#f0f0f5';
         if (gradBg) gradBg.style.background = 'linear-gradient(180deg, #0a1222 0%, #8d97ce 100%)';
