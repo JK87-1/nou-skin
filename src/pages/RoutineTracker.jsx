@@ -15,6 +15,7 @@ import {
 import CareRecommendation from '../components/CareRecommendation';
 import ProductRegisteredModal from '../components/ProductRegisteredModal';
 import { hapticLight } from '../utils/haptics';
+import { getAllProductThumbs, migrateThumbsFromLocalStorage } from '../storage/ImageStore';
 import { PRODUCTS } from '../data/ProductCatalog';
 import { KOREAN_PRODUCTS } from '../data/KoreanProducts';
 
@@ -1129,6 +1130,28 @@ export default function RoutineTracker({ themeColors, onBack }) {
       setDedupeToast(`중복 등록된 ${removed}개 자동 정리됐어요`);
       setTimeout(() => setDedupeToast(null), 3000);
     }
+
+    // localStorage에 박혀 있던 imageThumb를 IndexedDB로 이전 + localStorage 공간 확보
+    (async () => {
+      try {
+        const current = (removed > 0 ? cleaned : getProducts());
+        const { migrated, cleaned: afterMig } = await migrateThumbsFromLocalStorage(
+          current,
+          (next) => {
+            localStorage.setItem('nou_tracker_products', JSON.stringify(next));
+          }
+        );
+        // thumb를 IDB에서 hydrate해 React state에 반영
+        const map = await getAllProductThumbs();
+        if (map.size > 0 || migrated > 0) {
+          setProducts(prev => prev.map(p => ({ ...p, imageThumb: map.get(String(p.id)) || null })));
+        }
+        if (migrated > 0) {
+          setDedupeToast(`저장 공간 정리 완료 (${migrated}개 이미지 이동)`);
+          setTimeout(() => setDedupeToast(null), 2400);
+        }
+      } catch { /* IDB 미지원 환경 — 기존 동작 fallback */ }
+    })();
   }, []);
 
   // ===== 기존 제품 성분 자동 보강 (백그라운드 순차) =====
@@ -1226,13 +1249,16 @@ export default function RoutineTracker({ themeColors, onBack }) {
       }
 
       const updated = saveProduct(formData);
-      setProducts(updated);
+      // imageThumb는 IDB로 분리됐으니 직후 hydrate해서 React state엔 thumb 포함된 형태로
+      const thumbMap = await getAllProductThumbs();
+      const hydrated = updated.map(p => ({ ...p, imageThumb: thumbMap.get(String(p.id)) || null }));
+      setProducts(hydrated);
       setShowPhotoFlow(false);
       setShowManualForm(false);
       // 방금 저장된 제품 찾기 — edit이면 같은 id, 신규면 마지막 push
       const savedProduct = formData.id
-        ? updated.find(p => p.id === formData.id)
-        : updated[updated.length - 1];
+        ? hydrated.find(p => p.id === formData.id)
+        : hydrated[hydrated.length - 1];
       if (savedProduct) {
         setJustRegistered({ product: savedProduct, totalCount: updated.length });
       }

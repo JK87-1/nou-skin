@@ -4,6 +4,7 @@
  */
 
 import { getRecords } from './SkinStorage';
+import { setProductThumb, deleteProductThumb } from './ImageStore';
 
 const PRODUCTS_KEY = 'nou_tracker_products';
 const CHECKS_KEY = 'nou_tracker_checks';     // 호환성: 오늘 체크만 빠르게 (기존 사용처 유지)
@@ -51,6 +52,14 @@ function normKey(brand, name) {
 }
 
 export function saveProduct(product, opts = {}) {
+  // imageThumb는 localStorage가 아닌 IndexedDB(ImageStore)에 분리 저장.
+  // 여기서는 thumb를 변수로 잡아 IDB write 비동기 발행 후 product 객체에선 제거.
+  let pendingThumb = null;
+  if (product && typeof product.imageThumb === 'string' && product.imageThumb) {
+    pendingThumb = product.imageThumb;
+    product = { ...product, imageThumb: null };
+  }
+
   const products = getProducts();
   const idx = products.findIndex(p => p.id === product.id);
   if (idx >= 0) {
@@ -100,6 +109,8 @@ export function saveProduct(product, opts = {}) {
         }
         try {
           localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
+          const savedR = products.find(p => p.id === product.id) || products[products.length - 1];
+          if (pendingThumb && savedR) setProductThumb(savedR.id, pendingThumb);
           return products;
         } catch (e2) { /* 계속 제거 */ }
       }
@@ -108,6 +119,9 @@ export function saveProduct(product, opts = {}) {
     }
     throw e;
   }
+  // IDB 쪽 thumb 저장 (비동기 fire-and-forget)
+  const saved = products.find(p => p.id === product.id) || products[products.length - 1];
+  if (pendingThumb && saved) setProductThumb(saved.id, pendingThumb);
   return products;
 }
 
@@ -141,6 +155,8 @@ export function deleteProduct(id) {
   delete checks.morning[id];
   delete checks.night[id];
   localStorage.setItem(CHECKS_KEY, JSON.stringify(checks));
+  // IDB thumb 삭제 (비동기 fire-and-forget)
+  deleteProductThumb(id);
   return products;
 }
 
