@@ -14,6 +14,7 @@ import {
 } from '../storage/TrackerStorage';
 import CareRecommendation from '../components/CareRecommendation';
 import ProductRegisteredModal from '../components/ProductRegisteredModal';
+import { hapticLight } from '../utils/haptics';
 import { PRODUCTS } from '../data/ProductCatalog';
 import { KOREAN_PRODUCTS } from '../data/KoreanProducts';
 
@@ -1099,6 +1100,24 @@ export default function RoutineTracker({ themeColors, onBack }) {
   const [justRegistered, setJustRegistered] = useState(null); // { product, totalCount } — 등록 완료 모달
   const [dedupeToast, setDedupeToast] = useState(null); // 첫 마운트 시 중복 정리됐을 때 알림
 
+  // 루틴 생성 영역 상태
+  const [routineExpanded, setRoutineExpanded] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [refreshSpinning, setRefreshSpinning] = useState(false);
+  const routineRef = useRef(null);
+  const addBtnRef = useRef(null);
+
+  // 등록·삭제·수정 시 펼친 루틴 자동 갱신 (refreshKey ↑) — 사용자가 명시적으로 새로고침 안 눌러도 즉시 반영
+  const lastProductSignatureRef = useRef('');
+  useEffect(() => {
+    if (!routineExpanded) return;
+    const sig = products.map(p => `${p.id}:${p.brand}:${p.name}:${p.category}:${p.timeSlot}`).join('|');
+    if (sig !== lastProductSignatureRef.current) {
+      lastProductSignatureRef.current = sig;
+      setRefreshKey(k => k + 1);
+    }
+  }, [products, routineExpanded]);
+
   // 첫 마운트 시 중복 제품(같은 brand+name) 자동 정리 — 과거에 채팅 카드 다중 클릭 등으로 쌓인 데이터 cleanup
   const dedupeDoneRef = useRef(false);
   useEffect(() => {
@@ -1217,6 +1236,13 @@ export default function RoutineTracker({ themeColors, onBack }) {
       if (savedProduct) {
         setJustRegistered({ product: savedProduct, totalCount: updated.length });
       }
+      // 첫 등록 시 루틴 영역 자동 펼침
+      if (!routineExpanded && updated.length >= 1) {
+        setRoutineExpanded(true);
+        setTimeout(() => {
+          routineRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 500);
+      }
     } catch (err) {
       alert(err.message || '제품 저장에 실패했어요.');
     }
@@ -1300,11 +1326,30 @@ export default function RoutineTracker({ themeColors, onBack }) {
       {/* ═══ SECTION 1: 내 제품 ═══ */}
       {section === 'products' && (
         <div style={{ padding: '0 20px', animation: 'fadeUp 0.3s ease-out' }}>
+          {/* 헤더 — 등록 제품 N개 + 카테고리 미니 분포 */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>등록된 제품</span>
             <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)' }}>{products.length}개</span>
           </div>
 
+          {/* 제품 등록 버튼 — 등록 제품 grid 바로 위 (사용자 요청) */}
+          <div
+            ref={addBtnRef}
+            onClick={() => setShowAddSheet(true)}
+            style={{
+              padding: '13px 24px', marginBottom: 12, cursor: 'pointer',
+              background: '#6598ef', borderRadius: 16,
+              boxShadow: '0 4px 14px rgba(101,152,239,0.28)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+            }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            <span style={{ fontSize: 14, fontWeight: 700, color: '#fff', letterSpacing: -0.2 }}>제품 등록</span>
+          </div>
+
+          {/* 등록 제품 grid */}
           <div style={{
             background: 'rgba(255,255,255,0.42)', borderRadius: 18,
             backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
@@ -1313,8 +1358,9 @@ export default function RoutineTracker({ themeColors, onBack }) {
             padding: '6px 0', marginBottom: 16,
           }}>
             {products.length === 0 ? (
-              <div style={{ padding: '24px 16px', textAlign: 'center', fontSize: 13, color: 'var(--text-muted)' }}>
-                등록된 제품이 없어요
+              <div style={{ padding: '32px 16px', textAlign: 'center' }}>
+                <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>등록된 제품이 없어요</div>
+                <div style={{ fontSize: 11, color: 'var(--text-dim)' }}>위 '제품 등록' 버튼으로 추가해보세요</div>
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, padding: 10 }}>
@@ -1349,22 +1395,89 @@ export default function RoutineTracker({ themeColors, onBack }) {
             )}
           </div>
 
-          {/* Add Product Button */}
-          <div onClick={() => setShowAddSheet(true)} style={{
-            padding: '12px 24px', marginBottom: 16, cursor: 'pointer',
-            background: '#6598ef', borderRadius: 18,
-            backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-            boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-          }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>제품 등록</span>
-          </div>
+          {/* 루틴 생성 영역 — 등록 제품 있을 때만 노출 */}
+          {products.length > 0 && (
+            <div ref={routineRef} style={{ marginBottom: 20 }}>
+              {!routineExpanded ? (
+                <button
+                  onClick={() => { hapticLight(); setRoutineExpanded(true); }}
+                  style={{
+                    width: '100%', padding: '16px 20px',
+                    background: 'linear-gradient(135deg, #6598ef 0%, #8ac4fe 100%)',
+                    border: 'none', borderRadius: 18,
+                    cursor: 'pointer', fontFamily: 'inherit',
+                    boxShadow: '0 6px 18px rgba(101,152,239,0.32)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9,
+                    color: '#fff',
+                  }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff">
+                    <path d="M10.5 2l1.67 4.83l4.83 1.67l-4.83 1.67l-1.67 4.83l-1.67 -4.83l-4.83 -1.67l4.83 -1.67l1.67 -4.83z" />
+                    <path d="M17.5 13l1 2.5l2.5 1l-2.5 1l-1 2.5l-1 -2.5l-2.5 -1l2.5 -1l1 -2.5z" />
+                  </svg>
+                  <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: -0.2 }}>피부에 맞는 루틴 생성하기</span>
+                </button>
+              ) : (
+                <div style={{ animation: 'fadeUp 0.35s ease-out' }}>
+                  {/* 헤더 + 새로고침 */}
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    padding: '0 4px', marginBottom: 12,
+                  }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{
+                          fontSize: 17, fontWeight: 700, color: 'var(--text-primary)',
+                          letterSpacing: -0.3,
+                        }}>당신의 피부에 맞는 루틴</span>
+                        <span style={{
+                          fontSize: 10, fontWeight: 600, color: '#6598ef',
+                          background: 'rgba(101,152,239,0.18)', borderRadius: 8,
+                          padding: '3px 8px', letterSpacing: -0.1,
+                        }}>표준 정렬</span>
+                      </div>
+                      <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 4 }}>
+                        등록 제품 {products.length}개 기준
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        hapticLight();
+                        setRefreshSpinning(true);
+                        setRefreshKey(k => k + 1);
+                        setTimeout(() => setRefreshSpinning(false), 600);
+                      }}
+                      aria-label="새로고침"
+                      style={{
+                        width: 36, height: 36, borderRadius: 12,
+                        background: 'rgba(255,255,255,0.6)',
+                        border: '1px solid rgba(101,152,239,0.22)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        cursor: 'pointer', flexShrink: 0,
+                        fontFamily: 'inherit',
+                      }}
+                    >
+                      <svg
+                        width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="#6598ef" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
+                        style={{
+                          transition: 'transform 0.6s cubic-bezier(0.32,0.72,0,1)',
+                          transform: refreshSpinning ? 'rotate(360deg)' : 'rotate(0deg)',
+                        }}
+                      >
+                        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                        <path d="M21 3v5h-5"/>
+                        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                        <path d="M3 21v-5h5"/>
+                      </svg>
+                    </button>
+                  </div>
 
-          {/* 측정 데이터 기반 맞춤 제품 추천 — 화장대 (내 제품) 아래 배치 */}
-          <CareRecommendation />
+                  <CareRecommendation products={products} refreshKey={refreshKey} hideHeader />
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 

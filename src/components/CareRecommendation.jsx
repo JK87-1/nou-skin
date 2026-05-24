@@ -133,9 +133,13 @@ function RoutineColumn({ icon, title, subtitle, steps, totalProducts, dailyCount
   );
 }
 
-export default function CareRecommendation() {
+export default function CareRecommendation({ products: productsProp, refreshKey = 0, hideHeader = false }) {
   const result = getLatestRecord();
-  const userProducts = useMemo(() => { try { return getProducts(); } catch { return []; } }, []);
+  // 부모가 products를 prop으로 주면 실시간 반영. 없으면 1회 fetch (이전 호환).
+  const userProducts = useMemo(() => {
+    if (Array.isArray(productsProp)) return productsProp;
+    try { return getProducts(); } catch { return []; }
+  }, [productsProp, refreshKey]);
 
   const { morningSteps, nightSteps, morningStats, nightStats, hasManyProducts } = useMemo(() => {
     const rec = buildRoutineRecommendation(result, userProducts);
@@ -146,9 +150,9 @@ export default function CareRecommendation() {
       nightStats: rec.stats.night,
       hasManyProducts: rec.hasManyProducts,
     };
-  }, [userProducts, result]);
+  }, [userProducts, result, refreshKey]);
 
-  const interactions = useMemo(() => detectInteractions(userProducts), [userProducts]);
+  const interactions = useMemo(() => detectInteractions(userProducts), [userProducts, refreshKey]);
 
   // 빈 상태
   if (userProducts.length === 0) {
@@ -195,29 +199,31 @@ export default function CareRecommendation() {
 
   return (
     <div style={{ marginTop: 8, marginBottom: 24 }}>
-      {/* Section Header */}
-      <div style={{ padding: '0 4px', marginBottom: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-          <div style={{
-            fontSize: 17, fontWeight: 700, color: 'var(--text-primary)',
-            letterSpacing: -0.3,
-          }}>
-            당신의 피부에 맞는 루틴
+      {/* Section Header — hideHeader=true면 부모가 자체 헤더 노출 */}
+      {!hideHeader && (
+        <div style={{ padding: '0 4px', marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+            <div style={{
+              fontSize: 17, fontWeight: 700, color: 'var(--text-primary)',
+              letterSpacing: -0.3,
+            }}>
+              당신의 피부에 맞는 루틴
+            </div>
+            <span style={{
+              fontSize: 10, fontWeight: 600, color: '#6598ef',
+              background: 'rgba(101,152,239,0.18)', borderRadius: 8,
+              padding: '3px 8px', letterSpacing: -0.1,
+            }}>표준 정렬</span>
           </div>
-          <span style={{
-            fontSize: 10, fontWeight: 600, color: '#6598ef',
-            background: 'rgba(101,152,239,0.18)', borderRadius: 8,
-            padding: '3px 8px', letterSpacing: -0.1,
-          }}>표준 정렬</span>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.55 }}>
+            등록한 화장품을 표준 순서대로 정리했어요.
+            {result?.overallScore != null && ` 종합 ${result.overallScore}점 기준 매칭도 높은 순.`}
+          </div>
+          <div style={{ fontSize: 11.5, color: '#6598ef', lineHeight: 1.55, marginTop: 6, fontWeight: 500 }}>
+            내 피부 별 맞춤 추천은 상담으로 진행해보세요.
+          </div>
         </div>
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.55 }}>
-          등록한 화장품을 표준 순서대로 정리했어요.
-          {result?.overallScore != null && ` 종합 ${result.overallScore}점 기준 매칭도 높은 순.`}
-        </div>
-        <div style={{ fontSize: 11.5, color: '#6598ef', lineHeight: 1.55, marginTop: 6, fontWeight: 500 }}>
-          내 피부 별 맞춤 추천은 상담으로 진행해보세요.
-        </div>
-      </div>
+      )}
 
       {/* 가이드 카드 — 가장 임팩트 큰 1개만 노출 (피로도 ↓)
           우선순위: 충돌 high > medium > 과다 > low > 시너지 1개
