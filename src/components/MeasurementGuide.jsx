@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { hapticLight } from '../utils/haptics';
 import { getBaselineBuildingState } from '../engine/HybridAnalysis';
-import EternalPearl from './icons/EternalPearl';
 
 /**
  * MeasurementGuide — 측정 온보딩 풀스크린.
@@ -198,11 +197,6 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
           padding: '8px 20px 0',
           animation: 'mgSlideUp 500ms ease 100ms both',
         }}>
-          {/* 오브 */}
-          <div style={{ marginBottom: 12 }}>
-            <EternalPearl size={120} animated />
-          </div>
-
           {/* 진행 라벨 */}
           <div style={{
             fontSize: 10, fontWeight: 500, letterSpacing: 1.2,
