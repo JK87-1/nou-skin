@@ -225,7 +225,7 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
               <div
                 key={i}
                 style={{
-                  padding: '14px 0',
+                  padding: '21px 0',
                   borderBottom: i < CONDITIONS.length - 1 ? '1px dashed rgba(255,255,255,0.22)' : 'none',
                   animation: isFullSequence ? `mgCondIn 400ms cubic-bezier(0.32,0.72,0,1) both` : 'none',
                 }}
