@@ -68,7 +68,7 @@ const CONDITIONS = [
     note: '세안 후 5분 안에.\n메이크업 · 선크림은 점수를 가려요.',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M7.502 4a.882 .882 0 0 0 -.247 .03l-.004 .002l-.004 .002a.862 .862 0 0 0 -.21 .106c-.063 .042 -.12 .09 -.17 .144l-.745 .745a7.468 7.468 0 0 0 -2.122 5.228a7.468 7.468 0 0 0 2.122 5.228l6.879 6.879a.882 .882 0 0 0 1.248 0l6.879 -6.879a7.468 7.468 0 0 0 2.122 -5.228a7.468 7.468 0 0 0 -2.122 -5.228l-.745 -.745a.862 .862 0 0 0 -.586 -.243h-.001a.862 .862 0 0 0 -.586 .243l-3.94 3.94a1.128 1.128 0 0 1 -1.593 0l-3.94 -3.94a.862 .862 0 0 0 -.17 -.144a.862 .862 0 0 0 -.21 -.106l-.004 -.002z" />
+        <path d="M6.8 11a6 6 0 1 0 10.396 0l-5.197 -8l-5.2 8z" />
       </svg>
     ),
   },
@@ -271,10 +271,9 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
                 {/* 아이콘 + 제목 + 설명 */}
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                   <div style={{
-                    width: 32, height: 32, borderRadius: 10,
-                    background: 'rgba(255,255,255,0.15)',
+                    width: 20, height: 20,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    flexShrink: 0, marginTop: 1,
+                    flexShrink: 0, marginTop: 2,
                   }}>{c.icon}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
@@ -290,7 +289,7 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
 
                 {/* 노트 */}
                 <div style={{
-                  marginTop: 8, marginLeft: 42,
+                  marginTop: 8, marginLeft: 30,
                   paddingLeft: 10,
                   borderLeft: '2px solid rgba(255,255,255,0.5)',
                 }}>
