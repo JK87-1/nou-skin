@@ -85,7 +85,29 @@ export function saveProduct(product, opts = {}) {
     };
     products.push(newProduct);
   }
-  localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
+  try {
+    localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
+  } catch (e) {
+    // localStorage 한도 초과 — 가장 무거운 imageThumb를 단계적으로 제거하면서 재시도
+    if (e && /quota|QuotaExceeded/i.test(e.name + ' ' + e.message)) {
+      // 1차: 가장 오래된 제품들의 imageThumb 제거
+      const sorted = [...products].sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+      for (let removed = 1; removed <= sorted.length; removed++) {
+        for (let i = 0; i < removed; i++) {
+          const target = sorted[i];
+          const idx2 = products.findIndex(p => p.id === target.id);
+          if (idx2 >= 0) products[idx2] = { ...products[idx2], imageThumb: null };
+        }
+        try {
+          localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
+          return products;
+        } catch (e2) { /* 계속 제거 */ }
+      }
+      // 그래도 실패하면 친근한 한국어 에러
+      throw new Error('저장 공간이 부족해요. 사용 안 하는 제품을 삭제해주세요.');
+    }
+    throw e;
+  }
   return products;
 }
 
@@ -567,7 +589,8 @@ export function compressProductThumb(dataUrl) {
   return new Promise(resolve => {
     const img = new Image();
     img.onload = () => {
-      const size = 100;
+      // 80x80 0.5 quality ≈ 2~4KB per thumb (이전 100x100/0.6의 절반)
+      const size = 80;
       const canvas = document.createElement('canvas');
       canvas.width = size;
       canvas.height = size;
@@ -576,7 +599,7 @@ export function compressProductThumb(dataUrl) {
       const sx = (img.width - min) / 2;
       const sy = (img.height - min) / 2;
       ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
-      resolve(canvas.toDataURL('image/jpeg', 0.6));
+      resolve(canvas.toDataURL('image/jpeg', 0.5));
     };
     img.onerror = () => resolve(null);
     img.src = dataUrl;
