@@ -476,43 +476,59 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
   const cacheRef = useRef(new Map()); // query → results
 
   // 로컬 매칭 — KOREAN_PRODUCTS + ProductCatalog. 0ms 즉시 응답.
-  // 매칭 점수: brand 정확(100) > brand 시작(60) > brand 포함(40) > name 포함(20)
+  // multi-token 매칭: 사용자가 "피지오겔 토너"·"수분 세럼" 같이 여러 키워드를 쳐도 매칭.
+  // 각 토큰이 brand·name·category·ingredients 어디든 들어가면 점수.
+  // 모든 토큰을 만족해야 매칭(AND).
   const localMatch = (q) => {
     const norm = (s) => (s || '').replace(/\s+/g, '').toLowerCase();
-    const lq = norm(q);
-    if (lq.length < 1) return [];
-    const scored = [];
-    const seen = new Set();
+    const tokens = (q || '')
+      .toLowerCase()
+      .split(/\s+/)
+      .map(t => t.replace(/[^\p{L}\p{N}]/gu, ''))
+      .filter(Boolean);
+    if (tokens.length === 0) return [];
 
-    const score = (brand, name) => {
-      const nb = norm(brand);
-      const nn = norm(name);
-      const nbn = nb + nn;
-      if (nb === lq) return 100;
-      if (nb.startsWith(lq)) return 80;
-      if (nb.includes(lq)) return 60;
-      if (nn.includes(lq)) return 40;
-      if (nbn.includes(lq)) return 20;
+    const scoreOne = (token, nb, nn, nc, ni) => {
+      if (!token) return 0;
+      if (nb === token) return 100;
+      if (nb.startsWith(token)) return 80;
+      if (nb.includes(token)) return 60;
+      if (nn.includes(token)) return 40;
+      if (nc.includes(token)) return 30;
+      if (ni.includes(token)) return 20;
       return 0;
     };
 
-    // 우선순위 1: 한국 인기 제품 데이터셋
+    const scoreProduct = (brand, name, category, ingredients) => {
+      const nb = norm(brand);
+      const nn = norm(name);
+      const nc = norm(category);
+      const ni = norm(Array.isArray(ingredients) ? ingredients.join('') : (ingredients || ''));
+      let total = 0;
+      for (const t of tokens) {
+        const s = scoreOne(t, nb, nn, nc, ni);
+        if (s === 0) return 0; // AND: 모든 토큰 만족 필수
+        total += s;
+      }
+      return total;
+    };
+
+    const scored = [];
+    const seen = new Set();
+
+    // 우선순위 1: 한국 인기 제품 데이터셋 (카테고리·성분 풍부)
     for (const p of KOREAN_PRODUCTS) {
-      const s = score(p.brand, p.name);
+      const s = scoreProduct(p.brand, p.name, p.category, p.ingredients);
       if (s === 0) continue;
       const key = `${p.brand}|${p.name}`;
       if (seen.has(key)) continue;
       seen.add(key);
-      scored.push({
-        ...p,
-        source: 'local',
-        _score: s,
-      });
+      scored.push({ ...p, source: 'local', _score: s });
     }
 
-    // 우선순위 2: ProductCatalog (보조)
+    // 우선순위 2: ProductCatalog (보조 — tags를 ingredients 자리에)
     for (const p of PRODUCTS) {
-      const s = score(p.brand, p.name);
+      const s = scoreProduct(p.brand, p.name, '기타', p.tags);
       if (s === 0) continue;
       const key = `${p.brand}|${p.name}`;
       if (seen.has(key)) continue;
