@@ -364,7 +364,7 @@ export default function SkinWeather({ skinResult }) {
       {alerts.length > 0 && (
         <div style={{ marginBottom: 16, animation: 'swFadeInUp 0.5s ease 0.15s both' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-            <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>내 피부 맞춤 알림</span>
+            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>내 피부 맞춤 알림</span>
             {highCount > 0 && (
               <span style={{
                 fontSize: 10, fontWeight: 700, color: '#fff',
@@ -466,13 +466,13 @@ export default function SkinWeather({ skinResult }) {
       {/* ── 5-Day Forecast ── */}
       {weather.weekForecast && weather.weekForecast.length > 0 && (
         <div style={{ marginBottom: 16, animation: 'swFadeInUp 0.5s ease 0.2s both' }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 12 }}>
-            5일간 피부 환경 예보
-          </div>
           <div style={{
             background: 'rgba(34,113,208,0.05)', borderRadius: 16,
-            padding: 6,
+            padding: '14px 14px 6px',
           }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10 }}>
+              5일간 피부 환경 예보
+            </div>
             {weather.weekForecast.map((day, i) => {
               const ht = weekHumidityTag(day.humidity);
               const range = 25;
@@ -526,7 +526,7 @@ export default function SkinWeather({ skinResult }) {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}><PastelIcon emoji={seasonal.icon} size={18} /></div>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{seasonal.title}</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{seasonal.title}</div>
             <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{seasonal.season} 시즌 가이드</div>
           </div>
         </div>
@@ -567,7 +567,7 @@ export default function SkinWeather({ skinResult }) {
         return (
         <div style={{ marginBottom: 8, animation: 'swFadeInUp 0.5s ease 0.4s both', borderRadius: 18, padding: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>오늘 예정된 알림</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>오늘 예정된 알림</div>
             {weatherEnabled ? (
               <span style={{ fontSize: 10, fontWeight: 600, color: '#6598EF', background: 'rgba(101,152,239,0.1)', padding: '3px 8px', borderRadius: 8 }}>알림 ON</span>
             ) : (
