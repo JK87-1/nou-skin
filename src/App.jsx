@@ -1413,10 +1413,10 @@ export default function App() {
 
       {/* ===== CAMERA CAPTURE ===== */}
       {stage === 'camera' && (() => {
-        // baseline 첫 3회 단계에서만 자동 캡처 — 사용자가 버튼 안 눌러도 자세 잡히면 카운트다운 후 자동 측정.
-        // baseline 완성 후엔 평소처럼 수동 촬영 버튼 사용.
+        // baseline 첫 3회 단계에서 자동 캡처 — 사용자가 버튼 안 눌러도 자세 잡히면 카운트다운 후 자동 측정.
+        // 'none'(앱 첫 실행·리셋 직후 0회) + 'building'(1~2회 진행) 모두 자동. 'complete'만 수동.
         const buildState = (() => { try { return getBaselineBuildingState(); } catch { return null; } })();
-        const autoCapture = buildState?.stage === 'building';
+        const autoCapture = !buildState || buildState.stage !== 'complete';
         return (
           <CameraCapture
             onCapture={handleCameraCapture}
