@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react';
 import { getRecords, getSmoothedChanges, getChanges, getLatestRecord, getStableSkinAge, getRecentTrend } from '../storage/SkinStorage';
 import { getProfile } from '../storage/ProfileStorage';
 import { compressImage } from '../engine/PixelAnalysis';
@@ -147,6 +147,82 @@ function findExistingTrackerProduct(existing, item) {
   return existing.find(p => norm(p.brand) + '|' + norm(p.name) === itemKey);
 }
 
+// 메시지별 무거운 작업(regex 추출 + 마크다운)을 격리하고 React.memo로 재렌더 차단.
+// 마지막 메시지(content/isLast/isLoading 변경)만 재렌더, 과거 메시지는 props 안 바뀌어 skip.
+const LuaAssistantMessage = memo(function LuaAssistantMessage({
+  content, isLast, isLoading,
+  messageKey, isApplied,
+  onApplyRoutine, onSendQuickReply, onRegen, onCopy,
+}) {
+  const { cleanText, routine, quickReplies } = useMemo(() => {
+    const ar = extractApplyRoutine(content);
+    const qr = extractQuickReply(ar.cleanText);
+    return { cleanText: qr.cleanText, routine: ar.routine, quickReplies: qr.quickReplies };
+  }, [content]);
+
+  const showQuickReplies = isLast && !isLoading && quickReplies && quickReplies.length > 0;
+  const showActions = !isLoading || !isLast;
+
+  return (
+    <div style={{ padding: '10px 2px 4px', fontSize: 16 }}>
+      {renderChatMarkdown(cleanText)}
+      {routine && (
+        <ApplyRoutineCard
+          routine={routine}
+          applied={isApplied}
+          onApply={() => onApplyRoutine(messageKey, routine)}
+        />
+      )}
+      {showQuickReplies && (
+        <div style={{
+          display: 'flex', flexWrap: 'wrap', gap: 8,
+          marginTop: 14, paddingTop: 2,
+          animation: 'luaChipFadeIn 0.28s ease both',
+        }}>
+          <style>{`@keyframes luaChipFadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+          {quickReplies.map((opt, qi) => (
+            <button
+              key={qi}
+              type="button"
+              className="gem-btn"
+              onClick={() => onSendQuickReply(opt)}
+              style={{
+                padding: '9px 14px',
+                borderRadius: 18,
+                border: '1px solid rgba(101,152,239,0.32)',
+                background: 'rgba(101,152,239,0.08)',
+                color: '#1F1F1F',
+                fontSize: 14, fontWeight: 500,
+                cursor: 'pointer', fontFamily: 'inherit',
+                letterSpacing: -0.1,
+                maxWidth: '100%',
+                textAlign: 'left',
+                lineHeight: 1.35,
+              }}
+            >{opt}</button>
+          ))}
+        </div>
+      )}
+      {showActions && (
+        <div style={{ display: 'flex', gap: 18, alignItems: 'center', marginTop: 14, paddingTop: 2 }}>
+          <button className="gem-act" aria-label="좋아요" onClick={() => {}}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5F6368" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H7l-3-3v-9a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg>
+          </button>
+          <button className="gem-act" aria-label="별로예요" onClick={() => {}}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5F6368" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H17l3 3v9a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"/></svg>
+          </button>
+          <button className="gem-act" aria-label="다시 답변" onClick={onRegen}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5F6368" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>
+          </button>
+          <button className="gem-act" aria-label="복사" onClick={() => onCopy(content)}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5F6368" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+});
+
 function formatTime(ts) {
   const d = new Date(ts);
   const h = d.getHours();
@@ -257,6 +333,10 @@ function renderChatMarkdown(text) {
 
 export default function LuaChatSheet({ open, onClose, initialContext, onNavigateCare }) {
   const [messages, setMessages] = useState([]);
+  // messages를 ref로 미러링 — sendMessage·handleRegen 등에서 deps 없이 최신 messages 접근.
+  // sendMessage가 messages deps에 의존하면 SSE 매 delta마다 새 함수 → 메모이즈 무효화 → 메시지 누적 시 화면 freeze.
+  const messagesRef = useRef(messages);
+  useEffect(() => { messagesRef.current = messages; }, [messages]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [closing, setClosing] = useState(false);
@@ -508,7 +588,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
     setPendingImages([]);
     setIsLoading(true);
 
-    const conversationHistory = messages
+    const conversationHistory = messagesRef.current
       .filter(m => m.role === 'user' || m.role === 'assistant')
       .map(m => ({ role: m.role, content: m.content }));
     try {
@@ -572,7 +652,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
         content: err.message?.includes('429') ? '오늘 상담 횟수를 초과했어요. 내일 다시 이용해주세요!' : '잠시 문제가 생겼어요. 다시 시도해주세요.',
       }]);
     } finally { setIsLoading(false); }
-  }, [messages, isLoading, buildContext, pendingImages, personaId]);
+  }, [isLoading, buildContext, pendingImages, personaId]);
 
   // 페르소나 변경 — 새 채팅 시작 + localStorage 저장 + 환영 메시지
   const handleSelectPersona = useCallback((id) => {
@@ -588,6 +668,24 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
 
   const canSend = (input.trim() || pendingImages.length > 0) && !isLoading;
   const handleSubmit = useCallback(() => { sendMessage(input); }, [input, sendMessage]);
+
+  // 메시지 컴포넌트가 props로 받는 안정된 callback들 — React.memo로 재렌더 최소화.
+  const handleSendQuickReply = useCallback((opt) => {
+    setInput('');
+    sendMessage(opt);
+  }, [sendMessage]);
+
+  const handleRegen = useCallback(() => {
+    const lastUser = [...messagesRef.current].reverse().find(m => m.role === 'user');
+    if (lastUser) {
+      setMessages(prev => prev.slice(0, -1));
+      sendMessage(lastUser.content);
+    }
+  }, [sendMessage]);
+
+  const handleCopy = useCallback((text) => {
+    try { navigator.clipboard?.writeText(text); } catch {}
+  }, []);
 
   const onTouchStart = (e) => { dragStartY.current = e.touches[0].clientY; };
   const onTouchMove = (e) => {
@@ -787,82 +885,20 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
             const isLast = i === messages.length - 1;
 
             if (isLua) {
-              const afterRoutine = extractApplyRoutine(msg.content);
-              const { cleanText: cleanText2, quickReplies } = extractQuickReply(afterRoutine.cleanText);
-              const cleanText = cleanText2;
-              const routine = afterRoutine.routine;
               const messageKey = msg.timestamp ? `t-${msg.timestamp}` : `i-${i}`;
-              const isApplied = appliedRoutineKeys.has(messageKey);
-              // Quick reply chip은 마지막 assistant 메시지에만 + 스트리밍 끝난 뒤.
-              // input 의존성은 빼서 keystroke마다 전체 messages re-render 되지 않게 함 (긴 대화·긴 응답 시 스크롤 멈춤 방지).
-              const showQuickReplies = isLast && !isLoading && quickReplies && quickReplies.length > 0;
-              // Gemini 스타일: 버블 없음. 평문 마크다운만. 답변 아래 액션 row.
               return (
-                <div key={i} style={{ padding: '10px 2px 4px', fontSize: 16 }}>
-                  {renderChatMarkdown(cleanText)}
-                  {routine && (
-                    <ApplyRoutineCard
-                      routine={routine}
-                      applied={isApplied}
-                      onApply={() => handleApplyRoutine(messageKey, routine)}
-                    />
-                  )}
-                  {showQuickReplies && (
-                    <div style={{
-                      display: 'flex', flexWrap: 'wrap', gap: 8,
-                      marginTop: 14, paddingTop: 2,
-                      animation: 'luaChipFadeIn 0.28s ease both',
-                    }}>
-                      <style>{`@keyframes luaChipFadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }`}</style>
-                      {quickReplies.map((opt, qi) => (
-                        <button
-                          key={qi}
-                          type="button"
-                          className="gem-btn"
-                          onClick={() => { setInput(''); sendMessage(opt); }}
-                          style={{
-                            padding: '9px 14px',
-                            borderRadius: 18,
-                            border: '1px solid rgba(101,152,239,0.32)',
-                            background: 'rgba(101,152,239,0.08)',
-                            color: '#1F1F1F',
-                            fontSize: 14, fontWeight: 500,
-                            cursor: 'pointer', fontFamily: 'inherit',
-                            letterSpacing: -0.1,
-                            maxWidth: '100%',
-                            textAlign: 'left',
-                            lineHeight: 1.35,
-                          }}
-                        >{opt}</button>
-                      ))}
-                    </div>
-                  )}
-                  {!isLoading || !isLast ? (
-                    <div style={{ display: 'flex', gap: 18, alignItems: 'center', marginTop: 14, paddingTop: 2 }}>
-                      <button className="gem-act" aria-label="좋아요" onClick={() => {}}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5F6368" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H7l-3-3v-9a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg>
-                      </button>
-                      <button className="gem-act" aria-label="별로예요" onClick={() => {}}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5F6368" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H17l3 3v9a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"/></svg>
-                      </button>
-                      <button className="gem-act" aria-label="다시 답변" onClick={() => {
-                        // 마지막 user message로 재요청
-                        const lastUser = [...messages].reverse().find(m => m.role === 'user');
-                        if (lastUser) {
-                          setMessages(prev => prev.slice(0, -1));
-                          sendMessage(lastUser.content);
-                        }
-                      }}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5F6368" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>
-                      </button>
-                      <button className="gem-act" aria-label="복사" onClick={() => {
-                        try { navigator.clipboard?.writeText(msg.content); } catch {}
-                      }}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5F6368" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                      </button>
-                    </div>
-                  ) : null}
-                </div>
+                <LuaAssistantMessage
+                  key={i}
+                  content={msg.content}
+                  isLast={isLast}
+                  isLoading={isLoading}
+                  messageKey={messageKey}
+                  isApplied={appliedRoutineKeys.has(messageKey)}
+                  onApplyRoutine={handleApplyRoutine}
+                  onSendQuickReply={handleSendQuickReply}
+                  onRegen={handleRegen}
+                  onCopy={handleCopy}
+                />
               );
             }
             // User message — 옅은 회색 캡슐, 오른쪽 정렬
