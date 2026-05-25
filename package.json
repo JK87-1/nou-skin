@@ -28,6 +28,7 @@
     "@mediapipe/tasks-vision": "^0.10.32",
     "@upstash/redis": "^1.36.3",
     "@vladmandic/face-api": "^1.7.15",
+    "html-to-image": "^1.11.13",
     "puppeteer": "^24.37.5",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
