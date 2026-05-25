@@ -105,6 +105,32 @@ export async function getProductThumb(id) {
   }
 }
 
+// ===== Profile Image — 같은 IDB store, 약속 키 사용 =====
+const PROFILE_KEY = '__profile_image__';
+
+export async function setProfileImage(dataUrl) {
+  if (!dataUrl) {
+    memoryCache.delete(PROFILE_KEY);
+    try { await withStore('readwrite', s => s.delete(PROFILE_KEY)); } catch {}
+    return;
+  }
+  memoryCache.set(PROFILE_KEY, dataUrl);
+  try {
+    await withStore('readwrite', s => s.put(dataUrl, PROFILE_KEY));
+  } catch {}
+}
+
+export async function getProfileImage() {
+  if (memoryCache.has(PROFILE_KEY)) return memoryCache.get(PROFILE_KEY);
+  try {
+    const data = await withStore('readonly', s => s.get(PROFILE_KEY));
+    if (data) memoryCache.set(PROFILE_KEY, data);
+    return data || null;
+  } catch {
+    return null;
+  }
+}
+
 /** 단일 thumb 삭제 */
 export async function deleteProductThumb(id) {
   if (!id) return;

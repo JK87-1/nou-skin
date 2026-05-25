@@ -16,6 +16,7 @@ import {
 import { getLatestRecord } from '../storage/SkinStorage';
 import { getGoal, saveGoal, clearGoal, getDaysRemaining, getGoalProgress, getOverallProgress, METRIC_META } from '../storage/GoalStorage';
 import { getAllPhotosRaw, restorePhotos } from '../storage/PhotoDB';
+import { setProfileImage as setProfileImageIDB, getProfileImage as getProfileImageIDB } from '../storage/ImageStore';
 import { getUserLocation } from '../storage/WeatherStorage';
 import { MoonIcon, SunIcon, CameraIcon, SaveIcon, PastelIcon } from '../components/icons/PastelIcons';
 import { TERMS_OF_SERVICE, PRIVACY_POLICY, BIOMETRIC_CONSENT, OVERSEAS_TRANSFER_CONSENT, INQUIRY_FAQ, CONTACT_EMAIL } from '../legal/legalContent';
@@ -40,35 +41,67 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
   const glass = { background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', borderRadius: 20 };
 
   const showToast = (msg) => { setToastMsg(msg); setToast(true); setTimeout(() => setToast(false), 2500); };
-  const update = (key, value) => { const next = saveProfile({ [key]: value }); setProfile(next); };
+  const update = (key, value) => {
+    // profileImage는 큰 dataURL이라 localStorage quota 위험 — state만 갱신, 영속화는 IDB(setProfileImageIDB).
+    if (key === 'profileImage') {
+      setProfile(prev => ({ ...prev, profileImage: value }));
+      return;
+    }
+    const next = saveProfile({ [key]: value });
+    setProfile(next);
+  };
 
   const daysTogether = (() => { if (!records.length) return 0; const first = new Date(records[records.length - 1].date); return Math.max(1, Math.floor((Date.now() - first.getTime()) / 86400000)); })();
   const initial = (profile.nickname || '?')[0].toUpperCase();
 
-  // 아바타 클릭 시 사진 등록 — MyPage 자체 ref·핸들러 (SettingsModal의 동명 ref와 무관)
+  // 아바타 클릭 시 사진 등록 — MyPage 자체 ref·핸들러.
+  // 큰 사이즈 사진은 IndexedDB(ImageStore)에 저장 — localStorage 5MB quota 회피.
   const profilePhotoRef = useRef(null);
+
+  // 마운트 시 IDB에서 큰 사이즈 프로필 사진 load. localStorage의 옛 작은 사진을 덮어씌움.
+  useEffect(() => {
+    (async () => {
+      try {
+        const idbImg = await getProfileImageIDB();
+        if (idbImg) setProfile(prev => ({ ...prev, profileImage: idbImg }));
+      } catch {}
+    })();
+  }, []);
+
   const handleProfilePhoto = useCallback((e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
       const img = new Image();
-      img.onload = () => {
-        const size = 256;
+      img.onload = async () => {
+        // 최고 화질 — 768×768 / quality 0.94. IDB라 용량 부담 X. retina @3x 약 256pt 표시까지 깨끗.
+        const size = 768;
         const canvas = document.createElement('canvas');
         canvas.width = size; canvas.height = size;
         const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
         const min = Math.min(img.width, img.height);
         const sx = (img.width - min) / 2;
         const sy = (img.height - min) / 2;
         ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-        const next = saveProfile({ profileImage: dataUrl });
-        setProfile(next);
-        showToast('프로필 사진이 변경되었어요');
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.94);
+        try {
+          // IDB에 큰 사이즈 저장 (영속)
+          await setProfileImageIDB(dataUrl);
+          // localStorage엔 profileImage 필드만 in-memory 상태와 일치하게 정리 — 옛 큰 데이터 제거
+          saveProfile({ profileImage: '' });
+          setProfile(prev => ({ ...prev, profileImage: dataUrl }));
+          showToast('프로필 사진이 변경되었어요');
+        } catch {
+          showToast('사진 저장에 실패했어요. 다시 시도해주세요.');
+        }
       };
+      img.onerror = () => showToast('이미지를 읽을 수 없어요. 다른 사진을 선택해주세요.');
       img.src = reader.result;
     };
+    reader.onerror = () => showToast('파일을 읽을 수 없어요.');
     reader.readAsDataURL(file);
     e.target.value = '';
   }, []);
@@ -302,22 +335,32 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
     const reader = new FileReader();
     reader.onload = () => {
       const img = new Image();
-      img.onload = () => {
-        const size = 256;
+      img.onload = async () => {
+        // 최고 화질 — 768px / 0.94. IDB 저장이라 용량 부담 X.
+        const size = 768;
         const canvas = document.createElement('canvas');
         canvas.width = size;
         canvas.height = size;
         const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
         const min = Math.min(img.width, img.height);
         const sx = (img.width - min) / 2;
         const sy = (img.height - min) / 2;
         ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-        const next = saveProfile({ profileImage: dataUrl });
-        setProfile(next);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.94);
+        try {
+          await setProfileImageIDB(dataUrl);
+          update('profileImage', dataUrl); // MyPage state 갱신 (update는 profileImage 키일 때 localStorage 저장 X)
+          showToast('프로필 사진이 변경되었어요');
+        } catch {
+          showToast('사진 저장에 실패했어요. 다시 시도해주세요.');
+        }
       };
+      img.onerror = () => showToast('이미지를 읽을 수 없어요. 다른 사진을 선택해주세요.');
       img.src = reader.result;
     };
+    reader.onerror = () => showToast('파일을 읽을 수 없어요.');
     reader.readAsDataURL(file);
     e.target.value = '';
   }, []);
