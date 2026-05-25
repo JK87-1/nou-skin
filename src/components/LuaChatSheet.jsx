@@ -62,20 +62,28 @@ function pickEmptyPrompt(personaId) {
 const TRACKER_CATEGORY_SET = new Set(['클렌저','토너','에센스','세럼','크림','선크림','마스크팩','기타']);
 function extractApplyRoutine(text) {
   if (!text) return { cleanText: text, routine: null };
-  const startIdx = text.indexOf('[APPLY_ROUTINE]');
-  if (startIdx === -1) return { cleanText: text, routine: null };
+  // 시작 태그 변형·truncate 흡수 — `[APPLY_ROUT`, `[APPLY_ROUTINE`, `[APPLY_ROUTINE]` 모두 매칭.
+  // 모델이 토큰 한도로 끊겼거나 시작 태그가 깨져 들어와도 raw 마커가 본문에 노출되지 않게.
+  const startRe = /\[APPLY_ROUT(?:INE)?\]?/i;
+  const startMatch = text.match(startRe);
+  if (!startMatch) return { cleanText: text, routine: null };
+  const startIdx = startMatch.index;
+  const startLen = startMatch[0].length;
 
-  // 시작 태그가 발견된 순간부터는 무조건 hide — 스트리밍 중 닫는 태그가
-  // 아직 안 왔어도 사용자에게 raw JSON이 노출되지 않게 한다.
-  const endMarker = '[/APPLY_ROUTINE]';
-  const endIdx = text.indexOf(endMarker, startIdx);
+  const endRe = /\[\/APPLY_ROUTINE\]/i;
+  const tailSearch = text.slice(startIdx).match(endRe);
+  const endIdx = tailSearch ? startIdx + tailSearch.index : -1;
+  const endLen = tailSearch ? tailSearch[0].length : 0;
+
   const head = text.slice(0, startIdx).trim();
-  const tail = endIdx !== -1 ? text.slice(endIdx + endMarker.length).trim() : '';
+  const tail = endIdx !== -1 ? text.slice(endIdx + endLen).trim() : '';
   const cleanText = tail ? `${head}\n\n${tail}` : head;
 
-  if (endIdx === -1) return { cleanText, routine: null };
-
-  const jsonStr = text.slice(startIdx + '[APPLY_ROUTINE]'.length, endIdx).trim();
+  // 시작 태그가 정확히 `[APPLY_ROUTINE]`이고 닫는 태그까지 모두 있을 때만 JSON 파싱 시도
+  if (endIdx === -1 || !/^\[APPLY_ROUTINE\]$/i.test(startMatch[0])) {
+    return { cleanText, routine: null };
+  }
+  const jsonStr = text.slice(startIdx + startLen, endIdx).trim();
   let parsed = null;
   try { parsed = JSON.parse(jsonStr); } catch { parsed = null; }
   if (!parsed || typeof parsed !== 'object') return { cleanText, routine: null };
@@ -100,26 +108,34 @@ function extractApplyRoutine(text) {
 
 // ===== AI 응답에서 [QUICK_REPLY] chip 옵션 추출 =====
 // 형식: [QUICK_REPLY]옵션1|옵션2|옵션3[/QUICK_REPLY]
-// 본문에서 마커를 제거하고 옵션 배열 반환. 마커 미존재·파싱 실패 시 quickReplies=null.
+// 본문에서 마커를 제거하고 옵션 배열 반환. 시작 태그만 와도 본문에서 잘라내서 raw 노출 차단.
 function extractQuickReply(text) {
   if (!text) return { cleanText: text, quickReplies: null };
-  const re = /\[QUICK_REPLY\]([\s\S]*?)\[\/QUICK_REPLY\]/;
-  const m = text.match(re);
-  if (!m) {
-    // 시작 태그만 있고 닫는 태그가 아직 안 온 스트리밍 중 상황 → 본문에서 시작부터 끝까지 hide
-    const startIdx = text.indexOf('[QUICK_REPLY]');
-    if (startIdx !== -1) {
-      return { cleanText: text.slice(0, startIdx).trim(), quickReplies: null };
-    }
-    return { cleanText: text, quickReplies: null };
+  // 시작 태그 변형·truncate 흡수 — `[QUICK_REPL`, `[QUICK_REPLY`, `[QUICK_REPLY]` 모두 매칭.
+  const startRe = /\[QUICK_REPL(?:Y)?\]?/i;
+  const startMatch = text.match(startRe);
+  if (!startMatch) return { cleanText: text, quickReplies: null };
+  const startIdx = startMatch.index;
+  const startLen = startMatch[0].length;
+
+  const endRe = /\[\/QUICK_REPLY\]/i;
+  const tailSearch = text.slice(startIdx).match(endRe);
+  const endIdx = tailSearch ? startIdx + tailSearch.index : -1;
+  const endLen = tailSearch ? tailSearch[0].length : 0;
+
+  const head = text.slice(0, startIdx).trim();
+  const tail = endIdx !== -1 ? text.slice(endIdx + endLen).trim() : '';
+  const cleanText = (tail ? `${head}\n\n${tail}` : head).replace(/\n{3,}/g, '\n\n').trim();
+
+  if (endIdx === -1 || !/^\[QUICK_REPLY\]$/i.test(startMatch[0])) {
+    return { cleanText, quickReplies: null };
   }
-  const raw = m[1] || '';
+  const raw = text.slice(startIdx + startLen, endIdx);
   const options = raw.split('|')
     .map(s => s.trim())
     .filter(Boolean)
-    .filter(s => s.length <= 30)  // 너무 긴 옵션 방어
-    .slice(0, 5);                  // 5개 초과 방어
-  const cleanText = text.replace(re, '').replace(/\n{3,}/g, '\n\n').trim();
+    .filter(s => s.length <= 30)
+    .slice(0, 5);
   if (options.length === 0) return { cleanText, quickReplies: null };
   return { cleanText, quickReplies: options };
 }
