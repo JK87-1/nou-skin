@@ -124,6 +124,7 @@ export default function PullToRefresh({ onRefresh, children, color = '#6598ef' }
 }
 
 function LuaStarIndicator({ progress, reached, refreshing }) {
+  const visible = progress > 0.05 || refreshing;
   const opacity = reached || refreshing ? 1 : (0.3 + progress * 0.7);
   const scale = 0.5 + progress * 0.5;
 
@@ -133,11 +134,9 @@ function LuaStarIndicator({ progress, reached, refreshing }) {
       position: 'relative',
       transformStyle: 'preserve-3d',
       transformOrigin: '44% 100%',
-      transform: refreshing
-        ? 'scale(1)'
-        : `scale(${scale})`,
+      transform: refreshing ? 'scale(1)' : `scale(${scale})`,
       transition: refreshing ? 'transform 0.3s ease' : 'none',
-      animation: refreshing ? 'luaPtrFlip 1.5s ease-in-out infinite' : 'none',
+      animation: visible ? 'luaPtrFlip 1.5s ease-in-out infinite' : 'none',
       opacity,
       filter: reached || refreshing
         ? 'drop-shadow(0 0 12px rgba(168,216,255,0.5))'
