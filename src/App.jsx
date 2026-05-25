@@ -14,12 +14,12 @@ import CameraCapture from './components/CameraCapture';
 import { saveRecord, updateRecord, getRecords, getNextMeasurementInfo, getChanges, generateShareText, getLatestRecord, hasTodayRecord, saveThumbnail, saveComparisonPhoto, getTodayRecords, getStableSkinAge, findRecentPrimaryRecord } from './storage/SkinStorage';
 import { migrateFromLocalStorage } from './storage/PhotoDB';
 import { createAutoBackup, verifyDataIntegrity, restoreFromAutoBackup, startPeriodicBackup, getBackupInfo } from './storage/AutoBackup';
-import HistoryPage from './pages/HistoryPage';
+import CarePage from './pages/CarePage';
 import TabBar from './components/TabBar';
 import MyPage from './pages/MyPage';
 import DiscoverPage from './pages/DiscoverPage';
 // RoutinePage removed — tab restructuring
-import RoutineTracker from './pages/RoutineTracker';
+import ProductPage from './pages/ProductPage';
 import SkinScoreCircle from './components/SkinScoreCircle';
 import AiInsightCard from './components/AiInsightCard';
 import SkinConsultant from './components/SkinConsultant';
@@ -364,7 +364,7 @@ export default function App() {
 
   const openDetail = useCallback((key) => { setPrevStage(stage); setDetailKey(key); setStage('detail'); }, [stage]);
   const closeDetail = useCallback(() => { setStage(prevStage); setDetailKey(null); }, [prevStage]);
-  const goToHistory = useCallback(() => { refreshLandingData(); setHistoryInitMode(null); setActiveTab('history'); }, []);
+  const goToHistory = useCallback(() => { refreshLandingData(); setHistoryInitMode(null); setActiveTab('care'); }, []);
   const goToLanding = useCallback(() => { refreshLandingData(); setHistoryInitMode(null); setActiveTab('home'); setStage('landing'); }, []);
 
   const switchTab = useCallback((tab) => {
@@ -987,7 +987,7 @@ export default function App() {
       )}
 
       {/* ===== 탭별 배경 (PC에서도 전체 커버) ===== */}
-      {(activeTab === 'history' || activeTab === 'care1' || activeTab === 'discover' || activeTab === 'my') && (
+      {(activeTab === 'care' || activeTab === 'product' || activeTab === 'discover' || activeTab === 'my') && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: -1, pointerEvents: 'none',
           background: 'linear-gradient(180deg, #C5E3FF 0%, #F1F7FD 100%)',
@@ -995,12 +995,12 @@ export default function App() {
       )}
 
       {/* ===== HISTORY PAGE (gallery + insights merged) ===== */}
-      {activeTab === 'history' && (
-        <HistoryPage onBack={goToLanding} onMeasure={openCamera} onOpenConsult={() => setFabChatOpen(true)} onAddProduct={() => { setActiveTab('home'); setStage('routineTracker'); }} initialMode={historyInitMode} />
+      {activeTab === 'care' && (
+        <CarePage onBack={goToLanding} onMeasure={openCamera} onOpenConsult={() => setFabChatOpen(true)} onAddProduct={() => { setActiveTab('home'); setStage('routineTracker'); }} initialMode={historyInitMode} />
       )}
 
-      {activeTab === 'care1' && (
-        <RoutineTracker colorMode={colorMode} themeColors={activeThemeColors} onBack={() => setActiveTab('home')} />
+      {activeTab === 'product' && (
+        <ProductPage colorMode={colorMode} themeColors={activeThemeColors} onBack={() => setActiveTab('home')} />
       )}
 
       {activeTab === 'discover' && (
@@ -1016,7 +1016,7 @@ export default function App() {
 
       {/* ===== ROUTINE TRACKER ===== */}
       {stage === 'routineTracker' && (
-        <RoutineTracker
+        <ProductPage
           colorMode={colorMode}
           themeColors={activeThemeColors}
           onBack={() => setStage('landing')}

@@ -5,7 +5,7 @@ import {
   SKIN_TYPES, SKIN_CONCERNS, SENSITIVITY_OPTIONS, GENDER_OPTIONS,
 } from '../storage/ProfileStorage';
 import { getRecords, getTotalChanges, getAllThumbnailsAsync, deleteRecord } from '../storage/SkinStorage';
-import { RecordDetailModal } from './HistoryPage';
+import { RecordDetailModal } from './CarePage';
 import { clearBaseline, hasBaseline } from '../engine/HybridAnalysis';
 import {
   isPushSupported, isStandalone, isIOS, getPermissionState,

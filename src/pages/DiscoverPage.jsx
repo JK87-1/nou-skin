@@ -89,7 +89,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
     <div style={{ minHeight: '100dvh', paddingBottom: 100 }}>
 
       {/* ① 헤더 spacer */}
-      <div style={{ padding: '16px 16px 4px' }} />
+      <div style={{ padding: '30px 16px 4px' }} />
 
       {/* ③ 히어로 요약 카드 */}
           <div style={{ margin: '0 12px 12px' }}>

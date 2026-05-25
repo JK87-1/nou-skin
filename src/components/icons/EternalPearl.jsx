@@ -16,27 +16,27 @@ const orbStyles = `
 }
 .lua-blob-1 {
   width: 75%; height: 75%;
-  background: radial-gradient(circle, #FFFFFF, #FFB8C8);
+  background: radial-gradient(circle, #FFFFFF, #FF9AB0);
   top: 5%; left: 8%;
   animation: luaDrift1 4s ease-in-out infinite;
 }
 .lua-blob-2 {
   width: 65%; height: 65%;
-  background: radial-gradient(circle, #D8A8F0, #C090E0);
+  background: radial-gradient(circle, #CC90EC, #B078D8);
   bottom: 5%; right: 5%;
   opacity: 0.9;
   animation: luaDrift2 5s ease-in-out infinite;
 }
 .lua-blob-3 {
   width: 55%; height: 55%;
-  background: radial-gradient(circle, #90C4F8, #70B0F0);
+  background: radial-gradient(circle, #78B4F8, #58A0F0);
   top: 38%; left: 30%;
   opacity: 0.85;
   animation: luaDrift3 3.5s ease-in-out infinite;
 }
 .lua-blob-4 {
   width: 60%; height: 60%;
-  background: radial-gradient(circle, #FFFFFF, #E0C8F0);
+  background: radial-gradient(circle, #FFFFFF, #D0B0EC);
   top: 3%; right: 5%;
   animation: luaDrift4 4.5s ease-in-out infinite;
 }
@@ -158,8 +158,8 @@ export default function EternalPearl({ size = 280, animated = true }) {
             width: orbSize, height: orbSize, borderRadius: '50%',
             background: 'linear-gradient(135deg, #FFFFFF, #E8D0F0)',
             position: 'relative', overflow: 'hidden',
-            mask: 'radial-gradient(circle, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 72%)',
-            WebkitMask: 'radial-gradient(circle, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 72%)',
+            mask: 'radial-gradient(circle, rgba(0,0,0,1) 55%, rgba(0,0,0,0) 72%)',
+            WebkitMask: 'radial-gradient(circle, rgba(0,0,0,1) 55%, rgba(0,0,0,0) 72%)',
           }}>
             <div className="lua-blob lua-blob-1" style={{ filter: `blur(${blobBlur}px)`, WebkitFilter: `blur(${blobBlur}px)` }} />
             <div className="lua-blob lua-blob-2" style={{ filter: `blur(${blobBlur}px)`, WebkitFilter: `blur(${blobBlur}px)` }} />

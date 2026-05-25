@@ -49,7 +49,7 @@ export default function RoutinePage() {
   return (
     <div style={{ paddingBottom: 20 }}>
       {/* Header */}
-      <div style={{ padding: '48px 28px 20px', textAlign: 'center' }}>
+      <div style={{ padding: '30px 28px 20px', textAlign: 'center' }}>
         <h1 style={{
           fontSize: 28, fontWeight: 300, color: 'var(--text-secondary)',
           fontFamily: "'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif", fontStyle: 'italic',
