@@ -1169,11 +1169,11 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, accent }) {
             </div>
 
             <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
-              <div style={{ flex: 1, borderRadius: 18, padding: '14px', textAlign: 'center', background: 'rgba(255,255,255,0.42)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}>
+              <div style={{ flex: 1, borderRadius: 18, padding: '14px', textAlign: 'center', background: 'rgba(255,255,255,0.42)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 2px 12px rgba(0,0,0,0.1)' }}>
                 <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>사용 기간</div>
                 <div style={{ fontSize: 20, fontWeight: 700, color: accent, fontFamily: 'var(--font-display)' }}>{days}일</div>
               </div>
-              <div style={{ flex: 1, borderRadius: 18, padding: '14px', textAlign: 'center', background: 'rgba(255,255,255,0.42)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}>
+              <div style={{ flex: 1, borderRadius: 18, padding: '14px', textAlign: 'center', background: 'rgba(255,255,255,0.42)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 2px 12px rgba(0,0,0,0.1)' }}>
                 <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>시작일</div>
                 <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}>{product.startDate}</div>
               </div>
@@ -1667,7 +1667,7 @@ export default function ProductPage({ themeColors, onBack }) {
           backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
           borderRadius: 16, padding: '8px 14px',
           fontSize: 12, fontWeight: 500, letterSpacing: -0.1,
-          boxShadow: '0 4px 18px rgba(0,0,0,0.18)', zIndex: 950,
+          boxShadow: '0 2px 12px rgba(0,0,0,0.1)', zIndex: 950,
           display: 'flex', alignItems: 'center', gap: 8,
           animation: 'breatheIn 0.25s ease both',
         }}>
@@ -1721,7 +1721,7 @@ export default function ProductPage({ themeColors, onBack }) {
             style={{
               padding: '13px 24px', marginBottom: 12, cursor: 'pointer',
               background: '#6598ef', borderRadius: 16,
-              boxShadow: '0 4px 14px rgba(101,152,239,0.28)',
+              boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
             }}
           >
@@ -1760,7 +1760,7 @@ export default function ProductPage({ themeColors, onBack }) {
                     background: 'rgba(255,255,255,0.42)', borderRadius: 18,
                     backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
                     border: '1px solid rgba(255,255,255,0.4)',
-                    boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
                     padding: 14, cursor: 'pointer',
                     display: 'flex', flexDirection: 'column',
                   }}>
@@ -1811,7 +1811,7 @@ export default function ProductPage({ themeColors, onBack }) {
                     background: 'linear-gradient(135deg, #6598ef 0%, #8ac4fe 100%)',
                     border: 'none', borderRadius: 18,
                     cursor: 'pointer', fontFamily: 'inherit',
-                    boxShadow: '0 6px 18px rgba(101,152,239,0.32)',
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9,
                     color: '#fff',
                   }}
@@ -2074,7 +2074,7 @@ export default function ProductPage({ themeColors, onBack }) {
           background: '#1F2937', color: '#fff',
           padding: '12px 18px', borderRadius: 22,
           fontSize: 13.5, fontWeight: 600, letterSpacing: -0.2,
-          boxShadow: '0 8px 28px rgba(0,0,0,0.28)',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
           zIndex: 10500, pointerEvents: 'none', maxWidth: '86vw', textAlign: 'center',
           animation: 'dedupeRise 220ms ease-out',
         }}>
