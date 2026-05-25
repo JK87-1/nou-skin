@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { getLatestRecord } from '../storage/SkinStorage';
 import { getProducts, TRACKER_CATEGORIES } from '../storage/TrackerStorage';
 import { buildRoutineRecommendation, detectInteractions } from '../utils/routineBuilder';
@@ -114,20 +114,24 @@ function StepBlock({ stepDef }) {
   );
 }
 
-function RoutineColumn({ icon, title, subtitle, steps, totalProducts, dailyCount, occasionalCount }) {
+function RoutineColumn({ icon, title, subtitle, steps, totalProducts, hideHeader = false }) {
   if (steps.length === 0) return null;
   return (
     <div style={{ marginBottom: 22 }}>
-      <div style={{ padding: '0 4px', marginBottom: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-          <span style={{ display: 'flex', alignItems: 'center' }}>{icon}</span>
-          <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: -0.2 }}>{title}</span>
-          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{totalProducts}개</span>
+      {!hideHeader ? (
+        <div style={{ padding: '0 4px', marginBottom: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+            <span style={{ display: 'flex', alignItems: 'center' }}>{icon}</span>
+            <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: -0.2 }}>{title}</span>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{totalProducts}개</span>
+          </div>
+          {subtitle && (
+            <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.5 }}>{subtitle}</div>
+          )}
         </div>
-        {subtitle && (
-          <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.5 }}>{subtitle}</div>
-        )}
-      </div>
+      ) : subtitle ? (
+        <div style={{ padding: '0 4px', marginBottom: 10, fontSize: 11.5, color: 'var(--text-muted)', lineHeight: 1.5 }}>{subtitle}</div>
+      ) : null}
       {steps.map(s => <StepBlock key={s.step} stepDef={s} />)}
     </div>
   );
@@ -296,26 +300,118 @@ export default function CareRecommendation({ products: productsProp, refreshKey 
         );
       })()}
 
-      <RoutineColumn
-        icon={<IconSunrise size={18} />}
-        title="아침 루틴"
-        subtitle={morningStats.occasional > 0
-          ? `매일 ${morningStats.daily}개 · 가끔 ${morningStats.occasional}개`
-          : `매일 ${morningStats.daily}개`}
-        steps={morningSteps}
-        totalProducts={morningStats.total}
-      />
-
-      <RoutineColumn
-        icon={<IconMoon size={18} />}
-        title="저녁 루틴"
-        subtitle={nightStats.occasional > 0
-          ? `매일 ${nightStats.daily}개 · 가끔 ${nightStats.occasional}개`
-          : `매일 ${nightStats.daily}개`}
-        steps={nightSteps}
-        totalProducts={nightStats.total}
+      <RoutineTabs
+        morningSteps={morningSteps}
+        nightSteps={nightSteps}
+        morningStats={morningStats}
+        nightStats={nightStats}
       />
 
     </div>
+  );
+}
+
+// 아침/저녁 루틴 탭 — 한 쪽만 있을 땐 탭 숨김(그 쪽만 노출).
+function RoutineTabs({ morningSteps, nightSteps, morningStats, nightStats }) {
+  const hasMorning = morningSteps.length > 0;
+  const hasNight = nightSteps.length > 0;
+  // 기본 활성 탭: 현재 시간 기준 18시 이후면 저녁, 아니면 아침. 활성 쪽이 비어있으면 반대로.
+  const initial = (() => {
+    const isEvening = new Date().getHours() >= 18;
+    if (isEvening && hasNight) return 'night';
+    if (!isEvening && hasMorning) return 'morning';
+    return hasMorning ? 'morning' : 'night';
+  })();
+  const [tab, setTab] = useState(initial);
+
+  // 한 쪽만 있으면 탭 없이 그 쪽만
+  if (!hasMorning || !hasNight) {
+    return hasMorning ? (
+      <RoutineColumn
+        icon={<IconSunrise size={18} />}
+        title="아침 루틴"
+        subtitle={morningStats.occasional > 0 ? `매일 ${morningStats.daily}개 · 가끔 ${morningStats.occasional}개` : `매일 ${morningStats.daily}개`}
+        steps={morningSteps}
+        totalProducts={morningStats.total}
+      />
+    ) : (
+      <RoutineColumn
+        icon={<IconMoon size={18} />}
+        title="저녁 루틴"
+        subtitle={nightStats.occasional > 0 ? `매일 ${nightStats.daily}개 · 가끔 ${nightStats.occasional}개` : `매일 ${nightStats.daily}개`}
+        steps={nightSteps}
+        totalProducts={nightStats.total}
+      />
+    );
+  }
+
+  const tabs = [
+    { key: 'morning', label: '아침', icon: <IconSunrise size={15} />, count: morningStats.total },
+    { key: 'night',   label: '저녁', icon: <IconMoon size={15} />,    count: nightStats.total },
+  ];
+
+  return (
+    <>
+      {/* 세그먼트 탭 — 글래스 카드 안에 두 칸. 활성 탭은 흰색 pill로 강조 */}
+      <div style={{
+        display: 'flex', gap: 4, padding: 4, marginBottom: 16,
+        background: 'rgba(255,255,255,0.35)',
+        backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+        border: '1px solid rgba(255,255,255,0.4)',
+        borderRadius: 14,
+      }}>
+        {tabs.map(t => {
+          const active = tab === t.key;
+          return (
+            <button
+              key={t.key}
+              type="button"
+              onClick={() => setTab(t.key)}
+              style={{
+                flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                padding: '10px 0', borderRadius: 11, cursor: 'pointer',
+                border: 'none',
+                background: active ? 'rgba(255,255,255,0.85)' : 'transparent',
+                boxShadow: active ? '0 1px 4px rgba(0,0,0,0.06)' : 'none',
+                color: active ? '#6598ef' : 'var(--text-secondary)',
+                fontSize: 13.5, fontWeight: active ? 700 : 500,
+                letterSpacing: -0.2,
+                transition: 'background 0.18s ease, color 0.18s ease',
+              }}
+            >
+              <span style={{ display: 'flex', opacity: active ? 1 : 0.55 }}>{t.icon}</span>
+              <span>{t.label}</span>
+              <span style={{
+                fontSize: 10.5, fontWeight: 600,
+                color: active ? '#6598ef' : 'var(--text-muted)',
+                background: active ? 'rgba(101,152,239,0.14)' : 'rgba(0,0,0,0.05)',
+                borderRadius: 8, padding: '2px 7px',
+              }}>{t.count}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* 선택된 탭만 렌더링. 탭이 이미 아침/저녁을 노출하니 column 헤더는 숨김. */}
+      {tab === 'morning' ? (
+        <RoutineColumn
+          icon={<IconSunrise size={18} />}
+          title="아침 루틴"
+          subtitle={morningStats.occasional > 0 ? `매일 ${morningStats.daily}개 · 가끔 ${morningStats.occasional}개` : `매일 ${morningStats.daily}개`}
+          steps={morningSteps}
+          totalProducts={morningStats.total}
+          hideHeader
+        />
+      ) : (
+        <RoutineColumn
+          icon={<IconMoon size={18} />}
+          title="저녁 루틴"
+          subtitle={nightStats.occasional > 0 ? `매일 ${nightStats.daily}개 · 가끔 ${nightStats.occasional}개` : `매일 ${nightStats.daily}개`}
+          steps={nightSteps}
+          totalProducts={nightStats.total}
+          hideHeader
+        />
+      )}
+    </>
   );
 }
