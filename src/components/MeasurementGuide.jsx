@@ -49,8 +49,8 @@ const COPY = {
 // ── 조건 리스트 ──
 const CONDITIONS = [
   {
-    title: '밝은 환경',
-    desc: '낮시간 자연광이 좋아요. 밤이면 방을 환하게 밝혀주세요.',
+    title: '밝은 곳',
+    desc: '낮시간 자연광 또는 환한 실내조명',
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" />
@@ -61,7 +61,7 @@ const CONDITIONS = [
   },
   {
     title: '세안 이후',
-    desc: '스킨케어 전이 좋아요. 스킨케어를 했다면 30분후에.',
+    desc: '스킨케어 전 또는 스킨케어 30분 후',
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M6.8 11a6 6 0 1 0 10.396 0l-5.197 -8l-5.2 8z" />
@@ -69,8 +69,8 @@ const CONDITIONS = [
     ),
   },
   {
-    title: '메이크업 없이',
-    desc: '선크림이나 베이스, 컨실러는 내 진짜 피부를 가려요.',
+    title: '맨 얼굴',
+    desc: '선크림, 메이크업 없이',
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
@@ -80,7 +80,7 @@ const CONDITIONS = [
   },
   {
     title: '정면 30cm',
-    desc: '얼굴이 화면 가이드에 맞도록. 너무 가깝거나 멀지않게.',
+    desc: '화면 가이드에 맞도록',
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M5 7h1a2 2 0 0 0 2 -2a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2" />
@@ -89,8 +89,8 @@ const CONDITIONS = [
     ),
   },
   {
-    title: '자연스러운 표정',
-    desc: '입을 다물고 자연스러운 표정이 좋아요.',
+    title: '편안한 표정',
+    desc: '입을 다물고 자연스럽게',
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
@@ -257,7 +257,7 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
                   <div style={{
                     width: 24, height: 24,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    flexShrink: 0, marginTop: 1, marginLeft: 20, opacity: 0.85,
+                    flexShrink: 0, marginTop: 1, marginLeft: 62, opacity: 0.85,
                   }}>{c.icon}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
