@@ -476,13 +476,39 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
     saveConsultSession(messages, personaId);
   }, [messages, open, personaId]);
 
-  // 자동 스크롤 — 답변이 흐르는 동안 자연스럽게 따라가기 위해 smooth 사용.
-  // 사용자가 위로 스크롤 중이면(bottom에서 60px 이상 떨어짐) 자동 스크롤 중단 — 읽기 흐름 보존.
+  // 사용자 터치 인터랙션 감지 — 사용자가 직접 스크롤할 땐 자동 스크롤 멈춤(자유롭게 위아래 이동).
+  // touchend 후 700ms 동안 자동 스크롤 lockout. 그 사이 사용자가 다시 bottom 근처로 내리면 정상 재개.
+  const userScrollingRef = useRef(false);
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
-    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
-    if (!nearBottom && !isLoading) return; // 사용자가 위쪽 읽는 중 → 강제 스크롤 X
+    let releaseTimer = null;
+    const onTouchStart = () => {
+      userScrollingRef.current = true;
+      if (releaseTimer) { clearTimeout(releaseTimer); releaseTimer = null; }
+    };
+    const onTouchEnd = () => {
+      if (releaseTimer) clearTimeout(releaseTimer);
+      releaseTimer = setTimeout(() => { userScrollingRef.current = false; }, 700);
+    };
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchend', onTouchEnd, { passive: true });
+    el.addEventListener('touchcancel', onTouchEnd, { passive: true });
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchend', onTouchEnd);
+      el.removeEventListener('touchcancel', onTouchEnd);
+      if (releaseTimer) clearTimeout(releaseTimer);
+    };
+  }, []);
+
+  // 자동 스크롤 — 사용자 터치 중이거나 위로 올라가 있으면 강제 X.
+  useEffect(() => {
+    if (userScrollingRef.current) return;
+    const el = scrollRef.current;
+    if (!el) return;
+    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+    if (!nearBottom) return; // 사용자가 위쪽 읽는 중 → 자동 스크롤 X
     requestAnimationFrame(() => {
       el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
     });
