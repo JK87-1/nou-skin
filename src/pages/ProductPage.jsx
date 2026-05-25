@@ -1160,7 +1160,7 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
               </div>
               <div onClick={() => onToggleFavorite?.(product.id)} style={{ cursor: 'pointer', padding: 4, WebkitTapHighlightColor: 'transparent' }}>
                 {product.favorite ? (
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="#FFB8C8" stroke="none">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="#ffdaf0" stroke="none">
                     <path d="M6.979 3.074a6 6 0 0 1 4.988 1.425l.037 .033l.034 -.03a6 6 0 0 1 4.733 -1.44l.246 .036a6 6 0 0 1 3.364 10.008l-.18 .185l-.048 .041l-7.45 7.379a1 1 0 0 1 -1.313 .082l-.094 -.082l-7.493 -7.422a6 6 0 0 1 3.176 -10.215z" />
                   </svg>
                 ) : (
@@ -1825,7 +1825,7 @@ export default function ProductPage({ themeColors, onBack }) {
                   }}>
                     {p.favorite && (
                       <div style={{ position: 'absolute', top: 14, right: 14 }}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="#FFB8C8" stroke="none">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="#ffdaf0" stroke="none">
                           <path d="M6.979 3.074a6 6 0 0 1 4.988 1.425l.037 .033l.034 -.03a6 6 0 0 1 4.733 -1.44l.246 .036a6 6 0 0 1 3.364 10.008l-.18 .185l-.048 .041l-7.45 7.379a1 1 0 0 1 -1.313 .082l-.094 -.082l-7.493 -7.422a6 6 0 0 1 3.176 -10.215z" />
                         </svg>
                       </div>
