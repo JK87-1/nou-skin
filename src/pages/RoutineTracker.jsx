@@ -19,6 +19,7 @@ import { hapticLight } from '../utils/haptics';
 import { getAllProductThumbs, migrateThumbsFromLocalStorage } from '../storage/ImageStore';
 import { PRODUCTS } from '../data/ProductCatalog';
 import { KOREAN_PRODUCTS, POPULAR_KOREAN_PRODUCTS } from '../data/KoreanProducts';
+import TossLineChart from '../components/TossLineChart';
 
 // 네이버 쇼핑에서 제품 누끼 이미지 + 정확한 브랜드명 검색.
 // fast=true (자동완성용): URL만 반환, base64 다운로드 없이 ~500ms 빠름.
@@ -46,50 +47,68 @@ async function fetchProductInfo(brand, name, opts = {}) {
   } catch { return null; }
 }
 
-// 제품 사진 → API용 리사이즈 (정규화 없이 단순 축소)
-function resizeForApi(dataUrl, maxSize = 1024, quality = 0.85) {
-  return new Promise((resolve) => {
+// 브랜드·제품명·성분 키워드로 카테고리 추론. 사용자가 카테고리 selector를 직접 안 눌러도 자동 매칭.
+// 우선순위: 더 구체적인 키워드부터 (선크림·클렌저·마스크팩 > 에센스·세럼 > 토너·크림)
+function inferCategory(brand, name, ingredients = []) {
+  const ingText = Array.isArray(ingredients) ? ingredients.join(' ') : (ingredients || '');
+  const text = `${brand || ''} ${name || ''} ${ingText}`.toLowerCase();
+  const rules = [
+    { cat: '선크림',   kw: ['선크림','썬크림','선스크린','썬스크린','sunscreen','sun screen','sun block','선블록','자외선','spf','pa+'] },
+    { cat: '클렌저',   kw: ['클렌징','클렌저','폼클','세안','cleanser','cleansing','클린저','클렌징오일','클렌징밤','클렌징젤','클렌징워터','폼','버블'] },
+    { cat: '마스크팩', kw: ['마스크','시트','sheet mask','sleeping mask','슬리핑마스크','슬리핑팩'] },
+    { cat: '에센스',   kw: ['에센스','essence','부스터','퍼스트','first treatment','윤조'] },
+    { cat: '세럼',     kw: ['세럼','앰플','serum','ampoule','ampule','컨센트레이트','concentrate'] },
+    { cat: '토너',     kw: ['토너','toner','스킨','미스트','mist','토닉','tonic','후레쉬너','fresher'] },
+    { cat: '크림',     kw: ['크림','cream','로션','lotion','모이스처','moisturizer','이멀젼','emulsion','밤','balm','아쿠아젤','수분젤'] },
+  ];
+  for (const r of rules) {
+    for (const k of r.kw) {
+      if (text.includes(k)) return r.cat;
+    }
+  }
+  return '기타';
+}
+
+// 제품 사진 → API용 리사이즈.
+// EXIF orientation을 항상 적용해서 세로로 찍은 모바일 사진이 가로로 보이는 일이 없게 함.
+// createImageBitmap이 미지원이거나 실패하면 <img> 경로로 폴백.
+async function resizeForApi(dataUrl, maxSize = 1024, quality = 0.85) {
+  const drawAndEncode = (source, w, h) => {
+    let dw = w, dh = h;
+    if (dw > maxSize || dh > maxSize) {
+      if (dw >= dh) { dh = Math.round((maxSize / dw) * dh); dw = maxSize; }
+      else { dw = Math.round((maxSize / dh) * dw); dh = maxSize; }
+    }
+    const c = document.createElement('canvas');
+    c.width = dw; c.height = dh;
+    c.getContext('2d').drawImage(source, 0, 0, dw, dh);
+    return c.toDataURL('image/jpeg', quality);
+  };
+
+  // 1순위: createImageBitmap + imageOrientation 'from-image' (EXIF 자동 적용)
+  if (typeof createImageBitmap === 'function') {
+    try {
+      const blob = await (await fetch(dataUrl)).blob();
+      const bmp = await createImageBitmap(blob, { imageOrientation: 'from-image' });
+      const out = drawAndEncode(bmp, bmp.width, bmp.height);
+      bmp.close?.();
+      return out;
+    } catch { /* fallthrough */ }
+  }
+
+  // 폴백: <img> 태그 (모던 브라우저는 대부분 EXIF 자동 처리하나 보장은 안 됨)
+  return await new Promise((resolve) => {
     const img = new Image();
-    img.onload = () => {
-      let w = img.width, h = img.height;
-      if (w > maxSize || h > maxSize) {
-        if (w >= h) { h = Math.round((maxSize / w) * h); w = maxSize; }
-        else { w = Math.round((maxSize / h) * w); h = maxSize; }
-      }
-      const c = document.createElement('canvas');
-      c.width = w; c.height = h;
-      c.getContext('2d').drawImage(img, 0, 0, w, h);
-      resolve(c.toDataURL('image/jpeg', quality));
-    };
+    img.onload = () => resolve(drawAndEncode(img, img.width, img.height));
     img.onerror = () => resolve(dataUrl);
     img.src = dataUrl;
   });
 }
 
-// ===== MiniLineChart =====
+// ===== MiniLineChart — 토스 스타일 sparkline (TossLineChart compact 모드 wrapper) =====
 
 function MiniLineChart({ data, accent, height = 60 }) {
-  if (!data || data.length < 2) return null;
-  const min = Math.min(...data) - 2;
-  const max = Math.max(...data) + 2;
-  const range = max - min || 1;
-  const w = 200;
-  const pad = 4;
-  const pts = data.map((v, i) => ({
-    x: (i / (data.length - 1)) * w,
-    y: height - ((v - min) / range) * (height - pad * 2) - pad,
-  }));
-  const line = pts.map(p => `${p.x},${p.y}`).join(' ');
-  const area = `${pts.map(p => `${p.x},${p.y}`).join(' ')} ${w},${height} 0,${height}`;
-  const last = pts[pts.length - 1];
-  return (
-    <svg viewBox={`0 0 ${w} ${height}`} style={{ width: '100%', height }} preserveAspectRatio="none">
-      <polygon points={area} fill={accent} fillOpacity="0.08" />
-      <polyline points={line} fill="none" stroke={accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx={last.x} cy={last.y} r="3" fill={accent} />
-      <line x1="0" y1={pts[0].y} x2={w} y2={pts[0].y} stroke={accent} strokeWidth="0.5" strokeDasharray="4 4" opacity="0.3" />
-    </svg>
-  );
+  return <TossLineChart data={data} accent={accent} height={height} compact />;
 }
 
 // ===== Overlay wrapper =====
@@ -216,6 +235,42 @@ function PhotoRegistrationFlow({ onClose, onSave, saving, accent }) {
   const [error, setError] = useState(null);
   const cameraRef = useRef(null);
   const albumRef = useRef(null);
+  // 사진 등록 흐름도 카테고리 자동 추론·자동완성 선택 시 보존 적용
+  const categoryTouchedRef = useRef(false);
+
+  useEffect(() => {
+    if (categoryTouchedRef.current) return;
+    if (!form.brand && !form.name) return;
+    const guess = inferCategory(form.brand, form.name, form.ingredients);
+    if (guess !== '기타' && guess !== form.category) {
+      setForm(prev => ({ ...prev, category: guess }));
+    }
+  }, [form.brand, form.name]);
+
+  // 자동완성 선택: 사진 thumb는 보존, brand·name·category·시간대·성분만 갱신
+  const handlePickSuggestion = (s) => {
+    const finalCat = (s.category && s.category !== '기타')
+      ? s.category
+      : inferCategory(s.brand, s.name, s.ingredients);
+    setForm(prev => ({
+      ...prev,
+      brand: s.brand,
+      name: s.name,
+      category: finalCat,
+      timeSlot: s.timeSlot || prev.timeSlot,
+      ingredients: s.ingredients && s.ingredients.length > 0 ? s.ingredients : prev.ingredients,
+    }));
+    categoryTouchedRef.current = false;
+  };
+
+  // 다시 촬영: capture step으로 되돌리고 폼 초기화
+  const handleRetake = () => {
+    setStep('capture');
+    setImageThumb(null);
+    setForm({ brand: '', name: '', category: '기타', timeSlot: 'both', ingredients: [] });
+    setError(null);
+    categoryTouchedRef.current = false;
+  };
 
   const handleFile = async (e) => {
     const file = e.target.files?.[0];
@@ -280,10 +335,14 @@ function PhotoRegistrationFlow({ onClose, onSave, saving, accent }) {
           } catch { /* 네이버 실패 시 GPT 결과 유지 */ }
         }
 
+        // GPT가 카테고리 못 줬거나 '기타'로 줬으면 키워드 추론으로 보강
+        const recogCat = (data.category && data.category !== '기타')
+          ? data.category
+          : inferCategory(gptBrand, gptName, data.ingredients);
         setForm({
           brand: gptBrand,
           name: gptName,
-          category: data.category || '기타',
+          category: recogCat,
           timeSlot: 'both',
           ingredients: data.ingredients || [],
         });
@@ -311,21 +370,52 @@ function PhotoRegistrationFlow({ onClose, onSave, saving, accent }) {
         {step === 'capture' && (
           <>
             <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 8 }}>제품 사진 촬영</div>
-            <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 }}>
-              제품 라벨이 잘 보이도록 촬영해주세요
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 18 }}>
+              아래 가이드대로 촬영하면 인식 정확도가 올라가요
             </p>
+
+            {/* 촬영 가이드 카드 — 인식 실패를 줄이는 3가지 핵심 */}
+            <div style={{
+              background: 'var(--item-bg)', border: 'var(--item-border)',
+              borderRadius: 14, padding: '14px 16px', marginBottom: 20,
+            }}>
+              {[
+                { title: '라벨이 정면으로', desc: '브랜드·제품명이 비스듬하지 않게' },
+                { title: '빛 반사 피하기', desc: '형광등·창가 직광은 글자를 가려요' },
+                { title: '가까이 또렷하게', desc: '글씨가 또렷하게 보일 만큼 가깝게' },
+              ].map((g, i, arr) => (
+                <div key={i} style={{
+                  display: 'flex', gap: 12, alignItems: 'flex-start',
+                  paddingTop: i === 0 ? 0 : 10,
+                  paddingBottom: i === arr.length - 1 ? 0 : 10,
+                  borderBottom: i === arr.length - 1 ? 'none' : '1px solid rgba(0,0,0,0.05)',
+                }}>
+                  <div style={{
+                    width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+                    background: `${accent}18`, color: accent,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 11, fontWeight: 700,
+                  }}>{i + 1}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>{g.title}</div>
+                    <div style={{ fontSize: 11.5, color: 'var(--text-muted)', letterSpacing: -0.1 }}>{g.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
             <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleFile} style={{ display: 'none' }} />
             <input ref={albumRef} type="file" accept="image/*" onChange={handleFile} style={{ display: 'none' }} />
             <div style={{ display: 'flex', gap: 12 }}>
               {[
-                { label: ' 카메라', ref: cameraRef },
-                { label: ' 앨범', ref: albumRef },
+                { label: '카메라', ref: cameraRef, primary: true },
+                { label: '앨범', ref: albumRef, primary: false },
               ].map((btn, i) => (
                 <button key={i} onClick={() => btn.ref.current?.click()} style={{
                   flex: 1, padding: '16px 0', borderRadius: 14, cursor: 'pointer',
-                  border: 'var(--item-border)',
-                  background: 'var(--item-bg)',
-                  color: 'var(--text-primary)',
+                  border: btn.primary ? 'none' : 'var(--item-border)',
+                  background: btn.primary ? accent : 'var(--item-bg)',
+                  color: btn.primary ? '#fff' : 'var(--text-primary)',
                   fontSize: 15, fontWeight: 600,
                 }}>{btn.label}</button>
               ))}
@@ -387,33 +477,23 @@ function PhotoRegistrationFlow({ onClose, onSave, saving, accent }) {
               </div>
             )}
 
-            {/* 폼 필드 */}
-            {[
-              { label: '브랜드', key: 'brand', placeholder: '예: 코스알엑스' },
-              { label: '제품명', key: 'name', placeholder: '예: 히알루론산 세럼' },
-            ].map(f => (
-              <div key={f.key} style={{ marginBottom: 14 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tag-color)', marginBottom: 6 }}>{f.label}</div>
-                <input
-                  type="text"
-                  autoComplete="off"
-                  value={form[f.key]}
-                  onChange={e => setForm(prev => ({ ...prev, [f.key]: e.target.value }))}
-                  placeholder={f.placeholder}
-                  style={{
-                    width: '100%', padding: '12px 14px', borderRadius: 12, fontSize: 16,
-                    border: 'var(--item-border)',
-                    background: 'var(--item-bg)',
-                    color: 'var(--text-primary)',
-                    outline: 'none', boxSizing: 'border-box',
-                  }}
-                />
-              </div>
-            ))}
+            {/* 폼 필드 — 자동완성 input 공용 컴포넌트로 통일.
+                사진 인식 후 사용자가 brand/name 수정하면 자동완성 추천이 떠서 정확한 한국 제품 선택 가능 */}
+            <ProductBrandNameInputs
+              brand={form.brand}
+              name={form.name}
+              onBrandChange={v => setForm(prev => ({ ...prev, brand: v }))}
+              onNameChange={v => setForm(prev => ({ ...prev, name: v }))}
+              onPickSuggestion={handlePickSuggestion}
+              accent={accent}
+              brandPlaceholder="예: 코스알엑스"
+              namePlaceholder="예: 히알루론산 세럼"
+              helpText="브랜드·제품명을 수정하면 정확한 한국 제품이 자동으로 떠요"
+            />
 
             <div style={{ marginBottom: 14 }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tag-color)', marginBottom: 6 }}>카테고리</div>
-              <CategorySelector value={form.category} onChange={v => setForm(p => ({ ...p, category: v }))} accent={accent} />
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tag-color)', marginBottom: 6 }}>카테고리 <span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)', marginLeft: 4 }}>자동 매칭</span></div>
+              <CategorySelector value={form.category} onChange={v => { categoryTouchedRef.current = true; setForm(p => ({ ...p, category: v })); }} accent={accent} />
             </div>
 
             <div style={{ marginBottom: 20 }}>
@@ -421,13 +501,21 @@ function PhotoRegistrationFlow({ onClose, onSave, saving, accent }) {
               <TimeSlotSelector value={form.timeSlot} onChange={v => setForm(p => ({ ...p, timeSlot: v }))} accent={accent} />
             </div>
 
-            <button type="button" onClick={handleSave} disabled={!form.brand.trim() || !form.name.trim() || saving} style={{
-              width: '100%', padding: '14px 0', borderRadius: 14, border: 'none',
-              cursor: (form.brand.trim() && form.name.trim() && !saving) ? 'pointer' : 'default',
-              background: (!form.brand.trim() || !form.name.trim() || saving) ? ('var(--text-disabled)') : accent,
-              color: (!form.brand.trim() || !form.name.trim() || saving) ? ('var(--text-dim)') : '#fff',
-              fontSize: 15, fontWeight: 700, position: 'relative', zIndex: 1,
-            }}>{saving ? '제품 이미지 검색 중...' : '등록하기'}</button>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button type="button" onClick={handleRetake} disabled={saving} style={{
+                flex: '0 0 38%', padding: '14px 0', borderRadius: 14,
+                border: 'var(--item-border)', background: 'transparent',
+                color: 'var(--tag-color)', fontSize: 14, fontWeight: 600,
+                cursor: saving ? 'default' : 'pointer',
+              }}>다시 촬영</button>
+              <button type="button" onClick={handleSave} disabled={!form.brand.trim() || !form.name.trim() || saving} style={{
+                flex: 1, padding: '14px 0', borderRadius: 14, border: 'none',
+                cursor: (form.brand.trim() && form.name.trim() && !saving) ? 'pointer' : 'default',
+                background: (!form.brand.trim() || !form.name.trim() || saving) ? ('var(--text-disabled)') : accent,
+                color: (!form.brand.trim() || !form.name.trim() || saving) ? ('var(--text-dim)') : '#fff',
+                fontSize: 15, fontWeight: 700, position: 'relative', zIndex: 1,
+              }}>{saving ? '제품 이미지 검색 중...' : '등록하기'}</button>
+            </div>
           </>
         )}
       </div>
@@ -467,9 +555,23 @@ function setImgCache(brand, name, image) {
   } catch {}
 }
 
-function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
-  const [form, setForm] = useState({ brand: '', name: '', category: '기타', timeSlot: 'both' });
-  const [activeField, setActiveField] = useState(null); // 'brand' | 'name'
+// 인기 브랜드 set — 자동완성 정렬 boost용. 모듈 레벨로 상수 처리해서 매 렌더 재계산 방지.
+const POPULAR_BRAND_SET = new Set(POPULAR_KOREAN_PRODUCTS.map(p => p.brand));
+
+// ===== 자동완성 brand/name input 공용 컴포넌트 =====
+// 수동 등록·사진 등록 두 흐름에서 동일하게 사용.
+// 사용자가 brand·name input에 타이핑 → 한국 인기 95개 데이터셋 즉시 매칭 + 필요 시 GPT 보강.
+// 추천 클릭 → onPickSuggestion 콜백으로 상위 form에 위임.
+function ProductBrandNameInputs({
+  brand, name,
+  onBrandChange, onNameChange,
+  onPickSuggestion,
+  accent,
+  brandPlaceholder = '예: 토리든, 코스알엑스, 셀퓨전씨',
+  namePlaceholder = '예: 다이브인 저분자 히알루론산 토너',
+  helpText = '브랜드명만 입력해도 관련 제품이 자동으로 떠요',
+}) {
+  const [activeField, setActiveField] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]); // [{brand,name,category,timeSlot,ingredients,volume,source,image,imgLoading}]
   const [searchLoading, setSearchLoading] = useState(false);
@@ -477,13 +579,18 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
   const userSelectedRef = useRef(false);
   const lastQueryRef = useRef('');
   const cacheRef = useRef(new Map()); // query → results
+  const abortRef = useRef(null); // 이전 GPT fetch 즉시 cancel
+  const activeFieldRef = useRef(null);
+  useEffect(() => { activeFieldRef.current = activeField; }, [activeField]);
+  // brand 값을 최신 상태로 ref 유지 (useEffect 내부 fetch에서 활용)
+  const brandRef = useRef(brand);
+  useEffect(() => { brandRef.current = brand; }, [brand]);
 
   // 로컬 매칭 — KOREAN_PRODUCTS + ProductCatalog. 0ms 즉시 응답.
   // multi-token 매칭: 사용자가 "피지오겔 토너"·"수분 세럼" 같이 여러 키워드를 쳐도 매칭.
   // 각 토큰이 brand·name·category·ingredients 어디든 들어가면 점수.
   // 모든 토큰을 만족해야 매칭(AND).
   // 정렬: score 우선 → 인기 brand 우선 → brand 다양성 dedup(한 brand 최대 2개).
-  const POPULAR_BRAND_SET = new Set(POPULAR_KOREAN_PRODUCTS.map(p => p.brand));
   const localMatch = (q) => {
     const norm = (s) => (s || '').replace(/\s+/g, '').toLowerCase();
     const tokens = (q || '')
@@ -544,7 +651,7 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
       scored.push({
         brand: p.brand,
         name: p.name,
-        category: '기타',
+        category: inferCategory(p.brand, p.name, p.tags),
         timeSlot: 'both',
         ingredients: (p.tags || []).slice(0, 4),
         volume: p.volume || '',
@@ -593,20 +700,37 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
     } else {
       setSuggestions([]);
     }
+
+    // 로컬 매칭이 충분(5개 이상)하면 GPT 호출 자체를 skip — 즉시 응답, 스켈레톤 안 보임.
+    // 95개 한국 인기 데이터셋이 대부분 검색어를 커버하므로 체감 속도 대폭 개선.
+    if (local.length >= 5) {
+      setSearchLoading(false);
+      setSearchError('');
+      // 이전 진행 중인 GPT 호출이 있으면 cancel
+      if (abortRef.current) { try { abortRef.current.abort(); } catch {} abortRef.current = null; }
+      return;
+    }
+
     setSearchLoading(true);
     setSearchError('');
+
+    // 새 GPT 호출 전에 이전 fetch abort
+    if (abortRef.current) { try { abortRef.current.abort(); } catch {} }
+    const controller = new AbortController();
+    abortRef.current = controller;
 
     const t = setTimeout(async () => {
       lastQueryRef.current = q;
       const mode = activeFieldRef.current === 'brand' ? 'brand'
                  : activeFieldRef.current === 'name' ? 'name'
                  : 'any';
-      const brandHint = form.brand?.trim() || '';
+      const brandHint = brandRef.current?.trim() || '';
       try {
         const r = await fetch('/api/product-search', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ query: q, mode, brand: mode === 'name' ? brandHint : '' }),
+          signal: controller.signal,
         });
         if (lastQueryRef.current !== q) return;
         if (!r.ok || !r.body) {
@@ -638,7 +762,10 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
               continue;
             }
             if (evt.product) {
-              const p = { ...evt.product, source: 'gpt' };
+              // GPT가 category를 '기타'로 줬으면 키워드 추론으로 보강 (사용자가 카테고리 다시 누르지 않게)
+              const ep = evt.product;
+              const cat = (ep.category && ep.category !== '기타') ? ep.category : inferCategory(ep.brand, ep.name, ep.ingredients);
+              const p = { ...ep, category: cat, source: 'gpt' };
               // strict 필터 — 사용자 의도 보호
               const norm = (s) => (s || '').replace(/\s+/g, '').toLowerCase();
               if (mode === 'brand') {
@@ -664,12 +791,21 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
         cacheRef.current.set(q, gptProducts);
         setSearchLoading(false);
       } catch (e) {
+        // 의도된 cancel(다음 keystroke로 새 검색 시작)은 무시
+        if (e?.name === 'AbortError') return;
         if (lastQueryRef.current !== q) return;
         setSearchError(local.length > 0 ? '' : '네트워크가 잠깐 불안정해요. 그대로 입력해도 돼요.');
         setSearchLoading(false);
       }
     }, 180);
-    return () => clearTimeout(t);
+    return () => {
+      clearTimeout(t);
+      // unmount/재실행 시 진행 중 fetch도 같이 cancel
+      if (abortRef.current === controller) {
+        try { controller.abort(); } catch {}
+        abortRef.current = null;
+      }
+    };
   }, [searchQuery]);
 
   function mergeSuggestions(local, gpt) {
@@ -740,63 +876,52 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
       setSearchQuery(composed);
     }
   };
-  const activeFieldRef = useRef(activeField);
-  useEffect(() => { activeFieldRef.current = activeField; }, [activeField]);
+  const onBrandFieldChange = (v) => { onBrandChange(v); setSearchQuery(v); };
+  const onNameFieldChange = (v) => {
+    onNameChange(v);
+    const composed = brand ? `${brand} ${v}`.trim() : v.trim();
+    setSearchQuery(composed);
+  };
 
-  const onSuggestionClick = (s) => {
+  const handleSuggestionClick = (s) => {
     userSelectedRef.current = true;
-    setForm({
-      brand: s.brand,
-      name: s.name,
-      category: s.category,
-      timeSlot: s.timeSlot,
-      imageThumb: s.image || null,
-      ingredients: s.ingredients && s.ingredients.length > 0
-        ? { known: [], estimated: s.ingredients, source: s.source === 'gpt' ? 'gpt' : 'catalog' }
-        : null,
-    });
+    onPickSuggestion(s);
     setSuggestions([]);
     setActiveField(null);
     setSearchQuery('');
   };
 
-  const handleSave = () => {
-    if (!form.brand.trim() || !form.name.trim() || saving) return;
-    onSave(form);
-  };
-
-  const canSave = form.brand.trim() && form.name.trim() && !saving;
   const showSuggestions = activeField && (suggestions.length > 0 || searchLoading || searchError);
 
-  return (
-    <SheetOverlay onClose={onClose}>
-      <div style={{ background: 'var(--sheet-bg)', padding: '24px 20px calc(40px + env(safe-area-inset-bottom, 0px))' }}>
-        <SheetHandle />
-        <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 6 }}>제품 직접 입력</div>
-        <div style={{ fontSize: 11.5, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 16, letterSpacing: -0.1 }}>
-          브랜드명만 입력해도 관련 제품이 자동으로 떠요
-        </div>
+  const fields = [
+    { label: '브랜드', key: 'brand', value: brand, onChange: onBrandFieldChange, placeholder: brandPlaceholder },
+    { label: '제품명', key: 'name', value: name, onChange: onNameFieldChange, placeholder: namePlaceholder },
+  ];
 
-        {[
-          { label: '브랜드', key: 'brand', placeholder: '예: 토리든, 코스알엑스, 셀퓨전씨' },
-          { label: '제품명', key: 'name', placeholder: '예: 다이브인 저분자 히알루론산 토너' },
-        ].map(f => (
-          <div key={f.key} style={{ marginBottom: 14 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tag-color)', marginBottom: 6 }}>{f.label}</div>
-            <input
-              type="text"
-              autoComplete="off"
-              value={form[f.key]}
-              onChange={e => onFieldChange(f.key, e.target.value)}
-              onFocus={() => setActiveField(f.key)}
-              onBlur={() => setTimeout(() => setActiveField(null), 200)}
-              placeholder={f.placeholder}
-              style={{
-                width: '100%', padding: '12px 14px', borderRadius: 12, fontSize: 16,
-                border: 'var(--item-border)',
-                background: 'var(--item-bg)',
-                color: 'var(--text-primary)',
-                outline: 'none', boxSizing: 'border-box',
+  return (
+    <>
+      {helpText && (
+        <div style={{ fontSize: 11.5, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 16, letterSpacing: -0.1 }}>
+          {helpText}
+        </div>
+      )}
+      {fields.map(f => (
+        <div key={f.key} style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tag-color)', marginBottom: 6 }}>{f.label}</div>
+          <input
+            type="text"
+            autoComplete="off"
+            value={f.value}
+            onChange={e => f.onChange(e.target.value)}
+            onFocus={() => setActiveField(f.key)}
+            onBlur={() => setTimeout(() => setActiveField(null), 200)}
+            placeholder={f.placeholder}
+            style={{
+              width: '100%', padding: '12px 14px', borderRadius: 12, fontSize: 16,
+              border: 'var(--item-border)',
+              background: 'var(--item-bg)',
+              color: 'var(--text-primary)',
+              outline: 'none', boxSizing: 'border-box',
               }}
             />
           </div>
@@ -849,7 +974,7 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
                 key={`${s.brand}-${s.name}-${i}`}
                 type="button"
                 onMouseDown={e => e.preventDefault()}
-                onClick={() => onSuggestionClick(s)}
+                onClick={() => handleSuggestionClick(s)}
                 style={{
                   width: '100%', textAlign: 'left',
                   padding: '11px 14px',
@@ -916,10 +1041,69 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
             ))}
           </div>
         )}
+    </>
+  );
+}
+
+// ===== 수동 등록 폼 =====
+// brand/name input + 추천 리스트는 공용 ProductBrandNameInputs.
+// 카테고리·시간대·등록 버튼만 여기서.
+function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
+  const [form, setForm] = useState({ brand: '', name: '', category: '기타', timeSlot: 'both' });
+  // 사용자가 카테고리 selector를 직접 눌렀는지 추적. 누른 후엔 자동 추론으로 덮어쓰지 않음.
+  const categoryTouchedRef = useRef(false);
+
+  // brand·name 변경 시 카테고리 자동 추론 (사용자가 selector 직접 안 눌렀을 때만)
+  useEffect(() => {
+    if (categoryTouchedRef.current) return;
+    const guess = inferCategory(form.brand, form.name);
+    if (guess !== form.category) {
+      setForm(prev => ({ ...prev, category: guess }));
+    }
+  }, [form.brand, form.name]);
+
+  const handlePickSuggestion = (s) => {
+    const finalCat = (s.category && s.category !== '기타')
+      ? s.category
+      : inferCategory(s.brand, s.name, s.ingredients);
+    setForm({
+      brand: s.brand,
+      name: s.name,
+      category: finalCat,
+      timeSlot: s.timeSlot,
+      imageThumb: s.image || null,
+      ingredients: s.ingredients && s.ingredients.length > 0
+        ? { known: [], estimated: s.ingredients, source: s.source === 'gpt' ? 'gpt' : 'catalog' }
+        : null,
+    });
+    categoryTouchedRef.current = false; // 자동완성 카테고리 보존
+  };
+
+  const handleSave = () => {
+    if (!form.brand.trim() || !form.name.trim() || saving) return;
+    onSave(form);
+  };
+
+  const canSave = form.brand.trim() && form.name.trim() && !saving;
+
+  return (
+    <SheetOverlay onClose={onClose}>
+      <div style={{ background: 'var(--sheet-bg)', padding: '24px 20px calc(40px + env(safe-area-inset-bottom, 0px))' }}>
+        <SheetHandle />
+        <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 6 }}>제품 직접 입력</div>
+
+        <ProductBrandNameInputs
+          brand={form.brand}
+          name={form.name}
+          onBrandChange={v => setForm(p => ({ ...p, brand: v }))}
+          onNameChange={v => setForm(p => ({ ...p, name: v }))}
+          onPickSuggestion={handlePickSuggestion}
+          accent={accent}
+        />
 
         <div style={{ marginBottom: 14 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tag-color)', marginBottom: 6 }}>카테고리</div>
-          <CategorySelector value={form.category} onChange={v => setForm(p => ({ ...p, category: v }))} accent={accent} />
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tag-color)', marginBottom: 6 }}>카테고리 <span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)', marginLeft: 4 }}>자동 매칭</span></div>
+          <CategorySelector value={form.category} onChange={v => { categoryTouchedRef.current = true; setForm(p => ({ ...p, category: v })); }} accent={accent} />
         </div>
 
         <div style={{ marginBottom: 20 }}>
