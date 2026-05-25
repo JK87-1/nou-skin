@@ -978,9 +978,6 @@ D. 기타 사진 (음식, 환경 등):
 `;
 }
 
-// Vercel function timeout — default 10s 면 SSE 첫 chunk 늦을 때 끊김. 60s로 늘림.
-export const config = { maxDuration: 60 };
-
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
