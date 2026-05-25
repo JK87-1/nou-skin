@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getLatestRecord, getPreviousRecord, getRecordCount, getRecords, getTimeSeries, getAllThumbnailsAsync } from '../storage/SkinStorage';
+import TossLineChart from '../components/TossLineChart';
 
 const glass = {
   background: 'rgba(255,255,255,0.5)',
@@ -50,6 +51,8 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
   const [period, setPeriod] = useState('4w');
   const [impactMetric, setImpactMetric] = useState(null);
   const [showMetricDropdown, setShowMetricDropdown] = useState(false);
+  // 4주 변화 차트 — 한 번에 한 메트릭만 단일 라인으로 표시 (토스 스타일)
+  const [trendMetric, setTrendMetric] = useState(METRICS[0].key);
 
   const latest = getLatestRecord();
   const prev = getPreviousRecord();
@@ -164,55 +167,36 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
             </div>
           )}
 
-          {/* 종합 점수 추이 그래프 */}
+          {/* 종합 점수 추이 — 토스 스타일 라인 차트 (점·x축 라벨 제거, 최고/최저·평균만 강조) */}
           {recordCount >= 2 && (() => {
             const series = getTimeSeries('overallScore');
             if (series.length < 2) return null;
             const vals = series.map(s => s.value);
-            const minV = Math.min(...vals) - 5;
-            const maxV = Math.max(...vals) + 5;
             const firstVal = vals[0];
             const lastVal = vals[vals.length - 1];
             const diffPct = firstVal > 0 ? ((lastVal - firstVal) / firstVal * 100).toFixed(1) : null;
             return (
-              <div style={{ margin: '0 12px 12px', ...glass, padding: 13 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                  <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>종합 점수 추이</span>
+              <div style={{ margin: '0 12px 12px', ...glass, padding: '14px 14px 10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>종합 점수 추이</span>
                   {diffPct && Number(diffPct) !== 0 && (
-                    <span style={{ fontSize: 11, fontWeight: 500, color: Number(diffPct) > 0 ? 'var(--accent-primary)' : '#e05545' }}>
+                    <span style={{ fontSize: 11.5, fontWeight: 600, color: Number(diffPct) > 0 ? '#6598ef' : '#e05545' }}>
                       {Number(diffPct) > 0 ? '▲' : '▼'} {Math.abs(Number(diffPct))}%
                     </span>
                   )}
                 </div>
-                <svg width="100%" viewBox="0 0 320 120" preserveAspectRatio="none" style={{ display: 'block' }}>
-                  {[30, 60, 90].map(y => <line key={y} x1="0" y1={y} x2="320" y2={y} stroke="rgba(255,255,255,0.3)" strokeWidth="1" />)}
-                  <path
-                    d={(() => {
-                      const pts = series.map((s, i) => ({
-                        x: series.length === 1 ? 160 : (i / (series.length - 1)) * 300 + 10,
-                        y: 110 - ((s.value - minV) / (maxV - minV)) * 100 + 5,
-                      }));
-                      if (pts.length < 2) return `M${pts[0].x},${pts[0].y}`;
-                      let d = `M${pts[0].x},${pts[0].y}`;
-                      for (let i = 0; i < pts.length - 1; i++) {
-                        const cx = (pts[i].x + pts[i + 1].x) / 2;
-                        d += ` C${cx},${pts[i].y} ${cx},${pts[i + 1].y} ${pts[i + 1].x},${pts[i + 1].y}`;
-                      }
-                      return d;
-                    })()}
-                    fill="none" stroke="var(--accent-primary, #6598ef)" strokeWidth="2.5" strokeLinecap="round"
-                  />
-                  {series.map((s, i) => {
-                    const x = series.length === 1 ? 160 : (i / (series.length - 1)) * 300 + 10;
-                    const y = 110 - ((s.value - minV) / (maxV - minV)) * 100 + 5;
-                    return <circle key={i} cx={x} cy={y} r="3.5" fill="var(--accent-primary, #6598ef)" />;
-                  })}
-                </svg>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 10px 0' }}>
-                  {series.map((s, i) => (
-                    <span key={i} style={{ fontSize: 8, color: 'var(--text-muted)' }}>{`${new Date(s.date).getMonth()+1}/${new Date(s.date).getDate()}`}</span>
-                  ))}
+                <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: -0.3, marginBottom: 2 }}>
+                  {lastVal}점
                 </div>
+                <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginBottom: 6 }}>
+                  최근 {series.length}회 측정
+                </div>
+                <TossLineChart
+                  data={series}
+                  height={150}
+                  valueFormatter={(v) => `${v}점`}
+                  averageLabel="평균"
+                />
               </div>
             );
           })()}
@@ -278,57 +262,60 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
               </div>
             </div>
 
+            {/* 메트릭 chip — 한 번에 1개 메트릭만 단일 라인으로 (토스 스타일 가독성) */}
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
+              {METRICS.map((m) => {
+                const active = trendMetric === m.key;
+                return (
+                  <button key={m.key} onClick={() => setTrendMetric(m.key)} style={{
+                    padding: '5px 11px', borderRadius: 10, border: 'none',
+                    background: active ? 'rgba(101,152,239,0.16)' : 'rgba(0,0,0,0.04)',
+                    color: active ? '#6598ef' : 'var(--text-muted)',
+                    fontSize: 11, fontWeight: active ? 700 : 500,
+                    cursor: 'pointer', fontFamily: 'inherit',
+                  }}>{m.label}</button>
+                );
+              })}
+            </div>
+
             {chartRecords.length < 2 ? (
               <div style={{ height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.5 }}>
                   측정이 부족해요.<br />트렌드를 보려면 한 번 더 측정해보세요
                 </div>
               </div>
-            ) : (
-              <>
-                <svg width="100%" viewBox="0 0 320 140" preserveAspectRatio="none" style={{ display: 'block' }}>
-                  {/* Guide lines */}
-                  {[30, 70, 110].map(y => <line key={y} x1="0" y1={y} x2="320" y2={y} stroke="rgba(255,255,255,0.3)" strokeWidth="1" />)}
-                  {/* Lines */}
-                  {METRICS.map((m, mi) => {
-                    const vals = chartRecords.map(r => r[m.key] ?? 50);
-                    const maxV = 100, minV = 0;
-                    const pts = vals.map((v, i) => {
-                      const x = chartRecords.length === 1 ? 160 : (i / (chartRecords.length - 1)) * 300 + 10;
-                      const y = 130 - ((v - minV) / (maxV - minV)) * 120 + 5;
-                      return `${x},${y}`;
-                    });
-                    return (
-                      <g key={m.key}>
-                        <polyline points={pts.join(' ')} fill="none" stroke={CHART_COLORS[mi]} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        {pts.map((p, pi) => {
-                          const [cx, cy] = p.split(',');
-                          return <circle key={pi} cx={cx} cy={cy} r="3" fill={CHART_COLORS[mi]} />;
-                        })}
-                      </g>
-                    );
-                  })}
-                </svg>
-                {/* X axis labels */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 10px 0' }}>
-                  {chartRecords.map((r, i) => (
-                    <span key={i} style={{ fontSize: 8, color: 'var(--text-muted)' }}>{`${new Date(r.date).getMonth()+1}/${new Date(r.date).getDate()}`}</span>
-                  ))}
-                </div>
-                {/* Legend */}
-                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 6 }}>
-                  {METRICS.map((m, mi) => (
-                    <div key={m.key} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: CHART_COLORS[mi] }} />
-                      <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{m.label}</span>
-                    </div>
-                  ))}
-                </div>
-                {recordCount <= 3 && (
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 6 }}>데이터가 쌓일수록 정확해져요</div>
-                )}
-              </>
-            )}
+            ) : (() => {
+              const series = chartRecords.map(r => ({ date: r.date, value: r[trendMetric] ?? 50 }));
+              const vals = series.map(s => s.value);
+              const lastVal = vals[vals.length - 1];
+              const firstVal = vals[0];
+              const diff = lastVal - firstVal;
+              const metricLabel = METRICS.find(m => m.key === trendMetric)?.label || '';
+              return (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 2 }}>
+                    <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: -0.3 }}>{lastVal}</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{metricLabel}</span>
+                    {diff !== 0 && (
+                      <span style={{ fontSize: 11, fontWeight: 600, color: diff > 0 ? '#6598ef' : '#e05545', marginLeft: 'auto' }}>
+                        {diff > 0 ? '▲' : '▼'} {Math.abs(diff).toFixed(0)}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginBottom: 4 }}>
+                    {period === '7d' ? '7일' : period === '4w' ? '4주' : '3개월'} · {series.length}회 측정
+                  </div>
+                  <TossLineChart
+                    data={series}
+                    height={150}
+                    averageLabel="평균"
+                  />
+                  {recordCount <= 3 && (
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>데이터가 쌓일수록 정확해져요</div>
+                  )}
+                </>
+              );
+            })()}
           </div>
 
           {/* ⑤ 영향 요인 차트 */}

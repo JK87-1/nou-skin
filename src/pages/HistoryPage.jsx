@@ -29,6 +29,7 @@ import { getProfile } from '../storage/ProfileStorage';
 import AiInsightCard from '../components/AiInsightCard';
 import BeforeAfterSlider from '../components/BeforeAfterSlider';
 import DailyMission from '../components/DailyMission';
+import TossLineChart from '../components/TossLineChart';
 import { getProducts, getProductsForMode, getTrackerChecks, toggleTrackerCheck, getTrackerProgress, bulkToggleCheck, deleteProduct } from '../storage/TrackerStorage';
 import SwipeableRow from '../components/SwipeableRow';
 import { getAllProductThumbs } from '../storage/ImageStore';
@@ -534,11 +535,12 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
                   </span>
                 )}
               </div>
-              <TrendGraph
+              <TossLineChart
                 data={getTimeSeries('overallScore')}
-                color="#a8c8f8"
+                accent="#6598ef"
                 height={180}
-                showAllLabels
+                valueFormatter={(v) => `${v}점`}
+                averageLabel="평균"
               />
             </div>
 
