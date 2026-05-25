@@ -790,3 +790,80 @@ export function getRecentTrend(days = 7) {
     notableTrends: top,
   };
 }
+
+// 주간 리포트용 — 지난 7일 vs 그 이전 7일 비교 + 잘한 메트릭·약한 메트릭 정리.
+// 노출 조건: 측정 5회 이상 + 지난 7일에 최소 1회 측정.
+// 같은 주(ISO week) 한 번만 보여주려고 weekKey도 함께 반환 → 호출자가 localStorage로 dedup.
+export function getWeeklyReport() {
+  const all = getRecords().filter(r => !r.differentPerson);
+  if (all.length < 2) return null;
+
+  const now = Date.now();
+  const sevenDaysAgo = now - 7 * 86400000;
+  const fourteenDaysAgo = now - 14 * 86400000;
+
+  const recent = all.filter(r => (r.timestamp || 0) >= sevenDaysAgo);
+  const baseline = all.filter(r => {
+    const t = r.timestamp || 0;
+    return t >= fourteenDaysAgo && t < sevenDaysAgo;
+  });
+  if (recent.length === 0) return null;
+
+  // baseline이 없으면 그냥 latest vs first 비교
+  const latest = recent[0]; // sorted desc in getRecords (assumption verified via getLatestRecord)
+  const baselineRecord = baseline.length > 0
+    ? baseline.reduce((avg, r) => avg, baseline[0]) // 가장 가까운 것
+    : all[all.length - 1]; // 가장 오래된 것
+
+  const metrics = [
+    { key: 'overallScore', label: '종합 점수', unit: '점', inverse: false },
+    { key: 'moisture', label: '수분', unit: '점', inverse: false },
+    { key: 'elasticityScore', label: '탄력', unit: '점', inverse: false },
+    { key: 'troubleCount', label: '트러블', unit: '개', inverse: true },
+    { key: 'skinTone', label: '피부톤', unit: '점', inverse: false },
+    { key: 'skinAge', label: '피부나이', unit: '세', inverse: true },
+  ];
+
+  const changes = [];
+  for (const m of metrics) {
+    const cur = latest?.[m.key];
+    const prev = baselineRecord?.[m.key];
+    if (typeof cur !== 'number' || typeof prev !== 'number') continue;
+    const diff = cur - prev;
+    const improved = m.inverse ? diff < 0 : diff > 0;
+    const magnitude = Math.abs(diff);
+    if (magnitude < 1) continue; // 의미 없는 작은 변화 제외
+    changes.push({
+      key: m.key, label: m.label, unit: m.unit,
+      cur, prev, diff,
+      displayDiff: m.inverse ? -diff : diff, // 양수면 개선
+      improved, magnitude,
+    });
+  }
+
+  // 가장 좋아진 1개 + 가장 떨어진 1개 (있다면)
+  const improved = changes.filter(c => c.improved).sort((a, b) => b.magnitude - a.magnitude);
+  const declined = changes.filter(c => !c.improved).sort((a, b) => b.magnitude - a.magnitude);
+
+  // 이번 주 ISO week 키 (YYYY-Www)
+  const d = new Date(now);
+  const target = new Date(d.valueOf());
+  const dayNr = (d.getDay() + 6) % 7;
+  target.setDate(target.getDate() - dayNr + 3);
+  const firstThursday = target.valueOf();
+  target.setMonth(0, 1);
+  if (target.getDay() !== 4) target.setMonth(0, 1 + ((4 - target.getDay()) + 7) % 7);
+  const weekNr = 1 + Math.ceil((firstThursday - target) / 604800000);
+  const weekKey = `${d.getFullYear()}-W${String(weekNr).padStart(2, '0')}`;
+
+  return {
+    weekKey,
+    measuredThisWeek: recent.length,
+    latestRecord: latest,
+    baselineRecord,
+    changes,
+    topImproved: improved[0] || null,
+    topDeclined: declined[0] || null,
+    hasAnyMeaningfulChange: changes.length > 0,
+  };
+}

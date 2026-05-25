@@ -13,7 +13,7 @@ import TroubleBreakdownCard from './components/TroubleBreakdownCard';
 import MeasurementGuide, { isMeasureGuideDismissed } from './components/MeasurementGuide';
 import BaselineCompleteModal from './components/BaselineCompleteModal';
 import CameraCapture from './components/CameraCapture';
-import { saveRecord, updateRecord, getRecords, getNextMeasurementInfo, getChanges, generateShareText, getLatestRecord, hasTodayRecord, saveThumbnail, saveComparisonPhoto, getTodayRecords, getStableSkinAge, findRecentPrimaryRecord } from './storage/SkinStorage';
+import { saveRecord, updateRecord, getRecords, getNextMeasurementInfo, getChanges, generateShareText, getLatestRecord, hasTodayRecord, saveThumbnail, saveComparisonPhoto, getTodayRecords, getStableSkinAge, findRecentPrimaryRecord, getWeeklyReport } from './storage/SkinStorage';
 import { migrateFromLocalStorage } from './storage/PhotoDB';
 import { createAutoBackup, verifyDataIntegrity, restoreFromAutoBackup, startPeriodicBackup, getBackupInfo } from './storage/AutoBackup';
 import CarePage from './pages/CarePage';
@@ -44,6 +44,7 @@ import SkinMeasurePage from './pages/SkinMeasurePage';
 import TrendCard from './components/TrendCard';
 import AiCommentCard from './components/AiCommentCard';
 import BeforeAfterSlider from './components/BeforeAfterSlider';
+import WeeklyReportCard from './components/WeeklyReportCard';
 import { DropletIcon, SparkleIcon, LotionIcon, DiamondIcon, PaletteIcon, MicroscopeIcon, RulerIcon, EyeIcon, BubbleIcon, TargetIcon, SunIcon, MoonIcon, CameraIcon, TestTubeIcon, StarIcon, ShieldIcon, WandIcon, PhotoIcon, CheckIcon, SaveIcon, PastelIcon, LuaMiniIcon, FlameIcon, EggIcon, BlushIcon } from './components/icons/PastelIcons';
 import SoftCloverIcon from './components/icons/SoftCloverIcon';
 import EternalPearl from './components/icons/EternalPearl';
@@ -79,6 +80,12 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('home');
   // pull-to-refresh로 갱신될 때 페이지 컴포넌트 강제 remount용 key
   const [refreshKey, setRefreshKey] = useState(0);
+  // 주간 변화 리포트 — Before/After 풀스크린 모달
+  const [weeklyBeforeAfterOpen, setWeeklyBeforeAfterOpen] = useState(false);
+  // 이번 주 리포트 카드 dismiss 추적 — localStorage week key
+  const [weeklyDismissedKey, setWeeklyDismissedKey] = useState(() => {
+    try { return localStorage.getItem('nou_weekly_report_dismissed') || ''; } catch { return ''; }
+  });
   const [historyInitMode, setHistoryInitMode] = useState(null);
 
   const [fabChatOpen, setFabChatOpen] = useState(false);
@@ -1048,6 +1055,23 @@ export default function App() {
               <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path strokeWidth="0" d="M0 0h24v24H0z" fill="none" /><path d="M4 6l16 0" /><path d="M4 12l16 0" /><path d="M4 18l16 0" /></svg>
             </div>
           </div>
+
+          {/* 주간 변화 리포트 카드 — 이번 주 한 번만, dismiss 가능. 카드 탭 시 Before/After 풀스크린 */}
+          {(() => {
+            const report = (() => { try { return getWeeklyReport(); } catch { return null; } })();
+            if (!report || !report.hasAnyMeaningfulChange) return null;
+            if (weeklyDismissedKey === report.weekKey) return null;
+            return (
+              <WeeklyReportCard
+                report={report}
+                onOpenBeforeAfter={() => setWeeklyBeforeAfterOpen(true)}
+                onDismiss={() => {
+                  try { localStorage.setItem('nou_weekly_report_dismissed', report.weekKey); } catch {}
+                  setWeeklyDismissedKey(report.weekKey);
+                }}
+              />
+            );
+          })()}
 
           {/* Background aura — very subtle (hidden in light mode) */}
           {colorMode !== 'light' && (
@@ -2709,6 +2733,43 @@ export default function App() {
 
       {/* ===== BADGE CELEBRATION POPUP ===== */}
       <BadgeCelebration badge={celebrateBadge} onClose={() => setCelebrateBadge(null)} accent={activeThemeColors.accent} />
+
+      {/* ===== Weekly Report — Before/After 풀스크린 모달 ===== */}
+      {weeklyBeforeAfterOpen && createPortal(
+        <div
+          onClick={() => setWeeklyBeforeAfterOpen(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 99999,
+            background: 'rgba(0,0,0,0.92)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            padding: 'calc(60px + env(safe-area-inset-top, 0px)) 16px calc(40px + env(safe-area-inset-bottom, 0px))',
+            animation: 'uxFadeIn 0.28s var(--ease-out-smooth)',
+          }}
+        >
+          <button
+            onClick={(e) => { e.stopPropagation(); setWeeklyBeforeAfterOpen(false); }}
+            aria-label="닫기"
+            style={{
+              position: 'absolute', top: 'calc(20px + env(safe-area-inset-top, 0px))', right: 20,
+              width: 40, height: 40, borderRadius: 20,
+              background: 'rgba(255,255,255,0.16)', backdropFilter: 'blur(10px)',
+              border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', zIndex: 2,
+            }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 480 }}>
+            <div style={{ color: '#fff', textAlign: 'center', marginBottom: 18, fontSize: 14, fontWeight: 600, letterSpacing: -0.2, opacity: 0.85 }}>
+              7일 전 vs 지금
+            </div>
+            <BeforeAfterSlider />
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
     </PullToRefresh>
   );
