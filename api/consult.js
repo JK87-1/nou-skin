@@ -926,7 +926,7 @@ D. 기타 사진 (음식, 환경 등):
 
 ■ 규칙:
 1. **사용자가 등록한 제품**을 활용할 때는 등록 제품 목록의 name·brand를 **글자 그대로** 사용 (대소문자·띄어쓰기·괄호까지 동일).
-2. **name 필드에 brand 절대 포함 X** — brand는 brand 필드에만. 잘못된 예: `{"brand":"토리든","name":"토리든 다이브인…"}` → 올바른 예: `{"brand":"토리든","name":"다이브인 저분자 히알루론산 토너"}`. 클라이언트가 중복 등록 방지하려면 name에 brand prefix가 없어야 함.
+2. **name 필드에 brand 절대 포함 X** — brand는 brand 필드에만. 잘못된 예: {"brand":"토리든","name":"토리든 다이브인…"} → 올바른 예: {"brand":"토리든","name":"다이브인 저분자 히알루론산 토너"}. 클라이언트가 중복 등록 방지하려면 name에 brand prefix가 없어야 함.
 3. **새 제품**을 추천하는 경우: name·brand·category 필수. ingredients는 가능하면 채우기.
 3. category는 반드시 다음 중 하나: 클렌저 · 토너 · 에센스 · 세럼 · 크림 · 선크림 · 마스크팩 · 기타.
 4. timeSlot: "morning"(아침만) · "night"(저녁만) · "both"(둘 다). 같은 제품을 morning·night 양쪽 배열에 동시에 넣지 말고 "both"로 한 번만.
