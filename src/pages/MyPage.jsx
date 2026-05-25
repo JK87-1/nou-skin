@@ -65,12 +65,16 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
       {/* ② 프로필 영역 (noa style) */}
       <div style={{ margin: '0 16px 12px', padding: '0 2px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-          {/* Avatar */}
-          <div style={{
-            width: 86, height: 86, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
-            background: '#ffffff', border: '2px solid rgba(255,255,255,0.1)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
+          {/* Avatar — 클릭으로 사진 등록/변경 */}
+          <div
+            onClick={() => profilePhotoRef.current?.click()}
+            style={{
+              width: 86, height: 86, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
+              background: '#ffffff', border: '2px solid rgba(255,255,255,0.1)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', position: 'relative', WebkitTapHighlightColor: 'transparent',
+            }}
+          >
             {profile.profileImage ? (
               <img src={profile.profileImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             ) : (
@@ -78,7 +82,23 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
                 <circle cx="12" cy="10" r="4" /><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" strokeLinecap="round" />
               </svg>
             )}
+            {/* 카메라 배지 — 등록 가능함 시그널 */}
+            <div style={{
+              position: 'absolute', right: 2, bottom: 2,
+              width: 24, height: 24, borderRadius: '50%',
+              background: '#6598ef',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              border: '2px solid #fff',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.18)',
+            }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                <circle cx="12" cy="13" r="4" />
+              </svg>
+            </div>
           </div>
+          {/* 항상 페이지 레벨에 file input — 모달 닫혀 있어도 아바타 클릭으로 동작 */}
+          <input ref={profilePhotoRef} type="file" accept="image/*" onChange={handleProfilePhoto} style={{ display: 'none' }} />
 
           {/* Stat Tab Grid (3 tabs) */}
           <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
@@ -925,7 +945,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                 </svg>
               </div>
             </div>
-            <input ref={profilePhotoRef} type="file" accept="image/*" onChange={handleProfilePhoto} style={{ display: 'none' }} />
+            {/* input은 페이지 레벨(아바타 옆)에 단일 ref로 존재. 모달 중복 X */}
             <div onClick={() => profilePhotoRef.current?.click()} style={{ fontSize: 10.5, color: 'var(--accent-primary, #6598ef)', fontWeight: 500, marginTop: 12, cursor: 'pointer' }}>
               {profile.profileImage ? '사진 변경' : '사진 추가'}
             </div>

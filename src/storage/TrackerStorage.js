@@ -646,17 +646,21 @@ export function compressProductThumb(dataUrl) {
   return new Promise(resolve => {
     const img = new Image();
     img.onload = () => {
-      // 80x80 0.5 quality ≈ 2~4KB per thumb (이전 100x100/0.6의 절반)
-      const size = 80;
+      // 320x320 / quality 0.88 — retina @3x(약 100~120pt 표시) 깨끗하게.
+      // IndexedDB(ImageStore)에 저장되므로 localStorage 부담 X. 한 thumb ≈ 12~25KB.
+      const size = 320;
       const canvas = document.createElement('canvas');
       canvas.width = size;
       canvas.height = size;
       const ctx = canvas.getContext('2d');
+      // 고품질 리샘플링 (브라우저 기본보다 부드러움)
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
       const min = Math.min(img.width, img.height);
       const sx = (img.width - min) / 2;
       const sy = (img.height - min) / 2;
       ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
-      resolve(canvas.toDataURL('image/jpeg', 0.5));
+      resolve(canvas.toDataURL('image/jpeg', 0.88));
     };
     img.onerror = () => resolve(null);
     img.src = dataUrl;

@@ -984,6 +984,7 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
   const [isDragging, setIsDragging] = useState(false);
   const [closing, setClosing] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [photoZoomed, setPhotoZoomed] = useState(false);
   const dragStart = useRef(null);
   const sheetRef = useRef(null);
   const captureRef = useRef(null);
@@ -1175,21 +1176,89 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
               );
             })()}
 
-            {/* 셀카 */}
+            {/* 셀카 — 탭하면 원본 확대 */}
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
-              <div style={{
-                width: 100, height: 100, borderRadius: '50%',
-                background: thumbnail ? 'none' : `linear-gradient(135deg, ${C.gradTop}, ${C.gradMid})`,
-                padding: 3,
-                boxShadow: `0 0 0 3px ${C.accent}30`,
-              }}>
+              <div
+                onClick={() => thumbnail && setPhotoZoomed(true)}
+                style={{
+                  width: 100, height: 100, borderRadius: '50%',
+                  background: thumbnail ? 'none' : `linear-gradient(135deg, ${C.gradTop}, ${C.gradMid})`,
+                  padding: 3,
+                  boxShadow: `0 0 0 3px ${C.accent}30`,
+                  cursor: thumbnail ? 'pointer' : 'default',
+                  WebkitTapHighlightColor: 'transparent',
+                  position: 'relative',
+                }}
+              >
                 {thumbnail ? (
-                  <img src={thumbnail} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                  <>
+                    <img src={thumbnail} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                    {/* 확대 가능 시그널 */}
+                    <div style={{
+                      position: 'absolute', right: -2, bottom: -2,
+                      width: 26, height: 26, borderRadius: '50%',
+                      background: '#fff', border: `2px solid ${C.accent}`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      boxShadow: '0 1px 4px rgba(0,0,0,0.18)',
+                    }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={C.accent} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 8V3h5M21 8V3h-5M3 16v5h5M21 16v5h-5" />
+                      </svg>
+                    </div>
+                  </>
                 ) : (
                   <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: `linear-gradient(135deg, ${C.gradTop}, ${C.gradMid})` }} />
                 )}
               </div>
             </div>
+
+            {/* 사진 원본 확대 lightbox — 탭/스와이프로 닫기 */}
+            {photoZoomed && thumbnail && createPortal(
+              <div
+                onClick={() => setPhotoZoomed(false)}
+                style={{
+                  position: 'fixed', inset: 0, zIndex: 99999,
+                  background: 'rgba(0,0,0,0.94)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'zoom-out',
+                  animation: 'photoZoomFadeIn 0.2s ease',
+                }}
+              >
+                <style>{`@keyframes photoZoomFadeIn { from { opacity: 0; } to { opacity: 1; } }`}</style>
+                <img
+                  src={thumbnail}
+                  alt=""
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    maxWidth: '96vw', maxHeight: '92vh', objectFit: 'contain',
+                    borderRadius: 8, boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+                  }}
+                />
+                <button
+                  onClick={(e) => { e.stopPropagation(); setPhotoZoomed(false); }}
+                  aria-label="닫기"
+                  style={{
+                    position: 'absolute', top: 'calc(20px + env(safe-area-inset-top, 0px))', right: 20,
+                    width: 40, height: 40, borderRadius: 20,
+                    background: 'rgba(255,255,255,0.16)', backdropFilter: 'blur(10px)',
+                    border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+                <div style={{
+                  position: 'absolute', bottom: 'calc(24px + env(safe-area-inset-bottom, 0px))', left: 0, right: 0,
+                  textAlign: 'center', color: 'rgba(255,255,255,0.75)', fontSize: 12,
+                  pointerEvents: 'none',
+                }}>
+                  {dateShort}
+                </div>
+              </div>,
+              document.body
+            )}
 
           </div>
 

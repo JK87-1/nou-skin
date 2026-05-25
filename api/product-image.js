@@ -75,6 +75,26 @@ function pickBest(items, brand, name) {
   return { item: bestItem, score: bestScore };
 }
 
+/** 네이버 쇼핑 thumbnail URL을 큰 해상도로 upgrade.
+ * 네이버 CDN: ?type=f140/f300/f400/... — 숫자가 클수록 큰 이미지.
+ * default는 보통 f140 등 작은 사이즈라 retina 환경에서 흐려 보임. */
+function upgradeNaverImageUrl(url) {
+  if (!url || typeof url !== 'string') return url;
+  // ?type=fNNN 패턴 → f640 으로 교체
+  if (/\?type=f\d+/i.test(url)) {
+    return url.replace(/\?type=f\d+/i, '?type=f640');
+  }
+  // &type=fNNN 패턴
+  if (/&type=f\d+/i.test(url)) {
+    return url.replace(/&type=f\d+/i, '&type=f640');
+  }
+  // 파라미터가 아예 없으면 추가 (phinf CDN 한정)
+  if (/phinf\.(naver|pstatic)\.net/i.test(url) && !url.includes('?')) {
+    return url + '?type=f640';
+  }
+  return url;
+}
+
 /** 이미지 프록시 (CORS 우회) */
 async function proxyImage(imageUrl) {
   try {
@@ -122,21 +142,24 @@ export default async function handler(req, res) {
 
     if (!best) return res.status(200).json({ image: null });
 
-    // 빠른 경로: URL 그대로 반환 (네이버 쇼핑 CDN은 직접 img 태그 로드 가능 + CORS 문제 거의 없음)
+    // 화질 업그레이드 — default thumbnail은 작아서 retina 환경에서 흐림
+    const upgradedUrl = upgradeNaverImageUrl(best.image);
+
+    // 빠른 경로: 업그레이드된 URL 반환
     if (fast) {
       return res.status(200).json({
-        image: best.image,
+        image: upgradedUrl,
         brand: clean(best.brand) || null,
         title: clean(best.title) || null,
       });
     }
 
     // 안정 경로: base64 proxy (등록 영구 저장용)
-    const image = await proxyImage(best.image);
+    const image = await proxyImage(upgradedUrl);
     if (!image) {
       // proxy 실패해도 URL은 반환 — 클라이언트가 자체 처리
       return res.status(200).json({
-        image: best.image,
+        image: upgradedUrl,
         brand: clean(best.brand) || null,
         title: clean(best.title) || null,
       });
