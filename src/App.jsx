@@ -1031,46 +1031,6 @@ export default function App() {
       {/* ===== LANDING PAGE ===== */}
       {stage === 'landing' && (
         <div key={`home-${refreshKey}`}>
-          {/* Migration Notice */}
-          {showMigration && (
-            <div style={{
-              margin: '12px 16px 0', padding: '14px 18px',
-              background: 'rgba(240,144,112,0.08)', borderRadius: 16,
-              border: '1px solid rgba(240,144,112,0.15)',
-              animation: 'fadeUp 0.4s ease-out',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-                <span style={{ fontSize: 20, lineHeight: 1, flexShrink: 0, marginTop: 1 }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="#ADEBB3"><path d="M12 2a1 1 0 011 1v10.586l2.293-2.293a1 1 0 011.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L11 13.586V3a1 1 0 011-1zM5 20a1 1 0 110 2H3a1 1 0 01-1-1v-4a1 1 0 112 0v3h1zm16 2a1 1 0 110-2h1v-3a1 1 0 112 0v4a1 1 0 01-1 1h-2z"/></svg>
-                </span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>Safari 기록을 가져올 수 있어요</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                    Safari에서 측정한 기록은 마이페이지 &gt; 데이터 내보내기로 백업 후, 이 앱에서 가져오기로 복원할 수 있어요.
-                  </div>
-                  <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-                    <button onClick={() => {
-                      setShowMigration(false);
-                      localStorage.setItem('nou_migration_dismissed', '1');
-                    }} style={{
-                      padding: '6px 14px', borderRadius: 10, border: 'none',
-                      background: 'var(--bg-card-hover)', color: 'var(--text-muted)',
-                      fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
-                    }}>닫기</button>
-                    <button onClick={() => {
-                      setShowMigration(false);
-                      localStorage.setItem('nou_migration_dismissed', '1');
-                      setActiveTab('my');
-                    }} style={{
-                      padding: '6px 14px', borderRadius: 10, border: 'none',
-                      background: 'rgba(240,144,112,0.15)', color: '#ADEBB3',
-                      fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-                    }}>마이페이지로 이동</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
           {/* First screen — fills full viewport */}
           <div style={{ height: 'calc(100svh - 72px)', display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
           {/* Header with Logo + Weather Chip */}
