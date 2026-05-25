@@ -2577,35 +2577,10 @@ export default function App() {
       {showTabBar && activeTab === 'home' && stage === 'landing' && <div className="tab-bar-spacer" />}
 
 
-      {/* ===== 고정 인사이트 카드 (홈 화면만, 접히지 않았을 때) ===== */}
-      {homeCards.insight && showTabBar && activeTab === 'home' && stage === 'landing' && getLatestRecord() && !insightCollapsed && (
-        <div style={{
-          position: 'fixed',
-          bottom: 'calc(var(--tab-bar-h, 64px) + 10px)',
-          left: 20, right: 20,
-          zIndex: 90,
-          animation: 'insightFloat 3s ease-in-out infinite',
-        }}>
-          {/* 접기 버튼 */}
-          <div onClick={(e) => { e.stopPropagation(); setInsightCollapsed(true); }} style={{
-            position: 'absolute', top: 6, right: 6, zIndex: 2,
-            width: 40, height: 40,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer',
-          }}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #8B95A1)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" opacity="0.4"><path d="M6 9l6 6 6-6"/></svg>
-          </div>
-          <AiInsightCard
-            onOpenChat={() => setFabChatOpen(true)}
-            onCollapse={() => setInsightCollapsed(true)}
-            greeting={(() => { const h = new Date().getHours(); if (h >= 5 && h < 11) return '좋은 아침이에요'; if (h >= 11 && h < 17) return '오늘도 잘 지내고 있나요'; if (h >= 17 && h < 22) return '오늘 하루도 수고했어요'; return '조용한 시간이에요'; })() + (getProfile().nickname ? `, ${getProfile().nickname}` : '')}
-            dateInfo={`${new Date().getMonth() + 1}월 ${new Date().getDate()}일 · ${(() => { const recs = getRecords(); if (!recs.length) return '오늘부터 시작'; const d = Math.floor((Date.now() - new Date(recs[recs.length - 1].date).getTime()) / 86400000); return d > 0 ? `LUA와 ${d}일째` : '오늘부터 시작'; })()}`}
-          />
-        </div>
-      )}
+      {/* ===== 홈화면 인사이트카드 — 비활성화 (HomeInsightCard.jsx에 백업됨) ===== */}
 
-      {/* ===== FAB (인사이트 카드가 없거나 접혔을 때) ===== */}
-      {showTabBar && (!(homeCards.insight && activeTab === 'home' && stage === 'landing' && getLatestRecord()) || insightCollapsed) && (
+      {/* ===== FAB (luastar → 채팅) ===== */}
+      {showTabBar && (
         <div style={{
           position: 'fixed',
           bottom: 'calc(var(--tab-bar-h, 64px) + 18px)',
@@ -2614,7 +2589,7 @@ export default function App() {
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
         }}>
         <div
-          onClick={() => { if (insightCollapsed && activeTab === 'home' && stage === 'landing') { setInsightCollapsed(false); } else { setFabChatOpen(true); localStorage.setItem('fab_hint_dismissed', '1'); } }}
+          onClick={() => { setFabChatOpen(true); localStorage.setItem('fab_hint_dismissed', '1'); }}
           style={{
             position: 'relative',
             width: 58, height: 58,

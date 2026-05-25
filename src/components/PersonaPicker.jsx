@@ -29,12 +29,12 @@ export default function PersonaPicker({ open, activeId, onSelect, onClose, ancho
     <>
       <style>{`
         @keyframes personaCardIn {
-          from { opacity: 0; transform: translateY(-8px) scale(0.96); }
-          to   { opacity: 1; transform: translateY(0) scale(1); }
+          from { opacity: 0; transform: translateX(-50%) scale(0.96); }
+          to   { opacity: 1; transform: translateX(-50%) scale(1); }
         }
         .persona-opt {
           display: flex; align-items: flex-start; gap: 14px;
-          padding: 14px 18px 14px 50px;
+          padding: 9px 18px 9px 50px;
           cursor: pointer; position: relative;
           transition: background 0.12s;
           -webkit-tap-highlight-color: transparent;
@@ -52,12 +52,13 @@ export default function PersonaPicker({ open, activeId, onSelect, onClose, ancho
         style={{
           position: 'absolute', top: anchorTop, left: '50%',
           transform: 'translateX(-50%)',
-          width: 'min(340px, calc(100% - 28px))',
+          width: 'min(280px, calc(100% - 28px))',
           background: '#ffffff',
           borderRadius: 24,
           boxShadow: '0 8px 32px rgba(0,0,0,0.14), 0 1px 2px rgba(0,0,0,0.04)',
           zIndex: 320,
           overflow: 'hidden',
+          padding: '3px 0',
           animation: 'personaCardIn 180ms cubic-bezier(0.32,0.72,0,1)',
         }}
       >

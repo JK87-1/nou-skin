@@ -772,11 +772,11 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
         position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201,
         height: keyboardHeight > 0
           ? `calc(100% - ${keyboardHeight}px)`
-          : 'min(95dvh, 100%)',
+          : 'min(88dvh, 100%)',
         transition: 'height 0.22s cubic-bezier(0.32,0.72,0,1)',
         background: 'linear-gradient(180deg, #ffffff 0%, #ffffff 45%, #EAF4FB 100%)',
-        borderRadius: '24px 24px 0 0',
-        boxShadow: '0 -6px 24px rgba(0,0,0,0.06)',
+        borderRadius: '30px 30px 0 0',
+        boxShadow: '0 -2px 8px rgba(0,0,0,0.06)',
         display: 'flex', flexDirection: 'column',
         animation: closing ? 'luaChatSlideDown 240ms ease forwards' : 'luaChatSlideUp 280ms cubic-bezier(0.32,0.72,0,1) forwards',
         maxWidth: 430, margin: '0 auto',
@@ -814,7 +814,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
           <button onClick={handleClose} aria-label="채팅 닫기" className="gem-btn" style={{
-            width: 44, height: 44, borderRadius: 22,
+            width: 36, height: 36, borderRadius: 18,
             background: '#ffffff',
             border: 'none',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -822,8 +822,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
             boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
           }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#191F28" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
+              <path d="m15 18-6-6 6-6" />
             </svg>
           </button>
 
@@ -853,15 +852,16 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
           </button>
 
           <button onClick={() => { clearConsultSession(personaId); setMessages([]); setInput(''); setPendingImages([]); applyingRef.current = new Set(); }} aria-label="새 채팅" className="gem-btn" style={{
-            width: 44, height: 44, borderRadius: 22,
+            width: 36, height: 36, borderRadius: 18,
             background: '#ffffff',
-            border: '1.5px dashed rgba(0,0,0,0.18)',
+            border: 'none',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer', flexShrink: 0,
+            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
           }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#191F28" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 20h9"/>
-              <path d="M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4L16.5 3.5z"/>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#191F28" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+              <path d="M3 3v5h5"/>
             </svg>
           </button>
         </div>
@@ -880,22 +880,10 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
               textAlign: 'center', padding: '32px 24px 80px',
               gap: 20,
             }}>
-              {/* Gemini Flash 스타일 큰 4-point 별 (lua 푸른 그라데이션) */}
-              <svg width="56" height="56" viewBox="0 0 56 56" fill="none" aria-hidden>
-                <defs>
-                  <linearGradient id="luaStarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#6598ef" />
-                    <stop offset="55%" stopColor="#58aefe" />
-                    <stop offset="100%" stopColor="#cce8fb" />
-                  </linearGradient>
-                </defs>
-                <path
-                  d="M28 2 C29 14 30 17 32 19 C34 22 37 23 54 28 C37 33 34 34 32 37 C30 39 29 42 28 54 C27 42 26 39 24 37 C22 34 19 33 2 28 C19 23 22 22 24 19 C26 17 27 14 28 2 Z"
-                  fill="url(#luaStarGrad)"
-                />
-              </svg>
+              {/* luastar */}
+              <img src="/luastar.svg" alt="" style={{ width: 56, height: 56 }} />
               <div style={{
-                fontSize: 30, fontWeight: 500, color: '#1F1F1F',
+                fontSize: 28, fontWeight: 500, color: '#1F1F1F',
                 letterSpacing: -0.5, lineHeight: 1.3,
                 fontFamily: 'var(--font-display), Pretendard, -apple-system, sans-serif',
                 maxWidth: 320,
