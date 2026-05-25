@@ -777,8 +777,9 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
               const routine = afterRoutine.routine;
               const messageKey = msg.timestamp ? `t-${msg.timestamp}` : `i-${i}`;
               const isApplied = appliedRoutineKeys.has(messageKey);
-              // Quick reply chip은 마지막 assistant 메시지에만 + 스트리밍 끝난 뒤 + 사용자가 아직 타이핑 안 했을 때
-              const showQuickReplies = isLast && !isLoading && quickReplies && quickReplies.length > 0 && input.trim().length === 0;
+              // Quick reply chip은 마지막 assistant 메시지에만 + 스트리밍 끝난 뒤.
+              // input 의존성은 빼서 keystroke마다 전체 messages re-render 되지 않게 함 (긴 대화·긴 응답 시 스크롤 멈춤 방지).
+              const showQuickReplies = isLast && !isLoading && quickReplies && quickReplies.length > 0;
               // Gemini 스타일: 버블 없음. 평문 마크다운만. 답변 아래 액션 row.
               return (
                 <div key={i} style={{ padding: '10px 2px 4px', fontSize: 16 }}>
@@ -802,7 +803,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
                           key={qi}
                           type="button"
                           className="gem-btn"
-                          onClick={() => sendMessage(opt)}
+                          onClick={() => { setInput(''); sendMessage(opt); }}
                           style={{
                             padding: '9px 14px',
                             borderRadius: 18,
