@@ -286,11 +286,6 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
         />
       )}
 
-      {/* ===== ROUTINE (Morning / Night) ===== */}
-      <div style={{ animation: 'breatheIn 0.6s ease both' }}>
-        <RoutineChecklist />
-      </div>
-
       {/* ===== GALLERY MODE (Instagram-style profile) ===== */}
       {mode === 'gallery' && (() => {
         const latestRecord = records.length > 0 ? records[records.length - 1] : null;
@@ -303,7 +298,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
         return (
           <div>
             {/* Profile header */}
-            <div style={{ padding: '24px 20px 0', animation: 'breatheIn 0.6s ease both' }}>
+            <div style={{ padding: '30px 20px 0', animation: 'breatheIn 0.6s ease both' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                 {/* Profile avatar */}
                 <div style={{
@@ -444,37 +439,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
 
         return (
           <div style={{ padding: '0 16px' }}>
-            {/* === HEADER === */}
-            <div style={{ paddingTop: 20, marginBottom: 20, animation: 'breatheIn 0.6s ease both' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.5, color: 'var(--text-muted)' }}>SKIN TIMELINE</span>
-                {period > 0 && (
-                  <span style={{
-                    fontSize: 11, fontWeight: 600, color: '#fff',
-                    background: 'rgba(255,120,50,0.2)', border: '1px solid rgba(255,120,50,0.3)',
-                    borderRadius: 20, padding: '2px 10px',
-                  }}><span style={{ color: '#FF6B35' }}>●</span> {period}일째</span>
-                )}
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 style={{ fontSize: 22, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', margin: 0 }}>나의 피부 여정</h2>
-                <div style={{
-                  display: 'flex', background: 'rgba(255,255,255,0.42)',
-                  backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-                  border: '1px solid rgba(255,255,255,0.4)',
-                  borderRadius: 18, padding: 3, gap: 2,
-                }}>
-                  {['timeline', 'compare'].map(m => (
-                    <button key={m} onClick={() => setInsightMode(m)} style={{
-                      border: insightMode === m ? '1.5px solid rgba(255,255,255,0.25)' : '1.5px solid transparent',
-                      background: insightMode === m ? 'var(--bg-input)' : 'transparent',
-                      color: insightMode === m ? 'var(--text-primary)' : 'var(--text-muted)',
-                      borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                    }}>{m === 'timeline' ? '타임라인' : '비교'}</button>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <div style={{ paddingTop: 30 }} />
 
             {/* === SUMMARY CARDS === */}
             {totalChanges && (

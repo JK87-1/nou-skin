@@ -1130,6 +1130,7 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
   const [editing, setEditing] = useState(false);
   const [memo, setMemo] = useState(product.memo || '');
   const [memoSaved, setMemoSaved] = useState(false);
+  const [feeling, setFeeling] = useState(product.feeling || null);
   const [form, setForm] = useState({
     brand: product.brand, name: product.name,
     category: product.category, timeSlot: product.timeSlot,
@@ -1250,6 +1251,46 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
               {memoSaved && (
                 <div style={{ fontSize: 11, color: accent, marginTop: 4 }}>저장됨</div>
               )}
+            </div>
+
+            {/* 느낌 선택 */}
+            <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
+              {[
+                { key: 'good', label: '잘 맞아요',
+                  outline: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d0d0d0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 11v8a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1v-7a1 1 0 0 1 1 -1h3a4 4 0 0 0 4 -4v-1a2 2 0 0 1 4 0v5h3a2 2 0 0 1 2 2l-1 5a2 3 0 0 1 -2 2h-7a3 3 0 0 1 -3 -3" /></svg>,
+                  filled: <svg width="18" height="18" viewBox="0 0 24 24" fill="#d0d0d0" stroke="none"><path d="M13 3a3 3 0 0 1 2.995 2.824l.005 .176v4h2a3 3 0 0 1 2.98 2.65l.015 .174l.005 .176l-.02 .196l-1.006 5.032c-.381 1.626 -1.502 2.796 -2.81 2.78l-.164 -.008h-8a1 1 0 0 1 -.993 -.883l-.007 -.117l.001 -9.536a1 1 0 0 1 .5 -.865a2.998 2.998 0 0 0 1.492 -2.397l.007 -.202v-1a3 3 0 0 1 3 -3z" /><path d="M5 10a1 1 0 0 1 .993 .883l.007 .117v9a1 1 0 0 1 -.883 .993l-.117 .007h-1a2 2 0 0 1 -1.995 -1.85l-.005 -.15v-7a2 2 0 0 1 1.85 -1.995l.15 -.005h1z" /></svg>,
+                },
+                { key: 'unsure', label: '아직 모르겠어요',
+                  outline: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d0d0d0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0" /></svg>,
+                  filled: <svg width="18" height="18" viewBox="0 0 24 24" fill="#d0d0d0" stroke="none"><path d="M12 1.67a2.914 2.914 0 0 0 -2.492 1.403l-8.11 13.537a2.914 2.914 0 0 0 2.484 4.385h16.225a2.914 2.914 0 0 0 2.503 -4.371l-8.116 -13.546a2.917 2.917 0 0 0 -2.494 -1.408z" /></svg>,
+                },
+                { key: 'bad', label: '안 맞는 것 같아요',
+                  outline: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d0d0d0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 13v-8a1 1 0 0 0 -1 -1h-2a1 1 0 0 0 -1 1v7a1 1 0 0 0 1 1h3a4 4 0 0 1 4 4v1a2 2 0 0 0 4 0v-5h3a2 2 0 0 0 2 -2l-1 -5a2 3 0 0 0 -2 -2h-7a3 3 0 0 0 -3 3" /></svg>,
+                  filled: <svg width="18" height="18" viewBox="0 0 24 24" fill="#d0d0d0" stroke="none"><path d="M13 21.008a3 3 0 0 0 2.995 -2.823l.005 -.177v-4h2a3 3 0 0 0 2.98 -2.65l.015 -.173l.005 -.177l-.02 -.196l-1.006 -5.032c-.381 -1.625 -1.502 -2.796 -2.81 -2.78l-.164 .008h-8a1 1 0 0 0 -.993 .884l-.007 .116l.001 9.536a1 1 0 0 0 .5 .866a2.998 2.998 0 0 1 1.492 2.396l.007 .202v1a3 3 0 0 0 3 3z" /><path d="M5 14.008a1 1 0 0 0 .993 -.883l.007 -.117v-9a1 1 0 0 0 -.883 -.993l-.117 -.007h-1a2 2 0 0 0 -1.995 1.852l-.005 .15v7a2 2 0 0 0 1.85 1.994l.15 .005h1z" /></svg>,
+                },
+              ].map(f => {
+                const active = feeling === f.key;
+                return (
+                  <button key={f.key} onClick={() => {
+                    const next = active ? null : f.key;
+                    setFeeling(next);
+                    onEdit({ id: product.id, feeling: next });
+                  }} style={{
+                    flex: 1, padding: '10px 0', borderRadius: 12,
+                    border: 'none',
+                    background: 'transparent',
+                    cursor: 'pointer', fontFamily: 'inherit',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                    transition: 'all 0.15s',
+                  }}>
+                    {active ? f.filled : f.outline}
+                    <span style={{
+                      fontSize: 10, fontWeight: active ? 600 : 400,
+                      color: active ? 'var(--text-primary)' : '#d0d0d0',
+                    }}>{f.label}</span>
+                  </button>
+                );
+              })}
             </div>
 
             {/* 삭제 확인 모달 */}
@@ -1831,9 +1872,11 @@ export default function ProductPage({ themeColors, onBack }) {
                   }}>
                     {p.favorite && (
                       <div style={{ position: 'absolute', top: 14, right: 14 }}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="#ffdaf0" stroke="none">
-                          <path d="M6.979 3.074a6 6 0 0 1 4.988 1.425l.037 .033l.034 -.03a6 6 0 0 1 4.733 -1.44l.246 .036a6 6 0 0 1 3.364 10.008l-.18 .185l-.048 .041l-7.45 7.379a1 1 0 0 1 -1.313 .082l-.094 -.082l-7.493 -7.422a6 6 0 0 1 3.176 -10.215z" />
-                        </svg>
+                        {p.favorite && (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="#ffdaf0" stroke="#fff" strokeWidth="1">
+                            <path d="M6.979 3.074a6 6 0 0 1 4.988 1.425l.037 .033l.034 -.03a6 6 0 0 1 4.733 -1.44l.246 .036a6 6 0 0 1 3.364 10.008l-.18 .185l-.048 .041l-7.45 7.379a1 1 0 0 1 -1.313 .082l-.094 -.082l-7.493 -7.422a6 6 0 0 1 3.176 -10.215z" />
+                          </svg>
+                        )}
                       </div>
                     )}
                     {p.imageThumb ? (
@@ -1858,7 +1901,7 @@ export default function ProductPage({ themeColors, onBack }) {
                         {cat.emoji}
                       </div>
                     )}
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.brand}</div>
+                    <div style={{ fontSize: 11, color: '#c0c8d0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.brand}</div>
                     <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginTop: 2, lineHeight: 1.4, minHeight: '2.8em', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', wordBreak: 'keep-all' }}>{p.name}</div>
                     <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 'auto', paddingTop: 8 }}>
                       {p.category} · {days}일째
