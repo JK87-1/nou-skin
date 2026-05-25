@@ -136,7 +136,7 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
   useEffect(() => {
     if (!isFullSequence) return;
 
-    const delays = [1200, 1200, 1200, 1200, 1200, 1200]; // 0→1, 1→2, 2→3, 3→4, 4→5, 5→CTA
+    const delays = [1000, 1000, 1000, 1000, 1000, 1000]; // 0→1, 1→2, 2→3, 3→4, 4→5, 5→CTA
     let currentStep = 0;
 
     const advance = () => {
@@ -263,9 +263,9 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
               >
                 <div style={{
                   display: 'flex', alignItems: 'center', gap: 20,
-                  background: 'rgba(255,255,255,0.4)',
+                  background: 'rgba(255,255,255,0.7)',
                   borderRadius: 999,
-                  padding: '14px 20px 14px 18px',
+                  padding: '13px 20px 13px 18px',
                   width: 280, margin: '0 auto',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
                 }}>
