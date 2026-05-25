@@ -112,11 +112,24 @@ export default function PullToRefresh({ onRefresh, children, color = '#6598ef' }
           transition: refreshing || pullY === 0 ? 'top 0.32s cubic-bezier(0.34,1.2,0.6,1)' : 'none',
         }}
       >
-        <LuaStarIndicator
-          progress={progress}
-          reached={reached}
-          refreshing={refreshing}
-        />
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {/* 글로우 링 — luastar 회전과 독립 */}
+          {(reached || refreshing) && (
+            <div style={{
+              position: 'absolute',
+              width: 60, height: 60,
+              borderRadius: '50%',
+              border: '1.5px solid rgba(255,255,255,0.3)',
+              animation: 'luaPtrGlow 1.5s ease-in-out infinite',
+              pointerEvents: 'none',
+            }} />
+          )}
+          <LuaStarIndicator
+            progress={progress}
+            reached={reached}
+            refreshing={refreshing}
+          />
+        </div>
       </div>
       {children}
     </>
@@ -155,17 +168,6 @@ function LuaStarIndicator({ progress, reached, refreshing }) {
           100% { transform: translate(-50%, -50%) scale(1.8); opacity: 0; }
         }
       `}</style>
-      {/* 글로우 링 */}
-      {(reached || refreshing) && (
-        <div style={{
-          position: 'absolute', top: '50%', left: '50%',
-          width: 60, height: 60,
-          borderRadius: '50%',
-          border: '1.5px solid rgba(255,255,255,0.3)',
-          animation: 'luaPtrGlow 1.5s ease-in-out infinite',
-          pointerEvents: 'none',
-        }} />
-      )}
       {/* 앞면 */}
       <img
         src="/luastar-ptr.svg"
