@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import GlobalStyles from './design/GlobalStyles';
+import PullToRefresh from './components/PullToRefresh';
 import { compressImage, clearCompressCache, analyzePixels, pixelsToScores, generateDemoScores, checkPhotoQuality, generateSmartAdvice, QUALITY_ISSUE_LABELS } from './engine/PixelAnalysis';
 import { detectLandmarks } from './engine/FaceLandmarker';
 import { callVisionAI, hybridMerge, hasBaseline, getBaselineBuildingState, getAiFallbackStats, clearAiFallbackStats } from './engine/HybridAnalysis';
@@ -845,6 +846,7 @@ export default function App() {
   const showTabBar = activeTab !== 'home' || stage === 'landing' || stage === 'result';
 
   return (
+    <PullToRefresh onRefresh={() => window.location.reload()}>
     <div className="app-container">
       <GlobalStyles />
       <style>{`@keyframes landingPearlReveal { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }`}</style>
@@ -2742,6 +2744,7 @@ export default function App() {
       {/* ===== BADGE CELEBRATION POPUP ===== */}
       <BadgeCelebration badge={celebrateBadge} onClose={() => setCelebrateBadge(null)} accent={activeThemeColors.accent} />
     </div>
+    </PullToRefresh>
   );
 }
 
