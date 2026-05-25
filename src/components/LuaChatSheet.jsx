@@ -177,7 +177,8 @@ const LuaAssistantMessage = memo(function LuaAssistantMessage({
   const showActions = !isLoading || !isLast;
 
   return (
-    <div style={{ padding: '10px 2px 4px', fontSize: 16 }}>
+    <div style={{ padding: '10px 2px 4px', fontSize: 16, animation: 'luaMsgFadeIn 0.32s cubic-bezier(0.22, 0.84, 0.36, 1)' }}>
+      <style>{`@keyframes luaMsgFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }`}</style>
       {renderChatMarkdown(cleanText)}
       {routine && (
         <ApplyRoutineCard
@@ -475,10 +476,16 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
     saveConsultSession(messages, personaId);
   }, [messages, open, personaId]);
 
+  // 자동 스크롤 — 답변이 흐르는 동안 자연스럽게 따라가기 위해 smooth 사용.
+  // 사용자가 위로 스크롤 중이면(bottom에서 60px 이상 떨어짐) 자동 스크롤 중단 — 읽기 흐름 보존.
   useEffect(() => {
-    if (scrollRef.current) {
-      setTimeout(() => scrollRef.current.scrollTop = scrollRef.current.scrollHeight, 50);
-    }
+    const el = scrollRef.current;
+    if (!el) return;
+    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+    if (!nearBottom && !isLoading) return; // 사용자가 위쪽 읽는 중 → 강제 스크롤 X
+    requestAnimationFrame(() => {
+      el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+    });
   }, [messages, isLoading]);
 
   // iOS Keyboard sticky — Capacitor 이벤트로 정확한 키보드 높이 추적
@@ -623,13 +630,41 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
       });
       if (!response.ok) { const err = await response.json().catch(() => ({})); throw new Error(err.error || `HTTP ${response.status}`); }
 
-      // SSE 스트리밍 읽기 — 첫 토큰 도착 시점에 빈 assistant bubble 추가, 이후 delta 누적.
+      // SSE 스트리밍 — 서버 chunk가 불규칙해서 그대로 setMessages하면 툭툭 끊김.
+      // 누적된 fullText를 rAF로 부드럽게 흘려보내는 typewriter 효과로 변환.
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
-      let assistantText = '';
+      let assistantText = '';    // 서버에서 누적된 전체
+      let displayedLen = 0;       // 현재 화면에 노출된 글자 수
       let bubbleAdded = false;
       let streamError = null;
+      let isStreamDone = false;
+      let rafId = null;
+
+      const flushDisplay = () => {
+        if (!bubbleAdded) return;
+        const target = assistantText.length;
+        if (displayedLen < target) {
+          const remaining = target - displayedLen;
+          // 남은 글자의 ~12%씩 (최소 1, 최대 8). 길수록 빨리, 끝엔 천천히 — 자연스러운 호흡.
+          const step = Math.max(1, Math.min(8, Math.ceil(remaining * 0.12)));
+          displayedLen = Math.min(displayedLen + step, target);
+          const shown = assistantText.slice(0, displayedLen);
+          setMessages(prev => {
+            const next = [...prev];
+            const last = next[next.length - 1];
+            if (last) next[next.length - 1] = { ...last, content: shown };
+            return next;
+          });
+        }
+        // 스트림 진행 중이거나 아직 보여줄 글자 남았으면 계속
+        if (!isStreamDone || displayedLen < assistantText.length) {
+          rafId = requestAnimationFrame(flushDisplay);
+        } else {
+          rafId = null;
+        }
+      };
 
       while (true) {
         const { done, value } = await reader.read();
@@ -652,18 +687,35 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
               assistantText += evt.delta;
               if (!bubbleAdded) {
                 bubbleAdded = true;
-                setMessages(prev => [...prev, { role: 'assistant', content: assistantText, timestamp: Date.now() }]);
-              } else {
-                setMessages(prev => {
-                  const next = [...prev];
-                  next[next.length - 1] = { ...next[next.length - 1], content: assistantText };
-                  return next;
-                });
+                setMessages(prev => [...prev, { role: 'assistant', content: '', timestamp: Date.now() }]);
+                rafId = requestAnimationFrame(flushDisplay);
               }
+              // rAF가 자체 loop으로 계속 갱신하므로 여기서 setMessages 호출 X
             }
           } catch {}
         }
       }
+
+      // 스트림 종료 신호 — rAF가 남은 글자 끝까지 흘려보냄
+      isStreamDone = true;
+      // 안전: rAF가 미동작이면 즉시 final flush
+      if (!rafId && bubbleAdded) {
+        setMessages(prev => {
+          const next = [...prev];
+          const last = next[next.length - 1];
+          if (last) next[next.length - 1] = { ...last, content: assistantText };
+          return next;
+        });
+      }
+      // 마지막 글자까지 노출되도록 잠시 대기 (rAF가 끝낼 시간)
+      const waitForDisplay = () => new Promise(resolve => {
+        const check = () => {
+          if (displayedLen >= assistantText.length || !bubbleAdded) resolve();
+          else requestAnimationFrame(check);
+        };
+        check();
+      });
+      if (bubbleAdded) await waitForDisplay();
 
       if (streamError) throw new Error(streamError);
       if (!bubbleAdded) {

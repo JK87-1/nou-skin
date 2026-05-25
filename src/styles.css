@@ -39,6 +39,38 @@
   animation: tapSpringPop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+/* ===== 우아한 글로벌 전환 토큰 (cubic-bezier 통일) ===== */
+:root {
+  --ease-out-smooth: cubic-bezier(0.22, 0.84, 0.36, 1);  /* iOS 자연 감속 */
+  --ease-in-out-smooth: cubic-bezier(0.45, 0.05, 0.55, 0.95);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-pop: cubic-bezier(0.34, 1.7, 0.5, 1);
+}
+/* 페이지·모달·sheet 공통 페이드인 */
+@keyframes uxFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.ux-fade-in {
+  animation: uxFadeIn 0.36s var(--ease-out-smooth) both;
+}
+/* sheet bottom slide-up — 더 부드럽게 */
+@keyframes uxSheetUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.ux-sheet-up {
+  animation: uxSheetUp 0.42s var(--ease-out-smooth) both;
+}
+/* 부드러운 image fade-in (skeleton → image) */
+@keyframes uxImgIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.ux-img-in {
+  animation: uxImgIn 0.32s ease both;
+}
+
 
 
 :root {
