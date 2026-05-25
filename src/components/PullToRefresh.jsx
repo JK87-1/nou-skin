@@ -98,8 +98,7 @@ export default function PullToRefresh({ onRefresh, children, color = '#6598ef' }
           transition: refreshing || pullY === 0 ? 'top 0.32s cubic-bezier(0.34,1.2,0.6,1)' : 'none',
         }}
       >
-        <Balloon
-          color={color}
+        <LuaStarIndicator
           progress={progress}
           reached={reached}
           refreshing={refreshing}
@@ -110,44 +109,54 @@ export default function PullToRefresh({ onRefresh, children, color = '#6598ef' }
   );
 }
 
-function Balloon({ color, progress, reached, refreshing }) {
-  // 풍선 회전·흔들림: refreshing 중엔 부드럽게 떠다님
-  const baseColor = '#cdd5e0';
-  const fill = reached || refreshing ? color : baseColor;
-  const opacity = reached || refreshing ? 1 : (0.4 + progress * 0.55);
-  const scale = 0.7 + progress * 0.3;
+function LuaStarIndicator({ progress, reached, refreshing }) {
+  const opacity = reached || refreshing ? 1 : (0.3 + progress * 0.7);
+  const scale = 0.5 + progress * 0.5;
 
   return (
     <div style={{
-      width: 46, height: 62,
-      transform: `scale(${refreshing ? 1 : scale})`,
-      transformOrigin: 'top center',
+      width: 36, height: 36,
+      position: 'relative',
+      transformStyle: 'preserve-3d',
+      transformOrigin: '44% 100%',
+      transform: refreshing
+        ? 'scale(1)'
+        : `scale(${scale})`,
       transition: refreshing ? 'transform 0.3s ease' : 'none',
-      animation: refreshing ? 'tossPtrFloat 1.6s ease-in-out infinite' : 'none',
+      animation: refreshing ? 'luaPtrFlip 1.5s ease-in-out infinite' : 'none',
+      opacity,
+      filter: reached || refreshing
+        ? 'drop-shadow(0 0 12px rgba(168,216,255,0.5))'
+        : 'none',
     }}>
       <style>{`
-        @keyframes tossPtrFloat {
-          0%, 100% { transform: translateY(0) rotate(-3deg); }
-          50% { transform: translateY(-6px) rotate(3deg); }
+        @keyframes luaPtrFlip {
+          0% { transform: scale(1) perspective(400px) rotateY(0deg); }
+          50% { transform: scale(1.05) perspective(400px) rotateY(180deg); }
+          100% { transform: scale(1) perspective(400px) rotateY(360deg); }
         }
       `}</style>
-      <svg width="46" height="62" viewBox="0 0 46 62" fill="none">
-        {/* 풍선 본체 */}
-        <ellipse cx="23" cy="22" rx="18" ry="20" fill={fill} fillOpacity={opacity} />
-        {/* 풍선 꼭지 (아래 작은 삼각) */}
-        <path d="M20.5 41 L23 44 L25.5 41 Z" fill={fill} fillOpacity={opacity} />
-        {/* 끈 — 약간 곡선 */}
-        <path
-          d="M23 44 Q21 50 23 56 Q25 60 23 62"
-          stroke={fill}
-          strokeOpacity={opacity * 0.85}
-          strokeWidth="1.4"
-          strokeLinecap="round"
-          fill="none"
-        />
-        {/* highlight */}
-        <ellipse cx="17" cy="15" rx="4" ry="6" fill="rgba(255,255,255,0.5)" opacity={opacity} />
-      </svg>
+      {/* 앞면 */}
+      <img
+        src="/luastar-ptr.svg"
+        alt=""
+        style={{
+          position: 'absolute', top: 0, left: 0,
+          width: '100%', height: '100%',
+          backfaceVisibility: 'hidden',
+        }}
+      />
+      {/* 뒷면 */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0,
+        width: '100%', height: '100%',
+        backfaceVisibility: 'hidden',
+        transform: 'rotateY(180deg)',
+        background: 'rgba(0,0,0,0.1)',
+        borderRadius: '50%',
+      }}>
+        <img src="/luastar-ptr.svg" alt="" style={{ width: '100%', height: '100%', opacity: 0.15 }} />
+      </div>
     </div>
   );
 }
