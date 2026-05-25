@@ -7,7 +7,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { SunIcon, MoonIcon, LotionIcon, PastelIcon } from '../components/icons/PastelIcons';
 import {
-  TRACKER_CATEGORIES, getProducts, saveProduct, deleteProduct,
+  TRACKER_CATEGORIES, getProducts, saveProduct, deleteProduct, toggleFavorite,
   getProductsForMode, getTrackerChecks, toggleTrackerCheck,
   getTrackerProgress, getTrackerWeekly,
   computeAllCorrelations, compressProductThumb, dedupeProductsByName, reorderProducts,
@@ -1125,9 +1125,11 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
 
 // ===== 제품 상세 시트 =====
 
-function ProductDetailSheet({ product, onClose, onDelete, onEdit, accent }) {
+function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavorite, accent }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [memo, setMemo] = useState(product.memo || '');
+  const [memoSaved, setMemoSaved] = useState(false);
   const [form, setForm] = useState({
     brand: product.brand, name: product.name,
     category: product.category, timeSlot: product.timeSlot,
@@ -1148,6 +1150,32 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, accent }) {
 
         {!editing ? (
           <>
+            {/* 상단 우측 아이콘: 즐겨찾기 · 수정 · 삭제 */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginBottom: 8 }}>
+              <div onClick={() => setEditing(true)} style={{ cursor: 'pointer', padding: 4 }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d0d0d0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+                  <path d="M13.5 6.5l4 4" />
+                </svg>
+              </div>
+              <div onClick={() => onToggleFavorite?.(product.id)} style={{ cursor: 'pointer', padding: 4, WebkitTapHighlightColor: 'transparent' }}>
+                {product.favorite ? (
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="#FFB8C8" stroke="none">
+                    <path d="M6.979 3.074a6 6 0 0 1 4.988 1.425l.037 .033l.034 -.03a6 6 0 0 1 4.733 -1.44l.246 .036a6 6 0 0 1 3.364 10.008l-.18 .185l-.048 .041l-7.45 7.379a1 1 0 0 1 -1.313 .082l-.094 -.082l-7.493 -7.422a6 6 0 0 1 3.176 -10.215z" />
+                  </svg>
+                ) : (
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d0d0d0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572" />
+                  </svg>
+                )}
+              </div>
+              <div onClick={() => setConfirmDelete(true)} style={{ cursor: 'pointer', padding: 4 }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d0d0d0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+                  <path d="M9 12l6 0" />
+                </svg>
+              </div>
+            </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
               {product.imageThumb ? (
                 <img src={product.imageThumb} alt="" style={{ width: 56, height: 56, borderRadius: 14, objectFit: 'cover' }} />
@@ -1168,15 +1196,16 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, accent }) {
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
-              <div style={{ flex: 1, borderRadius: 18, padding: '14px', textAlign: 'center', background: 'rgba(255,255,255,0.42)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 2px 12px rgba(0,0,0,0.1)' }}>
-                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>사용 기간</div>
-                <div style={{ fontSize: 20, fontWeight: 700, color: accent, fontFamily: 'var(--font-display)' }}>{days}일</div>
+            <div style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '12px 16px', marginBottom: 16,
+              background: 'rgba(0,0,0,0.02)', borderRadius: 14,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                <span style={{ fontSize: 11, fontWeight: 600, color: '#d0d0d0' }}>사용</span>
+                <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{days}일째</span>
               </div>
-              <div style={{ flex: 1, borderRadius: 18, padding: '14px', textAlign: 'center', background: 'rgba(255,255,255,0.42)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 2px 12px rgba(0,0,0,0.1)' }}>
-                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>시작일</div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}>{product.startDate}</div>
-              </div>
+              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{product.startDate} 시작</span>
             </div>
 
             {product.ingredients?.length > 0 && (
@@ -1190,29 +1219,72 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, accent }) {
               </div>
             )}
 
-            {!confirmDelete ? (
-              <div style={{ display: 'flex', gap: 10 }}>
-                <button onClick={() => setEditing(true)} style={{
-                  flex: 1, padding: '12px 0', borderRadius: 12,
-                  border: `1px solid ${accent}30`,
-                  background: 'transparent', color: accent, fontSize: 14, fontWeight: 600, cursor: 'pointer',
-                }}>수정</button>
-                <button onClick={() => setConfirmDelete(true)} style={{
-                  flex: 1, padding: '12px 0', borderRadius: 12,
-                  border: '1px solid rgba(239,68,68,0.2)',
-                  background: 'transparent', color: '#ef4444', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-                }}>삭제</button>
+            {/* 메모 */}
+            <div style={{ marginBottom: 16 }}>
+              <div style={{
+                background: 'rgba(0,0,0,0.02)', borderRadius: 12,
+                padding: '10px 14px',
+              }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: '#d0d0d0', marginBottom: 4 }}>memo</div>
+                <textarea
+                  value={memo}
+                  onChange={(e) => { setMemo(e.target.value); setMemoSaved(false); }}
+                  onBlur={() => {
+                    if (memo !== (product.memo || '')) {
+                      onEdit({ id: product.id, memo });
+                      setMemoSaved(true);
+                      setTimeout(() => setMemoSaved(false), 1500);
+                    }
+                  }}
+                  placeholder=""
+                  style={{
+                    width: '100%', minHeight: memo ? 48 : 22, padding: 0,
+                    borderRadius: 0, border: 'none',
+                    background: 'transparent',
+                    fontSize: 13, color: 'var(--text-primary)',
+                    fontFamily: 'inherit', resize: 'none', outline: 'none',
+                    lineHeight: 1.5,
+                  }}
+                />
               </div>
-            ) : (
-              <div style={{ display: 'flex', gap: 10 }}>
-                <button onClick={() => setConfirmDelete(false)} style={{
-                  flex: 1, padding: '12px 0', borderRadius: 12, border: 'var(--item-border)',
-                  background: 'transparent', color: 'var(--tag-color)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-                }}>취소</button>
-                <button onClick={() => onDelete(product.id)} style={{
-                  flex: 1, padding: '12px 0', borderRadius: 12, border: 'none',
-                  background: '#ef4444', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-                }}>삭제 확인</button>
+              {memoSaved && (
+                <div style={{ fontSize: 11, color: accent, marginTop: 4 }}>저장됨</div>
+              )}
+            </div>
+
+            {/* 삭제 확인 모달 */}
+            {confirmDelete && (
+              <div style={{
+                position: 'fixed', inset: 0, zIndex: 9999,
+                background: 'rgba(0,0,0,0.4)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                padding: 24,
+                animation: 'fadeIn 150ms ease-out',
+              }}>
+                <div style={{
+                  background: '#fff', borderRadius: 20, padding: '28px 24px 20px',
+                  width: '100%', maxWidth: 280, textAlign: 'center',
+                  boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+                }}>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>제품 삭제</div>
+                  <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 20 }}>
+                    {product.name}을(를)<br />삭제할까요?
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={() => setConfirmDelete(false)} style={{
+                      flex: 1, padding: '12px 0', borderRadius: 12,
+                      border: '1px solid rgba(0,0,0,0.08)', background: '#fff',
+                      fontSize: 14, fontWeight: 600, color: 'var(--text-muted)',
+                      cursor: 'pointer', fontFamily: 'inherit',
+                    }}>취소</button>
+                    <button onClick={() => onDelete(product.id)} style={{
+                      flex: 1, padding: '12px 0', borderRadius: 12,
+                      border: 'none', background: '#333',
+                      fontSize: 14, fontWeight: 600, color: '#fff',
+                      cursor: 'pointer', fontFamily: 'inherit',
+                    }}>삭제</button>
+                  </div>
+                </div>
               </div>
             )}
           </>
@@ -1708,42 +1780,27 @@ export default function ProductPage({ themeColors, onBack }) {
       {/* ═══ SECTION 1: 내 제품 ═══ */}
       {section === 'products' && (
         <div style={{ padding: '0 20px', animation: 'fadeUp 0.3s ease-out' }}>
-          {/* 헤더 — 등록 제품 N개 + 카테고리 미니 분포 */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>등록된 제품</span>
-            <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)' }}>{products.length}개</span>
-          </div>
-
-          {/* 제품 등록 버튼 — 등록 제품 grid 바로 위 (사용자 요청) */}
-          <div
-            ref={addBtnRef}
-            onClick={() => setShowAddSheet(true)}
-            style={{
-              padding: '13px 24px', marginBottom: 12, cursor: 'pointer',
-              background: '#6598ef', borderRadius: 16,
-              border: 'none',
-              boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-            }}
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            <span style={{ fontSize: 14, fontWeight: 700, color: '#fff', letterSpacing: -0.2 }}>제품 등록</span>
-          </div>
-
           {/* 등록 제품 grid */}
           <div style={{
             background: 'rgba(255,255,255,0.2)', borderRadius: 18,
-            padding: '6px 0', marginBottom: 16,
+            padding: '14px 14px 14px', marginBottom: 16,
           }}>
+            {/* 헤더 — 배경 영역 안 */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>등록된 제품</span>
+              <span style={{
+                fontSize: 10.5, fontWeight: 600, color: '#6598ef',
+                background: 'rgba(101,152,239,0.14)',
+                borderRadius: 8, padding: '2px 7px',
+              }}>{products.length}</span>
+            </div>
             {products.length === 0 ? (
               <div style={{ padding: '32px 16px', textAlign: 'center' }}>
                 <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>등록된 제품이 없어요</div>
-                <div style={{ fontSize: 11, color: 'var(--text-dim)' }}>위 '제품 등록' 버튼으로 추가해보세요</div>
+                <div style={{ fontSize: 11, color: 'var(--text-dim)' }}>'제품 등록' 버튼으로 추가해보세요</div>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, padding: 10 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, padding: '0 0 0' }}>
               {products.map((p, pIdx) => {
                 const cat = getCat(p.category);
                 const days = Math.max(0, Math.floor((Date.now() - new Date(p.startDate)) / 86400000));
@@ -1764,7 +1821,15 @@ export default function ProductPage({ themeColors, onBack }) {
                     boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
                     padding: 14, cursor: 'pointer',
                     display: 'flex', flexDirection: 'column',
+                    position: 'relative',
                   }}>
+                    {p.favorite && (
+                      <div style={{ position: 'absolute', top: 14, right: 14 }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="#FFB8C8" stroke="none">
+                          <path d="M6.979 3.074a6 6 0 0 1 4.988 1.425l.037 .033l.034 -.03a6 6 0 0 1 4.733 -1.44l.246 .036a6 6 0 0 1 3.364 10.008l-.18 .185l-.048 .041l-7.45 7.379a1 1 0 0 1 -1.313 .082l-.094 -.082l-7.493 -7.422a6 6 0 0 1 3.176 -10.215z" />
+                        </svg>
+                      </div>
+                    )}
                     {p.imageThumb ? (
                       <img
                         src={p.imageThumb}
@@ -1799,6 +1864,23 @@ export default function ProductPage({ themeColors, onBack }) {
               })}
               </div>
             )}
+            {/* 제품 등록 버튼 — 배경 영역 하단 */}
+            <div
+              ref={addBtnRef}
+              onClick={() => setShowAddSheet(true)}
+              style={{
+                padding: '13px 24px', marginTop: 10, cursor: 'pointer',
+                background: '#6598ef', borderRadius: 14,
+                border: 'none',
+                boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+              }}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              <span style={{ fontSize: 14, fontWeight: 700, color: '#fff', letterSpacing: -0.2 }}>제품 등록</span>
+            </div>
           </div>
 
           {/* 루틴 생성 영역 — 등록 제품 있을 때만 노출 */}
@@ -2058,6 +2140,11 @@ export default function ProductPage({ themeColors, onBack }) {
           onClose={() => setSelectedProduct(null)}
           onEdit={handleEditProduct}
           onDelete={handleDeleteProduct}
+          onToggleFavorite={(id) => {
+            const updated = toggleFavorite(id);
+            setProducts(updated.map(p => ({ ...p })));
+            setSelectedProduct(prev => prev ? { ...prev, favorite: !prev.favorite } : null);
+          }}
           accent={accent}
         />
       )}

@@ -210,6 +210,16 @@ export function getProductCount() {
   return getProducts().length;
 }
 
+export function toggleFavorite(id) {
+  const products = getProducts();
+  const idx = products.findIndex(p => p.id === id);
+  if (idx < 0) return products;
+  products[idx] = { ...products[idx], favorite: !products[idx].favorite };
+  localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
+  emitProductsChanged();
+  return products;
+}
+
 export function getProductsForMode(mode) {
   return getProducts().filter(p => p.timeSlot === mode || p.timeSlot === 'both');
 }
