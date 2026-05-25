@@ -97,6 +97,11 @@ export function saveProduct(product, opts = {}) {
     }
   }
 
+  // name 끝에 붙은 불필요한 쉼표·공백 제거
+  if (product && product.name) {
+    product = { ...product, name: product.name.replace(/[,\s]+$/, '').trim() };
+  }
+
   const products = getProducts();
   const idx = products.findIndex(p => p.id === product.id);
   if (idx >= 0) {

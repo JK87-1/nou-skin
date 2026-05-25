@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { hapticSuccess } from '../utils/haptics';
 import { TRACKER_CATEGORIES } from '../storage/TrackerStorage';
 
@@ -22,7 +23,7 @@ export default function ProductRegisteredModal({ product, totalCount, onClose })
   if (!product) return null;
   const cat = TRACKER_CATEGORIES[product.category] || TRACKER_CATEGORIES['기타'];
 
-  return (
+  return createPortal(
     <div style={{
       position: 'fixed', inset: 0, zIndex: 9600,
       background: 'rgba(15,20,30,0.66)',
@@ -143,6 +144,7 @@ export default function ProductRegisteredModal({ product, totalCount, onClose })
           }}
         >확인</button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

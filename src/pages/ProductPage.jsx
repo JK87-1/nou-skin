@@ -1733,10 +1733,7 @@ export default function ProductPage({ themeColors, onBack }) {
 
           {/* 등록 제품 grid */}
           <div style={{
-            background: 'rgba(255,255,255,0.42)', borderRadius: 18,
-            backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-            border: '1px solid rgba(255,255,255,0.4)',
-            boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+            background: 'rgba(255,255,255,0.2)', borderRadius: 18,
             padding: '6px 0', marginBottom: 16,
           }}>
             {products.length === 0 ? (
@@ -1827,61 +1824,7 @@ export default function ProductPage({ themeColors, onBack }) {
                 </button>
               ) : (
                 <div style={{ animation: 'fadeUp 0.35s ease-out' }}>
-                  {/* 헤더 + 새로고침 */}
-                  <div style={{
-                    display: 'flex', alignItems: 'center', gap: 8,
-                    padding: '0 4px', marginBottom: 12,
-                  }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{
-                          fontSize: 17, fontWeight: 700, color: 'var(--text-primary)',
-                          letterSpacing: -0.3,
-                        }}>당신의 피부에 맞는 루틴</span>
-                        <span style={{
-                          fontSize: 10, fontWeight: 600, color: '#6598ef',
-                          background: 'rgba(101,152,239,0.18)', borderRadius: 8,
-                          padding: '3px 8px', letterSpacing: -0.1,
-                        }}>표준 정렬</span>
-                      </div>
-                      <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 4 }}>
-                        등록 제품 {products.length}개 기준
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => {
-                        hapticLight();
-                        setRefreshSpinning(true);
-                        setRefreshKey(k => k + 1);
-                        setTimeout(() => setRefreshSpinning(false), 600);
-                      }}
-                      aria-label="새로고침"
-                      style={{
-                        width: 36, height: 36, borderRadius: 12,
-                        background: 'rgba(255,255,255,0.6)',
-                        border: '1px solid rgba(101,152,239,0.22)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        cursor: 'pointer', flexShrink: 0,
-                        fontFamily: 'inherit',
-                      }}
-                    >
-                      <svg
-                        width="16" height="16" viewBox="0 0 24 24" fill="none"
-                        stroke="#6598ef" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
-                        style={{
-                          transition: 'transform 0.6s cubic-bezier(0.32,0.72,0,1)',
-                          transform: refreshSpinning ? 'rotate(360deg)' : 'rotate(0deg)',
-                        }}
-                      >
-                        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
-                        <path d="M21 3v5h-5"/>
-                        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
-                        <path d="M3 21v-5h5"/>
-                      </svg>
-                    </button>
-                  </div>
-
-                  <CareRecommendation products={products} refreshKey={refreshKey} hideHeader />
+                  <CareRecommendation products={products} refreshKey={refreshKey} />
                 </div>
               )}
             </div>
