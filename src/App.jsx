@@ -76,6 +76,8 @@ export default function App() {
   const nativeCameraRef = useRef(null);
 
   const [activeTab, setActiveTab] = useState('home');
+  // pull-to-refresh로 갱신될 때 페이지 컴포넌트 강제 remount용 key
+  const [refreshKey, setRefreshKey] = useState(0);
   const [historyInitMode, setHistoryInitMode] = useState(null);
 
   const [fabChatOpen, setFabChatOpen] = useState(false);
@@ -846,7 +848,7 @@ export default function App() {
   const showTabBar = activeTab !== 'home' || stage === 'landing' || stage === 'result';
 
   return (
-    <PullToRefresh onRefresh={() => window.location.reload()}>
+    <PullToRefresh onRefresh={() => setRefreshKey(k => k + 1)}>
     <div className="app-container">
       <GlobalStyles />
       <style>{`@keyframes landingPearlReveal { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }`}</style>
@@ -998,19 +1000,19 @@ export default function App() {
 
       {/* ===== HISTORY PAGE (gallery + insights merged) ===== */}
       {activeTab === 'care' && (
-        <CarePage onBack={goToLanding} onMeasure={openCamera} onOpenConsult={() => setFabChatOpen(true)} onAddProduct={() => { setActiveTab('home'); setStage('routineTracker'); }} initialMode={historyInitMode} />
+        <CarePage key={`care-${refreshKey}`} onBack={goToLanding} onMeasure={openCamera} onOpenConsult={() => setFabChatOpen(true)} onAddProduct={() => { setActiveTab('home'); setStage('routineTracker'); }} initialMode={historyInitMode} />
       )}
 
       {activeTab === 'product' && (
-        <ProductPage colorMode={colorMode} themeColors={activeThemeColors} onBack={() => setActiveTab('home')} />
+        <ProductPage key={`product-${refreshKey}`} colorMode={colorMode} themeColors={activeThemeColors} onBack={() => setActiveTab('home')} />
       )}
 
       {activeTab === 'discover' && (
-        <DiscoverPage onMeasure={openCamera} onOpenConsult={() => setFabChatOpen(true)} />
+        <DiscoverPage key={`discover-${refreshKey}`} onMeasure={openCamera} onOpenConsult={() => setFabChatOpen(true)} />
       )}
 
       {activeTab === 'my' && (
-        <MyPage colorMode={colorMode} setColorMode={setColorMode} onThemeChange={setActiveThemeId} onMeasure={openCamera} />
+        <MyPage key={`my-${refreshKey}`} colorMode={colorMode} setColorMode={setColorMode} onThemeChange={setActiveThemeId} onMeasure={openCamera} />
       )}
 
       {/* ===== HOME TAB (stage-based sub-flow) ===== */}
@@ -1019,6 +1021,7 @@ export default function App() {
       {/* ===== ROUTINE TRACKER ===== */}
       {stage === 'routineTracker' && (
         <ProductPage
+          key={`tracker-${refreshKey}`}
           colorMode={colorMode}
           themeColors={activeThemeColors}
           onBack={() => setStage('landing')}
@@ -1027,7 +1030,7 @@ export default function App() {
 
       {/* ===== LANDING PAGE ===== */}
       {stage === 'landing' && (
-        <div>
+        <div key={`home-${refreshKey}`}>
           {/* Migration Notice */}
           {showMigration && (
             <div style={{
