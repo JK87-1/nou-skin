@@ -654,13 +654,15 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
   // ===== Auto-capture (baseline 첫 3회 자동 측정) =====
   // ready 상태로 진입 → 0.5초 안정 확인 → 3·2·1 카운트다운 (각 0.8초) → 자동 캡처.
   // 도중에 ready 깨지면(얼굴 이탈·각도 무너짐) 즉시 cancel + 카운트다운 초기화.
+  // handleCapture를 ref로 보관 — deps에 넣으면 매 렌더마다 effect 재실행되어 cancel 루프 발생 가능.
+  const handleCaptureRef = useRef(handleCapture);
+  useEffect(() => { handleCaptureRef.current = handleCapture; }, [handleCapture]);
   useEffect(() => {
     if (!autoCapture) return;
     if (status !== 'ready') {
       setAutoCountdown(null);
       return;
     }
-    // ready 진입 — 0.5초 안정 후 카운트 시작
     let cancelled = false;
     let intervalId = null;
     const stableTimer = setTimeout(() => {
@@ -673,7 +675,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
         if (n <= 0) {
           clearInterval(intervalId);
           setAutoCountdown(null);
-          handleCapture();
+          handleCaptureRef.current?.();
         } else {
           setAutoCountdown(n);
         }
@@ -685,7 +687,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
       if (intervalId) clearInterval(intervalId);
       setAutoCountdown(null);
     };
-  }, [autoCapture, status, handleCapture]);
+  }, [autoCapture, status]);
 
   // ===== Error screen =====
   if (cameraError) {
