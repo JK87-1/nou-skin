@@ -5,6 +5,7 @@ import { compressImage } from '../engine/PixelAnalysis';
 import { getProductsWithUsageContext, getRoutineSnapshot, getProducts, saveProduct as saveTrackerProduct, dedupeProductsByName } from '../storage/TrackerStorage';
 import { saveConsultSession, loadConsultSession, clearConsultSession, purgeLegacyConsultSession } from '../storage/ConsultStorage';
 import { buildRoutineRecommendation, serializeRoutineForPrompt, detectInteractions, serializeInteractionsForPrompt } from '../utils/routineBuilder';
+import { hapticLight, hapticSuccess } from '../utils/haptics';
 import { getMemoryContext, recordUserMessage } from '../storage/UserMemoryStorage';
 import { Capacitor } from '@capacitor/core';
 import { Keyboard } from '@capacitor/keyboard';
@@ -421,6 +422,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
     setAppliedRoutineKeys(prev => new Set(prev).add(messageKey));
     // 적용 직후 한 번 정리 — AI가 과거에 "토리든 토리든 …" 식으로 보낸 중복 잔재 흡수
     try { dedupeProductsByName(); } catch {}
+    hapticSuccess(); // 등록 완료 — 무게감 있는 성공 시그널
 
     // 토스트 + "케어에서 확인" 액션
     if (added > 0) {
@@ -698,6 +700,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
 
   // 메시지 컴포넌트가 props로 받는 안정된 callback들 — React.memo로 재렌더 최소화.
   const handleSendQuickReply = useCallback((opt) => {
+    hapticLight();
     setInput('');
     sendMessage(opt);
   }, [sendMessage]);

@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import GlobalStyles from './design/GlobalStyles';
 import PullToRefresh from './components/PullToRefresh';
+import { hapticLight, hapticMedium } from './utils/haptics';
 import { compressImage, clearCompressCache, analyzePixels, pixelsToScores, generateDemoScores, checkPhotoQuality, generateSmartAdvice, QUALITY_ISSUE_LABELS } from './engine/PixelAnalysis';
 import { detectLandmarks } from './engine/FaceLandmarker';
 import { callVisionAI, hybridMerge, hasBaseline, getBaselineBuildingState, getAiFallbackStats, clearAiFallbackStats } from './engine/HybridAnalysis';
@@ -434,6 +435,7 @@ export default function App() {
 
   // Smart camera opener: baseline 완료 or dismiss됐으면 바로 카메라, 아니면 온보딩
   const openCamera = useCallback(() => {
+    hapticMedium(); // 큰 액션(측정 진입) — 무게감 있게
     const bs = (() => { try { return getBaselineBuildingState(); } catch { return null; } })();
     if (bs?.stage === 'complete' && isMeasureGuideDismissed()) {
       proceedToCamera();
@@ -2554,7 +2556,8 @@ export default function App() {
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
         }}>
         <div
-          onClick={() => { setFabChatOpen(true); localStorage.setItem('fab_hint_dismissed', '1'); }}
+          className="tap-fx-strong"
+          onClick={() => { hapticLight(); setFabChatOpen(true); localStorage.setItem('fab_hint_dismissed', '1'); }}
           style={{
             position: 'relative',
             width: 58, height: 58,

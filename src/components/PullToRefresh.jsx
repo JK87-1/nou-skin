@@ -3,6 +3,7 @@
 // 풍선 인디케이터만 상단에 띄움 (children 자체는 안 움직임 → fixed 요소 영향 X).
 // 임계치(THRESHOLD) 넘기고 손가락 떼면 onRefresh 콜백(기본 window.location.reload).
 import { useEffect, useRef, useState } from 'react';
+import { hapticLight, hapticSelection } from '../utils/haptics';
 
 const THRESHOLD = 72;     // 이만큼 당기면 트리거
 const MAX_PULL = 130;     // 풍선이 더 이상 안 내려오는 한계
@@ -24,21 +25,32 @@ export default function PullToRefresh({ onRefresh, children, color = '#6598ef' }
     active.current = true;
   };
 
+  const reachedRef = useRef(false);
   const handleTouchMove = (e) => {
     if (!active.current || startY.current === null) return;
     const dy = e.touches[0].clientY - startY.current;
     if (dy <= 0) {
       setPullY(0);
+      reachedRef.current = false;
       return;
     }
     // 스크롤이 위로 벗어났으면 즉시 cancel
     if (window.scrollY > 0) {
       active.current = false;
       setPullY(0);
+      reachedRef.current = false;
       return;
     }
     const pulled = Math.min(MAX_PULL, dy / RESISTANCE);
     setPullY(pulled);
+    // 임계 도달 순간 1회 selection 진동 (토스도 이 시점에 톡 느낌)
+    const nowReached = pulled >= THRESHOLD;
+    if (nowReached && !reachedRef.current) {
+      reachedRef.current = true;
+      hapticSelection();
+    } else if (!nowReached && reachedRef.current) {
+      reachedRef.current = false;
+    }
   };
 
   const handleTouchEnd = async () => {
@@ -47,7 +59,9 @@ export default function PullToRefresh({ onRefresh, children, color = '#6598ef' }
       return;
     }
     active.current = false;
+    reachedRef.current = false;
     if (pullYRef.current >= THRESHOLD) {
+      hapticLight(); // 트리거 순간 무게감
       setRefreshing(true);
       try {
         const result = onRefresh?.();

@@ -15,7 +15,7 @@ import {
 import CareRecommendation from '../components/CareRecommendation';
 import ProductRegisteredModal from '../components/ProductRegisteredModal';
 import SwipeableRow from '../components/SwipeableRow';
-import { hapticLight } from '../utils/haptics';
+import { hapticLight, hapticSuccess } from '../utils/haptics';
 import { getAllProductThumbs, migrateThumbsFromLocalStorage } from '../storage/ImageStore';
 import { PRODUCTS } from '../data/ProductCatalog';
 import { KOREAN_PRODUCTS, POPULAR_KOREAN_PRODUCTS } from '../data/KoreanProducts';
@@ -358,6 +358,7 @@ function PhotoRegistrationFlow({ onClose, onSave, saving, accent }) {
 
   const handleSave = () => {
     if (!form.brand.trim() || !form.name.trim() || saving) return;
+    hapticSuccess();
     onSave({ ...form, imageThumb });
   };
 
@@ -1077,10 +1078,12 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
         : null,
     });
     categoryTouchedRef.current = false; // 자동완성 카테고리 보존
+    hapticLight(); // 자동완성 선택 — 톡 시그널
   };
 
   const handleSave = () => {
     if (!form.brand.trim() || !form.name.trim() || saving) return;
+    hapticSuccess();
     onSave(form);
   };
 

@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { hapticSelection } from '../utils/haptics';
 
 export default function TabBar({ activeTab, onTabChange, themeColors, colorMode }) {
   const c = (active) => active ? '#0f0f0f' : '#d0d0d0';
@@ -65,8 +66,11 @@ export default function TabBar({ activeTab, onTabChange, themeColors, colorMode 
   const renderTab = (tab) => (
     <div key={tab.key} style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
       <button
-        className={`tab-bar-item${activeTab === tab.key ? ' active' : ''}`}
-        onClick={() => onTabChange(tab.key)}
+        className={`tab-bar-item tap-fx${activeTab === tab.key ? ' active' : ''}`}
+        onClick={() => {
+          if (activeTab !== tab.key) hapticSelection();
+          onTabChange(tab.key);
+        }}
         style={{ gap: 4 }}
       >
         {tab.icon(activeTab === tab.key)}
