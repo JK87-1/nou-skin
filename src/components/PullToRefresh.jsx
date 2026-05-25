@@ -112,14 +112,16 @@ export default function PullToRefresh({ onRefresh, children, color = '#6598ef' }
           transition: refreshing || pullY === 0 ? 'top 0.32s cubic-bezier(0.34,1.2,0.6,1)' : 'none',
         }}
       >
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {/* 글로우 링 — luastar 회전과 독립 */}
+        <div style={{ position: 'relative', width: 36, height: 36 }}>
+          {/* 글로우 링 — luastar 중심(44%, 50%)에 맞춤 */}
           {(reached || refreshing) && (
             <div style={{
               position: 'absolute',
+              top: '50%', left: '44%',
               width: 60, height: 60,
               borderRadius: '50%',
               border: '1.5px solid rgba(255,255,255,0.3)',
+              transform: 'translate(-50%, -50%)',
               animation: 'luaPtrGlow 1.5s ease-in-out infinite',
               pointerEvents: 'none',
             }} />
