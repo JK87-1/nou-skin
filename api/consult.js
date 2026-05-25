@@ -1146,6 +1146,16 @@ export default async function handler(req, res) {
     res.status(200).json({ reply });
   } catch (error) {
     console.error('consult handler error:', error);
-    res.status(500).json({ error: error.message });
+    const detail = `${error?.name || 'Error'}: ${(error?.message || 'unknown').slice(0, 300)}`;
+    // SSE 헤더가 이미 설정됐다면(streaming path에서 throw) SSE 형식으로 에러 전달
+    const ct = res.getHeader && res.getHeader('Content-Type');
+    if (ct && String(ct).includes('event-stream')) {
+      try {
+        res.write(`data: ${JSON.stringify({ error: '서버 에러', detail })}\n\n`);
+        res.write(`data: [DONE]\n\n`);
+        return res.end();
+      } catch {}
+    }
+    res.status(500).json({ error: detail });
   }
 }
