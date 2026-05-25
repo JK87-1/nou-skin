@@ -208,7 +208,7 @@ function CameraErrorScreen({ reason, onFallback, onClose, onRetry, colorMode }) 
 }
 
 // ===== Main CameraCapture Component =====
-export default function CameraCapture({ onCapture, onClose, onFallback, colorMode }) {
+export default function CameraCapture({ onCapture, onClose, onFallback, colorMode, autoCapture = false }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const brightnessCanvasRef = useRef(null);
@@ -246,6 +246,8 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
   const [ellipse, setEllipse] = useState({ cx: 0, cy: 0, rx: 0, ry: 0 });
   const labelFirstShownRef = useRef(null); // timestamp when labels first appeared
   const [scanStopped, setScanStopped] = useState(false);
+  // autoCapture: baseline 첫 3회 단계에서 ready 안정 시 자동 캡처. null이면 카운트다운 X.
+  const [autoCountdown, setAutoCountdown] = useState(null); // null | 3 | 2 | 1
 
   // Cleanup: stop stream, cancel RAF
   const cleanup = useCallback(() => {
@@ -649,6 +651,42 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
     }, 600);
   }, [cleanup, onCapture, setStatus]);
 
+  // ===== Auto-capture (baseline 첫 3회 자동 측정) =====
+  // ready 상태로 진입 → 0.5초 안정 확인 → 3·2·1 카운트다운 (각 0.8초) → 자동 캡처.
+  // 도중에 ready 깨지면(얼굴 이탈·각도 무너짐) 즉시 cancel + 카운트다운 초기화.
+  useEffect(() => {
+    if (!autoCapture) return;
+    if (status !== 'ready') {
+      setAutoCountdown(null);
+      return;
+    }
+    // ready 진입 — 0.5초 안정 후 카운트 시작
+    let cancelled = false;
+    let intervalId = null;
+    const stableTimer = setTimeout(() => {
+      if (cancelled) return;
+      let n = 3;
+      setAutoCountdown(n);
+      intervalId = setInterval(() => {
+        if (cancelled) return;
+        n -= 1;
+        if (n <= 0) {
+          clearInterval(intervalId);
+          setAutoCountdown(null);
+          handleCapture();
+        } else {
+          setAutoCountdown(n);
+        }
+      }, 800);
+    }, 500);
+    return () => {
+      cancelled = true;
+      clearTimeout(stableTimer);
+      if (intervalId) clearInterval(intervalId);
+      setAutoCountdown(null);
+    };
+  }, [autoCapture, status, handleCapture]);
+
   // ===== Error screen =====
   if (cameraError) {
     return (
@@ -795,6 +833,30 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
         pointerEvents: 'none',
       }} />
 
+      {/* Auto-capture countdown — 화면 중앙 큰 숫자 (baseline 자동 측정 모드) */}
+      {autoCapture && autoCountdown != null && (
+        <div style={{
+          position: 'absolute', inset: 0, pointerEvents: 'none',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 11,
+        }}>
+          <div
+            key={autoCountdown}
+            style={{
+              width: 140, height: 140, borderRadius: '50%',
+              background: 'rgba(0,0,0,0.32)',
+              backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+              border: '2px solid rgba(255,255,255,0.7)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 78, fontWeight: 700, color: '#fff',
+              fontFamily: 'var(--font-display), Pretendard, sans-serif',
+              animation: 'countdownPop 0.45s cubic-bezier(0.34,1.56,0.64,1) both',
+            }}
+          >{autoCountdown}</div>
+          <style>{`@keyframes countdownPop { 0% { transform: scale(0.55); opacity: 0; } 60% { transform: scale(1.12); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }`}</style>
+        </div>
+      )}
+
       {/* Bottom controls */}
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0,
@@ -808,7 +870,10 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
           fontSize: 13, fontWeight: 500, textAlign: 'center', letterSpacing: 0.2,
           margin: 0, minHeight: 18, transition: 'color 0.3s',
         }}>
-          {status === 'ready' && !scanStopped ? '잠시만 기다려주세요' : STATUS_TEXT[status] || ''}
+          {autoCapture && autoCountdown != null ? '자세 유지해주세요' :
+           autoCapture && status === 'ready' ? '자세 유지하면 자동으로 촬영해요' :
+           autoCapture && status !== 'ready' && status !== 'initializing' && status !== 'capturing' && status !== 'captured' ? (STATUS_TEXT[status] || '') + ' · 자동 촬영' :
+           status === 'ready' && !scanStopped ? '잠시만 기다려주세요' : STATUS_TEXT[status] || ''}
         </p>
 
         {/* Condition indicators — inline compact */}

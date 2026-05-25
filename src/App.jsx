@@ -1412,14 +1412,21 @@ export default function App() {
       )}
 
       {/* ===== CAMERA CAPTURE ===== */}
-      {stage === 'camera' && (
-        <CameraCapture
-          onCapture={handleCameraCapture}
-          onClose={reset}
-          onFallback={() => { setStage('landing'); setTimeout(() => nativeCameraRef.current?.click(), 100); }}
-          colorMode={colorMode}
-        />
-      )}
+      {stage === 'camera' && (() => {
+        // baseline 첫 3회 단계에서만 자동 캡처 — 사용자가 버튼 안 눌러도 자세 잡히면 카운트다운 후 자동 측정.
+        // baseline 완성 후엔 평소처럼 수동 촬영 버튼 사용.
+        const buildState = (() => { try { return getBaselineBuildingState(); } catch { return null; } })();
+        const autoCapture = buildState?.stage === 'building';
+        return (
+          <CameraCapture
+            onCapture={handleCameraCapture}
+            onClose={reset}
+            onFallback={() => { setStage('landing'); setTimeout(() => nativeCameraRef.current?.click(), 100); }}
+            colorMode={colorMode}
+            autoCapture={autoCapture}
+          />
+        );
+      })()}
 
       {/* ===== SKIN MEASURE (모델 이미지 데모) ===== */}
       {stage === 'skin-measure' && (
