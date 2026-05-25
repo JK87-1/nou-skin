@@ -74,7 +74,7 @@ export default function TossLineChart({
   const PAD_X = compact ? 4 : 14;
   // 일반 모드: tooltip 상단 22px, 최고 라벨 위쪽 14px → 합 36px 정도 확보
   const PAD_Y_TOP = compact ? 6 : 34;
-  const PAD_Y_BOT = compact ? 6 : 28;
+  const PAD_Y_BOT = compact ? 6 : 42;
   const innerW = W - PAD_X * 2;
   const innerH = H - PAD_Y_TOP - PAD_Y_BOT;
 
@@ -206,62 +206,89 @@ export default function TossLineChart({
         </>
       )}
 
+      {/* Area fill — 라인 아래 부드러운 그라데이션 */}
+      <defs>
+        <linearGradient id={`area-fill-${strokeColor.replace('#','')}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={strokeColor} stopOpacity="0.2" />
+          <stop offset="100%" stopColor={strokeColor} stopOpacity="0.02" />
+        </linearGradient>
+      </defs>
+      <path
+        d={`${path} L${pts[pts.length - 1].x.toFixed(2)},${H - PAD_Y_BOT} L${pts[0].x.toFixed(2)},${H - PAD_Y_BOT} Z`}
+        fill={`url(#area-fill-${strokeColor.replace('#','')})`}
+      />
+
       {/* 메인 라인 */}
       <path
         d={path}
         fill="none"
         stroke={strokeColor}
-        strokeWidth="2.4"
+        strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
 
-      {/* 최고/최저점 — 활성 시 옅게 */}
-      {showHighLow && (
+      {/* 데이터 포인트 dot */}
+      <g opacity={active ? 0.3 : 1} style={{ transition: 'opacity 0.15s ease' }}>
+        {pts.map((p, i) => (
+          <circle key={i} cx={p.x} cy={p.y} r="3" fill="#fff" stroke={strokeColor} strokeWidth="1.5" />
+        ))}
+      </g>
+
+      {/* 최고/최저점 라벨 */}
+      {showHighLow && !hiLoSame && (
         <g opacity={active ? 0.25 : 1} style={{ transition: 'opacity 0.15s ease' }}>
-          {!hiLoSame && (
-            <g>
-              <circle cx={hi.x} cy={hi.y} r="3.5" fill={strokeColor} />
-              <text
-                x={hi.x} y={hi.y - 10}
-                textAnchor={labelAnchor(hi.x)}
-                fontSize="10.5" fontWeight="600" fill={strokeColor}
-                style={{ pointerEvents: 'none' }}
-              >
-                최고 {valueFormatter(hi.v)}
-              </text>
-            </g>
-          )}
-          <g>
-            <circle cx={lo.x} cy={lo.y} r="3.5" fill={strokeColor} opacity={hiLoSame ? 1 : 0.7} />
-            {!hiLoSame && (
-              <text
-                x={lo.x} y={lo.y + 18}
-                textAnchor={labelAnchor(lo.x)}
-                fontSize="10.5" fontWeight="600" fill={strokeColor} opacity="0.75"
-                style={{ pointerEvents: 'none' }}
-              >
-                최저 {valueFormatter(lo.v)}
-              </text>
-            )}
-          </g>
+          <circle cx={hi.x} cy={hi.y} r="4" fill={strokeColor} />
+          <text
+            x={hi.x} y={hi.y - 10}
+            textAnchor={labelAnchor(hi.x)}
+            fontSize="10.5" fontWeight="600" fill={strokeColor}
+            style={{ pointerEvents: 'none' }}
+          >최고 {valueFormatter(hi.v)}</text>
+          <circle cx={lo.x} cy={lo.y} r="4" fill={strokeColor} opacity="0.7" />
+          <text
+            x={lo.x} y={lo.y + 18}
+            textAnchor={labelAnchor(lo.x)}
+            fontSize="10.5" fontWeight="600" fill={strokeColor} opacity="0.75"
+            style={{ pointerEvents: 'none' }}
+          >최저 {valueFormatter(lo.v)}</text>
         </g>
       )}
+
+      {/* X축 날짜 라벨 — 첫/끝 + 중간점 */}
+      {(() => {
+        const labelIdxs = norm.length <= 3
+          ? pts.map((_, i) => i)
+          : [0, Math.floor(pts.length / 2), pts.length - 1];
+        return labelIdxs.map(i => {
+          const dateStr = fmtDateTime(pts[i].date);
+          if (!dateStr) return null;
+          const short = dateStr.split(' ')[0].split('.').slice(1).join('/');
+          return (
+            <text
+              key={i} x={pts[i].x} y={H - 6}
+              textAnchor={i === 0 ? 'start' : i === pts.length - 1 ? 'end' : 'middle'}
+              fontSize="9" fill="var(--text-muted)" opacity="0.6"
+              style={{ pointerEvents: 'none' }}
+            >{short}</text>
+          );
+        });
+      })()}
 
       {/* Crosshair + dot + tooltip — 활성 시 */}
       {active && (
         <g style={{ pointerEvents: 'none' }}>
-          {/* vertical crosshair */}
+          {/* vertical crosshair — 민트/그린 라인 */}
           <line
             x1={active.x} y1={PAD_Y_TOP - 4}
             x2={active.x} y2={H - PAD_Y_BOT + 4}
-            stroke="rgba(0,0,0,0.22)" strokeWidth="1" strokeDasharray="2 2"
+            stroke="rgba(101,200,180,0.5)" strokeWidth="1.5"
           />
-          {/* highlighted dot — 흰색 가운데 + accent ring */}
-          <circle cx={active.x} cy={active.y} r="6" fill="#fff" stroke={strokeColor} strokeWidth="2.2" />
+          {/* highlighted dot */}
+          <circle cx={active.x} cy={active.y} r="5" fill="#fff" stroke={strokeColor} strokeWidth="2" />
           {/* tooltip chip — 상단 */}
           <g transform={`translate(${tipX - tipW / 2}, 0)`}>
-            <rect x="0" y="0" width={tipW} height="24" rx="12" fill="rgba(20,22,28,0.92)" />
+            <rect x="0" y="0" width={tipW} height="24" rx="12" fill="rgba(50,55,65,0.88)" />
             <text
               x={tipW / 2} y="15.5"
               textAnchor="middle"

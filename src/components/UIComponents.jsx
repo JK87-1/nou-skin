@@ -61,7 +61,7 @@ export function ScoreRing({ score, size = 110, label = '종합점수' }) {
 }
 
 /* ===== Metric Bar ===== */
-export function MetricBar({ label, value, unit = '%', color, icon, description, onClick, delay = 0 }) {
+export function MetricBar({ label, value, unit = '%', color, icon, description, onClick, delay = 0, diff = null }) {
   const [width, setWidth] = useState(0);
 
   useEffect(() => {
@@ -71,21 +71,24 @@ export function MetricBar({ label, value, unit = '%', color, icon, description, 
 
   return (
     <div
-      onClick={onClick}
       style={{
         marginBottom: 8,
-        cursor: onClick ? 'pointer' : 'default',
         padding: '12px 14px',
         borderRadius: 14,
         border: 'none',
-        transition: 'background 0.2s',
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-        <span style={{ fontSize: 14, color: 'var(--text-secondary)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6 }}>{icon} {label}</span>
-        <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
+        <span onClick={onClick} style={{ fontSize: 14, color: 'var(--text-secondary)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6, cursor: onClick ? 'pointer' : 'default' }}>{icon} {label}</span>
+        <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          {diff != null && diff !== 0 && (
+            <span style={{
+              fontSize: 9, fontWeight: 600, padding: '2px 6px', borderRadius: 8,
+              background: diff > 0 ? 'rgba(78,203,113,0.12)' : 'rgba(240,160,80,0.12)',
+              color: diff > 0 ? '#4ecb71' : '#f0a050',
+            }}>{diff > 0 ? '↑' : '↓'}{Math.abs(Math.round(diff))}</span>
+          )}
           <AnimatedNumber target={value} suffix={unit} />
-          {onClick && <span style={{ fontSize: 10, color: 'var(--text-dim)', marginLeft: 5 }}>→</span>}
         </span>
       </div>
       {description && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>{description}</div>}

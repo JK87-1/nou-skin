@@ -53,7 +53,7 @@ const CONDITIONS = [
     desc: '선크림, 메이크업 없이',
     icon: (
       <svg width="21" height="21" viewBox="0 0 24 24" stroke="none">
-        <defs><linearGradient id="gBan" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#6BA0FF" /><stop offset="100%" stopColor="#4D8AFF" /></linearGradient></defs>
+        <defs><linearGradient id="gBan" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#58aefe" /><stop offset="100%" stopColor="#78bdfd" /></linearGradient></defs>
         <path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z" fill="url(#gBan)" />
         <path d="M14.5 9.5l-5 5" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
         <path d="M9.5 9.5l5 5" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
@@ -65,7 +65,7 @@ const CONDITIONS = [
     desc: '스킨케어 전 또는 스킨케어 30분 후',
     icon: (
       <svg width="21" height="21" viewBox="0 0 24 24" stroke="none">
-        <defs><linearGradient id="gDrop" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#88D8FF" /><stop offset="100%" stopColor="#6BC8FF" /></linearGradient></defs>
+        <defs><linearGradient id="gDrop" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#78bdfd" /><stop offset="100%" stopColor="#98ccfc" /></linearGradient></defs>
         <path d="M6.8 11a6 6 0 1 0 10.396 0l-5.197 -8l-5.2 8z" fill="url(#gDrop)" />
       </svg>
     ),
@@ -278,7 +278,7 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
                   }}>{c.icon}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
-                      fontSize: 15, fontWeight: 700, letterSpacing: -0.2, lineHeight: 1.5,
+                      fontSize: 15, fontWeight: 600, letterSpacing: -0.2, lineHeight: 1.5,
                       color: '#333',
                     }}>{c.title}</div>
                     <div style={{

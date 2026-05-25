@@ -86,7 +86,7 @@ function RoutineColumn({ title, subtitle, steps, totalProducts, hideHeader = fal
       {!hideHeader ? (
         <div style={{ padding: '0 4px', marginBottom: 12 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-            <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: -0.2 }}>{title}</span>
+            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.2 }}>{title}</span>
             <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{totalProducts}개</span>
           </div>
           {subtitle && (
@@ -172,8 +172,8 @@ export default function CareRecommendation({ products: productsProp, refreshKey 
         <div style={{ padding: '0 4px', marginBottom: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
             <div style={{
-              fontSize: 17, fontWeight: 700, color: 'var(--text-primary)',
-              letterSpacing: -0.3,
+              fontSize: 14, fontWeight: 600, color: 'var(--text-primary)',
+              letterSpacing: -0.2,
             }}>
               당신의 피부에 맞는 루틴
             </div>

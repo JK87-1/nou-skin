@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getLatestRecord, getPreviousRecord, getRecordCount, getRecords, getTimeSeries, getAllThumbnailsAsync } from '../storage/SkinStorage';
 import TossLineChart from '../components/TossLineChart';
 
@@ -10,12 +10,28 @@ const glass = {
   borderRadius: 20,
 };
 
-const METRICS = [
-  { key: 'elasticityScore', label: 'V라인' },
+const ALL_METRICS = [
+  { key: 'moisture', label: '수분' },
+  { key: 'skinTone', label: '피부톤' },
+  { key: 'troubleCount', label: '트러블' },
+  { key: 'oilBalance', label: '유수분' },
+  { key: 'wrinkleScore', label: '주름' },
   { key: 'poreScore', label: '모공' },
-  { key: 'moisture', label: '유수분' },
-  { key: 'skinTone', label: '홍조' },
+  { key: 'elasticityScore', label: '탄력' },
+  { key: 'pigmentationScore', label: '색소' },
+  { key: 'textureScore', label: '결' },
+  { key: 'darkCircleScore', label: '다크서클' },
 ];
+
+function getTopChangedMetrics(latest, prev, count = 4) {
+  if (!latest || !prev) return ALL_METRICS.slice(0, count);
+  const diffs = ALL_METRICS.map(m => ({
+    ...m,
+    diff: Math.abs((latest[m.key] ?? 0) - (prev[m.key] ?? 0)),
+  }));
+  diffs.sort((a, b) => b.diff - a.diff);
+  return diffs.slice(0, count);
+}
 
 const CHART_COLORS = ['#1E90E8', '#185FA5', '#7FB3E3', '#C5DEF5'];
 
@@ -34,7 +50,7 @@ function getHeadline(latest, prev) {
   if (!latest) return '첫 측정을 해볼까요?';
   if (!prev) return '기준선이 만들어졌어요. 이제 함께 변화를 따라가요.';
   let bestKey = null, bestDiff = 0;
-  for (const m of METRICS) {
+  for (const m of ALL_METRICS) {
     const diff = (latest[m.key] ?? 0) - (prev[m.key] ?? 0);
     if (Math.abs(diff) > Math.abs(bestDiff)) { bestDiff = diff; bestKey = m.label; }
   }
@@ -51,11 +67,14 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
   const [period, setPeriod] = useState('4w');
   const [impactMetric, setImpactMetric] = useState(null);
   const [showMetricDropdown, setShowMetricDropdown] = useState(false);
-  // 4주 변화 차트 — 한 번에 한 메트릭만 단일 라인으로 표시 (토스 스타일)
-  const [trendMetric, setTrendMetric] = useState(METRICS[0].key);
-
   const latest = getLatestRecord();
   const prev = getPreviousRecord();
+
+  // 이전 측정 대비 변화폭 큰 4개 메트릭 동적 선택
+  const METRICS = useMemo(() => getTopChangedMetrics(latest, prev, 4), [latest, prev]);
+
+  // 4주 변화 차트 — 한 번에 한 메트릭만 단일 라인으로 표시 (토스 스타일)
+  const [trendMetric, setTrendMetric] = useState(null);
   const records = getRecords();
   const recordCount = records.length;
   const [thumbs, setThumbs] = useState({});
@@ -67,8 +86,8 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
   // Determine default impact metric
   const selectedMetric = impactMetric || (() => {
     if (!latest || !prev) return 'poreScore';
-    let best = METRICS[0].key, bestDiff = 0;
-    for (const m of METRICS) {
+    let best = ALL_METRICS[0].key, bestDiff = 0;
+    for (const m of ALL_METRICS) {
       const d = Math.abs((latest[m.key] ?? 0) - (prev[m.key] ?? 0));
       if (d > bestDiff) { bestDiff = d; best = m.key; }
     }
@@ -178,7 +197,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
             return (
               <div style={{ margin: '0 12px 12px', ...glass, padding: '14px 14px 10px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>종합 점수 추이</span>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>종합 점수 추이</span>
                   {diffPct && Number(diffPct) !== 0 && (
                     <span style={{ fontSize: 11.5, fontWeight: 600, color: Number(diffPct) > 0 ? '#6598ef' : '#e05545' }}>
                       {Number(diffPct) > 0 ? '▲' : '▼'} {Math.abs(Number(diffPct))}%
@@ -203,8 +222,8 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
 
           {/* 측정 기록 타임라인 */}
           {recordCount > 0 && (
-            <div style={{ margin: '0 12px 12px' }}>
-              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 10, paddingLeft: 4 }}>측정 기록</div>
+            <div style={{ margin: '0 12px 12px', background: 'rgba(255,255,255,0.2)', borderRadius: 18, padding: 14 }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10 }}>측정 기록</div>
               {[...records].reverse().slice(0, 5).map((r, i) => {
                 const d = new Date(r.date);
                 const dayLabels = ['일','월','화','수','목','금','토'];
@@ -245,9 +264,9 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
           )}
 
           {/* ④ 트렌드 차트 */}
-          <div style={{ margin: '0 12px 12px', ...glass, padding: 13 }}>
+          <div style={{ margin: '0 12px 12px', background: 'rgba(255,255,255,0.2)', borderRadius: 18, padding: 14 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-              <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>
+              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
                 {period === '7d' ? '7일' : period === '4w' ? '4주' : '3개월'} 변화
               </span>
               <div style={{ display: 'flex', gap: 6 }}>
@@ -265,7 +284,8 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
             {/* 메트릭 chip — 한 번에 1개 메트릭만 단일 라인으로 (토스 스타일 가독성) */}
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
               {METRICS.map((m) => {
-                const active = trendMetric === m.key;
+                const activeTrend = trendMetric || METRICS[0]?.key;
+                const active = activeTrend === m.key;
                 return (
                   <button key={m.key} onClick={() => setTrendMetric(m.key)} style={{
                     padding: '5px 11px', borderRadius: 10, border: 'none',
@@ -285,12 +305,13 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                 </div>
               </div>
             ) : (() => {
-              const series = chartRecords.map(r => ({ date: r.date, value: r[trendMetric] ?? 50 }));
+              const activeTrendKey = trendMetric || METRICS[0]?.key;
+              const series = chartRecords.map(r => ({ date: r.date, value: r[activeTrendKey] ?? 50 }));
               const vals = series.map(s => s.value);
               const lastVal = vals[vals.length - 1];
               const firstVal = vals[0];
               const diff = lastVal - firstVal;
-              const metricLabel = METRICS.find(m => m.key === trendMetric)?.label || '';
+              const metricLabel = METRICS.find(m => m.key === activeTrendKey)?.label || '';
               return (
                 <>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 2 }}>
@@ -319,9 +340,9 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
           </div>
 
           {/* ⑤ 영향 요인 차트 */}
-          <div style={{ margin: '0 12px 12px', ...glass, padding: 13 }}>
+          <div style={{ margin: '0 12px 12px', background: 'rgba(255,255,255,0.2)', borderRadius: 18, padding: 14 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-              <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>영향 요인</span>
+              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>영향 요인</span>
               <div style={{ position: 'relative' }}>
                 <span onClick={() => setShowMetricDropdown(!showMetricDropdown)} style={{ fontSize: 10, color: 'var(--text-muted)', cursor: 'pointer' }}>
                   {METRICS.find(m => m.key === selectedMetric)?.label || '모공'} 기준 ▾
@@ -383,10 +404,8 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
           </div>
 
           {/* ⑥ lua의 발견 */}
-          <div style={{ padding: '6px 16px 8px', fontSize: 10, color: 'var(--text-muted)', fontWeight: 500, letterSpacing: 0.3, textTransform: 'uppercase' }}>
-            lua의 발견
-          </div>
-          <div style={{ margin: '0 12px 12px', ...glass, padding: 13 }}>
+          <div style={{ margin: '0 12px 12px', background: 'rgba(255,255,255,0.2)', borderRadius: 18, padding: 14 }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10 }}>lua의 발견</div>
             {recordCount < 2 ? (
               <div style={{ padding: '20px 8px', textAlign: 'center', fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
                 꾸준히 기록하면, lua가 패턴을 찾아드릴게요

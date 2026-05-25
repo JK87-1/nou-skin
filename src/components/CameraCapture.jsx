@@ -790,22 +790,23 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
             position: 'absolute', top: 'calc(56px + env(safe-area-inset-top, 0px))',
             left: '50%', transform: 'translateX(-50%)',
             padding: '6px 11px',
-            background: 'rgba(4, 44, 83, 0.78)',
+            background: 'rgba(0, 0, 0, 0.78)',
             borderRadius: 14,
             display: 'flex', alignItems: 'center', gap: 6,
             zIndex: 10,
           }}
         >
           {hasLandmarks && status === 'ready' ? (
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#7EC8E3" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#58aefe" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           ) : (
-            <div style={{ width: 5, height: 5, borderRadius: '50%', background: hasLandmarks ? '#7EC8E3' : 'rgba(255,255,255,0.4)' }} />
+            <div style={{ width: 5, height: 5, borderRadius: '50%', background: hasLandmarks ? '#58aefe' : 'rgba(255,255,255,0.4)' }} />
           )}
           <span style={{ color: '#fff', fontSize: 10, fontWeight: 500, whiteSpace: 'nowrap' }}>
-            {!hasLandmarks ? '얼굴을 가운데에 맞춰주세요' :
+            {!hasLandmarks ? '타원 안에 얼굴을 맞춰주세요' :
              isCapturing ? '결과 정리 중' :
-             status === 'ready' ? '얼굴 인식 완료 · 7개 영역' :
-             '얼굴을 가운데에 맞춰주세요'}
+             autoCapture && autoCountdown != null ? '자세 유지해주세요' :
+             status === 'ready' ? '얼굴 인식 완료' :
+             '타원 안에 얼굴을 맞춰주세요'}
           </span>
         </div>
 
@@ -831,7 +832,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
       {/* Bottom gradient overlay */}
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0, height: '30%',
-        background: 'linear-gradient(180deg, transparent 0%, rgba(135, 206, 235, 0.45) 100%)',
+        background: 'linear-gradient(180deg, transparent 0%, rgba(88, 174, 254, 0.45) 100%)',
         pointerEvents: 'none',
       }} />
 
@@ -866,17 +867,6 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
         padding: '18px 20px calc(22px + env(safe-area-inset-bottom, 0px))',
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16,
       }}>
-        {/* Status text */}
-        <p style={{
-          color: isReady && scanStopped ? '#ffffff' : isReady ? '#7EC8E3' : 'rgba(255,255,255,0.7)',
-          fontSize: 13, fontWeight: 500, textAlign: 'center', letterSpacing: 0.2,
-          margin: 0, minHeight: 18, transition: 'color 0.3s',
-        }}>
-          {autoCapture && autoCountdown != null ? '자세 유지해주세요' :
-           autoCapture && status === 'ready' ? '자세 유지하면 자동으로 촬영해요' :
-           autoCapture && status !== 'ready' && status !== 'initializing' && status !== 'capturing' && status !== 'captured' ? (STATUS_TEXT[status] || '') + ' · 자동 촬영' :
-           status === 'ready' && !scanStopped ? '잠시만 기다려주세요' : STATUS_TEXT[status] || ''}
-        </p>
 
         {/* Condition indicators — inline compact */}
         <div style={{ display: 'flex', gap: 20, justifyContent: 'center' }}>
@@ -889,7 +879,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
             <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <div style={{
                 width: 6, height: 6, borderRadius: '50%',
-                background: conditions[key] ? '#7EC8E3' : 'rgba(255,255,255,0.2)',
+                background: conditions[key] ? '#58aefe' : 'rgba(255,255,255,0.2)',
                 transition: 'all 0.3s',
               }} />
               <span style={{

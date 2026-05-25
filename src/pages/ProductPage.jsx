@@ -1759,20 +1759,26 @@ export default function ProductPage({ themeColors, onBack }) {
       `}</style>
 
       {/* Section Tabs */}
-      <div style={{ display: 'flex', gap: 8, padding: '20px 20px 16px' }}>
+      <div style={{
+        display: 'flex', gap: 4, padding: 4, margin: '20px 20px 16px',
+        background: 'rgba(255,255,255,0.35)',
+        border: '1px solid rgba(255,255,255,0.4)',
+        borderRadius: 14,
+      }}>
         {sections.map(s => {
           const active = section === s.key;
           return (
             <button key={s.key} onClick={() => setSection(s.key)} style={{
-              flex: 1, padding: '12px 0', borderRadius: 18, cursor: 'pointer',
-              fontFamily: 'inherit', fontSize: 13, fontWeight: 600, textAlign: 'center',
-              background: active ? 'rgba(255,255,255,0.42)' : 'transparent',
-              color: active ? 'var(--text-primary)' : 'var(--text-muted)',
-              backdropFilter: active ? 'blur(14px)' : 'none', WebkitBackdropFilter: active ? 'blur(14px)' : 'none',
-              border: '1px solid rgba(255,255,255,0.4)',
-              boxShadow: active ? '0 2px 12px rgba(0,0,0,0.05)' : 'none',
-              transition: 'all 0.2s',
-            }}>{s.icon} {s.label}</button>
+              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              padding: '10px 0', borderRadius: 11, cursor: 'pointer',
+              fontFamily: 'inherit', fontSize: 13.5, letterSpacing: -0.2,
+              fontWeight: active ? 700 : 500,
+              background: active ? 'rgba(255,255,255,0.85)' : 'transparent',
+              boxShadow: active ? '0 1px 4px rgba(0,0,0,0.06)' : 'none',
+              color: active ? '#6598ef' : 'var(--text-secondary)',
+              border: 'none',
+              transition: 'background 0.18s ease, color 0.18s ease',
+            }}>{s.label}</button>
           );
         })}
       </div>
@@ -2012,7 +2018,7 @@ export default function ProductPage({ themeColors, onBack }) {
         <div style={{ padding: '20px 20px 0', animation: 'fadeUp 0.3s ease-out' }}>
           <div style={{ marginBottom: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>제품별 효과 분석</span>
+              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>제품별 효과 분석</span>
               <span style={{ fontSize: 10, fontWeight: 600, color: accent, background: `${accent}15`, borderRadius: 8, padding: '3px 8px' }}>데이터 기반</span>
             </div>
             <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '4px 0 0' }}>
