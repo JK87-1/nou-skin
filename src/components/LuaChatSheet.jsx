@@ -642,7 +642,10 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
           if (payload === '[DONE]') continue;
           try {
             const evt = JSON.parse(payload);
-            if (evt.error) { streamError = evt.error; continue; }
+            if (evt.error) {
+              streamError = evt.detail ? `${evt.error} — ${evt.detail}` : evt.error;
+              continue;
+            }
             if (evt.delta) {
               assistantText += evt.delta;
               if (!bubbleAdded) {
@@ -665,10 +668,16 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
         setMessages(prev => [...prev, { role: 'assistant', content: '잠시 문제가 생겼어요. 다시 시도해주세요.', timestamp: Date.now() }]);
       }
     } catch (err) {
-      setMessages(prev => [...prev, {
-        role: 'assistant', timestamp: Date.now(),
-        content: err.message?.includes('429') ? '오늘 상담 횟수를 초과했어요. 내일 다시 이용해주세요!' : '잠시 문제가 생겼어요. 다시 시도해주세요.',
-      }]);
+      const m = err?.message || '';
+      let content;
+      if (m.includes('429')) {
+        content = '오늘 상담 횟수를 초과했어요. 내일 다시 이용해주세요!';
+      } else {
+        // 사용자가 무슨 일이 있었는지 알 수 있게 detail을 작게 첨부 (진단 용이성 ↑)
+        const detail = m ? ` (${m.slice(0, 180)})` : '';
+        content = `잠시 문제가 생겼어요. 다시 시도해주세요.${detail}`;
+      }
+      setMessages(prev => [...prev, { role: 'assistant', timestamp: Date.now(), content }]);
     } finally { setIsLoading(false); }
   }, [isLoading, buildContext, pendingImages, personaId]);
 

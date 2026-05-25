@@ -978,6 +978,9 @@ D. 기타 사진 (음식, 환경 등):
 `;
 }
 
+// Vercel function timeout — default 10s 면 SSE 첫 chunk 늦을 때 끊김. 60s로 늘림.
+export const config = { maxDuration: 60 };
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -1046,7 +1049,7 @@ export default async function handler(req, res) {
 
     // 응축 답변(3~5 문장) 강제 위한 token 축소.
     // hasImages는 이미지 분석 좀 더 길어질 수 있으니 1500 + image당 200.
-    const maxTokens = hasImages ? 1500 + (imageList.length * 200) : 1000;
+    const maxTokens = hasImages ? 1800 + (imageList.length * 200) : 1500;
     const wantsStream = req.body?.stream === true;
 
     // ===== Streaming mode (SSE) =====
@@ -1069,7 +1072,12 @@ export default async function handler(req, res) {
       });
 
       if (!upstream.ok || !upstream.body) {
-        res.write(`data: ${JSON.stringify({ error: 'AI 응답을 받지 못했어요.' })}\n\n`);
+        const detailText = await upstream.text().catch(() => '');
+        console.error('OpenAI stream error:', upstream.status, detailText.slice(0, 500));
+        res.write(`data: ${JSON.stringify({
+          error: `AI 응답 오류 (${upstream.status})`,
+          detail: detailText.slice(0, 200),
+        })}\n\n`);
         res.write(`data: [DONE]\n\n`);
         return res.end();
       }
