@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react';
 import { getRecords, getSmoothedChanges, getChanges, getLatestRecord, getStableSkinAge, getRecentTrend } from '../storage/SkinStorage';
 import { getProfile } from '../storage/ProfileStorage';
 import { compressImage } from '../engine/PixelAnalysis';
-import { getProductsWithUsageContext, getRoutineSnapshot, getProducts, saveProduct as saveTrackerProduct } from '../storage/TrackerStorage';
+import { getProductsWithUsageContext, getRoutineSnapshot, getProducts, saveProduct as saveTrackerProduct, dedupeProductsByName } from '../storage/TrackerStorage';
 import { saveConsultSession, loadConsultSession, clearConsultSession, purgeLegacyConsultSession } from '../storage/ConsultStorage';
 import { buildRoutineRecommendation, serializeRoutineForPrompt, detectInteractions, serializeInteractionsForPrompt } from '../utils/routineBuilder';
 import { getMemoryContext, recordUserMessage } from '../storage/UserMemoryStorage';
@@ -140,11 +140,23 @@ function extractQuickReply(text) {
   return { cleanText, quickReplies: options };
 }
 
-// 같은 제품(name+brand 일치)이 이미 등록됐는지 체크 — TrackerStorage.normKey와 동일 규칙
+// 같은 제품(name+brand 일치)이 이미 등록됐는지 체크 — TrackerStorage.normKey와 동일 규칙.
+// name이 brand로 시작하면 prefix 제거 후 비교 (AI 추천이 "토리든 토리든 …" 같이 중복 prefix 보내도 대응).
 function findExistingTrackerProduct(existing, item) {
+  const stripBrand = (brand, name) => {
+    if (!name || !brand) return name || '';
+    const n = name.trim();
+    const b = brand.trim();
+    if (n.toLowerCase().startsWith(b.toLowerCase())) {
+      const rest = n.slice(b.length).trim();
+      if (rest) return rest;
+    }
+    return n;
+  };
   const norm = (s) => (s || '').replace(/[\s\-_·.,+/\\()\[\]{}!?'"`~@#$%^&*=:;]+/g, '').toLowerCase();
-  const itemKey = norm(item.brand) + '|' + norm(item.name);
-  return existing.find(p => norm(p.brand) + '|' + norm(p.name) === itemKey);
+  const keyOf = (brand, name) => norm(brand) + '|' + norm(stripBrand(brand, name));
+  const itemKey = keyOf(item.brand, item.name);
+  return existing.find(p => keyOf(p.brand, p.name) === itemKey);
 }
 
 // 메시지별 무거운 작업(regex 추출 + 마크다운)을 격리하고 React.memo로 재렌더 차단.
@@ -407,6 +419,8 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
       }
     }
     setAppliedRoutineKeys(prev => new Set(prev).add(messageKey));
+    // 적용 직후 한 번 정리 — AI가 과거에 "토리든 토리든 …" 식으로 보낸 중복 잔재 흡수
+    try { dedupeProductsByName(); } catch {}
 
     // 토스트 + "케어에서 확인" 액션
     if (added > 0) {
@@ -428,7 +442,11 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
   const MAX_IMAGES = 3;
 
   // 첫 마운트 1회: 이전 단일 세션 키 정리 (페르소나 구분 없는 옛 데이터)
-  useEffect(() => { purgeLegacyConsultSession(); }, []);
+  useEffect(() => {
+    purgeLegacyConsultSession();
+    // 이전에 들어간 brand-prefix 중복 1회 정리 (마이그레이션)
+    try { dedupeProductsByName(); } catch {}
+  }, []);
 
   useEffect(() => {
     if (open) {

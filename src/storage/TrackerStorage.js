@@ -57,10 +57,27 @@ export function getProduct(id) {
   return getProducts().find(p => p.id === id) || null;
 }
 
+// name이 brand로 시작하면 brand prefix 제거. AI 추천(`[APPLY_ROUTINE]`)이
+// "토리든 토리든 다이브인…" 같이 중복 prefix를 보내도 중복 매칭이 깨지지 않게.
+function stripBrandPrefix(brand, name) {
+  if (!name || !brand) return (name || '').trim();
+  const b = brand.trim();
+  const n = name.trim();
+  if (!b) return n;
+  const nl = n.toLowerCase();
+  const bl = b.toLowerCase();
+  if (nl.startsWith(bl)) {
+    const rest = n.slice(b.length).trim();
+    if (rest) return rest;
+  }
+  return n;
+}
+
 function normKey(brand, name) {
   // 공백·하이픈·점·괄호·플러스·콤마 등 다양한 구분자 모두 제거 → 사용자가 다른 표기로 같은 제품을 등록해도 매칭됨
+  // name에서 brand prefix가 있으면 미리 제거 → "토리든 다이브인…" vs "토리든 토리든 다이브인…" 같은 키 충돌 해결
   const norm = (s) => (s || '').replace(/[\s\-_·.,+/\\()\[\]{}!?'"`~@#$%^&*=:;]+/g, '').toLowerCase();
-  return norm(brand) + '|' + norm(name);
+  return norm(brand) + '|' + norm(stripBrandPrefix(brand, name));
 }
 
 export function saveProduct(product, opts = {}) {
@@ -70,6 +87,14 @@ export function saveProduct(product, opts = {}) {
   if (product && typeof product.imageThumb === 'string' && product.imageThumb) {
     pendingThumb = product.imageThumb;
     product = { ...product, imageThumb: null };
+  }
+
+  // 입력 단계에서 name의 brand prefix 자동 정리. 저장된 데이터 자체를 깨끗하게 유지.
+  if (product && product.name && product.brand) {
+    const cleaned = stripBrandPrefix(product.brand, product.name);
+    if (cleaned !== product.name) {
+      product = { ...product, name: cleaned };
+    }
   }
 
   const products = getProducts();
