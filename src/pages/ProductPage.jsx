@@ -1721,6 +1721,7 @@ export default function ProductPage({ themeColors, onBack }) {
             style={{
               padding: '13px 24px', marginBottom: 12, cursor: 'pointer',
               background: '#6598ef', borderRadius: 16,
+              border: 'none',
               boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
             }}

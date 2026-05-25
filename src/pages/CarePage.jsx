@@ -1996,7 +1996,7 @@ function RoutineChecklist() {
               color: allChecked ? '#3D7CA8' : '#fff',
               fontSize: 14, fontWeight: 700, letterSpacing: -0.2,
               cursor: 'pointer', fontFamily: 'inherit',
-              boxShadow: allChecked ? 'none' : '0 4px 14px rgba(101,152,239,0.28)',
+              boxShadow: allChecked ? 'none' : '0 2px 12px rgba(0,0,0,0.1)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             }}
           >
