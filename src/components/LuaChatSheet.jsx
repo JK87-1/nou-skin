@@ -98,6 +98,32 @@ function extractApplyRoutine(text) {
   return { cleanText, routine: { morning, night } };
 }
 
+// ===== AI 응답에서 [QUICK_REPLY] chip 옵션 추출 =====
+// 형식: [QUICK_REPLY]옵션1|옵션2|옵션3[/QUICK_REPLY]
+// 본문에서 마커를 제거하고 옵션 배열 반환. 마커 미존재·파싱 실패 시 quickReplies=null.
+function extractQuickReply(text) {
+  if (!text) return { cleanText: text, quickReplies: null };
+  const re = /\[QUICK_REPLY\]([\s\S]*?)\[\/QUICK_REPLY\]/;
+  const m = text.match(re);
+  if (!m) {
+    // 시작 태그만 있고 닫는 태그가 아직 안 온 스트리밍 중 상황 → 본문에서 시작부터 끝까지 hide
+    const startIdx = text.indexOf('[QUICK_REPLY]');
+    if (startIdx !== -1) {
+      return { cleanText: text.slice(0, startIdx).trim(), quickReplies: null };
+    }
+    return { cleanText: text, quickReplies: null };
+  }
+  const raw = m[1] || '';
+  const options = raw.split('|')
+    .map(s => s.trim())
+    .filter(Boolean)
+    .filter(s => s.length <= 30)  // 너무 긴 옵션 방어
+    .slice(0, 5);                  // 5개 초과 방어
+  const cleanText = text.replace(re, '').replace(/\n{3,}/g, '\n\n').trim();
+  if (options.length === 0) return { cleanText, quickReplies: null };
+  return { cleanText, quickReplies: options };
+}
+
 // 같은 제품(name+brand 일치)이 이미 등록됐는지 체크 — TrackerStorage.normKey와 동일 규칙
 function findExistingTrackerProduct(existing, item) {
   const norm = (s) => (s || '').replace(/[\s\-_·.,+/\\()\[\]{}!?'"`~@#$%^&*=:;]+/g, '').toLowerCase();
@@ -745,9 +771,14 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
             const isLast = i === messages.length - 1;
 
             if (isLua) {
-              const { cleanText, routine } = extractApplyRoutine(msg.content);
+              const afterRoutine = extractApplyRoutine(msg.content);
+              const { cleanText: cleanText2, quickReplies } = extractQuickReply(afterRoutine.cleanText);
+              const cleanText = cleanText2;
+              const routine = afterRoutine.routine;
               const messageKey = msg.timestamp ? `t-${msg.timestamp}` : `i-${i}`;
               const isApplied = appliedRoutineKeys.has(messageKey);
+              // Quick reply chip은 마지막 assistant 메시지에만 + 스트리밍 끝난 뒤 + 사용자가 아직 타이핑 안 했을 때
+              const showQuickReplies = isLast && !isLoading && quickReplies && quickReplies.length > 0 && input.trim().length === 0;
               // Gemini 스타일: 버블 없음. 평문 마크다운만. 답변 아래 액션 row.
               return (
                 <div key={i} style={{ padding: '10px 2px 4px', fontSize: 16 }}>
@@ -758,6 +789,36 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
                       applied={isApplied}
                       onApply={() => handleApplyRoutine(messageKey, routine)}
                     />
+                  )}
+                  {showQuickReplies && (
+                    <div style={{
+                      display: 'flex', flexWrap: 'wrap', gap: 8,
+                      marginTop: 14, paddingTop: 2,
+                      animation: 'luaChipFadeIn 0.28s ease both',
+                    }}>
+                      <style>{`@keyframes luaChipFadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+                      {quickReplies.map((opt, qi) => (
+                        <button
+                          key={qi}
+                          type="button"
+                          className="gem-btn"
+                          onClick={() => sendMessage(opt)}
+                          style={{
+                            padding: '9px 14px',
+                            borderRadius: 18,
+                            border: '1px solid rgba(101,152,239,0.32)',
+                            background: 'rgba(101,152,239,0.08)',
+                            color: '#1F1F1F',
+                            fontSize: 14, fontWeight: 500,
+                            cursor: 'pointer', fontFamily: 'inherit',
+                            letterSpacing: -0.1,
+                            maxWidth: '100%',
+                            textAlign: 'left',
+                            lineHeight: 1.35,
+                          }}
+                        >{opt}</button>
+                      ))}
+                    </div>
                   )}
                   {!isLoading || !isLast ? (
                     <div style={{ display: 'flex', gap: 18, alignItems: 'center', marginTop: 14, paddingTop: 2 }}>
