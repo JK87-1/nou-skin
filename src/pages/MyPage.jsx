@@ -45,6 +45,34 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
   const daysTogether = (() => { if (!records.length) return 0; const first = new Date(records[records.length - 1].date); return Math.max(1, Math.floor((Date.now() - first.getTime()) / 86400000)); })();
   const initial = (profile.nickname || '?')[0].toUpperCase();
 
+  // 아바타 클릭 시 사진 등록 — MyPage 자체 ref·핸들러 (SettingsModal의 동명 ref와 무관)
+  const profilePhotoRef = useRef(null);
+  const handleProfilePhoto = useCallback((e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const size = 256;
+        const canvas = document.createElement('canvas');
+        canvas.width = size; canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        const min = Math.min(img.width, img.height);
+        const sx = (img.width - min) / 2;
+        const sy = (img.height - min) / 2;
+        ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        const next = saveProfile({ profileImage: dataUrl });
+        setProfile(next);
+        showToast('프로필 사진이 변경되었어요');
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  }, []);
+
   return (
     <div style={{ minHeight: '100dvh', paddingBottom: 64 }}>
 
@@ -945,7 +973,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                 </svg>
               </div>
             </div>
-            {/* input은 페이지 레벨(아바타 옆)에 단일 ref로 존재. 모달 중복 X */}
+            <input ref={profilePhotoRef} type="file" accept="image/*" onChange={handleProfilePhoto} style={{ display: 'none' }} />
             <div onClick={() => profilePhotoRef.current?.click()} style={{ fontSize: 10.5, color: 'var(--accent-primary, #6598ef)', fontWeight: 500, marginTop: 12, cursor: 'pointer' }}>
               {profile.profileImage ? '사진 변경' : '사진 추가'}
             </div>
