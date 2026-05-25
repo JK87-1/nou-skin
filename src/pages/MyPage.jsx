@@ -7,6 +7,7 @@ import {
 import { getRecords, getTotalChanges, getAllThumbnailsAsync, deleteRecord } from '../storage/SkinStorage';
 import { RecordDetailModal } from './CarePage';
 import { clearBaseline, hasBaseline } from '../engine/HybridAnalysis';
+import { clearAllRecords } from '../storage/SkinStorage';
 import {
   isPushSupported, isStandalone, isIOS, getPermissionState,
   subscribeToPush, saveSubscriptionToServer,
@@ -326,6 +327,8 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
   const [baselineExists, setBaselineExists] = useState(() => hasBaseline());
   const [restoreConfirm, setRestoreConfirm] = useState(null);
   const [baselineResetConfirm, setBaselineResetConfirm] = useState(false);
+  const [allRecordsResetConfirm, setAllRecordsResetConfirm] = useState(false);
+  const [allRecordsClearing, setAllRecordsClearing] = useState(false);
   const [restoring, setRestoring] = useState(false);
   const [backupGuide, setBackupGuide] = useState(null);
   const fileInputRef = useRef(null);
@@ -759,6 +762,11 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><polyline points="21 3 21 8 16 8"/><polyline points="3 21 3 16 8 16"/></svg>}
           label="측정 기준 재설정"
           onTap={() => setBaselineResetConfirm(true)}
+        />
+        <SettingsRow
+          icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#dc4444" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>}
+          label="측정 기록 전체 삭제"
+          onTap={() => setAllRecordsResetConfirm(true)}
         />
 
         <SectionHeader label="정보" />
@@ -1503,6 +1511,74 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                   boxShadow: '0 2px 8px rgba(101,152,239,0.28)',
                 }}
               >재설정</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* All Records Reset Confirm — 측정 기록 전체 삭제 (위험) */}
+      {allRecordsResetConfirm && (
+        <div
+          onClick={() => !allRecordsClearing && setAllRecordsResetConfirm(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 1002,
+            background: 'var(--bg-modal-overlay)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 24,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 360,
+              background: 'var(--bg-modal)', borderRadius: 24, padding: 24,
+              border: '1px solid var(--border-subtle)',
+            }}
+          >
+            <div style={{ fontSize: 16, fontWeight: 600, color: '#dc4444', marginBottom: 6 }}>
+              측정 기록 전체 삭제
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16, lineHeight: 1.7 }}>
+              지금까지의 <strong style={{ color: 'var(--text-secondary)' }}>모든 측정 결과·사진·측정 기준</strong>이 영구히 삭제돼요.
+              <br />
+              <span style={{ fontSize: 11, color: 'var(--text-dim)' }}>되돌릴 수 없어요. 등록한 화장품과 루틴 체크 기록·프로필은 유지됩니다.</span>
+            </div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button
+                onClick={() => setAllRecordsResetConfirm(false)}
+                disabled={allRecordsClearing}
+                style={{
+                  flex: 1, padding: 12, borderRadius: 14, border: '1px solid var(--border-subtle)',
+                  background: 'transparent', color: 'var(--text-muted)', fontSize: 14, fontWeight: 500,
+                  cursor: allRecordsClearing ? 'default' : 'pointer', fontFamily: 'inherit',
+                }}
+              >취소</button>
+              <button
+                onClick={async () => {
+                  if (allRecordsClearing) return;
+                  setAllRecordsClearing(true);
+                  try {
+                    await clearAllRecords();
+                    try { clearBaseline(); } catch {}
+                    try { localStorage.removeItem('nou_measure_guide_dismissed'); } catch {}
+                    setBaselineExists(false);
+                    setAllRecordsResetConfirm(false);
+                    showToast('모든 측정 기록이 삭제됐어요');
+                  } catch {
+                    showToast('삭제 중 문제가 생겼어요. 다시 시도해주세요.');
+                  } finally {
+                    setAllRecordsClearing(false);
+                  }
+                }}
+                disabled={allRecordsClearing}
+                style={{
+                  flex: 1, padding: 12, borderRadius: 14, border: 'none',
+                  background: allRecordsClearing ? '#888' : '#dc4444', color: '#fff',
+                  fontSize: 14, fontWeight: 600,
+                  cursor: allRecordsClearing ? 'default' : 'pointer', fontFamily: 'inherit',
+                  boxShadow: '0 2px 8px rgba(220,68,68,0.28)',
+                }}
+              >{allRecordsClearing ? '삭제 중...' : '전체 삭제'}</button>
             </div>
           </div>
         </div>
