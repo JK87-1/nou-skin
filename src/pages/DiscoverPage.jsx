@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { getLatestRecord, getPreviousRecord, getRecordCount, getRecords, getTimeSeries, getAllThumbnailsAsync } from '../storage/SkinStorage';
 import TossLineChart from '../components/TossLineChart';
+import { AnimatedNumber } from '../components/UIComponents';
 
 const glass = {
   background: 'rgba(255,255,255,0.5)',
@@ -105,7 +106,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
   })();
 
   return (
-    <div style={{ minHeight: '100dvh', paddingBottom: 100 }}>
+    <div className="ux-stagger" style={{ minHeight: '100dvh', paddingBottom: 100 }}>
 
       {/* ① 헤더 spacer */}
       <div style={{ padding: '30px 16px 4px' }} />
@@ -164,7 +165,8 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
               <div style={{ flex: 1, ...glass, padding: '14px 12px', textAlign: 'center' }}>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>피부나이 변화</div>
                 <div style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)' }}>
-                  {latest?.skinAge ?? '—'}<span style={{ fontSize: 13, color: 'var(--text-muted)' }}>세</span>
+                  {latest?.skinAge != null ? <AnimatedNumber target={latest.skinAge} duration={1000} /> : '—'}
+                  <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>세</span>
                 </div>
                 {prev && (
                   <div style={{ fontSize: 11, fontWeight: 500, marginTop: 2, color: (latest.skinAge - prev.skinAge) <= 0 ? 'var(--accent-primary)' : '#e05545' }}>
@@ -175,7 +177,8 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
               <div style={{ flex: 1, ...glass, padding: '14px 12px', textAlign: 'center' }}>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>종합점수 변화</div>
                 <div style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)' }}>
-                  {latest?.overallScore ?? '—'}<span style={{ fontSize: 13, color: 'var(--text-muted)' }}>점</span>
+                  {latest?.overallScore != null ? <AnimatedNumber target={latest.overallScore} duration={1100} /> : '—'}
+                  <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>점</span>
                 </div>
                 {prev && (
                   <div style={{ fontSize: 11, fontWeight: 500, marginTop: 2, color: (latest.overallScore - prev.overallScore) >= 0 ? 'var(--accent-primary)' : '#e05545' }}>

@@ -114,6 +114,8 @@ function MiniLineChart({ data, accent, height = 60 }) {
 // ===== Overlay wrapper =====
 
 function SheetOverlay({ onClose, children }) {
+  // mount 시 톡 진동 — 시트가 손에 도착했다는 시그널
+  useEffect(() => { hapticLight(); }, []);
   return createPortal(
     <div
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}

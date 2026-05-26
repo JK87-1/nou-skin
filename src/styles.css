@@ -71,6 +71,29 @@
   animation: uxImgIn 0.32s ease both;
 }
 
+/* 카드 순차 등장 (stagger) — 부모에 .ux-stagger, 자식들이 시간차로 슉슉 */
+@keyframes uxStaggerIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.ux-stagger > * {
+  animation: uxStaggerIn 0.42s var(--ease-out-smooth) both;
+}
+.ux-stagger > *:nth-child(1) { animation-delay: 0.04s; }
+.ux-stagger > *:nth-child(2) { animation-delay: 0.10s; }
+.ux-stagger > *:nth-child(3) { animation-delay: 0.16s; }
+.ux-stagger > *:nth-child(4) { animation-delay: 0.22s; }
+.ux-stagger > *:nth-child(5) { animation-delay: 0.28s; }
+.ux-stagger > *:nth-child(6) { animation-delay: 0.34s; }
+.ux-stagger > *:nth-child(7) { animation-delay: 0.40s; }
+.ux-stagger > *:nth-child(8) { animation-delay: 0.46s; }
+
+/* iOS 오버스크롤 — 모든 스크롤 가능 컨테이너 자연스럽게 */
+html, body {
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
 
 
 :root {
