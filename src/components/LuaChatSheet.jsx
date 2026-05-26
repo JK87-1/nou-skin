@@ -537,23 +537,55 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
     };
   }, []);
 
-  // STT init
+  // STT 강화 — continuous + interim + 무음 자동 stop + 에러 복구
+  const silenceTimerRef = useRef(null);
   useEffect(() => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) return;
     const recognition = new SR();
     recognition.lang = 'ko-KR';
-    recognition.continuous = false;
+    recognition.continuous = true;       // 길게 말해도 끊지 않음
     recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+
+    let finalText = '';
     recognition.onresult = (event) => {
-      const transcript = Array.from(event.results).map(r => r[0].transcript).join('');
-      setInput(transcript);
+      let interim = '';
+      // 이번 event부터 누적된 결과 처리
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const r = event.results[i];
+        if (r.isFinal) finalText += r[0].transcript;
+        else interim += r[0].transcript;
+      }
+      setInput((finalText + interim).trim());
+      // 새 결과 도착마다 무음 타이머 리셋 → 3초 무음 시 자동 stop
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = setTimeout(() => {
+        try { recognition.stop(); } catch {}
+      }, 3000);
     };
-    recognition.onend = () => setIsListening(false);
-    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => {
+      if (silenceTimerRef.current) { clearTimeout(silenceTimerRef.current); silenceTimerRef.current = null; }
+      setIsListening(false);
+      finalText = '';
+    };
+    recognition.onerror = (e) => {
+      if (silenceTimerRef.current) { clearTimeout(silenceTimerRef.current); silenceTimerRef.current = null; }
+      setIsListening(false);
+      // 사용자에게 명확한 알림 (no-speech·aborted·not-allowed 등)
+      if (e?.error === 'not-allowed') {
+        // 권한 거부 — 한 번만 안내
+        console.warn('[STT] microphone permission denied');
+      } else if (e?.error && e.error !== 'no-speech' && e.error !== 'aborted') {
+        console.warn('[STT] error:', e.error);
+      }
+    };
     recognitionRef.current = recognition;
     setSttSupported(true);
-    return () => { try { recognition.abort(); } catch {} };
+    return () => {
+      try { recognition.abort(); } catch {}
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+    };
   }, []);
 
   // Close attach menu on outside click
@@ -606,12 +638,34 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
     const recentHistory = records.slice(-5).map(r => ({
       date: r.date, overallScore: r.overallScore, skinAge: r.skinAge,
       moisture: r.moisture, wrinkleScore: r.wrinkleScore, elasticityScore: r.elasticityScore,
+      timestamp: r.timestamp || null,
     }));
     const changes = getSmoothedChanges() || getChanges();
     const profile = getProfile();
     const latest = getLatestRecord();
+
+    // 측정 시간대 분류 — 상담사가 시점 인식해서 답변 (아침 측정 → 자고 일어난 상태 진단 등)
+    const classifyTimeSlot = (ts) => {
+      if (!ts) return null;
+      const d = new Date(ts);
+      const h = d.getHours();
+      const ko = h >= 5 && h < 11 ? '아침'
+        : h >= 11 && h < 14 ? '점심'
+        : h >= 14 && h < 18 ? '오후'
+        : h >= 18 && h < 22 ? '저녁'
+        : '자기 전(밤)';
+      return { key: ko, hour: h, dateTime: d.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) };
+    };
+
+    // 방금 측정 (60분 이내) — 시스템 프롬프트에서 우선 짚을 수 있게
+    const measuredAt = latest?.timestamp || null;
+    const minutesSinceMeasurement = measuredAt ? Math.round((Date.now() - measuredAt) / 60000) : null;
+    const measuredJustNow = minutesSinceMeasurement != null && minutesSinceMeasurement <= 60;
+
     return {
-      currentResult: latest || null, history: recentHistory, changes,
+      currentResult: latest || null,
+      history: recentHistory,
+      changes,
       stableSkinAge: getStableSkinAge(),
       profile: { nickname: profile.nickname, birthYear: profile.birthYear, gender: profile.gender, skinType: profile.skinType },
       products: getProductsWithUsageContext(),
@@ -621,6 +675,10 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
       userMemory: getMemoryContext(),
       routineRecommendation: serializeRoutineForPrompt(buildRoutineRecommendation(latest, getProducts())),
       productInteractions: serializeInteractionsForPrompt(detectInteractions(getProducts())),
+      // 측정 시점 컨텍스트 — 상담사가 인식해서 활용
+      measurementTimeSlot: classifyTimeSlot(measuredAt),
+      minutesSinceMeasurement,
+      measuredJustNow,
     };
   }, []);
 
@@ -1160,20 +1218,38 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
               }}
             />
 
-            {/* Mic Button — 평면 회색 아이콘 (Gemini와 동일) */}
+            {/* Mic Button — 평면 회색 아이콘 + 인식 중 pulse ring */}
             {sttSupported && (
               <button
                 onClick={toggleListening}
                 disabled={isLoading}
                 className="gem-input-btn"
                 style={{
+                  position: 'relative',
                   width: 52, height: 52, borderRadius: '50%', border: 'none',
-                  background: isListening ? 'rgba(101,152,239,0.2)' : 'transparent',
+                  background: isListening ? 'rgba(101,152,239,0.18)' : 'transparent',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   cursor: 'pointer', flexShrink: 0,
-                  opacity: isLoading ? 0.5 : 1, transition: 'background 0.15s',
+                  opacity: isLoading ? 0.5 : 1, transition: 'background 0.18s',
                 }}
               >
+                {isListening && (
+                  <>
+                    <span style={{
+                      position: 'absolute', inset: 0, borderRadius: '50%',
+                      border: '2px solid #6598ef',
+                      animation: 'sttPulseA 1.4s ease-out infinite',
+                      pointerEvents: 'none',
+                    }} />
+                    <span style={{
+                      position: 'absolute', inset: 0, borderRadius: '50%',
+                      border: '2px solid #6598ef',
+                      animation: 'sttPulseA 1.4s ease-out 0.7s infinite',
+                      pointerEvents: 'none',
+                    }} />
+                    <style>{`@keyframes sttPulseA { 0% { transform: scale(1); opacity: 0.55; } 100% { transform: scale(1.6); opacity: 0; } }`}</style>
+                  </>
+                )}
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={isListening ? '#6598ef' : '#5F6368'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="9" y="2" width="6" height="11" rx="3"/><path d="M19 10v1a7 7 0 01-14 0v-1"/><line x1="12" y1="19" x2="12" y2="22"/>
                 </svg>

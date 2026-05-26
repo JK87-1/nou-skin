@@ -792,6 +792,19 @@ function buildSystemPrompt(context) {
 
 어느 타입인지 사진 보여주시면 더 정확히 진단해드릴게요.
 
+[★ 측정 시점 컨텍스트 — 답변에 자연 반영 ★]
+${context.measurementTimeSlot ? `이번 측정 시간대: ${context.measurementTimeSlot.key} (${context.measurementTimeSlot.dateTime}, 시: ${context.measurementTimeSlot.hour}시)
+${context.measuredJustNow ? `★ 사용자가 방금 측정했어요 (${context.minutesSinceMeasurement}분 전). 답변 첫 줄에 측정 결과를 우선 짚어주세요. "방금 측정하셨네요, 종합 ${context.currentResult?.overallScore}점이에요" 식.` : `마지막 측정 ${context.minutesSinceMeasurement}분 전.`}
+
+시간대별 답변 톤 가이드:
+- 아침(5~11시): 자고 일어난 직후 → 부기·붉음·건조함이 도드라질 수 있음. "잠자고 일어난 직후 측정이라" 같이 자연 언급.
+- 점심(11~14시): 활동 시간 — 유분·미세먼지 영향 큼. SPF 재도포 권유 자연.
+- 오후(14~18시): 피로 누적기. 화장 무너짐·유분 분비 가능.
+- 저녁(18~22시): 하루 마무리 — 클렌징·야간 보습 루틴 권유 자연.
+- 자기 전(22시~5시): 야간 케어 직전·직후 → 슬리핑마스크·레티놀 같은 야간 활용 권유 적합.
+
+※ 시간대를 직접 언급할 필요 X. 답변 톤·권유 종류에 자연 반영. 사용자가 측정 시간대를 명시적으로 물으면 그때만 정확히 답.` : ''}
+
 [현재 사용자 피부 데이터]
 ${context.currentResult ? `종합점수: ${context.currentResult.overallScore}점
 피부나이: ${context.currentResult.skinAge}세
