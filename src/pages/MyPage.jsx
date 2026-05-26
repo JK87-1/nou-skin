@@ -42,7 +42,12 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
 
   const glass = { background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', borderRadius: 20 };
 
-  const showToast = (msg) => { setToastMsg(msg); setToast(true); setTimeout(() => setToast(false), 2500); };
+  const showToast = (msg) => {
+    setToastMsg(msg);
+    setToast(true);
+    hapticLight();
+    setTimeout(() => setToast(false), 2500);
+  };
   const update = (key, value) => {
     // profileImage는 큰 dataURL이라 localStorage quota 위험 — state만 갱신, 영속화는 IDB(setProfileImageIDB).
     if (key === 'profileImage') {
@@ -109,7 +114,7 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
   }, []);
 
   return (
-    <div style={{ minHeight: '100dvh', paddingBottom: 64 }}>
+    <div className="ux-stagger" style={{ minHeight: '100dvh', paddingBottom: 64 }}>
 
       {/* ① 헤더 (noa style) */}
       <div style={{ padding: '12px 28px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -276,7 +281,7 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
 
       {/* Toast */}
       {toast && (
-        <div style={{ position: 'fixed', bottom: 100, left: '50%', transform: 'translateX(-50%)', background: 'var(--accent-primary, #6598ef)', color: '#fff', padding: '10px 24px', borderRadius: 20, fontSize: 13, fontWeight: 500, zIndex: 999, animation: 'fadeIn 0.2s ease' }}>{toastMsg}</div>
+        <div style={{ position: 'fixed', bottom: 100, left: '50%', background: 'var(--accent-primary, #6598ef)', color: '#fff', padding: '10px 24px', borderRadius: 20, fontSize: 13, fontWeight: 500, zIndex: 999, boxShadow: '0 6px 22px rgba(101,152,239,0.32)', animation: 'toastSpringIn 0.42s cubic-bezier(0.34, 1.7, 0.5, 1)' }}>{toastMsg}<style>{`@keyframes toastSpringIn { 0% { opacity: 0; transform: translate(-50%, 20px) scale(0.85); } 60% { opacity: 1; transform: translate(-50%, -4px) scale(1.04); } 100% { transform: translate(-50%, 0) scale(1); } }`}</style></div>
       )}
     </div>
   );

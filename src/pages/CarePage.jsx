@@ -270,7 +270,7 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
   };
 
   return (
-    <div style={{ paddingBottom: 40 }}>
+    <div className="ux-stagger" style={{ paddingBottom: 40 }}>
       {/* Record Detail Modal */}
       {selectedRecord && (
         <RecordDetailModal

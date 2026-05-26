@@ -1050,7 +1050,7 @@ export default function App() {
 
       {/* ===== LANDING PAGE ===== */}
       {stage === 'landing' && (
-        <div key={`home-${refreshKey}`}>
+        <div key={`home-${refreshKey}`} className="ux-stagger">
           {/* First screen — fills full viewport */}
           <div style={{ height: 'calc(100svh - 72px)', display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
           {/* Header with Logo + Weather Chip */}
@@ -1785,11 +1785,13 @@ export default function App() {
                 padding: '60px 14px 16px',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end',
               }}>
-                {/* 점수 */}
+                {/* 점수 — AnimatedNumber로 카운트업 */}
                 <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 4, marginBottom: 8 }}>
                   <span style={{
                     fontSize: 54, fontWeight: 500, letterSpacing: -2, lineHeight: 1, color: '#FFFFFF',
-                  }}>{result.overallScore}</span>
+                  }}>
+                    {result.overallScore != null ? <AnimatedNumber target={result.overallScore} duration={1300} /> : '—'}
+                  </span>
                   <span style={{
                     fontSize: 15, letterSpacing: -0.3, color: 'rgba(255,255,255,0.5)', marginBottom: 6,
                   }}>점</span>
