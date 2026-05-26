@@ -1764,6 +1764,9 @@ function RoutineChecklist() {
   const addedIds = myRoutines.filter(r => r.mode === addMode).map(r => r.id);
 
   const handleToggle = (id) => {
+    // 체크 상태 토글 전 현재 상태로 무게 결정
+    const wasChecked = isChecked(id);
+    if (wasChecked) hapticLight(); else hapticMedium();
     if (id.startsWith('_')) {
       // Recommended routine — selectedDate 기반 키 (지난 날짜 수정 지원)
       const key = `lua_routine_${selectedDate}`;

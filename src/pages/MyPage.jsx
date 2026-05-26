@@ -18,6 +18,7 @@ import { getLatestRecord } from '../storage/SkinStorage';
 import { getGoal, saveGoal, clearGoal, getDaysRemaining, getGoalProgress, getOverallProgress, METRIC_META } from '../storage/GoalStorage';
 import { getAllPhotosRaw, restorePhotos } from '../storage/PhotoDB';
 import { setProfileImage as setProfileImageIDB, getProfileImage as getProfileImageIDB } from '../storage/ImageStore';
+import { hapticLight, hapticWarning, hapticSuccess } from '../utils/haptics';
 import { getUserLocation } from '../storage/WeatherStorage';
 import { MoonIcon, SunIcon, CameraIcon, SaveIcon, PastelIcon } from '../components/icons/PastelIcons';
 import { TERMS_OF_SERVICE, PRIVACY_POLICY, BIOMETRIC_CONSENT, OVERSEAS_TRANSFER_CONSENT, INQUIRY_FAQ, CONTACT_EMAIL } from '../legal/legalContent';
@@ -1458,6 +1459,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               >취소</button>
               <button
                 onClick={() => {
+                  hapticWarning();
                   try { clearBaseline(); } catch {}
                   // 측정 가이드 다시 보이도록
                   try {
@@ -1520,6 +1522,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               <button
                 onClick={async () => {
                   if (allRecordsClearing) return;
+                  hapticWarning();
                   setAllRecordsClearing(true);
                   try {
                     await clearAllRecords();

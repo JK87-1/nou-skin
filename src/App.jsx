@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { toPng } from 'html-to-image';
 import GlobalStyles from './design/GlobalStyles';
 import PullToRefresh from './components/PullToRefresh';
-import { hapticLight, hapticMedium } from './utils/haptics';
+import { hapticLight, hapticMedium, hapticSuccess } from './utils/haptics';
 import { compressImage, clearCompressCache, analyzePixels, pixelsToScores, generateDemoScores, checkPhotoQuality, generateSmartAdvice, QUALITY_ISSUE_LABELS } from './engine/PixelAnalysis';
 import { detectLandmarks } from './engine/FaceLandmarker';
 import { callVisionAI, hybridMerge, hasBaseline, getBaselineBuildingState, getAiFallbackStats, clearAiFallbackStats } from './engine/HybridAnalysis';
@@ -559,7 +559,10 @@ export default function App() {
         const avg = finalScores.measureDebug.baselineCompletedAvg?.overallScore || finalScores.overallScore;
         setBaselineCompleteAvg(avg);
         // 결과 stage 진입 후 살짝 텀 두고 modal — 측정 결과를 먼저 보여준 다음 축하
-        setTimeout(() => setBaselineCompleteOpen(true), 1100);
+        setTimeout(() => {
+          hapticSuccess(); // 3회 baseline 완성 — 큰 축하 진동
+          setBaselineCompleteOpen(true);
+        }, 1100);
       }
 
       // Update saved record with advice + briefing

@@ -15,7 +15,7 @@ import {
 import CareRecommendation from '../components/CareRecommendation';
 import ProductRegisteredModal from '../components/ProductRegisteredModal';
 import SwipeableRow from '../components/SwipeableRow';
-import { hapticLight, hapticSuccess } from '../utils/haptics';
+import { hapticLight, hapticMedium, hapticSuccess, hapticWarning } from '../utils/haptics';
 import { getAllProductThumbs, migrateThumbsFromLocalStorage } from '../storage/ImageStore';
 import { PRODUCTS } from '../data/ProductCatalog';
 import { KOREAN_PRODUCTS, POPULAR_KOREAN_PRODUCTS } from '../data/KoreanProducts';
@@ -1212,7 +1212,7 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, accent }) {
                   flex: 1, padding: '12px 0', borderRadius: 12, border: 'var(--item-border)',
                   background: 'transparent', color: 'var(--tag-color)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
                 }}>취소</button>
-                <button onClick={() => onDelete(product.id)} style={{
+                <button onClick={() => { hapticWarning(); onDelete(product.id); }} style={{
                   flex: 1, padding: '12px 0', borderRadius: 12, border: 'none',
                   background: '#ef4444', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer',
                 }}>삭제 확인</button>
@@ -1647,6 +1647,9 @@ export default function RoutineTracker({ themeColors, onBack }) {
   };
 
   const handleToggleCheck = (productId) => {
+    const wasChecked = !!checks[routineMode]?.[productId];
+    // 체크 켜질 땐 무게감(medium), 해제는 가볍게(light)
+    if (wasChecked) hapticLight(); else hapticMedium();
     const updated = toggleTrackerCheck(routineMode, productId, selectedDate);
     setChecks(updated);
   };
@@ -1936,12 +1939,18 @@ export default function RoutineTracker({ themeColors, onBack }) {
                       borderBottom: idx < modeProducts.length - 1 ? ('1px solid var(--border-separator)') : 'none',
                       opacity: isChecked ? 0.6 : 1, transition: 'opacity 0.2s',
                     }}>
-                      <button onClick={() => handleToggleCheck(p.id)} style={{
-                        width: 26, height: 26, borderRadius: 8, border: 'none', cursor: 'pointer', flexShrink: 0,
-                        background: isChecked ? `linear-gradient(135deg, ${accent}cc, ${accent})` : 'var(--progress-track)',
-                        ...(isChecked ? {} : { boxShadow: 'none' }),
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s',
-                      }}>
+                      <button
+                        onClick={() => handleToggleCheck(p.id)}
+                        className="tap-fx-strong"
+                        key={`chk-${p.id}-${isChecked}`}
+                        style={{
+                          width: 26, height: 26, borderRadius: 8, border: 'none', cursor: 'pointer', flexShrink: 0,
+                          background: isChecked ? `linear-gradient(135deg, ${accent}cc, ${accent})` : 'var(--progress-track)',
+                          ...(isChecked ? {} : { boxShadow: 'none' }),
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          animation: isChecked ? 'tapSpringPop 0.34s cubic-bezier(0.34, 1.7, 0.5, 1)' : 'none',
+                        }}
+                      >
                         {isChecked && <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 7" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" /></svg>}
                       </button>
                       {p.imageThumb ? (
