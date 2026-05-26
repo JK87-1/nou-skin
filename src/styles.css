@@ -99,12 +99,8 @@ img[loading="lazy"] {
   transition: opacity 0.32s var(--ease-out-smooth);
 }
 
-/* 활성 ring — tap-fx 누를 때 미세한 발광. 누르는 위치 시각 강조 */
-.tap-fx:active,
-.tap-fx-strong:active,
-.tap-fx-subtle:active {
-  box-shadow: 0 0 0 4px rgba(101, 152, 239, 0.08);
-}
+/* (제거됨) tap-fx active 시 파란 box-shadow ring — 탭바 등에서 파란 cursor처럼 보여 제거.
+   scale + opacity 시각 피드백만으로 충분. */
 
 /* input/textarea focus — 사용자 caret만 그대로 두고 ring은 제거 (cursor로 오해 차단) */
 input:focus,
