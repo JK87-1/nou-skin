@@ -1031,18 +1031,18 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
 
   // ── 지표 ──
   const conditionMetrics = [
-    { label: '수분도', key: 'moisture', icon: <DropletIcon size={16} />, color: '#A8DEFF', unit: '%' },
-    { label: '유분', key: 'oilBalance', icon: <BubbleIcon size={16} />, color: '#F0E0A8', unit: '%' },
-    { label: '피부톤', key: 'skinTone', icon: <SparkleIcon size={16} />, color: '#FFE082' },
-    { label: '트러블', key: 'troubleCount', icon: <TargetIcon size={14} />, color: '#FFB0B0', unit: '개' },
-    { label: '다크서클', key: 'darkCircleScore', icon: <EyeIcon size={16} />, color: '#C8B8E8' },
+    { label: '수분도', key: 'moisture', icon: <DropletIcon size={14} />, color: '#a5d8ff', unit: '%' },
+    { label: '유분', key: 'oilBalance', icon: <BubbleIcon size={14} />, color: '#ffec99', unit: '%' },
+    { label: '피부톤', key: 'skinTone', icon: <SparkleIcon size={14} />, color: '#fcc2d7' },
+    { label: '트러블', key: 'troubleCount', icon: <TargetIcon size={14} />, color: '#ffc9c9', unit: '개' },
+    { label: '다크서클', key: 'darkCircleScore', icon: <EyeIcon size={14} />, color: '#bac8ff' },
   ];
   const agingMetrics = [
-    { label: '피부결', key: 'textureScore', icon: <LotionIcon size={16} />, color: '#FFB0C8' },
-    { label: '탄력', key: 'elasticityScore', icon: <DiamondIcon size={16} />, color: '#FFD080' },
-    { label: '주름', key: 'wrinkleScore', icon: <RulerIcon size={16} />, color: '#F5D0B8' },
-    { label: '모공', key: 'poreScore', icon: <MicroscopeIcon size={16} />, color: '#E8D8C8' },
-    { label: '색소', key: 'pigmentationScore', icon: <PaletteIcon size={16} />, color: '#C0A890' },
+    { label: '피부결', key: 'textureScore', icon: <LotionIcon size={14} />, color: '#ffec99' },
+    { label: '탄력', key: 'elasticityScore', icon: <DiamondIcon size={14} />, color: '#99e9f2' },
+    { label: '주름', key: 'wrinkleScore', icon: <RulerIcon size={14} />, color: '#ffd8a8' },
+    { label: '모공', key: 'poreScore', icon: <MicroscopeIcon size={14} />, color: '#c19570' },
+    { label: '색소', key: 'pigmentationScore', icon: <PaletteIcon size={14} />, color: '#ffe066' },
   ];
 
   // ── 공유 ──

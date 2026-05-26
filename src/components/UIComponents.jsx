@@ -100,17 +100,6 @@ export function MetricBar({ label, value, unit = '%', color, icon, description, 
             width: `${width}%`,
           }}
         />
-        {width > 0 && (
-          <div style={{
-            position: 'absolute', top: '50%', left: `${width}%`,
-            transform: 'translate(-50%, -50%)',
-            width: 3, height: 3, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.5)',
-            boxShadow: '0 0 3px rgba(255,255,255,0.3)',
-            transition: 'left 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
-            pointerEvents: 'none',
-          }} />
-        )}
       </div>
     </div>
   );
