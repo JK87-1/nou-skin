@@ -116,22 +116,64 @@ function MiniLineChart({ data, accent, height = 60 }) {
 function SheetOverlay({ onClose, children }) {
   // mount 시 톡 진동 — 시트가 손에 도착했다는 시그널
   useEffect(() => { hapticLight(); }, []);
+  // swipe-down to close — 시트 상단에서 아래로 스와이프하면 자연스럽게 닫힘
+  const [dragY, setDragY] = useState(0);
+  const [closing, setClosing] = useState(false);
+  const startRef = useRef(null);
+  const innerRef = useRef(null);
+
+  const handleClose = () => {
+    setClosing(true);
+    setTimeout(() => onClose(), 220);
+  };
+  const onTouchStart = (e) => {
+    // 시트 내부 스크롤이 위로 안 가있을 때만 drag 허용
+    if (innerRef.current && innerRef.current.scrollTop > 0) return;
+    startRef.current = e.touches[0].clientY;
+  };
+  const onTouchMove = (e) => {
+    if (startRef.current === null) return;
+    const dy = e.touches[0].clientY - startRef.current;
+    if (dy > 0) setDragY(dy);
+  };
+  const onTouchEnd = () => {
+    if (startRef.current === null) return;
+    if (dragY > 100) {
+      hapticLight();
+      handleClose();
+    } else {
+      setDragY(0);
+    }
+    startRef.current = null;
+  };
+
   return createPortal(
     <div
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={e => { if (e.target === e.currentTarget) handleClose(); }}
       style={{
         position: 'fixed', inset: 0, zIndex: 9999,
         background: 'rgba(0,0,0,0.5)', backdropFilter: 'none',
         display: 'flex', alignItems: 'flex-end',
-        animation: 'fadeIn 0.2s ease',
+        animation: closing ? 'fadeOut 0.22s ease forwards' : 'fadeIn 0.2s ease',
       }}
     >
-      <div style={{
-        width: '100%', borderRadius: '20px 20px 0 0',
-        maxHeight: '85dvh', overflowY: 'auto',
-        WebkitOverflowScrolling: 'touch',
-        animation: 'slideUp 0.35s cubic-bezier(0.32,0.72,0,1)',
-      }}>
+      <style>{`@keyframes fadeOut { to { opacity: 0; } }`}</style>
+      <div
+        ref={innerRef}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        style={{
+          width: '100%', borderRadius: '20px 20px 0 0',
+          maxHeight: '85dvh', overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch',
+          transform: closing ? 'translateY(100%)' : `translateY(${dragY}px)`,
+          transition: closing
+            ? 'transform 0.24s cubic-bezier(0.32,0.72,0,1)'
+            : (dragY === 0 ? 'transform 0.28s cubic-bezier(0.32,0.72,0,1)' : 'none'),
+          animation: closing ? 'none' : 'slideUp 0.35s cubic-bezier(0.32,0.72,0,1)',
+        }}
+      >
         {children}
       </div>
     </div>,

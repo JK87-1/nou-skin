@@ -94,6 +94,18 @@ html, body {
   -webkit-overflow-scrolling: touch;
 }
 
+/* lazy 이미지 부드러운 등장 — 깜빡임 줄이는 transition */
+img[loading="lazy"] {
+  transition: opacity 0.32s var(--ease-out-smooth);
+}
+
+/* 활성 ring — tap-fx 누를 때 미세한 발광. 누르는 위치 시각 강조 */
+.tap-fx:active,
+.tap-fx-strong:active,
+.tap-fx-subtle:active {
+  box-shadow: 0 0 0 4px rgba(101, 152, 239, 0.08);
+}
+
 
 
 :root {
