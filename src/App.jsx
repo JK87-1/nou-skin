@@ -2292,8 +2292,7 @@ export default function App() {
                                 className="product-item-card"
                                 style={{
                                   display: 'flex', alignItems: 'center', gap: 10,
-                                  padding: '8px 12px 8px 20px',
-                                  marginLeft: 12, marginRight: 12,
+                                  padding: '8px 12px',
                                   borderTop: '1px solid rgba(4,44,83,0.04)',
                                   textDecoration: 'none', color: 'inherit',
                                   transition: 'background 0.2s',
@@ -2360,8 +2359,7 @@ export default function App() {
                               </div>
                               {items.map((t, ti) => (
                                 <div key={t.id} style={{
-                                  padding: '8px 12px 8px 20px',
-                                  marginLeft: 12, marginRight: 12,
+                                  padding: '8px 12px',
                                   borderTop: '1px solid rgba(4,44,83,0.04)',
                                 }}>
                                   <div style={{ fontSize: 11, fontWeight: 700, color: '#555555' }}>
