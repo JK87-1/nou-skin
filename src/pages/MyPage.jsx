@@ -24,7 +24,7 @@ import { MoonIcon, SunIcon, CameraIcon, SaveIcon, PastelIcon } from '../componen
 import { TERMS_OF_SERVICE, PRIVACY_POLICY, BIOMETRIC_CONSENT, OVERSEAS_TRANSFER_CONSENT, INQUIRY_FAQ, CONTACT_EMAIL } from '../legal/legalContent';
 import SiteFooter from '../components/SiteFooter';
 
-export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSkin, onThemeChange, onMeasure }) {
+export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSkin, onThemeChange, onMeasure, onViewRecord }) {
   const [profile, setProfile] = useState(getProfile);
   const [toast, setToast] = useState(false);
   const [toastMsg, setToastMsg] = useState('저장되었습니다');
@@ -216,7 +216,7 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
                 const d = new Date(p.date);
                 const shortDate = `${String(d.getMonth()+1).padStart(2,'0')}월${String(d.getDate()).padStart(2,'0')}일`;
                 return (
-                  <div key={i} className="photo-cell" onClick={() => setSelectedPhoto(p)} style={{ cursor: 'pointer' }}>
+                  <div key={i} className="photo-cell" onClick={() => { if (onViewRecord && p.record) { onViewRecord(p.record, p.thumb); } else { setSelectedPhoto(p); } }} style={{ cursor: 'pointer' }}>
                     <img src={p.thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     <span style={{
                       position: 'absolute', bottom: 6, left: 6,
@@ -249,19 +249,6 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
         </div>
       )}
 
-      {/* 사진 상세 모달 (케어-앨범과 동일) */}
-      {selectedPhoto && selectedPhoto.record && (
-        <RecordDetailModal
-          record={selectedPhoto.record}
-          thumbnail={selectedPhoto.thumb}
-          onClose={() => setSelectedPhoto(null)}
-          onDelete={(id) => {
-            deleteRecord(id);
-            setSelectedPhoto(null);
-            getAllThumbnailsAsync().then(setThumbs);
-          }}
-        />
-      )}
 
       {/* Bio 편집 모달 */}
       {bioModal && createPortal(

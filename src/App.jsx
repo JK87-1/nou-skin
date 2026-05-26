@@ -154,6 +154,7 @@ export default function App() {
   const [colorMode, setColorModeState] = useState(() => getProfile().colorMode || 'light');
   const [colorSkin, setColorSkinState] = useState(() => getProfile().colorSkin || 'blue');
   const [userLevel, setUserLevel] = useState(() => calculateLevel(getTotalXP()));
+  const [viewingHistory, setViewingHistory] = useState(false);
   const [activeThemeId, setActiveThemeId] = useState(() => getProfile().activeTheme || null);
 
   // AI fallback 디버그 헬퍼 — 콘솔에서 window.__aiFallbackStats() 호출
@@ -1064,7 +1065,14 @@ export default function App() {
       )}
 
       {activeTab === 'my' && (
-        <MyPage key={`my-${refreshKey}`} colorMode={colorMode} setColorMode={setColorMode} colorSkin={colorSkin} setColorSkin={setColorSkin} onThemeChange={setActiveThemeId} onMeasure={openCamera} />
+        <MyPage key={`my-${refreshKey}`} colorMode={colorMode} setColorMode={setColorMode} colorSkin={colorSkin} setColorSkin={setColorSkin} onThemeChange={setActiveThemeId} onMeasure={openCamera} onViewRecord={(record, thumb) => {
+          setResult(record);
+          setImage(thumb || null);
+          setSaved(true);
+          setViewingHistory(true);
+          setActiveTab('home');
+          setStage('result');
+        }} />
       )}
 
       {/* ===== HOME TAB (stage-based sub-flow) ===== */}
@@ -1750,10 +1758,13 @@ export default function App() {
         const sigScore = result.overallScore;
         const sigLevel = sigScore >= 85 ? 'S' : sigScore >= 70 ? 'A' : sigScore >= 55 ? 'B' : sigScore >= 40 ? 'C' : 'D';
         const sigComment = getSignatureComment(result);
-        const sigDate = new Date().toLocaleDateString('sv-SE').replace(/-/g, '.');
+        const sigDate = viewingHistory && result.date
+          ? result.date.replace(/-/g, '.')
+          : new Date().toLocaleDateString('sv-SE').replace(/-/g, '.');
         const sigChange = changes?.overallScore;
         return (
         <div style={{ minHeight: '100dvh', paddingBottom: 'calc(var(--tab-bar-h, 80px) + 40px)' }}>
+          {viewingHistory && <div style={{ position: 'fixed', inset: 0, background: 'var(--sub-gradient)', zIndex: -1, pointerEvents: 'none' }} />}
 
           {/* ═══════ Nav Bar ═══════ */}
           <div style={{
@@ -1762,7 +1773,16 @@ export default function App() {
             justifyContent: 'space-between', alignItems: 'center',
             background: 'transparent',
           }}>
-            <div onClick={reset} style={{
+            <div onClick={() => {
+              if (viewingHistory) {
+                setViewingHistory(false);
+                setResult(null);
+                setStage('landing');
+                setActiveTab('my');
+              } else {
+                reset();
+              }
+            }} style={{
               width: 36, height: 36, cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
@@ -2442,44 +2462,47 @@ export default function App() {
             )}
           </div>
 
-          {/* ═══════ 다시 측정하기 (항상 표시) ═══════ */}
-          <div style={{ padding: '12px 14px 0', animation: 'fadeUp 0.5s ease-out 0.5s both' }}>
-            <button onClick={reset} style={{
-              width: '100%', padding: 12, borderRadius: 12, fontFamily: 'inherit',
-              background: '#FFFFFF', border: 'none',
-              color: '#042C53', fontSize: 13, fontWeight: 500, cursor: 'pointer',
-              boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M19.933 13.041a8 8 0 11-9.925-8.788c3.899-1 7.935 1.007 9.425 4.747"/><path d="M20 4v5h-5"/></svg>
-              다시 측정하기
-            </button>
-          </div>
+          {/* ═══════ 다시 측정하기 / 하단 액션 ═══════ */}
+          {!viewingHistory && (
+            <>
+            <div style={{ padding: '12px 14px 0', animation: 'fadeUp 0.5s ease-out 0.5s both' }}>
+              <button onClick={reset} style={{
+                width: '100%', padding: 12, borderRadius: 12, fontFamily: 'inherit',
+                background: '#FFFFFF', border: 'none',
+                color: '#042C53', fontSize: 13, fontWeight: 500, cursor: 'pointer',
+                boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M19.933 13.041a8 8 0 11-9.925-8.788c3.899-1 7.935 1.007 9.425 4.747"/><path d="M20 4v5h-5"/></svg>
+                다시 측정하기
+              </button>
+            </div>
 
-          {/* ═══════ Action Buttons ═══════ */}
-          <div style={{
-            padding: '8px 14px', display: 'flex', gap: 8,
-            paddingBottom: 'calc(var(--tab-bar-h, 80px) + 20px)',
-          }}>
-            <button onClick={() => setFabChatOpen(true)} style={{
-              flex: 1, height: 44, borderRadius: 12, border: 'none',
-              background: 'rgba(30, 144, 232, 0.1)', color: '#185FA5',
-              fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            <div style={{
+              padding: '8px 14px', display: 'flex', gap: 8,
+              paddingBottom: 'calc(var(--tab-bar-h, 80px) + 20px)',
             }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v12a1 1 0 01-1 1H6l-3 3z"/></svg>
-              lua에게 물어보기
-            </button>
-            <button onClick={handleSave} disabled={saved} style={{
-              flex: 1, height: 44, borderRadius: 12, border: 'none',
-              background: saved ? 'rgba(144,196,248,0.15)' : '#1E90E8',
-              color: saved ? '#70B0F0' : '#FFFFFF',
-              fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
-              boxShadow: saved ? 'none' : '0 2px 8px rgba(30, 144, 232, 0.25)',
+              <button onClick={() => setFabChatOpen(true)} style={{
+                flex: 1, height: 44, borderRadius: 12, border: 'none',
+                background: 'rgba(30, 144, 232, 0.1)', color: '#185FA5',
+                fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v12a1 1 0 01-1 1H6l-3 3z"/></svg>
+                lua에게 물어보기
+              </button>
+              <button onClick={handleSave} disabled={saved} style={{
+                flex: 1, height: 44, borderRadius: 12, border: 'none',
+                background: saved ? 'rgba(144,196,248,0.15)' : '#1E90E8',
+                color: saved ? '#70B0F0' : '#FFFFFF',
+                fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+                boxShadow: saved ? 'none' : '0 2px 8px rgba(30, 144, 232, 0.25)',
             }}>
               {saved ? '기록 완료 ' : '이 결과 기록하기'}
             </button>
           </div>
+            </>
+          )}
         </div>
         );
       })()}
