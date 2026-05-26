@@ -2207,7 +2207,7 @@ export default function App() {
                 <MetricBar label="유분" value={result.oilBalance} unit="%" icon={<BubbleIcon size={14} />} color="#ffec99" delay={60}
                   description={result.oilBalance >= 45 && result.oilBalance <= 65 ? '균형 상태' : result.oilBalance > 65 ? '유분 조절 필요' : '유분 보충 필요'}
                   diff={changes?.oilBalance?.diff} onClick={() => openDetail('oilBalance')} />
-                <MetricBar label="피부톤" value={result.skinTone} unit="점" icon={<RulerIcon size={13} />} color="#ffd8a8" delay={120}
+                <MetricBar label="피부톤" value={result.skinTone} unit="점" icon={<LotionIcon size={13} />} color="#ffd8a8" delay={120}
                   description={result.skinTone >= 70 ? '균일하고 밝은 톤' : '색소 관리 추천'}
                   diff={changes?.skinTone?.diff} onClick={() => openDetail('skinTone')} />
                 <MetricBar label="트러블" value={Math.max(0, 100 - result.troubleCount * 8.5)} unit="점" icon={<TargetIcon size={14} />} color="#ffc9c9" delay={180}
@@ -2234,7 +2234,7 @@ export default function App() {
                 <MetricBar label="피부결" value={result.textureScore} unit="점" icon={<SparkleIcon size={14} />} color="#fcc2d7" delay={60}
                   description={result.textureScore >= 70 ? '매끈한 피부' : result.textureScore >= 45 ? '각질 케어 추천' : '피부결 집중 관리 필요'}
                   diff={changes?.textureScore?.diff} onClick={() => openDetail('texture')} />
-                <MetricBar label="주름" value={result.wrinkleScore} unit="점" icon={<LotionIcon size={14} />} color="#ffec99" delay={120}
+                <MetricBar label="주름" value={result.wrinkleScore} unit="점" icon={<RulerIcon size={14} />} color="#ffec99" delay={120}
                   description={result.wrinkleScore >= 75 ? '매끄러운 피부' : result.wrinkleScore >= 50 ? '잔주름 관리 추천' : '주름 집중 관리 필요'}
                   diff={changes?.wrinkleScore?.diff} onClick={() => openDetail('wrinkles')} />
                 <MetricBar label="모공" value={result.poreScore} unit="점" icon={<MicroscopeIcon size={14} />} color="#ffd8a8" delay={180}
