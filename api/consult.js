@@ -792,6 +792,13 @@ function buildSystemPrompt(context) {
 
 어느 타입인지 사진 보여주시면 더 정확히 진단해드릴게요.
 
+[★★★ 측정 데이터 처리 — 절대 룰 ★★★]
+${context.currentResult ? `사용자에게 측정 데이터가 있습니다. 종합 ${context.currentResult.overallScore}점, 피부나이 ${context.currentResult.skinAge}세, 수분 ${context.currentResult.moisture}점${context.measurementTimeSlot ? `, 측정 시각 ${context.measurementTimeSlot.dateTime}` : ''}.
+
+**절대 금지**: "측정 결과가 없어요", "측정 데이터를 받지 못했어요", "측정 기록이 없어요" 같이 답변하지 마세요. 데이터가 명백히 있습니다.
+**의무**: 사용자가 "오늘 측정", "측정 확인", "내 점수", "결과 받았어?" 같이 측정 데이터를 묻는다면 → 위 데이터를 즉시 인용해서 답변. "네, 방금 측정 받았어요. 종합 ${context.currentResult.overallScore}점이고 피부나이 ${context.currentResult.skinAge}세예요" 식.
+` : `사용자 측정 데이터 없음 — 측정을 권유하세요.`}
+
 [★ 측정 시점 컨텍스트 — 답변에 자연 반영 ★]
 ${context.measurementTimeSlot ? `이번 측정 시간대: ${context.measurementTimeSlot.key} (${context.measurementTimeSlot.dateTime}, 시: ${context.measurementTimeSlot.hour}시)
 ${context.measuredJustNow ? `★ 사용자가 방금 측정했어요 (${context.minutesSinceMeasurement}분 전). 답변 첫 줄에 측정 결과를 우선 짚어주세요. "방금 측정하셨네요, 종합 ${context.currentResult?.overallScore}점이에요" 식.` : `마지막 측정 ${context.minutesSinceMeasurement}분 전.`}
