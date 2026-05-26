@@ -84,8 +84,8 @@ export function MetricBar({ label, value, unit = '%', color, icon, description, 
           {diff != null && diff !== 0 && (
             <span style={{
               fontSize: 9, fontWeight: 600, padding: '2px 6px', borderRadius: 8,
-              background: diff > 0 ? 'rgba(78,203,113,0.12)' : 'rgba(240,160,80,0.12)',
-              color: diff > 0 ? '#4ecb71' : '#f0a050',
+              background: diff > 0 ? 'rgba(144,196,248,0.15)' : 'rgba(216,168,240,0.15)',
+              color: diff > 0 ? '#70B0F0' : '#C090E0',
             }}>{diff > 0 ? '↑' : '↓'}{Math.abs(Math.round(diff))}</span>
           )}
           <AnimatedNumber target={value} suffix={unit} />

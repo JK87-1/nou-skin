@@ -136,8 +136,8 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
   // 시퀀스 자동 진행 (모든 측정 공통)
   useEffect(() => {
     const delays = isFirstMeasure
-      ? [1000, 1000, 1000, 1000, 1000, 1000] // 1/3: 조건 하나씩
-      : [800, 800, 800, 800, 800, 800];       // 2/3, 3/3: 약간 빠르게
+      ? [600, 600, 600, 600, 600, 600]
+      : [600, 600, 600, 600, 600, 500];
     let currentStep = 0;
 
     const advance = () => {
@@ -190,7 +190,7 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
       <style>{`
         @keyframes mgFadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes mgSlideUp { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes mgCondIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes mgCondIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes mgCtaFadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes mgCtaPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
       `}</style>
@@ -259,7 +259,7 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
                 key={i}
                 style={{
                   padding: '6.5px 0',
-                  animation: `mgCondIn 600ms ease both`,
+                  animation: `mgCondIn 1500ms ease-out both`,
                 }}
               >
                 <div style={{

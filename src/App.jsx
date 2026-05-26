@@ -1719,7 +1719,7 @@ export default function App() {
         const sigDate = new Date().toLocaleDateString('sv-SE').replace(/-/g, '.');
         const sigChange = changes?.overallScore;
         return (
-        <div style={{ minHeight: '100dvh', background: 'var(--bg-primary)' }}>
+        <div style={{ minHeight: '100dvh', paddingBottom: 'calc(var(--tab-bar-h, 80px) + 40px)' }}>
 
           {/* ═══════ Nav Bar ═══════ */}
           <div style={{
@@ -1732,16 +1732,16 @@ export default function App() {
               width: 36, height: 36, cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M15 18l-6-6 6-6" />
               </svg>
             </div>
             <div style={{ display: 'flex', gap: 4 }}>
               <div onClick={handleSave} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               </div>
               <div onClick={handleShare} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                <svg width="18" height="18" viewBox="0 0 179.14 159.38" fill="#fff"><path d="M107.81,145.08c-5.95,9.54-13.61,15.45-24.89,14.11-8.98-1.07-18.15-8.13-19.99-18.29l-10.46-57.69L8.12,45.62C.3,38.98-2.04,28.17,1.83,18.68,5.44,9.79,14.01,4.52,24.5,4.18L154.27.02c5.63-.18,9.81,1.28,14.32,4.05,12.07,7.42,13.33,22.07,6.09,33.69l-66.87,107.33ZM112.25,58.81l-41.93,24.22,9.49,53.03c.57,3.19,2.53,5.19,5.17,5.48,2.82.32,4.76-.7,6.42-3.37L161.03,26.14c1.27-2.05.54-4.68-.6-6.19-.9-1.19-2.67-2.49-5.2-2.41L22.6,22.01c-2.6.09-4.84,2.43-5.01,3.98-.16,1.45-.05,4.52,1.46,5.8l42.64,36.1,34.48-19.99c4.57-2.65,8.51-5.7,14.43-5.97,3.78.54,6.7,4.44,7.06,7.87.38,3.71-1.6,6.81-5.41,9.01Z"/></svg>
               </div>
             </div>
           </div>
@@ -1871,8 +1871,8 @@ export default function App() {
                             {badges.map(c => (
                               <span key={c.key} style={{
                                 fontSize: 13, padding: '3px 10px', borderRadius: 20,
-                                background: c.improved ? 'rgba(78,203,113,0.1)' : 'rgba(240,160,80,0.1)',
-                                color: c.improved ? '#4ecb71' : '#f0a050',
+                                background: c.improved ? 'rgba(144,196,248,0.15)' : 'rgba(216,168,240,0.15)',
+                                color: c.improved ? '#70B0F0' : '#C090E0',
                               }}>
                                 {c.icon} {c.label} {c.diff > 0 ? '+' : ''}{c.diff}
                               </span>
@@ -1964,9 +1964,9 @@ export default function App() {
                 {result.measureDebug.isDifferentPerson && (
                   <div style={{
                     marginTop: 10, padding: '8px 10px', borderRadius: 10,
-                    background: 'rgba(255,180,80,0.16)',
-                    border: '1px solid rgba(255,180,80,0.32)',
-                    fontSize: 11.5, color: '#A86A0F', lineHeight: 1.55,
+                    background: 'rgba(216,168,240,0.12)',
+                    border: '1px solid rgba(216,168,240,0.25)',
+                    fontSize: 11.5, color: '#9070B0', lineHeight: 1.55,
                   }}>
                     ⚠️ 이번 측정은 동일인 인식이 약했어요. 다음 측정 시 정면·자연광에서 시도해주세요.
                   </div>
@@ -1981,9 +1981,9 @@ export default function App() {
               return (
                 <div style={{
                   margin: '0 14px 10px',
-                  background: 'linear-gradient(135deg, rgba(88,174,254,0.10), rgba(138,196,254,0.08))',
-                  border: '1px solid rgba(88,174,254,0.25)',
+                  background: 'rgba(255,255,255,0.8)',
                   borderRadius: 14, padding: '14px 16px',
+                  boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)',
                   display: 'flex', gap: 10, alignItems: 'center',
                 }}>
                   <div style={{
@@ -1999,22 +1999,22 @@ export default function App() {
             }
             const sev = autoInsight.severity;
             const palette = sev === 'attention'
-              ? { bg: 'rgba(255,180,80,0.14)', border: 'rgba(255,180,80,0.35)', accent: '#C26A0F', dot: '#F0A030' }
+              ? { bg: 'rgba(216,168,240,0.12)', border: 'rgba(216,168,240,0.25)', accent: '#9070B0', dot: '#C090E0' }
               : sev === 'good'
-              ? { bg: 'rgba(160,220,170,0.16)', border: 'rgba(140,200,150,0.38)', accent: '#2E7D44', dot: '#5BB872' }
-              : { bg: 'rgba(88,174,254,0.10)', border: 'rgba(88,174,254,0.28)', accent: '#3D7CA8', dot: '#58aefe' };
+              ? { bg: 'rgba(144,196,248,0.12)', border: 'rgba(144,196,248,0.25)', accent: '#5A90C8', dot: '#90C4F8' }
+              : { bg: 'rgba(224,200,240,0.12)', border: 'rgba(224,200,240,0.25)', accent: '#8878A8', dot: '#E0C8F0' };
             return (
               <div style={{
                 margin: '0 14px 10px',
-                background: palette.bg,
-                border: `1px solid ${palette.border}`,
+                background: 'rgba(255,255,255,0.8)',
                 borderRadius: 14, padding: '14px 16px',
+                boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)',
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: palette.dot, flexShrink: 0 }} />
-                  <div style={{ fontSize: 11, fontWeight: 700, color: palette.accent, letterSpacing: 0.3 }}>AI 자동 인사이트</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: palette.dot, flexShrink: 0 }} />
+                  <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: 0.2 }}>AI 자동 인사이트</div>
                 </div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: '#042C53', marginBottom: 6, lineHeight: 1.4 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#042C53', marginBottom: 6, lineHeight: 1.4 }}>
                   {autoInsight.headline}
                 </div>
                 {autoInsight.cause && (
@@ -2024,12 +2024,12 @@ export default function App() {
                 )}
                 {autoInsight.action && (
                   <div style={{
-                    fontSize: 12, color: palette.accent, fontWeight: 600,
-                    background: 'rgba(255,255,255,0.55)',
+                    fontSize: 12, color: '#374E66', fontWeight: 500,
+                    background: 'rgba(101,152,239,0.06)',
                     padding: '8px 10px', borderRadius: 10,
                     lineHeight: 1.55, wordBreak: 'keep-all',
                   }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#6598ef" stroke="none" style={{ verticalAlign: 'middle', marginRight: 4 }}><path d="M4 11a1 1 0 0 1 .117 1.993l-.117 .007h-1a1 1 0 0 1 -.117 -1.993l.117 -.007h1zm16 0a1 1 0 0 1 .117 1.993l-.117 .007h-1a1 1 0 0 1 -.117 -1.993l.117 -.007h1zm-2.834 -6.304l.094 .083l.7 .7a1 1 0 0 1 -1.32 1.497l-.094 -.083l-.7 -.7a1 1 0 0 1 1.218 -1.567l.102 .07zm-11.332 0a1 1 0 0 1 .083 1.32l-.083 .094l-.7 .7a1 1 0 0 1 -1.497 -1.32l.083 -.094l.7 -.7a1 1 0 0 1 1.414 0zM12 2a1 1 0 0 1 .993 .883l.007 .117v1a1 1 0 0 1 -1.993 .117l-.007 -.117v-1a1 1 0 0 1 1 -1zm2 12h-4a2 2 0 0 0 -2 2v2a2 2 0 0 0 2 2h4a2 2 0 0 0 2 -2v-2a2 2 0 0 0 -2 -2zm-2 -10a6 6 0 0 1 6 6a6 6 0 0 1 -3 5.2v.8a2 2 0 0 0 -2 2h-2a2 2 0 0 0 -2 -2v-.8a6 6 0 0 1 -3 -5.2a6 6 0 0 1 6 -6z" /></svg>{autoInsight.action}
+                    {autoInsight.action}
                   </div>
                 )}
               </div>
@@ -2175,7 +2175,7 @@ export default function App() {
                   }}>
                     <span style={{ fontSize: 16, flexShrink: 0 }}></span>
                     <div>
-                      <div style={{ fontSize: 11, fontWeight: 600, color: '#f4a3bb', marginBottom: 1 }}>메이크업이 감지되었어요</div>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: '#FFB8C8', marginBottom: 1 }}>메이크업이 감지되었어요</div>
                       <div style={{ fontSize: 10, color: '#6B7F99', lineHeight: 1.4 }}>클렌징 후 다시 측정하면 더 정확한 피부 상태를 확인할 수 있어요</div>
                     </div>
                   </div>
@@ -2201,38 +2201,46 @@ export default function App() {
               <div style={{ padding: '0 16px 16px', animation: 'fadeUp 0.3s ease-out' }}>
                 {/* Condition metrics */}
                 <div style={{ fontSize: 13, fontWeight: 600, color: '#042C53', marginBottom: 8 }}>컨디션 지표</div>
-                <MetricBar label="수분도" value={result.moisture} unit="%" icon={<DropletIcon size={18} />} color="#A8DEFF"
+                <MetricBar label="수분도" value={result.moisture} unit="%" icon={<DropletIcon size={14} />} color="#a5d8ff"
                   description={result.moisture >= 60 ? '정상 범위' : '보습 강화 필요'}
                   diff={changes?.moisture?.diff} onClick={() => openDetail('moisture')} />
-                <MetricBar label="유분" value={result.oilBalance} unit="%" icon={<BubbleIcon size={18} />} color="#F0E0A8" delay={60}
+                <MetricBar label="유분" value={result.oilBalance} unit="%" icon={<BubbleIcon size={14} />} color="#ffec99" delay={60}
                   description={result.oilBalance >= 45 && result.oilBalance <= 65 ? '균형 상태' : result.oilBalance > 65 ? '유분 조절 필요' : '유분 보충 필요'}
                   diff={changes?.oilBalance?.diff} onClick={() => openDetail('oilBalance')} />
-                <MetricBar label="피부톤" value={result.skinTone} unit="점" icon={<SparkleIcon size={18} />} color="#FFE082" delay={120}
+                <MetricBar label="피부톤" value={result.skinTone} unit="점" icon={<SparkleIcon size={14} />} color="#fcc2d7" delay={120}
                   description={result.skinTone >= 70 ? '균일하고 밝은 톤' : '색소 관리 추천'}
                   diff={changes?.skinTone?.diff} onClick={() => openDetail('skinTone')} />
-                <MetricBar label="트러블" value={Math.max(0, 100 - result.troubleCount * 8.5)} unit="점" icon={<TargetIcon size={14} />} color="#FFB0B0" delay={180}
+                <MetricBar label="트러블" value={Math.max(0, 100 - result.troubleCount * 8.5)} unit="점" icon={<TargetIcon size={14} />} color="#ffc9c9" delay={180}
                   description={`${result.troubleCount}개 | ${result.troubleCount <= 2 ? '깨끗' : result.troubleCount <= 5 ? '경증' : '집중관리'}`}
                   diff={changes?.troubleCount?.diff ? -changes.troubleCount.diff * 8.5 : null} onClick={() => openDetail('trouble')} />
-                {/* 5종 분류 시각화 — 백엔드 troubleBreakdown 데이터 노출 */}
-                <TroubleBreakdownCard breakdown={result.troubleBreakdown} />
-                <MetricBar label="다크서클" value={result.darkCircleScore} unit="점" icon={<EyeIcon size={18} />} color="#C8B8E8" delay={240}
+                {result.troubleBreakdown && (result.troubleBreakdown.whitehead > 0 || result.troubleBreakdown.blackhead > 0) && (
+                  <div style={{ display: 'flex', gap: 10, padding: '2px 0 6px 22px' }}>
+                    {result.troubleBreakdown.whitehead > 0 && (
+                      <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>화이트헤드 {result.troubleBreakdown.whitehead}</span>
+                    )}
+                    {result.troubleBreakdown.blackhead > 0 && (
+                      <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>블랙헤드 {result.troubleBreakdown.blackhead}</span>
+                    )}
+                  </div>
+                )}
+                <MetricBar label="다크서클" value={result.darkCircleScore} unit="점" icon={<EyeIcon size={14} />} color="#bac8ff" delay={240}
                   description={result.darkCircleScore >= 70 ? '눈 밑 밝음' : result.darkCircleScore >= 45 ? '아이크림 추천' : '다크서클 집중 관리'}
                   diff={changes?.darkCircleScore?.diff} onClick={() => openDetail('darkCircles')} />
                 {/* Aging metrics */}
                 <div style={{ fontSize: 13, fontWeight: 600, color: '#042C53', margin: '14px 0 8px' }}>노화 지표</div>
-                <MetricBar label="피부결" value={result.textureScore} unit="점" icon={<LotionIcon size={18} />} color="#FFB0C8"
+                <MetricBar label="피부결" value={result.textureScore} unit="점" icon={<LotionIcon size={14} />} color="#ffec99"
                   description={result.textureScore >= 70 ? '매끈한 피부' : result.textureScore >= 45 ? '각질 케어 추천' : '피부결 집중 관리 필요'}
                   diff={changes?.textureScore?.diff} onClick={() => openDetail('texture')} />
-                <MetricBar label="탄력" value={result.elasticityScore} unit="점" icon={<DiamondIcon size={18} />} color="#FFD080" delay={60}
+                <MetricBar label="탄력" value={result.elasticityScore} unit="점" icon={<DiamondIcon size={14} />} color="#99e9f2" delay={60}
                   description={result.elasticityScore >= 70 ? '턱선 선명' : result.elasticityScore >= 45 ? '탄력 관리 시작' : '탄력 집중 케어 필요'}
                   diff={changes?.elasticityScore?.diff} onClick={() => openDetail('elasticity')} />
-                <MetricBar label="주름" value={result.wrinkleScore} unit="점" icon={<RulerIcon size={18} />} color="#F5D0B8" delay={120}
+                <MetricBar label="주름" value={result.wrinkleScore} unit="점" icon={<RulerIcon size={14} />} color="#ffd8a8" delay={120}
                   description={result.wrinkleScore >= 75 ? '매끄러운 피부' : result.wrinkleScore >= 50 ? '잔주름 관리 추천' : '주름 집중 관리 필요'}
                   diff={changes?.wrinkleScore?.diff} onClick={() => openDetail('wrinkles')} />
-                <MetricBar label="모공" value={result.poreScore} unit="점" icon={<MicroscopeIcon size={18} />} color="#E8D8C8" delay={180}
+                <MetricBar label="모공" value={result.poreScore} unit="점" icon={<MicroscopeIcon size={14} />} color="#c19570" delay={180}
                   description={result.poreScore >= 70 ? '미세 모공' : result.poreScore >= 45 ? '모공 축소 관리' : '넓은 모공 관리 필요'}
                   diff={changes?.poreScore?.diff} onClick={() => openDetail('pores')} />
-                <MetricBar label="색소" value={result.pigmentationScore} unit="점" icon={<PaletteIcon size={18} />} color="#C0A890" delay={240}
+                <MetricBar label="색소" value={result.pigmentationScore} unit="점" icon={<PaletteIcon size={14} />} color="#ffe066" delay={240}
                   description={result.pigmentationScore >= 70 ? '맑은 피부' : result.pigmentationScore >= 45 ? '미백 관리 추천' : '색소 집중 관리 필요'}
                   diff={changes?.pigmentationScore?.diff} onClick={() => openDetail('pigmentation')} />
               </div>
@@ -2274,14 +2282,10 @@ export default function App() {
                             overflow: 'hidden',
                           }}>
                             <div style={{
-                              display: 'flex', alignItems: 'center', gap: 8,
                               padding: '10px 12px',
                             }}>
-                              <span style={{ fontSize: 14, display: 'inline-flex' }}><PastelIcon emoji={meta.icon} size={14} /></span>
-                              <div>
-                                <div style={{ fontSize: 12, fontWeight: 600, color: '#042C53' }}>{meta.label}</div>
-                                <div style={{ fontSize: 9, color: '#6B7F99' }}>{meta.ingredient}</div>
-                              </div>
+                              <div style={{ fontSize: 12, fontWeight: 600, color: '#042C53' }}>{meta.label}</div>
+                              <div style={{ fontSize: 9, color: '#6B7F99' }}>{meta.ingredient}</div>
                             </div>
                             {products.map((product, pi) => (
                               <a key={product.id} href={product.link} target="_blank" rel="noopener noreferrer"
@@ -2345,18 +2349,14 @@ export default function App() {
                               overflow: 'hidden',
                             }}>
                               <div style={{
-                                display: 'flex', alignItems: 'center', gap: 8,
                                 padding: '10px 12px',
                               }}>
-                                <span style={{ fontSize: 14, display: 'inline-flex' }}><PastelIcon emoji={catMeta?.icon || ''} size={14} /></span>
-                                <div>
-                                  <div style={{ fontSize: 12, fontWeight: 600, color: '#042C53' }}>{catMeta?.label}</div>
-                                  {items[0]?.weakestMetric && (
-                                    <div style={{ fontSize: 9, fontWeight: 400, color: '#ef4444', marginTop: 1 }}>
-                                      {items[0].weakestMetric.label} {items[0].weakestMetric.value}점
-                                    </div>
-                                  )}
-                                </div>
+                                <div style={{ fontSize: 12, fontWeight: 600, color: '#042C53' }}>{catMeta?.label}</div>
+                                {items[0]?.weakestMetric && (
+                                  <div style={{ fontSize: 9, fontWeight: 400, color: '#6B7F99', marginTop: 1 }}>
+                                    {items[0].weakestMetric.label} {items[0].weakestMetric.value}점
+                                  </div>
+                                )}
                               </div>
                               {items.map((t, ti) => (
                                 <div key={t.id} style={{
@@ -2411,7 +2411,7 @@ export default function App() {
           </div>
 
           {/* ═══════ 다시 측정하기 (항상 표시) ═══════ */}
-          <div style={{ padding: '12px 14px 20px', animation: 'fadeUp 0.5s ease-out 0.5s both' }}>
+          <div style={{ padding: '12px 14px 0', animation: 'fadeUp 0.5s ease-out 0.5s both' }}>
             <button onClick={reset} style={{
               width: '100%', padding: 12, borderRadius: 12, fontFamily: 'inherit',
               background: '#FFFFFF', border: 'none',
@@ -2424,15 +2424,10 @@ export default function App() {
             </button>
           </div>
 
-          {/* Bottom action bar spacer */}
-          <div style={{ height: 70 }} />
-
-          {/* ═══════ Fixed Bottom Action Bar ═══════ */}
+          {/* ═══════ Action Buttons ═══════ */}
           <div style={{
-            position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 30,
-            background: '#FFFFFF', borderTop: '0.5px solid rgba(4, 44, 83, 0.08)',
-            padding: '12px 14px', display: 'flex', gap: 8,
-            paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
+            padding: '8px 14px', display: 'flex', gap: 8,
+            paddingBottom: 'calc(var(--tab-bar-h, 80px) + 20px)',
           }}>
             <button onClick={() => setFabChatOpen(true)} style={{
               flex: 1, height: 44, borderRadius: 12, border: 'none',
@@ -2445,8 +2440,8 @@ export default function App() {
             </button>
             <button onClick={handleSave} disabled={saved} style={{
               flex: 1, height: 44, borderRadius: 12, border: 'none',
-              background: saved ? 'rgba(74,222,128,0.15)' : '#1E90E8',
-              color: saved ? '#4ade80' : '#FFFFFF',
+              background: saved ? 'rgba(144,196,248,0.15)' : '#1E90E8',
+              color: saved ? '#70B0F0' : '#FFFFFF',
               fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
               boxShadow: saved ? 'none' : '0 2px 8px rgba(30, 144, 232, 0.25)',
             }}>

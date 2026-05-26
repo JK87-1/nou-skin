@@ -1118,12 +1118,12 @@ select:focus-visible {
   z-index: 100;
 }
 
-/* Top light shimmer — disabled */
+/* Disabled — no shimmer */
 .tab-bar::before {
   display: none;
 }
 
-/* Center ambient glow — disabled */
+/* Disabled */
 .tab-bar::after {
   display: none;
 }
