@@ -652,21 +652,9 @@ export default function App() {
         if (goalResult.achieved) {
           setTimeout(() => setShowCelebration(true), 1200);
         }
-        // Badge & XP: measurement completed
-        const xpResult = addXP(50, '피부 측정 완료');
         const hour = new Date().getHours();
         if (hour >= 22 || hour < 5) incrementStat('nightMeasure');
         if (hour >= 5 && hour < 10) incrementStat('morningMeasure');
-        const badgeResult = checkAndAwardBadges();
-        if (badgeResult.newBadges.length > 0) {
-          setTimeout(() => setCelebrateBadge(badgeResult.newBadges[0]), 1500);
-        }
-        // Auto-upgrade title on level-up
-        if (xpResult.levelUp) {
-          const newTitle = getLevelTitleData(xpResult.newLevel);
-          saveProfile({ selectedTitleLevel: newTitle.level });
-          setUserLevel(xpResult.newLevel);
-        }
         // Submit score to ranking server
         const freshLevel = getLevel();
         fetch('/api/ranking', {
@@ -748,17 +736,6 @@ export default function App() {
           setShowSaveToast(true);
           setTimeout(() => setShowSaveToast(false), 2500);
           updateGoalProgress(scores);
-          const demoXpResult = addXP(50, '피부 측정 완료');
-          const badgeResult = checkAndAwardBadges();
-          if (badgeResult.newBadges.length > 0) {
-            setTimeout(() => setCelebrateBadge(badgeResult.newBadges[0]), 1500);
-          }
-          // Auto-upgrade title on level-up
-          if (demoXpResult.levelUp) {
-            const newTitle = getLevelTitleData(demoXpResult.newLevel);
-            saveProfile({ selectedTitleLevel: newTitle.level });
-            setUserLevel(demoXpResult.newLevel);
-          }
           // Submit score to ranking server
           const prof = getProfile();
           fetch('/api/ranking', {
@@ -2591,13 +2568,12 @@ export default function App() {
               maxWidth: 340,
             }}
           >
-            <div style={{ fontSize: 64, marginBottom: 16, animation: 'celebrate-bounce 0.6s ease' }}></div>
             <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>
-              목표를 달성했어요!
+              목표에 도달했어요
             </div>
             <div style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 8 }}>
-              설정한 모든 피부 목표를 달성했어요.
-              <br />꾸준한 관리의 결과예요!
+              설정한 피부 목표를 모두 달성했어요.
+              <br />꾸준히 관리한 결과가 기록에 남았어요.
             </div>
             {(() => {
               const g = getGoal();
@@ -2646,8 +2622,6 @@ export default function App() {
         </div>
       )}
 
-      {/* ===== BADGE CELEBRATION POPUP ===== */}
-      <BadgeCelebration badge={celebrateBadge} onClose={() => setCelebrateBadge(null)} accent={activeThemeColors.accent} />
 
       {/* ===== Weekly Report — Before/After 풀스크린 모달 ===== */}
       {weeklyBeforeAfterOpen && createPortal(

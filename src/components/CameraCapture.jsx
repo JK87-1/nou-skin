@@ -846,13 +846,9 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
           <div
             key={autoCountdown}
             style={{
-              width: 140, height: 140, borderRadius: '50%',
-              background: 'rgba(0,0,0,0.32)',
-              backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
-              border: '2px solid rgba(255,255,255,0.7)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 78, fontWeight: 700, color: '#fff',
+              fontSize: 120, fontWeight: 700, color: '#fff',
               fontFamily: 'var(--font-display), Pretendard, sans-serif',
+              textShadow: '0 2px 12px rgba(0,0,0,0.3)',
               animation: 'countdownPop 0.45s cubic-bezier(0.34,1.56,0.64,1) both',
             }}
           >{autoCountdown}</div>

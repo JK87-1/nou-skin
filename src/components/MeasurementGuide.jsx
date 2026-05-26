@@ -34,15 +34,15 @@ const COPY = {
   },
   2: {
     header: '두 번째 비춤',
-    eyebrow: '같은 환경 기억하시죠',
-    headline: '한 번 더\n비춰주세요',
-    sub: '첫 측정과 같은 조건이\n가장 정확한 기준을 만들어요',
+    eyebrow: '',
+    headline: '매번 같은 환경, 시간에 촬영했을 때',
+    sub: '정확한 결과를 얻을 수 있어요.',
   },
   3: {
     header: '마지막 한 번',
-    eyebrow: '곧 기준점이 완성돼요',
-    headline: '마지막으로\n비춰주세요',
-    sub: '이 세 번이\n나만의 기준점이 돼요',
+    eyebrow: '',
+    headline: '기준점이 만들어지고 있어요.',
+    sub: '앞으로도 같은 환경에서 측정해요.',
   },
 };
 
@@ -53,7 +53,7 @@ const CONDITIONS = [
     desc: '선크림, 메이크업 없이',
     icon: (
       <svg width="21" height="21" viewBox="0 0 24 24" stroke="none">
-        <defs><linearGradient id="gBan" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#58aefe" /><stop offset="100%" stopColor="#78bdfd" /></linearGradient></defs>
+        <defs><linearGradient id="gBan" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b8de8" /><stop offset="100%" stopColor="#5a9eef" /></linearGradient></defs>
         <path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z" fill="url(#gBan)" />
         <path d="M14.5 9.5l-5 5" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
         <path d="M9.5 9.5l5 5" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
@@ -65,7 +65,7 @@ const CONDITIONS = [
     desc: '스킨케어 전 또는 스킨케어 30분 후',
     icon: (
       <svg width="21" height="21" viewBox="0 0 24 24" stroke="none">
-        <defs><linearGradient id="gDrop" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#78bdfd" /><stop offset="100%" stopColor="#98ccfc" /></linearGradient></defs>
+        <defs><linearGradient id="gDrop" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#58aefe" /><stop offset="100%" stopColor="#78bdfd" /></linearGradient></defs>
         <path d="M6.8 11a6 6 0 1 0 10.396 0l-5.197 -8l-5.2 8z" fill="url(#gDrop)" />
       </svg>
     ),
@@ -124,19 +124,20 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
   const step = Math.min(baselineCount + 1, 3); // 1, 2, or 3
   const copy = COPY[step];
 
-  // 2/3, 3/3은 시퀀스 스킵 → 단계 4(전체 표시) 즉시
-  const isFullSequence = baselineCount === 0;
+  // 1/3: 헤드라인 즉시 → 조건 순차 → 오브
+  // 2/3, 3/3: 헤드라인 → 조건 순차 → 오브
+  const isFirstMeasure = baselineCount === 0;
 
-  // 시퀀스 상태: 0=시작, 1=하나, 2=둘, 3=셋, 4=전체
-  const [seqStep, setSeqStep] = useState(isFullSequence ? 0 : 4);
-  const [ctaReady, setCtaReady] = useState(!isFullSequence);
+  // 시퀀스 상태: 0=시작, 1~5=조건 순차, 6=오브
+  const [seqStep, setSeqStep] = useState(isFirstMeasure ? 0 : 0);
+  const [ctaReady, setCtaReady] = useState(false);
   const seqTimerRef = useRef(null);
 
-  // 풀 시퀀스 자동 진행
+  // 시퀀스 자동 진행 (모든 측정 공통)
   useEffect(() => {
-    if (!isFullSequence) return;
-
-    const delays = [1000, 1000, 1000, 1000, 1000, 1000]; // 0→1, 1→2, 2→3, 3→4, 4→5, 5→CTA
+    const delays = isFirstMeasure
+      ? [1000, 1000, 1000, 1000, 1000, 1000] // 1/3: 조건 하나씩
+      : [800, 800, 800, 800, 800, 800];       // 2/3, 3/3: 약간 빠르게
     let currentStep = 0;
 
     const advance = () => {
@@ -151,7 +152,7 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
 
     seqTimerRef.current = setTimeout(advance, delays[0]);
     return () => clearTimeout(seqTimerRef.current);
-  }, [isFullSequence]);
+  }, [isFirstMeasure]);
 
   // 탭으로 시퀀스 가속
   const handleTapAccelerate = () => {
@@ -258,7 +259,7 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
                 key={i}
                 style={{
                   padding: '6.5px 0',
-                  animation: isFullSequence ? `mgCondIn 600ms ease both` : 'none',
+                  animation: `mgCondIn 600ms ease both`,
                 }}
               >
                 <div style={{

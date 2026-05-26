@@ -325,6 +325,8 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
   const [goalModalOpen, setGoalModalOpen] = useState(false);
   const [baselineExists, setBaselineExists] = useState(() => hasBaseline());
   const [restoreConfirm, setRestoreConfirm] = useState(null);
+  const [dataManageOpen, setDataManageOpen] = useState(false);
+  const [backupStats, setBackupStats] = useState(null);
   const [baselineResetConfirm, setBaselineResetConfirm] = useState(false);
   const [allRecordsResetConfirm, setAllRecordsResetConfirm] = useState(false);
   const [allRecordsClearing, setAllRecordsClearing] = useState(false);
@@ -601,6 +603,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
         <SectionHeader label="프로필" />
         <SettingsRow icon={icons.user} label="프로필" right={profile.nickname || '사용자'} onTap={() => setEditingProfile(true)} />
         <SettingsRow icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M19 3h-4a2 2 0 0 0 -2 2v12a4 4 0 0 0 8 0v-12a2 2 0 0 0 -2 -2" /><path d="M13 7.35l-2 -2a2 2 0 0 0 -2.828 0l-2.828 2.828a2 2 0 0 0 0 2.828l9 9" /><path d="M7.3 13h-2.3a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h12" /><path d="M17 17l0 .01" /></svg>} label="피부 타입" right={profile.skinType || '미설정'} onTap={() => setEditingSkin(true)} />
+        <SettingsRow icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M20.984 12.536a9 9 0 1 0 -8.463 8.449" /><path d="M19 22v-6" /><path d="M22 19l-3 -3l-3 3" /><path d="M9 10h.01" /><path d="M15 10h.01" /><path d="M9.5 15c.658 .64 1.56 1 2.5 1s1.842 -.36 2.5 -1" /></svg>} label="개선 목표" right={(() => { const g = getGoal(); return g && g.status === 'active' ? '진행 중' : '미설정'; })()} onTap={() => setGoalModalOpen(true)} />
 
         <SectionHeader label="앱 설정" />
         <SettingsRow icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6" /><path d="M9 17v1a3 3 0 0 0 6 0v-1" /></svg>} label="알림" right={reminderEnabled || tipEnabled || weatherEnabled ? '켜짐' : '꺼짐'} onTap={() => setShowTimePicker('page')} />
@@ -627,103 +630,114 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>알림</span>
             </div>
 
-            <div style={{ flex: 1, padding: '8px 0' }}>
+            <div style={{ padding: '50px 40px 0', display: 'flex', flexDirection: 'column', gap: 16 }}>
               {/* 진단 리마인더 */}
-              <div style={{ padding: '16px 28px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>진단 리마인더</div>
-                  <div onClick={pushSubscribing ? undefined : handleReminderToggle} style={{
-                    width: 44, height: 26, borderRadius: 13,
-                    background: reminderEnabled ? '#ADEBB3' : 'rgba(0,0,0,0.12)',
-                    position: 'relative', flexShrink: 0,
-                    cursor: pushSubscribing ? 'wait' : 'pointer',
-                    transition: 'background 0.3s',
-                    opacity: pushSubscribing ? 0.6 : 1,
-                  }}>
-                    <div style={{
-                      position: 'absolute', top: 3, left: reminderEnabled ? 21 : 3,
-                      width: 20, height: 20, borderRadius: '50%',
-                      background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-                      transition: 'left 0.3s',
-                    }} />
-                  </div>
+              <div style={{ padding: '6px 0', display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+                <div style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.5)', borderRadius: 16 }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6" /><path d="M9 17v1a3 3 0 0 0 6 0v-1" /></svg>
                 </div>
-                <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 10 }}>
-                  매일 설정한 시간에 피부 측정을 알려드려요
-                </div>
-                {reminderEnabled && (
-                  <div onClick={() => setShowTimePicker('reminder')} style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '10px 14px', borderRadius: 12,
-                    background: 'rgba(255,255,255,0.6)', cursor: 'pointer',
-                  }}>
-                    <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>알림 시간</span>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: '#4a9eff' }}>{formatPushTime(reminderTime)}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>진단 리마인더</div>
+                    <div onClick={pushSubscribing ? undefined : handleReminderToggle} style={{
+                      width: 39, height: 24, borderRadius: 10,
+                      background: reminderEnabled ? '#6598ef' : 'rgba(0,0,0,0.12)',
+                      position: 'relative', flexShrink: 0,
+                      cursor: pushSubscribing ? 'wait' : 'pointer',
+                      transition: 'background 0.3s',
+                      opacity: pushSubscribing ? 0.6 : 1,
+                    }}>
+                      <div style={{
+                        position: 'absolute', top: 3, left: reminderEnabled ? 19 : 3,
+                        width: 18, height: 18, borderRadius: 7,
+                        background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                        transition: 'left 0.3s',
+                      }} />
+                    </div>
                   </div>
-                )}
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                    매일 설정한 시간에 피부 측정을 알려드려요
+                  </div>
+                  {reminderEnabled && (
+                    <div onClick={() => setShowTimePicker('reminder')} style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '10px 14px', borderRadius: 12, marginTop: 10,
+                      background: 'rgba(255,255,255,0.5)', cursor: 'pointer',
+                    }}>
+                      <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>알림 시간</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: '#6598ef' }}>{formatPushTime(reminderTime)}</span>
+                    </div>
+                  )}
+                </div>
               </div>
-
-              <div style={{ height: 1, background: 'rgba(0,0,0,0.06)', margin: '0 28px' }} />
 
               {/* 뷰티 팁 */}
-              <div style={{ padding: '16px 28px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>뷰티 팁</div>
-                  <div onClick={pushSubscribing ? undefined : handleTipToggle} style={{
-                    width: 44, height: 26, borderRadius: 13,
-                    background: tipEnabled ? '#ADEBB3' : 'rgba(0,0,0,0.12)',
-                    position: 'relative', flexShrink: 0,
-                    cursor: pushSubscribing ? 'wait' : 'pointer',
-                    transition: 'background 0.3s',
-                    opacity: pushSubscribing ? 0.6 : 1,
-                  }}>
-                    <div style={{
-                      position: 'absolute', top: 3, left: tipEnabled ? 21 : 3,
-                      width: 20, height: 20, borderRadius: '50%',
-                      background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-                      transition: 'left 0.3s',
-                    }} />
-                  </div>
+              <div style={{ padding: '6px 0', display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+                <div style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.5)', borderRadius: 16 }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" /><path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" /></svg>
                 </div>
-                <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 10 }}>
-                  내 피부 데이터에 맞는 뷰티 팁을 매일 받아보세요
-                </div>
-                {tipEnabled && (
-                  <div onClick={() => setShowTimePicker('tip')} style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '10px 14px', borderRadius: 12,
-                    background: 'rgba(255,255,255,0.6)', cursor: 'pointer',
-                  }}>
-                    <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>알림 시간</span>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: '#4a9eff' }}>{formatPushTime(tipTime)}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>뷰티 팁</div>
+                    <div onClick={pushSubscribing ? undefined : handleTipToggle} style={{
+                      width: 39, height: 24, borderRadius: 10,
+                      background: tipEnabled ? '#6598ef' : 'rgba(0,0,0,0.12)',
+                      position: 'relative', flexShrink: 0,
+                      cursor: pushSubscribing ? 'wait' : 'pointer',
+                      transition: 'background 0.3s',
+                      opacity: pushSubscribing ? 0.6 : 1,
+                    }}>
+                      <div style={{
+                        position: 'absolute', top: 3, left: tipEnabled ? 19 : 3,
+                        width: 18, height: 18, borderRadius: 7,
+                        background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                        transition: 'left 0.3s',
+                      }} />
+                    </div>
                   </div>
-                )}
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                    내 피부 데이터에 맞는 뷰티 팁을 매일 받아보세요
+                  </div>
+                  {tipEnabled && (
+                    <div onClick={() => setShowTimePicker('tip')} style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '10px 14px', borderRadius: 12, marginTop: 10,
+                      background: 'rgba(255,255,255,0.5)', cursor: 'pointer',
+                    }}>
+                      <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>알림 시간</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: '#6598ef' }}>{formatPushTime(tipTime)}</span>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <div style={{ height: 1, background: 'rgba(0,0,0,0.06)', margin: '0 28px' }} />
-
               {/* 피부 날씨 알림 */}
-              <div style={{ padding: '16px 28px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>피부 날씨 알림</div>
-                  <div onClick={pushSubscribing ? undefined : handleWeatherToggle} style={{
-                    width: 44, height: 26, borderRadius: 13,
-                    background: weatherEnabled ? '#ADEBB3' : 'rgba(0,0,0,0.12)',
-                    position: 'relative', flexShrink: 0,
-                    cursor: pushSubscribing ? 'wait' : 'pointer',
-                    transition: 'background 0.3s',
-                    opacity: pushSubscribing ? 0.6 : 1,
-                  }}>
-                    <div style={{
-                      position: 'absolute', top: 3, left: weatherEnabled ? 21 : 3,
-                      width: 20, height: 20, borderRadius: '50%',
-                      background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-                      transition: 'left 0.3s',
-                    }} />
-                  </div>
+              <div style={{ padding: '6px 0', display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+                <div style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.5)', borderRadius: 16 }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-12" /></svg>
                 </div>
-                <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                  날씨에 따라 선크림, 수분 보충 등을 알려드려요
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>피부 날씨 알림</div>
+                    <div onClick={pushSubscribing ? undefined : handleWeatherToggle} style={{
+                      width: 39, height: 24, borderRadius: 10,
+                      background: weatherEnabled ? '#6598ef' : 'rgba(0,0,0,0.12)',
+                      position: 'relative', flexShrink: 0,
+                      cursor: pushSubscribing ? 'wait' : 'pointer',
+                      transition: 'background 0.3s',
+                      opacity: pushSubscribing ? 0.6 : 1,
+                    }}>
+                      <div style={{
+                        position: 'absolute', top: 3, left: weatherEnabled ? 19 : 3,
+                        width: 18, height: 18, borderRadius: 7,
+                        background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                        transition: 'left 0.3s',
+                      }} />
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                    날씨에 따라 선크림, 수분 보충 등을 알려드려요
+                  </div>
                 </div>
               </div>
             </div>
@@ -741,31 +755,12 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           document.body,
         )}
 
-        <SectionHeader label="데이터 관리" />
-        <SettingsRow icon={icons.download} label="데이터 백업" onTap={async () => {
-          try {
-            const lsData = {};
-            for (let i = 0; i < localStorage.length; i++) {
-              const k = localStorage.key(i);
-              lsData[k] = localStorage.getItem(k);
-            }
-            const photos = await getAllPhotosRaw();
-            const json = JSON.stringify({ localStorage: lsData, photos, exportedAt: new Date().toISOString() });
-            const lsCount = Object.keys(lsData).length;
-            const photoCount = photos ? photos.length : 0;
-            setBackupGuide({ json, lsCount, photoCount });
-          } catch { showToast('백업 준비 중 오류가 발생했어요'); }
-        }} />
-        <SettingsRow icon={icons.upload} label="데이터 복원" onTap={() => fileInputRef.current?.click()} />
+        <SectionHeader label="데이터" />
+        <SettingsRow icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M7 21h10a2 2 0 0 0 2 -2v-14a2 2 0 0 0 -2 -2h-6.172a2 2 0 0 0 -1.414 .586l-3.828 3.828a2 2 0 0 0 -.586 1.414v10.172a2 2 0 0 0 2 2" /><path d="M13 6v2" /><path d="M16 6v2" /><path d="M10 7v1" /></svg>} label="데이터 관리" onTap={() => { setDataManageOpen(true); getAllPhotosRaw().then(p => setBackupStats({ lsCount: localStorage.length, photoCount: p ? p.length : 0 })).catch(() => setBackupStats({ lsCount: localStorage.length, photoCount: 0 })); }} />
         <SettingsRow
-          icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><polyline points="21 3 21 8 16 8"/><polyline points="3 21 3 16 8 16"/></svg>}
-          label="측정 기준 재설정"
-          onTap={() => setBaselineResetConfirm(true)}
-        />
-        <SettingsRow
-          icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#dc4444" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>}
-          label="측정 기록 전체 삭제"
-          onTap={() => setAllRecordsResetConfirm(true)}
+          icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 8l0 4l2 2" /><path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5" /></svg>}
+          label="측정 기록 관리"
+          onTap={() => setDataManageOpen('records')}
         />
 
         <SectionHeader label="정보" />
@@ -858,17 +853,17 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                     return trimmed;
                   }).filter(row => !row.every(c => /^-+$/.test(c) || c === ''));
                   elements.push(
-                    <div key={key} style={{ overflowX: 'auto', margin: '10px 0', borderRadius: 5, border: '1px solid rgba(0,0,0,0.08)', WebkitOverflowScrolling: 'touch' }} className="legal-table-scroll">
-                      <table style={{ minWidth: 520, borderCollapse: 'collapse', fontSize: 12 }}>
+                    <div key={key} style={{ overflowX: 'auto', margin: '10px 0', borderRadius: 5, border: '1px solid rgba(0,0,0,0.08)', WebkitOverflowScrolling: 'touch' }}>
+                      <table style={{ width: '100%', minWidth: 360, borderCollapse: 'collapse', fontSize: 12, tableLayout: 'auto' }}>
                         <thead>
                           <tr style={{ background: 'rgba(101,152,239,0.1)' }}>
-                            {headerCells.map((c, j) => <th key={j} style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 600, color: 'var(--text-primary)', borderBottom: '1px solid rgba(0,0,0,0.1)', borderRight: j < headerCells.length - 1 ? '1px solid rgba(0,0,0,0.1)' : 'none', whiteSpace: 'nowrap' }}>{c}</th>)}
+                            {headerCells.map((c, j) => <th key={j} style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 600, color: 'var(--text-primary)', borderBottom: '1px solid rgba(0,0,0,0.1)', borderRight: j < headerCells.length - 1 ? '1px solid rgba(0,0,0,0.1)' : 'none', whiteSpace: 'nowrap' }}>{c}</th>)}
                           </tr>
                         </thead>
                         <tbody>
                           {dataRows.map((row, ri) => (
                             <tr key={ri}>
-                              {row.map((c, ci) => <td key={ci} style={{ padding: '7px 12px', color: 'var(--text-secondary)', borderBottom: ri < dataRows.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none', borderRight: ci < row.length - 1 ? '1px solid rgba(0,0,0,0.1)' : 'none', whiteSpace: 'nowrap' }}>{c}</td>)}
+                              {row.map((c, ci) => <td key={ci} style={{ padding: '7px 10px', color: 'var(--text-secondary)', borderBottom: ri < dataRows.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none', borderRight: ci < row.length - 1 ? '1px solid rgba(0,0,0,0.1)' : 'none', whiteSpace: 'normal', wordBreak: 'keep-all', lineHeight: 1.5 }}>{c}</td>)}
                             </tr>
                           ))}
                         </tbody>
@@ -1002,7 +997,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           </div>
 
           {/* Avatar */}
-          <div style={{ textAlign: 'center', padding: '12px 0 20px' }}>
+          <div style={{ textAlign: 'center', padding: '50px 0 20px' }}>
             <div style={{ position: 'relative', display: 'inline-block' }}>
               <div style={{
                 width: 88, height: 88, borderRadius: '50%', overflow: 'hidden',
@@ -1032,19 +1027,19 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           </div>
 
           {/* Fields */}
-          <div style={{ margin: '0 16px', background: '#ffffff', borderRadius: 14, border: 'none' }}>
+          <div style={{ margin: '0 40px', display: 'flex', flexDirection: 'column', gap: 16 }}>
             {[
               { label: '이름', value: profile.nickname, key: 'nickname', placeholder: '입력해주세요' },
               { label: '생년월일', value: profile.birthYear ? (profile.birthYear.includes('-') ? profile.birthYear.replace(/-/g, '.') : `${profile.birthYear}년생`) : '', key: 'birthYear', placeholder: '선택 안 함' },
               { label: '성별', value: profile.gender || '', key: 'gender', placeholder: '선택 안 함' },
-            ].map((f, i) => (
+            ].map((f) => (
               <div key={f.key} onClick={() => { setEditField(f.key); setEditFieldValue(f.key === 'nickname' ? (profile.nickname || '') : f.key === 'birthYear' ? (profile.birthYear ? profile.birthYear.replace(/-/g, '.') : '') : (profile.gender || '')); }} style={{
-                padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                borderTop: i > 0 ? '1px solid rgba(255,255,255,0.2)' : 'none', cursor: 'pointer',
+                padding: '6px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                cursor: 'pointer',
               }}>
-                <span style={{ fontSize: 13, color: 'var(--text-primary)' }}>{f.label}</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{f.label}</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{ fontSize: 12, color: f.value ? 'var(--text-muted)' : 'var(--text-dim, #B0B8C1)' }}>{f.value || f.placeholder}</span>
+                  <span style={{ fontSize: 13, color: f.value ? 'var(--text-secondary)' : 'var(--text-dim, #B0B8C1)' }}>{f.value || f.placeholder}</span>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C5DEF5" strokeWidth="1.8" strokeLinecap="round"><path d="M9 6l6 6-6 6"/></svg>
                 </div>
               </div>
@@ -1052,7 +1047,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           </div>
 
           {/* Bio */}
-          <div style={{ padding: '14px 16px' }}>
+          <div style={{ padding: '14px 40px' }}>
             <div style={{ fontSize: 13, color: 'var(--text-primary)', marginBottom: 8 }}>자기소개</div>
             <textarea
               value={profile.bio || ''}
@@ -1221,45 +1216,27 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
             <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>피부 타입</span>
           </div>
 
-          {/* Intro */}
-          <div style={{ padding: '12px 24px 20px' }}>
-            <div style={{ fontSize: 17, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.3, lineHeight: 1.35 }}>
-              {profile.skinType
-                ? '지금 설정된 피부 타입이에요'
-                : `${profile.nickname || '당신'}의 피부 타입은 무엇인가요?`}
-            </div>
-            <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 6, lineHeight: 1.5 }}>
-              {profile.skinType ? '피부 타입이 바뀐 것 같다면 다시 설정해도 돼요' : '선택하시면 lua가 더 정확한 분석을 드릴 수 있어요'}
-            </div>
-          </div>
-
           {/* Skin type options */}
-          <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ padding: '50px 40px 0', display: 'flex', flexDirection: 'column', gap: 16 }}>
             {[
-              { key: '건성', icon: '', desc: '세안 후 당기고 건조한 느낌이 자주 나요' },
-              { key: '지성', icon: '', desc: '전체적으로 유분이 많고 번들거림이 있어요' },
-              { key: '복합성', icon: '', desc: 'T존은 유분, 볼은 건조한 편이에요' },
-              { key: '민감성', icon: '', desc: '쉽게 자극받고 환절기에 트러블이 잘 나요' },
-              { key: '중성', icon: '', desc: '특별히 건조하거나 유분이 많지 않아요' },
+              { key: '건성', desc: '세안 후 당기고 건조한 느낌이 자주 나요' },
+              { key: '지성', desc: '전체적으로 유분이 많고 번들거림이 있어요' },
+              { key: '복합성', desc: 'T존은 유분, 볼은 건조한 편이에요' },
+              { key: '민감성', desc: '쉽게 자극받고 환절기에 트러블이 잘 나요' },
+              { key: '중성', desc: '특별히 건조하거나 유분이 많지 않아요' },
             ].map(opt => {
               const selected = profile.skinType === opt.key;
               return (
                 <div key={opt.key} onClick={() => update('skinType', opt.key)} style={{
-                  padding: '14px 16px', borderRadius: 14, cursor: 'pointer',
-                  background: selected ? 'rgba(101,152,239,0.12)' : 'rgba(255,255,255,0.35)',
-                  border: selected ? '1px solid var(--accent-primary, #6598ef)' : '1px solid rgba(255,255,255,0.3)',
-                  display: 'flex', alignItems: 'center', gap: 12, transition: 'all 0.2s',
+                  padding: '6px 0', cursor: 'pointer',
+                  display: 'flex', alignItems: 'flex-start', gap: 16, transition: 'all 0.2s',
                 }}>
-                  <div style={{
-                    width: 40, height: 40, flexShrink: 0,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20,
-                  }}>{opt.icon}</div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.2 }}>{opt.key}</div>
-                    <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginTop: 2, lineHeight: 1.4 }}>{opt.desc}</div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{opt.key}</div>
+                    <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4, lineHeight: 1.6 }}>{opt.desc}</div>
                   </div>
                   {selected && (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #6598ef)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #6598ef)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}><polyline points="20 6 9 17 4 12"/></svg>
                   )}
                 </div>
               );
@@ -1277,92 +1254,147 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
         </div>
       )}
 
-      {/* Backup Guide Sub-Page */}
-      {backupGuide && (
+      {/* Data Management Sub-Page */}
+      {dataManageOpen === true && (
         <div style={{
-          position: 'fixed', inset: 0, zIndex: 1002,
+          position: 'fixed', inset: 0, zIndex: 1002, maxWidth: 430, margin: '0 auto',
           background: 'linear-gradient(180deg, #C5E3FF 0%, #F1F7FD 100%)',
+          display: 'flex', flexDirection: 'column',
+          overflowY: 'auto', WebkitOverflowScrolling: 'touch',
           animation: 'settingsSlideIn 0.3s ease',
         }}>
-        <div style={{
-          position: 'absolute', top: 0, bottom: 0, left: '50%', transform: 'translateX(-50%)',
-          width: '100%', maxWidth: 430,
-          display: 'flex', flexDirection: 'column',
-        }}>
           <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
-            <div onClick={() => setBackupGuide(null)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
+            <div onClick={() => setDataManageOpen(false)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
             </div>
-            <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>데이터 백업</span>
+            <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>데이터 관리</span>
           </div>
 
-          <div style={{ flex: 1, overflowY: 'auto', padding: '25px 20px 40px', WebkitOverflowScrolling: 'touch' }}>
-            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>
-              백업 파일 저장하기
-            </div>
-            <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 24, lineHeight: 1.6 }}>
-              {backupGuide.lsCount}개 항목 · {backupGuide.photoCount}장 사진이 백업됩니다.
-            </div>
-
-            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12 }}>
-              저장 방법 안내
-            </div>
-            <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 24 }}>
-              아래 버튼을 누르면 공유 화면이 열립니다.{'\n'}"파일에 저장"을 선택해주세요.
-            </div>
-
-            <button
+          <div style={{ padding: '50px 40px 0', display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {/* 데이터 백업 */}
+            <div
               onClick={async () => {
-                const { json, lsCount, photoCount } = backupGuide;
-                setBackupGuide(null);
-                const dateStr = new Date().toISOString().slice(0, 10);
-                const fileName = `lua-backup-${dateStr}.json`;
-                const blob = new Blob([json], { type: 'application/json' });
-
                 try {
-                  const file = new File([blob], fileName, { type: 'application/json', lastModified: Date.now() });
-                  if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share({ files: [file] });
-                    localStorage.setItem('nou_last_manual_backup', String(Date.now()));
-                    showToast(`백업 완료! (${lsCount}개 항목, ${photoCount}장 사진)`);
+                  const lsData = {};
+                  for (let i = 0; i < localStorage.length; i++) {
+                    const k = localStorage.key(i);
+                    lsData[k] = localStorage.getItem(k);
+                  }
+                  const photos = await getAllPhotosRaw();
+                  const json = JSON.stringify({ localStorage: lsData, photos, exportedAt: new Date().toISOString() });
+                  const lsCount = Object.keys(lsData).length;
+                  const photoCount = photos ? photos.length : 0;
+                  const dateStr = new Date().toISOString().slice(0, 10);
+                  const fileName = `lua-backup-${dateStr}.json`;
+                  const blob = new Blob([json], { type: 'application/json' });
+
+                  try {
+                    const file = new File([blob], fileName, { type: 'application/json', lastModified: Date.now() });
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                      await navigator.share({ files: [file] });
+                      localStorage.setItem('nou_last_manual_backup', String(Date.now()));
+                      showToast(`백업 완료! (${lsCount}개 항목, ${photoCount}장 사진)`);
+                      return;
+                    }
+                  } catch (e) {
+                    if (e.name === 'AbortError') return;
+                  }
+
+                  try {
+                    const dlUrl = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = dlUrl;
+                    a.download = fileName;
+                    a.rel = 'noopener';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    setTimeout(() => URL.revokeObjectURL(dlUrl), 10000);
+                  } catch (e) {
+                    console.warn('backup download fallback failed:', e);
+                    showToast('백업 다운로드 실패 — 다시 시도해주세요');
                     return;
                   }
-                } catch (e) {
-                  if (e.name === 'AbortError') return;
-                }
-
-                try {
-                  const dlUrl = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = dlUrl;
-                  a.download = fileName;
-                  a.rel = 'noopener';
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-                  setTimeout(() => URL.revokeObjectURL(dlUrl), 10000);
-                } catch (e) {
-                  console.warn('backup download fallback failed:', e);
-                  showToast('백업 다운로드 실패 — 다시 시도해주세요');
-                  return;
-                }
-                localStorage.setItem('nou_last_manual_backup', String(Date.now()));
-                showToast(`백업 완료! (${lsCount}개 항목, ${photoCount}장 사진)`);
+                  localStorage.setItem('nou_last_manual_backup', String(Date.now()));
+                  showToast(`백업 완료! (${lsCount}개 항목, ${photoCount}장 사진)`);
+                } catch { showToast('백업 준비 중 오류가 발생했어요'); }
               }}
-              style={{
-                width: '100%', padding: '12px', borderRadius: 10,
-                border: 'none', background: 'rgba(101,152,239,0.1)', color: '#6598ef',
-                fontSize: 14, fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}
+              style={{ padding: '6px 0', cursor: 'pointer', display: 'flex', alignItems: 'flex-start', gap: 16 }}
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6 }}><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              백업 파일 저장하기
-            </button>
+              <div style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.5)', borderRadius: 16 }}>
+                {icons.download}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>데이터 백업</div>
+                <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4, lineHeight: 1.6 }}>
+                  {backupStats ? `${backupStats.lsCount}개 항목 · ${backupStats.photoCount}개 사진이 저장됩니다` : '현재 데이터를 파일로 저장해요'}
+                </div>
+              </div>
+            </div>
+
+            {/* 데이터 복원 */}
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              style={{ padding: '6px 0', cursor: 'pointer', display: 'flex', alignItems: 'flex-start', gap: 16 }}
+            >
+              <div style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.5)', borderRadius: 16 }}>
+                {icons.upload}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>데이터 복원</div>
+                <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4, lineHeight: 1.6 }}>백업 파일에서 데이터를 불러와요</div>
+              </div>
+            </div>
           </div>
         </div>
+      )}
+
+      {/* Records Management Sub-Page */}
+      {dataManageOpen === 'records' && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 1002, maxWidth: 430, margin: '0 auto',
+          background: 'linear-gradient(180deg, #C5E3FF 0%, #F1F7FD 100%)',
+          display: 'flex', flexDirection: 'column',
+          overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+          animation: 'settingsSlideIn 0.3s ease',
+        }}>
+          <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+            <div onClick={() => setDataManageOpen(false)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </div>
+            <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>측정 기록 관리</span>
+          </div>
+
+          <div style={{ padding: '50px 40px 0', display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div
+              onClick={() => { setDataManageOpen(false); setBaselineResetConfirm(true); }}
+              style={{ padding: '6px 0', cursor: 'pointer', display: 'flex', alignItems: 'flex-start', gap: 16 }}
+            >
+              <div style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.5)', borderRadius: 16 }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><polyline points="21 3 21 8 16 8"/><polyline points="3 21 3 16 8 16"/></svg>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>측정 기준 재설정</div>
+                <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4, lineHeight: 1.6 }}>기준점을 처음부터 다시 측정해요</div>
+              </div>
+            </div>
+
+            <div
+              onClick={() => { setDataManageOpen(false); setAllRecordsResetConfirm(true); }}
+              style={{ padding: '6px 0', cursor: 'pointer', display: 'flex', alignItems: 'flex-start', gap: 16 }}
+            >
+              <div style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.5)', borderRadius: 16 }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#dc4444" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#dc4444' }}>측정 기록 전체 삭제</div>
+                <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4, lineHeight: 1.6 }}>모든 측정 기록과 사진을 삭제해요</div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
+
 
       {/* Restore Confirmation Modal */}
       {restoreConfirm && (
@@ -1645,7 +1677,7 @@ function GoalSettingModal({ onClose, showToast }) {
           label: meta.label,
           icon: meta.icon,
           startValue,
-          targetValue: targets[key] || Math.min(100, startValue + 10),
+          targetValue: targets[key] || startValue,
           currentValue: startValue,
         };
       }),
@@ -1667,276 +1699,245 @@ function GoalSettingModal({ onClose, showToast }) {
   };
 
   return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 1002,
-        background: 'var(--bg-modal-overlay)',
-        display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-        animation: 'fadeIn 0.2s ease',
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: '100%', maxWidth: 420,
-          maxHeight: '85vh', overflowY: 'auto',
-          background: 'var(--bg-modal)', borderRadius: '24px 24px 0 0',
-          padding: '24px 24px 40px',
-          border: '1px solid var(--border-subtle)',
-          borderBottom: 'none',
-          animation: 'slideUp 0.3s ease',
-        }}
-      >
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>
-              {step === 1 && '지표 선택'}
-              {step === 2 && '목표 설정'}
-              {step === 3 && '목표 확인'}
-            </div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-              {step === 1 && '개선하고 싶은 지표를 선택하세요 (최대 3개)'}
-              {step === 2 && '목표 점수와 기간을 설정하세요'}
-              {step === 3 && '설정한 목표를 확인하세요'}
-            </div>
-          </div>
-          <button onClick={onClose} style={{
-            width: 32, height: 32, borderRadius: '50%', border: 'none',
-            background: 'var(--bg-input)', color: 'var(--text-muted)',
-            fontSize: 16, cursor: 'pointer', display: 'flex',
-            alignItems: 'center', justifyContent: 'center',
-          }}></button>
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 1002, maxWidth: 430, margin: '0 auto',
+      background: 'linear-gradient(180deg, #C5E3FF 0%, #F1F7FD 100%)',
+      display: 'flex', flexDirection: 'column',
+      overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+      animation: 'settingsSlideIn 0.3s ease',
+    }}>
+      {/* Header — 피부타입 스타일 */}
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+        <div onClick={onClose} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
         </div>
+        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>피부 목표</span>
+      </div>
 
-        {/* Step indicator */}
-        <div style={{ display: 'flex', gap: 6, marginBottom: 24 }}>
-          {[1, 2, 3].map((s) => (
-            <div key={s} style={{
-              flex: 1, height: 3, borderRadius: 2,
-              background: s <= step ? '#ADEBB3' : 'var(--bg-input)',
-              transition: 'background 0.3s',
-            }} />
-          ))}
-        </div>
+      {/* Step indicator */}
+      <div style={{ display: 'flex', gap: 6, padding: '16px 40px 0' }}>
+        {[1, 2, 3].map((s) => (
+          <div key={s} style={{
+            flex: 1, height: 3, borderRadius: 2,
+            background: s <= step ? 'var(--accent-primary, #6598ef)' : 'rgba(255,255,255,0.5)',
+            transition: 'background 0.3s',
+          }} />
+        ))}
+      </div>
 
-        {/* STEP 1: Metric selection */}
-        {step === 1 && (
-          <div>
-            {!latestRecord && (
-              <div style={{
-                padding: '12px 16px', borderRadius: 14, marginBottom: 16,
-                background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)',
-              }}>
-                <div style={{ fontSize: 12, color: '#f59e0b', lineHeight: 1.5 }}>
-                  먼저 피부 분석을 해야 현재 점수를 확인할 수 있어요. 분석 후 목표를 설정해보세요!
-                </div>
+      {/* STEP 1: Metric selection */}
+      {step === 1 && (
+        <div style={{ padding: '50px 40px 0', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {!latestRecord && (
+            <div style={{
+              padding: '12px 16px', borderRadius: 14, marginBottom: 8,
+              background: 'rgba(101,152,239,0.08)', border: '1px solid rgba(101,152,239,0.15)',
+            }}>
+              <div style={{ fontSize: 13, color: 'var(--accent-primary, #6598ef)', lineHeight: 1.6 }}>
+                먼저 피부 분석을 해야 현재 점수를 확인할 수 있어요. 분석 후 목표를 설정해보세요!
               </div>
-            )}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {sortedMetrics.map((m, idx) => {
-                const selected = selectedMetrics.includes(m.key);
-                return (
-                  <div
-                    key={m.key}
-                    onClick={() => latestRecord && toggleMetric(m.key)}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 12,
-                      padding: '14px 16px', borderRadius: 16,
-                      background: selected ? 'rgba(240,144,112,0.1)' : 'var(--bg-card)',
-                      border: selected ? '1px solid rgba(240,144,112,0.3)' : '1px solid var(--border-light)',
-                      cursor: latestRecord ? 'pointer' : 'default',
-                      opacity: latestRecord ? 1 : 0.5,
-                      transition: 'all 0.2s',
-                    }}
-                  >
-                    <span style={{ fontSize: 20 }}>{m.icon}</span>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-secondary)' }}>{m.label}</span>
-                        {idx < 3 && latestRecord && (
-                          <span style={{
-                            fontSize: 10, padding: '1px 6px', borderRadius: 6,
-                            background: 'rgba(240,96,80,0.1)', color: '#e05545',
-                          }}>추천</span>
-                        )}
-                      </div>
-                      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-                        현재 {m.value}점
-                      </div>
-                    </div>
-                    <div style={{
-                      width: 22, height: 22, borderRadius: 6,
-                      border: selected ? 'none' : '1.5px solid rgba(255,255,255,0.15)',
-                      background: selected ? '#ADEBB3' : 'transparent',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      flexShrink: 0, transition: 'all 0.2s',
-                    }}>
-                      {selected && (
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
             </div>
-          </div>
-        )}
+          )}
+          {sortedMetrics.map((m, idx) => {
+            const selected = selectedMetrics.includes(m.key);
+            return (
+              <div
+                key={m.key}
+                onClick={() => latestRecord && toggleMetric(m.key)}
+                style={{
+                  padding: '6px 0', cursor: latestRecord ? 'pointer' : 'default',
+                  display: 'flex', alignItems: 'flex-start', gap: 16, transition: 'all 0.2s',
+                  opacity: latestRecord ? 1 : 0.5,
+                }}
+              >
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{m.label}</span>
+                    {idx < 3 && latestRecord && (
+                      <span style={{
+                        fontSize: 10, padding: '1px 6px', borderRadius: 6,
+                        background: 'rgba(101,152,239,0.1)', color: 'var(--accent-primary, #6598ef)',
+                      }}>추천</span>
+                    )}
+                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4, lineHeight: 1.6 }}>
+                    현재 {m.value}점
+                  </div>
+                </div>
+                {selected && (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #6598ef)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}><polyline points="20 6 9 17 4 12"/></svg>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
 
-        {/* STEP 2: Target setting */}
-        {step === 2 && (
-          <div>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-              {[
-                { label: '조금 개선', delta: 10 },
-                { label: '적극 개선', delta: 20 },
-                { label: '최고 목표', delta: 30 },
-              ].map((p) => (
+      {/* STEP 2: Target setting */}
+      {step === 2 && (
+        <div style={{ padding: '30px 40px 0' }}>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+            {[
+              { label: '조금 개선', delta: 10 },
+              { label: '적극 개선', delta: 20 },
+              { label: '최고 목표', delta: 30 },
+            ].map((p) => (
+              <button
+                key={p.delta}
+                onClick={() => applyPreset(p.delta)}
+                style={{
+                  flex: 1, padding: '10px 8px', borderRadius: 14,
+                  border: '1px solid rgba(0,0,0,0.06)',
+                  background: 'transparent',
+                  color: 'var(--accent-primary, #6598ef)', fontSize: 12, fontWeight: 600,
+                  cursor: 'pointer', fontFamily: 'inherit',
+                }}
+              >+{p.delta}<br/><span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>{p.label}</span></button>
+            ))}
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {selectedMetrics.map((key) => {
+              const meta = METRIC_META.find((m) => m.key === key);
+              const current = latestRecord ? (latestRecord[key] ?? 0) : 50;
+              const target = targets[key] || current;
+
+              return (
+                <div key={key} style={{
+                  padding: '6px 0',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{meta.label}</span>
+                    <span style={{ fontSize: 13, color: 'var(--accent-primary, #6598ef)', fontWeight: 600 }}>
+                      {current} → {target}
+                    </span>
+                  </div>
+                  {/* Slider */}
+                  <div style={{ position: 'relative', height: 34, display: 'flex', alignItems: 'flex-end' }}>
+                    {/* Track background */}
+                    <div style={{
+                      position: 'absolute', left: 0, right: 0, bottom: 8,
+                      height: 4, borderRadius: 2,
+                      background: 'rgba(101,152,239,0.12)',
+                    }} />
+                    {/* Filled portion */}
+                    <div style={{
+                      position: 'absolute', left: 0, bottom: 8,
+                      height: 4, borderRadius: 2,
+                      width: `calc(${target}% - ${target * 14 / 100}px + 7px)`,
+                      background: 'linear-gradient(90deg, rgba(101,152,239,0.35), #6598ef)',
+                    }} />
+                    {/* Current position dot */}
+                    <div style={{
+                      position: 'absolute',
+                      left: `calc(${current}% - ${current * 14 / 100}px + 7px)`,
+                      bottom: 5,
+                      transform: 'translate(-50%, 0)',
+                      width: 10, height: 10, borderRadius: '50%',
+                      background: '#6598ef',
+                      zIndex: 0,
+                    }} />
+                    {/* Current label */}
+                    <div style={{
+                      position: 'absolute',
+                      left: `calc(${current}% - ${current * 14 / 100}px + 7px)`,
+                      top: -8,
+                      transform: 'translateX(-50%)',
+                      fontSize: 9, fontWeight: 500, color: 'rgba(101,152,239,0.5)',
+                      whiteSpace: 'nowrap',
+                    }}>{current}</div>
+                    {/* Range input (thumb on top) */}
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={target}
+                      onChange={(e) => {
+                        const v = parseInt(e.target.value);
+                        if (v > current) setTargets((prev) => ({ ...prev, [key]: v }));
+                      }}
+                      className="lua-goal-slider"
+                      style={{ width: '100%', position: 'relative', zIndex: 2, height: 20, margin: 0 }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div style={{ marginTop: 20 }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10 }}>목표 기간</div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {[30, 60, 90].map((d) => (
                 <button
-                  key={p.delta}
-                  onClick={() => applyPreset(p.delta)}
+                  key={d}
+                  onClick={() => setDuration(d)}
                   style={{
-                    flex: 1, padding: '10px 8px', borderRadius: 14,
-                    border: '1px solid rgba(240,144,112,0.2)',
-                    background: 'rgba(240,144,112,0.06)',
-                    color: '#81E4BD', fontSize: 12, fontWeight: 600,
-                    cursor: 'pointer', fontFamily: 'inherit',
+                    flex: 1, padding: '10px 0', borderRadius: 14,
+                    border: duration === d ? '1px solid var(--accent-primary, #6598ef)' : '1px solid rgba(0,0,0,0.06)',
+                    background: duration === d ? 'rgba(101,152,239,0.12)' : 'transparent',
+                    color: duration === d ? 'var(--accent-primary, #6598ef)' : 'var(--text-muted)',
+                    fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
                   }}
-                >+{p.delta}<br/><span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>{p.label}</span></button>
+                >{d}일</button>
               ))}
             </div>
+          </div>
+        </div>
+      )}
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* STEP 3: Confirmation */}
+      {step === 3 && (
+        <div style={{ padding: '30px 40px 0' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>목표 요약</span>
+              <span style={{ fontSize: 12, color: 'var(--accent-primary, #6598ef)', fontWeight: 500 }}>{duration}일</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {selectedMetrics.map((key) => {
                 const meta = METRIC_META.find((m) => m.key === key);
                 const current = latestRecord ? (latestRecord[key] ?? 0) : 50;
-                const target = targets[key] || Math.min(100, current + 10);
-
+                const target = targets[key] || current;
                 return (
-                  <div key={key} style={{
-                    padding: '16px', borderRadius: 16,
-                    background: 'var(--bg-card)',
-                    border: '1px solid var(--border-light)',
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ fontSize: 16 }}>{meta.icon}</span>
-                        <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-secondary)' }}>{meta.label}</span>
-                      </div>
-                      <span style={{ fontSize: 13, color: '#ADEBB3', fontWeight: 600 }}>
-                        {current} → {target}
-                      </span>
+                  <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: 13, color: 'var(--text-primary)' }}>{meta.label}</span>
+                    <div style={{ fontSize: 13 }}>
+                      <span style={{ color: 'var(--text-muted)' }}>{current}</span>
+                      <span style={{ color: 'var(--text-muted)', margin: '0 6px' }}>→</span>
+                      <span style={{ color: 'var(--accent-primary, #6598ef)', fontWeight: 600 }}>{target}</span>
                     </div>
-                    <div style={{
-                      width: '100%', height: 8, borderRadius: 4,
-                      background: 'var(--bg-card-hover)', position: 'relative',
-                      marginBottom: 10,
-                    }}>
-                      <div style={{
-                        width: `${current}%`, height: '100%', borderRadius: 4,
-                        background: 'var(--bg-input)',
-                      }} />
-                      <div style={{
-                        position: 'absolute', top: 0, left: 0,
-                        width: `${target}%`, height: '100%', borderRadius: 4,
-                        background: 'linear-gradient(90deg, #E87080, #81E4BD, #81E4BD)',
-                        opacity: 0.6,
-                      }} />
-                    </div>
-                    <input
-                      type="range"
-                      min={Math.min(current + 1, 100)}
-                      max={100}
-                      value={target}
-                      onChange={(e) => setTargets((prev) => ({ ...prev, [key]: parseInt(e.target.value) }))}
-                      style={{ width: '100%', accentColor: '#ADEBB3' }}
-                    />
                   </div>
                 );
               })}
             </div>
-
-            <div style={{ marginTop: 20 }}>
-              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 10 }}>목표 기간</div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {[30, 60, 90].map((d) => (
-                  <button
-                    key={d}
-                    onClick={() => setDuration(d)}
-                    style={{
-                      flex: 1, padding: '10px 0', borderRadius: 14,
-                      border: duration === d ? '1px solid #ADEBB3' : '1px solid var(--border-subtle)',
-                      background: duration === d ? 'rgba(240,144,112,0.12)' : 'transparent',
-                      color: duration === d ? '#ADEBB3' : 'var(--text-muted)',
-                      fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-                    }}
-                  >{d}일</button>
-                ))}
-              </div>
-            </div>
           </div>
-        )}
 
-        {/* STEP 3: Confirmation */}
-        {step === 3 && (
-          <div>
+          {existingGoal && existingGoal.status === 'active' && (
             <div style={{
-              padding: 20, borderRadius: 20,
-              background: 'rgba(240,144,112,0.06)',
-              border: '1px solid rgba(240,144,112,0.15)',
+              marginTop: 12, padding: '10px 16px', borderRadius: 14,
+              background: 'rgba(101,152,239,0.06)', border: '1px solid rgba(101,152,239,0.12)',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>목표 요약</span>
-                <span style={{ fontSize: 12, color: '#ADEBB3', fontWeight: 500 }}>{duration}일</span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {selectedMetrics.map((key) => {
-                  const meta = METRIC_META.find((m) => m.key === key);
-                  const current = latestRecord ? (latestRecord[key] ?? 0) : 50;
-                  const target = targets[key] || Math.min(100, current + 10);
-                  return (
-                    <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ fontSize: 16 }}>{meta.icon}</span>
-                        <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{meta.label}</span>
-                      </div>
-                      <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-                        <span style={{ color: 'var(--text-muted)' }}>{current}</span>
-                        <span style={{ color: 'var(--text-dim)', margin: '0 6px' }}>→</span>
-                        <span style={{ color: '#ADEBB3', fontWeight: 600 }}>{target}</span>
-                      </div>
-                    </div>
-                  );
-                })}
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                기존 목표가 새 목표로 대체됩니다.
               </div>
             </div>
+          )}
+        </div>
+      )}
 
-            {existingGoal && existingGoal.status === 'active' && (
-              <div style={{
-                marginTop: 12, padding: '10px 16px', borderRadius: 12,
-                background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.15)',
-              }}>
-                <div style={{ fontSize: 12, color: '#f59e0b', lineHeight: 1.5 }}>
-                  기존 목표가 새 목표로 대체됩니다.
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+      <div style={{ flex: 1 }} />
 
-        {/* Navigation buttons */}
-        <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
+      {/* Bottom buttons */}
+      <div style={{ padding: '16px 16px calc(16px + env(safe-area-inset-bottom,0px))' }}>
+        <div style={{ display: 'flex', gap: 10 }}>
           {step > 1 && (
             <button
               onClick={() => setStep(step - 1)}
               style={{
-                flex: 1, padding: 14, borderRadius: 16,
-                border: '1px solid var(--border-subtle)',
-                background: 'transparent', color: 'var(--text-muted)',
-                fontSize: 15, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+                flex: 1, padding: 14, borderRadius: 12, border: 'none',
+                background: 'rgba(255,255,255,0.5)', color: 'var(--text-muted)',
+                fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
               }}
             >이전</button>
           )}
@@ -1948,7 +1949,7 @@ function GoalSettingModal({ onClose, showToast }) {
                   const t = {};
                   for (const key of selectedMetrics) {
                     const v = latestRecord ? (latestRecord[key] ?? 0) : 50;
-                    t[key] = Math.min(100, v + 10);
+                    t[key] = v;
                   }
                   setTargets((prev) => ({ ...t, ...prev }));
                 }
@@ -1956,11 +1957,12 @@ function GoalSettingModal({ onClose, showToast }) {
               }}
               disabled={step === 1 && selectedMetrics.length === 0}
               style={{
-                flex: 1, padding: 14, borderRadius: 16, border: 'none',
+                flex: 1, padding: 14, borderRadius: 12, border: 'none',
                 background: (step === 1 && selectedMetrics.length === 0)
-                  ? 'var(--bg-input)' : 'var(--btn-primary-bg)',
+                  ? 'rgba(255,255,255,0.3)' : 'var(--accent-primary, #6598ef)',
                 color: (step === 1 && selectedMetrics.length === 0) ? 'var(--text-dim)' : '#fff',
-                fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+                letterSpacing: -0.2,
               }}
             >다음</button>
           )}
@@ -1968,11 +1970,11 @@ function GoalSettingModal({ onClose, showToast }) {
             <button
               onClick={handleSave}
               style={{
-                flex: 1, padding: 14, borderRadius: 16, border: 'none',
-                background: 'var(--btn-primary-bg)',
-                color: '#fff', fontSize: 15, fontWeight: 700,
+                flex: 1, padding: 14, borderRadius: 12, border: 'none',
+                background: 'var(--accent-primary, #6598ef)',
+                color: '#fff', fontSize: 14, fontWeight: 500,
                 cursor: 'pointer', fontFamily: 'inherit',
-                boxShadow: 'none',
+                letterSpacing: -0.2,
               }}
             >목표 시작하기</button>
           )}
@@ -1982,7 +1984,7 @@ function GoalSettingModal({ onClose, showToast }) {
           <button
             onClick={handleReset}
             style={{
-              width: '100%', marginTop: 12, padding: 12, borderRadius: 14,
+              width: '100%', marginTop: 10, padding: 12, borderRadius: 12,
               border: 'none', background: 'transparent',
               color: '#e05545', fontSize: 13, fontWeight: 400,
               cursor: 'pointer', fontFamily: 'inherit',
@@ -2380,12 +2382,13 @@ function TimePicker({ value, onChange, onClose }) {
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxWidth: 430,
-          background: '#fff', borderRadius: '20px 20px 0 0',
+          background: 'linear-gradient(180deg, #d7e9fa 0%, #F1F7FD 100%)',
+          borderRadius: '20px 20px 0 0',
           padding: '16px 0 calc(16px + env(safe-area-inset-bottom, 0px))',
           maxHeight: '50vh', display: 'flex', flexDirection: 'column',
         }}
       >
-        <div style={{ padding: '0 20px 12px', fontSize: 15, fontWeight: 600, color: '#1a1a1a', borderBottom: '1px solid #f0f0f0' }}>
+        <div style={{ padding: '0 24px 12px', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
           알림 시간
         </div>
         <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
@@ -2394,17 +2397,17 @@ function TimePicker({ value, onChange, onClose }) {
               key={t.h24}
               onClick={() => onChange(`${String(t.h24).padStart(2, '0')}:00`)}
               style={{
-                padding: '14px 24px',
-                fontSize: 15, color: t.h24 === currentH ? '#4a9eff' : '#333',
+                padding: '13px 24px',
+                fontSize: 14, color: t.h24 === currentH ? '#6598ef' : 'var(--text-primary)',
                 fontWeight: t.h24 === currentH ? 600 : 400,
-                background: t.h24 === currentH ? 'rgba(74,158,255,0.06)' : 'transparent',
+                background: t.h24 === currentH ? 'rgba(101,152,239,0.08)' : 'transparent',
                 cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               }}
             >
               {t.label}
               {t.h24 === currentH && (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4a9eff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               )}
             </div>
           ))}

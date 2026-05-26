@@ -1877,3 +1877,43 @@
 [data-theme="light"] .history-divider {
   background: rgba(255,255,255,0.3);
 }
+
+/* ===== Goal Slider — LUA style ===== */
+.lua-goal-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  height: 20px;
+}
+.lua-goal-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  background: transparent;
+  border-radius: 2px;
+}
+.lua-goal-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #6598ef;
+  box-shadow: 0 1px 4px rgba(101,152,239,0.3);
+  margin-top: -5px;
+}
+.lua-goal-slider::-moz-range-track {
+  height: 4px;
+  background: transparent;
+  border-radius: 2px;
+}
+.lua-goal-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #6598ef;
+  box-shadow: 0 1px 4px rgba(101,152,239,0.3);
+  box-sizing: border-box;
+}
