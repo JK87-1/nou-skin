@@ -10,7 +10,7 @@ export default defineConfig({
     react(),
     ...(useSSL ? [basicSsl()] : []),
     VitePWA({
-      registerType: 'prompt',
+      registerType: 'autoUpdate',
       workbox: {
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         skipWaiting: true,

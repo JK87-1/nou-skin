@@ -106,21 +106,16 @@ img[loading="lazy"] {
   box-shadow: 0 0 0 4px rgba(101, 152, 239, 0.08);
 }
 
-/* input/textarea focus 시 우아한 ring fade-in (토스 스타일) */
+/* input/textarea focus — 사용자 caret만 그대로 두고 ring은 제거 (cursor로 오해 차단) */
+input:focus,
+textarea:focus,
+select:focus,
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(101, 152, 239, 0.18);
-  border-color: rgba(101, 152, 239, 0.6);
-  transition: box-shadow 0.18s var(--ease-out-smooth), border-color 0.18s ease;
 }
-/* :focus(터치/click)에도 — Safari mobile은 :focus-visible 보수적 */
-input:focus,
-textarea:focus,
-select:focus {
-  outline: none;
-}
+/* 텍스트 caret 색은 OS 기본 유지 — 강제 색 변경 X */
 
 
 
