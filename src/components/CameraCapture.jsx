@@ -10,6 +10,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { getVideoLandmarker, detectLandmarksImage } from '../engine/FaceLandmarker';
 import { LockIcon, CameraIcon } from './icons/PastelIcons';
+import { hapticSelection, hapticSuccess } from '../utils/haptics';
 
 // Landmark indices for key facial points
 const NOSE_TIP = 1;
@@ -669,15 +670,18 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
       if (cancelled) return;
       let n = 3;
       setAutoCountdown(n);
+      hapticSelection(); // 첫 숫자 등장 시 톡
       intervalId = setInterval(() => {
         if (cancelled) return;
         n -= 1;
         if (n <= 0) {
           clearInterval(intervalId);
           setAutoCountdown(null);
+          hapticSuccess(); // 캡처 직전 — 무게감 있는 시그널
           handleCaptureRef.current?.();
         } else {
           setAutoCountdown(n);
+          hapticSelection(); // 매 숫자 카운트마다 톡톡
         }
       }, 800);
     }, 500);

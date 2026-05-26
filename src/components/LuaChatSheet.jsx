@@ -176,10 +176,28 @@ const LuaAssistantMessage = memo(function LuaAssistantMessage({
   const showQuickReplies = isLast && !isLoading && quickReplies && quickReplies.length > 0;
   const showActions = !isLoading || !isLast;
 
+  const isTyping = isLast && isLoading;
   return (
     <div style={{ padding: '10px 2px 4px', fontSize: 16, animation: 'luaMsgFadeIn 0.32s cubic-bezier(0.22, 0.84, 0.36, 1)' }}>
-      <style>{`@keyframes luaMsgFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+      <style>{`
+        @keyframes luaMsgFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes luaCursorBlink { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
+      `}</style>
       {renderChatMarkdown(cleanText)}
+      {isTyping && (
+        <span
+          aria-hidden
+          style={{
+            display: 'inline-block',
+            width: 3, height: 16,
+            marginLeft: 2,
+            verticalAlign: '-2px',
+            background: '#6598ef',
+            borderRadius: 1.5,
+            animation: 'luaCursorBlink 1s steps(1) infinite',
+          }}
+        />
+      )}
       {routine && (
         <ApplyRoutineCard
           routine={routine}
