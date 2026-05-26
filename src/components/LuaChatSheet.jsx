@@ -176,28 +176,10 @@ const LuaAssistantMessage = memo(function LuaAssistantMessage({
   const showQuickReplies = isLast && !isLoading && quickReplies && quickReplies.length > 0;
   const showActions = !isLoading || !isLast;
 
-  const isTyping = isLast && isLoading;
   return (
     <div style={{ padding: '10px 2px 4px', fontSize: 16, animation: 'luaMsgFadeIn 0.32s cubic-bezier(0.22, 0.84, 0.36, 1)' }}>
-      <style>{`
-        @keyframes luaMsgFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes luaCursorBlink { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
-      `}</style>
+      <style>{`@keyframes luaMsgFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }`}</style>
       {renderChatMarkdown(cleanText)}
-      {isTyping && (
-        <span
-          aria-hidden
-          style={{
-            display: 'inline-block',
-            width: 3, height: 16,
-            marginLeft: 2,
-            verticalAlign: '-2px',
-            background: '#6598ef',
-            borderRadius: 1.5,
-            animation: 'luaCursorBlink 1s steps(1) infinite',
-          }}
-        />
-      )}
       {routine && (
         <ApplyRoutineCard
           routine={routine}
@@ -868,17 +850,18 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
           height: Capacitor 키보드 이벤트 우선, fallback으로 dvh.
           composer는 flex column 마지막이라 sheet가 줄어들면 자동으로 키보드 위에 sticky. */}
       <div ref={sheetRef} style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201,
+        position: 'fixed', top: 0, bottom: 0, left: 0, right: 0, zIndex: 201,
         height: keyboardHeight > 0
           ? `calc(100% - ${keyboardHeight}px)`
-          : 'min(88dvh, 100%)',
+          : '100dvh',
         transition: 'height 0.22s cubic-bezier(0.32,0.72,0,1)',
         background: 'linear-gradient(180deg, #ffffff 0%, #ffffff 45%, #EAF4FB 100%)',
-        borderRadius: '30px 30px 0 0',
-        boxShadow: '0 -2px 8px rgba(0,0,0,0.06)',
+        borderRadius: 0,
+        boxShadow: 'none',
         display: 'flex', flexDirection: 'column',
         animation: closing ? 'luaChatSlideDown 240ms ease forwards' : 'luaChatSlideUp 280ms cubic-bezier(0.32,0.72,0,1) forwards',
         maxWidth: 430, margin: '0 auto',
+        paddingTop: 'env(safe-area-inset-top, 0px)',
       }}>
         <style>{`
           @keyframes luaChatSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -1135,10 +1118,10 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
           )}
 
           <div style={{
-            display: 'flex', gap: 6, alignItems: 'center', width: '100%',
-            background: '#ffffff', borderRadius: 32,
+            display: 'flex', gap: 7, alignItems: 'center', width: '100%',
+            background: '#ffffff', borderRadius: 38,
             border: '1px solid rgba(0,0,0,0.06)',
-            padding: '6px 8px', boxSizing: 'border-box',
+            padding: '8px 10px', boxSizing: 'border-box',
             boxShadow: '0 2px 14px rgba(0,0,0,0.06)',
           }}>
             {/* + Attach Button — Gemini와 동일하게 평면 큰 + 아이콘 */}
@@ -1147,14 +1130,14 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
               disabled={isLoading}
               className="gem-input-btn"
               style={{
-                width: 40, height: 40, borderRadius: '50%', border: 'none',
+                width: 48, height: 48, borderRadius: '50%', border: 'none',
                 background: 'transparent',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: 'pointer', flexShrink: 0,
                 opacity: isLoading ? 0.5 : 1,
               }}
             >
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#5F6368" strokeWidth="2" strokeLinecap="round">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#5F6368" strokeWidth="2" strokeLinecap="round">
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
             </button>
@@ -1167,9 +1150,9 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
               placeholder={isListening ? '듣고 있어요...' : pendingImages.length > 0 ? '메시지와 함께 전송...' : 'lua에게 물어보세요'}
               disabled={isLoading}
               style={{
-                flex: 1, minWidth: 0, padding: '10px 4px', borderRadius: 0,
+                flex: 1, minWidth: 0, padding: '14px 4px', borderRadius: 0,
                 border: 'none', background: 'transparent',
-                fontSize: 16, color: '#1F1F1F',
+                fontSize: 17, color: '#1F1F1F',
                 fontFamily: 'inherit', outline: 'none',
                 letterSpacing: -0.1,
               }}
@@ -1182,14 +1165,14 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
                 disabled={isLoading}
                 className="gem-input-btn"
                 style={{
-                  width: 40, height: 40, borderRadius: '50%', border: 'none',
+                  width: 48, height: 48, borderRadius: '50%', border: 'none',
                   background: isListening ? 'rgba(101,152,239,0.2)' : 'transparent',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   cursor: 'pointer', flexShrink: 0,
                   opacity: isLoading ? 0.5 : 1, transition: 'background 0.15s',
                 }}
               >
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={isListening ? '#6598ef' : '#5F6368'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={isListening ? '#6598ef' : '#5F6368'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="9" y="2" width="6" height="11" rx="3"/><path d="M19 10v1a7 7 0 01-14 0v-1"/><line x1="12" y1="19" x2="12" y2="22"/>
                 </svg>
               </button>
@@ -1201,7 +1184,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
               disabled={isLoading}
               className="gem-input-btn"
               style={{
-                width: 40, height: 40, borderRadius: '50%', border: 'none',
+                width: 48, height: 48, borderRadius: '50%', border: 'none',
                 background: canSend ? '#1F1F1F' : 'rgba(101,152,239,0.18)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: canSend ? 'pointer' : 'pointer',
@@ -1209,12 +1192,12 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
               }}
             >
               {canSend ? (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
                 </svg>
               ) : (
                 // Sound-wave 아이콘 (Gemini와 동일)
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5F8FB5" strokeWidth="2" strokeLinecap="round">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#5F8FB5" strokeWidth="2" strokeLinecap="round">
                   <line x1="6" y1="9" x2="6" y2="15"/>
                   <line x1="10" y1="6" x2="10" y2="18"/>
                   <line x1="14" y1="8" x2="14" y2="16"/>
