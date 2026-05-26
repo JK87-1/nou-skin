@@ -1033,16 +1033,16 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
   const conditionMetrics = [
     { label: '수분도', key: 'moisture', icon: <DropletIcon size={14} />, color: '#a5d8ff', unit: '%' },
     { label: '유분', key: 'oilBalance', icon: <BubbleIcon size={14} />, color: '#ffec99', unit: '%' },
-    { label: '피부톤', key: 'skinTone', icon: <SparkleIcon size={14} />, color: '#fcc2d7' },
+    { label: '피부톤', key: 'skinTone', icon: <LotionIcon size={13} />, color: '#ffd8a8' },
     { label: '트러블', key: 'troubleCount', icon: <TargetIcon size={14} />, color: '#ffc9c9', unit: '개' },
     { label: '다크서클', key: 'darkCircleScore', icon: <EyeIcon size={14} />, color: '#bac8ff' },
   ];
   const agingMetrics = [
-    { label: '피부결', key: 'textureScore', icon: <LotionIcon size={14} />, color: '#ffec99' },
     { label: '탄력', key: 'elasticityScore', icon: <DiamondIcon size={14} />, color: '#99e9f2' },
-    { label: '주름', key: 'wrinkleScore', icon: <RulerIcon size={14} />, color: '#ffd8a8' },
-    { label: '모공', key: 'poreScore', icon: <MicroscopeIcon size={14} />, color: '#c19570' },
-    { label: '색소', key: 'pigmentationScore', icon: <PaletteIcon size={14} />, color: '#ffe066' },
+    { label: '피부결', key: 'textureScore', icon: <SparkleIcon size={14} />, color: '#fcc2d7' },
+    { label: '주름', key: 'wrinkleScore', icon: <RulerIcon size={14} />, color: '#ffec99' },
+    { label: '모공', key: 'poreScore', icon: <MicroscopeIcon size={14} />, color: '#ffd8a8' },
+    { label: '색소', key: 'pigmentationScore', icon: <PaletteIcon size={13} />, color: '#e0c0a0' },
   ];
 
   // ── 공유 ──

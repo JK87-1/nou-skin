@@ -290,6 +290,7 @@ select:focus-visible {
   /* Hint / Context box */
   --context-bg: #F2F8FC;
   --context-border: 1px solid #E6F0F8;
+  --accent-bg: rgba(101,152,239,0.1);
 }
 
 /* Scroll reveal animations */
@@ -1958,4 +1959,37 @@ select:focus-visible {
   border: 2px solid #6598ef;
   box-shadow: 0 1px 4px rgba(101,152,239,0.3);
   box-sizing: border-box;
+}
+
+/* ===== Skin CSS Variables ===== */
+:root {
+  --sub-gradient: linear-gradient(180deg, #C5E3FF 0%, #F1F7FD 100%);
+}
+[data-skin="pink"][data-theme="light"] {
+  --sub-gradient: linear-gradient(180deg, #f9eef5 0%, #f3edf8 25%, #fafbff 50%, #fafbff 100%);
+  --accent-primary: #e9a8f0;
+  --accent-secondary: #f0c8f5;
+  --accent-gradient: linear-gradient(135deg, #e9a8f0, #f0c8f5);
+  --btn-primary-bg: #e9a8f0;
+  --btn-primary-shadow: 0 2px 8px rgba(233,168,240,0.25);
+  --progress-fill: linear-gradient(90deg, #f0c8f5, #e9a8f0);
+  --day-today-accent: #e9a8f0;
+  --context-bg: rgba(233,168,240,0.06);
+  --context-border: 1px solid rgba(233,168,240,0.12);
+  --ingredient-accent: #f0c8f5;
+  --accent-success: #e9a8f0;
+  --accent-success-bg: rgba(233,168,240,0.08);
+  --accent-bg: rgba(233,168,240,0.1);
+  --chip-text: #c080d0;
+}
+[data-skin="pink"] .tab-bar {
+  background: rgba(255,255,255,0.95);
+}
+[data-skin="pink"] .lua-goal-slider::-webkit-slider-thumb {
+  border-color: #e9a8f0;
+  box-shadow: 0 1px 4px rgba(233,168,240,0.3);
+}
+[data-skin="pink"] .lua-goal-slider::-moz-range-thumb {
+  border-color: #e9a8f0;
+  box-shadow: 0 1px 4px rgba(233,168,240,0.3);
 }

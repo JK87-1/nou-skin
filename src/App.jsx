@@ -152,6 +152,7 @@ export default function App() {
   const [recoveryInfo, setRecoveryInfo] = useState(null);
   const [showBackupReminder, setShowBackupReminder] = useState(false);
   const [colorMode, setColorModeState] = useState(() => getProfile().colorMode || 'light');
+  const [colorSkin, setColorSkinState] = useState(() => getProfile().colorSkin || 'blue');
   const [userLevel, setUserLevel] = useState(() => calculateLevel(getTotalXP()));
   const [activeThemeId, setActiveThemeId] = useState(() => getProfile().activeTheme || null);
 
@@ -192,26 +193,52 @@ export default function App() {
   // Apply data-theme attribute for light/dark CSS variables
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', colorMode);
+    document.documentElement.setAttribute('data-skin', colorSkin);
     const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg-primary').trim() || (colorMode === 'light' ? '#F7F8FA' : '#000000');
     document.body.style.background = bg;
     document.body.style.color = colorMode === 'light' ? '#191F28' : '#f0f0f5';
+    // Gradient background — skin에 따라 변경
+    const gradEl = document.getElementById('gradient-bg');
+    const htmlEl = document.documentElement;
+    if (colorMode === 'light') {
+      if (colorSkin === 'pink') {
+        const pinkGrad = 'radial-gradient(ellipse at 20% 20%, rgba(255,184,200,0.5), transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(88,174,254,0.4), transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(216,168,240,0.3), transparent 60%), linear-gradient(135deg, #fff5f9 0%, #f0e6ff 50%, #e8f1ff 100%)';
+        if (gradEl) gradEl.style.background = pinkGrad;
+        htmlEl.style.background = pinkGrad;
+      } else {
+        const blueGrad = 'linear-gradient(to bottom, #58aefe 0%, #d7e9fa 80%, #d7e9fa 100%)';
+        if (gradEl) gradEl.style.background = blueGrad;
+        htmlEl.style.background = blueGrad;
+      }
+    }
     // theme-color: 배터리 영역이 배경과 자연스럽게 이어지도록
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) {
       if (showSplash) {
         meta.content = '#ffffff';
       } else if (colorMode === 'light') {
-        const hasOverlay = activeTab !== 'home';
-        meta.content = hasOverlay ? '#C5E3FF' : '#58aefe';
+        if (colorSkin === 'pink') {
+          const hasOverlay = activeTab !== 'home';
+          meta.content = hasOverlay ? '#f9eef5' : '#fff5f9';
+        } else {
+          const hasOverlay = activeTab !== 'home';
+          meta.content = hasOverlay ? '#C5E3FF' : '#58aefe';
+        }
       } else {
         meta.content = '#0a1222';
       }
     }
-  }, [colorMode, activeTab, showSplash]);
+  }, [colorMode, colorSkin, activeTab, showSplash]);
 
   const setColorMode = useCallback((mode) => {
     setColorModeState(mode);
     saveProfile({ colorMode: mode });
+  }, []);
+
+  const setColorSkin = useCallback((skin) => {
+    setColorSkinState(skin);
+    saveProfile({ colorSkin: skin });
+    document.documentElement.setAttribute('data-skin', skin);
   }, []);
 
   // Active theme — reactive to colorMode + user preference
@@ -1019,7 +1046,7 @@ export default function App() {
       {(activeTab === 'care' || activeTab === 'product' || activeTab === 'discover' || activeTab === 'my') && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: -1, pointerEvents: 'none',
-          background: 'linear-gradient(180deg, #C5E3FF 0%, #F1F7FD 100%)',
+          background: 'var(--sub-gradient)',
         }} />
       )}
 
@@ -1037,7 +1064,7 @@ export default function App() {
       )}
 
       {activeTab === 'my' && (
-        <MyPage key={`my-${refreshKey}`} colorMode={colorMode} setColorMode={setColorMode} onThemeChange={setActiveThemeId} onMeasure={openCamera} />
+        <MyPage key={`my-${refreshKey}`} colorMode={colorMode} setColorMode={setColorMode} colorSkin={colorSkin} setColorSkin={setColorSkin} onThemeChange={setActiveThemeId} onMeasure={openCamera} />
       )}
 
       {/* ===== HOME TAB (stage-based sub-flow) ===== */}
@@ -1390,7 +1417,9 @@ export default function App() {
           {weatherSheet && (
             <div style={{
               position: 'fixed', inset: 0, zIndex: 200,
-              background: 'linear-gradient(to bottom, #58aefe 0%, #d7e9fa 80%, #d7e9fa 100%)',
+              background: colorSkin === 'pink'
+                ? 'linear-gradient(180deg, rgba(83,154,234,0.85) 0%, transparent 40%), linear-gradient(90deg, rgba(83,154,234,0.5) 0%, rgba(108,135,250,0.5) 100%), radial-gradient(ellipse at 0% 100%, rgba(233,175,247,0.7), transparent 50%), radial-gradient(ellipse at 100% 100%, rgba(255,187,214,0.85), transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(216,168,240,0.3), transparent 60%), linear-gradient(315deg, #fff5f9 0%, #f0e6ff 50%, #e8f1ff 100%)'
+                : 'linear-gradient(to bottom, #58aefe 0%, #d7e9fa 80%, #d7e9fa 100%)',
               display: 'flex', flexDirection: 'column',
               animation: 'weatherSlideIn 0.3s cubic-bezier(0.32,0.72,0,1) both',
             }}>
@@ -1401,11 +1430,11 @@ export default function App() {
               {/* Header */}
               <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
                 <div onClick={() => setWeatherSheet(false)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={colorSkin === 'pink' ? 'var(--text-primary)' : '#fff'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
                 </div>
                 <div style={{ position: 'absolute', left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-                  <svg width="16" height="16" viewBox="0 0 256 256" fill="#fff" stroke="none"><path d="M128,16a88.1,88.1,0,0,0-88,88c0,31.4,14.51,64.68,42,96.25a254.19,254.19,0,0,0,41.45,38.3,8,8,0,0,0,9.18,0A254.19,254.19,0,0,0,174,200.25c27.45-31.57,42-64.85,42-96.25A88.1,88.1,0,0,0,128,16Zm0,56a48,48,0,1,1-48,48A48,48,0,0,1,128,72Z" /></svg>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>{(() => { try { const w = JSON.parse(localStorage.getItem('nou_weather_data')); return w?.location || '서울'; } catch { return '서울'; } })()}</span>
+                  <svg width="16" height="16" viewBox="0 0 256 256" fill={colorSkin === 'pink' ? 'var(--text-primary)' : '#fff'} stroke="none"><path d="M128,16a88.1,88.1,0,0,0-88,88c0,31.4,14.51,64.68,42,96.25a254.19,254.19,0,0,0,41.45,38.3,8,8,0,0,0,9.18,0A254.19,254.19,0,0,0,174,200.25c27.45-31.57,42-64.85,42-96.25A88.1,88.1,0,0,0,128,16Zm0,56a48,48,0,1,1-48,48A48,48,0,0,1,128,72Z" /></svg>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: colorSkin === 'pink' ? 'var(--text-primary)' : '#fff' }}>{(() => { try { const w = JSON.parse(localStorage.getItem('nou_weather_data')); return w?.location || '서울'; } catch { return '서울'; } })()}</span>
                 </div>
               </div>
               {/* Content */}
@@ -2505,7 +2534,9 @@ export default function App() {
           <div style={{
             position: 'relative', width: 34, height: 34, zIndex: 1,
             animation: 'fabStarTwinkle 2.5s ease-in-out infinite',
-            filter: 'drop-shadow(0 0 10px rgba(160,200,240,0.9)) drop-shadow(0 0 25px rgba(160,200,240,0.7)) drop-shadow(0 0 50px rgba(160,200,240,0.5)) drop-shadow(0 0 80px rgba(160,200,240,0.3))',
+            filter: colorSkin === 'pink'
+              ? 'drop-shadow(0 0 10px rgba(233,168,240,0.9)) drop-shadow(0 0 25px rgba(233,168,240,0.7)) drop-shadow(0 0 50px rgba(233,168,240,0.5)) drop-shadow(0 0 80px rgba(233,168,240,0.3))'
+              : 'drop-shadow(0 0 10px rgba(160,200,240,0.9)) drop-shadow(0 0 25px rgba(160,200,240,0.7)) drop-shadow(0 0 50px rgba(160,200,240,0.5)) drop-shadow(0 0 80px rgba(160,200,240,0.3))',
           }}>
             <img src="/luastar.svg" alt="" style={{
               width: '100%', height: '100%',
