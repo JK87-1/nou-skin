@@ -1118,11 +1118,12 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
           )}
 
           <div style={{
-            display: 'flex', gap: 7, alignItems: 'center', width: '100%',
-            background: '#ffffff', borderRadius: 38,
+            display: 'flex', gap: 8, alignItems: 'center', width: '100%',
+            background: '#ffffff', borderRadius: 44,
             border: '1px solid rgba(0,0,0,0.06)',
-            padding: '8px 10px', boxSizing: 'border-box',
+            padding: '10px 12px', boxSizing: 'border-box',
             boxShadow: '0 2px 14px rgba(0,0,0,0.06)',
+            minHeight: 64,
           }}>
             {/* + Attach Button — Gemini와 동일하게 평면 큰 + 아이콘 */}
             <button
@@ -1130,14 +1131,14 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
               disabled={isLoading}
               className="gem-input-btn"
               style={{
-                width: 48, height: 48, borderRadius: '50%', border: 'none',
+                width: 52, height: 52, borderRadius: '50%', border: 'none',
                 background: 'transparent',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: 'pointer', flexShrink: 0,
                 opacity: isLoading ? 0.5 : 1,
               }}
             >
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#5F6368" strokeWidth="2" strokeLinecap="round">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#5F6368" strokeWidth="2" strokeLinecap="round">
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
             </button>
@@ -1150,11 +1151,12 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
               placeholder={isListening ? '듣고 있어요...' : pendingImages.length > 0 ? '메시지와 함께 전송...' : 'lua에게 물어보세요'}
               disabled={isLoading}
               style={{
-                flex: 1, minWidth: 0, padding: '14px 4px', borderRadius: 0,
+                flex: 1, minWidth: 0, padding: '18px 6px', borderRadius: 0,
                 border: 'none', background: 'transparent',
-                fontSize: 17, color: '#1F1F1F',
+                fontSize: 18, color: '#1F1F1F',
                 fontFamily: 'inherit', outline: 'none',
                 letterSpacing: -0.1,
+                lineHeight: 1.4,
               }}
             />
 
@@ -1165,14 +1167,14 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
                 disabled={isLoading}
                 className="gem-input-btn"
                 style={{
-                  width: 48, height: 48, borderRadius: '50%', border: 'none',
+                  width: 52, height: 52, borderRadius: '50%', border: 'none',
                   background: isListening ? 'rgba(101,152,239,0.2)' : 'transparent',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   cursor: 'pointer', flexShrink: 0,
                   opacity: isLoading ? 0.5 : 1, transition: 'background 0.15s',
                 }}
               >
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={isListening ? '#6598ef' : '#5F6368'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={isListening ? '#6598ef' : '#5F6368'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="9" y="2" width="6" height="11" rx="3"/><path d="M19 10v1a7 7 0 01-14 0v-1"/><line x1="12" y1="19" x2="12" y2="22"/>
                 </svg>
               </button>
@@ -1184,7 +1186,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
               disabled={isLoading}
               className="gem-input-btn"
               style={{
-                width: 48, height: 48, borderRadius: '50%', border: 'none',
+                width: 52, height: 52, borderRadius: '50%', border: 'none',
                 background: canSend ? '#1F1F1F' : 'rgba(101,152,239,0.18)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: canSend ? 'pointer' : 'pointer',
@@ -1192,12 +1194,12 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
               }}
             >
               {canSend ? (
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
                 </svg>
               ) : (
                 // Sound-wave 아이콘 (Gemini와 동일)
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#5F8FB5" strokeWidth="2" strokeLinecap="round">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#5F8FB5" strokeWidth="2" strokeLinecap="round">
                   <line x1="6" y1="9" x2="6" y2="15"/>
                   <line x1="10" y1="6" x2="10" y2="18"/>
                   <line x1="14" y1="8" x2="14" y2="16"/>
