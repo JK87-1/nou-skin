@@ -358,6 +358,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [sttSupported, setSttSupported] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [personaId, setPersonaId] = useState(() => getActivePersonaId());
   const [personaPickerOpen, setPersonaPickerOpen] = useState(false);
@@ -440,6 +441,9 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
   const cameraInputRef = useRef(null);
   const albumInputRef = useRef(null);
   const recognitionRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioStreamRef = useRef(null);
+  const recordingTimeoutRef = useRef(null);
   const dragStartY = useRef(null);
   const dragDelta = useRef(0);
   const MAX_IMAGES = 3;
@@ -537,56 +541,51 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
     };
   }, []);
 
-  // STT 강화 — continuous + interim + 무음 자동 stop + 에러 복구
-  const silenceTimerRef = useRef(null);
+  // STT — OpenAI Whisper(gpt-4o-transcribe) 기반. Web Speech API보다 정확·iOS 안정.
+  // MediaRecorder로 녹음 → /api/transcribe → text
   useEffect(() => {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) return;
-    const recognition = new SR();
-    recognition.lang = 'ko-KR';
-    recognition.continuous = true;       // 길게 말해도 끊지 않음
-    recognition.interimResults = true;
-    recognition.maxAlternatives = 1;
-
-    let finalText = '';
-    recognition.onresult = (event) => {
-      let interim = '';
-      // 이번 event부터 누적된 결과 처리
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const r = event.results[i];
-        if (r.isFinal) finalText += r[0].transcript;
-        else interim += r[0].transcript;
-      }
-      setInput((finalText + interim).trim());
-      // 새 결과 도착마다 무음 타이머 리셋 → 3초 무음 시 자동 stop
-      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-      silenceTimerRef.current = setTimeout(() => {
-        try { recognition.stop(); } catch {}
-      }, 3000);
-    };
-    recognition.onend = () => {
-      if (silenceTimerRef.current) { clearTimeout(silenceTimerRef.current); silenceTimerRef.current = null; }
-      setIsListening(false);
-      finalText = '';
-    };
-    recognition.onerror = (e) => {
-      if (silenceTimerRef.current) { clearTimeout(silenceTimerRef.current); silenceTimerRef.current = null; }
-      setIsListening(false);
-      // 사용자에게 명확한 알림 (no-speech·aborted·not-allowed 등)
-      if (e?.error === 'not-allowed') {
-        // 권한 거부 — 한 번만 안내
-        console.warn('[STT] microphone permission denied');
-      } else if (e?.error && e.error !== 'no-speech' && e.error !== 'aborted') {
-        console.warn('[STT] error:', e.error);
-      }
-    };
-    recognitionRef.current = recognition;
-    setSttSupported(true);
+    if (typeof window === 'undefined') return;
+    const hasMic = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+    const hasMR = typeof window.MediaRecorder !== 'undefined';
+    setSttSupported(hasMic && hasMR);
     return () => {
-      try { recognition.abort(); } catch {}
-      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+      try {
+        const rec = mediaRecorderRef.current;
+        if (rec && rec.state === 'recording') rec.stop();
+      } catch {}
+      try {
+        const stream = audioStreamRef.current;
+        if (stream) stream.getTracks().forEach((t) => t.stop());
+      } catch {}
+      if (recordingTimeoutRef.current) clearTimeout(recordingTimeoutRef.current);
     };
   }, []);
+
+  const pickSupportedMime = useCallback(() => {
+    const candidates = [
+      'audio/mp4',                     // iOS/macOS Safari
+      'audio/mp4;codecs=mp4a.40.2',
+      'audio/webm;codecs=opus',        // Chrome/Edge/Firefox
+      'audio/webm',
+      'audio/ogg;codecs=opus',
+    ];
+    if (typeof window === 'undefined' || !window.MediaRecorder) return '';
+    for (const c of candidates) {
+      try { if (window.MediaRecorder.isTypeSupported(c)) return c; } catch {}
+    }
+    return '';
+  }, []);
+
+  const blobToBase64 = useCallback((blob) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result || '';
+      const idx = String(result).indexOf(',');
+      resolve(idx >= 0 ? String(result).slice(idx + 1) : '');
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  }), []);
 
   // Close attach menu on outside click
   useEffect(() => {
@@ -596,12 +595,79 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
     return () => document.removeEventListener('click', handler);
   }, [showAttachMenu]);
 
-  const toggleListening = useCallback(() => {
-    const recognition = recognitionRef.current;
-    if (!recognition) return;
-    if (isListening) { recognition.stop(); }
-    else { try { recognition.start(); setIsListening(true); } catch {} }
-  }, [isListening]);
+  const toggleListening = useCallback(async () => {
+    if (isTranscribing) return;
+    // 녹음 중 → stop
+    if (isListening) {
+      try {
+        const rec = mediaRecorderRef.current;
+        if (rec && rec.state === 'recording') rec.stop();
+      } catch (e) { console.warn('[stt] stop failed', e); }
+      if (recordingTimeoutRef.current) { clearTimeout(recordingTimeoutRef.current); recordingTimeoutRef.current = null; }
+      return;
+    }
+    // 녹음 시작
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+      });
+      audioStreamRef.current = stream;
+      const mimeType = pickSupportedMime();
+      const recorder = mimeType
+        ? new MediaRecorder(stream, { mimeType })
+        : new MediaRecorder(stream);
+      mediaRecorderRef.current = recorder;
+      const chunks = [];
+
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) chunks.push(e.data);
+      };
+      recorder.onstop = async () => {
+        try { stream.getTracks().forEach((t) => t.stop()); } catch {}
+        audioStreamRef.current = null;
+        setIsListening(false);
+        if (recordingTimeoutRef.current) { clearTimeout(recordingTimeoutRef.current); recordingTimeoutRef.current = null; }
+        if (chunks.length === 0) return;
+        const finalMime = recorder.mimeType || mimeType || 'audio/webm';
+        const blob = new Blob(chunks, { type: finalMime });
+        if (blob.size < 1000) return; // 너무 짧음 → 무시
+        setIsTranscribing(true);
+        try {
+          const base64 = await blobToBase64(blob);
+          const resp = await fetch('/api/transcribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ audio: base64, mime: finalMime }),
+          });
+          if (!resp.ok) {
+            const errData = await resp.json().catch(() => ({}));
+            throw new Error(errData.error || `HTTP ${resp.status}`);
+          }
+          const data = await resp.json();
+          const text = (data.text || '').trim();
+          if (text) setInput((prev) => (prev ? `${prev} ${text}` : text));
+        } catch (e) {
+          console.warn('[stt] transcribe failed:', e?.message || e);
+        } finally {
+          setIsTranscribing(false);
+        }
+      };
+      recorder.onerror = (e) => {
+        console.warn('[stt] recorder error', e);
+        setIsListening(false);
+      };
+      recorder.start();
+      setIsListening(true);
+      // 안전망 — 60초 초과 자동 stop
+      recordingTimeoutRef.current = setTimeout(() => {
+        try { if (recorder.state === 'recording') recorder.stop(); } catch {}
+      }, 60000);
+    } catch (e) {
+      console.warn('[stt] mic access failed:', e?.message || e);
+      setIsListening(false);
+      audioStreamRef.current = null;
+    }
+  }, [isListening, isTranscribing, pickSupportedMime, blobToBase64]);
 
   const processFile = useCallback((file) => {
     return new Promise((resolve) => {
@@ -1206,8 +1272,8 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); handleSubmit(); } }}
-              placeholder={isListening ? '듣고 있어요...' : pendingImages.length > 0 ? '메시지와 함께 전송...' : 'lua에게 물어보세요'}
-              disabled={isLoading}
+              placeholder={isListening ? '듣고 있어요... 마이크 다시 눌러주세요' : isTranscribing ? '음성을 텍스트로 변환 중...' : pendingImages.length > 0 ? '메시지와 함께 전송...' : 'lua에게 물어보세요'}
+              disabled={isLoading || isTranscribing}
               style={{
                 flex: 1, minWidth: 0, padding: '18px 6px', borderRadius: 0,
                 border: 'none', background: 'transparent',
@@ -1218,21 +1284,31 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
               }}
             />
 
-            {/* Mic Button — 평면 회색 아이콘 + 인식 중 pulse ring */}
+            {/* Mic Button — Whisper STT. 인식 중 pulse ring, 변환 중 spinner */}
             {sttSupported && (
               <button
                 onClick={toggleListening}
-                disabled={isLoading}
+                disabled={isLoading || isTranscribing}
                 className="gem-input-btn"
+                aria-label={isListening ? '녹음 정지' : isTranscribing ? '변환 중' : '음성 입력'}
                 style={{
                   position: 'relative',
                   width: 52, height: 52, borderRadius: '50%', border: 'none',
-                  background: isListening ? 'rgba(101,152,239,0.18)' : 'transparent',
+                  background: isListening ? 'rgba(101,152,239,0.18)' : isTranscribing ? 'rgba(101,152,239,0.10)' : 'transparent',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   cursor: 'pointer', flexShrink: 0,
-                  opacity: isLoading ? 0.5 : 1, transition: 'background 0.18s',
+                  opacity: (isLoading || isTranscribing) ? 0.7 : 1, transition: 'background 0.18s',
                 }}
               >
+                {isTranscribing && (
+                  <span style={{
+                    position: 'absolute', inset: 0, borderRadius: '50%',
+                    border: '2.4px solid rgba(101,152,239,0.25)',
+                    borderTopColor: '#6598ef',
+                    animation: 'sttSpin 0.85s linear infinite',
+                  }} />
+                )}
+                <style>{`@keyframes sttSpin { to { transform: rotate(360deg); } }`}</style>
                 {isListening && (
                   <>
                     <span style={{
