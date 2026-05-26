@@ -554,15 +554,20 @@ export default function App() {
       setBriefingLoading(false);
       setResult(finalScores); setStage('result');
 
-      // 🎉 3회 평균 baseline 완성 시 축하 modal 트리거 (애플 setup 완료 톤)
+      // 🎉 3회 평균 baseline 완성 시 축하 modal — 영구 1회만 노출.
+      // baseline이 어떤 이유로 reset(얼굴 인식 오인 등) 되어 또 3회 완성되어도 다시 안 띄움.
+      // 명시적 재설정(마이 → 측정 기준 재설정/측정 기록 전체 삭제)에서 flag 같이 초기화.
       if (finalScores?.measureDebug?.baselineJustCompleted) {
-        const avg = finalScores.measureDebug.baselineCompletedAvg?.overallScore || finalScores.overallScore;
-        setBaselineCompleteAvg(avg);
-        // 결과 stage 진입 후 살짝 텀 두고 modal — 측정 결과를 먼저 보여준 다음 축하
-        setTimeout(() => {
-          hapticSuccess(); // 3회 baseline 완성 — 큰 축하 진동
-          setBaselineCompleteOpen(true);
-        }, 1100);
+        const alreadyShown = (() => { try { return localStorage.getItem('nou_baseline_complete_shown') === '1'; } catch { return false; } })();
+        if (!alreadyShown) {
+          try { localStorage.setItem('nou_baseline_complete_shown', '1'); } catch {}
+          const avg = finalScores.measureDebug.baselineCompletedAvg?.overallScore || finalScores.overallScore;
+          setBaselineCompleteAvg(avg);
+          setTimeout(() => {
+            hapticSuccess();
+            setBaselineCompleteOpen(true);
+          }, 1100);
+        }
       }
 
       // Update saved record with advice + briefing

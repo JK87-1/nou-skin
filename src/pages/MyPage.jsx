@@ -1472,6 +1472,8 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                     if (m?.resetMeasureGuideDismiss) m.resetMeasureGuideDismiss();
                   } catch {}
                   try { localStorage.removeItem('nou_measure_guide_dismissed'); } catch {}
+                  // 축하 modal 다시 노출 가능하게 flag 초기화
+                  try { localStorage.removeItem('nou_baseline_complete_shown'); } catch {}
                   setBaselineResetConfirm(false);
                   showToast('측정 기준이 재설정됐어요. 다음 3회 측정으로 새 기준이 만들어져요.');
                 }}
@@ -1533,6 +1535,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                     await clearAllRecords();
                     try { clearBaseline(); } catch {}
                     try { localStorage.removeItem('nou_measure_guide_dismissed'); } catch {}
+                    try { localStorage.removeItem('nou_baseline_complete_shown'); } catch {}
                     setBaselineExists(false);
                     setAllRecordsResetConfirm(false);
                     showToast('모든 측정 기록이 삭제됐어요');
