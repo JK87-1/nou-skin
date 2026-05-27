@@ -1876,9 +1876,8 @@ export default function App() {
                 </div>
                 {/* 또래 상위 % — 연령 보정 추정 (핵심 비교 지표) */}
                 {overallPct && (
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 14px', borderRadius: 20, background: 'rgba(88,174,254,0.28)', border: '1px solid rgba(255,255,255,0.28)', marginBottom: 8 }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873z" /></svg>
-                    <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.2, color: '#fff' }}>{pctPeerLabel} 상위 {overallPct.top}%</span>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', padding: '5px 14px', borderRadius: 20, background: 'rgba(255,255,255,0.15)', marginBottom: 8 }}>
+                    <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: 0.3, color: 'rgba(255,255,255,0.8)' }}>{pctPeerLabel} 상위 {overallPct.top}%</span>
                   </div>
                 )}
                 {/* 피부나이 · 레벨 배지 */}
@@ -2298,8 +2297,21 @@ export default function App() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         {m.icon}
                         <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(0,0,0,0.8)' }}>{m.label}</span>
+                        {pct && pct.top <= 30 && (() => {
+                          const _ic = {
+                            moisture: '#4d8ef2', oilBalance: '#4dbdfd', oilMoistureBalance: '#8fe2ff',
+                            skinTone: '#f86aaa', redness: '#e86260', pigmentation: '#d44a68',
+                            texture: '#ff85b8', elasticity: '#ffab4d', pores: '#fda4db',
+                            wrinkles: '#fde04d', darkCircles: '#ffd04d', trouble: '#ff8a85',
+                          };
+                          const tc = _ic[m.detail] || '#6598ef';
+                          return <span style={{
+                            marginLeft: 'auto', fontSize: 10, fontWeight: 500,
+                            color: tc, whiteSpace: 'nowrap',
+                          }}>{pct.top}%</span>;
+                        })()}
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 'auto', paddingTop: 12 }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 'auto', paddingTop: 20 }}>
                         {(() => {
                           const v = m.value;
                           const d = m.detail;
@@ -2318,8 +2330,8 @@ export default function App() {
                             else { scoreColor = 'rgba(0,0,0,0.7)'; label = '건조'; }
                           } else if (d === 'oilBalance') {
                             if (v >= 40 && v <= 60) { scoreColor = dark; label = '적당'; }
-                            else if (v > 60 && v <= 80) { scoreColor = light; label = '유분과다'; }
-                            else if (v < 40) { scoreColor = 'rgba(0,0,0,0.35)'; label = '유분부족'; }
+                            else if (v > 60 && v <= 80) { scoreColor = light; label = '과다'; }
+                            else if (v < 40) { scoreColor = 'rgba(0,0,0,0.35)'; label = '부족'; }
                             else { scoreColor = 'rgba(0,0,0,0.7)'; label = '나쁨'; }
                           } else if (d === 'oilMoistureBalance') {
                             const mst = result.moisture ?? 50, oil = result.oilBalance ?? 50;
@@ -2395,16 +2407,6 @@ export default function App() {
                           </>;
                         })()}
                       </div>
-                      {/* 또래 상위 % — 우수 지표(상위 50% 이내)만 강조 노출 */}
-                      {pct && pct.top <= 50 && (
-                        <div style={{
-                          display: 'inline-flex', alignItems: 'center', gap: 3, marginTop: 7,
-                          padding: '2px 7px', borderRadius: 7,
-                          background: 'rgba(88,174,254,0.14)',
-                        }}>
-                          <span style={{ fontSize: 9.5, fontWeight: 600, color: '#3D8BE0', letterSpacing: 0.1 }}>상위 {pct.top}%</span>
-                        </div>
-                      )}
                     </div>
                     );
                   })}
