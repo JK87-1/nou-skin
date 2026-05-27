@@ -447,10 +447,20 @@ export default async function handler(req, res) {
 
     // 3x parallel API calls with different seeds → median
     const seeds = [12345, 67890, 24680];
-    const results = await Promise.all(
+    let results = await Promise.all(
       seeds.map(s => callGPT(apiKey, image, s, baselineImage || null, baselineResult || null, deviceInfo))
     );
-    const valid = results.filter(r => r !== null);
+    let valid = results.filter(r => r !== null);
+
+    // 전체 실패 시 1회 재시도 — 일시적 OpenAI 지연/오류로 3회 모두 실패한 경우 자동 복구.
+    // (사용자가 직접 재측정하지 않아도 복구되어 CV-only로 빠지는 것을 막음)
+    if (valid.length === 0) {
+      console.warn('[analyze] 1차 3회 모두 실패 — 1회 재시도');
+      results = await Promise.all(
+        seeds.map(s => callGPT(apiKey, image, s, baselineImage || null, baselineResult || null, deviceInfo))
+      );
+      valid = results.filter(r => r !== null);
+    }
 
     if (valid.length === 0) {
       recordOutcome(reqDate, 'failure', Date.now() - startedAt);
