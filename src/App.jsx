@@ -2211,7 +2211,7 @@ export default function App() {
             </button>
             {expandedSections.analysis && (
               <div style={{ padding: '0 16px 16px', animation: 'fadeUp 0.3s ease-out' }}>
-                <p style={{ fontSize: 14, color: '#042C53', lineHeight: 1.7, margin: '0 0 12px' }}>{result.advice}</p>
+                <p style={{ fontSize: 14, color: '#042C53', lineHeight: 1.7, margin: 0 }}>{result.advice}</p>
                 <AiCommentCard
                   aiNotes={result.aiNotes}
                   aiDetails={result.aiDetails}
