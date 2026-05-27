@@ -379,13 +379,11 @@ export default function SkinWeather({ skinResult }) {
             return (
               <div key={alert.id} style={{
                 marginBottom: 8,
-                background: 'rgba(255,255,255,0.42)',
-                backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-                border: '1px solid rgba(255,255,255,0.4)',
-                boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
-                borderRadius: 18, overflow: 'hidden',
+                background: 'rgba(255,255,255,0.5)',
+                border: 'none',
+                boxShadow: 'none',
+                borderRadius: 14, overflow: 'hidden',
                 animation: `swFadeInUp 0.4s ease ${i * 0.08}s both`,
-                transition: 'background 0.3s, border-color 0.3s',
               }}>
                 {/* Header */}
                 <div
@@ -395,12 +393,6 @@ export default function SkinWeather({ skinResult }) {
                     padding: 16, cursor: 'pointer',
                   }}
                 >
-                  <div style={{
-                    width: 44, height: 44, borderRadius: 14, flexShrink: 0,
-                    background: 'transparent',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 22,
-                  }}><PastelIcon emoji={alert.icon} size={22} /></div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{alert.title}</span>

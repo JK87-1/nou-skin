@@ -152,7 +152,9 @@ export default function App() {
   const [recoveryInfo, setRecoveryInfo] = useState(null);
   const [showBackupReminder, setShowBackupReminder] = useState(false);
   const [colorMode, setColorModeState] = useState(() => getProfile().colorMode || 'light');
+  const [colorSkin, setColorSkinState] = useState(() => getProfile().colorSkin || 'blue');
   const [userLevel, setUserLevel] = useState(() => calculateLevel(getTotalXP()));
+  const [viewingHistory, setViewingHistory] = useState(false);
   const [activeThemeId, setActiveThemeId] = useState(() => getProfile().activeTheme || null);
 
   // AI fallback 디버그 헬퍼 — 콘솔에서 window.__aiFallbackStats() 호출
@@ -192,26 +194,52 @@ export default function App() {
   // Apply data-theme attribute for light/dark CSS variables
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', colorMode);
+    document.documentElement.setAttribute('data-skin', colorSkin);
     const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg-primary').trim() || (colorMode === 'light' ? '#F7F8FA' : '#000000');
     document.body.style.background = bg;
     document.body.style.color = colorMode === 'light' ? '#191F28' : '#f0f0f5';
+    // Gradient background — skin에 따라 변경
+    const gradEl = document.getElementById('gradient-bg');
+    const htmlEl = document.documentElement;
+    if (colorMode === 'light') {
+      if (colorSkin === 'pink') {
+        const pinkGrad = 'radial-gradient(ellipse at 20% 20%, rgba(255,184,200,0.5), transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(88,174,254,0.4), transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(216,168,240,0.3), transparent 60%), linear-gradient(135deg, #fff5f9 0%, #f0e6ff 50%, #e8f1ff 100%)';
+        if (gradEl) gradEl.style.background = pinkGrad;
+        htmlEl.style.background = pinkGrad;
+      } else {
+        const blueGrad = 'linear-gradient(to bottom, #58aefe 0%, #d7e9fa 80%, #d7e9fa 100%)';
+        if (gradEl) gradEl.style.background = blueGrad;
+        htmlEl.style.background = blueGrad;
+      }
+    }
     // theme-color: 배터리 영역이 배경과 자연스럽게 이어지도록
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) {
       if (showSplash) {
         meta.content = '#ffffff';
       } else if (colorMode === 'light') {
-        const hasOverlay = activeTab !== 'home';
-        meta.content = hasOverlay ? '#C5E3FF' : '#58aefe';
+        if (colorSkin === 'pink') {
+          const hasOverlay = activeTab !== 'home';
+          meta.content = hasOverlay ? '#f9eef5' : '#fff5f9';
+        } else {
+          const hasOverlay = activeTab !== 'home';
+          meta.content = hasOverlay ? '#C5E3FF' : '#58aefe';
+        }
       } else {
         meta.content = '#0a1222';
       }
     }
-  }, [colorMode, activeTab, showSplash]);
+  }, [colorMode, colorSkin, activeTab, showSplash]);
 
   const setColorMode = useCallback((mode) => {
     setColorModeState(mode);
     saveProfile({ colorMode: mode });
+  }, []);
+
+  const setColorSkin = useCallback((skin) => {
+    setColorSkinState(skin);
+    saveProfile({ colorSkin: skin });
+    document.documentElement.setAttribute('data-skin', skin);
   }, []);
 
   // Active theme — reactive to colorMode + user preference
@@ -1019,7 +1047,7 @@ export default function App() {
       {(activeTab === 'care' || activeTab === 'product' || activeTab === 'discover' || activeTab === 'my') && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: -1, pointerEvents: 'none',
-          background: 'linear-gradient(180deg, #C5E3FF 0%, #F1F7FD 100%)',
+          background: 'var(--sub-gradient)',
         }} />
       )}
 
@@ -1037,7 +1065,14 @@ export default function App() {
       )}
 
       {activeTab === 'my' && (
-        <MyPage key={`my-${refreshKey}`} colorMode={colorMode} setColorMode={setColorMode} onThemeChange={setActiveThemeId} onMeasure={openCamera} />
+        <MyPage key={`my-${refreshKey}`} colorMode={colorMode} setColorMode={setColorMode} colorSkin={colorSkin} setColorSkin={setColorSkin} onThemeChange={setActiveThemeId} onMeasure={openCamera} onViewRecord={(record, thumb) => {
+          setResult(record);
+          setImage(thumb || null);
+          setSaved(true);
+          setViewingHistory(true);
+          setActiveTab('home');
+          setStage('result');
+        }} />
       )}
 
       {/* ===== HOME TAB (stage-based sub-flow) ===== */}
@@ -1390,7 +1425,9 @@ export default function App() {
           {weatherSheet && (
             <div style={{
               position: 'fixed', inset: 0, zIndex: 200,
-              background: 'linear-gradient(to bottom, #58aefe 0%, #d7e9fa 80%, #d7e9fa 100%)',
+              background: colorSkin === 'pink'
+                ? 'linear-gradient(180deg, rgba(83,154,234,0.85) 0%, transparent 40%), linear-gradient(90deg, rgba(83,154,234,0.5) 0%, rgba(108,135,250,0.5) 100%), radial-gradient(ellipse at 0% 100%, rgba(233,175,247,0.7), transparent 50%), radial-gradient(ellipse at 100% 100%, rgba(255,187,214,0.85), transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(216,168,240,0.3), transparent 60%), linear-gradient(315deg, #fff5f9 0%, #f0e6ff 50%, #e8f1ff 100%)'
+                : 'linear-gradient(to bottom, #58aefe 0%, #d7e9fa 80%, #d7e9fa 100%)',
               display: 'flex', flexDirection: 'column',
               animation: 'weatherSlideIn 0.3s cubic-bezier(0.32,0.72,0,1) both',
             }}>
@@ -1401,11 +1438,11 @@ export default function App() {
               {/* Header */}
               <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
                 <div onClick={() => setWeatherSheet(false)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={colorSkin === 'pink' ? 'var(--text-primary)' : '#fff'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
                 </div>
                 <div style={{ position: 'absolute', left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-                  <svg width="16" height="16" viewBox="0 0 256 256" fill="#fff" stroke="none"><path d="M128,16a88.1,88.1,0,0,0-88,88c0,31.4,14.51,64.68,42,96.25a254.19,254.19,0,0,0,41.45,38.3,8,8,0,0,0,9.18,0A254.19,254.19,0,0,0,174,200.25c27.45-31.57,42-64.85,42-96.25A88.1,88.1,0,0,0,128,16Zm0,56a48,48,0,1,1-48,48A48,48,0,0,1,128,72Z" /></svg>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>{(() => { try { const w = JSON.parse(localStorage.getItem('nou_weather_data')); return w?.location || '서울'; } catch { return '서울'; } })()}</span>
+                  <svg width="16" height="16" viewBox="0 0 256 256" fill={colorSkin === 'pink' ? 'var(--text-primary)' : '#fff'} stroke="none"><path d="M128,16a88.1,88.1,0,0,0-88,88c0,31.4,14.51,64.68,42,96.25a254.19,254.19,0,0,0,41.45,38.3,8,8,0,0,0,9.18,0A254.19,254.19,0,0,0,174,200.25c27.45-31.57,42-64.85,42-96.25A88.1,88.1,0,0,0,128,16Zm0,56a48,48,0,1,1-48,48A48,48,0,0,1,128,72Z" /></svg>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: colorSkin === 'pink' ? 'var(--text-primary)' : '#fff' }}>{(() => { try { const w = JSON.parse(localStorage.getItem('nou_weather_data')); return w?.location || '서울'; } catch { return '서울'; } })()}</span>
                 </div>
               </div>
               {/* Content */}
@@ -1721,10 +1758,13 @@ export default function App() {
         const sigScore = result.overallScore;
         const sigLevel = sigScore >= 85 ? 'S' : sigScore >= 70 ? 'A' : sigScore >= 55 ? 'B' : sigScore >= 40 ? 'C' : 'D';
         const sigComment = getSignatureComment(result);
-        const sigDate = new Date().toLocaleDateString('sv-SE').replace(/-/g, '.');
+        const sigDate = viewingHistory && result.date
+          ? result.date.replace(/-/g, '.')
+          : new Date().toLocaleDateString('sv-SE').replace(/-/g, '.');
         const sigChange = changes?.overallScore;
         return (
         <div style={{ minHeight: '100dvh', paddingBottom: 'calc(var(--tab-bar-h, 80px) + 40px)' }}>
+          {viewingHistory && <div style={{ position: 'fixed', inset: 0, background: 'var(--sub-gradient)', zIndex: -1, pointerEvents: 'none' }} />}
 
           {/* ═══════ Nav Bar ═══════ */}
           <div style={{
@@ -1733,7 +1773,16 @@ export default function App() {
             justifyContent: 'space-between', alignItems: 'center',
             background: 'transparent',
           }}>
-            <div onClick={reset} style={{
+            <div onClick={() => {
+              if (viewingHistory) {
+                setViewingHistory(false);
+                setResult(null);
+                setStage('landing');
+                setActiveTab('my');
+              } else {
+                reset();
+              }
+            }} style={{
               width: 36, height: 36, cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
@@ -2413,44 +2462,47 @@ export default function App() {
             )}
           </div>
 
-          {/* ═══════ 다시 측정하기 (항상 표시) ═══════ */}
-          <div style={{ padding: '12px 14px 0', animation: 'fadeUp 0.5s ease-out 0.5s both' }}>
-            <button onClick={reset} style={{
-              width: '100%', padding: 12, borderRadius: 12, fontFamily: 'inherit',
-              background: '#FFFFFF', border: 'none',
-              color: '#042C53', fontSize: 13, fontWeight: 500, cursor: 'pointer',
-              boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M19.933 13.041a8 8 0 11-9.925-8.788c3.899-1 7.935 1.007 9.425 4.747"/><path d="M20 4v5h-5"/></svg>
-              다시 측정하기
-            </button>
-          </div>
+          {/* ═══════ 다시 측정하기 / 하단 액션 ═══════ */}
+          {!viewingHistory && (
+            <>
+            <div style={{ padding: '12px 14px 0', animation: 'fadeUp 0.5s ease-out 0.5s both' }}>
+              <button onClick={reset} style={{
+                width: '100%', padding: 12, borderRadius: 12, fontFamily: 'inherit',
+                background: '#FFFFFF', border: 'none',
+                color: '#042C53', fontSize: 13, fontWeight: 500, cursor: 'pointer',
+                boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M19.933 13.041a8 8 0 11-9.925-8.788c3.899-1 7.935 1.007 9.425 4.747"/><path d="M20 4v5h-5"/></svg>
+                다시 측정하기
+              </button>
+            </div>
 
-          {/* ═══════ Action Buttons ═══════ */}
-          <div style={{
-            padding: '8px 14px', display: 'flex', gap: 8,
-            paddingBottom: 'calc(var(--tab-bar-h, 80px) + 20px)',
-          }}>
-            <button onClick={() => setFabChatOpen(true)} style={{
-              flex: 1, height: 44, borderRadius: 12, border: 'none',
-              background: 'rgba(30, 144, 232, 0.1)', color: '#185FA5',
-              fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            <div style={{
+              padding: '8px 14px', display: 'flex', gap: 8,
+              paddingBottom: 'calc(var(--tab-bar-h, 80px) + 20px)',
             }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v12a1 1 0 01-1 1H6l-3 3z"/></svg>
-              lua에게 물어보기
-            </button>
-            <button onClick={handleSave} disabled={saved} style={{
-              flex: 1, height: 44, borderRadius: 12, border: 'none',
-              background: saved ? 'rgba(144,196,248,0.15)' : '#1E90E8',
-              color: saved ? '#70B0F0' : '#FFFFFF',
-              fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
-              boxShadow: saved ? 'none' : '0 2px 8px rgba(30, 144, 232, 0.25)',
+              <button onClick={() => setFabChatOpen(true)} style={{
+                flex: 1, height: 44, borderRadius: 12, border: 'none',
+                background: 'rgba(30, 144, 232, 0.1)', color: '#185FA5',
+                fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v12a1 1 0 01-1 1H6l-3 3z"/></svg>
+                lua에게 물어보기
+              </button>
+              <button onClick={handleSave} disabled={saved} style={{
+                flex: 1, height: 44, borderRadius: 12, border: 'none',
+                background: saved ? 'rgba(144,196,248,0.15)' : '#1E90E8',
+                color: saved ? '#70B0F0' : '#FFFFFF',
+                fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+                boxShadow: saved ? 'none' : '0 2px 8px rgba(30, 144, 232, 0.25)',
             }}>
               {saved ? '기록 완료 ' : '이 결과 기록하기'}
             </button>
           </div>
+            </>
+          )}
         </div>
         );
       })()}
@@ -2505,7 +2557,9 @@ export default function App() {
           <div style={{
             position: 'relative', width: 34, height: 34, zIndex: 1,
             animation: 'fabStarTwinkle 2.5s ease-in-out infinite',
-            filter: 'drop-shadow(0 0 10px rgba(160,200,240,0.9)) drop-shadow(0 0 25px rgba(160,200,240,0.7)) drop-shadow(0 0 50px rgba(160,200,240,0.5)) drop-shadow(0 0 80px rgba(160,200,240,0.3))',
+            filter: colorSkin === 'pink'
+              ? 'drop-shadow(0 0 10px rgba(233,168,240,0.9)) drop-shadow(0 0 25px rgba(233,168,240,0.7)) drop-shadow(0 0 50px rgba(233,168,240,0.5)) drop-shadow(0 0 80px rgba(233,168,240,0.3))'
+              : 'drop-shadow(0 0 10px rgba(160,200,240,0.9)) drop-shadow(0 0 25px rgba(160,200,240,0.7)) drop-shadow(0 0 50px rgba(160,200,240,0.5)) drop-shadow(0 0 80px rgba(160,200,240,0.3))',
           }}>
             <img src="/luastar.svg" alt="" style={{
               width: '100%', height: '100%',

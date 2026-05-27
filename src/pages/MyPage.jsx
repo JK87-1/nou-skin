@@ -24,7 +24,7 @@ import { MoonIcon, SunIcon, CameraIcon, SaveIcon, PastelIcon } from '../componen
 import { TERMS_OF_SERVICE, PRIVACY_POLICY, BIOMETRIC_CONSENT, OVERSEAS_TRANSFER_CONSENT, INQUIRY_FAQ, CONTACT_EMAIL } from '../legal/legalContent';
 import SiteFooter from '../components/SiteFooter';
 
-export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasure }) {
+export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSkin, onThemeChange, onMeasure, onViewRecord }) {
   const [profile, setProfile] = useState(getProfile);
   const [toast, setToast] = useState(false);
   const [toastMsg, setToastMsg] = useState('저장되었습니다');
@@ -156,7 +156,7 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
             <div style={{
               position: 'absolute', right: -2, bottom: -2,
               width: 26, height: 26, borderRadius: '50%',
-              background: '#6598ef',
+              background: 'var(--accent-primary, #6598ef)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               border: '2px solid #fff',
               boxShadow: '0 1px 3px rgba(0,0,0,0.18)',
@@ -216,7 +216,7 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
                 const d = new Date(p.date);
                 const shortDate = `${String(d.getMonth()+1).padStart(2,'0')}월${String(d.getDate()).padStart(2,'0')}일`;
                 return (
-                  <div key={i} className="photo-cell" onClick={() => setSelectedPhoto(p)} style={{ cursor: 'pointer' }}>
+                  <div key={i} className="photo-cell" onClick={() => { if (onViewRecord && p.record) { onViewRecord(p.record, p.thumb); } else { setSelectedPhoto(p); } }} style={{ cursor: 'pointer' }}>
                     <img src={p.thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     <span style={{
                       position: 'absolute', bottom: 6, left: 6,
@@ -249,19 +249,6 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
         </div>
       )}
 
-      {/* 사진 상세 모달 (케어-앨범과 동일) */}
-      {selectedPhoto && selectedPhoto.record && (
-        <RecordDetailModal
-          record={selectedPhoto.record}
-          thumbnail={selectedPhoto.thumb}
-          onClose={() => setSelectedPhoto(null)}
-          onDelete={(id) => {
-            deleteRecord(id);
-            setSelectedPhoto(null);
-            getAllThumbnailsAsync().then(setThumbs);
-          }}
-        />
-      )}
 
       {/* Bio 편집 모달 */}
       {bioModal && createPortal(
@@ -275,7 +262,7 @@ export default function MyPage({ colorMode, setColorMode, onThemeChange, onMeasu
 
       {/* Settings Modal */}
       {settingsOpen && createPortal(
-        <SettingsModal profile={profile} update={update} onClose={() => setSettingsOpen(false)} showToast={showToast} colorMode={colorMode} setColorMode={setColorMode} />,
+        <SettingsModal profile={profile} update={update} onClose={() => setSettingsOpen(false)} showToast={showToast} colorMode={colorMode} setColorMode={setColorMode} colorSkin={colorSkin} setColorSkin={setColorSkin} />,
         document.body,
       )}
 
@@ -320,7 +307,7 @@ function BioEditModal({ bio, onSave, onClose }) {
 
 // ===== Settings Modal =====
 
-function SettingsModal({ profile, update, onClose, showToast, colorMode, setColorMode }) {
+function SettingsModal({ profile, update, onClose, showToast, colorMode, setColorMode, colorSkin, setColorSkin }) {
   const [editingProfile, setEditingProfile] = useState(false);
   const [editingSkin, setEditingSkin] = useState(false);
   const [legalPage, setLegalPage] = useState(null); // 'terms' | 'privacy' | 'biometric' | null
@@ -576,7 +563,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
   return (
     <div style={{
       position: 'fixed', top: 0, right: 0, bottom: 0, left: 0, zIndex: 1000,
-      background: 'linear-gradient(180deg, #C5E3FF 0%, #F1F7FD 100%)',
+      background: 'var(--sub-gradient)',
     }}>
     <div style={{
       position: 'absolute', top: 0, bottom: 0, left: '50%', transform: 'translateX(-50%)',
@@ -613,13 +600,13 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
 
         <SectionHeader label="앱 설정" />
         <SettingsRow icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6" /><path d="M9 17v1a3 3 0 0 0 6 0v-1" /></svg>} label="알림" right={reminderEnabled || tipEnabled || weatherEnabled ? '켜짐' : '꺼짐'} onTap={() => setShowTimePicker('page')} />
-        <SettingsRow icon={icons.sun} label="화면 모드" />
+        <SettingsRow icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 21a9 9 0 0 1 0 -18c4.97 0 9 3.582 9 8c0 1.06 -.474 2.078 -1.318 2.828c-.844 .75 -1.989 1.172 -3.182 1.172h-2.5a2 2 0 0 0 -1 3.75a1.3 1.3 0 0 1 -1 2.25" /><path d="M7.5 10.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M11.5 7.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M15.5 10.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /></svg>} label="스타일" right={colorSkin === 'pink' ? '오로라' : '스카이'} onTap={() => setShowTimePicker('style')} />
 
         {/* ── 알림 설정 서브페이지 ── */}
         {showTimePicker === 'page' && (
           <div style={{
             position: 'fixed', top: 0, right: 0, bottom: 0, left: 0, zIndex: 1100,
-            background: 'linear-gradient(180deg, #C5E3FF 0%, #F1F7FD 100%)',
+            background: 'var(--sub-gradient)',
           }}>
           <div style={{
             position: 'absolute', top: 0, bottom: 0, left: '50%', transform: 'translateX(-50%)',
@@ -647,7 +634,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                     <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>진단 리마인더</div>
                     <div onClick={pushSubscribing ? undefined : handleReminderToggle} style={{
                       width: 39, height: 24, borderRadius: 10,
-                      background: reminderEnabled ? '#6598ef' : 'rgba(0,0,0,0.12)',
+                      background: reminderEnabled ? 'var(--accent-primary, #6598ef)' : 'rgba(0,0,0,0.12)',
                       position: 'relative', flexShrink: 0,
                       cursor: pushSubscribing ? 'wait' : 'pointer',
                       transition: 'background 0.3s',
@@ -671,7 +658,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                       background: 'rgba(255,255,255,0.5)', cursor: 'pointer',
                     }}>
                       <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>알림 시간</span>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: '#6598ef' }}>{formatPushTime(reminderTime)}</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent-primary, #6598ef)' }}>{formatPushTime(reminderTime)}</span>
                     </div>
                   )}
                 </div>
@@ -687,7 +674,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                     <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>뷰티 팁</div>
                     <div onClick={pushSubscribing ? undefined : handleTipToggle} style={{
                       width: 39, height: 24, borderRadius: 10,
-                      background: tipEnabled ? '#6598ef' : 'rgba(0,0,0,0.12)',
+                      background: tipEnabled ? 'var(--accent-primary, #6598ef)' : 'rgba(0,0,0,0.12)',
                       position: 'relative', flexShrink: 0,
                       cursor: pushSubscribing ? 'wait' : 'pointer',
                       transition: 'background 0.3s',
@@ -711,7 +698,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                       background: 'rgba(255,255,255,0.5)', cursor: 'pointer',
                     }}>
                       <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>알림 시간</span>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: '#6598ef' }}>{formatPushTime(tipTime)}</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent-primary, #6598ef)' }}>{formatPushTime(tipTime)}</span>
                     </div>
                   )}
                 </div>
@@ -727,7 +714,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                     <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>피부 날씨 알림</div>
                     <div onClick={pushSubscribing ? undefined : handleWeatherToggle} style={{
                       width: 39, height: 24, borderRadius: 10,
-                      background: weatherEnabled ? '#6598ef' : 'rgba(0,0,0,0.12)',
+                      background: weatherEnabled ? 'var(--accent-primary, #6598ef)' : 'rgba(0,0,0,0.12)',
                       position: 'relative', flexShrink: 0,
                       cursor: pushSubscribing ? 'wait' : 'pointer',
                       transition: 'background 0.3s',
@@ -747,6 +734,72 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                 </div>
               </div>
             </div>
+          </div>
+          </div>
+        )}
+
+        {/* ── 스타일 설정 서브페이지 ── */}
+        {showTimePicker === 'style' && (
+          <div style={{
+            position: 'fixed', top: 0, right: 0, bottom: 0, left: 0, zIndex: 1100,
+            background: 'var(--sub-gradient)',
+          }}>
+          <div style={{
+            position: 'absolute', top: 0, bottom: 0, left: '50%', transform: 'translateX(-50%)',
+            width: '100%', maxWidth: 430,
+            display: 'flex', flexDirection: 'column',
+            overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+            animation: 'settingsSlideIn 0.3s ease',
+          }}>
+            {/* Header */}
+            <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0', display: 'flex', alignItems: 'center', position: 'relative' }}>
+              <div onClick={() => setShowTimePicker(null)} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              </div>
+              <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>스타일</span>
+            </div>
+
+            {/* 테마 프리뷰 카드 */}
+            <div style={{ padding: '40px 28px 0' }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 14 }}>테마</div>
+              <div style={{ display: 'flex', gap: 12 }}>
+                {[
+                  { key: 'blue', label: '스카이', gradient: 'linear-gradient(180deg, #58aefe 0%, #98ccfc 40%, #d7e9fa 100%)' },
+                  { key: 'pink', label: '오로라', gradient: 'radial-gradient(ellipse at 20% 20%, rgba(255,184,200,0.5), transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(88,174,254,0.4), transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(216,168,240,0.3), transparent 60%), linear-gradient(135deg, #fff5f9 0%, #f0e6ff 50%, #e8f1ff 100%)' },
+                ].map(t => {
+                  const selected = colorSkin === t.key;
+                  return (
+                    <div key={t.key} onClick={() => setColorSkin(t.key)} style={{
+                      flex: 1, cursor: 'pointer', transition: 'all 0.25s',
+                      opacity: selected ? 1 : 0.55,
+                      transform: selected ? 'scale(1)' : 'scale(0.97)',
+                    }}>
+                      <div style={{
+                        height: 100, borderRadius: 16,
+                        background: t.gradient,
+                        border: selected ? '2px solid rgba(255,255,255,0.9)' : '2px solid transparent',
+                        boxShadow: selected ? '0 2px 12px rgba(0,0,0,0.1)' : 'none',
+                        position: 'relative', overflow: 'hidden',
+                      }}>
+                        {/* 미니 UI 미리보기 */}
+                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 28, background: 'rgba(255,255,255,0.7)', borderRadius: '10px 10px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+                          {[1,2,3,4,5].map(i => <div key={i} style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(0,0,0,0.15)' }} />)}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'center', marginTop: 8 }}>
+                        <div style={{ fontSize: 13, fontWeight: selected ? 600 : 500, color: selected ? 'var(--text-primary)' : 'var(--text-muted)' }}>{t.label}</div>
+                      </div>
+                      {selected && (
+                        <div style={{ textAlign: 'center', marginTop: 4 }}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #6598ef)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
           </div>
           </div>
         )}
@@ -812,7 +865,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
       {legalPage && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 1002, maxWidth: 430, margin: '0 auto',
-          background: 'linear-gradient(180deg, #C5E3FF 0%, #F1F7FD 100%)',
+          background: 'var(--sub-gradient)',
           display: 'flex', flexDirection: 'column',
           animation: 'settingsSlideIn 0.3s ease',
         }}>
@@ -862,7 +915,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                     <div key={key} style={{ overflowX: 'auto', margin: '10px 0', borderRadius: 5, border: '1px solid rgba(0,0,0,0.08)', WebkitOverflowScrolling: 'touch' }}>
                       <table style={{ width: '100%', minWidth: 360, borderCollapse: 'collapse', fontSize: 12, tableLayout: 'auto' }}>
                         <thead>
-                          <tr style={{ background: 'rgba(101,152,239,0.1)' }}>
+                          <tr style={{ background: 'var(--accent-bg, rgba(101,152,239,0.1))' }}>
                             {headerCells.map((c, j) => <th key={j} style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 600, color: 'var(--text-primary)', borderBottom: '1px solid rgba(0,0,0,0.1)', borderRight: j < headerCells.length - 1 ? '1px solid rgba(0,0,0,0.1)' : 'none', whiteSpace: 'nowrap' }}>{c}</th>)}
                           </tr>
                         </thead>
@@ -905,7 +958,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
       {faqOpen && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 1002,
-          background: 'linear-gradient(180deg, #C5E3FF 0%, #F1F7FD 100%)',
+          background: 'var(--sub-gradient)',
           animation: 'settingsSlideIn 0.3s ease',
         }}>
         <div style={{
@@ -972,7 +1025,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                 onClick={() => window.open(`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('[루아 문의]')}`, '_blank')}
                 style={{
                   width: '100%', padding: '12px', borderRadius: 10,
-                  border: 'none', background: 'rgba(101,152,239,0.1)', color: '#6598ef',
+                  border: 'none', background: 'var(--accent-bg, rgba(101,152,239,0.1))', color: 'var(--accent-primary, #6598ef)',
                   fontSize: 14, fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
@@ -990,7 +1043,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
       {editingProfile && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 1002, maxWidth: 430, margin: '0 auto',
-          background: 'linear-gradient(180deg, #C5E3FF 0%, #F1F7FD 100%)',
+          background: 'var(--sub-gradient)',
           display: 'flex', flexDirection: 'column',
           overflowY: 'auto', WebkitOverflowScrolling: 'touch',
           animation: 'settingsSlideIn 0.3s ease',
@@ -1096,7 +1149,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                       flex: 1, padding: '10px 0', borderRadius: 10, cursor: 'pointer', textAlign: 'center',
                       fontSize: 13, fontWeight: 500,
                       background: selected ? 'rgba(101,152,239,0.1)' : 'rgba(255,255,255,0.5)',
-                      color: selected ? '#6598ef' : 'var(--text-secondary)',
+                      color: selected ? 'var(--accent-primary, #6598ef)' : 'var(--text-secondary)',
                       border: 'none',
                       transition: 'all 0.2s',
                     }}>{g}</div>
@@ -1132,7 +1185,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           <div style={{ padding: '16px 40px calc(16px + env(safe-area-inset-bottom,0px))' }}>
             <button onClick={() => { showToast('저장되었어요'); setEditingProfile(false); }} style={{
               width: '100%', padding: 12, borderRadius: 10, border: 'none',
-              background: 'rgba(101,152,239,0.1)', color: '#6598ef', fontSize: 14, fontWeight: 600,
+              background: 'var(--accent-bg, rgba(101,152,239,0.1))', color: 'var(--accent-primary, #6598ef)', fontSize: 14, fontWeight: 600,
               cursor: 'pointer', fontFamily: 'inherit',
             }}>저장</button>
           </div>
@@ -1143,7 +1196,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
       {editingSkin && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 1002, maxWidth: 430, margin: '0 auto',
-          background: 'linear-gradient(180deg, #C5E3FF 0%, #F1F7FD 100%)',
+          background: 'var(--sub-gradient)',
           display: 'flex', flexDirection: 'column',
           overflowY: 'auto', WebkitOverflowScrolling: 'touch',
           animation: 'settingsSlideIn 0.3s ease',
@@ -1186,7 +1239,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           <div style={{ padding: '16px 16px calc(16px + env(safe-area-inset-bottom,0px))' }}>
             <button onClick={() => { showToast('저장되었어요'); setEditingSkin(false); }} style={{
               width: '100%', padding: 12, borderRadius: 10, border: 'none',
-              background: 'rgba(101,152,239,0.1)', color: '#6598ef', fontSize: 14, fontWeight: 600,
+              background: 'var(--accent-bg, rgba(101,152,239,0.1))', color: 'var(--accent-primary, #6598ef)', fontSize: 14, fontWeight: 600,
               cursor: 'pointer', fontFamily: 'inherit',
             }}>저장</button>
           </div>
@@ -1197,7 +1250,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
       {dataManageOpen === true && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 1002, maxWidth: 430, margin: '0 auto',
-          background: 'linear-gradient(180deg, #C5E3FF 0%, #F1F7FD 100%)',
+          background: 'var(--sub-gradient)',
           display: 'flex', flexDirection: 'column',
           overflowY: 'auto', WebkitOverflowScrolling: 'touch',
           animation: 'settingsSlideIn 0.3s ease',
@@ -1292,7 +1345,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
       {dataManageOpen === 'records' && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 1002, maxWidth: 430, margin: '0 auto',
-          background: 'linear-gradient(180deg, #C5E3FF 0%, #F1F7FD 100%)',
+          background: 'var(--sub-gradient)',
           display: 'flex', flexDirection: 'column',
           overflowY: 'auto', WebkitOverflowScrolling: 'touch',
           animation: 'settingsSlideIn 0.3s ease',
@@ -1446,7 +1499,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16, lineHeight: 1.7 }}>
               지금까지의 측정 기준점(baseline)을 삭제해요.<br />
               <span style={{ color: 'var(--text-secondary)' }}>
-                다음 <strong style={{ color: '#6598ef' }}>3회 측정의 평균</strong>으로 더 정확한 새 기준이 만들어집니다.
+                다음 <strong style={{ color: 'var(--accent-primary, #6598ef)' }}>3회 측정의 평균</strong>으로 더 정확한 새 기준이 만들어집니다.
               </span>
               <br /><br />
               <span style={{ fontSize: 11, color: 'var(--text-dim)' }}>
@@ -1479,7 +1532,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                 }}
                 style={{
                   flex: 1, padding: 12, borderRadius: 14, border: 'none',
-                  background: '#6598ef', color: '#fff',
+                  background: 'var(--accent-primary, #6598ef)', color: '#fff',
                   fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
                   boxShadow: '0 2px 8px rgba(101,152,239,0.28)',
                 }}
@@ -1645,7 +1698,7 @@ function GoalSettingModal({ onClose, showToast }) {
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 1002, maxWidth: 430, margin: '0 auto',
-      background: 'linear-gradient(180deg, #C5E3FF 0%, #F1F7FD 100%)',
+      background: 'var(--sub-gradient)',
       display: 'flex', flexDirection: 'column',
       overflowY: 'auto', WebkitOverflowScrolling: 'touch',
       animation: 'settingsSlideIn 0.3s ease',
@@ -1700,7 +1753,7 @@ function GoalSettingModal({ onClose, showToast }) {
                     {idx < 3 && latestRecord && (
                       <span style={{
                         fontSize: 10, padding: '1px 6px', borderRadius: 6,
-                        background: 'rgba(101,152,239,0.1)', color: 'var(--accent-primary, #6598ef)',
+                        background: 'var(--accent-bg, rgba(101,152,239,0.1))', color: 'var(--accent-primary, #6598ef)',
                       }}>추천</span>
                     )}
                   </div>
@@ -1778,7 +1831,7 @@ function GoalSettingModal({ onClose, showToast }) {
                       bottom: 5,
                       transform: 'translate(-50%, 0)',
                       width: 10, height: 10, borderRadius: '50%',
-                      background: '#6598ef',
+                      background: 'var(--accent-primary, #6598ef)',
                       zIndex: 0,
                     }} />
                     {/* Current label */}
@@ -1914,8 +1967,8 @@ function GoalSettingModal({ onClose, showToast }) {
               onClick={handleSave}
               style={{
                 flex: 1, padding: 12, borderRadius: 10, border: 'none',
-                background: 'rgba(101,152,239,0.1)',
-                color: '#6598ef', fontSize: 14, fontWeight: 600,
+                background: 'var(--accent-bg, rgba(101,152,239,0.1))',
+                color: 'var(--accent-primary, #6598ef)', fontSize: 14, fontWeight: 600,
                 cursor: 'pointer', fontFamily: 'inherit',
               }}
             >목표 시작하기</button>
@@ -2324,7 +2377,7 @@ function TimePicker({ value, onChange, onClose }) {
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%', maxWidth: 430,
-          background: 'linear-gradient(180deg, #d7e9fa 0%, #F1F7FD 100%)',
+          background: 'var(--sub-gradient)',
           borderRadius: '20px 20px 0 0',
           padding: '16px 0 calc(16px + env(safe-area-inset-bottom, 0px))',
           maxHeight: '50vh', display: 'flex', flexDirection: 'column',
@@ -2349,7 +2402,7 @@ function TimePicker({ value, onChange, onClose }) {
             >
               {t.label}
               {t.h24 === currentH && (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #6598ef)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               )}
             </div>
           ))}
