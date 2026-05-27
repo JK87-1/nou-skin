@@ -390,7 +390,13 @@ async function callGPT(apiKey, newImage, seed, baselineImage, baselineResult, de
     }),
   });
 
-  if (!response.ok) return null;
+  if (!response.ok) {
+    // 운영 로깅: OpenAI 실패 사유를 남겨 재발 시 vercel 로그로 즉시 진단.
+    // (이전엔 조용히 null만 반환해 "All AI calls failed"의 원인을 알 수 없었음)
+    const errText = await response.text().catch(() => '');
+    console.error(`[analyze] OpenAI 호출 실패 ${response.status}: ${errText.slice(0, 200)}`);
+    return null;
+  }
   const data = await response.json();
   const text = data.choices?.[0]?.message?.content || '';
   return parseAIResponse(text);
