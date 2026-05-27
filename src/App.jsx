@@ -2283,7 +2283,7 @@ export default function App() {
                     { label: '탄력', value: result.elasticityScore, unit: '점', icon: <DiamondIcon size={14} />, diff: changes?.elasticityScore?.diff, detail: 'elasticity' },
                     { label: '주름', value: result.wrinkleScore, unit: '점', icon: <RulerIcon size={14} />, diff: changes?.wrinkleScore?.diff, detail: 'wrinkles' },
                     { label: '모공', value: result.poreScore, unit: '점', icon: <MicroscopeIcon size={14} />, diff: changes?.poreScore?.diff, detail: 'pores' },
-                    { label: '트러블', value: Math.max(0, Math.round(100 - result.troubleCount * 8.5)), unit: '점', icon: <RednessIcon size={14} />, diff: changes?.troubleCount?.diff ? Math.round(-changes.troubleCount.diff * 8.5) : null, detail: 'trouble' },
+                    { label: '트러블', value: result.troubleCount, unit: '개', icon: <RednessIcon size={14} />, diff: changes?.troubleCount?.diff ?? null, detail: 'trouble' },
                     { label: '다크서클', value: result.darkCircleScore, unit: '점', icon: <EyeIcon size={14} />, diff: changes?.darkCircleScore?.diff, detail: 'darkCircles' },
                   ].map((m, i) => (
                     <div key={m.detail} onClick={() => openDetail(m.detail)} style={{
@@ -2299,6 +2299,13 @@ export default function App() {
                           <AnimatedNumber target={m.value} />
                         </span>
                         <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(0,0,0,0.3)' }}>{m.unit}</span>
+                        {m.detail === 'trouble' && result.troubleBreakdown && (result.troubleBreakdown.whitehead > 0 || result.troubleBreakdown.blackhead > 0) && (
+                          <span style={{ fontSize: 9, fontWeight: 500, color: 'rgba(0,0,0,0.25)', marginLeft: 2 }}>
+                            {result.troubleBreakdown.whitehead > 0 && `W${result.troubleBreakdown.whitehead}`}
+                            {result.troubleBreakdown.whitehead > 0 && result.troubleBreakdown.blackhead > 0 && ' '}
+                            {result.troubleBreakdown.blackhead > 0 && `B${result.troubleBreakdown.blackhead}`}
+                          </span>
+                        )}
                         {m.diff != null && m.diff !== 0 && (
                           <span style={{
                             fontSize: 10, fontWeight: 500, marginLeft: 'auto',
