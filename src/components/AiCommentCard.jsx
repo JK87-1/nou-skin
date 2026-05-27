@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 /**
- * 결과 페이지 AI 정밀 판독 카드.
+ * 결과 페이지 AI 정밀 분석 카드.
  * - aiNotes (summary) 본문: 매일 다르게 나오는 narrative
  * - aiDetails (3개 부위별 소견): 칩 + 아코디언 펼침
  * - 메이크업/cv_only 배지 통합
@@ -54,7 +54,7 @@ export default function AiCommentCard({
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 11, fontWeight: 700, color: accent, letterSpacing: 0.2 }}>
-            AI 정밀 판독
+            AI 정밀 분석
           </span>
         </div>
         <div style={{ display: 'flex', gap: 4 }}>

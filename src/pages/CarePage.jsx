@@ -1388,7 +1388,7 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
               );
             })()}
 
-            {/* 전체 피부 분석 + AI 정밀 판독 */}
+            {/* 전체 피부 분석 + AI 정밀 분석 */}
             {record.advice && (
               <div style={cardStyle}>
                 <div style={{ fontSize: 13, fontWeight: 500, letterSpacing: -0.2, color: C.main, marginBottom: 10 }}>전체 피부 분석</div>
@@ -1400,7 +1400,7 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
                   if (!filtered) return null;
                   return (
                     <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 12, background: 'rgba(30,144,232,0.04)', border: `1px solid ${C.divLight}` }}>
-                      <div style={{ fontSize: 10, fontWeight: 500, color: C.accent, marginBottom: 4 }}>AI 정밀 판독</div>
+                      <div style={{ fontSize: 10, fontWeight: 500, color: C.accent, marginBottom: 4 }}>AI 정밀 분석</div>
                       <p style={{ fontSize: 11, color: C.sub, lineHeight: 1.7, margin: 0 }}>{filtered}</p>
                     </div>
                   );

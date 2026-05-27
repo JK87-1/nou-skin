@@ -56,7 +56,7 @@ export const TargetIcon = ({ size = 18 }) => {
 export const EyeIcon = ({ size = 18 }) => {
   const id = useGradId();
   return (
-  <svg width={size} height={size} viewBox="0 0 139.7 116.3">
+  <svg width={size} height={size} viewBox="0 -11.7 139.7 139.7">
     <defs><linearGradient id={id} x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#ffb600"/><stop offset="100%" stopColor="#ffd04d"/></linearGradient></defs>
     <path fill={`url(#${id})`} d="M139.56,57.45c-1.58,21.48-16.95,41.21-34.8,50.3-23.97,12.2-52.09,11.47-74.97-3.03C13.66,94.5,2.35,78.12,0,57.48l50.25-.73c-11.68-3.75-22.1-8.9-31.22-17.71C8.52,28.97,1.43,15.31.14,0h139.56c-3.82,30.16-23.6,48.03-50.04,56.87l49.9.58Z"/>
   </svg>
@@ -78,7 +78,7 @@ export const LotionIcon = ({ size = 18 }) => {
 export const DiamondIcon = ({ size = 18 }) => {
   const id = useGradId();
   return (
-  <svg width={size} height={size} viewBox="0 0 120 116.29">
+  <svg width={size} height={size} viewBox="0 -1.85 120 120">
     <defs><linearGradient id={id} x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#ff8500"/><stop offset="100%" stopColor="#ffab4d"/></linearGradient></defs>
     <ellipse fill={`url(#${id})`} cx="60" cy="25.12" rx="57.5" ry="17.93"/>
     <ellipse fill={`url(#${id})`} cx="60" cy="58.15" rx="57.5" ry="17.93"/>
@@ -91,7 +91,7 @@ export const DiamondIcon = ({ size = 18 }) => {
 export const RulerIcon = ({ size = 18 }) => {
   const id = useGradId();
   return (
-  <svg width={size} height={size} viewBox="0 0 130 112.16">
+  <svg width={size} height={size} viewBox="0 -8.92 130 130">
     <defs><linearGradient id={id} x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#fccd03"/><stop offset="100%" stopColor="#fde04d"/></linearGradient></defs>
     <path fill={`url(#${id})`} d="M129.49,39.65l.26,2.29c.1.85.3,1.36.1,2.23l.14,2.67H40.53c-14.46-2.3-27.1-10.93-34.41-23.58C2.05,16.2-.08,8.22,0,0h88.94c13.11,1.37,25.13,9.38,32.64,19.95,3.36,4.73,5.68,9.9,7.1,15.49l.8,4.21Z"/>
     <path fill={`url(#${id})`} d="M129.49,104.97l.26,2.29c.1.85.3,1.36.1,2.23l.14,2.67H40.53c-13.16-2.1-24.86-9.44-32.39-20.39C2.79,84-.11,74.84,0,65.32h88.94c13.11,1.37,25.13,9.38,32.64,19.95,3.36,4.73,5.68,9.9,7.1,15.49l.81,4.21Z"/>

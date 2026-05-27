@@ -880,7 +880,7 @@ export default function App() {
     if (p < 66) return '피부결 매끄러움 측정 중...';
     if (p < 74) return '다크서클 밝기·색조 분석 중...';
     if (p < 84) return 'T/U존 유분 비교 중...';
-    if (p < 92) return 'AI가 정밀 판독하고 있어요...';
+    if (p < 92) return 'AI가 정밀 분석하고 있어요...';
     return '10개 지표 종합 산출 중...';
   };
 
@@ -2213,14 +2213,14 @@ export default function App() {
 
 
 
-          {/* ═══════ Section 3: lua의 정밀 판독 ═══════ */}
+          {/* ═══════ Section 3: 정밀 분석 ═══════ */}
           <div style={{ margin: '0 16px 10px', background: 'rgba(255,255,255,0.5)', borderRadius: 14, boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)', overflow: 'hidden' }}>
             <button onClick={() => toggleSection('analysis')} style={{
               width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               padding: expandedSections.analysis ? '14px 16px 10px' : '14px 16px 18px',
               background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
             }}>
-              <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>lua의 정밀 판독</span>
+              <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>정밀 분석</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"
                 style={{ transition: 'transform 0.3s ease', transform: expandedSections.analysis ? 'rotate(180deg)' : 'rotate(0deg)' }}>
                 <path d="M6 9l6 6 6-6" />
@@ -2489,11 +2489,9 @@ export default function App() {
                                     <span style={{ fontSize: 10, color: 'rgba(0,0,0,0.35)' }}>{product.volume}</span>
                                   </div>
                                 </div>
-                                <div style={{
-                                  padding: '4px 10px', borderRadius: 12, flexShrink: 0,
-                                  background: '#6598ef',
-                                  fontSize: 10, fontWeight: 600, color: '#fff',
-                                }}>구매</div>
+                                <span style={{
+                                  fontSize: 10, fontWeight: 500, color: 'rgba(0,0,0,0.35)', flexShrink: 0,
+                                }}>구매 ›</span>
                               </a>
                             ))}
                           </div>
@@ -2564,13 +2562,12 @@ export default function App() {
                       })()}
                       <button onClick={() => setFabChatOpen(true)} style={{
                         width: '100%', padding: '10px 0', borderRadius: 10, border: 'none',
-                        background: 'rgba(101,152,239,0.1)', color: 'rgba(0,0,0,0.5)',
-                        fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                        background: 'rgba(0,0,0,0.03)', color: 'rgba(0,0,0,0.35)',
+                        fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
                         marginTop: 8,
                       }}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v12a1 1 0 01-1 1H6l-3 3z"/></svg>
-                        시술에 대해 루아에게 물어보기
+                        루아에게 문의
                       </button>
                       <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.35)', textAlign: 'center', marginTop: 6, lineHeight: 1.4 }}>
                         <span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><ShieldIcon size={10} /></span> 의료 행위가 아닌 정보 제공 목적입니다. 시술은 전문 의료진과 상담 후 결정하세요.

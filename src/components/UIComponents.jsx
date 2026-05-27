@@ -180,13 +180,6 @@ export function DetailPage({ metricKey, value, onBack }) {
             <h1 style={{ fontSize: 20, fontWeight: 700, color: 'rgba(0,0,0,0.8)', margin: 0 }}>
               {data.title}
             </h1>
-            {_pct && _pct.top <= 30 && (
-              <span style={{
-                marginLeft: 'auto', fontSize: 10, fontWeight: 500,
-                background: 'rgba(101,152,239,0.12)', color: '#6598ef',
-                borderRadius: 6, padding: '2px 6px', lineHeight: 1.3, textAlign: 'center', whiteSpace: 'nowrap',
-              }}>상위 {_pct.top}%</span>
-            )}
           </div>
           <p style={{ fontSize: 13, color: 'rgba(0,0,0,0.4)', lineHeight: 1.7, margin: '10px 0 0' }}>{data.hero}</p>
         </div>
