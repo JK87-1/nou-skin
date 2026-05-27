@@ -1158,6 +1158,14 @@ export function pixelsToScores(px, mlAge = null) {
   // ── DARK CIRCLES (calibration table) ──
   const dcScore = clamp(calibrate('darkCircle', px.darkCircle.overall), 15, 98);
 
+  // ── OIL-MOISTURE BALANCE (유수분밸런스: 수분과 유분의 균형도) ──
+  // 수분·유분 모두 45~65 근처일 때 100, 차이가 클수록 낮아짐
+  const oilMoistureBalance = clamp(Math.round(100 - Math.abs(moisture - oilBalance) * 1.2 - Math.abs(55 - (moisture + oilBalance) / 2) * 0.8), 15, 98);
+
+  // ── REDNESS (붉은기: LAB a* 채널 기반) ──
+  // cheekLabA가 낮을수록 붉은기 없음(점수 높음), 높을수록 붉은기 심함(점수 낮음)
+  const rednessScore = clamp(Math.round(95 - Math.max(0, px.cheekLabA - 5) * 3.5), 15, 98);
+
   // ── SKIN TYPE ──
   let skinType;
   if (oilBalance > 72) skinType = '지성';
@@ -1234,7 +1242,7 @@ export function pixelsToScores(px, mlAge = null) {
   return {
     skinAge, moisture, troubleCount, skinTone, oilBalance, skinType,
     wrinkleScore, poreScore, elasticityScore, pigmentationScore,
-    textureScore, darkCircleScore: dcScore,
+    textureScore, darkCircleScore: dcScore, oilMoistureBalance, rednessScore,
     concerns: concerns.slice(0, 3), overallScore, conditionScore, advice, confidence,
     _pixelData: px,
   };

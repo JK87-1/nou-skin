@@ -73,7 +73,7 @@ export function MetricBar({ label, value, unit = '%', color, icon, description, 
     <div
       style={{
         marginBottom: 8,
-        padding: '12px 14px',
+        padding: '12px 0',
         borderRadius: 14,
         border: 'none',
       }}

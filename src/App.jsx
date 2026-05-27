@@ -46,7 +46,7 @@ import TrendCard from './components/TrendCard';
 import AiCommentCard from './components/AiCommentCard';
 import BeforeAfterSlider from './components/BeforeAfterSlider';
 import WeeklyReportCard from './components/WeeklyReportCard';
-import { DropletIcon, SparkleIcon, LotionIcon, DiamondIcon, PaletteIcon, MicroscopeIcon, RulerIcon, EyeIcon, BubbleIcon, TargetIcon, SunIcon, MoonIcon, CameraIcon, TestTubeIcon, StarIcon, ShieldIcon, WandIcon, PhotoIcon, CheckIcon, SaveIcon, PastelIcon, LuaMiniIcon, FlameIcon, EggIcon, BlushIcon } from './components/icons/PastelIcons';
+import { DropletIcon, SparkleIcon, LotionIcon, DiamondIcon, PaletteIcon, MicroscopeIcon, RulerIcon, EyeIcon, BubbleIcon, TargetIcon, SunIcon, MoonIcon, CameraIcon, TestTubeIcon, StarIcon, ShieldIcon, WandIcon, PhotoIcon, CheckIcon, SaveIcon, PastelIcon, LuaMiniIcon, FlameIcon, EggIcon, BlushIcon, BalanceIcon, RednessIcon } from './components/icons/PastelIcons';
 import SoftCloverIcon from './components/icons/SoftCloverIcon';
 import EternalPearl from './components/icons/EternalPearl';
 // ConsentModal는 MyPage > 설정 > 정보에서 자율적으로 접근.
@@ -799,21 +799,34 @@ export default function App() {
   }, []);
 
   const handleSave = useCallback(async () => {
-    if (!result || saved) return;
-    // 기록 저장
-    const recordId = saveRecord(result);
-    if (recordId) {
-      setSaved(true);
-      if (image) saveThumbnail(recordId, image);
+    if (!result) return;
+    // 기록 저장 (아직 안 저장된 경우)
+    if (!saved) {
+      const recordId = saveRecord(result);
+      if (recordId) {
+        setSaved(true);
+        if (image) saveThumbnail(recordId, image);
+      }
     }
-    // 카드 이미지 저장
-    const dataUrl = await captureCard();
-    if (dataUrl) {
-      const link = document.createElement('a');
-      link.download = `lua-skin-${new Date().toISOString().slice(0, 10)}.png`;
-      link.href = dataUrl;
-      link.click();
-    }
+    // 카드 이미지 다운로드
+    try {
+      const dataUrl = await captureCard();
+      if (dataUrl) {
+        if (navigator.share) {
+          const res = await fetch(dataUrl);
+          const blob = await res.blob();
+          const file = new File([blob], `lua-skin-${new Date().toISOString().slice(0, 10)}.png`, { type: 'image/png' });
+          await navigator.share({ files: [file] });
+        } else {
+          const link = document.createElement('a');
+          link.download = `lua-skin-${new Date().toISOString().slice(0, 10)}.png`;
+          link.href = dataUrl;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      }
+    } catch { /* 캡처 실패 또는 사용자 취소 */ }
     setShowSaveToast(true);
     setTimeout(() => setShowSaveToast(false), 2500);
   }, [result, saved, image, captureCard]);
@@ -823,21 +836,21 @@ export default function App() {
     incrementStat('shareCount');
     checkAndAwardBadges();
     const dataUrl = await captureCard();
-    if (dataUrl && navigator.share) {
-      try {
-        const res = await fetch(dataUrl);
-        const blob = await res.blob();
-        const file = new File([blob], 'lua-skin.png', { type: 'image/png' });
-        await navigator.share({ title: 'LUA 피부 측정', files: [file] });
-      } catch {
-        // 파일 공유 실패 시 텍스트 공유 fallback
-        const text = generateShareText(result);
-        navigator.share({ title: 'LUA 피부 측정', text }).catch(() => {});
+    if (navigator.share) {
+      if (dataUrl) {
+        try {
+          const res = await fetch(dataUrl);
+          const blob = await res.blob();
+          const file = new File([blob], 'lua-skin.png', { type: 'image/png' });
+          await navigator.share({ title: 'LUA 피부 측정', files: [file] });
+          return;
+        } catch { /* 파일 공유 실패 → 텍스트 fallback */ }
       }
+      const text = generateShareText(result);
+      navigator.share({ title: 'LUA 피부 측정', text }).catch(() => {});
     } else {
       const text = generateShareText(result);
-      if (navigator.share) { navigator.share({ title: 'LUA 피부 측정', text }).catch(() => {}); }
-      else { navigator.clipboard?.writeText(text).then(() => alert('복사되었습니다!')).catch(() => {}); }
+      navigator.clipboard?.writeText(text).then(() => alert('복사되었습니다!')).catch(() => {});
     }
   }, [result, captureCard]);
 
@@ -1068,6 +1081,7 @@ export default function App() {
         <MyPage key={`my-${refreshKey}`} colorMode={colorMode} setColorMode={setColorMode} colorSkin={colorSkin} setColorSkin={setColorSkin} onThemeChange={setActiveThemeId} onMeasure={openCamera} onViewRecord={(record, thumb) => {
           setResult(record);
           setImage(thumb || null);
+          setConditionBriefing(record.conditionBriefing || null);
           setSaved(true);
           setViewingHistory(true);
           setActiveTab('home');
@@ -1769,7 +1783,7 @@ export default function App() {
           {/* ═══════ Nav Bar ═══════ */}
           <div style={{
             position: 'sticky', top: 0, zIndex: 20,
-            padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 10px', display: 'flex',
+            padding: '8px 20px 10px', display: 'flex',
             justifyContent: 'space-between', alignItems: 'center',
             background: 'transparent',
           }}>
@@ -1868,7 +1882,7 @@ export default function App() {
 
 
           {/* ═══════ Section 1: 컨디션 브리핑 ═══════ */}
-          <div style={{ margin: '0 14px 10px', background: 'rgba(255,255,255,0.8)', borderRadius: 14, boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)', overflow: 'hidden' }}>
+          <div style={{ margin: '0 16px 10px', background: 'rgba(255,255,255,0.5)', borderRadius: 14, boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)', overflow: 'hidden' }}>
             <button onClick={() => toggleSection('briefing')} style={{
               width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               padding: expandedSections.briefing ? '14px 16px 10px' : '14px 16px 18px',
@@ -1880,8 +1894,9 @@ export default function App() {
                 <path d="M6 9l6 6 6-6" />
               </svg>
             </button>
-            {expandedSections.briefing && (
-              <div style={{ padding: '0 16px 16px', animation: 'fadeUp 0.3s ease-out' }}>
+            {expandedSections.briefing && (<>
+              <div style={{ height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 15%, rgba(255,255,255,0.3) 85%, transparent 100%)', margin: '0 16px' }} />
+              <div style={{ padding: '12px 16px 16px', animation: 'fadeUp 0.3s ease-out' }}>
                 {conditionBriefing && (() => {
                   const score = result.conditionScore ?? result.overallScore;
                   const grade = score >= 85 ? { letter: 'S', label: '최상' }
@@ -1897,7 +1912,7 @@ export default function App() {
                         <span style={{ fontSize: 12, color: '#185FA5' }}>컨디션 등급</span>
                       </div>
                       {/* Briefing text */}
-                      <p style={{ fontSize: 13, fontWeight: 400, color: '#042C53', lineHeight: 1.6, margin: '0 0 12px' }}>{conditionBriefing}</p>
+                      <p style={{ fontSize: 13, fontWeight: 400, color: '#042C53', lineHeight: 1.7, margin: '0 0 12px' }}>{conditionBriefing}</p>
                       {/* 5 condition metrics grid */}
                       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 4, marginBottom: 10 }}>
                         {[
@@ -1938,7 +1953,7 @@ export default function App() {
                   );
                 })()}
               </div>
-            )}
+            </>)}
           </div>
 
           {/* ═══════ Section: 기준점 구축 진행 안내 — 첫 3회 측정 사용자 ═══════ */}
@@ -1948,7 +1963,7 @@ export default function App() {
             const isComplete = b.count >= b.target;
             return (
               <div style={{
-                margin: '0 14px 10px',
+                margin: '0 16px 10px',
                 background: 'linear-gradient(135deg, rgba(101,152,239,0.12), rgba(101,152,239,0.05))',
                 border: '1px solid rgba(101,152,239,0.32)',
                 borderRadius: 14, padding: '14px 16px',
@@ -2034,8 +2049,8 @@ export default function App() {
             if (autoInsightLoading && !autoInsight) {
               return (
                 <div style={{
-                  margin: '0 14px 10px',
-                  background: 'rgba(255,255,255,0.8)',
+                  margin: '0 16px 10px',
+                  background: 'rgba(255,255,255,0.5)',
                   borderRadius: 14, padding: '14px 16px',
                   boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)',
                   display: 'flex', gap: 10, alignItems: 'center',
@@ -2059,8 +2074,8 @@ export default function App() {
               : { bg: 'rgba(224,200,240,0.12)', border: 'rgba(224,200,240,0.25)', accent: '#8878A8', dot: '#E0C8F0' };
             return (
               <div style={{
-                margin: '0 14px 10px',
-                background: 'rgba(255,255,255,0.8)',
+                margin: '0 16px 10px',
+                background: 'rgba(255,255,255,0.5)',
                 borderRadius: 14, padding: '14px 16px',
                 boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)',
               }}>
@@ -2068,20 +2083,20 @@ export default function App() {
                   <div style={{ width: 5, height: 5, borderRadius: '50%', background: palette.dot, flexShrink: 0 }} />
                   <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: 0.2 }}>AI 자동 인사이트</div>
                 </div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#042C53', marginBottom: 6, lineHeight: 1.4 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#042C53', marginBottom: 6, lineHeight: 1.5 }}>
                   {autoInsight.headline}
                 </div>
                 {autoInsight.cause && (
-                  <div style={{ fontSize: 12.5, color: '#374E66', lineHeight: 1.6, marginBottom: 8, wordBreak: 'keep-all' }}>
+                  <div style={{ fontSize: 13, color: '#374E66', lineHeight: 1.7, marginBottom: 8, wordBreak: 'keep-all' }}>
                     {autoInsight.cause}
                   </div>
                 )}
                 {autoInsight.action && (
                   <div style={{
-                    fontSize: 12, color: '#374E66', fontWeight: 500,
+                    fontSize: 13, color: '#374E66', fontWeight: 500,
                     background: 'rgba(101,152,239,0.06)',
                     padding: '8px 10px', borderRadius: 10,
-                    lineHeight: 1.55, wordBreak: 'keep-all',
+                    lineHeight: 1.7, wordBreak: 'keep-all',
                   }}>
                     {autoInsight.action}
                   </div>
@@ -2091,7 +2106,7 @@ export default function App() {
           })()}
 
           {/* ═══════ Section: 측정 정보 (컨디션 브리핑 바로 아래) ═══════ */}
-          <div style={{ margin: '0 14px 10px', background: 'rgba(255,255,255,0.8)', borderRadius: 14, boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)', overflow: 'hidden' }}>
+          <div style={{ margin: '0 16px 10px', background: 'rgba(255,255,255,0.5)', borderRadius: 14, boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)', overflow: 'hidden' }}>
             <button onClick={() => toggleSection('meta')} style={{
               width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               padding: expandedSections.meta ? '14px 16px 10px' : '14px 16px 18px',
@@ -2103,8 +2118,9 @@ export default function App() {
                 <path d="M6 9l6 6 6-6" />
               </svg>
             </button>
-            {expandedSections.meta && (
-              <div style={{ padding: '0 16px 16px', animation: 'fadeUp 0.3s ease-out' }}>
+            {expandedSections.meta && (<>
+              <div style={{ height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 15%, rgba(255,255,255,0.3) 85%, transparent 100%)', margin: '0 16px' }} />
+              <div style={{ padding: '12px 16px 16px', animation: 'fadeUp 0.3s ease-out' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 13 }}>
                   <span style={{ color: '#6B7F99' }}>피부 타입</span>
                   <span style={{ color: '#042C53', fontWeight: 500 }}>{result.skinType}</span>
@@ -2191,13 +2207,13 @@ export default function App() {
                 <p style={{ fontSize: 11, color: '#6B7F99', textAlign: 'center', marginTop: 10, marginBottom: 4, lineHeight: 1.4 }}>AI 추정치이며 의료 진단이 아닙니다</p>
                 {/* 쿠팡 파트너스 안내는 맞춤 제품 추천(화장대) 아래로 이동 */}
               </div>
-            )}
+            </>)}
           </div>
 
 
 
           {/* ═══════ Section 3: lua의 정밀 판독 ═══════ */}
-          <div style={{ margin: '0 14px 10px', background: 'rgba(255,255,255,0.8)', borderRadius: 14, boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)', overflow: 'hidden' }}>
+          <div style={{ margin: '0 16px 10px', background: 'rgba(255,255,255,0.5)', borderRadius: 14, boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)', overflow: 'hidden' }}>
             <button onClick={() => toggleSection('analysis')} style={{
               width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               padding: expandedSections.analysis ? '14px 16px 10px' : '14px 16px 18px',
@@ -2209,9 +2225,10 @@ export default function App() {
                 <path d="M6 9l6 6 6-6" />
               </svg>
             </button>
-            {expandedSections.analysis && (
-              <div style={{ padding: '0 16px 16px', animation: 'fadeUp 0.3s ease-out' }}>
-                <p style={{ fontSize: 14, color: '#042C53', lineHeight: 1.7, margin: 0 }}>{result.advice}</p>
+            {expandedSections.analysis && (<>
+              <div style={{ height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 15%, rgba(255,255,255,0.3) 85%, transparent 100%)', margin: '0 16px' }} />
+              <div style={{ padding: '12px 16px 16px', animation: 'fadeUp 0.3s ease-out' }}>
+                <p style={{ fontSize: 13, color: '#042C53', lineHeight: 1.7, margin: 0 }}>{result.advice}</p>
                 <AiCommentCard
                   aiNotes={result.aiNotes}
                   aiDetails={result.aiDetails}
@@ -2235,11 +2252,11 @@ export default function App() {
                   </div>
                 )}
               </div>
-            )}
+            </>)}
           </div>
 
           {/* ═══════ Section 4: 전체 지표 ═══════ */}
-          <div style={{ margin: '0 14px 10px', background: 'rgba(255,255,255,0.8)', borderRadius: 14, boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)', overflow: 'hidden' }}>
+          <div style={{ margin: '0 16px 10px', background: 'rgba(255,255,255,0.5)', borderRadius: 14, boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)', overflow: 'hidden' }}>
             <button onClick={() => toggleSection('indicators')} style={{
               width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               padding: expandedSections.indicators ? '14px 16px 10px' : '14px 16px 18px',
@@ -2251,58 +2268,55 @@ export default function App() {
                 <path d="M6 9l6 6 6-6" />
               </svg>
             </button>
-            {expandedSections.indicators && (
-              <div style={{ padding: '0 16px 16px', animation: 'fadeUp 0.3s ease-out' }}>
-                {/* Condition metrics */}
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#042C53', marginBottom: 8 }}>컨디션 지표</div>
-                <MetricBar label="수분도" value={result.moisture} unit="%" icon={<DropletIcon size={14} />} color="#a5d8ff"
-                  description={result.moisture >= 60 ? '정상 범위' : '보습 강화 필요'}
-                  diff={changes?.moisture?.diff} onClick={() => openDetail('moisture')} />
-                <MetricBar label="유분" value={result.oilBalance} unit="%" icon={<BubbleIcon size={14} />} color="#ffec99" delay={60}
-                  description={result.oilBalance >= 45 && result.oilBalance <= 65 ? '균형 상태' : result.oilBalance > 65 ? '유분 조절 필요' : '유분 보충 필요'}
-                  diff={changes?.oilBalance?.diff} onClick={() => openDetail('oilBalance')} />
-                <MetricBar label="피부톤" value={result.skinTone} unit="점" icon={<LotionIcon size={13} />} color="#ffd8a8" delay={120}
-                  description={result.skinTone >= 70 ? '균일하고 밝은 톤' : '색소 관리 추천'}
-                  diff={changes?.skinTone?.diff} onClick={() => openDetail('skinTone')} />
-                <MetricBar label="트러블" value={Math.max(0, 100 - result.troubleCount * 8.5)} unit="점" icon={<TargetIcon size={14} />} color="#ffc9c9" delay={180}
-                  description={`${result.troubleCount}개 | ${result.troubleCount <= 2 ? '깨끗' : result.troubleCount <= 5 ? '경증' : '집중관리'}`}
-                  diff={changes?.troubleCount?.diff ? -changes.troubleCount.diff * 8.5 : null} onClick={() => openDetail('trouble')} />
-                {result.troubleBreakdown && (result.troubleBreakdown.whitehead > 0 || result.troubleBreakdown.blackhead > 0) && (
-                  <div style={{ display: 'flex', gap: 10, padding: '2px 0 6px 22px' }}>
-                    {result.troubleBreakdown.whitehead > 0 && (
-                      <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>화이트헤드 {result.troubleBreakdown.whitehead}</span>
-                    )}
-                    {result.troubleBreakdown.blackhead > 0 && (
-                      <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>블랙헤드 {result.troubleBreakdown.blackhead}</span>
-                    )}
-                  </div>
-                )}
-                <MetricBar label="다크서클" value={result.darkCircleScore} unit="점" icon={<EyeIcon size={14} />} color="#bac8ff" delay={240}
-                  description={result.darkCircleScore >= 70 ? '눈 밑 밝음' : result.darkCircleScore >= 45 ? '아이크림 추천' : '다크서클 집중 관리'}
-                  diff={changes?.darkCircleScore?.diff} onClick={() => openDetail('darkCircles')} />
-                {/* Aging metrics */}
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#042C53', margin: '14px 0 8px' }}>노화 지표</div>
-                <MetricBar label="탄력" value={result.elasticityScore} unit="점" icon={<DiamondIcon size={14} />} color="#99e9f2"
-                  description={result.elasticityScore >= 70 ? '턱선 선명' : result.elasticityScore >= 45 ? '탄력 관리 시작' : '탄력 집중 케어 필요'}
-                  diff={changes?.elasticityScore?.diff} onClick={() => openDetail('elasticity')} />
-                <MetricBar label="피부결" value={result.textureScore} unit="점" icon={<SparkleIcon size={14} />} color="#fcc2d7" delay={60}
-                  description={result.textureScore >= 70 ? '매끈한 피부' : result.textureScore >= 45 ? '각질 케어 추천' : '피부결 집중 관리 필요'}
-                  diff={changes?.textureScore?.diff} onClick={() => openDetail('texture')} />
-                <MetricBar label="주름" value={result.wrinkleScore} unit="점" icon={<RulerIcon size={14} />} color="#ffec99" delay={120}
-                  description={result.wrinkleScore >= 75 ? '매끄러운 피부' : result.wrinkleScore >= 50 ? '잔주름 관리 추천' : '주름 집중 관리 필요'}
-                  diff={changes?.wrinkleScore?.diff} onClick={() => openDetail('wrinkles')} />
-                <MetricBar label="모공" value={result.poreScore} unit="점" icon={<MicroscopeIcon size={14} />} color="#ffd8a8" delay={180}
-                  description={result.poreScore >= 70 ? '미세 모공' : result.poreScore >= 45 ? '모공 축소 관리' : '넓은 모공 관리 필요'}
-                  diff={changes?.poreScore?.diff} onClick={() => openDetail('pores')} />
-                <MetricBar label="색소" value={result.pigmentationScore} unit="점" icon={<PaletteIcon size={13} />} color="#e0c0a0" delay={240}
-                  description={result.pigmentationScore >= 70 ? '맑은 피부' : result.pigmentationScore >= 45 ? '미백 관리 추천' : '색소 집중 관리 필요'}
-                  diff={changes?.pigmentationScore?.diff} onClick={() => openDetail('pigmentation')} />
+            {expandedSections.indicators && (<>
+              <div style={{ height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 15%, rgba(255,255,255,0.3) 85%, transparent 100%)', margin: '0 16px' }} />
+              <div style={{ padding: '12px 16px 16px', animation: 'fadeUp 0.3s ease-out' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+                  {[
+                    { label: '수분', value: result.moisture, unit: '%', icon: <DropletIcon size={14} />, diff: changes?.moisture?.diff, detail: 'moisture' },
+                    { label: '유분', value: result.oilBalance, unit: '%', icon: <BubbleIcon size={14} />, diff: changes?.oilBalance?.diff, detail: 'oilBalance' },
+                    { label: '유수분밸런스', value: result.oilMoistureBalance ?? Math.round(100 - Math.abs((result.moisture || 50) - (result.oilBalance || 50)) * 1.2), unit: '점', icon: <BalanceIcon size={14} />, diff: null, detail: 'oilMoistureBalance' },
+                    { label: '피부톤', value: result.skinTone, unit: '점', icon: <LotionIcon size={14} />, diff: changes?.skinTone?.diff, detail: 'skinTone' },
+                    { label: '붉은기', value: result.rednessScore ?? 70, unit: '점', icon: <TargetIcon size={14} />, diff: null, detail: 'redness' },
+                    { label: '색소', value: result.pigmentationScore, unit: '점', icon: <PaletteIcon size={14} />, diff: changes?.pigmentationScore?.diff, detail: 'pigmentation' },
+                    { label: '피부결', value: result.textureScore, unit: '점', icon: <SparkleIcon size={14} />, diff: changes?.textureScore?.diff, detail: 'texture' },
+                    { label: '탄력', value: result.elasticityScore, unit: '점', icon: <DiamondIcon size={14} />, diff: changes?.elasticityScore?.diff, detail: 'elasticity' },
+                    { label: '주름', value: result.wrinkleScore, unit: '점', icon: <RulerIcon size={14} />, diff: changes?.wrinkleScore?.diff, detail: 'wrinkles' },
+                    { label: '모공', value: result.poreScore, unit: '점', icon: <MicroscopeIcon size={14} />, diff: changes?.poreScore?.diff, detail: 'pores' },
+                    { label: '트러블', value: Math.max(0, Math.round(100 - result.troubleCount * 8.5)), unit: '점', icon: <RednessIcon size={14} />, diff: changes?.troubleCount?.diff ? Math.round(-changes.troubleCount.diff * 8.5) : null, detail: 'trouble' },
+                    { label: '다크서클', value: result.darkCircleScore, unit: '점', icon: <EyeIcon size={14} />, diff: changes?.darkCircleScore?.diff, detail: 'darkCircles' },
+                  ].map((m, i) => (
+                    <div key={m.detail} onClick={() => openDetail(m.detail)} style={{
+                      background: 'rgba(255,255,255,0.45)', borderRadius: 12, padding: '14px 12px',
+                      cursor: 'pointer', transition: 'background 0.2s',
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        {m.icon}
+                        <span style={{ fontSize: 12, fontWeight: 500, color: '#000' }}>{m.label}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'flex-start', gap: 3, marginTop: 18 }}>
+                        <span style={{ fontSize: 22, fontWeight: 500, color: '#042C53', letterSpacing: -1, lineHeight: 1 }}>
+                          <AnimatedNumber target={m.value} />
+                        </span>
+                        <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(0,0,0,0.3)' }}>{m.unit}</span>
+                        {m.diff != null && m.diff !== 0 && (
+                          <span style={{
+                            fontSize: 10, fontWeight: 500, marginLeft: 'auto',
+                            color: m.diff > 0 ? '#70B0F0' : '#C090E0',
+                            background: 'rgba(255,255,255,0.3)', borderRadius: 6,
+                            padding: '2px 6px',
+                          }}>{m.diff > 0 ? '+' : ''}{Math.round(m.diff)}</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            )}
+            </>)}
           </div>
 
           {/* ═══════ Section 5: 맞춤 케어 제안 ═══════ */}
-          <div style={{ margin: '0 14px 10px', background: 'rgba(255,255,255,0.8)', borderRadius: 14, boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)', overflow: 'hidden' }}>
+          <div style={{ margin: '0 16px 10px', background: 'rgba(255,255,255,0.5)', borderRadius: 14, boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)', overflow: 'hidden' }}>
             <button onClick={() => toggleSection('care')} style={{
               width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               padding: expandedSections.care ? '14px 16px 10px' : '14px 16px 18px',
@@ -2314,15 +2328,16 @@ export default function App() {
                 <path d="M6 9l6 6 6-6" />
               </svg>
             </button>
-            {expandedSections.care && (
-              <div style={{ padding: '0 16px 16px', animation: 'fadeUp 0.3s ease-out' }}>
+            {expandedSections.care && (<>
+              <div style={{ height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 15%, rgba(255,255,255,0.3) 85%, transparent 100%)', margin: '0 16px' }} />
+              <div style={{ padding: '12px 16px 16px', animation: 'fadeUp 0.3s ease-out' }}>
                 {/* Product recommendations */}
                 {(() => {
                   const weakCats = getWeakestCategories(result);
                   if (weakCats.length === 0) return null;
                   return (
                     <div style={{ marginBottom: 12 }}>
-                      <div style={{ fontSize: 11, fontWeight: 500, color: '#042C53', marginBottom: 8 }}>맞춤 추천 제품</div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: '#042C53', marginBottom: 8 }}>맞춤 추천 제품</div>
                       {weakCats.slice(0, 2).map((cat) => {
                         const meta = CATEGORY_META[cat];
                         if (!meta) return null;
@@ -2330,40 +2345,42 @@ export default function App() {
                         if (products.length === 0) return null;
                         return (
                           <div key={cat} style={{
-                            marginBottom: 8, borderRadius: 12,
-                            background: '#F8FBFE',
-                            border: '1px solid rgba(4,44,83,0.06)',
+                            marginBottom: 10, borderRadius: 14,
+                            background: '#fff',
+                            border: '1px solid rgba(4,44,83,0.08)',
                             overflow: 'hidden',
                           }}>
                             <div style={{
-                              padding: '10px 12px',
+                              padding: '12px 14px',
+                              background: 'rgba(101,152,239,0.06)',
+                              borderBottom: '1px solid rgba(4,44,83,0.06)',
                             }}>
-                              <div style={{ fontSize: 12, fontWeight: 600, color: '#042C53' }}>{meta.label}</div>
-                              <div style={{ fontSize: 9, color: '#6B7F99' }}>{meta.ingredient}</div>
+                              <div style={{ fontSize: 14, fontWeight: 600, color: '#042C53' }}>{meta.label}</div>
+                              <div style={{ fontSize: 11, color: '#6B7F99', marginTop: 2 }}>{meta.ingredient}</div>
                             </div>
                             {products.map((product, pi) => (
                               <a key={product.id} href={product.link} target="_blank" rel="noopener noreferrer"
                                 className="product-item-card"
                                 style={{
                                   display: 'flex', alignItems: 'center', gap: 10,
-                                  padding: '8px 12px',
-                                  borderTop: '1px solid rgba(4,44,83,0.04)',
+                                  padding: '12px 14px',
+                                  borderTop: pi > 0 ? '1px solid rgba(4,44,83,0.04)' : 'none',
                                   textDecoration: 'none', color: 'inherit',
                                   transition: 'background 0.2s',
                                 }}>
                                 <div style={{ flex: 1, minWidth: 0 }}>
-                                  <div style={{ fontSize: 11, fontWeight: 600, color: '#555555',
+                                  <div style={{ fontSize: 13, fontWeight: 600, color: '#555555',
                                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                     {product.brand} {product.name}
                                   </div>
                                   <div style={{ display: 'flex', gap: 4, marginTop: 2, alignItems: 'center' }}>
                                     {product.tags?.slice(0, 2).map((tag, ti) => (
                                       <span key={ti} style={{
-                                        fontSize: 8, fontWeight: 600, padding: '1px 5px', borderRadius: 5,
+                                        fontSize: 10, fontWeight: 600, padding: '1px 5px', borderRadius: 5,
                                         background: 'rgba(24,95,165,0.1)', color: '#185FA5',
                                       }}>{tag}</span>
                                     ))}
-                                    <span style={{ fontSize: 8, color: '#6B7F99' }}>{product.volume}</span>
+                                    <span style={{ fontSize: 10, color: '#6B7F99' }}>{product.volume}</span>
                                   </div>
                                 </div>
                                 <div style={{
@@ -2379,13 +2396,16 @@ export default function App() {
                     </div>
                   );
                 })()}
+                <div style={{ fontSize: 10, color: '#6B7F99', textAlign: 'center', marginBottom: 12, lineHeight: 1.4 }}>
+                  이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
+                </div>
                 {/* Treatment recommendations */}
                 {(() => {
                   const treatments = result ? getRecommendedTreatments(result, 3) : [];
                   if (treatments.length === 0) return null;
                   return (
                     <div style={{ marginBottom: 12 }}>
-                      <div style={{ fontSize: 11, fontWeight: 500, color: '#042C53', marginBottom: 8 }}>맞춤 추천 시술</div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: '#042C53', marginBottom: 8 }}>맞춤 추천 시술</div>
                       {(() => {
                         const grouped = {};
                         treatments.forEach(t => {
@@ -2404,9 +2424,9 @@ export default function App() {
                               <div style={{
                                 padding: '10px 12px',
                               }}>
-                                <div style={{ fontSize: 12, fontWeight: 600, color: '#042C53' }}>{catMeta?.label}</div>
+                                <div style={{ fontSize: 14, fontWeight: 600, color: '#042C53' }}>{catMeta?.label}</div>
                                 {items[0]?.weakestMetric && (
-                                  <div style={{ fontSize: 9, fontWeight: 400, color: '#6B7F99', marginTop: 1 }}>
+                                  <div style={{ fontSize: 11, fontWeight: 400, color: '#6B7F99', marginTop: 1 }}>
                                     {items[0].weakestMetric.label} {items[0].weakestMetric.value}점
                                   </div>
                                 )}
@@ -2416,23 +2436,23 @@ export default function App() {
                                   padding: '8px 12px',
                                   borderTop: '1px solid rgba(4,44,83,0.04)',
                                 }}>
-                                  <div style={{ fontSize: 11, fontWeight: 700, color: '#555555' }}>
+                                  <div style={{ fontSize: 13, fontWeight: 700, color: '#555555' }}>
                                     {t.name}
                                   </div>
-                                  <div style={{ fontSize: 10, color: '#6B7F99', marginTop: 2, lineHeight: 1.3 }}>
+                                  <div style={{ fontSize: 12, color: '#6B7F99', marginTop: 2, lineHeight: 1.3 }}>
                                     {t.mechanism.length > 35 ? t.mechanism.slice(0, 35) + '...' : t.mechanism}
                                   </div>
-                                  <div style={{ display: 'flex', gap: 8, marginTop: 3, fontSize: 9, color: '#6B7F99' }}>
+                                  <div style={{ display: 'flex', gap: 8, marginTop: 3, fontSize: 11, color: '#6B7F99' }}>
                                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
-                                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8a3 3 0 013-3h12a3 3 0 013 3v8a3 3 0 01-3 3H6a3 3 0 01-3-3z"/><path d="M3 10h18"/></svg>
+                                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8a3 3 0 013-3h12a3 3 0 013 3v8a3 3 0 01-3 3H6a3 3 0 01-3-3z"/><path d="M3 10h18"/></svg>
                                       {t.costRange}
                                     </span>
                                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
-                                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+                                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
                                       {t.downtime}
                                     </span>
                                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
-                                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19.933 13.041a8 8 0 11-9.925-8.788c3.899-1 7.935 1.007 9.425 4.747"/><path d="M20 4v5h-5"/></svg>
+                                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19.933 13.041a8 8 0 11-9.925-8.788c3.899-1 7.935 1.007 9.425 4.747"/><path d="M20 4v5h-5"/></svg>
                                       {t.frequency}
                                     </span>
                                   </div>
@@ -2445,21 +2465,21 @@ export default function App() {
                       <button onClick={() => setFabChatOpen(true)} style={{
                         width: '100%', padding: '10px 0', borderRadius: 10, border: 'none',
                         background: 'rgba(30,144,232,0.1)', color: '#185FA5',
-                        fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+                        fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                         marginTop: 8,
                       }}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v12a1 1 0 01-1 1H6l-3 3z"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v12a1 1 0 01-1 1H6l-3 3z"/></svg>
                         시술에 대해 루아에게 물어보기
                       </button>
-                      <div style={{ fontSize: 8, color: '#6B7F99', textAlign: 'center', marginTop: 6, lineHeight: 1.4 }}>
+                      <div style={{ fontSize: 10, color: '#6B7F99', textAlign: 'center', marginTop: 6, lineHeight: 1.4 }}>
                         <span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><ShieldIcon size={10} /></span> 의료 행위가 아닌 정보 제공 목적입니다. 시술은 전문 의료진과 상담 후 결정하세요.
                       </div>
                     </div>
                   );
                 })()}
               </div>
-            )}
+            </>)}
           </div>
 
           {/* ═══════ 다시 측정하기 / 하단 액션 ═══════ */}
