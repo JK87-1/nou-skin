@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { SCIENCE } from '../data/ScienceData';
-import { RulerIcon, GearIcon, BooksIcon } from './icons/PastelIcons';
+import { RulerIcon, GearIcon, BooksIcon, DropletIcon, BubbleIcon, BalanceIcon, LotionIcon, TargetIcon, RednessIcon, PaletteIcon, SparkleIcon, DiamondIcon, MicroscopeIcon, EyeIcon } from './icons/PastelIcons';
 
 /* ===== Animated Number Counter ===== */
 export function AnimatedNumber({ target, suffix = '', duration = 1200 }) {
@@ -120,70 +120,57 @@ export function DetailPage({ metricKey, value, onBack }) {
   if (!data) return null;
 
   const unitMap = {
-    skinAge: '세', moisture: '%', skinTone: '점', trouble: '개', oilBalance: '%'
+    skinAge: '세', moisture: '%', skinTone: '점', trouble: '개', oilBalance: '%', oilMoistureBalance: '점', redness: '점'
+  };
+
+  const metricIconMap = {
+    moisture: <DropletIcon size={22} />, oilBalance: <BubbleIcon size={22} />, oilMoistureBalance: <BalanceIcon size={22} />,
+    skinTone: <LotionIcon size={22} />, redness: <TargetIcon size={22} />, pigmentation: <PaletteIcon size={22} />,
+    trouble: <RednessIcon size={22} />, texture: <SparkleIcon size={22} />, elasticity: <DiamondIcon size={22} />,
+    wrinkles: <RulerIcon size={22} />, pores: <MicroscopeIcon size={22} />, darkCircles: <EyeIcon size={22} />,
   };
 
   return (
     <div style={{ paddingBottom: 40 }}>
-      {/* Hero Header */}
-      <div style={{
-        background: data.gradient,
-        padding: '48px 22px 30px',
-        borderRadius: '0 0 32px 32px',
-        position: 'relative',
-        overflow: 'hidden',
-      }}>
-        <div style={{ position: 'absolute', top: -40, right: -40, width: 150, height: 150, borderRadius: '50%', background: 'var(--bg-input)' }} />
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <button className="btn-back" onClick={onBack} style={{ marginBottom: 20 }}>←</button>
-          <div style={{ fontSize: 40, marginBottom: 10 }}>{data.icon}</div>
-          <h1 style={{ fontSize: 26, fontWeight: 800, color: '#fff', fontFamily: 'var(--font-display)', marginBottom: 4 }}>
+      {/* Header */}
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 20px' }}>
+        <div onClick={onBack} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginBottom: 16 }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+          {metricIconMap[metricKey]}
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: 'rgba(0,0,0,0.8)', margin: 0 }}>
             {data.title}
           </h1>
-          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)', letterSpacing: 1, marginBottom: 12 }}>
-            {data.subtitle}
-          </div>
-          <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.9)', lineHeight: 1.7 }}>{data.hero}</p>
-
           {value != null && (
-            <div style={{
-              marginTop: 16,
-              display: 'inline-flex',
-              alignItems: 'baseline',
-              gap: 4,
-              background: 'rgba(255,255,255,0.2)',
-              borderRadius: 16,
-              padding: '8px 20px',
-            }}>
-              <span style={{ fontSize: 32, fontWeight: 900, color: '#fff', fontFamily: 'var(--font-display)' }}>{value}</span>
-              <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>{unitMap[metricKey]}</span>
-              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginLeft: 8 }}>나의 측정값</span>
-            </div>
+            <span style={{ fontSize: 22, fontWeight: 600, color: 'rgba(0,0,0,0.8)', marginLeft: 'auto' }}>
+              {value}<span style={{ fontSize: 13, fontWeight: 500, color: 'rgba(0,0,0,0.3)', marginLeft: 3 }}>{unitMap[metricKey]}</span>
+            </span>
           )}
         </div>
+        <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.6)', letterSpacing: 0.5, marginBottom: 10, paddingLeft: 32 }}>
+          {data.subtitle}
+        </div>
+        <p style={{ fontSize: 13, color: 'rgba(0,0,0,0.4)', lineHeight: 1.7, margin: 0 }}>{data.hero}</p>
       </div>
 
       {/* Content */}
       <div style={{ padding: '20px 16px' }}>
-        {/* Methodology */}
+        {/* Methodology + Analysis Steps */}
         <div className="card">
-          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 10, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><RulerIcon size={15} /></span> 측정 원리</div>
-          <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.85, whiteSpace: 'pre-line' }}>{data.methodology}</p>
-        </div>
-
-        {/* Analysis Steps */}
-        <div className="card">
-          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><GearIcon size={15} /></span> 분석 과정</div>
+          <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 16, color: 'rgba(0,0,0,0.8)' }}>측정 원리</div>
+          <p style={{ fontSize: 13, color: 'rgba(0,0,0,0.4)', lineHeight: 1.85, whiteSpace: 'pre-line', marginBottom: 24 }}>{data.methodology}</p>
+          <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 16, color: 'rgba(0,0,0,0.8)' }}>분석 과정</div>
           {data.steps.map((step, i) => (
-            <div key={i} style={{ display: 'flex', gap: 14, marginBottom: i < data.steps.length - 1 ? 18 : 0 }}>
+            <div key={i} style={{ display: 'flex', gap: 11, marginBottom: i < data.steps.length - 1 ? 18 : 0 }}>
               <div style={{
-                width: 32, height: 32, borderRadius: '50%', background: data.gradient,
+                width: 24, height: 24, borderRadius: 8, background: 'rgba(255,255,255,0.3)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#fff', fontSize: 13, fontWeight: 800, flexShrink: 0,
+                color: '#000', fontSize: 13, fontWeight: 600, flexShrink: 0,
               }}>{i + 1}</div>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 3 }}>{step.title}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.65 }}>{step.desc}</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(0,0,0,0.6)', marginBottom: 3 }}>{step.title}</div>
+                <div style={{ fontSize: 12, color: 'rgba(0,0,0,0.4)', lineHeight: 1.65 }}>{step.desc}</div>
               </div>
             </div>
           ))}
@@ -191,7 +178,7 @@ export function DetailPage({ metricKey, value, onBack }) {
 
         {/* Score Ranges */}
         <div className="card">
-          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 14, color: 'var(--text-primary)' }}> 결과 해석</div>
+          <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 14, color: 'rgba(0,0,0,0.8)' }}>결과 해석</div>
           {data.ranges.map((r, i) => (
             <div key={i} style={{
               display: 'flex', alignItems: 'center', gap: 10,
@@ -200,43 +187,30 @@ export function DetailPage({ metricKey, value, onBack }) {
             }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: r.color, flexShrink: 0 }} />
               <span style={{ fontSize: 12, fontWeight: 700, color: r.color, minWidth: 80 }}>{r.range}</span>
-              <span style={{ fontSize: 11, color: r.color, background: `${r.color}15`, padding: '2px 10px', borderRadius: 8 }}>{r.label}</span>
-              <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 'auto' }}>{r.description}</span>
+              <span style={{ fontSize: 11, color: '#fff', background: r.color, padding: '2px 10px', borderRadius: 8, fontWeight: 500 }}>{r.label}</span>
+              <span style={{ fontSize: 10, color: 'rgba(0,0,0,0.4)', marginLeft: 'auto' }}>{r.description}</span>
             </div>
           ))}
         </div>
 
         {/* Scientific References */}
         <div className="card">
-          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 14, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><BooksIcon size={15} /></span> 과학적 근거</div>
+          <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 14, color: 'rgba(0,0,0,0.8)' }}>과학적 근거</div>
           {data.references.map((ref, i) => (
             <div key={i} style={{
-              marginBottom: i < data.references.length - 1 ? 14 : 0,
-              padding: 14, background: 'var(--bg-card)', borderRadius: 14,
+              marginBottom: i < data.references.length - 1 ? 10 : 0,
+              borderRadius: 5, border: '1px solid rgba(0,0,0,0.08)', overflow: 'hidden',
             }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: data.color, marginBottom: 5 }}>{ref.name}</div>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.65, marginBottom: 8 }}>{ref.description}</p>
-              <div style={{
-                fontSize: 10, color: 'var(--text-dim)', fontStyle: 'italic',
-                borderLeft: `3px solid ${data.color}40`, paddingLeft: 10,
-              }}>{ref.source}</div>
+              <div style={{ padding: '8px 10px', background: 'rgba(255,255,255,0.1)', fontWeight: 600, fontSize: 12, color: 'rgba(0,0,0,0.6)', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>{ref.name}</div>
+              <div style={{ padding: '7px 10px', fontSize: 12, color: 'rgba(0,0,0,0.4)', lineHeight: 1.5, borderBottom: '1px solid rgba(0,0,0,0.06)' }}>{ref.description}</div>
+              <div style={{ padding: '7px 10px', fontSize: 11, color: 'rgba(0,0,0,0.4)', fontStyle: 'italic', lineHeight: 1.5 }}>{ref.source}</div>
             </div>
           ))}
         </div>
 
-        {/* Gut-Brain-Skin */}
-        <div className="gbs-box">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-            <span style={{ fontSize: 20 }}></span>
-            <span style={{ fontSize: 15, fontWeight: 700, color: '#ADEBB3' }}>장-뇌-피부 축 (Gut-Brain-Skin Axis)</span>
-          </div>
-          <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.75, marginBottom: 10 }}>{data.gutBrainSkin}</p>
-          <div style={{ fontSize: 10, color: 'var(--text-dim)', fontStyle: 'italic' }}>{data.gutBrainSkinSource}</div>
-        </div>
-
         {/* Disclaimer */}
         <div style={{ padding: 14, background: 'var(--bg-card)', borderRadius: 14, marginBottom: 16 }}>
-          <p style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.6 }}>
+          <p style={{ fontSize: 11, color: 'rgba(0,0,0,0.4)', lineHeight: 1.6 }}>
              루아 AI 비전 기반 추정치이며, 의료기기 정밀 측정과 차이가 있습니다.
             정확한 진단은 피부과 전문의와 상담해주세요.
           </p>

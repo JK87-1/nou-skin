@@ -2270,50 +2270,124 @@ export default function App() {
             </button>
             {expandedSections.indicators && (<>
               <div style={{ height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 15%, rgba(255,255,255,0.3) 85%, transparent 100%)', margin: '0 16px' }} />
-              <div style={{ padding: '12px 16px 16px', animation: 'fadeUp 0.3s ease-out' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+              <div style={{ padding: '11px 10px 10px', animation: 'fadeUp 0.3s ease-out' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 5 }}>
                   {[
                     { label: '수분', value: result.moisture, unit: '%', icon: <DropletIcon size={14} />, diff: changes?.moisture?.diff, detail: 'moisture' },
                     { label: '유분', value: result.oilBalance, unit: '%', icon: <BubbleIcon size={14} />, diff: changes?.oilBalance?.diff, detail: 'oilBalance' },
-                    { label: '유수분밸런스', value: result.oilMoistureBalance ?? Math.round(100 - Math.abs((result.moisture || 50) - (result.oilBalance || 50)) * 1.2), unit: '점', icon: <BalanceIcon size={14} />, diff: null, detail: 'oilMoistureBalance' },
-                    { label: '피부톤', value: result.skinTone, unit: '점', icon: <LotionIcon size={14} />, diff: changes?.skinTone?.diff, detail: 'skinTone' },
-                    { label: '붉은기', value: result.rednessScore ?? 70, unit: '점', icon: <TargetIcon size={14} />, diff: null, detail: 'redness' },
+                    { label: '유수분', value: result.oilMoistureBalance ?? Math.round(100 - Math.abs((result.moisture || 50) - (result.oilBalance || 50)) * 1.2), unit: '점', icon: <BalanceIcon size={14} />, diff: null, detail: 'oilMoistureBalance' },
                     { label: '색소', value: result.pigmentationScore, unit: '점', icon: <PaletteIcon size={14} />, diff: changes?.pigmentationScore?.diff, detail: 'pigmentation' },
-                    { label: '피부결', value: result.textureScore, unit: '점', icon: <SparkleIcon size={14} />, diff: changes?.textureScore?.diff, detail: 'texture' },
-                    { label: '탄력', value: result.elasticityScore, unit: '점', icon: <DiamondIcon size={14} />, diff: changes?.elasticityScore?.diff, detail: 'elasticity' },
-                    { label: '주름', value: result.wrinkleScore, unit: '점', icon: <RulerIcon size={14} />, diff: changes?.wrinkleScore?.diff, detail: 'wrinkles' },
-                    { label: '모공', value: result.poreScore, unit: '점', icon: <MicroscopeIcon size={14} />, diff: changes?.poreScore?.diff, detail: 'pores' },
+                    { label: '붉은기', value: result.rednessScore ?? 70, unit: '점', icon: <TargetIcon size={14} />, diff: null, detail: 'redness' },
                     { label: '트러블', value: result.troubleCount, unit: '개', icon: <RednessIcon size={14} />, diff: changes?.troubleCount?.diff ?? null, detail: 'trouble' },
+                    { label: '피부톤', value: result.skinTone, unit: '점', icon: <LotionIcon size={14} />, diff: changes?.skinTone?.diff, detail: 'skinTone' },
+                    { label: '피부결', value: result.textureScore, unit: '점', icon: <SparkleIcon size={14} />, diff: changes?.textureScore?.diff, detail: 'texture' },
+                    { label: '모공', value: result.poreScore, unit: '점', icon: <MicroscopeIcon size={14} />, diff: changes?.poreScore?.diff, detail: 'pores' },
+                    { label: '탄력', value: result.elasticityScore, unit: '점', icon: <DiamondIcon size={14} />, diff: changes?.elasticityScore?.diff, detail: 'elasticity' },
                     { label: '다크서클', value: result.darkCircleScore, unit: '점', icon: <EyeIcon size={14} />, diff: changes?.darkCircleScore?.diff, detail: 'darkCircles' },
+                    { label: '주름', value: result.wrinkleScore, unit: '점', icon: <RulerIcon size={14} />, diff: changes?.wrinkleScore?.diff, detail: 'wrinkles' },
                   ].map((m, i) => (
                     <div key={m.detail} onClick={() => openDetail(m.detail)} style={{
-                      background: 'rgba(255,255,255,0.45)', borderRadius: 12, padding: '14px 12px',
+                      background: 'rgba(255,255,255,0.45)', borderRadius: 12, padding: '12px 10px',
                       cursor: 'pointer', transition: 'background 0.2s',
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         {m.icon}
                         <span style={{ fontSize: 12, fontWeight: 500, color: '#000' }}>{m.label}</span>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'flex-start', gap: 3, marginTop: 18 }}>
-                        <span style={{ fontSize: 22, fontWeight: 500, color: '#042C53', letterSpacing: -1, lineHeight: 1 }}>
-                          <AnimatedNumber target={m.value} />
-                        </span>
-                        <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(0,0,0,0.3)' }}>{m.unit}</span>
-                        {m.detail === 'trouble' && result.troubleBreakdown && (result.troubleBreakdown.whitehead > 0 || result.troubleBreakdown.blackhead > 0) && (
-                          <span style={{ fontSize: 9, fontWeight: 500, color: 'rgba(0,0,0,0.25)', marginLeft: 2 }}>
-                            {result.troubleBreakdown.whitehead > 0 && `W${result.troubleBreakdown.whitehead}`}
-                            {result.troubleBreakdown.whitehead > 0 && result.troubleBreakdown.blackhead > 0 && ' '}
-                            {result.troubleBreakdown.blackhead > 0 && `B${result.troubleBreakdown.blackhead}`}
-                          </span>
-                        )}
-                        {m.diff != null && m.diff !== 0 && (
-                          <span style={{
-                            fontSize: 10, fontWeight: 500, marginLeft: 'auto',
-                            color: m.diff > 0 ? '#70B0F0' : '#C090E0',
-                            background: 'rgba(255,255,255,0.3)', borderRadius: 6,
-                            padding: '2px 6px',
-                          }}>{m.diff > 0 ? '+' : ''}{Math.round(m.diff)}</span>
-                        )}
+                      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 18 }}>
+                        {(() => {
+                          const v = m.value;
+                          const d = m.detail;
+                          const iconColors = {
+                            moisture: ['#0e6bec', '#4d8ef2'], oilBalance: ['#00a0fc', '#4dbdfd'], oilMoistureBalance: ['#63D6ff', '#8fe2ff'],
+                            skinTone: ['#f42f89', '#f86aaa'], redness: ['#C32824', '#e86260'], pigmentation: ['#9D1233', '#d44a68'],
+                            texture: ['#ff5097', '#ff85b8'], elasticity: ['#ff8500', '#ffab4d'], pores: ['#fc75c6', '#fda4db'],
+                            wrinkles: ['#fccd03', '#fde04d'], darkCircles: ['#ffb600', '#ffd04d'], trouble: ['#f23f39', '#ff8a85'],
+                          };
+                          const [dark, light] = iconColors[d] || ['#0e6bec', '#4d8ef2'];
+                          let scoreColor, label;
+                          if (d === 'moisture') {
+                            if (v >= 75) { scoreColor = dark; label = '촉촉'; }
+                            else if (v >= 60) { scoreColor = light; label = '정상'; }
+                            else if (v >= 40) { scoreColor = 'rgba(0,0,0,0.35)'; label = '건조'; }
+                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '건조'; }
+                          } else if (d === 'oilBalance') {
+                            if (v >= 45 && v <= 65) { scoreColor = dark; label = '균형'; }
+                            else if ((v > 65 && v <= 80) || v < 45) { scoreColor = 'rgba(0,0,0,0.35)'; label = v > 65 ? '유분과다' : '건조'; }
+                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '지성'; }
+                          } else if (d === 'oilMoistureBalance') {
+                            const mst = result.moisture ?? 50, oil = result.oilBalance ?? 50;
+                            if (mst >= 60 && oil >= 40 && oil <= 60) { scoreColor = dark; label = '중성'; }
+                            else if (mst <= 40 && oil >= 70) { scoreColor = 'rgba(0,0,0,0.7)'; label = '수부지'; }
+                            else if (mst <= 40 && oil <= 30) { scoreColor = 'rgba(0,0,0,0.35)'; label = '건성'; }
+                            else if (mst >= 50 && oil >= 70) { scoreColor = 'rgba(0,0,0,0.35)'; label = '지성'; }
+                            else if (v >= 55) { scoreColor = light; label = '보통'; }
+                            else { scoreColor = 'rgba(0,0,0,0.35)'; label = '복합성'; }
+                          } else if (d === 'skinTone') {
+                            if (v >= 80) { scoreColor = dark; label = '균일'; }
+                            else if (v >= 60) { scoreColor = light; label = '양호'; }
+                            else if (v >= 40) { scoreColor = 'rgba(0,0,0,0.35)'; label = '불균일'; }
+                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '칙칙'; }
+                          } else if (d === 'redness') {
+                            if (v >= 75) { scoreColor = dark; label = '깨끗'; }
+                            else if (v >= 55) { scoreColor = light; label = '양호'; }
+                            else if (v >= 35) { scoreColor = 'rgba(0,0,0,0.35)'; label = '홍조'; }
+                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '심함'; }
+                          } else if (d === 'pigmentation') {
+                            if (v >= 80) { scoreColor = dark; label = '맑음'; }
+                            else if (v >= 60) { scoreColor = light; label = '양호'; }
+                            else if (v >= 40) { scoreColor = 'rgba(0,0,0,0.35)'; label = '주의'; }
+                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '심함'; }
+                          } else if (d === 'trouble') {
+                            if (v <= 2) { scoreColor = dark; label = '깨끗'; }
+                            else if (v <= 5) { scoreColor = light; label = '경증'; }
+                            else if (v <= 10) { scoreColor = 'rgba(0,0,0,0.35)'; label = '중등도'; }
+                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '중증'; }
+                          } else if (d === 'texture') {
+                            if (v >= 80) { scoreColor = dark; label = '매끈'; }
+                            else if (v >= 60) { scoreColor = light; label = '양호'; }
+                            else if (v >= 40) { scoreColor = 'rgba(0,0,0,0.35)'; label = '거칠음'; }
+                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '나쁨'; }
+                          } else if (d === 'elasticity') {
+                            if (v >= 80) { scoreColor = dark; label = '탄탄'; }
+                            else if (v >= 60) { scoreColor = light; label = '양호'; }
+                            else if (v >= 40) { scoreColor = 'rgba(0,0,0,0.35)'; label = '처짐'; }
+                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '나쁨'; }
+                          } else if (d === 'pores') {
+                            if (v >= 80) { scoreColor = dark; label = '미세'; }
+                            else if (v >= 60) { scoreColor = light; label = '정상'; }
+                            else if (v >= 40) { scoreColor = 'rgba(0,0,0,0.35)'; label = '확장'; }
+                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '나쁨'; }
+                          } else if (d === 'wrinkles') {
+                            if (v >= 85) { scoreColor = dark; label = '매끈'; }
+                            else if (v >= 65) { scoreColor = light; label = '양호'; }
+                            else if (v >= 45) { scoreColor = 'rgba(0,0,0,0.35)'; label = '보통'; }
+                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '나쁨'; }
+                          } else if (d === 'darkCircles') {
+                            if (v >= 80) { scoreColor = dark; label = '밝음'; }
+                            else if (v >= 60) { scoreColor = light; label = '양호'; }
+                            else if (v >= 40) { scoreColor = 'rgba(0,0,0,0.35)'; label = '눈에띔'; }
+                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '심함'; }
+                          } else {
+                            if (v >= 75) { scoreColor = dark; label = '좋음'; }
+                            else if (v >= 55) { scoreColor = light; label = '보통'; }
+                            else if (v >= 35) { scoreColor = 'rgba(0,0,0,0.35)'; label = '주의'; }
+                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '나쁨'; }
+                          }
+                          return <>
+                            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3 }}>
+                              <span style={{ fontSize: 22, fontWeight: 500, color: scoreColor, letterSpacing: -1, lineHeight: 1 }}>
+                                <AnimatedNumber target={v} />
+                              </span>
+                              <span style={{ fontSize: 12, fontWeight: 500, color: scoreColor, opacity: 0.6, lineHeight: 1, paddingBottom: 1 }}>{m.unit}</span>
+                            </div>
+                            <span style={{
+                              fontSize: 10, fontWeight: 600, color: scoreColor,
+                              background: `${typeof scoreColor === 'string' && scoreColor.startsWith('#') ? scoreColor + '12' : 'rgba(0,0,0,0.04)'}`,
+                              borderRadius: 6, padding: '2px 6px', lineHeight: 1.3, textAlign: 'center',
+                            }}>{label.length >= 4 ? <>{label.slice(0, 2)}<br/>{label.slice(2)}</> : label}</span>
+                          </>;
+                        })()}
                       </div>
                     </div>
                   ))}

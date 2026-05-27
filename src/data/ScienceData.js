@@ -68,10 +68,10 @@ Corneometer(각질층 전기 용량 수분 측정기)의 시각적 상관관계�
       { title: '채도 보정', desc: '적당한 피부 채도는 건강한 혈색 → 추가 보정.' },
     ],
     ranges: [
-      { range: '75% 이상', label: '촉촉', color: '#2196F3', description: '충분히 보습된 피부.' },
-      { range: '60~74%', label: '정상', color: '#4CAF50', description: '양호한 수분 상태.' },
-      { range: '40~59%', label: '약간 건조', color: '#FF9800', description: '보습 에센스 추가 추천.' },
-      { range: '40% 미만', label: '건조', color: '#f44336', description: '집중 보습 케어 필요.' },
+      { range: '75% 이상', label: '촉촉', color: '#0e6bec', description: '충분히 보습된 피부.' },
+      { range: '60~74%', label: '정상', color: '#00a0fc', description: '양호한 수분 상태.' },
+      { range: '40~59%', label: '건조', color: '#777167', description: '보습 에센스 추가 추천.' },
+      { range: '40% 미만', label: '건조', color: '#272727', description: '집중 보습 케어 필요.' },
     ],
     gutBrainSkin: '장내 유익균은 단쇄지방산(SCFA)을 생산하여 피부 각질세포의 세라마이드 합성을 촉진하고, 경피수분손실(TEWL)을 줄여줍니다.',
     gutBrainSkinSource: 'Lee DE et al. (2023) "Probiotics and Skin Barrier Function" Gut Microbiome',
@@ -97,40 +97,58 @@ L*은 밝기, b*은 황색-청색 축. RGB 평균에서 근사값을 추출하�
       { title: '좌우 대칭 비교', desc: '양볼 밝기 차이 = 비대칭 톤 불균일 → 감점.' },
     ],
     ranges: [
-      { range: '80점 이상', label: '맑고 균일', color: '#FF9800', description: '밝고 균일한 피부톤.' },
-      { range: '60~79점', label: '양호', color: '#4CAF50', description: '전반적으로 좋은 상태.' },
-      { range: '40~59점', label: '불균일', color: '#FF9800', description: '색소침착 관리 필요.' },
-      { range: '40점 미만', label: '관리 필요', color: '#f44336', description: '비타민C + 자외선 차단 추천.' },
+      { range: '80점 이상', label: '균일', color: '#0e6bec', description: '밝고 균일한 피부톤.' },
+      { range: '60~79점', label: '양호', color: '#00a0fc', description: '전반적으로 좋은 상태.' },
+      { range: '40~59점', label: '불균일', color: '#777167', description: '색소침착 관리 필요.' },
+      { range: '40점 미만', label: '칙칙', color: '#272727', description: '비타민C + 자외선 차단 추천.' },
     ],
     gutBrainSkin: '장내 만성 염증은 사이토카인(TNF-α, IL-6)을 퍼뜨려 멜라노사이트를 과자극, 기미·색소침착을 유발합니다.',
     gutBrainSkinSource: 'Park SH et al. (2024) J Cosmetic Dermatology',
   },
 
   trouble: {
-    icon: '', title: '트러블', subtitle: 'Skin Trouble Detection',
+    icon: '', title: '트러블', subtitle: 'Acne & Blemish Analysis',
     color: '#FFB0B0', gradient: 'linear-gradient(135deg, #FFB0B0, #F08080)',
-    hero: '적색 우세 픽셀(Red-Dominant Pixels)을 카운팅하여 염증·여드름·잡티를 감지합니다.',
-    methodology: `각 픽셀에서 R > G×1.2 AND R > B×1.25 AND R > 95 AND (R-G) > 15 조건 검사.
+    hero: '블랙헤드·화이트헤드·화농성 여드름 3가지 트러블 유형을 각각 구분 감지하여 피부 트러블 상태를 종합 평가합니다.',
+    methodology: `LUA는 트러블을 3가지 유형으로 구분하여 감지합니다.
 
-볼(홍조), 턱(호르몬성 여드름), 이마(피지성)를 구분 측정하고 GAGS 기준으로 심각도를 매핑합니다.`,
+■ 블랙헤드 (개방성 면포, Blackhead)
+모공이 열린 상태에서 피지가 공기 중 산화되어 검게 변한 것입니다.
+주로 코와 나비존(T존) 주변에서 작고 어두운 점(다크 스팟)들의 밀집도를 분석합니다.
+LAB L* 채널에서 주변보다 유의미하게 어두운 미세 클러스터를 검출합니다.
+
+■ 화이트헤드 (폐쇄성 면포, Whitehead)
+각질이 모공을 막아 피지가 갇혀 있는 하얀 좁쌀 여드름입니다.
+붉은기는 없지만, 피부 표면에 약간 튀어나온 미세한 음영(요철)과 옅은 유백색을 감지합니다.
+로컬 분산(Micro-Variance)으로 주변 대비 밝기·텍스처 변화가 있는 돌기를 검출합니다.
+
+■ 화농성 여드름 (염증성, Pustule)
+세균(C. acnes)이 증식해 염증이 생기고 고름이 찬 상태입니다.
+주변 피부에 비해 강한 붉은기(Redness)를 띠며, 중심부에 노란색 고름(Pustule) 픽셀이 뭉쳐 있는 것을 인식합니다.
+적색 우세 조건(R > G×1.2, R > B×1.25, R > 95, R-G > 15) + 사이즈 필터로 일반 홍조와 구분합니다.
+
+영역별로 볼(홍조 구분), 턱(호르몬성), 이마(피지성)를 분리 측정하고 GAGS 기준으로 심각도를 매핑합니다.`,
     references: [
-      { name: '적색 우세 픽셀 카운팅', description: 'R>G×1.2 & R>B×1.25 & R>95 & (R-G)>15 조건으로 염증 감지.', source: 'LUA Computer Vision Engine' },
-      { name: 'GAGS', description: '얼굴 6영역 병변 종합. 경증 1~18, 중등도 19~30, 중증 31+.', source: 'Doshi A et al. (1997) J Am Acad Dermatol' },
+      { name: '3유형 트러블 분류', description: '블랙헤드(개방성 면포): 산화 피지 다크 스팟 밀집도. 화이트헤드(폐쇄성 면포): 유백색 요철 로컬 분산. 화농성 여드름: 적색 우세 + 중심 황색 클러스터.', source: 'LUA Computer Vision Engine' },
+      { name: 'GAGS (Global Acne Grading System)', description: '얼굴 6영역(이마·우볼·좌볼·코·턱·흉부) 병변 종합. 경증 1~18, 중등도 19~30, 중증 31+.', source: 'Doshi A et al. (1997) J Am Acad Dermatol, 37(3):468-472' },
+      { name: 'Comedone Pathogenesis', description: '면포(Comedone)는 여드름의 기본 병변. 개방성(블랙헤드)은 산화 멜라닌+피지, 폐쇄성(화이트헤드)은 각질+피지 폐색. 방치 시 염증성으로 진행.', source: 'Zaenglein AL et al. (2016) J Am Acad Dermatol, 74(5):945-973' },
+      { name: 'C. acnes & Inflammation', description: 'Cutibacterium acnes가 막힌 모낭에서 증식 → 유리지방산 분비 → TLR2 활성화 → IL-1β, TNF-α 분비 → 염증성 여드름(구진·농포·결절).', source: 'Beylot C et al. (2014) JEADV, 28(3):271-278' },
     ],
     steps: [
-      { title: '적색 우세 스캔', desc: '모든 픽셀에서 적색 우세 조건 검사.' },
-      { title: '영역별 분리', desc: '볼(홍조), 턱(호르몬), 이마(피지)를 구분 측정.' },
-      { title: '밀도 → 개수 변환', desc: '적색 픽셀 비율을 트러블 개수로 변환.' },
-      { title: 'GAGS 매핑', desc: '0~2개: 깨끗, 3~5: 경증, 6~10: 중등도, 11+: 중증.' },
+      { title: '블랙헤드 감지', desc: 'T존(코·나비존)에서 LAB L* 채널 기반 어두운 미세 스팟 클러스터를 검출합니다.' },
+      { title: '화이트헤드 감지', desc: '피부 표면의 로컬 밝기·텍스처 분산으로 유백색 요철(좁쌀) 돌기를 검출합니다.' },
+      { title: '화농성 여드름 감지', desc: '적색 우세 픽셀(R>G×1.2) + 사이즈 필터로 염증성 병변만 선별. 일반 홍조와 구분합니다.' },
+      { title: '영역별 분류', desc: '이마(피지성)·볼(홍조 구분)·턱(호르몬성) 영역별로 분리 측정합니다.' },
+      { title: 'GAGS 매핑', desc: '3유형 합산 → 0~2개: 깨끗, 3~5: 경증, 6~10: 중등도, 11+: 중증.' },
     ],
     ranges: [
-      { range: '0~2개', label: '깨끗', color: '#4CAF50', description: '트러블 거의 없음.' },
-      { range: '3~5개', label: '경증', color: '#8BC34A', description: '기본 클렌징으로 관리.' },
-      { range: '6~10개', label: '중등도', color: '#FF9800', description: 'BHA 각질 케어 권장.' },
-      { range: '11개 이상', label: '중증', color: '#f44336', description: '피부과 상담 권장.' },
+      { range: '0~2개', label: '깨끗', color: '#0e6bec', description: '트러블 거의 없음. 현재 루틴 유지.' },
+      { range: '3~5개', label: '경증', color: '#00a0fc', description: '가벼운 면포 수준. 기본 클렌징 + BHA 토너로 관리.' },
+      { range: '6~10개', label: '중등도', color: '#777167', description: '염증성 병변 포함. BHA 각질 케어 + 진정 세럼 권장.' },
+      { range: '11개 이상', label: '중증', color: '#272727', description: '화농성 여드름 다수. 피부과 상담 권장.' },
     ],
-    gutBrainSkin: '장 유해균↑ → 장 투과성↑ → 내독소 유입 → 피지 과다 + 모낭 염증 → 여드름. L. rhamnosus GG 섭취 후 병변 47.2%↓.',
-    gutBrainSkinSource: 'Fabbrocini G et al. (2023) Gut Microbiome Journal',
+    gutBrainSkin: '장 유해균 증가 → 장 투과성 증가(Leaky Gut) → 내독소(LPS) 혈류 유입 → 피지선 과활성 + 모낭 염증 → 여드름 악화. 특히 C. acnes의 과증식은 장내 미생물 불균형과 상관관계가 높습니다. L. rhamnosus GG 프로바이오틱스 섭취 후 여드름 병변이 47.2% 감소한 임상 결과가 보고되었습니다.',
+    gutBrainSkinSource: 'Fabbrocini G et al. (2023) "Probiotics and Acne" Gut Microbiome Journal; Bowe WP & Logan AC (2011) "Acne vulgaris, probiotics and the gut-brain-skin axis" Gut Pathogens, 3:1',
   },
 
   oilBalance: {
@@ -151,10 +169,10 @@ T존(이마+코) vs U존(볼+턱) 하이라이트 비율 비교로 유형을 판
       { title: '밸런스 판별', desc: 'T/U 비율 + 전체 하이라이트량으로 유형 판별.' },
     ],
     ranges: [
-      { range: '45~65%', label: '균형', color: '#4CAF50', description: '이상적인 유수분 밸런스.' },
-      { range: '66~80%', label: '유분과다', color: '#FF9800', description: '수분 젤 보습제 추천.' },
-      { range: '44% 이하', label: '건조', color: '#2196F3', description: '페이셜 오일 추가 추천.' },
-      { range: '81% 이상', label: '심한지성', color: '#f44336', description: '유분 조절 토너 필요.' },
+      { range: '45~65%', label: '균형', color: '#0e6bec', description: '이상적인 유수분 밸런스.' },
+      { range: '66~80%', label: '유분과다', color: '#777167', description: '수분 젤 보습제 추천.' },
+      { range: '44% 이하', label: '건조', color: '#777167', description: '페이셜 오일 추가 추천.' },
+      { range: '81% 이상', label: '지성', color: '#272727', description: '유분 조절 토너 필요.' },
     ],
     gutBrainSkin: '장내 유익균은 에스트로볼롬으로 호르몬 대사에 관여. 장 불균형 → 호르몬 불균형 → 피지선 과활성.',
     gutBrainSkinSource: 'Baker JM et al. (2017) Maturitas, 103:45-53',
@@ -183,10 +201,10 @@ T존(이마+코) vs U존(볼+턱) 하이라이트 비율 비교로 유형을 판
       { title: '가중 합산', desc: '이마(40%)+눈가(35%)+팔자(25%) → 종합 주름 점수.' },
     ],
     ranges: [
-      { range: '85점 이상', label: '매끄러움', color: '#4CAF50', description: '주름 거의 없음.' },
-      { range: '65~84점', label: '양호', color: '#8BC34A', description: '미세 잔주름 수준.' },
-      { range: '45~64점', label: '보통', color: '#FF9800', description: '주름이 눈에 띄기 시작.' },
-      { range: '45점 미만', label: '관리필요', color: '#f44336', description: '적극적 주름 관리 추천.' },
+      { range: '85점 이상', label: '매끈', color: '#0e6bec', description: '주름 거의 없음.' },
+      { range: '65~84점', label: '양호', color: '#00a0fc', description: '미세 잔주름 수준.' },
+      { range: '45~64점', label: '보통', color: '#777167', description: '주름이 눈에 띄기 시작.' },
+      { range: '45점 미만', label: '나쁨', color: '#272727', description: '적극적 주름 관리 추천.' },
     ],
     gutBrainSkin: '장 불균형 → 전신 염증 → MMP 활성화 → 콜라겐·엘라스틴 분해 → 주름 가속. L. plantarum이 항산화 효소를 활성화하여 콜라겐 보호.',
     gutBrainSkinSource: 'Kim HM et al. (2021) Nutrients, 13(4):1195',
@@ -210,10 +228,10 @@ T존(이마+코) vs U존(볼+턱) 하이라이트 비율 비교로 유형을 판
       { title: '영역 합산', desc: '코(50%) + 볼(50%) 가중 합산 → 최종 모공 점수.' },
     ],
     ranges: [
-      { range: '80점 이상', label: '미세모공', color: '#4CAF50', description: '모공 거의 안 보임.' },
-      { range: '60~79점', label: '정상', color: '#8BC34A', description: '보통 수준의 모공.' },
-      { range: '40~59점', label: '확장', color: '#FF9800', description: '모공 축소 관리 추천.' },
-      { range: '40점 미만', label: '매우확장', color: '#f44336', description: '적극적 모공 관리 필요.' },
+      { range: '80점 이상', label: '미세', color: '#0e6bec', description: '모공 거의 안 보임.' },
+      { range: '60~79점', label: '정상', color: '#00a0fc', description: '보통 수준의 모공.' },
+      { range: '40~59점', label: '확장', color: '#777167', description: '모공 축소 관리 추천.' },
+      { range: '40점 미만', label: '나쁨', color: '#272727', description: '적극적 모공 관리 필요.' },
     ],
     gutBrainSkin: '장 불균형 → 안드로겐 과다 → 피지선 비대 → 모공 확장. 프로바이오틱스로 호르몬 밸런스 개선 시 모공 축소 효과.',
     gutBrainSkinSource: 'Deplewski D, Rosenfield RL (2000) Endocrine Reviews, 21(4):363-392',
@@ -240,10 +258,10 @@ T존(이마+코) vs U존(볼+턱) 하이라이트 비율 비교로 유형을 판
       { title: '가중 합산', desc: '좌우 턱선(60%) + 중앙턱(40%) → 종합 탄력 점수.' },
     ],
     ranges: [
-      { range: '80점 이상', label: '탄탄', color: '#4CAF50', description: '턱선 뚜렷, 탄력 좋음.' },
-      { range: '60~79점', label: '양호', color: '#8BC34A', description: '아직 괜찮은 탄력.' },
-      { range: '40~59점', label: '약간처짐', color: '#FF9800', description: '탄력 관리 시작 추천.' },
-      { range: '40점 미만', label: '관리필요', color: '#f44336', description: '적극적 탄력 케어 추천.' },
+      { range: '80점 이상', label: '탄탄', color: '#0e6bec', description: '턱선 뚜렷, 탄력 좋음.' },
+      { range: '60~79점', label: '양호', color: '#00a0fc', description: '아직 괜찮은 탄력.' },
+      { range: '40~59점', label: '처짐', color: '#777167', description: '탄력 관리 시작 추천.' },
+      { range: '40점 미만', label: '나쁨', color: '#272727', description: '적극적 탄력 케어 추천.' },
     ],
     gutBrainSkin: '장내 유익균은 항산화 효소(SOD, Catalase)를 활성화하여 엘라스틴을 보호합니다. 장 불균형 → ROS↑ → 엘라스틴 변성 → 처짐.',
     gutBrainSkinSource: 'Guéniche A et al. (2010) European J Dermatology, 20(6):731-735',
@@ -268,10 +286,10 @@ T존(이마+코) vs U존(볼+턱) 하이라이트 비율 비교로 유형을 판
       { title: '비율 합산', desc: '볼(60%) + 이마(40%) 색소 비율 → 최종 점수.' },
     ],
     ranges: [
-      { range: '80점 이상', label: '맑음', color: '#4CAF50', description: '색소침착 거의 없음.' },
-      { range: '60~79점', label: '양호', color: '#8BC34A', description: '경미한 잡티 수준.' },
-      { range: '40~59점', label: '주의', color: '#FF9800', description: '미백 관리 추천.' },
-      { range: '40점 미만', label: '관리필요', color: '#f44336', description: '적극적 미백 + 자외선 차단.' },
+      { range: '80점 이상', label: '맑음', color: '#0e6bec', description: '색소침착 거의 없음.' },
+      { range: '60~79점', label: '양호', color: '#00a0fc', description: '경미한 잡티 수준.' },
+      { range: '40~59점', label: '주의', color: '#777167', description: '미백 관리 추천.' },
+      { range: '40점 미만', label: '심함', color: '#272727', description: '적극적 미백 + 자외선 차단.' },
     ],
     gutBrainSkin: '장 만성 염증 → 사이토카인 → 멜라노사이트 과자극 → 멜라닌 과생산. 장 건강 회복 → 염증↓ → 멜라닌 정상화.',
     gutBrainSkinSource: 'Bastonini E et al. (2016) Br J Dermatology, 175:1099-1105',
@@ -310,10 +328,10 @@ LUA는 두 가지 독립적 분석을 수행합니다:
       { title: '가중 합산', desc: 'Laplacian 에너지(60%) + 구배 일관성(40%)으로 종합. 볼(60%) + 이마(40%).' },
     ],
     ranges: [
-      { range: '80점 이상', label: '매끈', color: '#4CAF50', description: '피부결이 매우 매끄러워요.' },
-      { range: '60~79점', label: '양호', color: '#8BC34A', description: '전반적으로 좋은 피부결.' },
-      { range: '40~59점', label: '거칠음', color: '#FF9800', description: '각질 케어를 추천.' },
-      { range: '40점 미만', label: '관리필요', color: '#f44336', description: '적극적 각질+보습 관리 필요.' },
+      { range: '80점 이상', label: '매끈', color: '#0e6bec', description: '피부결이 매우 매끄러워요.' },
+      { range: '60~79점', label: '양호', color: '#00a0fc', description: '전반적으로 좋은 피부결.' },
+      { range: '40~59점', label: '거칠음', color: '#777167', description: '각질 케어를 추천.' },
+      { range: '40점 미만', label: '나쁨', color: '#272727', description: '적극적 각질+보습 관리 필요.' },
     ],
     gutBrainSkin: '장내 유익균이 생산하는 단쇄지방산(SCFA, 특히 부티르산)은 피부 각질세포의 분화와 장벽 형성을 촉진합니다. 장 건강이 좋으면 각질 턴오버가 정상화(28일 주기)되어 자연스럽게 매끄러운 피부결이 유지됩니다. 장 불균형 시 턴오버 지연 → 각질 축적 → 거친 피부결로 이어집니다.',
     gutBrainSkinSource: 'Schwarz A et al. (2012) "Short-chain fatty acids and skin barrier" J Investigative Dermatology, 132(3 Pt 1):818-825',
@@ -349,12 +367,100 @@ LUA는 세 가지 독립적 신호를 측정합니다:
       { title: '종합 심각도', desc: '밝기 차이(50%) + 블루 시프트(30%) + 채도 차이(20%) → 좌우 평균 → 최종 점수.' },
     ],
     ranges: [
-      { range: '80점 이상', label: '밝음', color: '#4CAF50', description: '다크서클이 거의 없어요.' },
-      { range: '60~79점', label: '양호', color: '#8BC34A', description: '경미한 수준.' },
-      { range: '40~59점', label: '눈에띔', color: '#FF9800', description: '아이크림 + 수면 관리 추천.' },
-      { range: '40점 미만', label: '심함', color: '#f44336', description: '적극적 관리 필요.' },
+      { range: '80점 이상', label: '밝음', color: '#0e6bec', description: '다크서클이 거의 없어요.' },
+      { range: '60~79점', label: '양호', color: '#00a0fc', description: '경미한 수준.' },
+      { range: '40~59점', label: '눈에띔', color: '#777167', description: '아이크림 + 수면 관리 추천.' },
+      { range: '40점 미만', label: '심함', color: '#272727', description: '적극적 관리 필요.' },
     ],
     gutBrainSkin: '장은 세로토닌의 90%를 생산합니다. 세로토닌은 멜라토닌(수면 호르몬)의 전구체이므로, 장 건강이 나쁘면 세로토닌↓ → 멜라토닌↓ → 수면 질 저하 → 혈류 정체 → 다크서클 악화로 이어집니다. 또한 장내 만성 염증은 혈관 투과성을 높여 눈 밑 혈관 울혈을 촉진합니다. 프로바이오틱스(특히 L. helveticus + B. longum)가 수면 질 개선에 효과가 있다는 임상 보고가 있습니다.',
     gutBrainSkinSource: 'Yano JM et al. (2015) "Indigenous Bacteria from the Gut Microbiota Regulate Host Serotonin Biosynthesis" Cell, 161(2):264-276',
+  },
+
+  oilMoistureBalance: {
+    icon: '', title: '유수분 밸런스', subtitle: 'Oil-Moisture Balance & Skin Type',
+    color: '#66d9e8', gradient: 'linear-gradient(135deg, #66d9e8, #3bc9db)',
+    hero: '수분도와 유분량의 상호 관계를 분석하여 피부 타입(중성·지성·건성·수부지·복합성)을 판별하고, 유수분 균형 점수를 산출합니다.',
+    methodology: `LUA는 수분도(moisture)와 유분(oilBalance) 두 지표를 조합하여 피부 타입을 판별합니다.
+
+■ 피부 타입 판별 기준
+
+• 정상/중성(Normal): 수분 60점 이상 + 유분 40~60점
+  → 가장 이상적인 상태. 유수분 밸런스가 완벽히 맞음.
+
+• 지성(Oily): 수분 50점 이상 + 유분 70점 이상
+  → 수분도 어느 정도 있지만, 유분 분비가 너무 과한 상태.
+
+• 건성(Dry): 수분 40점 이하 + 유분 30점 이하
+  → 유분과 수분이 모두 메말라 피부가 당기고 푸석한 상태.
+
+• 수부지/수분부족지성(Dehydrated-Oily): 수분 40점 이하 + 유분 70점 이상
+  → 현대인에게 가장 많음. 속은 건조한데 겉은 기름진 상태.
+
+• 복합성(Combination): T존(이마·코)과 U존(볼·턱)의 유분 격차가 30점 이상
+  → T존은 지성, U존은 건성인 상태.
+
+■ 밸런스 점수 공식
+100 - |수분 - 유분| × 1.2 - |55 - (수분+유분)/2| × 0.8
+
+수분과 유분이 모두 45~65% 범위에서 균형을 이루면 높은 점수, 한쪽이 치우치거나 양쪽 모두 극단이면 낮은 점수입니다.`,
+    references: [
+      { name: '피부 타입 분류 모델', description: '수분도와 유분량의 조합으로 5가지 피부 타입(중성·지성·건성·수부지·복합성)을 판별. T존/U존 영역 분할로 복합성 감지.', source: 'LUA Skin Analysis Engine' },
+      { name: 'Skin Barrier Function', description: '각질층의 세라마이드-지질-수분 3요소 균형이 피부 장벽 기능의 핵심. 불균형 시 TEWL(경피수분손실) 증가.', source: 'Elias PM (2005) J Invest Dermatol, 125(2):183-200' },
+      { name: 'Sebum-Hydration Correlation', description: '피지 분비량과 각질층 수분량은 독립적이나, 둘의 균형이 피부 컨디션과 트러블 발생에 직접 영향.', source: 'Youn SW et al. (2005) Skin Research & Technology, 11(2):110-115' },
+      { name: 'Dehydrated-Oily Skin', description: '수분 부족형 지성(수부지)은 피부 장벽 손상으로 수분은 빠져나가고 피지는 보상 분비되는 상태. 현대인의 도시 환경·에어컨·과도한 세안에 의해 급증.', source: 'Muizzuddin N et al. (2008) J Cosmetic Science, 59(2):151-158' },
+    ],
+    steps: [
+      { title: '수분도 측정', desc: '피부 표면 밝기 균일도(σ)로 각질층 수분 함유량을 평가합니다.' },
+      { title: '유분량 측정', desc: 'T존/U존 하이라이트 비율로 피지 분비량을 평가합니다.' },
+      { title: '피부 타입 판별', desc: '수분·유분 조합 + T존/U존 격차로 5가지 피부 타입을 판별합니다.' },
+      { title: '균형 점수 산출', desc: '수분-유분 차이 패널티 + 중앙 이탈 패널티를 종합하여 0~100점으로 환산.' },
+    ],
+    ranges: [
+      { range: '수분 60+, 유분 40~60', label: '중성', color: '#4CAF50', description: '이상적인 유수분 밸런스. 현재 루틴을 유지하세요.' },
+      { range: '수분 50+, 유분 70+', label: '지성', color: '#FF9800', description: '유분 과다. 가벼운 수분 젤 + 클레이 마스크 추천.' },
+      { range: '수분 40↓, 유분 30↓', label: '건성', color: '#2196F3', description: '수분·유분 모두 부족. 세라마이드 크림 + 페이셜 오일 추천.' },
+      { range: '수분 40↓, 유분 70+', label: '수부지', color: '#f44336', description: '속건조 겉지성. 수분 에센스 + 가벼운 보습제로 장벽 회복 우선.' },
+      { range: 'T/U존 격차 30+', label: '복합성', color: '#FF9800', description: 'T존 지성 + U존 건성. 부위별 다른 케어 필요.' },
+    ],
+    gutBrainSkin: '장내 미생물은 단쇄지방산(SCFA)을 통해 피부 세라마이드 합성을 촉진하고, 동시에 호르몬 대사(에스트로볼롬)를 통해 피지 분비를 조절합니다. 장 건강이 나빠지면 수분 손실 증가 + 피지 과다가 동시에 발생하여 유수분 밸런스가 무너지고, 수부지(수분부족지성) 상태로 이어질 수 있습니다.',
+    gutBrainSkinSource: 'Salem I et al. (2018) "The Gut Microbiome as a Major Regulator of the Gut-Skin Axis" Frontiers in Microbiology, 9:1459',
+  },
+
+  redness: {
+    icon: '', title: '붉은기', subtitle: 'Skin Redness Level',
+    color: '#ff8787', gradient: 'linear-gradient(135deg, #ff8787, #C32824)',
+    hero: 'LAB 색 공간의 a* 채널을 분석하여 볼 영역의 붉은기(홍조) 정도를 정량 측정합니다.',
+    methodology: `LUA는 CIE LAB 색 공간의 a* 채널을 활용합니다.
+
+a* 값은 녹색(-) ~ 적색(+) 축으로, 값이 높을수록 피부가 붉습니다. 양볼(cheek) 영역의 평균 a* 값을 기준으로 붉은기 심각도를 판별합니다.
+
+공식: 95 - max(0, cheekLabA - 5) × 3.5
+
+a* ≤ 5: 붉은기 거의 없음 (95점)
+a* 10: 경미한 홍조 (약 78점)
+a* 15: 눈에 띄는 홍조 (약 60점)
+a* 20+: 심한 홍조 (40점 이하)
+
+민감성 피부, 주사(Rosacea), 알레르기, 자외선 손상, 온도 변화 등이 주요 원인입니다.`,
+    references: [
+      { name: 'LAB a* 채널 분석', description: 'CIE LAB 색 공간에서 a* 채널(녹-적 축)로 피부 붉은기를 정량화. 비침습적 홍조 측정 표준 방법.', source: 'LUA Computer Vision Engine' },
+      { name: 'Mexameter Erythema Index', description: '568nm(hemoglobin 흡수 파장) 반사율로 홍반 지수 측정. a* 채널과 높은 상관관계(r=0.89).', source: 'Courage+Khazaka Electronic GmbH' },
+      { name: 'Rosacea Grading (NRS)', description: 'National Rosacea Society 4단계: ETR(홍반), PPR(구진농포), Phymatous(비류), Ocular(안구). LUA는 ETR 단계의 홍반 정도를 측정.', source: 'Wilkin J et al. (2002) J Am Acad Dermatol, 46(4):584-587' },
+      { name: 'Neurogenic Inflammation', description: '스트레스·온도·매운 음식 → TRPV1 수용체 활성화 → 신경성 염증 → 혈관 확장 → 홍조. 만성화 시 주사(Rosacea)로 진행.', source: 'Steinhoff M et al. (2011) J Invest Dermatol Symp Proc, 15(1):2-11' },
+    ],
+    steps: [
+      { title: '볼 영역 추출', desc: 'MediaPipe 랜드마크로 좌·우 볼 영역을 정확히 분리합니다.' },
+      { title: 'LAB 변환', desc: 'RGB → CIE LAB 색 공간 변환. a* 채널 값을 추출합니다.' },
+      { title: 'a* 평균 산출', desc: '양볼 영역의 평균 a* 값을 계산합니다.' },
+      { title: '붉은기 점수 산출', desc: 'a* 값이 높을수록 감점. 95점 기준에서 a* 초과분만큼 차감.' },
+    ],
+    ranges: [
+      { range: '75점 이상', label: '깨끗', color: '#4CAF50', description: '붉은기가 거의 없어요.' },
+      { range: '55~74점', label: '양호', color: '#8BC34A', description: '경미한 붉은기. 크게 걱정 없어요.' },
+      { range: '35~54점', label: '홍조', color: '#FF9800', description: '홍조가 눈에 띄어요. 진정 케어 추천.' },
+      { range: '35점 미만', label: '심함', color: '#f44336', description: '지속적 홍조. 피부과 상담 권장.' },
+    ],
+    gutBrainSkin: '장-피부 축에서 장 투과성 증가(Leaky Gut)는 내독소(LPS)가 혈류로 유입되어 전신 염증 반응을 유발하고, 이것이 피부 혈관 확장 → 만성 홍조로 이어집니다. 주사(Rosacea) 환자의 장내 미생물 다양성이 유의미하게 낮다는 연구가 있으며, H. pylori 제균 치료 후 홍조가 개선된 사례도 보고되었습니다.',
+    gutBrainSkinSource: 'Parodi A et al. (2008) "Small Intestinal Bacterial Overgrowth in Rosacea" Clinical Gastroenterology and Hepatology, 6(7):759-764',
   },
 };

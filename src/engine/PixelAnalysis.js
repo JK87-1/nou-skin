@@ -657,87 +657,171 @@ export function analyzePixels(dataUrl, landmarks = null) {
         return { clusterCount, totalArea, redSpots, brownSpots, weightedPenalty };
       }
 
-      // === 2-D2. computeTroubleSpots — Acne/whitehead-specific detection ===
-      // Detects actual inflammatory acne (red bumps with strong local contrast),
-      // NOT general skin redness or blemishes (잡티).
-      // Key: acne has (1) high absolute a*, (2) strong local a* spike, (3) compact shape.
-      function computeTroubleSpots(imageData) {
-        if (!imageData) return { count: 0, severity: 0 };
+      // === 2-D2. computeTroubleSpots — 3-type acne detection ===
+      // Detects 3 types: pustule (화농성), whitehead (화이트헤드), blackhead (블랙헤드)
+      function computeTroubleSpots(imageData, isNoseArea = false) {
+        if (!imageData) return { count: 0, severity: 0, pustule: 0, whitehead: 0, blackhead: 0 };
         const d = imageData.data, w = imageData.width, h = imageData.height;
         const n = w * h;
 
-        // Build per-pixel LAB a* and L* maps
+        // Build per-pixel LAB maps
         const mapA = new Float32Array(n);
         const mapL = new Float32Array(n);
-        let sumA = 0;
+        const mapB = new Float32Array(n);
+        let sumA = 0, sumL = 0;
         for (let i = 0, j = 0; i < d.length; i += 4, j++) {
           const lab = rgbToLab(d[i], d[i + 1], d[i + 2]);
           mapA[j] = lab.a;
           mapL[j] = lab.L;
+          mapB[j] = lab.b;
           sumA += lab.a;
+          sumL += lab.L;
         }
         const avgA = sumA / n;
+        const avgL = sumL / n;
 
-        // Very strict threshold: normal skin a* is 8-16, acne spikes to 22+
-        const threshold = Math.max(avgA + 10, 20);
+        let pustuleCount = 0, whiteheadCount = 0, blackheadCount = 0;
+        let totalSeverity = 0;
+        const visited = new Uint8Array(n);
+
+        // ── 1. Pustule (화농성 여드름): 강한 붉은기 + 로컬 스파이크 ──
+        const redThreshold = Math.max(avgA + 10, 20);
         const redMask = new Uint8Array(n);
         const radius = 6;
         for (let y = radius; y < h - radius; y++) {
           for (let x = radius; x < w - radius; x++) {
             const idx = y * w + x;
-            const ca = mapA[idx];
-            if (ca < threshold) continue;
-
-            // Strong local contrast: must be clearly redder than 6px-radius neighbors
+            if (mapA[idx] < redThreshold) continue;
             let nSum = 0, nCount = 0;
             for (let dy = -radius; dy <= radius; dy += radius) {
               for (let dx = -radius; dx <= radius; dx += radius) {
                 if (dy === 0 && dx === 0) continue;
                 const ny = y + dy, nx = x + dx;
-                if (ny >= 0 && ny < h && nx >= 0 && nx < w) {
-                  nSum += mapA[ny * w + nx];
-                  nCount++;
-                }
+                if (ny >= 0 && ny < h && nx >= 0 && nx < w) { nSum += mapA[ny * w + nx]; nCount++; }
               }
             }
-            const nAvg = nSum / nCount;
-            // Pixel must be at least 6 a* units redder than neighbors
-            if (ca > nAvg + 6) redMask[idx] = 1;
+            if (mapA[idx] > nSum / nCount + 6) redMask[idx] = 1;
           }
         }
-
-        // 4-connected clustering — acne-sized clusters only (5-300px at 512px resolution)
-        const visited = new Uint8Array(n);
-        let count = 0, totalSeverity = 0;
         for (let j = 0; j < n; j++) {
           if (redMask[j] && !visited[j]) {
-            const stack = [j];
-            visited[j] = 1;
-            let size = 0, sumRedA = 0, sumRedL = 0;
+            const stack = [j]; visited[j] = 1;
+            let size = 0, sumRedA = 0;
             while (stack.length > 0) {
-              const cur = stack.pop();
-              size++;
-              sumRedA += mapA[cur];
-              sumRedL += mapL[cur];
+              const cur = stack.pop(); size++; sumRedA += mapA[cur];
               const cx = cur % w, cy = (cur - cx) / w;
               if (cx > 0 && redMask[cur - 1] && !visited[cur - 1]) { visited[cur - 1] = 1; stack.push(cur - 1); }
               if (cx < w - 1 && redMask[cur + 1] && !visited[cur + 1]) { visited[cur + 1] = 1; stack.push(cur + 1); }
               if (cy > 0 && redMask[cur - w] && !visited[cur - w]) { visited[cur - w] = 1; stack.push(cur - w); }
               if (cy < h - 1 && redMask[cur + w] && !visited[cur + w]) { visited[cur + w] = 1; stack.push(cur + w); }
             }
-            // Size filter: too small = noise, too large = diffuse redness (not pimple)
-            if (size >= 10 && size <= 300) {
-              const clusterAvgA = sumRedA / size;
-              // Extra check: cluster must have high average a* (inflammatory)
-              if (clusterAvgA >= threshold) {
-                count++;
-                totalSeverity += Math.sqrt(size) * (clusterAvgA - avgA);
-              }
+            if (size >= 10 && size <= 300 && sumRedA / size >= redThreshold) {
+              pustuleCount++;
+              totalSeverity += Math.sqrt(size) * (sumRedA / size - avgA);
             }
           }
         }
 
-        return { count, severity: totalSeverity };
+        // ── 2. Blackhead (블랙헤드): 주변보다 확연히 어두운 미세 스팟 ──
+        // 코/나비존에서 주로 발생. 점(mole)과 구분: 점은 더 크고(>200px) 매우 어두움(L*<30)
+        const darkMask = new Uint8Array(n);
+        const darkRadius = 4;
+        for (let y = darkRadius; y < h - darkRadius; y++) {
+          for (let x = darkRadius; x < w - darkRadius; x++) {
+            const idx = y * w + x;
+            if (visited[idx]) continue;
+            const cL = mapL[idx];
+            // 블랙헤드는 주변보다 어둡지만 점처럼 극단적이진 않음
+            if (cL > avgL - 5) continue; // 평균보다 어두워야 함
+            let nSumL = 0, nCnt = 0;
+            for (let dy = -darkRadius; dy <= darkRadius; dy += darkRadius) {
+              for (let dx = -darkRadius; dx <= darkRadius; dx += darkRadius) {
+                if (dy === 0 && dx === 0) continue;
+                const ny = y + dy, nx = x + dx;
+                if (ny >= 0 && ny < h && nx >= 0 && nx < w) { nSumL += mapL[ny * w + nx]; nCnt++; }
+              }
+            }
+            const nAvgL = nSumL / nCnt;
+            // 주변 대비 8+ L* 어두움 + 붉지 않음(a* < avgA+5) → 블랙헤드
+            if (cL < nAvgL - 8 && mapA[idx] < avgA + 5) darkMask[idx] = 1;
+          }
+        }
+        for (let j = 0; j < n; j++) {
+          if (darkMask[j] && !visited[j]) {
+            const stack = [j]; visited[j] = 1;
+            let size = 0, sumDkL = 0;
+            while (stack.length > 0) {
+              const cur = stack.pop(); size++; sumDkL += mapL[cur];
+              const cx = cur % w, cy = (cur - cx) / w;
+              if (cx > 0 && darkMask[cur - 1] && !visited[cur - 1]) { visited[cur - 1] = 1; stack.push(cur - 1); }
+              if (cx < w - 1 && darkMask[cur + 1] && !visited[cur + 1]) { visited[cur + 1] = 1; stack.push(cur + 1); }
+              if (cy > 0 && darkMask[cur - w] && !visited[cur - w]) { visited[cur - w] = 1; stack.push(cur - w); }
+              if (cy < h - 1 && darkMask[cur + w] && !visited[cur + w]) { visited[cur + w] = 1; stack.push(cur + w); }
+            }
+            // 사이즈 필터: 3~80px = 블랙헤드, >200px = 점(mole) 제외
+            // 점은 L* < 30으로 극도로 어두움, 블랙헤드는 L* 30~60 범위
+            const clAvgL = sumDkL / size;
+            if (size >= 3 && size <= 80 && clAvgL >= 25) {
+              blackheadCount++;
+              totalSeverity += Math.sqrt(size) * 0.5;
+            }
+          }
+        }
+
+        // ── 3. Whitehead (화이트헤드): 주변보다 밝고 붉지 않은 미세 돌기 ──
+        // 유백색 요철, 로컬 밝기 스파이크 + 텍스처 분산 변화
+        const brightMask = new Uint8Array(n);
+        const whRadius = 4;
+        for (let y = whRadius; y < h - whRadius; y++) {
+          for (let x = whRadius; x < w - whRadius; x++) {
+            const idx = y * w + x;
+            if (visited[idx]) continue;
+            const cL = mapL[idx];
+            if (cL < avgL + 3) continue; // 평균보다 밝아야 함
+            let nSumL = 0, nSumVar = 0, nCnt = 0;
+            for (let dy = -whRadius; dy <= whRadius; dy += whRadius) {
+              for (let dx = -whRadius; dx <= whRadius; dx += whRadius) {
+                if (dy === 0 && dx === 0) continue;
+                const ny = y + dy, nx = x + dx;
+                if (ny >= 0 && ny < h && nx >= 0 && nx < w) {
+                  nSumL += mapL[ny * w + nx];
+                  nSumVar += Math.abs(mapL[ny * w + nx] - cL);
+                  nCnt++;
+                }
+              }
+            }
+            const nAvgL = nSumL / nCnt;
+            // 주변보다 6+ L* 밝음 + 붉지 않음 + 주변과 텍스처 차이 존재
+            if (cL > nAvgL + 6 && mapA[idx] < avgA + 3 && nSumVar / nCnt > 3) brightMask[idx] = 1;
+          }
+        }
+        for (let j = 0; j < n; j++) {
+          if (brightMask[j] && !visited[j]) {
+            const stack = [j]; visited[j] = 1;
+            let size = 0;
+            while (stack.length > 0) {
+              const cur = stack.pop(); size++;
+              const cx = cur % w, cy = (cur - cx) / w;
+              if (cx > 0 && brightMask[cur - 1] && !visited[cur - 1]) { visited[cur - 1] = 1; stack.push(cur - 1); }
+              if (cx < w - 1 && brightMask[cur + 1] && !visited[cur + 1]) { visited[cur + 1] = 1; stack.push(cur + 1); }
+              if (cy > 0 && brightMask[cur - w] && !visited[cur - w]) { visited[cur - w] = 1; stack.push(cur - w); }
+              if (cy < h - 1 && brightMask[cur + w] && !visited[cur + w]) { visited[cur + w] = 1; stack.push(cur + w); }
+            }
+            // 사이즈 필터: 3~60px = 화이트헤드 (좁쌀 크기)
+            if (size >= 3 && size <= 60) {
+              whiteheadCount++;
+              totalSeverity += Math.sqrt(size) * 0.3;
+            }
+          }
+        }
+
+        return {
+          count: pustuleCount + whiteheadCount + blackheadCount,
+          severity: totalSeverity,
+          pustule: pustuleCount,
+          whitehead: whiteheadCount,
+          blackhead: blackheadCount,
+        };
       }
 
       // === 2-E. computeDarkCircles — LAB 3-component model ===
@@ -900,15 +984,19 @@ export function analyzePixels(dataUrl, landmarks = null) {
         overallPenalty: ((lSpots.weightedPenalty + rSpots.weightedPenalty) / 2) * 0.6 + fSpots.weightedPenalty * 0.4,
       };
 
-      // Trouble spots (new: LAB a* redness detection)
+      // Trouble spots (v4: 3-type detection — pustule, whitehead, blackhead)
       const lTrouble = computeTroubleSpots(getRegionData(regions.leftUpperCheek));
       const rTrouble = computeTroubleSpots(getRegionData(regions.rightUpperCheek));
       const fTrouble = computeTroubleSpots(getRegionData(regions.foreheadSide));
       const chinTrouble = computeTroubleSpots(getRegionData(regions.chin));
-      const noseTrouble = computeTroubleSpots(getRegionData(regions.nose));
+      const noseTrouble = computeTroubleSpots(getRegionData(regions.nose), true);
+      const allTrouble = [lTrouble, rTrouble, fTrouble, chinTrouble, noseTrouble];
       const troubleData = {
-        totalSpots: lTrouble.count + rTrouble.count + fTrouble.count + chinTrouble.count + noseTrouble.count,
-        totalSeverity: lTrouble.severity + rTrouble.severity + fTrouble.severity + chinTrouble.severity + noseTrouble.severity,
+        totalSpots: allTrouble.reduce((s, t) => s + t.count, 0),
+        totalSeverity: allTrouble.reduce((s, t) => s + t.severity, 0),
+        pustule: allTrouble.reduce((s, t) => s + t.pustule, 0),
+        whitehead: allTrouble.reduce((s, t) => s + t.whitehead, 0),
+        blackhead: allTrouble.reduce((s, t) => s + t.blackhead, 0),
       };
 
       // Dark Circles (new: LAB 3-component)
@@ -1162,9 +1250,15 @@ export function pixelsToScores(px, mlAge = null) {
   // 수분·유분 모두 45~65 근처일 때 100, 차이가 클수록 낮아짐
   const oilMoistureBalance = clamp(Math.round(100 - Math.abs(moisture - oilBalance) * 1.2 - Math.abs(55 - (moisture + oilBalance) / 2) * 0.8), 15, 98);
 
-  // ── REDNESS (붉은기: LAB a* 채널 기반) ──
-  // cheekLabA가 낮을수록 붉은기 없음(점수 높음), 높을수록 붉은기 심함(점수 낮음)
-  const rednessScore = clamp(Math.round(95 - Math.max(0, px.cheekLabA - 5) * 3.5), 15, 98);
+  // ── REDNESS (붉은기: 얼굴 전체 LAB a* 기반) ──
+  // 볼만이 아닌 얼굴 전체(labA)와 볼(cheekLabA) 중 높은 값을 기준으로 판단
+  // 피부 전체 톤의 붉은기를 반영 (국소 스팟이 아닌 전반적 홍조)
+  const faceRedA = Math.max(px.labA || 0, px.cheekLabA || 0);
+  // 볼과 전체 평균의 가중 합산: 볼(60%) + 전체(40%)
+  const blendedRedA = (px.cheekLabA || 0) * 0.6 + (px.labA || 0) * 0.4;
+  const effectiveRedA = Math.max(faceRedA, blendedRedA);
+  // 기준점 3으로 낮추고 계수 5로 강화 → 붉은기에 더 민감하게 반응
+  const rednessScore = clamp(Math.round(95 - Math.max(0, effectiveRedA - 3) * 5), 15, 98);
 
   // ── SKIN TYPE ──
   let skinType;
@@ -1239,10 +1333,18 @@ export function pixelsToScores(px, mlAge = null) {
   const faceDet = px.faceDetected ? 1 : 0.6;
   const confidence = clamp(Math.round((brightOk * 0.3 + skinCov * 0.35 + faceDet * 0.35) * 100), 0, 100);
 
+  // ── TROUBLE BREAKDOWN (CV 3-type) ──
+  const troubleBreakdown = px.trouble ? {
+    whitehead: px.trouble.whitehead || 0,
+    blackhead: px.trouble.blackhead || 0,
+    pustule: px.trouble.pustule || 0,
+  } : { whitehead: 0, blackhead: 0, pustule: 0 };
+
   return {
     skinAge, moisture, troubleCount, skinTone, oilBalance, skinType,
     wrinkleScore, poreScore, elasticityScore, pigmentationScore,
     textureScore, darkCircleScore: dcScore, oilMoistureBalance, rednessScore,
+    troubleBreakdown,
     concerns: concerns.slice(0, 3), overallScore, conditionScore, advice, confidence,
     _pixelData: px,
   };
