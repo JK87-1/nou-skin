@@ -72,6 +72,7 @@ export default function App() {
   });
   const [showSaveToast, setShowSaveToast] = useState(false);
   const [photoQuality, setPhotoQuality] = useState(null);
+  const [aiFailedOpen, setAiFailedOpen] = useState(false);
   const [tipsOpen, setTipsOpen] = useState(false);
   const [mlAge, setMlAge] = useState(null);
   const [faceMesh, setFaceMesh] = useState(null);
@@ -522,36 +523,29 @@ export default function App() {
     // CV scoring (with mlAge from FaceAgeEstimator)
     const cvScores = pixelsToScores(pixelData, mlAge);
 
-    // AI scoring (baseline image comparison handled internally)
-    let finalScores = cvScores;
-    try {
-      if (b64) {
-        const aiScores = await callVisionAI(b64, landmarks);
-        if (aiScores) {
-          finalScores = hybridMerge(cvScores, aiScores);
-        } else {
-          finalScores = { ...cvScores, analysisMode: 'cv_only' };
-        }
-      } else {
-        finalScores = { ...cvScores, analysisMode: 'cv_only' };
+    // AI scoring — 실패 시 CV로 진행하지 않고 재측정을 유도한다 (정확도 우선 정책).
+    // CV-only 점수는 AI 대비 보수적이라 ~10점 낮게 나와 사용자 혼란을 유발하므로,
+    // 차라리 측정을 중단하고 다시 찍게 한다. (AI 3회 전체 실패 시 서버가 1회 자동 재시도함)
+    let aiScores = null;
+    if (b64) {
+      try {
+        aiScores = await callVisionAI(b64, landmarks);
+      } catch (e) {
+        console.warn('AI 분석 실패:', e);
       }
-    } catch (e) {
-      console.warn('Hybrid analysis fallback to CV:', e);
-      finalScores = { ...cvScores, analysisMode: 'cv_only' };
     }
 
-    console.log('[Score Debug] overallScore:', finalScores.overallScore, 'conditionScore:', finalScores.conditionScore, 'mode:', finalScores.analysisMode);
-
-    if (finalScores.analysisMode === 'cv_only') {
+    if (!aiScores) {
       const stats = getAiFallbackStats();
-      console.error(' AI 분석 실패 → CV-only fallback', {
-        누적_fallback: stats.fallbackTotal,
-        누적_성공: stats.successTotal,
-        마지막_사유: stats.lastReason,
-        사유별_횟수: stats.byReason,
-        상세조회: 'window.__aiFallbackStats() 입력',
-      });
+      console.error('AI 분석 실패 → CV fallback 대신 재측정 유도', { 마지막_사유: stats.lastReason });
+      clearInterval(pi);
+      setProgress(0);
+      setAiFailedOpen(true);
+      return;
     }
+
+    const finalScores = hybridMerge(cvScores, aiScores);
+    console.log('[Score Debug] overallScore:', finalScores.overallScore, 'conditionScore:', finalScores.conditionScore, 'mode:', finalScores.analysisMode);
 
     clearInterval(pi); setProgress(100);
     setTimeout(() => {
@@ -936,6 +930,21 @@ export default function App() {
           avgScore={baselineCompleteAvg}
           onClose={() => setBaselineCompleteOpen(false)}
         />
+      )}
+
+      {/* AI 분석 실패 — CV로 진행하지 않고 재측정 유도 (정확도 우선) */}
+      {aiFailedOpen && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9600, background: 'rgba(15,20,30,0.66)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <div style={{ width: '100%', maxWidth: 340, background: 'linear-gradient(180deg, #ffffff 0%, #f4f8fc 100%)', borderRadius: 24, padding: '30px 24px 22px', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.18)' }}>
+            <div style={{ width: 64, height: 64, borderRadius: '50%', margin: '0 auto 16px', background: 'rgba(101,152,239,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 9v4" /><path d="M12 17h.01" /><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /></svg>
+            </div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: '#042C53', marginBottom: 8 }}>AI 분석에 실패했어요</div>
+            <div style={{ fontSize: 13.5, color: '#374E66', lineHeight: 1.6, marginBottom: 22, wordBreak: 'keep-all' }}>네트워크가 잠시 불안정했던 것 같아요. 정확한 측정을 위해 다시 측정해주세요.</div>
+            <button onClick={() => { setAiFailedOpen(false); setStage('camera'); }} style={{ width: '100%', padding: 14, background: 'linear-gradient(135deg, #6598ef, #85b0f5)', border: 'none', borderRadius: 14, color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>다시 측정하기</button>
+            <button onClick={() => { setAiFailedOpen(false); goToLanding(); }} style={{ width: '100%', padding: '12px 0 2px', background: 'none', border: 'none', color: '#8095ad', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', marginTop: 6 }}>홈으로</button>
+          </div>
+        </div>
       )}
       <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} style={{ display: 'none' }} />
       <input ref={nativeCameraRef} type="file" accept="image/*" capture="user" onChange={handleFile} style={{ display: 'none' }} />
@@ -1634,27 +1643,27 @@ export default function App() {
 
             {/* CTA buttons */}
             <div style={{ width: '100%' }}>
-              <button onClick={isBlocked ? undefined : startAnalysis} disabled={isBlocked} style={{
+              <button onClick={isBlocked ? () => setStage('camera') : startAnalysis} style={{
                 width: '100%', height: 50, borderRadius: 14, border: 'none',
-                background: isBlocked ? 'rgba(255,255,255,0.25)' : '#58aefe',
-                color: isBlocked ? 'rgba(255,255,255,0.5)' : '#fff',
+                background: '#58aefe',
+                color: '#fff',
                 fontSize: 15, fontWeight: 600,
-                cursor: isBlocked ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
-                boxShadow: isBlocked ? 'none' : '0 2px 12px rgba(0,0,0,0.1)',
+                cursor: 'pointer', fontFamily: 'inherit',
+                boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
                 marginBottom: 8,
               }}>
-                {isBlocked ? '재촬영이 필요해요'
+                {isBlocked ? '다시 촬영하기'
                   : allGood ? 'AI 피부 분석 시작'
                   : '이대로 분석하기'}
               </button>
-              <button onClick={allGood ? () => fileRef.current?.click() : () => setStage('camera')} style={{
+              <button onClick={(allGood || isBlocked) ? () => fileRef.current?.click() : () => setStage('camera')} style={{
                 width: '100%', height: 40, borderRadius: 14,
                 border: 'none',
                 background: 'transparent',
                 color: 'rgba(255,255,255,0.85)', fontSize: 13, fontWeight: 500,
                 cursor: 'pointer', fontFamily: 'inherit',
               }}>
-                {allGood ? '다른 사진 선택' : '다시 촬영하기'}
+                {allGood ? '다른 사진 선택' : isBlocked ? '앨범에서 선택' : '다시 촬영하기'}
               </button>
             </div>
           </div>
