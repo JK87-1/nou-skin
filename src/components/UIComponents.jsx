@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { SCIENCE } from '../data/ScienceData';
 import { RulerIcon, GearIcon, BooksIcon } from './icons/PastelIcons';
+import { getProfile } from '../storage/ProfileStorage';
+import { getPercentile, bucketLabel } from '../engine/SkinPercentile';
 
 /* ===== Animated Number Counter ===== */
 export function AnimatedNumber({ target, suffix = '', duration = 1200 }) {
@@ -123,6 +125,12 @@ export function DetailPage({ metricKey, value, onBack }) {
     skinAge: '세', moisture: '%', skinTone: '점', trouble: '개', oilBalance: '%'
   };
 
+  // 또래(연령대) 대비 백분위 — 연령 보정 추정
+  const _profile = (() => { try { return getProfile(); } catch { return {}; } })();
+  const _age = _profile.birthYear ? (new Date().getFullYear() - parseInt(_profile.birthYear, 10)) : null;
+  const _pct = getPercentile(metricKey, value, _age);
+  const _peer = bucketLabel(_age, _profile.gender);
+
   return (
     <div style={{ paddingBottom: 40 }}>
       {/* Hero Header */}
@@ -158,6 +166,19 @@ export function DetailPage({ metricKey, value, onBack }) {
               <span style={{ fontSize: 32, fontWeight: 900, color: '#fff', fontFamily: 'var(--font-display)' }}>{value}</span>
               <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>{unitMap[metricKey]}</span>
               <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginLeft: 8 }}>나의 측정값</span>
+            </div>
+          )}
+
+          {/* 또래 대비 백분위 — 연령 보정 추정 */}
+          {_pct && (
+            <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 5 }}>
+              <div style={{ display: 'inline-flex', alignSelf: 'flex-start', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.22)', border: '1px solid rgba(255,255,255,0.28)', borderRadius: 16, padding: '6px 14px' }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873z" /></svg>
+                <span style={{ fontSize: 12.5, fontWeight: 700, color: '#fff' }}>{_peer} 중 상위 {_pct.top}%</span>
+              </div>
+              <span style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.6)', lineHeight: 1.5 }}>
+                {_pct.top <= 50 ? '또래 분포에서 상위권이에요.' : '꾸준히 관리하면 충분히 올라갈 수 있어요.'} · 또래 분포 추정값
+              </span>
             </div>
           )}
         </div>

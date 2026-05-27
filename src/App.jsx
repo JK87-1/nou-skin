@@ -29,6 +29,7 @@ import SkinConsultant from './components/SkinConsultant';
 import LuaChatSheet from './components/LuaChatSheet';
 import InstallBanner from './components/InstallBanner';
 import { CATEGORY_META, getProductsByCategory, getWeakestCategories, calcMatchScore } from './data/ProductCatalog';
+import { getPercentile, getSkinAgePercentile, bucketLabel } from './engine/SkinPercentile';
 import { getRecommendedTreatments, TREATMENT_CATEGORIES } from './data/TreatmentData';
 import { syncSkinDataToServer } from './utils/pushNotification';
 import { getProfile, saveProfile, getDeviceId } from './storage/ProfileStorage';
@@ -1776,6 +1777,15 @@ export default function App() {
           ? result.date.replace(/-/g, '.')
           : new Date().toLocaleDateString('sv-SE').replace(/-/g, '.');
         const sigChange = changes?.overallScore;
+        // ── 또래 대비 백분위 (연령 보정 추정) ──
+        const pctProfile = (() => { try { return getProfile(); } catch { return {}; } })();
+        const pctAge = pctProfile.birthYear
+          ? (new Date().getFullYear() - parseInt(pctProfile.birthYear, 10))
+          : (result.skinAge || null);
+        const pctPeerLabel = bucketLabel(pctAge, pctProfile.gender);
+        const overallPct = getPercentile('overall', result.overallScore, pctAge);
+        const skinAgePct = getSkinAgePercentile(result.skinAge, pctProfile.birthYear
+          ? (new Date().getFullYear() - parseInt(pctProfile.birthYear, 10)) : null);
         return (
         <div style={{ minHeight: '100dvh', paddingBottom: 'calc(var(--tab-bar-h, 80px) + 40px)' }}>
           {viewingHistory && <div style={{ position: 'fixed', inset: 0, background: 'var(--sub-gradient)', zIndex: -1, pointerEvents: 'none' }} />}
@@ -1864,9 +1874,16 @@ export default function App() {
                     fontSize: 15, letterSpacing: -0.3, color: 'rgba(255,255,255,0.5)', marginBottom: 6,
                   }}>점</span>
                 </div>
+                {/* 또래 상위 % — 연령 보정 추정 (핵심 비교 지표) */}
+                {overallPct && (
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 14px', borderRadius: 20, background: 'rgba(88,174,254,0.28)', border: '1px solid rgba(255,255,255,0.28)', marginBottom: 8 }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873z" /></svg>
+                    <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.2, color: '#fff' }}>{pctPeerLabel} 상위 {overallPct.top}%</span>
+                  </div>
+                )}
                 {/* 피부나이 · 레벨 배지 */}
                 <div style={{ display: 'inline-flex', alignItems: 'center', padding: '5px 14px', borderRadius: 20, background: 'rgba(255,255,255,0.15)', marginBottom: 8 }}>
-                  <span style={{ fontSize: 10.5, fontWeight: 500, letterSpacing: 0.3, color: 'rgba(255,255,255,0.8)' }}>{result.skinAge}세 · {sigLevel}</span>
+                  <span style={{ fontSize: 10.5, fontWeight: 500, letterSpacing: 0.3, color: 'rgba(255,255,255,0.8)' }}>{result.skinAge}세 · {sigLevel}{skinAgePct && skinAgePct.diffYears > 0 ? ` · 또래보다 -${skinAgePct.diffYears}세` : ''}</span>
                 </div>
                 {/* 시그니처 한 줄 */}
                 <div style={{
@@ -2285,7 +2302,9 @@ export default function App() {
                     { label: '모공', value: result.poreScore, unit: '점', icon: <MicroscopeIcon size={14} />, diff: changes?.poreScore?.diff, detail: 'pores' },
                     { label: '트러블', value: result.troubleCount, unit: '개', icon: <RednessIcon size={14} />, diff: changes?.troubleCount?.diff ?? null, detail: 'trouble' },
                     { label: '다크서클', value: result.darkCircleScore, unit: '점', icon: <EyeIcon size={14} />, diff: changes?.darkCircleScore?.diff, detail: 'darkCircles' },
-                  ].map((m, i) => (
+                  ].map((m, i) => {
+                    const pct = getPercentile(m.detail, m.value, pctAge);
+                    return (
                     <div key={m.detail} onClick={() => openDetail(m.detail)} style={{
                       background: 'rgba(255,255,255,0.45)', borderRadius: 12, padding: '14px 12px',
                       cursor: 'pointer', transition: 'background 0.2s',
@@ -2315,8 +2334,19 @@ export default function App() {
                           }}>{m.diff > 0 ? '+' : ''}{Math.round(m.diff)}</span>
                         )}
                       </div>
+                      {/* 또래 상위 % — 우수 지표(상위 50% 이내)만 강조 노출 */}
+                      {pct && pct.top <= 50 && (
+                        <div style={{
+                          display: 'inline-flex', alignItems: 'center', gap: 3, marginTop: 7,
+                          padding: '2px 7px', borderRadius: 7,
+                          background: 'rgba(88,174,254,0.14)',
+                        }}>
+                          <span style={{ fontSize: 9.5, fontWeight: 600, color: '#3D8BE0', letterSpacing: 0.1 }}>상위 {pct.top}%</span>
+                        </div>
+                      )}
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </>)}
