@@ -6,6 +6,7 @@ const DEFAULTS = {
   birthYear: '',
   gender: '',
   skinType: '',
+  isSensitive: false,
   skinConcerns: [],
   sensitivity: '',
   reminderEnabled: false,

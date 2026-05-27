@@ -1696,11 +1696,11 @@ select:focus-visible {
 
 /* Cards: glassmorphism */
 [data-theme="light"] .card {
-  background: rgba(255,255,255,0.42);
+  background: rgba(255,255,255,0.3);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border: none;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
   border-radius: 18px;
 }
 [data-theme="light"] .glass-card {

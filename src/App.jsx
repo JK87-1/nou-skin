@@ -2204,7 +2204,7 @@ export default function App() {
                     <div style={{ fontSize: 11, color: '#6B7F99', lineHeight: 1.5 }}>{result.outlierReason}. 조명/각도/메이크업 차이일 가능성이 있어요.</div>
                   </div>
                 )}
-                <p style={{ fontSize: 11, color: '#6B7F99', textAlign: 'center', marginTop: 10, marginBottom: 4, lineHeight: 1.4 }}>AI 추정치이며 의료 진단이 아닙니다</p>
+                <p style={{ fontSize: 11, color: '#6B7F99', textAlign: 'center', marginTop: 10, marginBottom: 4, lineHeight: 1.4 }}>본 분석은 피부과 임상 기기를 참조한 AI 분석 결과이며, 의료 진단을 대체하지 않습니다. 정확한 진단은 피부과 전문의와 상담해주세요.</p>
                 {/* 쿠팡 파트너스 안내는 맞춤 제품 추천(화장대) 아래로 이동 */}
               </div>
             </>)}
@@ -2271,7 +2271,7 @@ export default function App() {
             {expandedSections.indicators && (<>
               <div style={{ height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 15%, rgba(255,255,255,0.3) 85%, transparent 100%)', margin: '0 16px' }} />
               <div style={{ padding: '11px 10px 10px', animation: 'fadeUp 0.3s ease-out' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 5 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 5, gridAutoRows: '1fr' }}>
                   {[
                     { label: '수분', value: result.moisture, unit: '%', icon: <DropletIcon size={14} />, diff: changes?.moisture?.diff, detail: 'moisture' },
                     { label: '유분', value: result.oilBalance, unit: '%', icon: <BubbleIcon size={14} />, diff: changes?.oilBalance?.diff, detail: 'oilBalance' },
@@ -2289,12 +2289,13 @@ export default function App() {
                     <div key={m.detail} onClick={() => openDetail(m.detail)} style={{
                       background: 'rgba(255,255,255,0.45)', borderRadius: 12, padding: '12px 10px',
                       cursor: 'pointer', transition: 'background 0.2s',
+                      display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         {m.icon}
                         <span style={{ fontSize: 12, fontWeight: 500, color: '#000' }}>{m.label}</span>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 18 }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 'auto', paddingTop: 12 }}>
                         {(() => {
                           const v = m.value;
                           const d = m.detail;
@@ -2312,17 +2313,18 @@ export default function App() {
                             else if (v >= 40) { scoreColor = 'rgba(0,0,0,0.35)'; label = '건조'; }
                             else { scoreColor = 'rgba(0,0,0,0.7)'; label = '건조'; }
                           } else if (d === 'oilBalance') {
-                            if (v >= 45 && v <= 65) { scoreColor = dark; label = '균형'; }
-                            else if ((v > 65 && v <= 80) || v < 45) { scoreColor = 'rgba(0,0,0,0.35)'; label = v > 65 ? '유분과다' : '건조'; }
-                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '지성'; }
+                            if (v >= 40 && v <= 60) { scoreColor = dark; label = '적당'; }
+                            else if (v > 60 && v <= 80) { scoreColor = light; label = '유분과다'; }
+                            else if (v < 40) { scoreColor = 'rgba(0,0,0,0.35)'; label = '유분부족'; }
+                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '나쁨'; }
                           } else if (d === 'oilMoistureBalance') {
                             const mst = result.moisture ?? 50, oil = result.oilBalance ?? 50;
+                            const mid = '#79dfff'; // 아이콘 중간톤
                             if (mst >= 60 && oil >= 40 && oil <= 60) { scoreColor = dark; label = '중성'; }
+                            else if (mst >= 50 && oil >= 70) { scoreColor = light; label = '지성'; }
                             else if (mst <= 40 && oil >= 70) { scoreColor = 'rgba(0,0,0,0.7)'; label = '수부지'; }
                             else if (mst <= 40 && oil <= 30) { scoreColor = 'rgba(0,0,0,0.35)'; label = '건성'; }
-                            else if (mst >= 50 && oil >= 70) { scoreColor = 'rgba(0,0,0,0.35)'; label = '지성'; }
-                            else if (v >= 55) { scoreColor = light; label = '보통'; }
-                            else { scoreColor = 'rgba(0,0,0,0.35)'; label = '복합성'; }
+                            else { scoreColor = mid; label = '복합성'; }
                           } else if (d === 'skinTone') {
                             if (v >= 80) { scoreColor = dark; label = '균일'; }
                             else if (v >= 60) { scoreColor = light; label = '양호'; }
@@ -2332,19 +2334,19 @@ export default function App() {
                             if (v >= 75) { scoreColor = dark; label = '깨끗'; }
                             else if (v >= 55) { scoreColor = light; label = '양호'; }
                             else if (v >= 35) { scoreColor = 'rgba(0,0,0,0.35)'; label = '홍조'; }
-                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '심함'; }
+                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '나쁨'; }
                           } else if (d === 'pigmentation') {
                             if (v >= 80) { scoreColor = dark; label = '맑음'; }
                             else if (v >= 60) { scoreColor = light; label = '양호'; }
                             else if (v >= 40) { scoreColor = 'rgba(0,0,0,0.35)'; label = '주의'; }
-                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '심함'; }
+                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '나쁨'; }
                           } else if (d === 'trouble') {
                             if (v <= 2) { scoreColor = dark; label = '깨끗'; }
                             else if (v <= 5) { scoreColor = light; label = '경증'; }
                             else if (v <= 10) { scoreColor = 'rgba(0,0,0,0.35)'; label = '중등도'; }
                             else { scoreColor = 'rgba(0,0,0,0.7)'; label = '중증'; }
                           } else if (d === 'texture') {
-                            if (v >= 80) { scoreColor = dark; label = '매끈'; }
+                            if (v >= 80) { scoreColor = dark; label = '좋음'; }
                             else if (v >= 60) { scoreColor = light; label = '양호'; }
                             else if (v >= 40) { scoreColor = 'rgba(0,0,0,0.35)'; label = '거칠음'; }
                             else { scoreColor = 'rgba(0,0,0,0.7)'; label = '나쁨'; }
@@ -2354,12 +2356,12 @@ export default function App() {
                             else if (v >= 40) { scoreColor = 'rgba(0,0,0,0.35)'; label = '처짐'; }
                             else { scoreColor = 'rgba(0,0,0,0.7)'; label = '나쁨'; }
                           } else if (d === 'pores') {
-                            if (v >= 80) { scoreColor = dark; label = '미세'; }
+                            if (v >= 80) { scoreColor = dark; label = '좋음'; }
                             else if (v >= 60) { scoreColor = light; label = '정상'; }
                             else if (v >= 40) { scoreColor = 'rgba(0,0,0,0.35)'; label = '확장'; }
                             else { scoreColor = 'rgba(0,0,0,0.7)'; label = '나쁨'; }
                           } else if (d === 'wrinkles') {
-                            if (v >= 85) { scoreColor = dark; label = '매끈'; }
+                            if (v >= 85) { scoreColor = dark; label = '좋음'; }
                             else if (v >= 65) { scoreColor = light; label = '양호'; }
                             else if (v >= 45) { scoreColor = 'rgba(0,0,0,0.35)'; label = '보통'; }
                             else { scoreColor = 'rgba(0,0,0,0.7)'; label = '나쁨'; }
@@ -2367,7 +2369,7 @@ export default function App() {
                             if (v >= 80) { scoreColor = dark; label = '밝음'; }
                             else if (v >= 60) { scoreColor = light; label = '양호'; }
                             else if (v >= 40) { scoreColor = 'rgba(0,0,0,0.35)'; label = '눈에띔'; }
-                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '심함'; }
+                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '나쁨'; }
                           } else {
                             if (v >= 75) { scoreColor = dark; label = '좋음'; }
                             else if (v >= 55) { scoreColor = light; label = '보통'; }
@@ -2477,7 +2479,7 @@ export default function App() {
                     </div>
                   );
                 })()}
-                <div style={{ fontSize: 10, color: '#6B7F99', textAlign: 'center', marginBottom: 12, lineHeight: 1.4 }}>
+                <div style={{ fontSize: 10, color: '#6B7F99', textAlign: 'center', marginBottom: 24, lineHeight: 1.4 }}>
                   이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
                 </div>
                 {/* Treatment recommendations */}

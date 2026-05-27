@@ -1211,11 +1211,11 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           {/* Skin type options */}
           <div style={{ padding: '50px 40px 0', display: 'flex', flexDirection: 'column', gap: 16 }}>
             {[
-              { key: '건성', desc: '세안 후 당기고 건조한 느낌이 자주 나요' },
+              { key: '중성', desc: '특별히 건조하거나 유분이 많지 않아요' },
               { key: '지성', desc: '전체적으로 유분이 많고 번들거림이 있어요' },
               { key: '복합성', desc: 'T존은 유분, 볼은 건조한 편이에요' },
-              { key: '민감성', desc: '쉽게 자극받고 환절기에 트러블이 잘 나요' },
-              { key: '중성', desc: '특별히 건조하거나 유분이 많지 않아요' },
+              { key: '건성', desc: '세안 후 당기고 건조한 느낌이 자주 나요' },
+              { key: '수부지', desc: '속은 건조한데 겉은 기름지는 느낌이에요' },
             ].map(opt => {
               const selected = profile.skinType === opt.key;
               return (
@@ -1223,16 +1223,41 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                   padding: '6px 0', cursor: 'pointer',
                   display: 'flex', alignItems: 'flex-start', gap: 16, transition: 'all 0.2s',
                 }}>
+                  <div style={{
+                    width: 30, height: 30, borderRadius: 12, flexShrink: 0,
+                    background: selected ? 'var(--accent-primary, #6598ef)' : 'rgba(255,255,255,0.5)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s',
+                  }}>
+                    {selected && <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                  </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{opt.key}</div>
                     <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4, lineHeight: 1.6 }}>{opt.desc}</div>
                   </div>
-                  {selected && (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #6598ef)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}><polyline points="20 6 9 17 4 12"/></svg>
-                  )}
                 </div>
               );
             })}
+            {/* 민감성 — 중복 선택 가능 */}
+            <div style={{ height: 1, background: 'rgba(0,0,0,0.06)', margin: '12px 0' }} />
+            <div onClick={() => update('isSensitive', !profile.isSensitive)} style={{
+              padding: '6px 0', cursor: 'pointer',
+              display: 'flex', alignItems: 'flex-start', gap: 16, transition: 'all 0.2s',
+            }}>
+              <div style={{
+                width: 30, height: 30, borderRadius: 12, flexShrink: 0,
+                background: profile.isSensitive ? 'var(--accent-primary, #6598ef)' : 'rgba(255,255,255,0.5)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s',
+              }}>
+                {profile.isSensitive && <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>민감성</div>
+                  <span style={{ fontSize: 10, color: 'var(--text-muted)', background: 'rgba(0,0,0,0.04)', padding: '1px 6px', borderRadius: 4 }}>중복 선택 가능</span>
+                </div>
+                <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4, lineHeight: 1.6 }}>쉽게 자극받고 환절기에 트러블이 잘 나요</div>
+              </div>
+            </div>
           </div>
 
           <div style={{ flex: 1 }} />

@@ -114,9 +114,38 @@ export function Tag({ children, primary = false }) {
   );
 }
 
+/* ===== Detail Accordion ===== */
+function DetailAccordion({ title, children, onToggle }) {
+  const [open, setOpen] = useState(false);
+  const toggle = () => { setOpen(!open); onToggle?.(!open); };
+  return (
+    <div className="card" style={{ overflow: 'hidden' }}>
+      <button onClick={toggle} style={{
+        width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0,
+      }}>
+        <span style={{ fontSize: 15, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>{title}</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.3)" strokeWidth="2" strokeLinecap="round"
+          style={{ transition: 'transform 0.3s ease', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+      {open && (
+        <>
+          <div style={{ height: 1, background: 'rgba(0,0,0,0.06)', margin: '14px 0' }} />
+          <div style={{ animation: 'fadeUp 0.3s ease-out' }}>
+            {children}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 /* ===== Detail Page ===== */
 export function DetailPage({ metricKey, value, onBack }) {
   const data = SCIENCE[metricKey];
+  const [anyAccordionOpen, setAnyAccordionOpen] = useState(0);
   if (!data) return null;
 
   const unitMap = {
@@ -133,90 +162,74 @@ export function DetailPage({ metricKey, value, onBack }) {
   return (
     <div style={{ paddingBottom: 40 }}>
       {/* Header */}
-      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 20px' }}>
-        <div onClick={onBack} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginBottom: 16 }}>
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 16px) 20px 0' }}>
+        <div onClick={onBack} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginBottom: 12 }}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-          {metricIconMap[metricKey]}
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: 'rgba(0,0,0,0.8)', margin: 0 }}>
-            {data.title}
-          </h1>
-          {value != null && (
-            <span style={{ fontSize: 22, fontWeight: 600, color: 'rgba(0,0,0,0.8)', marginLeft: 'auto' }}>
-              {value}<span style={{ fontSize: 13, fontWeight: 500, color: 'rgba(0,0,0,0.3)', marginLeft: 3 }}>{unitMap[metricKey]}</span>
-            </span>
-          )}
+        <div style={{ padding: '10px 15px 0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {metricIconMap[metricKey]}
+            <h1 style={{ fontSize: 20, fontWeight: 700, color: 'rgba(0,0,0,0.8)', margin: 0 }}>
+              {data.title}
+            </h1>
+          </div>
+          <p style={{ fontSize: 13, color: 'rgba(0,0,0,0.4)', lineHeight: 1.7, margin: '10px 0 0' }}>{data.hero}</p>
         </div>
-        <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.6)', letterSpacing: 0.5, marginBottom: 10, paddingLeft: 32 }}>
-          {data.subtitle}
-        </div>
-        <p style={{ fontSize: 13, color: 'rgba(0,0,0,0.4)', lineHeight: 1.7, margin: 0 }}>{data.hero}</p>
       </div>
 
       {/* Content */}
       <div style={{ padding: '20px 16px' }}>
-        {/* Methodology + Analysis Steps */}
-        <div className="card">
-          <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 16, color: 'rgba(0,0,0,0.8)' }}>측정 원리</div>
-          <p style={{ fontSize: 13, color: 'rgba(0,0,0,0.4)', lineHeight: 1.85, whiteSpace: 'pre-line', marginBottom: 24 }}>{data.methodology}</p>
-          <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 16, color: 'rgba(0,0,0,0.8)' }}>분석 과정</div>
-          {data.steps.map((step, i) => (
-            <div key={i} style={{ display: 'flex', gap: 11, marginBottom: i < data.steps.length - 1 ? 18 : 0 }}>
-              <div style={{
-                width: 24, height: 24, borderRadius: 8, background: 'rgba(255,255,255,0.3)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#000', fontSize: 13, fontWeight: 600, flexShrink: 0,
-              }}>{i + 1}</div>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(0,0,0,0.6)', marginBottom: 3 }}>{step.title}</div>
-                <div style={{ fontSize: 12, color: 'rgba(0,0,0,0.4)', lineHeight: 1.65 }}>{step.desc}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Score Ranges */}
+        {/* 1. Score Ranges — 가장 먼저 */}
         <div className="card">
           <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 14, color: 'rgba(0,0,0,0.8)' }}>결과 해석</div>
-          {data.ranges.map((r, i) => (
-            <div key={i} style={{
-              display: 'flex', alignItems: 'center', gap: 10,
-              padding: '9px 12px', marginBottom: 5, borderRadius: 12,
-              background: `${r.color}08`,
-            }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: r.color, flexShrink: 0 }} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: r.color, minWidth: 80 }}>{r.range}</span>
-              <span style={{ fontSize: 11, color: '#fff', background: r.color, padding: '2px 10px', borderRadius: 8, fontWeight: 500 }}>{r.label}</span>
-              <span style={{ fontSize: 10, color: 'rgba(0,0,0,0.4)', marginLeft: 'auto' }}>{r.description}</span>
-            </div>
-          ))}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            {data.ranges.map((r, i) => (
+              <div key={i} style={{
+                borderRadius: 12, padding: '12px 10px',
+                background: `${r.color}10`,
+                display: 'flex', flexDirection: 'column', gap: 8,
+              }}>
+                <span style={{ fontSize: 10, color: '#fff', background: r.color, padding: '3px 8px', borderRadius: 6, fontWeight: 600, alignSelf: 'flex-start', whiteSpace: 'nowrap' }}>{r.label}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: r.color, lineHeight: 1.3 }}>{r.range}</span>
+                <span style={{ fontSize: 12, fontWeight: 400, color: 'rgba(0,0,0,0.4)', lineHeight: 1.5 }}>{r.description}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Scientific References */}
-        <div className="card">
-          <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 14, color: 'rgba(0,0,0,0.8)' }}>과학적 근거</div>
+        {/* 2. Methodology — 아코디언 */}
+        <DetailAccordion title="측정 원리" onToggle={(open) => setAnyAccordionOpen(p => p + (open ? 1 : -1))}>
+          <p style={{ fontSize: 13, color: 'rgba(0,0,0,0.4)', lineHeight: 1.85, whiteSpace: 'pre-line', margin: 0 }}>{data.methodology}</p>
+        </DetailAccordion>
+
+        {/* 3. Scientific References — 아코디언 */}
+        <DetailAccordion title="과학적 근거" onToggle={(open) => setAnyAccordionOpen(p => p + (open ? 1 : -1))}>
           {data.references.map((ref, i) => (
             <div key={i} style={{
               marginBottom: i < data.references.length - 1 ? 10 : 0,
               borderRadius: 5, border: '1px solid rgba(0,0,0,0.08)', overflow: 'hidden',
             }}>
               <div style={{ padding: '8px 10px', background: 'rgba(255,255,255,0.1)', fontWeight: 600, fontSize: 12, color: 'rgba(0,0,0,0.6)', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>{ref.name}</div>
-              <div style={{ padding: '7px 10px', fontSize: 12, color: 'rgba(0,0,0,0.4)', lineHeight: 1.5, borderBottom: '1px solid rgba(0,0,0,0.06)' }}>{ref.description}</div>
+              <div style={{ padding: '7px 10px', fontSize: 12, color: 'rgba(0,0,0,0.4)', lineHeight: 1.5 }}>{ref.description}</div>
               <div style={{ padding: '7px 10px', fontSize: 11, color: 'rgba(0,0,0,0.4)', fontStyle: 'italic', lineHeight: 1.5 }}>{ref.source}</div>
             </div>
           ))}
-        </div>
+        </DetailAccordion>
 
-        {/* Disclaimer */}
-        <div style={{ padding: 14, background: 'var(--bg-card)', borderRadius: 14, marginBottom: 16 }}>
+        {/* 4. Disclaimer */}
+        <div style={{ padding: 14, background: 'rgba(255,255,255,0.3)', borderRadius: 18, marginBottom: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
           <p style={{ fontSize: 11, color: 'rgba(0,0,0,0.4)', lineHeight: 1.6 }}>
-             루아 AI 비전 기반 추정치이며, 의료기기 정밀 측정과 차이가 있습니다.
-            정확한 진단은 피부과 전문의와 상담해주세요.
+            피부과 임상 기기(Corneometer, Mexameter 등)의 측정 원리를 컴퓨터 비전으로 구현하였으며, 임상 데이터와의 교차 검증을 통해 정확도를 개선하고 있습니다.
           </p>
         </div>
 
-        <button className="btn-primary" onClick={onBack}>← 돌아가기</button>
+        {anyAccordionOpen > 0 && (
+          <button onClick={onBack} style={{
+            width: '100%', padding: '12px 0', border: 'none', borderRadius: 12,
+            background: 'rgba(0,0,0,0.04)', color: 'rgba(0,0,0,0.25)',
+            fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+          }}>돌아가기</button>
+        )}
       </div>
     </div>
   );
