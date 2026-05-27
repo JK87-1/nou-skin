@@ -494,7 +494,11 @@ export async function callVisionAI(base64Image, landmarks) {
       const buildingLen = baseline.building?.length || 0;
       const totalCount = buildingLen + 1; // baseline 첫 측정 + building
 
-      if (totalCount < BASELINE_BUILD_COUNT) {
+      // 🛡 built=true면 완성 확정 — building 절대 재시작 금지.
+      //    완성 시 building 기록이 clear되므로, built를 안 보면 totalCount=1로 재계산되어
+      //    완성된 기준점이 다시 1/3부터 building → 2회 더 측정 시 baselineJustCompleted 재발 →
+      //    "기준점 완성!" modal 중복 노출 버그가 났다. built를 최우선으로 확인해 차단.
+      if (!baseline.built && totalCount < BASELINE_BUILD_COUNT) {
         // 평균 baseline 구축 중. 점수 누적.
         saveBaselineBuilding(currentScores);
         const nextCount = totalCount + 1;
@@ -511,7 +515,14 @@ export async function callVisionAI(base64Image, landmarks) {
           console.log(`Baseline building ${nextCount}/${BASELINE_BUILD_COUNT}`);
         }
       } else {
-        // 평균 baseline 완성 — 일반 drift
+        // 완성된 baseline — 일반 drift.
+        // built flag가 누락된 채 누적만 충분(totalCount>=3)한 경우(부분 손상 등) self-heal:
+        // 완성으로 영구 마킹하되 baselineJustCompleted는 켜지 않아 modal 재노출은 막는다.
+        if (!baseline.built) {
+          saveBaseline(baseline.image, baseline.result, baseline.descriptor || newDescriptor, { built: true });
+          clearBaselineBuilding();
+          console.log('Baseline built flag back-filled (recovered, no modal re-prompt)');
+        }
         const baselineDate = new Date(baseline.timestamp).toISOString().slice(0, 10);
         const todayDate = new Date().toISOString().slice(0, 10);
         if (baselineDate !== todayDate) {
