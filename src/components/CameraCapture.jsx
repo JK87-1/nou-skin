@@ -487,7 +487,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
     // 3. Request camera
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 960 } },
+        video: { facingMode: 'user', width: { ideal: 1920 }, height: { ideal: 1440 } },
         audio: false,
       });
       if (cancelled?.current) { stream.getTracks().forEach(t => t.stop()); return; }
@@ -627,7 +627,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
     capCtx.translate(video.videoWidth, 0);
     capCtx.scale(-1, 1);
     capCtx.drawImage(video, 0, 0);
-    const dataUrl = captureCanvas.toDataURL('image/jpeg', 0.92);
+    const dataUrl = captureCanvas.toDataURL('image/jpeg', 0.98);
 
     if (flashRef.current) {
       flashRef.current.style.animation = 'none';

@@ -148,7 +148,7 @@ import { createAutoBackup } from './AutoBackup';
 export async function saveThumbnail(key, imageDataUrl) {
   if (!imageDataUrl) return;
   try {
-    const resized = await resizeImage(imageDataUrl, 512, 0.82);
+    const resized = await resizeImage(imageDataUrl);
     await savePhotoDB(String(key), resized);
   } catch (e) {
     console.warn('LUA: thumbnail save failed', e);
@@ -202,7 +202,7 @@ export async function saveComparisonPhoto(imageDataUrl) {
   if (!imageDataUrl) return;
   try {
     const today = getLocalDateStr();
-    const hiRes = await resizeImage(imageDataUrl, 512, 0.82);
+    const hiRes = await resizeImage(imageDataUrl);
 
     // IndexedDB에서 기존 earliest 확인
     const existing = await getComparisonPhotoDB();

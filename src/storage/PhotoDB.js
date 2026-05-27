@@ -293,19 +293,18 @@ export async function getComparisonPhotoDB() {
   }
 }
 
-export function resizeImage(imageDataUrl, size = 512, quality = 0.82) {
+export function resizeImage(imageDataUrl, size = 1440, quality = 0.95) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
+      const scale = Math.min(1, size / Math.max(img.width, img.height));
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
       const canvas = document.createElement('canvas');
-      canvas.width = size;
-      canvas.height = size;
+      canvas.width = w;
+      canvas.height = h;
       const ctx = canvas.getContext('2d');
-      // 중앙 크롭
-      const s = Math.min(img.width, img.height);
-      const sx = (img.width - s) / 2;
-      const sy = (img.height - s) / 2;
-      ctx.drawImage(img, sx, sy, s, s, 0, 0, size, size);
+      ctx.drawImage(img, 0, 0, w, h);
       resolve(canvas.toDataURL('image/jpeg', quality));
     };
     img.onerror = reject;

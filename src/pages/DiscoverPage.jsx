@@ -115,7 +115,8 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
           <div style={{ margin: '0 12px 12px' }}>
             {recordCount === 0 ? (
               <div onClick={() => onMeasure?.()} style={{
-                ...glass, background: 'linear-gradient(135deg, rgba(220,238,251,0.6), rgba(240,247,254,0.4))',
+                background: 'rgba(255,255,255,0.2)',
+                borderRadius: 20,
                 padding: '32px 16px', textAlign: 'center', cursor: 'pointer',
               }}>
                 <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 8 }}>첫 측정을 해볼까요?</div>
