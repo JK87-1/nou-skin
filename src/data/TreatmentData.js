@@ -6,12 +6,12 @@
  */
 
 export const TREATMENT_CATEGORIES = {
-  lifting:       { icon: '', label: '리프팅/탄력', color: '#FFD080' },
-  pigmentation:  { icon: '', label: '색소/미백',   color: '#C0A890' },
-  texture:       { icon: '', label: '피부결/모공', color: '#FFB0C8' },
-  wrinkle:       { icon: '', label: '주름/볼륨',   color: '#F5D0B8' },
-  acne:          { icon: '', label: '트러블',      color: '#FFB0B0' },
-  rejuvenation:  { icon: '', label: '재생/광채',   color: '#A8DEFF' },
+  lifting:       { icon: '', label: '탄력 · 리프팅', color: '#FFD080' },
+  pigmentation:  { icon: '', label: '색소 · 미백',   color: '#C0A890' },
+  texture:       { icon: '', label: '피부결 · 모공', color: '#FFB0C8' },
+  wrinkle:       { icon: '', label: '주름 · 볼륨',   color: '#F5D0B8' },
+  acne:          { icon: '', label: '트러블',         color: '#FFB0B0' },
+  rejuvenation:  { icon: '', label: '수분 · 재생',   color: '#A8DEFF' },
 };
 
 export const TREATMENTS = [

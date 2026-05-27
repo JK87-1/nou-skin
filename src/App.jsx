@@ -1924,7 +1924,7 @@ export default function App() {
                     <>
                       {/* Grade + label */}
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 8 }}>
-                        <span style={{ fontSize: 22, fontWeight: 300, color: 'rgba(0,0,0,0.8)' }}>{grade.letter}</span>
+                        <span style={{ fontSize: 22, fontWeight: 500, color: 'rgba(0,0,0,0.8)' }}>{grade.letter}</span>
                         <span style={{ fontSize: 11, color: 'rgba(0,0,0,0.5)' }}>컨디션 등급</span>
                       </div>
                       {/* Briefing text */}
@@ -2437,7 +2437,7 @@ export default function App() {
                   if (weakCats.length === 0) return null;
                   return (
                     <div style={{ marginBottom: 12 }}>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(0,0,0,0.8)', marginBottom: 8 }}>맞춤 추천 제품</div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(0,0,0,0.8)', marginBottom: 8 }}>제품</div>
                       {weakCats.slice(0, 2).map((cat) => {
                         const meta = CATEGORY_META[cat];
                         if (!meta) return null;
@@ -2470,7 +2470,7 @@ export default function App() {
                                 style={{
                                   display: 'flex', alignItems: 'center', gap: 10,
                                   padding: '12px 14px',
-                                  borderTop: pi > 0 ? '1px solid rgba(0,0,0,0.04)' : 'none',
+                                  borderTop: '1px solid rgba(0,0,0,0.04)',
                                   textDecoration: 'none', color: 'inherit',
                                   transition: 'background 0.2s',
                                 }}>
@@ -2479,11 +2479,11 @@ export default function App() {
                                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                     {product.brand} {product.name}
                                   </div>
-                                  <div style={{ display: 'flex', gap: 4, marginTop: 2, alignItems: 'center' }}>
+                                  <div style={{ display: 'flex', gap: 4, marginTop: 3, alignItems: 'center' }}>
                                     {product.tags?.slice(0, 2).map((tag, ti) => (
                                       <span key={ti} style={{
-                                        fontSize: 10, fontWeight: 600, padding: '1px 5px', borderRadius: 5,
-                                        background: 'rgba(101,152,239,0.1)', color: 'rgba(0,0,0,0.5)',
+                                        fontSize: 10, fontWeight: 500, padding: '2px 6px', borderRadius: 4,
+                                        background: 'rgba(0,0,0,0.04)', color: 'rgba(0,0,0,0.35)',
                                       }}>{tag}</span>
                                     ))}
                                     <span style={{ fontSize: 10, color: 'rgba(0,0,0,0.35)' }}>{product.volume}</span>
@@ -2511,7 +2511,7 @@ export default function App() {
                   if (treatments.length === 0) return null;
                   return (
                     <div style={{ marginBottom: 12 }}>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(0,0,0,0.8)', marginBottom: 8 }}>맞춤 추천 시술</div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(0,0,0,0.8)', marginBottom: 8 }}>시술</div>
                       {(() => {
                         const grouped = {};
                         treatments.forEach(t => {
@@ -2527,32 +2527,32 @@ export default function App() {
                               overflow: 'hidden',
                             }}>
                               <div style={{
-                                padding: '10px 12px',
+                                padding: '12px 14px',
                               }}>
                                 <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ opacity: 0.9, display: 'inline-flex' }}>{({lifting: <DiamondIcon size={10}/>, pigmentation: <PaletteIcon size={10}/>, texture: <SparkleIcon size={10}/>, wrinkle: <RulerIcon size={10}/>, acne: <RednessIcon size={10}/>, rejuvenation: <DropletIcon size={10}/>})[cat]}</span>{catMeta?.label}</div>
                               </div>
                               {items.map((t, ti) => (
                                 <div key={t.id} style={{
-                                  padding: '8px 12px',
+                                  padding: '12px 14px',
                                   borderTop: '1px solid rgba(0,0,0,0.04)',
                                 }}>
-                                  <div style={{ fontSize: 13, fontWeight: 700, color: 'rgba(0,0,0,0.7)' }}>
+                                  <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(0,0,0,0.6)' }}>
                                     {t.name}
                                   </div>
-                                  <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.35)', marginTop: 2, lineHeight: 1.3 }}>
+                                  <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.35)', marginTop: 2, lineHeight: 1.3 }}>
                                     {t.mechanism.length > 35 ? t.mechanism.slice(0, 35) + '...' : t.mechanism}
                                   </div>
-                                  <div style={{ display: 'flex', gap: 8, marginTop: 3, fontSize: 11, color: 'rgba(0,0,0,0.35)' }}>
+                                  <div style={{ display: 'flex', gap: 8, marginTop: 3, fontSize: 10, color: 'rgba(0,0,0,0.35)' }}>
                                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
-                                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8a3 3 0 013-3h12a3 3 0 013 3v8a3 3 0 01-3 3H6a3 3 0 01-3-3z"/><path d="M3 10h18"/></svg>
+                                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8a3 3 0 013-3h12a3 3 0 013 3v8a3 3 0 01-3 3H6a3 3 0 01-3-3z"/><path d="M3 10h18"/></svg>
                                       {t.costRange}
                                     </span>
                                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
-                                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+                                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
                                       {t.downtime}
                                     </span>
                                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
-                                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19.933 13.041a8 8 0 11-9.925-8.788c3.899-1 7.935 1.007 9.425 4.747"/><path d="M20 4v5h-5"/></svg>
+                                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19.933 13.041a8 8 0 11-9.925-8.788c3.899-1 7.935 1.007 9.425 4.747"/><path d="M20 4v5h-5"/></svg>
                                       {t.frequency}
                                     </span>
                                   </div>
@@ -2572,7 +2572,7 @@ export default function App() {
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v12a1 1 0 01-1 1H6l-3 3z"/></svg>
                         시술에 대해 루아에게 물어보기
                       </button>
-                      <div style={{ fontSize: 10, color: '#6B7F99', textAlign: 'center', marginTop: 6, lineHeight: 1.4 }}>
+                      <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.35)', textAlign: 'center', marginTop: 6, lineHeight: 1.4 }}>
                         <span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><ShieldIcon size={10} /></span> 의료 행위가 아닌 정보 제공 목적입니다. 시술은 전문 의료진과 상담 후 결정하세요.
                       </div>
                     </div>

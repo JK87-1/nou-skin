@@ -2,11 +2,11 @@
 // [RECOMMEND:카테고리] 태그 기반 추천 시스템
 
 export const CATEGORY_META = {
-  '수분부족': { icon: '', label: '수분 부족', ingredient: '히알루론산 · 세라마이드', metricKey: 'moisture' },
-  '유분과다': { icon: '', label: '유분 과다', ingredient: '나이아신아마이드 · 티트리', metricKey: 'oilBalance', inverse: true },
-  '색소침착': { icon: '', label: '색소 침착', ingredient: '비타민C · 글루타치온', metricKey: 'pigmentationScore' },
-  '주름탄력': { icon: '', label: '주름 · 탄력', ingredient: '레티놀 · 펩타이드', metricKey: 'wrinkleScore' },
-  '트러블': { icon: '', label: '트러블 케어', ingredient: '시카 · 살리실산', metricKey: 'troubleCount', inverse: true },
+  '수분부족': { icon: '', label: '수분', ingredient: '히알루론산 · 세라마이드', metricKey: 'moisture' },
+  '유분과다': { icon: '', label: '유분', ingredient: '나이아신아마이드 · 티트리', metricKey: 'oilBalance', inverse: true },
+  '색소침착': { icon: '', label: '색소', ingredient: '비타민C · 글루타치온', metricKey: 'pigmentationScore' },
+  '주름탄력': { icon: '', label: '주름', ingredient: '레티놀 · 펩타이드', metricKey: 'wrinkleScore' },
+  '트러블': { icon: '', label: '트러블', ingredient: '시카 · 살리실산', metricKey: 'troubleCount', inverse: true },
   '다크서클': { icon: '', label: '다크서클', ingredient: '비타민K · 카페인', metricKey: 'darkCircleScore' },
 };
 
