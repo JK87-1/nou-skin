@@ -1265,6 +1265,9 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
                     {product.timeSlot === 'both' ? '아침·저녁' : product.timeSlot === 'morning' ? '아침' : '저녁'}
                   </span>
                 </div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+                  사용 {days}일째 · {product.startDate} 시작
+                </div>
               </div>
             </div>
 
@@ -1364,17 +1367,6 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
               );
             } catch { return null; } })()}
 
-            <div style={{
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              padding: '12px 16px', marginBottom: 16,
-              background: 'rgba(0,0,0,0.02)', borderRadius: 14,
-            }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                <span style={{ fontSize: 11, fontWeight: 600, color: '#d0d0d0' }}>사용</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{days}일째</span>
-              </div>
-              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{product.startDate} 시작</span>
-            </div>
 
             {/* 메모 */}
             <div style={{ marginBottom: 16 }}>
