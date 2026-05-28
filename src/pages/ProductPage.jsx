@@ -1182,30 +1182,72 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
 
         {!editing ? (
           <>
-            {/* 상단 우측 아이콘: 즐겨찾기 · 수정 · 삭제 */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginBottom: 8 }}>
-              <div onClick={() => setEditing(true)} style={{ cursor: 'pointer', padding: 4 }}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d0d0d0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
-                  <path d="M13.5 6.5l4 4" />
-                </svg>
+            {/* 상단: 별점 (좌) · 수정/하트/삭제 (우) */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              {/* 별점 pill */}
+              <div
+                ref={ratingRef}
+                onTouchStart={onRatingTouchStart}
+                onTouchMove={onRatingTouchMove}
+                onTouchEnd={onRatingTouchEnd}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 3,
+                  padding: '6px 10px',
+                  background: '#fff',
+                  borderRadius: 50,
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                  cursor: 'pointer',
+                  WebkitTapHighlightColor: 'transparent',
+                  userSelect: 'none', WebkitUserSelect: 'none',
+                }}
+              >
+                {[1, 2, 3, 4, 5].map(star => {
+                  const filled = star <= rating;
+                  return (
+                    <svg
+                      key={star}
+                      onClick={() => onRatingClick(star)}
+                      width="18" height="18" viewBox="0 0 24 24"
+                      style={{
+                        transition: 'transform 0.15s ease',
+                        transform: filled ? 'scale(1.05)' : 'scale(0.92)',
+                        filter: filled ? 'drop-shadow(0 1px 2px rgba(230,140,60,0.3))' : 'none',
+                      }}
+                    >
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                        fill={filled ? '#E08C3C' : 'rgba(0,0,0,0.08)'}
+                        stroke="none"
+                      />
+                    </svg>
+                  );
+                })}
               </div>
-              <div onClick={() => onToggleFavorite?.(product.id)} style={{ cursor: 'pointer', padding: 4, WebkitTapHighlightColor: 'transparent' }}>
-                {product.favorite ? (
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="#ffdaf0" stroke="none">
-                    <path d="M6.979 3.074a6 6 0 0 1 4.988 1.425l.037 .033l.034 -.03a6 6 0 0 1 4.733 -1.44l.246 .036a6 6 0 0 1 3.364 10.008l-.18 .185l-.048 .041l-7.45 7.379a1 1 0 0 1 -1.313 .082l-.094 -.082l-7.493 -7.422a6 6 0 0 1 3.176 -10.215z" />
-                  </svg>
-                ) : (
+              {/* 우측 아이콘 */}
+              <div style={{ display: 'flex', gap: 8 }}>
+                <div onClick={() => setEditing(true)} style={{ cursor: 'pointer', padding: 4 }}>
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d0d0d0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572" />
+                    <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+                    <path d="M13.5 6.5l4 4" />
                   </svg>
-                )}
-              </div>
-              <div onClick={() => setConfirmDelete(true)} style={{ cursor: 'pointer', padding: 4 }}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d0d0d0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
-                  <path d="M9 12l6 0" />
-                </svg>
+                </div>
+                <div onClick={() => onToggleFavorite?.(product.id)} style={{ cursor: 'pointer', padding: 4, WebkitTapHighlightColor: 'transparent' }}>
+                  {product.favorite ? (
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="#ffdaf0" stroke="none">
+                      <path d="M6.979 3.074a6 6 0 0 1 4.988 1.425l.037 .033l.034 -.03a6 6 0 0 1 4.733 -1.44l.246 .036a6 6 0 0 1 3.364 10.008l-.18 .185l-.048 .041l-7.45 7.379a1 1 0 0 1 -1.313 .082l-.094 -.082l-7.493 -7.422a6 6 0 0 1 3.176 -10.215z" />
+                    </svg>
+                  ) : (
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d0d0d0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572" />
+                    </svg>
+                  )}
+                </div>
+                <div onClick={() => setConfirmDelete(true)} style={{ cursor: 'pointer', padding: 4 }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d0d0d0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+                    <path d="M9 12l6 0" />
+                  </svg>
+                </div>
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
@@ -1226,47 +1268,6 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
                   </span>
                 </div>
               </div>
-            </div>
-
-            {/* 별점 */}
-            <div
-              ref={ratingRef}
-              onTouchStart={onRatingTouchStart}
-              onTouchMove={onRatingTouchMove}
-              onTouchEnd={onRatingTouchEnd}
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                padding: '10px 16px',
-                background: 'rgba(0,0,0,0.03)',
-                borderRadius: 50,
-                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(255,255,255,0.8)',
-                marginBottom: 16,
-                cursor: 'pointer',
-                WebkitTapHighlightColor: 'transparent',
-                userSelect: 'none', WebkitUserSelect: 'none',
-              }}
-            >
-              {[1, 2, 3, 4, 5].map(star => {
-                const filled = star <= rating;
-                return (
-                  <svg
-                    key={star}
-                    onClick={() => onRatingClick(star)}
-                    width="26" height="26" viewBox="0 0 24 24"
-                    style={{
-                      transition: 'transform 0.15s ease',
-                      transform: filled ? 'scale(1.05)' : 'scale(0.92)',
-                      filter: filled ? 'drop-shadow(0 1px 2px rgba(230,140,60,0.3))' : 'none',
-                    }}
-                  >
-                    <path
-                      d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-                      fill={filled ? '#E08C3C' : 'rgba(0,0,0,0.08)'}
-                      stroke="none"
-                    />
-                  </svg>
-                );
-              })}
             </div>
 
             <div style={{
