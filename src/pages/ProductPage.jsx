@@ -1259,9 +1259,9 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
               <div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{product.brand}</div>
                 <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)' }}>{product.name}</div>
-                <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
-                  <span style={{ fontSize: 10, fontWeight: 600, color: cat.color, background: `${cat.color}15`, borderRadius: 6, padding: '2px 7px' }}>{product.category}</span>
-                  <span style={{ fontSize: 10, color: 'var(--text-dim)' }}>
+                <div style={{ display: 'flex', gap: 6, marginTop: 4, alignItems: 'center' }}>
+                  <span style={{ fontSize: 10, fontWeight: 600, color: cat.color, background: `${cat.color}15`, borderRadius: 6, padding: '2px 7px', lineHeight: 1 }}>{product.category}</span>
+                  <span style={{ fontSize: 10, color: 'var(--text-dim)', lineHeight: 1 }}>
                     {product.timeSlot === 'both' ? '아침·저녁' : product.timeSlot === 'morning' ? '아침' : '저녁'}
                   </span>
                 </div>
