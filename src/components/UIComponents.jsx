@@ -5,10 +5,11 @@ import { getProfile } from '../storage/ProfileStorage';
 import { getPercentile, bucketLabel } from '../engine/SkinPercentile';
 
 /* ===== Animated Number Counter ===== */
-export function AnimatedNumber({ target, suffix = '', duration = 1200 }) {
+export function AnimatedNumber({ target, suffix = '', duration = 1200, delay = 0 }) {
   const [current, setCurrent] = useState(0);
   const [visible, setVisible] = useState(false);
   const raf = useRef();
+  const delayTimer = useRef();
   const elRef = useRef();
 
   useEffect(() => {
@@ -21,16 +22,18 @@ export function AnimatedNumber({ target, suffix = '', duration = 1200 }) {
 
   useEffect(() => {
     if (!visible) return;
-    const start = Date.now();
-    const animate = () => {
-      const progress = Math.min((Date.now() - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setCurrent(Math.round(target * eased));
-      if (progress < 1) raf.current = requestAnimationFrame(animate);
-    };
-    raf.current = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(raf.current);
-  }, [target, duration, visible]);
+    delayTimer.current = setTimeout(() => {
+      const start = Date.now();
+      const animate = () => {
+        const progress = Math.min((Date.now() - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        setCurrent(Math.round(target * eased));
+        if (progress < 1) raf.current = requestAnimationFrame(animate);
+      };
+      raf.current = requestAnimationFrame(animate);
+    }, delay);
+    return () => { clearTimeout(delayTimer.current); cancelAnimationFrame(raf.current); };
+  }, [target, duration, delay, visible]);
 
   return <span ref={elRef}>{current}{suffix}</span>;
 }

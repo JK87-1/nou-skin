@@ -321,7 +321,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
       {/* ② 점수 변화 — 최상단 */}
           <div style={{ margin: '0 12px 12px', background: 'rgba(255,255,255,0.2)', borderRadius: 18, padding: 14 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>점수 변화</span>
+              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>내 피부 흐름</span>
               <div style={{ display: 'flex', gap: 6 }}>
                 {[{ k: '7d', l: '7일' }, { k: '4w', l: '4주' }, { k: '3m', l: '3개월' }].map(p => (
                   <button key={p.k} onClick={() => setPeriod(p.k)} style={{
@@ -333,17 +333,18 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                 ))}
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-              {[{ key: 'overallScore', label: '종합' }, { key: 'skinAge', label: '피부나이' }, ...ALL_METRICS].map((m) => {
+            <div style={{ display: 'flex', gap: 6, marginBottom: 10, overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }} className="hide-scrollbar">
+              {[{ key: 'overallScore', label: '종합점수' }, { key: 'skinAge', label: '피부나이' }, ...ALL_METRICS].map((m) => {
                 const activeTrend = trendMetric || 'overallScore';
                 const active = activeTrend === m.key;
                 return (
                   <button key={m.key} onClick={() => setTrendMetric(m.key)} style={{
-                    padding: '5px 11px', borderRadius: 10, border: 'none',
-                    background: active ? 'rgba(101,152,239,0.16)' : 'rgba(0,0,0,0.04)',
-                    color: active ? '#6598ef' : 'var(--text-muted)',
-                    fontSize: 11, fontWeight: active ? 700 : 500,
+                    padding: '3px 8px', borderRadius: 7, border: 'none',
+                    background: active ? '#6598ef12' : 'rgba(0,0,0,0.04)',
+                    color: active ? '#6598ef' : 'rgba(0,0,0,0.35)',
+                    fontSize: 11, fontWeight: 600, lineHeight: 1.3,
                     cursor: 'pointer', fontFamily: 'inherit',
+                    flexShrink: 0, whiteSpace: 'nowrap',
                   }}>{m.label}</button>
                 );
               })}
@@ -427,9 +428,9 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                     return (
                       <div key={m.key} style={{ background: 'rgba(255,255,255,0.6)', borderRadius: 10, padding: '8px 6px', textAlign: 'center' }}>
                         <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>{m.label}</div>
-                        <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)', marginTop: 2 }}>{val ?? '—'}</div>
-                        <div style={{ fontSize: 9, fontWeight: 500, marginTop: 1, color: diff === null ? 'var(--text-muted)' : diff > 0 ? '#1976D2' : diff < 0 ? '#A32D2D' : 'var(--text-muted)' }}>
-                          {diff === null ? '기준선' : diff > 0 ? `+${diff}` : diff < 0 ? `${diff}` : '0'}
+                        <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)', marginTop: 2 }}>{val != null ? <AnimatedNumber target={val} duration={600} /> : '—'}</div>
+                        <div style={{ fontSize: 9, fontWeight: 500, marginTop: 1, color: diff === null ? 'var(--text-muted)' : diff > 0 ? '#6598ef' : diff < 0 ? '#e05545' : 'var(--text-muted)' }}>
+                          {diff === null ? '기준선' : diff > 0 ? <>+<AnimatedNumber target={diff} duration={800} /></> : diff < 0 ? <>-<AnimatedNumber target={Math.abs(diff)} duration={800} /></> : '0'}
                         </div>
                       </div>
                     );

@@ -19,6 +19,16 @@ import { useState, useRef } from 'react';
 const POSITIVE = '#6598ef'; // 토스 블루 톤
 const NEGATIVE = '#e05545'; // 토스 빨강
 
+// hex 색상을 밝게/어둡게 조절 (amount: -1~1, 양수=밝게, 음수=어둡게)
+function adjustColor(hex, amount) {
+  const c = hex.replace('#', '');
+  const r = parseInt(c.substring(0, 2), 16);
+  const g = parseInt(c.substring(2, 4), 16);
+  const b = parseInt(c.substring(4, 6), 16);
+  const adj = (v) => Math.max(0, Math.min(255, Math.round(amount > 0 ? v + (255 - v) * amount : v * (1 + amount))));
+  return `#${adj(r).toString(16).padStart(2,'0')}${adj(g).toString(16).padStart(2,'0')}${adj(b).toString(16).padStart(2,'0')}`;
+}
+
 // date(ISO/Date/timestamp)를 한국어 짧은 표기로. sparkline용 숫자 인덱스면 null.
 function fmtDateTime(d) {
   if (d == null) return null;
@@ -206,19 +216,23 @@ export default function TossLineChart({
         </>
       )}
 
+      {/* 라인 드로잉 애니메이션 */}
+      <style>{`@keyframes tossLineDraw{from{stroke-dashoffset:1000}to{stroke-dashoffset:0}}@keyframes tossAreaFade{from{opacity:0}to{opacity:1}}`}</style>
+
       {/* Area fill — 라인 아래 부드러운 그라데이션 */}
       <defs>
         <linearGradient id={`area-fill-${strokeColor.replace('#','')}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={strokeColor} stopOpacity="0.2" />
+          <stop offset="0%" stopColor={strokeColor} stopOpacity="0.5" />
           <stop offset="100%" stopColor={strokeColor} stopOpacity="0.02" />
         </linearGradient>
       </defs>
       <path
         d={`${path} L${pts[pts.length - 1].x.toFixed(2)},${H - PAD_Y_BOT} L${pts[0].x.toFixed(2)},${H - PAD_Y_BOT} Z`}
         fill={`url(#area-fill-${strokeColor.replace('#','')})`}
+        style={{ animation: 'tossAreaFade 0.8s ease-out 0.6s both' }}
       />
 
-      {/* 메인 라인 */}
+      {/* 메인 라인 — 왼→오 드로잉 애니메이션 */}
       <path
         d={path}
         fill="none"
@@ -226,36 +240,39 @@ export default function TossLineChart({
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
+        strokeDasharray="1000"
+        strokeDashoffset="1000"
+        style={{ animation: 'tossLineDraw 1.2s ease-out forwards' }}
       />
 
-      {/* 데이터 포인트 dot — 10개 이하일 때만 전체 표시, 초과 시 첫·끝만 */}
-      <g opacity={active ? 0.3 : 1} style={{ transition: 'opacity 0.15s ease' }}>
-        {pts.length <= 10 ? pts.map((p, i) => (
-          <circle key={i} cx={p.x} cy={p.y} r="3" fill="#fff" stroke={strokeColor} strokeWidth="1.5" />
-        )) : [0, pts.length - 1].map(i => (
-          <circle key={i} cx={pts[i].x} cy={pts[i].y} r="3" fill="#fff" stroke={strokeColor} strokeWidth="1.5" />
-        ))}
+      {/* 마지막 점 (현재 값) — 작게 */}
+      <g opacity={active ? 0.2 : 1} style={{ transition: 'opacity 0.15s ease' }}>
+        <circle cx={pts[pts.length - 1].x} cy={pts[pts.length - 1].y} r="2.5" fill={strokeColor} stroke={strokeColor} strokeWidth="1.5" />
       </g>
 
       {/* 최고/최저점 라벨 */}
-      {showHighLow && !hiLoSame && (
-        <g opacity={active ? 0.25 : 1} style={{ transition: 'opacity 0.15s ease' }}>
-          <circle cx={hi.x} cy={hi.y} r="4" fill={strokeColor} />
+      {showHighLow && !hiLoSame && (() => {
+        const darkFill = adjustColor(strokeColor, -0.3);
+        const lightFill = adjustColor(strokeColor, 0.45);
+        return (
+        <g opacity={active ? 0.2 : 1} style={{ transition: 'opacity 0.15s ease' }}>
+          <circle cx={hi.x} cy={hi.y} r="3" fill={darkFill} stroke={strokeColor} strokeWidth="1.5" />
           <text
             x={hi.x} y={hi.y - 10}
             textAnchor={labelAnchor(hi.x)}
-            fontSize="10.5" fontWeight="600" fill={strokeColor}
+            fontSize="10.5" fontWeight="600" fill={darkFill}
             style={{ pointerEvents: 'none' }}
           >최고 {valueFormatter(hi.v)}</text>
-          <circle cx={lo.x} cy={lo.y} r="4" fill={strokeColor} opacity="0.7" />
+          <circle cx={lo.x} cy={lo.y} r="3" fill={lightFill} stroke={strokeColor} strokeWidth="1.5" />
           <text
             x={lo.x} y={lo.y + 18}
             textAnchor={labelAnchor(lo.x)}
-            fontSize="10.5" fontWeight="600" fill={strokeColor} opacity="0.75"
+            fontSize="10.5" fontWeight="600" fill={lightFill}
             style={{ pointerEvents: 'none' }}
           >최저 {valueFormatter(lo.v)}</text>
         </g>
-      )}
+        );
+      })()}
 
       {/* X축 날짜 라벨 — 첫/끝 + 중간점 */}
       {(() => {
