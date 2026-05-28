@@ -14,15 +14,17 @@ const glass = {
 
 const ALL_METRICS = [
   { key: 'moisture', label: '수분' },
+  { key: 'oilBalance', label: '유분' },
+  { key: 'oilMoistureBalance', label: '유수분' },
   { key: 'skinTone', label: '피부톤' },
-  { key: 'troubleCount', label: '트러블', inverse: true },
-  { key: 'oilBalance', label: '유수분' },
-  { key: 'wrinkleScore', label: '주름' },
+  { key: 'textureScore', label: '피부결' },
   { key: 'poreScore', label: '모공' },
   { key: 'elasticityScore', label: '탄력' },
   { key: 'pigmentationScore', label: '색소' },
-  { key: 'textureScore', label: '결' },
+  { key: 'rednessScore', label: '붉은기' },
+  { key: 'troubleCount', label: '트러블', inverse: true },
   { key: 'darkCircleScore', label: '다크서클' },
+  { key: 'wrinkleScore', label: '주름' },
 ];
 
 function getTopChangedMetrics(latest, prev, count = 4) {
