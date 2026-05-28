@@ -1702,7 +1702,9 @@ function RoutineChecklist() {
 
   const [tagDefs, setTagDefs] = useState(getTagDefs);
   const [newTagName, setNewTagName] = useState('');
+  const [showNewTagInput, setShowNewTagInput] = useState(false);
   const [newTagNameDetail, setNewTagNameDetail] = useState('');
+  const [showNewTagInputDetail, setShowNewTagInputDetail] = useState(false);
 
   const addNewTag = (label, setterFn) => {
     if (!label.trim()) return null;
@@ -2244,7 +2246,7 @@ function RoutineChecklist() {
       {/* Routine Detail Modal */}
       {detailItem && createPortal(
         <>
-          <div onClick={() => setDetailItem(null)} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,44,83,0.18)', backdropFilter: 'none', WebkitBackdropFilter: 'none' }} />
+          <div onClick={() => { setDetailItem(null); setShowNewTagInputDetail(false); setNewTagNameDetail(''); }} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,44,83,0.18)', backdropFilter: 'none', WebkitBackdropFilter: 'none' }} />
           <div style={{
             position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201,
             background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none',
@@ -2284,27 +2286,39 @@ function RoutineChecklist() {
                   );
                 })}
                 {/* 새 태그 추가 */}
-                {newTagNameDetail !== null && newTagNameDetail !== false ? (
-                  typeof newTagNameDetail === 'string' && newTagNameDetail !== '' ? (
-                    <div style={{ display: 'flex', gap: 4 }}>
-                      <input
-                        autoFocus
-                        value={newTagNameDetail}
-                        onChange={e => setNewTagNameDetail(e.target.value)}
-                        onKeyDown={e => { if (e.key === 'Enter' && newTagNameDetail.trim()) { const id = addNewTag(newTagNameDetail); if (id) { setTagOverride(detailItem.id, id); setDetailItem({ ...detailItem }); } setNewTagNameDetail(''); } if (e.key === 'Escape') setNewTagNameDetail(''); }}
-                        placeholder="태그 이름"
-                        style={{ width: 80, padding: '7px 10px', borderRadius: 20, border: '1px solid rgba(101,152,239,0.3)', background: '#fff', fontSize: 12, outline: 'none', fontFamily: 'inherit', color: 'var(--text-primary)' }}
-                      />
-                    </div>
-                  ) : (
-                    <button onClick={() => setNewTagNameDetail(' ')} style={{
-                      padding: '7px 12px', borderRadius: 20, cursor: 'pointer',
-                      fontSize: 12, fontWeight: 500, fontFamily: 'inherit',
-                      background: 'rgba(0,0,0,0.04)', color: 'var(--text-muted)',
-                      border: '1px dashed rgba(0,0,0,0.12)',
-                    }}>+</button>
-                  )
-                ) : null}
+                {showNewTagInputDetail ? (
+                  <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                    <input
+                      autoFocus
+                      value={newTagNameDetail}
+                      onChange={e => setNewTagNameDetail(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && newTagNameDetail.trim()) {
+                          const id = addNewTag(newTagNameDetail);
+                          if (id) { setTagOverride(detailItem.id, id); setDetailItem({ ...detailItem }); }
+                          setNewTagNameDetail(''); setShowNewTagInputDetail(false);
+                        }
+                        if (e.key === 'Escape') { setNewTagNameDetail(''); setShowNewTagInputDetail(false); }
+                      }}
+                      onBlur={() => {
+                        if (newTagNameDetail.trim()) {
+                          const id = addNewTag(newTagNameDetail);
+                          if (id) { setTagOverride(detailItem.id, id); setDetailItem({ ...detailItem }); }
+                        }
+                        setNewTagNameDetail(''); setShowNewTagInputDetail(false);
+                      }}
+                      placeholder="새 태그"
+                      style={{ width: 80, padding: '7px 10px', borderRadius: 20, border: '1px solid rgba(101,152,239,0.3)', background: '#fff', fontSize: 12, outline: 'none', fontFamily: 'inherit', color: 'var(--text-primary)' }}
+                    />
+                  </div>
+                ) : (
+                  <button onClick={() => { setNewTagNameDetail(''); setShowNewTagInputDetail(true); }} style={{
+                    padding: '7px 12px', borderRadius: 20, cursor: 'pointer',
+                    fontSize: 12, fontWeight: 500, fontFamily: 'inherit',
+                    background: 'rgba(0,0,0,0.04)', color: 'var(--text-muted)',
+                    border: '1px dashed rgba(0,0,0,0.12)',
+                  }}>+</button>
+                )}
               </div>
 
               <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500, marginBottom: 10 }}>반복 요일</div>
@@ -2379,7 +2393,7 @@ function RoutineChecklist() {
       {/* Add Routine Modal */}
       {addModal && createPortal(
         <>
-          <div onClick={() => setAddModal(false)} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,44,83,0.18)', backdropFilter: 'none', WebkitBackdropFilter: 'none' }} />
+          <div onClick={() => { setAddModal(false); setShowNewTagInput(false); setNewTagName(''); }} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,44,83,0.18)', backdropFilter: 'none', WebkitBackdropFilter: 'none' }} />
           <div style={{
             position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201,
             background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none',
@@ -2509,19 +2523,33 @@ function RoutineChecklist() {
                     border: customTag === t.id ? '1px solid rgba(101,152,239,0.35)' : '1px solid rgba(0,0,0,0.06)',
                   }}>{t.label}</button>
                 ))}
-                {newTagName ? (
-                  <div style={{ display: 'flex', gap: 4 }}>
+                {showNewTagInput ? (
+                  <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                     <input
                       autoFocus
                       value={newTagName}
                       onChange={e => setNewTagName(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter' && newTagName.trim()) { const id = addNewTag(newTagName); if (id) setCustomTag(id); setNewTagName(''); } if (e.key === 'Escape') setNewTagName(''); }}
-                      placeholder="태그 이름"
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && newTagName.trim()) {
+                          const id = addNewTag(newTagName);
+                          if (id) setCustomTag(id);
+                          setNewTagName(''); setShowNewTagInput(false);
+                        }
+                        if (e.key === 'Escape') { setNewTagName(''); setShowNewTagInput(false); }
+                      }}
+                      onBlur={() => {
+                        if (newTagName.trim()) {
+                          const id = addNewTag(newTagName);
+                          if (id) setCustomTag(id);
+                        }
+                        setNewTagName(''); setShowNewTagInput(false);
+                      }}
+                      placeholder="새 태그"
                       style={{ width: 80, padding: '5px 10px', borderRadius: 16, border: '1px solid rgba(101,152,239,0.3)', background: '#fff', fontSize: 11, outline: 'none', fontFamily: 'inherit', color: 'var(--text-primary)' }}
                     />
                   </div>
                 ) : (
-                  <button onClick={() => setNewTagName(' ')} style={{
+                  <button onClick={() => { setNewTagName(''); setShowNewTagInput(true); }} style={{
                     padding: '5px 10px', borderRadius: 16, cursor: 'pointer',
                     fontSize: 11, fontWeight: 500, fontFamily: 'inherit',
                     background: 'rgba(0,0,0,0.04)', color: 'var(--text-muted)',
