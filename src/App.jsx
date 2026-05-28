@@ -115,21 +115,26 @@ export default function App() {
     setHomeCardOrder(newOrder);
     localStorage.setItem('lua_home_order', JSON.stringify(newOrder));
   };
+  // localStorage 깨진 JSON 방어 — useState initializer에서 throw하면 컴포넌트가 마운트 실패함.
+  const _safeDaily = (key) => {
+    try { return JSON.parse(localStorage.getItem(key) || '{}') || {}; }
+    catch { return {}; }
+  };
   const [waterCups, setWaterCups] = useState(() => {
     const today = new Date().toISOString().slice(0, 10);
-    const saved = JSON.parse(localStorage.getItem('lua_water') || '{}');
+    const saved = _safeDaily('lua_water');
     return saved.date === today ? saved.cups : 0;
   });
   const [sleepHours, setSleepHours] = useState(() => {
     const today = new Date().toISOString().slice(0, 10);
-    const saved = JSON.parse(localStorage.getItem('lua_sleep') || '{}');
+    const saved = _safeDaily('lua_sleep');
     return saved.date === today ? saved.hours : null;
   });
   const refreshWaterSleep = () => {
     const today = new Date().toISOString().slice(0, 10);
-    const w = JSON.parse(localStorage.getItem('lua_water') || '{}');
+    const w = _safeDaily('lua_water');
     setWaterCups(w.date === today ? w.cups : 0);
-    const s = JSON.parse(localStorage.getItem('lua_sleep') || '{}');
+    const s = _safeDaily('lua_sleep');
     setSleepHours(s.date === today ? s.hours : null);
   };
 
