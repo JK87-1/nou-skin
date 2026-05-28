@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { getLatestRecord, getPreviousRecord, getRecordCount, getRecords, getTimeSeries, getAllThumbnailsAsync } from '../storage/SkinStorage';
 import TossLineChart from '../components/TossLineChart';
 import { AnimatedNumber } from '../components/UIComponents';
@@ -35,6 +35,7 @@ function getTopChangedMetrics(latest, prev, count = 4) {
 }
 
 const CHART_COLORS = ['#1E90E8', '#185FA5', '#7FB3E3', '#C5DEF5'];
+const DAY_LABELS = ['일','월','화','수','목','금','토'];
 
 // Mock impact factors (real implementation would compute from data)
 function getImpactFactors(metricKey, records) {
@@ -61,6 +62,7 @@ function getHeadline(latest, prev) {
 
 function formatDate(dateStr) {
   const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return '날짜 없음';
   return `${d.getMonth() + 1}월 ${d.getDate()}일`;
 }
 
@@ -68,6 +70,13 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
   const [period, setPeriod] = useState('4w');
   const [impactMetric, setImpactMetric] = useState(null);
   const [showMetricDropdown, setShowMetricDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+  useEffect(() => {
+    if (!showMetricDropdown) return;
+    const handleClick = (e) => { if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setShowMetricDropdown(false); };
+    document.addEventListener('pointerdown', handleClick);
+    return () => document.removeEventListener('pointerdown', handleClick);
+  }, [showMetricDropdown]);
   const latest = getLatestRecord();
   const prev = getPreviousRecord();
 
@@ -79,9 +88,9 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
   const records = getRecords();
   const recordCount = records.length;
   const [thumbs, setThumbs] = useState({});
-  useEffect(() => { getAllThumbnailsAsync().then(setThumbs); }, []);
+  useEffect(() => { let cancelled = false; getAllThumbnailsAsync().then(t => { if (!cancelled) setThumbs(t); }); return () => { cancelled = true; }; }, []);
 
-  const daysSince = latest ? Math.floor((Date.now() - new Date(latest.date).getTime()) / 86400000) : null;
+  const daysSince = (() => { if (!latest) return null; const t = new Date(latest.date).getTime(); return isNaN(t) ? null : Math.floor((Date.now() - t) / 86400000); })();
   const headline = getHeadline(latest, prev);
 
   // Determine default impact metric
@@ -95,6 +104,8 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
     return best;
   })();
 
+  const handleMeasure = useCallback(() => onMeasure?.(), [onMeasure]);
+  const handleConsult = useCallback(() => onOpenConsult?.(), [onOpenConsult]);
   const impacts = getImpactFactors(selectedMetric, records);
   const confidence = recordCount < 5 ? '낮음' : recordCount < 10 ? '보통' : '높음';
 
@@ -114,7 +125,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
       {/* ③ 히어로 요약 카드 */}
           <div style={{ margin: '0 12px 12px' }}>
             {recordCount === 0 ? (
-              <div onClick={() => onMeasure?.()} style={{
+              <div role="button" aria-label="첫 측정 시작" onClick={handleMeasure} style={{
                 background: 'rgba(255,255,255,0.2)',
                 borderRadius: 20,
                 padding: '32px 16px', textAlign: 'center', cursor: 'pointer',
@@ -140,7 +151,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                   {headline}
                 </div>
                 {/* 4분할 */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginTop: 14 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 8, marginTop: 14 }}>
                   {METRICS.map(m => {
                     const val = latest?.[m.key] ?? null;
                     const prevVal = prev?.[m.key] ?? null;
@@ -230,7 +241,6 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
               <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10 }}>측정 기록</div>
               {[...records].reverse().slice(0, 5).map((r, i) => {
                 const d = new Date(r.date);
-                const dayLabels = ['일','월','화','수','목','금','토'];
                 const thumb = thumbs[String(r.id)] || thumbs[r.date];
                 const prevR = [...records].reverse()[i + 1];
                 const diff = prevR ? r.overallScore - prevR.overallScore : 0;
@@ -246,7 +256,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                     </div>
                     <div style={{ width: 1, height: 32, background: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
                     <div style={{ width: 40, height: 40, borderRadius: 10, overflow: 'hidden', flexShrink: 0, background: 'rgba(255,255,255,0.2)' }}>
-                      {thumb ? <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}></div>}
+                      {thumb ? <img src={thumb} alt={`${d.getMonth()+1}월 ${d.getDate()}일 측정`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}></div>}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -258,7 +268,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                         )}
                       </div>
                       <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
-                        {dayLabels[d.getDay()]}요일 · 피부나이 {r.skinAge}세
+                        {DAY_LABELS[d.getDay()]}요일 · 피부나이 {r.skinAge}세
                       </div>
                     </div>
                   </div>
@@ -288,7 +298,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
             {/* 메트릭 chip — 한 번에 1개 메트릭만 단일 라인으로 (토스 스타일 가독성) */}
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
               {METRICS.map((m) => {
-                const activeTrend = trendMetric || METRICS[0]?.key;
+                const activeTrend = trendMetric || METRICS[0]?.key || 'moisture';
                 const active = activeTrend === m.key;
                 return (
                   <button key={m.key} onClick={() => setTrendMetric(m.key)} style={{
@@ -309,7 +319,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                 </div>
               </div>
             ) : (() => {
-              const activeTrendKey = trendMetric || METRICS[0]?.key;
+              const activeTrendKey = trendMetric || METRICS[0]?.key || 'moisture';
               const series = chartRecords.map(r => ({ date: r.date, value: r[activeTrendKey] ?? 50 }));
               const vals = series.map(s => s.value);
               const lastVal = vals[vals.length - 1];
@@ -347,8 +357,8 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
           <div style={{ margin: '0 12px 12px', background: 'rgba(255,255,255,0.2)', borderRadius: 18, padding: 14 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
               <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>영향 요인</span>
-              <div style={{ position: 'relative' }}>
-                <span onClick={() => setShowMetricDropdown(!showMetricDropdown)} style={{ fontSize: 10, color: 'var(--text-muted)', cursor: 'pointer' }}>
+              <div ref={dropdownRef} style={{ position: 'relative' }}>
+                <span role="button" aria-label="메트릭 선택" aria-expanded={showMetricDropdown} onClick={() => setShowMetricDropdown(!showMetricDropdown)} style={{ fontSize: 10, color: 'var(--text-muted)', cursor: 'pointer' }}>
                   {METRICS.find(m => m.key === selectedMetric)?.label || '모공'} 기준 ▾
                 </span>
                 {showMetricDropdown && (
@@ -420,7 +430,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                 { text: '수분이 충분한 주에는 유수분 점수가 평균 6점 더 좋았어요.', tag: '피부 발견' },
                 { text: '측정 시각이 일정할수록 점수가 안정적이에요. 주로 일요일 저녁에 재고 있어요.', tag: '패턴 발견' },
               ].map((d, i) => (
-                <div key={i} onClick={() => onOpenConsult?.()} style={{
+                <div key={i} onClick={handleConsult} style={{
                   padding: '12px 0', cursor: 'pointer',
                   borderTop: i > 0 ? '0.5px solid rgba(255,255,255,0.2)' : 'none',
                   display: 'flex', gap: 10, alignItems: 'flex-start',
