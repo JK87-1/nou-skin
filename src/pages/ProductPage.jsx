@@ -1191,7 +1191,7 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
                 onTouchMove={onRatingTouchMove}
                 onTouchEnd={onRatingTouchEnd}
                 style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 2,
+                  display: 'inline-flex', alignItems: 'center', gap: 2, marginLeft: 2,
                   cursor: 'pointer',
                   WebkitTapHighlightColor: 'transparent',
                   userSelect: 'none', WebkitUserSelect: 'none',
