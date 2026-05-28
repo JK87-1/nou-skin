@@ -1424,7 +1424,7 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
                     setFeeling(next);
                     onEdit({ id: product.id, feeling: next });
                   }} style={{
-                    flex: 1, padding: '10px 0', borderRadius: 12,
+                    flex: 1, padding: '6px 0', borderRadius: 12,
                     border: 'none',
                     background: 'transparent',
                     cursor: 'pointer', fontFamily: 'inherit',
