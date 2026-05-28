@@ -451,7 +451,7 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
                 {period > 0 && (
                   <span style={{
                     fontSize: 11, fontWeight: 600, color: '#fff',
-                    background: 'rgba(255,120,50,0.2)', border: '1px solid rgba(255,120,50,0.3)',
+                    background: 'rgba(255,120,50,0.2)', border: 'none',
                     borderRadius: 20, padding: '2px 10px',
                   }}><span style={{ color: '#FF6B35' }}>●</span> {period}일째</span>
                 )}
@@ -461,7 +461,7 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
                 <div style={{
                   display: 'flex', background: 'rgba(255,255,255,0.42)',
                   backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-                  border: '1px solid rgba(255,255,255,0.4)',
+                  border: 'none',
                   borderRadius: 18, padding: 3, gap: 2,
                 }}>
                   {['timeline', 'compare'].map(m => (
@@ -482,7 +482,7 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
                 <div style={{
                   flex: 1, background: 'rgba(255,255,255,0.42)',
                   backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-                  border: '1px solid rgba(255,255,255,0.4)', borderRadius: 18, padding: '14px 16px',
+                  border: 'none', borderRadius: 18, padding: '14px 16px',
                   boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
                   display: 'flex', alignItems: 'center', gap: 12,
                 }}>
@@ -502,7 +502,7 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
                 <div style={{
                   flex: 1, background: 'rgba(255,255,255,0.42)',
                   backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-                  border: '1px solid rgba(255,255,255,0.4)', borderRadius: 18, padding: '14px 16px',
+                  border: 'none', borderRadius: 18, padding: '14px 16px',
                   boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
                   display: 'flex', alignItems: 'center', gap: 12,
                 }}>
@@ -673,7 +673,7 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
                       <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>현재</div>
                       <div style={{
                         fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)',
-                        background: 'rgba(240,144,112,0.12)', border: '1px solid rgba(240,144,112,0.25)',
+                        background: 'rgba(240,144,112,0.12)', border: 'none',
                         borderRadius: 10, padding: '6px 14px',
                       }}>{formatShortDate(lastRecord.date)}</div>
                     </div>
@@ -920,7 +920,7 @@ function PhotoGallery({ records, thumbs, onMeasure, onSelectRecord, onThumbsChan
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div onClick={onMeasure} style={{
             width: 34, height: 34, borderRadius: '50%', cursor: 'pointer',
-            background: 'rgba(240,144,112,0.1)', border: '1.5px solid rgba(240,144,112,0.2)',
+            background: 'rgba(240,144,112,0.1)', border: 'none',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -1917,7 +1917,7 @@ function RoutineChecklist() {
   const totalItems = allItems.length;
   const pct = totalItems > 0 ? Math.round((totalDone / totalItems) * 100) : 0;
 
-  const glass = { background: 'rgba(255,255,255,0.42)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', borderRadius: 18 };
+  const glass = { background: 'rgba(255,255,255,0.42)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', border: 'none', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', borderRadius: 18 };
 
   // 주 단위 weekDays 빌더 — carousel용 3개 주(이전·현재·다음) 렌더에 재사용
   const buildWeek = (offset) => {
@@ -2081,7 +2081,7 @@ function RoutineChecklist() {
             background: mode === m.key ? 'rgba(255,255,255,0.42)' : 'transparent',
             color: mode === m.key ? 'var(--text-primary)' : 'var(--text-muted)',
             backdropFilter: mode === m.key ? 'blur(14px)' : 'none', WebkitBackdropFilter: mode === m.key ? 'blur(14px)' : 'none',
-            border: '1px solid rgba(255,255,255,0.4)',
+            border: 'none',
             boxShadow: mode === m.key ? '0 2px 12px rgba(0,0,0,0.05)' : 'none',
             transition: 'all 0.2s',
           }}>{m.label}</button>
@@ -2308,7 +2308,7 @@ function RoutineChecklist() {
                         setNewTagNameDetail(''); setShowNewTagInputDetail(false);
                       }}
                       placeholder="새 태그"
-                      style={{ width: 80, padding: '7px 10px', borderRadius: 20, border: '1px solid rgba(101,152,239,0.3)', background: '#fff', fontSize: 12, outline: 'none', fontFamily: 'inherit', color: 'var(--text-primary)' }}
+                      style={{ width: 80, padding: '7px 10px', borderRadius: 20, border: 'none', background: '#fff', fontSize: 12, outline: 'none', fontFamily: 'inherit', color: 'var(--text-primary)' }}
                     />
                   </div>
                 ) : (
@@ -2352,7 +2352,7 @@ function RoutineChecklist() {
                     localStorage.setItem('lua_routine_days', JSON.stringify(next));
                     setDaySettings(next);
                   }} style={{
-                    flex: 1, padding: '8px 0', borderRadius: 18, border: '1px solid rgba(255,255,255,0.4)', cursor: 'pointer',
+                    flex: 1, padding: '8px 0', borderRadius: 18, border: 'none', cursor: 'pointer',
                     background: 'rgba(255,255,255,0.42)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
                     boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
                     color: 'var(--text-primary)',
@@ -2380,7 +2380,7 @@ function RoutineChecklist() {
       <div onClick={() => { setAddMode(mode); setAddModal(true); }} style={{
         padding: '12px 24px', marginBottom: 16, cursor: 'pointer',
         background: 'rgba(255,255,255,0.42)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-        border: '1px solid rgba(255,255,255,0.4)', borderRadius: 18,
+        border: 'none', borderRadius: 18,
         boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
       }}>
@@ -2423,7 +2423,7 @@ function RoutineChecklist() {
                     background: addMode === m.key ? 'rgba(255,255,255,0.42)' : 'transparent',
                     color: addMode === m.key ? 'var(--text-primary)' : 'var(--text-muted)',
                     backdropFilter: addMode === m.key ? 'blur(14px)' : 'none', WebkitBackdropFilter: addMode === m.key ? 'blur(14px)' : 'none',
-                    border: '1px solid rgba(255,255,255,0.4)',
+                    border: 'none',
                     boxShadow: addMode === m.key ? '0 2px 12px rgba(0,0,0,0.05)' : 'none',
                   }}>{m.label}</button>
                 ))}
@@ -2545,7 +2545,7 @@ function RoutineChecklist() {
                         setNewTagName(''); setShowNewTagInput(false);
                       }}
                       placeholder="새 태그"
-                      style={{ width: 80, padding: '5px 10px', borderRadius: 16, border: '1px solid rgba(101,152,239,0.3)', background: '#fff', fontSize: 11, outline: 'none', fontFamily: 'inherit', color: 'var(--text-primary)' }}
+                      style={{ width: 80, padding: '5px 10px', borderRadius: 16, border: 'none', background: '#fff', fontSize: 11, outline: 'none', fontFamily: 'inherit', color: 'var(--text-primary)' }}
                     />
                   </div>
                 ) : (
@@ -2585,7 +2585,7 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
   const sleepH = habit.sleep_hours;
   const sunscreen = habit.sunscreen_applied;
 
-  const glass = { background: 'rgba(255,255,255,0.42)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', borderRadius: 18 };
+  const glass = { background: 'rgba(255,255,255,0.42)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', border: 'none', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', borderRadius: 18 };
 
   const summaryParts = [];
   if (habit.water_amount) summaryParts.push(`수분 ${waterL}L`);

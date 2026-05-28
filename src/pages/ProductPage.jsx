@@ -978,7 +978,7 @@ function ProductBrandNameInputs({
                 <div style={{
                   width: 52, height: 52, borderRadius: 10, flexShrink: 0,
                   background: '#FFFFFF',
-                  border: '1px solid rgba(255,255,255,0.12)',
+                  border: 'none',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   overflow: 'hidden',
                   position: 'relative',
@@ -1462,7 +1462,7 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button onClick={() => setConfirmDelete(false)} style={{
                       flex: 1, padding: '12px 0', borderRadius: 12,
-                      border: '1px solid rgba(0,0,0,0.08)', background: '#fff',
+                      border: 'none', background: '#fff',
                       fontSize: 14, fontWeight: 600, color: 'var(--text-muted)',
                       cursor: 'pointer', fontFamily: 'inherit',
                     }}>취소</button>
@@ -1879,7 +1879,7 @@ export default function ProductPage({ themeColors, onBack }) {
         }}>
           <span style={{
             display: 'inline-block', width: 12, height: 12, borderRadius: '50%',
-            border: '2px solid rgba(255,255,255,0.3)',
+            border: 'none',
             borderTopColor: '#6598ef',
             animation: 'ingredientSpin 0.9s linear infinite',
           }} />
@@ -1896,7 +1896,7 @@ export default function ProductPage({ themeColors, onBack }) {
       <div style={{
         display: 'flex', gap: 4, padding: 4, margin: '20px 20px 16px',
         background: 'rgba(255,255,255,0.35)',
-        border: '1px solid rgba(255,255,255,0.4)',
+        border: 'none',
         borderRadius: 14,
       }}>
         {sections.map(s => {
@@ -1957,7 +1957,7 @@ export default function ProductPage({ themeColors, onBack }) {
                   <div onClick={() => setSelectedProduct(p)} style={{
                     background: 'rgba(255,255,255,0.42)', borderRadius: 18,
                     backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-                    border: '1px solid rgba(255,255,255,0.4)',
+                    border: 'none',
                     boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
                     padding: 14, cursor: 'pointer',
                     display: 'flex', flexDirection: 'column',

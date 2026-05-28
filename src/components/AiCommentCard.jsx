@@ -46,7 +46,7 @@ export default function AiCommentCard({
       marginTop: 14, padding: 18, borderRadius: 18,
       background: 'rgba(255,255,255,0.42)',
       backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-      border: '1px solid rgba(255,255,255,0.4)',
+      border: 'none',
       boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
       animation: `fadeUp 0.5s ease-out ${animationDelay} both`,
     }}>

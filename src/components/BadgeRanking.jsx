@@ -267,7 +267,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
               background: 'linear-gradient(135deg, #81E4BD, #FFA500)',
               color: '#fff', fontSize: 10, fontWeight: 700,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              border: '2px solid #fff',
+              border: 'none',
             }}>{earnedCount}</div>
           </div>
 
@@ -283,7 +283,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
                 maxLength={12}
                 style={{
                   fontSize: 22, fontWeight: 700, color: 'var(--text-primary)',
-                  background: 'var(--item-bg)', border: '1.5px solid rgba(124,92,252,0.3)',
+                  background: 'var(--item-bg)', border: 'none',
                   borderRadius: 10, padding: '2px 10px', width: 180,
                   outline: 'none', fontFamily: 'inherit', textAlign: 'center',
                 }}
@@ -561,7 +561,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
                       <div key={i} style={{
                         width: 12, height: 12, borderRadius: '50%',
                         background: c,
-                        border: '1px solid rgba(0,0,0,0.06)',
+                        border: 'none',
                       }} />
                     ))}
                   </div>
@@ -684,7 +684,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
           {myRank && (
             <div style={{
               background: 'linear-gradient(135deg, rgba(240,144,112,0.08), rgba(240,144,112,0.04))',
-              borderRadius: 20, border: '1px solid rgba(240,144,112,0.15)',
+              borderRadius: 20, border: 'none',
               padding: 18, marginTop: 16,
               animation: 'brFadeInUp 0.5s ease 0.4s both',
             }}>
@@ -847,7 +847,7 @@ function TitleSelectionSheet({ currentLevel, totalXP, activeTheme, selectedTitle
           position: 'relative', maxHeight: '75vh',
           borderRadius: '28px 28px 0 0',
           background: 'var(--modal-bg)', backdropFilter: 'var(--card-backdrop)', WebkitBackdropFilter: 'var(--card-backdrop)',
-          border: '1px solid var(--border-light)', borderBottom: 'none',
+          border: 'none', borderBottom: 'none',
           display: 'flex', flexDirection: 'column',
           animation: 'brFadeInUp 0.3s cubic-bezier(0.22,1,0.36,1)',
         }}
@@ -961,7 +961,7 @@ function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#81E4BD' 
         onClick={(e) => e.stopPropagation()}
         style={{
           background: 'var(--bg-modal)', borderRadius: '24px 24px 0 0',
-          border: '1px solid rgba(240,144,112,0.15)', borderBottom: 'none',
+          border: 'none', borderBottom: 'none',
           maxHeight: '85vh', display: 'flex', flexDirection: 'column',
           animation: 'brFadeInUp 0.35s ease both',
         }}
@@ -978,7 +978,7 @@ function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#81E4BD' 
             </div>
           </div>
           <button onClick={onClose} style={{
-            width: 32, height: 32, borderRadius: 10, border: '1px solid var(--border-subtle)',
+            width: 32, height: 32, borderRadius: 10, border: 'none',
             background: 'var(--bg-card)', color: 'var(--text-muted)', fontSize: 16,
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}></button>
@@ -1075,7 +1075,7 @@ function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#81E4BD' 
                             width: 14, height: 14, borderRadius: 5,
                             background: 'linear-gradient(135deg, #34d399, #22c55e)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            border: '1.5px solid var(--bg-modal)',
+                            border: 'none',
                           }}>
                             <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
                               <polyline points="20 6 9 17 4 12" />
@@ -1125,7 +1125,7 @@ function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#81E4BD' 
               <div style={{
                 marginTop: 16, padding: 16, borderRadius: 18,
                 background: 'linear-gradient(135deg, rgba(240,144,112,0.06), rgba(240,144,112,0.03))',
-                border: '1px solid rgba(240,144,112,0.12)',
+                border: 'none',
                 animation: 'brFadeInUp 0.3s ease both',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>

@@ -120,7 +120,7 @@ export default function PullToRefresh({ onRefresh, children, color = '#6598ef' }
               top: '50%', left: '44%',
               width: 60, height: 60,
               borderRadius: '50%',
-              border: '1.5px solid rgba(255,255,255,0.3)',
+              border: 'none',
               transform: 'translate(-50%, -50%)',
               animation: 'luaPtrGlow 1.5s ease-in-out infinite',
               pointerEvents: 'none',

@@ -16,7 +16,7 @@ import { hapticSelection, hapticSuccess } from '../utils/haptics';
 const NOSE_TIP = 1;
 const LEFT_EAR = 234;
 const RIGHT_EAR = 454;
-const FOREHEAD = 10;
+const FOREHEAD = 10; // 이마 상단 (+ 오프셋으로 헤어라인 추정)
 const CHIN = 152;
 
 // Key landmark indices to render as dots (~50 points, matching facedot.png)
@@ -41,13 +41,14 @@ const KEY_LANDMARKS = [
 
 // Layer 1: Beauty Lines — ~27 dots on facial beauty lines
 // grade 1 = bright (40%), grade 2 = normal (50%), grade 3 = dim (10%)
+const FOREHEAD_DOTS = [10, 67, 297, 109, 338];
 const BEAUTY_LINES = [
-  // 이마 — 5 dots (v1에서 선별)
-  { lm: 10, grade: 3 },
-  { lm: 67, grade: 2 },
-  { lm: 297, grade: 2 },
-  { lm: 109, grade: 2 },
-  { lm: 338, grade: 3 },
+  // 이마 — 5 dots (헤어라인 위치로 오프셋, 중앙 3개 더 올려서 타원형)
+  { lm: 10, grade: 3, hairline: 1.4 },
+  { lm: 67, grade: 2, hairline: 1.0 },
+  { lm: 297, grade: 2, hairline: 1.0 },
+  { lm: 109, grade: 2, hairline: 1.35 },
+  { lm: 338, grade: 3, hairline: 1.35 },
   // 눈썹 아치 좌 (camera-left) — 3 dots
   { lm: 300, grade: 2 },
   { lm: 293, grade: 1 },
@@ -108,12 +109,12 @@ const BEAUTY_DOT_PARAMS = BEAUTY_LINES.map(dot => ({
 
 // Layer 2: Active Measurement — 7 zones with highlight dots
 const ANALYSIS_ZONES = [
-  { id: 'forehead', label: '이마', anchor: 10, offsetY: -0.02, dots: [10, 67, 297, 109, 338] },
-  { id: 'under_eye_left', label: '왼눈가', anchor: 33, offsetX: -0.07, dots: [111, 117, 118] },
-  { id: 'under_eye_right', label: '오른눈가', anchor: 263, offsetX: 0.07, dots: [340, 346, 347] },
-  { id: 't_zone', label: 'T존', anchor: 4, offsetY: 0.0, dots: [6, 4, 197] },
-  { id: 'cheek_left', label: '왼볼', anchor: 132, offsetX: -0.025, dots: [116, 93, 132, 123] },
-  { id: 'cheek_right', label: '오른볼', anchor: 361, offsetX: 0.025, dots: [345, 323, 361, 352] },
+  { id: 'forehead', label: '이마', anchor: 10, offsetY: -0.03, dots: [10, 67, 297, 109, 338] },
+  { id: 'under_eye_right', label: '오른눈가', anchor: 33, offsetX: -0.07, dots: [111, 117, 118] },
+  { id: 'under_eye_left', label: '왼눈가', anchor: 263, offsetX: 0.07, dots: [340, 346, 347] },
+  { id: 't_zone', label: 'T존', anchor: 4, offsetY: -0.03, dots: [6, 4, 197] },
+  { id: 'cheek_right', label: '오른볼', anchor: 132, offsetX: -0.025, dots: [116, 93, 132, 123] },
+  { id: 'cheek_left', label: '왼볼', anchor: 361, offsetX: 0.025, dots: [345, 323, 361, 352] },
   { id: 'chin', label: '턱선', anchor: 152, offsetY: 0.022, dots: [152, 175, 396] },
 ];
 
@@ -291,7 +292,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
     const baseSize = Math.min(W, H);
     const rx = baseSize * 0.34;
     const ry = Math.min(rx * 1.35, H * 0.40);
-    ellipseRef.current = { cx, cy, rx, ry };
+    ellipseRef.current = { cx, cy, rx, ry, mapScale, mapOffX, mapOffY, videoW, videoH };
     if (Math.abs(ellipse.rx - rx) > 1 || Math.abs(ellipse.ry - ry) > 1) {
       setEllipse({ cx, cy, rx, ry });
     }
@@ -318,11 +319,16 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
     if (!scanComplete && scanStopped) setScanStopped(false);
     ctx.save();
     ctx.strokeStyle = scanComplete ? 'rgba(255, 255, 255, 0.6)' : 'rgba(30, 144, 232, 0.55)';
-    ctx.lineWidth = scanComplete ? 1.6 : 1.2;
+    ctx.lineWidth = 2.5;
     ctx.setLineDash(scanComplete ? [3, 4] : [2, 5]);
-    ctx.beginPath();
-    ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
-    ctx.stroke();
+    // faceline.svg path (viewBox 302x437) — 얼굴 윤곽선
+    const faceW = 302, faceH = 437;
+    const scaleX = (rx * 2) / faceW;
+    const scaleY = (ry * 2) / faceH;
+    ctx.translate(cx - rx, cy - ry);
+    ctx.scale(scaleX, scaleY);
+    const facePath = new Path2D('M154.02,436c2.94-.52,5.92-.61,8.88-1.03,8.22-1.18,16.03-3.6,23.58-6.98,13.86-6.2,25.91-15,36.82-25.51,11.09-10.69,20.58-22.67,28.94-35.54,10.75-16.56,19.47-34.17,26.69-52.55,5.08-12.95,9.29-26.16,12.72-39.62,2.08-8.13,3.58-16.39,5.03-24.66,1-5.68,1.85-11.39,2.48-17.11.63-5.74,1.21-11.52,1.37-17.3.15-5.48.6-10.96.45-16.45-.29-10.7-.75-21.37-1.89-32.04-2.22-20.82-7.01-41-14.35-60.59-4.02-10.73-9.04-21-14.71-30.95-5.51-9.66-11.93-18.72-19.3-27.02-13.37-15.06-28.89-27.3-47.31-35.83-9.3-4.3-18.89-7.5-28.84-9.57-5.02-1.05-10.17-1.61-15.34-1.92-3.83-.23-7.66-.4-11.48-.29-7.42.21-14.81,1.02-22.07,2.59-11.81,2.54-23.06,6.67-33.78,12.29-10.04,5.27-19.26,11.75-27.66,19.31-10.84,9.76-20.23,20.82-28.16,33.08-10.46,16.15-18.23,33.55-23.8,51.94-2.82,9.31-5.04,18.75-6.8,28.33-1.15,6.26-2.11,12.55-2.86,18.85-.47,3.93-.74,7.92-1.01,11.89-.62,9.16-.66,18.32-.58,27.49.07,7.09.69,14.15,1.23,21.21,1.22,15.9,4.13,31.51,7.92,46.94,4.49,18.31,10.79,36.04,18.51,53.27,7.05,15.75,15.35,30.79,25.15,44.99,8.41,12.19,17.97,23.43,29.01,33.31,12.18,10.89,25.72,19.62,41.31,24.93,7.1,2.42,14.39,3.79,21.86,4.34,2.6.19,5.19.18,7.79.2');
+    ctx.stroke(facePath);
     ctx.setLineDash([]);
     ctx.restore();
 
@@ -367,10 +373,15 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
     };
 
     // --- Layer 1: Beauty Lines (always visible, breathing) ---
+    // 이마 점 헤어라인 오프셋 계산
+    const _chin = landmarks[CHIN], _fhd = landmarks[FOREHEAD];
+    const _faceH = _chin && _fhd ? Math.abs(_chin.y - _fhd.y) : 0;
+    const _hairlineOff = _faceH * 0.09; // 얼굴 높이의 9% 위로
     for (const dot of BEAUTY_DOT_PARAMS) {
       if (dot.lm >= landmarks.length) continue;
       const lm = landmarks[dot.lm];
-      const x = mapX(lm.x), y = mapY(lm.y);
+      const yOffset = dot.hairline ? -_hairlineOff * dot.hairline : 0;
+      const x = mapX(lm.x), y = mapY(lm.y + yOffset);
       // Breathing: sin wave with per-dot random period/phase
       const t = ((now + dot.phase) % dot.period) / dot.period;
       const opacity = 0.3 + 0.55 * (0.5 + 0.5 * Math.sin(t * Math.PI * 2));
@@ -418,12 +429,44 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
 
     const cond = { face: true, position: false, distance: false, light: false };
 
-    const nose = landmarks[NOSE_TIP];
-    cond.position = Math.abs(nose.x - 0.5) < 0.08 && Math.abs(nose.y - 0.44) < 0.08;
+    // 가이드 타원 안에 이마 5점 + 턱선 2점이 모두 들어오면 위치+거리 OK
+    const el = ellipseRef.current;
+    const { mapScale: ms, mapOffX: moX, mapOffY: moY, videoW: vW, videoH: vH } = el;
+    if (!ms || !vW || !vH) { cond.position = false; cond.distance = false; }
+    else {
+      // 정규화 좌표 → 디스플레이 좌표 변환
+      const toDispX = (nx) => nx * vW * ms + moX;
+      const toDispY = (ny) => ny * vH * ms + moY;
 
-    const earW = Math.abs(landmarks[RIGHT_EAR].x - landmarks[LEFT_EAR].x);
-    const faceH = Math.abs(landmarks[CHIN].y - landmarks[FOREHEAD].y);
-    cond.distance = earW > 0.25 && earW < 0.60 && faceH > 0.25 && faceH < 0.65;
+      // 이마 5점 (헤어라인 오프셋 적용)
+      const _fhd = landmarks[FOREHEAD], _chn = landmarks[CHIN];
+      const _fH = Math.abs(_chn.y - _fhd.y);
+      const _baseOff = _fH * 0.09;
+      const foreheadMults = { 10: 1.4, 67: 1.0, 297: 1.0, 109: 1.35, 338: 1.35 };
+      const checkPoints = [];
+      for (const lmIdx of FOREHEAD_DOTS) {
+        const lm = landmarks[lmIdx];
+        const off = _baseOff * (foreheadMults[lmIdx] || 1);
+        checkPoints.push({ x: toDispX(lm.x), y: toDispY(lm.y - off) });
+      }
+      // 턱선 2점 (176, 400)
+      for (const lmIdx of [176, 400]) {
+        const lm = landmarks[lmIdx];
+        checkPoints.push({ x: toDispX(lm.x), y: toDispY(lm.y) });
+      }
+
+      // 타원 내부 판정: ((x-cx)/rx)^2 + ((y-cy)/ry)^2 <= 1
+      const ratios = checkPoints.map(p => {
+        const dx = (p.x - el.cx) / el.rx;
+        const dy = (p.y - el.cy) / el.ry;
+        return dx * dx + dy * dy;
+      });
+      const allInside = ratios.every(r => r <= 1.05); // 5% 마진
+      const minRatio = Math.max(...ratios); // 가장 바깥 점의 비율
+
+      cond.position = allInside;
+      cond.distance = allInside && minRatio >= 0.90; // 타원의 90% 이상 채워야 거리 OK
+    }
 
     const bCanvas = brightnessCanvasRef.current;
     const video = videoRef.current;

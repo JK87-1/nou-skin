@@ -99,7 +99,7 @@ function ProductItem({ product, matchScore, delay = 0 }) {
         display: 'flex', alignItems: 'center', gap: 10,
         padding: '10px 12px', borderRadius: 14,
         background: 'var(--bg-card)',
-        border: '1px solid var(--border-light)',
+        border: 'none',
         textDecoration: 'none', color: 'inherit',
         animation: `slideInRight 0.4s ease-out ${delay}s both`,
         cursor: 'pointer',
@@ -160,7 +160,7 @@ function ProductRecommendSection({ category, result, delay = 0 }) {
         display: 'flex', alignItems: 'center', gap: 8,
         padding: '10px 14px', borderRadius: 20,
         background: 'var(--bg-card)',
-        border: '1px solid var(--border-subtle)',
+        border: 'none',
         marginBottom: 8,
       }}>
         <span style={{ fontSize: 18 }}>{meta.icon}</span>

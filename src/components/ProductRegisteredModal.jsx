@@ -79,7 +79,7 @@ export default function ProductRegisteredModal({ product, totalCount, onClose })
           display: 'flex', alignItems: 'center', gap: 12,
           padding: '14px 16px',
           background: 'rgba(255,255,255,0.7)',
-          border: '1px solid rgba(101,152,239,0.18)',
+          border: 'none',
           borderRadius: 14,
           marginBottom: 22,
           textAlign: 'left',

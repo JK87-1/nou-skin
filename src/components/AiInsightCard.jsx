@@ -86,7 +86,7 @@ export default function AiInsightCard({ onOpenChat, greeting, dateInfo }) {
       padding: '16px 18px', cursor: 'pointer',
       background: 'rgba(255,255,255,0.42)',
       backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-      border: '1px solid rgba(255,255,255,0.4)',
+      border: 'none',
       boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
       borderRadius: '36px 36px 7px 36px',
     }}>

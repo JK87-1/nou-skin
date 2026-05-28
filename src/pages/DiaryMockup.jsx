@@ -270,7 +270,7 @@ export default function DiaryMockup() {
                 <div style={{
                   width: 66, height: 72, borderRadius: 14,
                   background: 'var(--bg-card)', backdropFilter: 'var(--card-backdrop)',
-                  border: '1px solid var(--border-subtle)',
+                  border: 'none',
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                   boxShadow: 'none',
                 }}>
@@ -282,7 +282,7 @@ export default function DiaryMockup() {
                 <div style={{
                   width: 66, height: 72, borderRadius: 14,
                   background: 'var(--bg-card)', backdropFilter: 'var(--card-backdrop)',
-                  border: '1px solid var(--border-subtle)',
+                  border: 'none',
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                   boxShadow: 'none',
                   position: 'relative',
@@ -315,7 +315,7 @@ export default function DiaryMockup() {
               }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><CheckIcon size={14} /></span> 저장 완료</button>
               <button style={{
                 padding: '12px 20px', borderRadius: 'var(--btn-radius)', fontFamily: 'inherit',
-                background: 'var(--bg-card)', border: '1px solid var(--border-subtle)',
+                background: 'var(--bg-card)', border: 'none',
                 backdropFilter: 'var(--card-backdrop)',
                 color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
               }}> 공유</button>
@@ -395,7 +395,7 @@ export default function DiaryMockup() {
                     ].map((tag, i) => (
                       <div key={i} style={{
                         padding: '4px 10px', borderRadius: 8,
-                        background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.12)',
+                        background: 'rgba(52,211,153,0.08)', border: 'none',
                         fontSize: 11, color: '#34d399', display: 'flex', alignItems: 'center', gap: 4,
                       }}>
                         {tag.icon} {tag.label}
@@ -461,7 +461,7 @@ export default function DiaryMockup() {
                     <span key={i} style={{
                       fontSize: 11, padding: '4px 10px', borderRadius: 20,
                       background: 'var(--bg-input)', color: 'var(--text-secondary)',
-                      border: '1px solid var(--border-light)',
+                      border: 'none',
                     }}>{t}</span>
                   ))}
                   <span style={{
@@ -486,7 +486,7 @@ export default function DiaryMockup() {
               </p>
               <div style={{
                 marginTop: 14, padding: '12px 14px', borderRadius: 12,
-                background: 'var(--bg-card)', border: '1px solid var(--border-light)',
+                background: 'var(--bg-card)', border: 'none',
               }}>
                 <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>지난 측정 대비 변화</div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 10 }}>수분·피부톤 개선, 모공은 조금만 신경 쓰면 돼요</div>
@@ -549,7 +549,7 @@ export default function DiaryMockup() {
 
             <button style={{
               width: '100%', padding: 14, borderRadius: 'var(--btn-radius)', fontFamily: 'inherit',
-              background: 'var(--bg-card)', border: '1px solid var(--border-subtle)',
+              background: 'var(--bg-card)', border: 'none',
               backdropFilter: 'var(--card-backdrop)',
               color: 'var(--text-secondary)', fontSize: 15, fontWeight: 600, cursor: 'pointer',
               animation: 'fadeUp 0.5s ease-out 1.4s both',
@@ -678,7 +678,7 @@ export default function DiaryMockup() {
                     <div key={idx} style={{
                       padding: '12px 14px', marginBottom: 6, borderRadius: 16,
                       background: 'var(--bg-card)',
-                      border: '1px solid var(--border-light)',
+                      border: 'none',
                       opacity: hasEnoughData ? 1 : 0.5,
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
@@ -719,7 +719,7 @@ export default function DiaryMockup() {
               {/* AI 종합 분석 */}
               <div className="glass-card" style={{
                 background: 'linear-gradient(135deg, rgba(240,144,112,0.08), rgba(240,144,112,0.03))',
-                border: '1px solid rgba(240,144,112,0.15)',
+                border: 'none',
                 animation: 'breatheIn 0.6s ease 0.3s both',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
@@ -735,7 +735,7 @@ export default function DiaryMockup() {
                 </div>
                 <div style={{
                   marginTop: 14, padding: '12px 14px', borderRadius: 12,
-                  background: 'var(--bg-card)', border: '1px solid var(--border-light)',
+                  background: 'var(--bg-card)', border: 'none',
                 }}>
                   <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent-primary)', marginBottom: 4 }}> 이번 주 추천</div>
                   <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>

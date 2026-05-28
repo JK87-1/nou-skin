@@ -35,7 +35,7 @@ export default function TrendCard({ accent = '#FF8C42', changes = null, animatio
       style={{
         background: 'rgba(255,255,255,0.42)',
         backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-        border: '1px solid rgba(255,255,255,0.4)',
+        border: 'none',
         borderRadius: 18,
         padding: 20,
         boxShadow: '0 2px 12px rgba(0,0,0,0.05)',

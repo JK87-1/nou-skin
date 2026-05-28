@@ -114,7 +114,7 @@ export default function BeforeAfterSlider() {
           userSelect: 'none',
           WebkitUserSelect: 'none',
           background: 'var(--bg-modal)',
-          border: '1px solid var(--border-subtle)',
+          border: 'none',
         }}
       >
         {/* After image (full background) */}

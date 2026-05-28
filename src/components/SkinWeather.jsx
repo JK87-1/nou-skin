@@ -563,7 +563,7 @@ export default function SkinWeather({ skinResult }) {
             )}
           </div>
           {!weatherEnabled && (
-            <div style={{ padding: '10px 14px', borderRadius: 12, marginBottom: 10, background: 'rgba(101,152,239,0.08)', border: '1px solid rgba(101,152,239,0.12)', fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+            <div style={{ padding: '10px 14px', borderRadius: 12, marginBottom: 10, background: 'rgba(101,152,239,0.08)', border: 'none', fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
               마이 &gt; 알림 설정에서 피부 날씨 알림을 켜면 시간대별로 알림을 받을 수 있어요
             </div>
           )}

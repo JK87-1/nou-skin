@@ -79,7 +79,7 @@ export default function BaselineCompleteModal({ avgScore, onClose }) {
             display: 'inline-flex', alignItems: 'baseline', gap: 6,
             padding: '10px 20px', borderRadius: 20,
             background: 'rgba(101,152,239,0.12)',
-            border: '1px solid rgba(101,152,239,0.32)',
+            border: 'none',
             marginBottom: 22,
           }}>
             <span style={{ fontSize: 11, fontWeight: 600, color: '#6598ef', letterSpacing: 0.3 }}>평균 종합 점수</span>
@@ -92,7 +92,7 @@ export default function BaselineCompleteModal({ avgScore, onClose }) {
         <div style={{
           textAlign: 'left',
           background: 'rgba(255,255,255,0.7)',
-          border: '1px solid rgba(101,152,239,0.18)',
+          border: 'none',
           borderRadius: 14, padding: '14px 16px',
           marginBottom: 22,
         }}>

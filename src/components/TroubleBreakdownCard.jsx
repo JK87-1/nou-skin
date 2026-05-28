@@ -43,7 +43,7 @@ export default function TroubleBreakdownCard({ breakdown }) {
     <div style={{
       background: 'rgba(255,255,255,0.35)',
       backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-      border: '1px solid rgba(255,255,255,0.4)',
+      border: 'none',
       borderRadius: 16,
       padding: '14px 16px',
       marginTop: 8, marginBottom: 8,

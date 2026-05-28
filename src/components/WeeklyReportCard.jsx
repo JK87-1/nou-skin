@@ -44,7 +44,7 @@ export default function WeeklyReportCard({ report, onOpenBeforeAfter, onDismiss 
         background: 'rgba(255,255,255,0.6)',
         backdropFilter: 'blur(18px)',
         WebkitBackdropFilter: 'blur(18px)',
-        border: '1px solid rgba(255,255,255,0.6)',
+        border: 'none',
         borderRadius: 22,
         boxShadow: '0 4px 16px rgba(101,152,239,0.10)',
         cursor: 'pointer',

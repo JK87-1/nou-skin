@@ -139,7 +139,7 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
             onClick={() => profilePhotoRef.current?.click()}
             style={{
               width: 88, height: 88, borderRadius: '50%', flexShrink: 0,
-              background: '#ffffff', border: '2px solid rgba(255,255,255,0.1)',
+              background: '#ffffff', border: 'none',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               cursor: 'pointer', position: 'relative', WebkitTapHighlightColor: 'transparent',
             }}
@@ -159,7 +159,7 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
               width: 26, height: 26, borderRadius: '50%',
               background: 'var(--accent-primary, #6598ef)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              border: '2px solid #fff',
+              border: 'none',
               boxShadow: '0 1px 3px rgba(0,0,0,0.18)',
             }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.8" strokeLinecap="round">
@@ -246,13 +246,9 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
                   const shortDate = mm && dd ? `${mm}월${dd}일` : '';
                   return (
                     <div key={p.record.id || p.date} role="button" aria-label={`${shortDate} 측정 결과 ${p.record.overallScore ?? ''}점`} className="photo-cell" onClick={() => onViewRecord?.(p.record, p.thumb)}>
-                      <div className="photo-cell-img">
-                        <img src={p.thumb} alt={`${shortDate} 측정`} />
-                      </div>
-                      <div className="photo-cell-info">
-                        <span className="photo-cell-date">{shortDate}</span>
-                        <span className="photo-cell-score">{p.record.overallScore ?? '--'}점</span>
-                      </div>
+                      <img src={p.thumb} alt={`${shortDate} 측정`} />
+                      <span className="photo-cell-date">{shortDate}</span>
+                      <span className="photo-cell-score">{p.record.overallScore ?? '--'}</span>
                     </div>
                   );
                 })}
@@ -274,28 +270,25 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
                     ? p.record.overallScore - prev.record.overallScore : null;
                   return (
                     <div key={p.record.id || p.date} role="button" aria-label={`${shortDate} 측정 결과 ${p.record.overallScore ?? ''}점`} onClick={() => onViewRecord?.(p.record, p.thumb)} style={{
-                      display: 'flex', alignItems: 'center', gap: 12,
-                      background: '#fff', borderRadius: 12, padding: 10,
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      background: 'rgba(255,255,255,0.2)', borderRadius: 10, padding: '6px 8px',
                       cursor: 'pointer',
                     }}>
-                      <div style={{ width: 52, height: 52, borderRadius: 8, overflow: 'hidden', flexShrink: 0 }}>
+                      <div style={{ width: 56, height: 56, borderRadius: 10, overflow: 'hidden', flexShrink: 0 }}>
                         <img src={p.thumb} alt={`${shortDate} 측정`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                          <span style={{ fontSize: 20, fontWeight: 700, color: 'rgba(0,0,0,0.8)', letterSpacing: -0.5 }}>{p.record.overallScore ?? '--'}</span>
-                          <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(0,0,0,0.3)' }}>점</span>
-                          {diff != null && diff !== 0 && (
-                            <span style={{ fontSize: 10, fontWeight: 600, marginLeft: 2, color: diff > 0 ? '#6598ef' : '#e05545' }}>
-                              {diff > 0 ? `+${diff}` : diff}
-                            </span>
-                          )}
-                        </div>
-                        <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.35)', marginTop: 1 }}>
+                        <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.35)' }}>
                           {shortDate}{p.record.skinAge != null ? ` · 피부나이 ${p.record.skinAge}세` : ''}
                         </div>
                       </div>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.15)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 2, flexShrink: 0 }}>
+                        <span style={{ fontSize: 20, fontWeight: 700, color: 'rgba(0,0,0,0.8)', letterSpacing: -0.5 }}>{p.record.overallScore ?? '--'}</span>
+                        <span style={{ fontSize: 10, fontWeight: 500, color: 'rgba(0,0,0,0.25)' }}>점</span>
+                        <span style={{ fontSize: 10, fontWeight: 600, minWidth: 20, marginLeft: 2, color: diff != null && diff !== 0 ? (diff > 0 ? '#6598ef' : '#e05545') : 'transparent' }}>
+                          {diff != null && diff !== 0 ? (diff > 0 ? `+${diff}` : diff) : '\u00A0'}
+                        </span>
+                      </div>
                     </div>
                   );
                 })}
@@ -1017,7 +1010,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                     return trimmed;
                   }).filter(row => !row.every(c => /^-+$/.test(c) || c === ''));
                   elements.push(
-                    <div key={key} style={{ overflowX: 'auto', margin: '10px 0', borderRadius: 5, border: '1px solid rgba(0,0,0,0.08)', WebkitOverflowScrolling: 'touch' }}>
+                    <div key={key} style={{ overflowX: 'auto', margin: '10px 0', borderRadius: 5, border: 'none', WebkitOverflowScrolling: 'touch' }}>
                       <table style={{ width: '100%', minWidth: 360, borderCollapse: 'collapse', fontSize: 12, tableLayout: 'auto' }}>
                         <thead>
                           <tr style={{ background: 'var(--accent-bg, rgba(101,152,239,0.1))' }}>
@@ -1176,7 +1169,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               <div onClick={() => profilePhotoRef.current?.click()} style={{
                 position: 'absolute', bottom: -2, right: -2,
                 width: 28, height: 28, borderRadius: '50%',
-                background: 'var(--accent-primary, #6598ef)', border: '2px solid #EAF4FB',
+                background: 'var(--accent-primary, #6598ef)', border: 'none',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
               }}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1534,7 +1527,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
             style={{
               width: '100%', maxWidth: 360,
               background: 'var(--bg-modal)', borderRadius: 24, padding: 24,
-              border: '1px solid var(--border-subtle)',
+              border: 'none',
             }}
           >
             <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>
@@ -1553,7 +1546,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                   <button
                     onClick={() => setRestoreConfirm(null)}
                     style={{
-                      flex: 1, padding: 12, borderRadius: 14, border: '1px solid var(--border-subtle)',
+                      flex: 1, padding: 12, borderRadius: 14, border: 'none',
                       background: 'transparent', color: 'var(--text-muted)', fontSize: 14, fontWeight: 500,
                       cursor: 'pointer', fontFamily: 'inherit',
                     }}
@@ -1591,7 +1584,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
             ) : (
               <div style={{ textAlign: 'center', padding: '20px 0' }}>
                 <div style={{
-                  width: 32, height: 32, border: '3px solid rgba(240,144,112,0.2)',
+                  width: 32, height: 32, border: 'none',
                   borderTopColor: '#81E4BD', borderRadius: '50%',
                   animation: 'spin 0.8s linear infinite',
                   margin: '0 auto 12px',
@@ -1620,7 +1613,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
             style={{
               width: '100%', maxWidth: 360,
               background: 'var(--bg-modal)', borderRadius: 24, padding: 24,
-              border: '1px solid var(--border-subtle)',
+              border: 'none',
             }}
           >
             <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>
@@ -1640,7 +1633,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               <button
                 onClick={() => setBaselineResetConfirm(false)}
                 style={{
-                  flex: 1, padding: 12, borderRadius: 14, border: '1px solid var(--border-subtle)',
+                  flex: 1, padding: 12, borderRadius: 14, border: 'none',
                   background: 'transparent', color: 'var(--text-muted)', fontSize: 14, fontWeight: 500,
                   cursor: 'pointer', fontFamily: 'inherit',
                 }}
@@ -1688,7 +1681,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
             style={{
               width: '100%', maxWidth: 360,
               background: 'var(--bg-modal)', borderRadius: 24, padding: 24,
-              border: '1px solid var(--border-subtle)',
+              border: 'none',
             }}
           >
             <div style={{ fontSize: 16, fontWeight: 600, color: '#dc4444', marginBottom: 6 }}>
@@ -1704,7 +1697,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                 onClick={() => setAllRecordsResetConfirm(false)}
                 disabled={allRecordsClearing}
                 style={{
-                  flex: 1, padding: 12, borderRadius: 14, border: '1px solid var(--border-subtle)',
+                  flex: 1, padding: 12, borderRadius: 14, border: 'none',
                   background: 'transparent', color: 'var(--text-muted)', fontSize: 14, fontWeight: 500,
                   cursor: allRecordsClearing ? 'default' : 'pointer', fontFamily: 'inherit',
                 }}
@@ -1858,7 +1851,7 @@ function GoalSettingModal({ onClose, showToast }) {
           {!latestRecord && (
             <div style={{
               padding: '12px 16px', borderRadius: 14, marginBottom: 8,
-              background: 'rgba(101,152,239,0.08)', border: '1px solid rgba(101,152,239,0.15)',
+              background: 'rgba(101,152,239,0.08)', border: 'none',
             }}>
               <div style={{ fontSize: 13, color: 'var(--accent-primary, #6598ef)', lineHeight: 1.6 }}>
                 먼저 피부 분석을 해야 현재 점수를 확인할 수 있어요. 분석 후 목표를 설정해보세요!
@@ -1914,7 +1907,7 @@ function GoalSettingModal({ onClose, showToast }) {
                 onClick={() => applyPreset(p.delta)}
                 style={{
                   flex: 1, padding: '10px 8px', borderRadius: 14,
-                  border: '1px solid rgba(0,0,0,0.06)',
+                  border: 'none',
                   background: 'transparent',
                   color: 'var(--accent-primary, #6598ef)', fontSize: 12, fontWeight: 600,
                   cursor: 'pointer', fontFamily: 'inherit',
@@ -2043,7 +2036,7 @@ function GoalSettingModal({ onClose, showToast }) {
           {existingGoal && existingGoal.status === 'active' && (
             <div style={{
               marginTop: 12, padding: '10px 16px', borderRadius: 14,
-              background: 'rgba(101,152,239,0.06)', border: '1px solid rgba(101,152,239,0.12)',
+              background: 'rgba(101,152,239,0.06)', border: 'none',
             }}>
               <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
                 기존 목표가 새 목표로 대체됩니다.
@@ -2188,7 +2181,7 @@ function SettingsSection({ label, children }) {
       <div style={{
         display: 'flex', flexDirection: 'column', gap: 0,
         background: 'var(--bg-card)', borderRadius: 20, overflow: 'hidden',
-        border: '1px solid var(--border-separator)',
+        border: 'none',
       }}>
         {children}
       </div>
@@ -2581,7 +2574,7 @@ function DarkModeItem({ enabled, onToggle }) {
 
 const inputStyle = {
   width: '100%', padding: '12px 14px', borderRadius: 14,
-  border: '1px solid var(--border-subtle)', background: 'var(--bg-card-hover)',
+  border: 'none', background: 'var(--bg-card-hover)',
   fontSize: 14, color: 'var(--text-primary)', outline: 'none',
   fontFamily: 'inherit',
   transition: 'border-color 0.2s',

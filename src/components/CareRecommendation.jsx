@@ -129,7 +129,7 @@ export default function CareRecommendation({ products: productsProp, refreshKey 
         padding: '28px 18px', marginBottom: 20,
         background: 'rgba(255,255,255,0.42)',
         backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-        border: '1px solid rgba(255,255,255,0.4)',
+        border: 'none',
         borderRadius: 18, textAlign: 'center',
         boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
       }}>
@@ -150,7 +150,7 @@ export default function CareRecommendation({ products: productsProp, refreshKey 
         padding: '24px 18px', marginBottom: 20,
         background: 'rgba(255,255,255,0.42)',
         backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-        border: '1px solid rgba(255,255,255,0.4)',
+        border: 'none',
         borderRadius: 18, textAlign: 'center',
         boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
       }}>
@@ -319,7 +319,7 @@ function RoutineTabs({ morningSteps, nightSteps, morningStats, nightStats }) {
         display: 'flex', gap: 4, padding: 4, marginBottom: 16,
         background: 'rgba(255,255,255,0.35)',
         backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-        border: '1px solid rgba(255,255,255,0.4)',
+        border: 'none',
         borderRadius: 14,
       }}>
         {tabs.map(t => {

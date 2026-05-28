@@ -978,7 +978,7 @@ export default function App() {
           <div onClick={(e) => e.stopPropagation()} style={{
             maxWidth: 340, width: '100%',
             background: 'var(--bg-modal, #fff)', borderRadius: 24, padding: 28,
-            border: '1px solid var(--border-subtle, #e5e7eb)',
+            border: 'none',
             textAlign: 'center',
           }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}><ShieldIcon size={40} /></div>
@@ -997,7 +997,7 @@ export default function App() {
                 onClick={() => setShowDataRecovery(false)}
                 style={{
                   flex: 1, padding: 13, borderRadius: 14,
-                  border: '1px solid var(--border-subtle, #e5e7eb)',
+                  border: 'none',
                   background: 'transparent', color: 'var(--text-muted)',
                   fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
                 }}
@@ -1032,7 +1032,7 @@ export default function App() {
           padding: '16px 18px',
           display: 'flex', alignItems: 'center', gap: 12,
           borderRadius: 16,
-          border: '0.5px solid rgba(255,255,255,0.6)',
+          border: 'none',
           boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
         }}>
           <span style={{ fontSize: 20, flexShrink: 0 }}></span>
@@ -1644,7 +1644,7 @@ export default function App() {
               <div style={{
                 width: '100%', padding: '12px 14px', marginBottom: 12,
                 background: 'rgba(220,80,80,0.18)',
-                border: '1px solid rgba(220,80,80,0.32)',
+                border: 'none',
                 borderRadius: 12,
                 display: 'flex', gap: 10, alignItems: 'flex-start',
               }}>
@@ -2048,7 +2048,7 @@ export default function App() {
                         <div style={{
                           marginTop: 10, padding: '10px 12px', borderRadius: 12,
                           background: 'linear-gradient(135deg, rgba(244,163,187,0.1), rgba(244,163,187,0.05))',
-                          border: '1px solid rgba(244,163,187,0.2)',
+                          border: 'none',
                           display: 'flex', alignItems: 'center', gap: 8,
                         }}>
                           <span style={{ fontSize: 16, flexShrink: 0 }}></span>
@@ -2074,7 +2074,7 @@ export default function App() {
               <div style={{
                 margin: '0 16px 10px',
                 background: 'linear-gradient(135deg, rgba(101,152,239,0.12), rgba(101,152,239,0.05))',
-                border: '1px solid rgba(101,152,239,0.32)',
+                border: 'none',
                 borderRadius: 14, padding: '14px 16px',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
@@ -2143,7 +2143,7 @@ export default function App() {
                   <div style={{
                     marginTop: 10, padding: '8px 10px', borderRadius: 10,
                     background: 'rgba(216,168,240,0.12)',
-                    border: '1px solid rgba(216,168,240,0.25)',
+                    border: 'none',
                     fontSize: 11, color: '#9070B0', lineHeight: 1.55,
                   }}>
                     ⚠️ 이번 측정은 동일인 인식이 약했어요. 다음 측정 시 정면·자연광에서 시도해주세요.
@@ -2168,7 +2168,7 @@ export default function App() {
                 }}>
                   <div style={{
                     width: 14, height: 14, borderRadius: '50%',
-                    border: '2px solid rgba(101,152,239,0.3)',
+                    border: 'none',
                     borderTopColor: '#6598ef',
                     animation: 'autoInsightSpin 0.9s linear infinite',
                   }} />
@@ -2601,7 +2601,7 @@ export default function App() {
                   return (
                     <div style={{
                       marginTop: 8, padding: '8px 10px', borderRadius: 10,
-                      background: 'rgba(101,152,239,0.06)', border: '1px solid rgba(101,152,239,0.15)',
+                      background: 'rgba(101,152,239,0.06)', border: 'none',
                       fontSize: 10, color: 'rgba(0,0,0,0.35)', lineHeight: 1.6,
                     }}>
                       <div style={{ fontWeight: 600, marginBottom: 2 }}>측정 정확도 디버그 (베타 임시)</div>
@@ -2621,7 +2621,7 @@ export default function App() {
                 {result?.outlierWarning && (
                   <div style={{
                     marginTop: 8, padding: '8px 10px', borderRadius: 10,
-                    background: 'rgba(183,218,251,0.15)', border: '1px solid rgba(183,218,251,0.3)',
+                    background: 'rgba(183,218,251,0.15)', border: 'none',
                   }}>
                     <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(101,152,239,0.5)', marginBottom: 2 }}>오늘 결과가 평소와 크게 달라요</div>
                     <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.35)', lineHeight: 1.5 }}>{result.outlierReason}. 조명/각도/메이크업 차이일 가능성이 있어요.</div>
@@ -2809,7 +2809,7 @@ export default function App() {
                 <div style={{
                   margin: '20px 0', padding: 16, borderRadius: 16,
                   background: 'rgba(52,211,153,0.08)',
-                  border: '1px solid rgba(52,211,153,0.15)',
+                  border: 'none',
                 }}>
                   {g.metrics.map((m) => (
                     <div key={m.key} style={{
@@ -2830,7 +2830,7 @@ export default function App() {
                 onClick={() => setShowCelebration(false)}
                 style={{
                   flex: 1, padding: 14, borderRadius: 16,
-                  border: '1px solid var(--border-subtle)',
+                  border: 'none',
                   background: 'transparent', color: 'var(--text-muted)',
                   fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
                 }}
@@ -3081,13 +3081,13 @@ function SleepInputModal({ onClose, onUpdate }) {
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>잠든 시간</div>
                 <input type="time" value={bedtime || ''} onChange={e => { setBedtime(e.target.value); if (e.target.value && wakeTime) calcFromTime(e.target.value, wakeTime); }}
-                  style={{ width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 14, fontWeight: 500, border: '1px solid rgba(91,106,175,.2)', background: 'rgba(91,106,175,.04)', color: 'var(--text-primary)', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', height: 42 }} />
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 14, fontWeight: 500, border: 'none', background: 'rgba(91,106,175,.04)', color: 'var(--text-primary)', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', height: 42 }} />
               </div>
               <div style={{ fontSize: 16, color: '#5B6AAF', paddingBottom: 12, fontWeight: 500 }}>→</div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>일어난 시간</div>
                 <input type="time" value={wakeTime || ''} onChange={e => { setWakeTime(e.target.value); if (bedtime && e.target.value) calcFromTime(bedtime, e.target.value); }}
-                  style={{ width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 14, fontWeight: 500, border: '1px solid rgba(91,106,175,.2)', background: 'rgba(91,106,175,.04)', color: 'var(--text-primary)', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', height: 42 }} />
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 14, fontWeight: 500, border: 'none', background: 'rgba(91,106,175,.04)', color: 'var(--text-primary)', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', height: 42 }} />
               </div>
             </div>
             {bedtime && wakeTime && (

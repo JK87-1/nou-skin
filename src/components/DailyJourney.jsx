@@ -86,7 +86,7 @@ export default function DailyJourney({ onTodayTap, onPastTap }) {
               <div style={{
                 width: 56, height: 56, borderRadius: '50%',
                 background: 'var(--bg-card)',
-                border: '2px solid var(--border-light)',
+                border: 'none',
               }} />
             )}
             <span className={`journey-day${day.isToday ? ' today' : ''}`}>{day.dayLabel}</span>

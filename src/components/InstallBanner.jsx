@@ -98,7 +98,7 @@ export default function InstallBanner() {
       position: 'fixed', bottom: 80, left: 12, right: 12, zIndex: 9999,
       background: 'var(--bg-modal)',
       backdropFilter: 'var(--card-backdrop)', WebkitBackdropFilter: 'var(--card-backdrop)',
-      border: '1px solid rgba(240,144,112,0.2)',
+      border: 'none',
       borderRadius: 20, padding: '16px 18px',
       boxShadow: 'none',
       animation: closing ? 'installSlideDown 0.3s ease-in forwards' : 'installSlideUp 0.4s ease-out',
@@ -175,7 +175,7 @@ export default function InstallBanner() {
             }).catch(() => {});
           }} id="lua-copy-btn" style={{
             width: '100%', marginTop: 10, padding: '10px 0', borderRadius: 12,
-            border: '1px solid rgba(240,144,112,0.25)', background: 'rgba(240,144,112,0.1)',
+            border: 'none', background: 'rgba(240,144,112,0.1)',
             color: '#a5b4fc', fontSize: 13, fontWeight: 600, cursor: 'pointer',
             fontFamily: 'inherit',
           }}>URL 복사하기</button>

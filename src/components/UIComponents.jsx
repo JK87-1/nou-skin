@@ -227,7 +227,7 @@ export function DetailPage({ metricKey, value, onBack }) {
           {data.references.map((ref, i) => (
             <div key={i} style={{
               marginBottom: i < data.references.length - 1 ? 10 : 0,
-              borderRadius: 5, border: '1px solid rgba(0,0,0,0.08)', overflow: 'hidden',
+              borderRadius: 5, border: 'none', overflow: 'hidden',
             }}>
               <div style={{ padding: '8px 10px', background: 'rgba(255,255,255,0.1)', fontWeight: 600, fontSize: 12, color: 'rgba(0,0,0,0.6)', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>{ref.name}</div>
               <div style={{ padding: '7px 10px', fontSize: 12, color: 'rgba(0,0,0,0.4)', lineHeight: 1.5 }}>{ref.description}</div>

@@ -204,7 +204,7 @@ export default function SkinMeasurePage({ onClose, onCapture, colorMode }) {
           style={{
             width: 72, height: 72, borderRadius: '50%',
             background: '#FF8C42',
-            border: '4px solid #fff',
+            border: 'none',
             boxShadow: '0 4px 16px rgba(255,140,66,0.3)',
             cursor: 'pointer',
             transition: 'all 0.3s',

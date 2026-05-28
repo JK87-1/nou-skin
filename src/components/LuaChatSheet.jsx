@@ -203,7 +203,7 @@ const LuaAssistantMessage = memo(function LuaAssistantMessage({
               style={{
                 padding: '9px 14px',
                 borderRadius: 18,
-                border: '1px solid rgba(101,152,239,0.32)',
+                border: 'none',
                 background: 'rgba(101,152,239,0.08)',
                 color: '#1F1F1F',
                 fontSize: 14, fontWeight: 500,
@@ -277,7 +277,7 @@ const glass = {
   background: '#ffffff',
   backdropFilter: 'none',
   WebkitBackdropFilter: 'none',
-  border: '1px solid rgba(255,255,255,0.3)',
+  border: 'none',
   boxShadow: '0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.4)',
 };
 
@@ -1170,7 +1170,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
           }}>
             {pendingImages.map((img, idx) => (
               <div key={idx} style={{ position: 'relative', display: 'inline-block' }}>
-                <img src={img.dataUrl} alt="" style={{ width: 72, height: 72, borderRadius: 12, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.3)' }} />
+                <img src={img.dataUrl} alt="" style={{ width: 72, height: 72, borderRadius: 12, objectFit: 'cover', border: 'none' }} />
                 <button onClick={() => setPendingImages(prev => prev.filter((_, i) => i !== idx))} style={{
                   position: 'absolute', top: -6, right: -6, width: 24, height: 24, borderRadius: '50%',
                   border: 'none', background: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: 14,
@@ -1244,7 +1244,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
           <div style={{
             display: 'flex', gap: 8, alignItems: 'center', width: '100%',
             background: '#ffffff', borderRadius: 44,
-            border: '1px solid rgba(0,0,0,0.06)',
+            border: 'none',
             padding: '10px 12px', boxSizing: 'border-box',
             boxShadow: '0 2px 14px rgba(0,0,0,0.06)',
             minHeight: 64,
@@ -1303,7 +1303,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
                 {isTranscribing && (
                   <span style={{
                     position: 'absolute', inset: 0, borderRadius: '50%',
-                    border: '2.4px solid rgba(101,152,239,0.25)',
+                    border: 'none',
                     borderTopColor: '#6598ef',
                     animation: 'sttSpin 0.85s linear infinite',
                   }} />
@@ -1313,13 +1313,13 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
                   <>
                     <span style={{
                       position: 'absolute', inset: 0, borderRadius: '50%',
-                      border: '2px solid #6598ef',
+                      border: 'none',
                       animation: 'sttPulseA 1.4s ease-out infinite',
                       pointerEvents: 'none',
                     }} />
                     <span style={{
                       position: 'absolute', inset: 0, borderRadius: '50%',
-                      border: '2px solid #6598ef',
+                      border: 'none',
                       animation: 'sttPulseA 1.4s ease-out 0.7s infinite',
                       pointerEvents: 'none',
                     }} />
@@ -1419,7 +1419,7 @@ function ApplyRoutineCard({ routine, applied, onApply }) {
     <div style={{
       marginTop: 14,
       background: applied ? 'rgba(101,152,239,0.08)' : 'linear-gradient(180deg, #F4F8FF 0%, #EAF1FE 100%)',
-      border: '1px solid rgba(101,152,239,0.32)',
+      border: 'none',
       borderRadius: 18,
       padding: '14px 16px',
     }}>

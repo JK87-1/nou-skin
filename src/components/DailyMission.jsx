@@ -613,7 +613,7 @@ export default function DailyMission() {
       <div style={{
         background: 'rgba(255,255,255,0.42)',
         backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-        borderRadius: 18, border: '1px solid rgba(255,255,255,0.4)', padding: 16,
+        borderRadius: 18, border: 'none', padding: 16,
         boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
         ...fadeUp(0.5),
       }}>
