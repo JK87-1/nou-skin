@@ -316,6 +316,78 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
       {/* ① 헤더 spacer */}
       <div style={{ padding: '30px 16px 4px' }} />
 
+      {/* ② 점수 변화 — 최상단 */}
+          <div style={{ margin: '0 12px 12px', background: 'rgba(255,255,255,0.2)', borderRadius: 18, padding: 14 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>점수 변화</span>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {[{ k: '7d', l: '7일' }, { k: '4w', l: '4주' }, { k: '3m', l: '3개월' }].map(p => (
+                  <button key={p.k} onClick={() => setPeriod(p.k)} style={{
+                    padding: '4px 10px', borderRadius: 10, border: period === p.k ? 'none' : '1px solid rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 500,
+                    background: period === p.k ? 'var(--accent-primary, #6598ef)' : 'rgba(255,255,255,0.4)',
+                    color: period === p.k ? '#fff' : 'var(--text-muted)',
+                    cursor: 'pointer', fontFamily: 'inherit',
+                  }}>{p.l}</button>
+                ))}
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
+              {[{ key: 'overallScore', label: '종합' }, ...ALL_METRICS].map((m) => {
+                const activeTrend = trendMetric || 'overallScore';
+                const active = activeTrend === m.key;
+                return (
+                  <button key={m.key} onClick={() => setTrendMetric(m.key)} style={{
+                    padding: '5px 11px', borderRadius: 10, border: 'none',
+                    background: active ? 'rgba(101,152,239,0.16)' : 'rgba(0,0,0,0.04)',
+                    color: active ? '#6598ef' : 'var(--text-muted)',
+                    fontSize: 11, fontWeight: active ? 700 : 500,
+                    cursor: 'pointer', fontFamily: 'inherit',
+                  }}>{m.label}</button>
+                );
+              })}
+            </div>
+            {chartRecords.length < 2 ? (
+              <div style={{ height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.5 }}>
+                  측정이 부족해요.<br />트렌드를 보려면 한 번 더 측정해보세요
+                </div>
+              </div>
+            ) : (() => {
+              const activeTrendKey = trendMetric || 'overallScore';
+              const series = chartRecords.map(r => ({ date: r.date, value: r[activeTrendKey] ?? 50 }));
+              const vals = series.map(s => s.value);
+              const lastVal = vals[vals.length - 1];
+              const firstVal = vals[0];
+              const diff = lastVal - firstVal;
+              const metricLabel = activeTrendKey === 'overallScore' ? '종합' : (ALL_METRICS.find(m => m.key === activeTrendKey)?.label || '');
+              const unit = activeTrendKey === 'skinAge' ? '세' : '점';
+              return (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 2 }}>
+                    <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: -0.3 }}>{lastVal}{unit}</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{metricLabel}</span>
+                    {diff !== 0 && (
+                      <span style={{ fontSize: 11, fontWeight: 600, color: diff > 0 ? '#6598ef' : '#e05545', marginLeft: 'auto' }}>
+                        {diff > 0 ? '▲' : '▼'} {Math.abs(diff).toFixed(0)}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginBottom: 4 }}>
+                    {period === '7d' ? '7일' : period === '4w' ? '4주' : '3개월'} · {series.length}회 측정
+                  </div>
+                  <TossLineChart
+                    data={series}
+                    height={150}
+                    averageLabel="평균"
+                  />
+                  {recordCount <= 3 && (
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>데이터가 쌓일수록 정확해져요</div>
+                  )}
+                </>
+              );
+            })()}
+          </div>
+
       {/* ③ 히어로 요약 카드 */}
           <div style={{ margin: '0 12px 12px' }}>
             {recordCount === 0 ? (
@@ -363,111 +435,6 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                 </div>
               </div>
             )}
-          </div>
-
-          {/* 피부나이 · 종합점수 요약 */}
-          {recordCount >= 2 && (
-            <div style={{ margin: '0 12px 12px', display: 'flex', gap: 8 }}>
-              <div style={{ flex: 1, ...glass, padding: '14px 12px', textAlign: 'center' }}>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>피부나이 변화</div>
-                <div style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)' }}>
-                  {latest?.skinAge != null ? <AnimatedNumber target={latest.skinAge} duration={1000} /> : '—'}
-                  <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>세</span>
-                </div>
-                {prev && (
-                  <div style={{ fontSize: 11, fontWeight: 500, marginTop: 2, color: (latest.skinAge - prev.skinAge) <= 0 ? 'var(--accent-primary)' : '#e05545' }}>
-                    {latest.skinAge - prev.skinAge <= 0 ? `${latest.skinAge - prev.skinAge}세` : `+${latest.skinAge - prev.skinAge}세`}
-                  </div>
-                )}
-              </div>
-              <div style={{ flex: 1, ...glass, padding: '14px 12px', textAlign: 'center' }}>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>종합점수 변화</div>
-                <div style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)' }}>
-                  {latest?.overallScore != null ? <AnimatedNumber target={latest.overallScore} duration={1100} /> : '—'}
-                  <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>점</span>
-                </div>
-                {prev && (
-                  <div style={{ fontSize: 11, fontWeight: 500, marginTop: 2, color: (latest.overallScore - prev.overallScore) >= 0 ? 'var(--accent-primary)' : '#e05545' }}>
-                    {latest.overallScore - prev.overallScore >= 0 ? `+${latest.overallScore - prev.overallScore}점` : `${latest.overallScore - prev.overallScore}점`}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ④ 점수 변화 — 종합 + 10개 지표 통합 */}
-          <div style={{ margin: '0 12px 12px', background: 'rgba(255,255,255,0.2)', borderRadius: 18, padding: 14 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>점수 변화</span>
-              <div style={{ display: 'flex', gap: 6 }}>
-                {[{ k: '7d', l: '7일' }, { k: '4w', l: '4주' }, { k: '3m', l: '3개월' }].map(p => (
-                  <button key={p.k} onClick={() => setPeriod(p.k)} style={{
-                    padding: '4px 10px', borderRadius: 10, border: period === p.k ? 'none' : '1px solid rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 500,
-                    background: period === p.k ? 'var(--accent-primary, #6598ef)' : 'rgba(255,255,255,0.4)',
-                    color: period === p.k ? '#fff' : 'var(--text-muted)',
-                    cursor: 'pointer', fontFamily: 'inherit',
-                  }}>{p.l}</button>
-                ))}
-              </div>
-            </div>
-
-            {/* 메트릭 chip — 종합 + 10개 지표 */}
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-              {[{ key: 'overallScore', label: '종합' }, ...ALL_METRICS].map((m) => {
-                const activeTrend = trendMetric || 'overallScore';
-                const active = activeTrend === m.key;
-                return (
-                  <button key={m.key} onClick={() => setTrendMetric(m.key)} style={{
-                    padding: '5px 11px', borderRadius: 10, border: 'none',
-                    background: active ? 'rgba(101,152,239,0.16)' : 'rgba(0,0,0,0.04)',
-                    color: active ? '#6598ef' : 'var(--text-muted)',
-                    fontSize: 11, fontWeight: active ? 700 : 500,
-                    cursor: 'pointer', fontFamily: 'inherit',
-                  }}>{m.label}</button>
-                );
-              })}
-            </div>
-
-            {chartRecords.length < 2 ? (
-              <div style={{ height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.5 }}>
-                  측정이 부족해요.<br />트렌드를 보려면 한 번 더 측정해보세요
-                </div>
-              </div>
-            ) : (() => {
-              const activeTrendKey = trendMetric || 'overallScore';
-              const series = chartRecords.map(r => ({ date: r.date, value: r[activeTrendKey] ?? 50 }));
-              const vals = series.map(s => s.value);
-              const lastVal = vals[vals.length - 1];
-              const firstVal = vals[0];
-              const diff = lastVal - firstVal;
-              const metricLabel = activeTrendKey === 'overallScore' ? '종합' : (ALL_METRICS.find(m => m.key === activeTrendKey)?.label || '');
-              const unit = activeTrendKey === 'skinAge' ? '세' : '점';
-              return (
-                <>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 2 }}>
-                    <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: -0.3 }}>{lastVal}{unit}</span>
-                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{metricLabel}</span>
-                    {diff !== 0 && (
-                      <span style={{ fontSize: 11, fontWeight: 600, color: diff > 0 ? '#6598ef' : '#e05545', marginLeft: 'auto' }}>
-                        {diff > 0 ? '▲' : '▼'} {Math.abs(diff).toFixed(0)}
-                      </span>
-                    )}
-                  </div>
-                  <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginBottom: 4 }}>
-                    {period === '7d' ? '7일' : period === '4w' ? '4주' : '3개월'} · {series.length}회 측정
-                  </div>
-                  <TossLineChart
-                    data={series}
-                    height={150}
-                    averageLabel="평균"
-                  />
-                  {recordCount <= 3 && (
-                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>데이터가 쌓일수록 정확해져요</div>
-                  )}
-                </>
-              );
-            })()}
           </div>
 
           {/* ⑤ 영향 요인 차트 */}
