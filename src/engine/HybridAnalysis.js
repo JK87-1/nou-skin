@@ -357,14 +357,16 @@ export async function callVisionAI(base64Image, landmarks) {
   } catch (e) { console.warn('[ImageNormalizer] failed, raw image used:', e); }
 
   // ===== Phase 2: Face descriptor 임베딩 (디바이스·조명 무관 동일인 판단의 정수) =====
-  // 3초 timeout. 첫 측정 또는 모델 미로드 시 null 반환. 다음 측정부터 자연 활용.
+  // 6초 timeout. 첫 측정 시 face-api 모델 cold start로 3초 안에 안 끝나면 descriptor가
+  // null이 되어 baseline에 저장됨 → 이후 모든 측정에서 매칭 불가 → device 기반 fallback →
+  // 타인 측정 시에도 baseline anchor 적용되는 버그가 발생했음. 6초로 늘려 안전 마진 확보.
   const rawBaseline = getBaseline();
   const currentDevice = getDeviceFingerprint();
 
   // descriptor는 정규화 이미지 사용 — 디바이스 차이 흡수 후 임베딩
   const newDescriptor = await Promise.race([
     extractDescriptorFromBase64(faceImage),
-    new Promise(resolve => setTimeout(() => resolve(null), 3000)),
+    new Promise(resolve => setTimeout(() => resolve(null), 6000)),
   ]);
 
   let faceMatch = null; // 'same' | 'different' | 'ambiguous' | 'no_baseline_descriptor' | null
@@ -467,6 +469,15 @@ export async function callVisionAI(base64Image, landmarks) {
       parsed.differentPerson = false;
       console.log('[FaceDescriptor override] same person confirmed by embedding, forcing isDifferentPerson=false');
     }
+    // 🛡 Face descriptor 'different' 확정이면 differentPerson 강제 true.
+    // GPT system prompt가 "default to SAME when uncertain"으로 편향돼 타인을 같은 사람으로 보고
+    // baseline 점수에 anchor → 타인이 본인 baseline 점수(60점)로 측정되는 버그가 발생했음.
+    // 얼굴 임베딩이 명확히 다르면(distance > 0.6) GPT 판정 무시하고 강제 different.
+    if (faceMatch === 'different' && !isDifferentPerson) {
+      isDifferentPerson = true;
+      parsed.differentPerson = true;
+      console.log('[FaceDescriptor override] different person confirmed by embedding, forcing isDifferentPerson=true');
+    }
     // 현재 측정에서 추출한 핵심 점수 — building 누적·평균에 사용
     const currentScores = {};
     for (const key of GPT_SCORE_KEYS) {
@@ -501,6 +512,13 @@ export async function callVisionAI(base64Image, landmarks) {
       if (!baseline.built && totalCount < BASELINE_BUILD_COUNT) {
         // 평균 baseline 구축 중. 점수 누적.
         saveBaselineBuilding(currentScores);
+        // 🛡 building 중에도 descriptor backfill — 첫 측정 timeout으로 baseline.descriptor가
+        // null로 저장됐을 경우, 이후 building 측정에서 새 descriptor를 채워 매칭 작동시킴.
+        // (예전엔 baseline 완성 후 drift 분기에서만 backfill되어 building 동안 매칭 불가했음)
+        if (!baseline.descriptor && newDescriptor) {
+          saveBaseline(baseline.image, baseline.result, newDescriptor);
+          console.log('Primary baseline descriptor backfilled during building');
+        }
         const nextCount = totalCount + 1;
         if (nextCount >= BASELINE_BUILD_COUNT) {
           // BASELINE_BUILD_COUNT번째 측정 — 평균 baseline 완성 + built flag 영구 마킹
