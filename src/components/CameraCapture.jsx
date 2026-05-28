@@ -714,6 +714,8 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
   return (
     <div style={{
       position: 'fixed', inset: 0, background: '#000', zIndex: 200,
+      // iOS Chrome 하단 toolbar(~50px)·Safari URL bar 변동에 캡처 버튼이 가리지 않도록 dynamic viewport 사용
+      height: '100dvh',
     }}>
       {/* Camera preview — full screen */}
       <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>

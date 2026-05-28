@@ -1767,7 +1767,7 @@ export default function ProductPage({ themeColors, onBack }) {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', paddingBottom: 100, animation: 'breatheIn 0.5s ease both' }}>
+    <div style={{ minHeight: '100dvh', paddingBottom: 100, animation: 'breatheIn 0.5s ease both' }}>
       {/* Header */}
       <div style={{ padding: '10px 20px 0' }}></div>
 
