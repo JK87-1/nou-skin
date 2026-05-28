@@ -1676,18 +1676,57 @@ function RoutineChecklist() {
   };
   const products = getProductsForMode(mode);
 
+  // ===== 태그 시스템 =====
+  const DEFAULT_TAGS = [
+    { id: 'skincare', label: '스킨케어' },
+    { id: 'beauty', label: '뷰티습관' },
+    { id: 'supplement', label: '영양제' },
+    { id: 'exercise', label: '운동' },
+  ];
+  const getTagDefs = () => { try { const v = JSON.parse(localStorage.getItem('lua_care_tags')); return Array.isArray(v) && v.length > 0 ? v : DEFAULT_TAGS; } catch { return DEFAULT_TAGS; } };
+  const saveTagDefs = (tags) => { localStorage.setItem('lua_care_tags', JSON.stringify(tags)); setTagDefs(tags); };
+  const getTagOverrides = () => { try { return JSON.parse(localStorage.getItem('lua_care_tag_overrides') || '{}'); } catch { return {}; } };
+  const setTagOverride = (itemId, tagId) => { const o = getTagOverrides(); o[itemId] = tagId; localStorage.setItem('lua_care_tag_overrides', JSON.stringify(o)); forceTick(t => t + 1); };
+
+  const resolveTag = (item) => {
+    const overrides = getTagOverrides();
+    if (overrides[item.id]) return overrides[item.id];
+    if (item.tag) return item.tag;
+    if (item.type === 'product') return 'skincare';
+    const text = `${item.name || ''} ${item.id || ''}`.toLowerCase();
+    if (/비타민|영양|유산균|오메가|콜라겐|vitamin|pill/.test(text)) return 'supplement';
+    if (/운동|스트레칭|요가|필라테스|stretch|exercise/.test(text)) return 'exercise';
+    if (/클렌|토너|세럼|크림|선크림|마스크|에센스|세안|sunscreen|toner|serum|cream/.test(text)) return 'skincare';
+    return 'beauty';
+  };
+
+  const [tagDefs, setTagDefs] = useState(getTagDefs);
+  const [newTagName, setNewTagName] = useState('');
+  const [newTagNameDetail, setNewTagNameDetail] = useState('');
+
+  const addNewTag = (label, setterFn) => {
+    if (!label.trim()) return null;
+    const existing = tagDefs.find(t => t.label === label.trim());
+    if (existing) return existing.id;
+    const tag = { id: `tag_${Date.now()}`, label: label.trim() };
+    const updated = [...tagDefs, tag];
+    saveTagDefs(updated);
+    if (setterFn) setterFn('');
+    return tag.id;
+  };
+
   // Recommended routines (user picks from these)
   const recommendedRoutines = [
-    { id: '_water', name: '물 한 잔 마시기', icon: '' },
-    { id: '_wash', name: '세안', icon: '' },
-    { id: '_sunscreen', name: '선크림 바르기', icon: '' },
-    { id: '_toner', name: '토너 바르기', icon: '' },
-    { id: '_serum', name: '세럼 바르기', icon: '' },
-    { id: '_cream', name: '크림 바르기', icon: '' },
-    { id: '_cleansing', name: '클렌징', icon: '' },
-    { id: '_mask', name: '마스크팩', icon: '' },
-    { id: '_vitamin', name: '비타민 먹기', icon: '' },
-    { id: '_stretch', name: '스트레칭', icon: '' },
+    { id: '_water', name: '물 한 잔 마시기', icon: '', tag: 'beauty' },
+    { id: '_wash', name: '세안', icon: '', tag: 'skincare' },
+    { id: '_sunscreen', name: '선크림 바르기', icon: '', tag: 'skincare' },
+    { id: '_toner', name: '토너 바르기', icon: '', tag: 'skincare' },
+    { id: '_serum', name: '세럼 바르기', icon: '', tag: 'skincare' },
+    { id: '_cream', name: '크림 바르기', icon: '', tag: 'skincare' },
+    { id: '_cleansing', name: '클렌징', icon: '', tag: 'skincare' },
+    { id: '_mask', name: '마스크팩', icon: '', tag: 'skincare' },
+    { id: '_vitamin', name: '비타민 먹기', icon: '', tag: 'supplement' },
+    { id: '_stretch', name: '스트레칭', icon: '', tag: 'exercise' },
   ];
 
   // User-added routines (recommend + custom)
@@ -1703,8 +1742,9 @@ function RoutineChecklist() {
     setMyRoutines(updated);
   };
 
-  const addCustomRoutine = (name, targetMode) => {
-    const entry = { id: `_custom_${Date.now()}`, name, icon: '', type: 'custom', mode: targetMode };
+  const [customTag, setCustomTag] = useState('beauty');
+  const addCustomRoutine = (name, targetMode, tagId) => {
+    const entry = { id: `_custom_${Date.now()}`, name, icon: '', type: 'custom', mode: targetMode, tag: tagId || customTag || 'beauty' };
     const updated = [...myRoutines, entry];
     localStorage.setItem('lua_my_routines', JSON.stringify(updated));
     setMyRoutines(updated);
@@ -1769,6 +1809,28 @@ function RoutineChecklist() {
 
   // Only show items active today
   const allItems = allItemsSorted.filter(item => isActiveToday(item.id));
+
+  // 태그별 그룹핑
+  const tagGroups = (() => {
+    const defs = tagDefs;
+    const tagOrder = defs.map(t => t.id);
+    const groupMap = new Map();
+    for (const item of allItems) {
+      const tagId = resolveTag(item);
+      if (!groupMap.has(tagId)) {
+        const def = defs.find(t => t.id === tagId) || { id: tagId, label: tagId };
+        groupMap.set(tagId, { ...def, items: [] });
+      }
+      groupMap.get(tagId).items.push(item);
+    }
+    const groups = [...groupMap.values()];
+    groups.sort((a, b) => {
+      const ai = tagOrder.indexOf(a.id);
+      const bi = tagOrder.indexOf(b.id);
+      return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+    });
+    return groups;
+  })();
 
   // Drag to reorder
   const [dragIdx, setDragIdx] = useState(null);
@@ -2082,88 +2144,101 @@ function RoutineChecklist() {
         );
       })()}
 
-      {/* Checklist */}
+      {/* Checklist — 태그별 그룹 */}
       <div onTouchMove={handleDragMove} onTouchEnd={handleDragEnd} style={{ ...glass, padding: '6px 0', marginBottom: 16 }}>
         {allItems.length === 0 ? (
           <div style={{ padding: '24px 16px', textAlign: 'center', fontSize: 13, color: 'var(--text-muted)' }}>
             케어 항목 추가 버튼으로 루틴을 추가해보세요
           </div>
-        ) : (
-          allItems.map((item, i) => {
-            const checked = isChecked(item.id);
-            const isDragging = dragIdx === i;
-            const isOver = dragOverIdx === i && dragIdx !== null && dragIdx !== i;
-            return (
-              <SwipeableRow
-                key={item.id}
-                rowId={item.id}
-                openRowId={openSwipeRowId}
-                setOpenRowId={setOpenSwipeRowId}
-                onDelete={() => handleSwipeDelete(item)}
-                onMoveUp={i > 0 ? () => handleSwipeMove(item, allItems, 'up') : null}
-                onMoveDown={i < allItems.length - 1 ? () => handleSwipeMove(item, allItems, 'down') : null}
-              >
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 10,
-                  padding: '13px 14px 13px 14px',
-                  borderTop: i > 0 ? '1px solid rgba(255,255,255,0.15)' : 'none',
-                  opacity: isDragging ? 0.4 : checked ? 0.5 : 1,
-                  background: isOver ? 'rgba(101,152,239,0.1)' : 'rgba(255,255,255,0.0)',
-                  transition: 'opacity 0.2s, background 0.15s',
-                }}>
-                  <div style={{
-                    width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
-                    background: 'rgba(101,152,239,0.14)',
-                    color: '#6598ef', fontSize: 11, fontWeight: 700,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: 'inherit',
-                  }}>{i + 1}</div>
-                  {/* 누끼 이미지(등록 제품) 또는 카테고리 아이콘/이모지 */}
-                  {item.imageThumb ? (
-                    <img
-                      src={item.imageThumb}
-                      alt=""
-                      style={{ width: 32, height: 32, borderRadius: 8, objectFit: 'cover', flexShrink: 0, background: '#fff' }}
-                      onError={(e) => {
-                        const parent = e.currentTarget.parentNode;
-                        if (parent) {
-                          const fb = document.createElement('div');
-                          fb.style.cssText = 'width:32px;height:32px;border-radius:8px;background:rgba(101,152,239,0.1);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;';
-                          fb.textContent = '';
-                          parent.insertBefore(fb, e.currentTarget);
-                          e.currentTarget.remove();
-                        }
-                      }}
-                    />
-                  ) : (
-                    <span style={{ fontSize: 18, width: 22, textAlign: 'center', flexShrink: 0 }}>{item.icon}</span>
-                  )}
-                  <div onClick={() => setDetailItem(item)} style={{ flex: 1, cursor: 'pointer' }}>
-                    <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', textDecoration: checked ? 'line-through' : 'none' }}>{item.name}</div>
-                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>
-                      {(() => {
-                        const days = getItemDays(item.id);
-                        const allDays = days.every(Boolean);
-                        if (allDays) return '매일';
-                        const active = days.map((d, idx) => d ? dayLabels[idx] : null).filter(Boolean);
-                        return active.length > 0 ? active.join(' · ') : '비활성';
-                      })()}
+        ) : (() => {
+          let globalIdx = 0;
+          return tagGroups.map((group, gi) => (
+            <div key={group.id}>
+              {/* 태그 그룹 헤더 */}
+              <div style={{
+                padding: gi === 0 ? '10px 14px 4px' : '14px 14px 4px',
+                display: 'flex', alignItems: 'center', gap: 6,
+                borderTop: gi > 0 ? '1px solid rgba(101,152,239,0.1)' : 'none',
+              }}>
+                <span style={{ fontSize: 11.5, fontWeight: 700, color: '#6598ef', letterSpacing: -0.2 }}>{group.label}</span>
+                <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{group.items.length}</span>
+              </div>
+              {group.items.map((item) => {
+                const idx = globalIdx++;
+                const checked = isChecked(item.id);
+                const isDragging = dragIdx === idx;
+                const isOver = dragOverIdx === idx && dragIdx !== null && dragIdx !== idx;
+                return (
+                  <SwipeableRow
+                    key={item.id}
+                    rowId={item.id}
+                    openRowId={openSwipeRowId}
+                    setOpenRowId={setOpenSwipeRowId}
+                    onDelete={() => handleSwipeDelete(item)}
+                    onMoveUp={idx > 0 ? () => handleSwipeMove(item, allItems, 'up') : null}
+                    onMoveDown={idx < allItems.length - 1 ? () => handleSwipeMove(item, allItems, 'down') : null}
+                  >
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '13px 14px 13px 14px',
+                      opacity: isDragging ? 0.4 : checked ? 0.5 : 1,
+                      background: isOver ? 'rgba(101,152,239,0.1)' : 'rgba(255,255,255,0.0)',
+                      transition: 'opacity 0.2s, background 0.15s',
+                    }}>
+                      <div style={{
+                        width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+                        background: 'rgba(101,152,239,0.14)',
+                        color: '#6598ef', fontSize: 11, fontWeight: 700,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontFamily: 'inherit',
+                      }}>{idx + 1}</div>
+                      {item.imageThumb ? (
+                        <img
+                          src={item.imageThumb}
+                          alt=""
+                          style={{ width: 32, height: 32, borderRadius: 8, objectFit: 'cover', flexShrink: 0, background: '#fff' }}
+                          onError={(e) => {
+                            const parent = e.currentTarget.parentNode;
+                            if (parent) {
+                              const fb = document.createElement('div');
+                              fb.style.cssText = 'width:32px;height:32px;border-radius:8px;background:rgba(101,152,239,0.1);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;';
+                              fb.textContent = '';
+                              parent.insertBefore(fb, e.currentTarget);
+                              e.currentTarget.remove();
+                            }
+                          }}
+                        />
+                      ) : (
+                        <span style={{ fontSize: 18, width: 22, textAlign: 'center', flexShrink: 0 }}>{item.icon}</span>
+                      )}
+                      <div onClick={() => setDetailItem(item)} style={{ flex: 1, cursor: 'pointer' }}>
+                        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', textDecoration: checked ? 'line-through' : 'none' }}>{item.name}</div>
+                        <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>
+                          {(() => {
+                            const days = getItemDays(item.id);
+                            const allDays = days.every(Boolean);
+                            if (allDays) return '매일';
+                            const active = days.map((d, didx) => d ? dayLabels[didx] : null).filter(Boolean);
+                            return active.length > 0 ? active.join(' · ') : '비활성';
+                          })()}
+                        </div>
+                      </div>
+                      <div onClick={(e) => { e.stopPropagation(); handleToggle(item.id); }} style={{
+                        width: 24, height: 24, borderRadius: 8, flexShrink: 0, cursor: 'pointer',
+                        border: 'none',
+                        background: checked ? 'var(--accent-primary, #6598ef)' : 'rgba(255,255,255,0.85)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        transition: 'all 0.2s',
+                      }}>
+                        {checked && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                      </div>
                     </div>
-                  </div>
-                  <div onClick={(e) => { e.stopPropagation(); handleToggle(item.id); }} style={{
-                    width: 24, height: 24, borderRadius: 8, flexShrink: 0, cursor: 'pointer',
-                    border: 'none',
-                    background: checked ? 'var(--accent-primary, #6598ef)' : 'rgba(255,255,255,0.85)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    transition: 'all 0.2s',
-                  }}>
-                    {checked && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
-                  </div>
-                </div>
-              </SwipeableRow>
-            );
-          })
-        )}
+                  </SwipeableRow>
+                );
+              })}
+            </div>
+          ));
+        })()}
       </div>
 
       {/* Routine Detail Modal */}
@@ -2193,6 +2268,45 @@ function RoutineChecklist() {
             </div>
             <div style={{ padding: '0 16px 16px' }}>
               {/* Day selector */}
+              {/* 태그 변경 */}
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500, marginBottom: 8 }}>태그</div>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
+                {tagDefs.map(t => {
+                  const active = resolveTag(detailItem) === t.id;
+                  return (
+                    <button key={t.id} onClick={() => { setTagOverride(detailItem.id, t.id); setDetailItem({ ...detailItem }); }} style={{
+                      padding: '7px 14px', borderRadius: 20, cursor: 'pointer',
+                      fontSize: 12, fontWeight: active ? 700 : 500, fontFamily: 'inherit',
+                      background: active ? 'rgba(101,152,239,0.18)' : 'rgba(0,0,0,0.04)',
+                      color: active ? '#6598ef' : 'var(--text-primary)',
+                      border: active ? '1px solid rgba(101,152,239,0.35)' : '1px solid rgba(0,0,0,0.06)',
+                    }}>{t.label}</button>
+                  );
+                })}
+                {/* 새 태그 추가 */}
+                {newTagNameDetail !== null && newTagNameDetail !== false ? (
+                  typeof newTagNameDetail === 'string' && newTagNameDetail !== '' ? (
+                    <div style={{ display: 'flex', gap: 4 }}>
+                      <input
+                        autoFocus
+                        value={newTagNameDetail}
+                        onChange={e => setNewTagNameDetail(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter' && newTagNameDetail.trim()) { const id = addNewTag(newTagNameDetail); if (id) { setTagOverride(detailItem.id, id); setDetailItem({ ...detailItem }); } setNewTagNameDetail(''); } if (e.key === 'Escape') setNewTagNameDetail(''); }}
+                        placeholder="태그 이름"
+                        style={{ width: 80, padding: '7px 10px', borderRadius: 20, border: '1px solid rgba(101,152,239,0.3)', background: '#fff', fontSize: 12, outline: 'none', fontFamily: 'inherit', color: 'var(--text-primary)' }}
+                      />
+                    </div>
+                  ) : (
+                    <button onClick={() => setNewTagNameDetail(' ')} style={{
+                      padding: '7px 12px', borderRadius: 20, cursor: 'pointer',
+                      fontSize: 12, fontWeight: 500, fontFamily: 'inherit',
+                      background: 'rgba(0,0,0,0.04)', color: 'var(--text-muted)',
+                      border: '1px dashed rgba(0,0,0,0.12)',
+                    }}>+</button>
+                  )
+                ) : null}
+              </div>
+
               <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500, marginBottom: 10 }}>반복 요일</div>
               <div style={{ display: 'flex', gap: 6, marginBottom: 20 }}>
                 {dayLabels.map((label, idx) => {
@@ -2340,7 +2454,7 @@ function RoutineChecklist() {
                         return (
                           <div key={p.id} onClick={() => {
                             if (added) removeRoutine(pid, addMode);
-                            else addRoutine({ id: pid, name: `${p.brand} ${p.name}`, icon: '', type: 'product' }, addMode);
+                            else addRoutine({ id: pid, name: `${p.brand} ${p.name}`, icon: '', type: 'product', tag: 'skincare' }, addMode);
                           }} style={{
                             padding: '8px 14px', borderRadius: 20, cursor: 'pointer',
                             fontSize: 12, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6,
@@ -2362,7 +2476,7 @@ function RoutineChecklist() {
 
               {/* Custom input */}
               <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 500, marginBottom: 8 }}>직접 입력</div>
-              <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
                 <input
                   value={customName}
                   onChange={e => setCustomName(e.target.value)}
@@ -2383,6 +2497,37 @@ function RoutineChecklist() {
                   fontSize: 13, fontWeight: 500, cursor: customName.trim() ? 'pointer' : 'default',
                   fontFamily: 'inherit',
                 }}>추가</button>
+              </div>
+              {/* 태그 선택 */}
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
+                {tagDefs.map(t => (
+                  <button key={t.id} onClick={() => setCustomTag(t.id)} style={{
+                    padding: '5px 12px', borderRadius: 16, cursor: 'pointer',
+                    fontSize: 11, fontWeight: customTag === t.id ? 700 : 500, fontFamily: 'inherit',
+                    background: customTag === t.id ? 'rgba(101,152,239,0.18)' : 'rgba(0,0,0,0.04)',
+                    color: customTag === t.id ? '#6598ef' : 'var(--text-muted)',
+                    border: customTag === t.id ? '1px solid rgba(101,152,239,0.35)' : '1px solid rgba(0,0,0,0.06)',
+                  }}>{t.label}</button>
+                ))}
+                {newTagName ? (
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    <input
+                      autoFocus
+                      value={newTagName}
+                      onChange={e => setNewTagName(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter' && newTagName.trim()) { const id = addNewTag(newTagName); if (id) setCustomTag(id); setNewTagName(''); } if (e.key === 'Escape') setNewTagName(''); }}
+                      placeholder="태그 이름"
+                      style={{ width: 80, padding: '5px 10px', borderRadius: 16, border: '1px solid rgba(101,152,239,0.3)', background: '#fff', fontSize: 11, outline: 'none', fontFamily: 'inherit', color: 'var(--text-primary)' }}
+                    />
+                  </div>
+                ) : (
+                  <button onClick={() => setNewTagName(' ')} style={{
+                    padding: '5px 10px', borderRadius: 16, cursor: 'pointer',
+                    fontSize: 11, fontWeight: 500, fontFamily: 'inherit',
+                    background: 'rgba(0,0,0,0.04)', color: 'var(--text-muted)',
+                    border: '1px dashed rgba(0,0,0,0.12)',
+                  }}>+</button>
+                )}
               </div>
             </div>
           </div>
