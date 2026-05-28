@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { getLatestRecord, getPreviousRecord, getRecordCount, getRecords, getTimeSeries, getAllThumbnailsAsync } from '../storage/SkinStorage';
+import { getLatestRecord, getPreviousRecord, getRecordCount, getRecords, getTimeSeries } from '../storage/SkinStorage';
 import { getProducts, computeAllCorrelations } from '../storage/TrackerStorage';
 import TossLineChart from '../components/TossLineChart';
 import { AnimatedNumber } from '../components/UIComponents';
@@ -283,8 +283,6 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
   const [trendMetric, setTrendMetric] = useState(null);
   const records = getRecords();
   const recordCount = records.length;
-  const [thumbs, setThumbs] = useState({});
-  useEffect(() => { let cancelled = false; getAllThumbnailsAsync().then(t => { if (!cancelled) setThumbs(t); }); return () => { cancelled = true; }; }, []);
 
   const daysSince = (() => { if (!latest) return null; const t = new Date(latest.date).getTime(); return isNaN(t) ? null : Math.floor((Date.now() - t) / 86400000); })();
   const headline = getHeadline(latest, prev);
@@ -394,48 +392,6 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                   </div>
                 )}
               </div>
-            </div>
-          )}
-
-          {/* 측정 기록 타임라인 */}
-          {recordCount > 0 && (
-            <div style={{ margin: '0 12px 12px', background: 'rgba(255,255,255,0.2)', borderRadius: 18, padding: 14 }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10 }}>측정 기록</div>
-              {[...records].reverse().slice(0, 5).map((r, i) => {
-                const d = new Date(r.date);
-                const thumb = thumbs[String(r.id)] || thumbs[r.date];
-                const prevR = [...records].reverse()[i + 1];
-                const diff = prevR ? r.overallScore - prevR.overallScore : 0;
-                return (
-                  <div key={r.id || r.timestamp} style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '12px 14px', marginBottom: 6,
-                    ...glass, cursor: 'pointer',
-                  }}>
-                    <div style={{ textAlign: 'center', minWidth: 32 }}>
-                      <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1 }}>{d.getDate()}</div>
-                      <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>{d.getMonth()+1}월</div>
-                    </div>
-                    <div style={{ width: 1, height: 32, background: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
-                    <div style={{ width: 40, height: 40, borderRadius: 10, overflow: 'hidden', flexShrink: 0, background: 'rgba(255,255,255,0.2)' }}>
-                      {thumb ? <img src={thumb} alt={`${d.getMonth()+1}월 ${d.getDate()}일 측정`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}></div>}
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>종합 {r.overallScore}점</span>
-                        {diff !== 0 && (
-                          <span style={{ fontSize: 10, fontWeight: 500, color: diff > 0 ? 'var(--accent-primary)' : '#e05545' }}>
-                            {diff > 0 ? `+${diff}` : diff}
-                          </span>
-                        )}
-                      </div>
-                      <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
-                        {DAY_LABELS[d.getDay()]}요일 · 피부나이 {r.skinAge}세
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
             </div>
           )}
 
