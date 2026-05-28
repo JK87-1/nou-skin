@@ -14,7 +14,7 @@ import TroubleBreakdownCard from './components/TroubleBreakdownCard';
 import MeasurementGuide, { isMeasureGuideDismissed } from './components/MeasurementGuide';
 import BaselineCompleteModal from './components/BaselineCompleteModal';
 import CameraCapture from './components/CameraCapture';
-import { saveRecord, updateRecord, getRecords, getNextMeasurementInfo, getChanges, generateShareText, getLatestRecord, hasTodayRecord, saveThumbnail, saveComparisonPhoto, getTodayRecords, getStableSkinAge, findRecentPrimaryRecord, getWeeklyReport } from './storage/SkinStorage';
+import { saveRecord, updateRecord, getRecords, deleteRecord, getNextMeasurementInfo, getChanges, generateShareText, getLatestRecord, hasTodayRecord, saveThumbnail, saveComparisonPhoto, getTodayRecords, getStableSkinAge, findRecentPrimaryRecord, getWeeklyReport } from './storage/SkinStorage';
 import { migrateFromLocalStorage } from './storage/PhotoDB';
 import { createAutoBackup, verifyDataIntegrity, restoreFromAutoBackup, startPeriodicBackup, getBackupInfo } from './storage/AutoBackup';
 import CarePage from './pages/CarePage';
@@ -1838,6 +1838,22 @@ export default function App() {
               <div role="button" aria-label="공유하기" onClick={handleShare} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                 <svg width="18" height="18" viewBox="0 0 179.14 159.38" fill="#fff"><path d="M107.81,145.08c-5.95,9.54-13.61,15.45-24.89,14.11-8.98-1.07-18.15-8.13-19.99-18.29l-10.46-57.69L8.12,45.62C.3,38.98-2.04,28.17,1.83,18.68,5.44,9.79,14.01,4.52,24.5,4.18L154.27.02c5.63-.18,9.81,1.28,14.32,4.05,12.07,7.42,13.33,22.07,6.09,33.69l-66.87,107.33ZM112.25,58.81l-41.93,24.22,9.49,53.03c.57,3.19,2.53,5.19,5.17,5.48,2.82.32,4.76-.7,6.42-3.37L161.03,26.14c1.27-2.05.54-4.68-.6-6.19-.9-1.19-2.67-2.49-5.2-2.41L22.6,22.01c-2.6.09-4.84,2.43-5.01,3.98-.16,1.45-.05,4.52,1.46,5.8l42.64,36.1,34.48-19.99c4.57-2.65,8.51-5.7,14.43-5.97,3.78.54,6.7,4.44,7.06,7.87.38,3.71-1.6,6.81-5.41,9.01Z"/></svg>
               </div>
+              {viewingHistory && (
+                <div role="button" aria-label="기록 삭제" onClick={() => {
+                  if (window.confirm('이 기록을 삭제할까요?')) {
+                    deleteRecord(result.id || result.date);
+                    setViewingHistory(false);
+                    setResult(null);
+                    setStage('landing');
+                    setActiveTab('my');
+                  }
+                }} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="8" y1="12" x2="16" y2="12" />
+                  </svg>
+                </div>
+              )}
             </div>
           </div>
 
@@ -2723,7 +2739,7 @@ export default function App() {
       />
 
       {/* ===== TAB BAR ===== */}
-      {showTabBar && <TabBar activeTab={activeTab} onTabChange={switchTab} onMeasure={openCamera} themeColors={activeThemeColors} colorMode={colorMode} />}
+      {showTabBar && <TabBar activeTab={viewingHistory ? 'my' : activeTab} onTabChange={switchTab} onMeasure={openCamera} themeColors={activeThemeColors} colorMode={colorMode} />}
 
       {/* ===== GOAL CELEBRATION OVERLAY ===== */}
       {showCelebration && (
