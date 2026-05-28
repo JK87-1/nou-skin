@@ -9,6 +9,7 @@ import { detectLandmarks } from './engine/FaceLandmarker';
 import { callVisionAI, hybridMerge, hasBaseline, getBaselineBuildingState, getAiFallbackStats, clearAiFallbackStats } from './engine/HybridAnalysis';
 import { estimateAge, preload as preloadAge } from './engine/FaceAgeEstimator';
 import { preload as preloadLandmarker } from './engine/FaceLandmarker';
+import { preload as preloadFaceDescriptor } from './engine/FaceDescriptor';
 import { AnimatedNumber, ScoreRing, MetricBar, Tag, DetailPage } from './components/UIComponents';
 import TroubleBreakdownCard from './components/TroubleBreakdownCard';
 import MeasurementGuide, { isMeasureGuideDismissed } from './components/MeasurementGuide';
@@ -302,6 +303,10 @@ export default function App() {
     // Eagerly preload ML models in background so camera opens faster
     preloadLandmarker();
     preloadAge();
+    // face-api descriptor 모델도 함께 preload — 누락 시 첫 측정에서 cold start로
+    // 6초 timeout 안에 추출 못 해 baseline.descriptor=null로 저장됨 → 이후 모든
+    // 측정에서 face 매칭 불가, 측정 정보에 "비교 안 함" 표시되는 버그가 발생했음.
+    preloadFaceDescriptor();
     // Show migration notice in standalone (PWA) mode with no data
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
     if (isStandalone && getRecords().length === 0 && !localStorage.getItem('nou_migration_dismissed')) {
