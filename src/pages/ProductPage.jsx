@@ -12,6 +12,7 @@ import {
 import CareRecommendation from '../components/CareRecommendation';
 import ProductRegisteredModal from '../components/ProductRegisteredModal';
 import SwipeableRow from '../components/SwipeableRow';
+import { DropletIcon, BubbleIcon, BalanceIcon, PaletteIcon, TargetIcon, RednessIcon, LotionIcon, SparkleIcon, MicroscopeIcon, DiamondIcon, EyeIcon, RulerIcon } from '../components/icons/PastelIcons';
 import { hapticLight, hapticSelection } from '../utils/haptics';
 import { getAllProductThumbs, migrateThumbsFromLocalStorage } from '../storage/ImageStore';
 import { PRODUCTS } from '../data/ProductCatalog';
@@ -1269,6 +1270,21 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
 
             {/* 제품 요약 카드 */}
             {(() => { try {
+              // 진단서 피부 지표 12개 — 아이콘·색상 시스템 통일
+              const SKIN_METRICS = {
+                moisture:           { label: '수분',     icon: (s) => <DropletIcon size={s} />,     color: '#0e6bec' },
+                oilBalance:         { label: '유분',     icon: (s) => <BubbleIcon size={s} />,      color: '#00a0fc' },
+                oilMoistureBalance: { label: '유수분',   icon: (s) => <BalanceIcon size={s} />,     color: '#00a0fc' },
+                pigmentationScore:  { label: '색소',     icon: (s) => <PaletteIcon size={s} />,     color: '#9D1233' },
+                rednessScore:       { label: '붉은기',   icon: (s) => <TargetIcon size={s} />,      color: '#e05545' },
+                troubleCount:       { label: '트러블',   icon: (s) => <RednessIcon size={s} />,     color: '#e05545' },
+                skinTone:           { label: '피부톤',   icon: (s) => <LotionIcon size={s} />,      color: '#f42f89' },
+                textureScore:       { label: '피부결',   icon: (s) => <SparkleIcon size={s} />,     color: '#ff5097' },
+                poreScore:          { label: '모공',     icon: (s) => <MicroscopeIcon size={s} />,  color: '#fc75c6' },
+                elasticityScore:    { label: '탄력',     icon: (s) => <DiamondIcon size={s} />,     color: '#ff8500' },
+                darkCircleScore:    { label: '다크서클', icon: (s) => <EyeIcon size={s} />,         color: '#ffb600' },
+                wrinkleScore:       { label: '주름',     icon: (s) => <RulerIcon size={s} />,       color: '#fccd03' },
+              };
               // 카테고리→기대 효과 메트릭 매핑
               const CAT_METRICS = {
                 '토너': ['moisture', 'poreScore', 'skinTone'],
@@ -1280,39 +1296,24 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
                 '마스크팩': ['moisture', 'skinTone', 'elasticityScore'],
                 '기타': ['moisture', 'skinTone'],
               };
-              const METRIC_LABELS = {
-                moisture: '수분', skinTone: '피부톤', troubleCount: '트러블',
-                oilBalance: '유수분', wrinkleScore: '주름', poreScore: '모공',
-                elasticityScore: '탄력', pigmentationScore: '색소',
-                textureScore: '피부결', darkCircleScore: '다크서클',
-              };
-              const METRIC_ICONS = {
-                moisture: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l-6.5 11a6.5 6.5 0 1 0 13 0z"/></svg>,
-                skinTone: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18"/></svg>,
-                troubleCount: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg>,
-                oilBalance: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 18a6 6 0 0 1 12 0"/><path d="M12 12v-8"/></svg>,
-                wrinkleScore: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 8c2 -2 4 2 6 0s4 -2 6 0"/><path d="M4 16c2 -2 4 2 6 0s4 -2 6 0"/></svg>,
-                poreScore: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/></svg>,
-                elasticityScore: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17l-4 4"/><path d="M17 7l4 -4"/><path d="M3 21l18 -18"/></svg>,
-                pigmentationScore: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>,
-                textureScore: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>,
-                darkCircleScore: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="12" r="4"/><circle cx="15" cy="12" r="4"/></svg>,
-              };
 
               // 실제 상관 데이터 있으면 사용, 없으면 카테고리 기반 추론
               let benefitKeys = CAT_METRICS[product.category] || CAT_METRICS['기타'];
               let correlation = null;
               try { correlation = computeCorrelation(product); } catch {}
               if (correlation?.metrics?.length > 0) {
-                const improved = correlation.metrics.filter(m => m.improved).map(m => m.key);
-                if (improved.length > 0) benefitKeys = improved;
+                const improved = correlation.metrics.filter(m => m.improved).map(m => m.key).filter(k => SKIN_METRICS[k]);
+                if (improved.length >= 2) benefitKeys = improved;
               }
+              // 2~5개로 제한
+              benefitKeys = benefitKeys.filter(k => SKIN_METRICS[k]).slice(0, 5);
+              if (benefitKeys.length < 2) benefitKeys = (CAT_METRICS[product.category] || CAT_METRICS['기타']).slice(0, 2);
 
               // 요약 텍스트 생성
               const rawIngs = Array.isArray(product.ingredients) ? product.ingredients
                 : (product.ingredients?.estimated || product.ingredients?.known || []);
               const ings = rawIngs.slice(0, 3);
-              const benefitLabels = benefitKeys.map(k => METRIC_LABELS[k]).filter(Boolean);
+              const benefitLabels = benefitKeys.map(k => SKIN_METRICS[k]?.label).filter(Boolean);
               let summary = '';
               if (ings.length > 0) {
                 summary = `${ings.slice(0, 2).join(', ')} 성분으로 ${benefitLabels.slice(0, 2).join('·')} 관리에 도움을 줘요.`;
@@ -1333,16 +1334,20 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
                   </div>
                   {/* 효과 메트릭 아이콘 */}
                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: displayIngs.length > 0 ? 10 : 0 }}>
-                    {benefitKeys.map(k => (
-                      <div key={k} style={{
-                        display: 'flex', alignItems: 'center', gap: 4,
-                        padding: '3px 8px', borderRadius: 8,
-                        background: 'rgba(101,152,239,0.08)',
-                      }}>
-                        {METRIC_ICONS[k]}
-                        <span style={{ fontSize: 10, fontWeight: 600, color: '#6598ef' }}>{METRIC_LABELS[k]}</span>
-                      </div>
-                    ))}
+                    {benefitKeys.map(k => {
+                      const m = SKIN_METRICS[k];
+                      if (!m) return null;
+                      return (
+                        <div key={k} style={{
+                          display: 'flex', alignItems: 'center', gap: 4,
+                          padding: '3px 8px', borderRadius: 8,
+                          background: `${m.color}14`,
+                        }}>
+                          {m.icon(13)}
+                          <span style={{ fontSize: 10, fontWeight: 600, color: m.color }}>{m.label}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                   {/* 핵심 성분 태그 */}
                   {displayIngs.length > 0 && (
