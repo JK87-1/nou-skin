@@ -1089,8 +1089,68 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
     }
   };
 
-  // ── 저장 (캡처 placeholder) ──
-  const handleSave = () => { setSaved(true); setTimeout(() => setSaved(false), 2000); };
+  // ── 저장 (시그니처 카드 캡처 → 갤러리 저장) ──
+  const handleSave = async () => {
+    const el = captureRef.current;
+    if (!el) return;
+    try {
+      const canvas = document.createElement('canvas');
+      const dpr = window.devicePixelRatio || 2;
+      const rect = el.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+      // html2canvas 없이 SVG foreignObject 방식으로 캡처
+      const clone = el.cloneNode(true);
+      clone.style.position = 'absolute';
+      clone.style.left = '-9999px';
+      document.body.appendChild(clone);
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${rect.width}" height="${rect.height}">
+        <foreignObject width="100%" height="100%">
+          <div xmlns="http://www.w3.org/1999/xhtml">${clone.outerHTML}</div>
+        </foreignObject>
+      </svg>`;
+      document.body.removeChild(clone);
+      const img = new Image();
+      const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      img.onload = async () => {
+        ctx.drawImage(img, 0, 0, rect.width, rect.height);
+        URL.revokeObjectURL(url);
+        canvas.toBlob(async (b) => {
+          if (!b) return;
+          // Web Share API로 이미지 저장/공유
+          if (navigator.share && navigator.canShare?.({ files: [new File([b], 'skin-report.png', { type: 'image/png' })] })) {
+            try {
+              await navigator.share({ files: [new File([b], 'skin-report.png', { type: 'image/png' })], title: '스킨 리포트' });
+            } catch {}
+          } else {
+            // fallback: 다운로드
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(b);
+            a.download = `skin-report-${dateShort}.png`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+          }
+          setSaved(true);
+          setTimeout(() => setSaved(false), 2000);
+        }, 'image/png');
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        // foreignObject 실패 시 텍스트 공유 fallback
+        const text = `스킨 리포트 · ${dateShort}\n종합 ${record.overallScore}점 · 스킨 레벨 ${level}\n피부나이 ${record.skinAge}세`;
+        navigator.clipboard?.writeText(text);
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      };
+      img.src = url;
+    } catch {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    }
+  };
 
   // ── 변화 행 ──
   const ChangeRow = ({ label, diff, unit }) => (
@@ -2015,7 +2075,7 @@ function RoutineChecklist() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M5 12l5 5L20 7"/>
                 </svg>
-                <span>오늘 모두 발랐어요</span>
+                <span>{selectedDate === _care_todayStr() ? '오늘 모두 발랐어요' : `${_care_dateLabel(selectedDate)} 모두 완료`}</span>
               </>
             )}
           </button>
@@ -2092,8 +2152,8 @@ function RoutineChecklist() {
                   </div>
                   <div onClick={(e) => { e.stopPropagation(); handleToggle(item.id); }} style={{
                     width: 24, height: 24, borderRadius: 8, flexShrink: 0, cursor: 'pointer',
-                    border: checked ? 'none' : '2px solid rgba(255,255,255,0.4)',
-                    background: checked ? 'var(--accent-primary, #6598ef)' : 'transparent',
+                    border: checked ? 'none' : '2px solid rgba(200,210,220,0.6)',
+                    background: checked ? 'var(--accent-primary, #6598ef)' : 'rgba(255,255,255,0.85)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     transition: 'all 0.2s',
                   }}>
