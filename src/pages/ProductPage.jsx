@@ -7,7 +7,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
   TRACKER_CATEGORIES, getProducts, saveProduct, deleteProduct, toggleFavorite,
-  computeAllCorrelations, compressProductThumb, dedupeProductsByName, reorderProducts,
+  computeAllCorrelations, computeCorrelation, compressProductThumb, dedupeProductsByName, reorderProducts,
 } from '../storage/TrackerStorage';
 import CareRecommendation from '../components/CareRecommendation';
 import ProductRegisteredModal from '../components/ProductRegisteredModal';
@@ -1267,6 +1267,99 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
               </div>
             </div>
 
+            {/* 제품 요약 카드 */}
+            {(() => {
+              // 카테고리→기대 효과 메트릭 매핑
+              const CAT_METRICS = {
+                '토너': ['moisture', 'poreScore', 'skinTone'],
+                '세럼': ['moisture', 'elasticityScore', 'textureScore'],
+                '에센스': ['moisture', 'elasticityScore', 'skinTone'],
+                '크림': ['moisture', 'wrinkleScore', 'elasticityScore'],
+                '선크림': ['pigmentationScore', 'skinTone', 'wrinkleScore'],
+                '클렌저': ['poreScore', 'troubleCount', 'textureScore'],
+                '마스크팩': ['moisture', 'skinTone', 'elasticityScore'],
+                '기타': ['moisture', 'skinTone'],
+              };
+              const METRIC_LABELS = {
+                moisture: '수분', skinTone: '피부톤', troubleCount: '트러블',
+                oilBalance: '유수분', wrinkleScore: '주름', poreScore: '모공',
+                elasticityScore: '탄력', pigmentationScore: '색소',
+                textureScore: '피부결', darkCircleScore: '다크서클',
+              };
+              const METRIC_ICONS = {
+                moisture: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l-6.5 11a6.5 6.5 0 1 0 13 0z"/></svg>,
+                skinTone: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18"/></svg>,
+                troubleCount: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg>,
+                oilBalance: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 18a6 6 0 0 1 12 0"/><path d="M12 12v-8"/></svg>,
+                wrinkleScore: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 8c2 -2 4 2 6 0s4 -2 6 0"/><path d="M4 16c2 -2 4 2 6 0s4 -2 6 0"/></svg>,
+                poreScore: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/></svg>,
+                elasticityScore: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17l-4 4"/><path d="M17 7l4 -4"/><path d="M3 21l18 -18"/></svg>,
+                pigmentationScore: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>,
+                textureScore: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>,
+                darkCircleScore: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="12" r="4"/><circle cx="15" cy="12" r="4"/></svg>,
+              };
+
+              // 실제 상관 데이터 있으면 사용, 없으면 카테고리 기반 추론
+              let benefitKeys = CAT_METRICS[product.category] || CAT_METRICS['기타'];
+              let correlation = null;
+              try { correlation = computeCorrelation(product); } catch {}
+              if (correlation?.metrics?.length > 0) {
+                const improved = correlation.metrics.filter(m => m.improved).map(m => m.key);
+                if (improved.length > 0) benefitKeys = improved;
+              }
+
+              // 요약 텍스트 생성
+              const ings = product.ingredients?.slice(0, 3) || [];
+              const benefitLabels = benefitKeys.map(k => METRIC_LABELS[k]).filter(Boolean);
+              let summary = '';
+              if (correlation?.metrics?.length > 0 && correlation.metrics[0].improved) {
+                const best = correlation.metrics[0];
+                summary = `${best.label} ${best.diff}점 개선. ${ings.length > 0 ? ings[0] + ' 성분이 ' : ''}${product.category} 루틴에 효과적이에요.`;
+              } else if (ings.length > 0) {
+                summary = `${ings.slice(0, 2).join(', ')} 성분으로 ${benefitLabels.slice(0, 2).join('·')} 관리에 도움을 줘요.`;
+              } else {
+                summary = `${product.category} 제품으로 ${benefitLabels.slice(0, 2).join('·')} 케어에 도움을 줘요.`;
+              }
+
+              const displayIngs = (product.ingredients || []).slice(0, 5);
+
+              return (
+                <div style={{
+                  padding: '12px 16px', marginBottom: 12,
+                  background: 'rgba(0,0,0,0.02)', borderRadius: 14,
+                }}>
+                  {/* 요약 */}
+                  <div style={{ fontSize: 12, color: 'var(--text-primary)', lineHeight: 1.55, marginBottom: 10 }}>
+                    {summary}
+                  </div>
+                  {/* 효과 메트릭 아이콘 */}
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: displayIngs.length > 0 ? 10 : 0 }}>
+                    {benefitKeys.map(k => (
+                      <div key={k} style={{
+                        display: 'flex', alignItems: 'center', gap: 4,
+                        padding: '3px 8px', borderRadius: 8,
+                        background: 'rgba(101,152,239,0.08)',
+                      }}>
+                        {METRIC_ICONS[k]}
+                        <span style={{ fontSize: 10, fontWeight: 600, color: '#6598ef' }}>{METRIC_LABELS[k]}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {/* 핵심 성분 태그 */}
+                  {displayIngs.length > 0 && (
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                      {displayIngs.map((ing, i) => (
+                        <span key={i} style={{
+                          fontSize: 10, color: 'var(--text-muted)', background: 'rgba(0,0,0,0.04)',
+                          borderRadius: 6, padding: '3px 8px', fontWeight: 500,
+                        }}>{ing}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
             <div style={{
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               padding: '12px 16px', marginBottom: 16,
@@ -1278,17 +1371,6 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
               </div>
               <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{product.startDate} 시작</span>
             </div>
-
-            {product.ingredients?.length > 0 && (
-              <div style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tag-color)', marginBottom: 6 }}>핵심 성분</div>
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                  {product.ingredients.map((ing, i) => (
-                    <span key={i} style={{ fontSize: 11, color: accent, background: `${accent}12`, borderRadius: 8, padding: '4px 10px' }}>{ing}</span>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {/* 메모 */}
             <div style={{ marginBottom: 16 }}>
