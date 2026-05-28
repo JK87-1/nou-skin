@@ -627,7 +627,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
 
           {/* ⑥ lua의 발견 */}
           <div style={{ margin: '0 12px 12px', background: 'rgba(255,255,255,0.2)', borderRadius: 18, padding: 14 }}>
-            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10 }}>lua의 발견</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10 }}>인사이트</div>
             {(() => {
               const discoveries = getDiscoveries(records, getProducts());
               if (discoveries.length === 0) return (
