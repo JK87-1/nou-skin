@@ -237,7 +237,7 @@ export function DetailPage({ metricKey, value, onBack }) {
         </DetailAccordion>
 
         {/* 4. Disclaimer */}
-        <p style={{ fontSize: 10, color: 'rgba(0,0,0,0.25)', lineHeight: 1.5, textAlign: 'center', margin: '0 0 16px', padding: '0 14px' }}>
+        <p style={{ fontSize: 10, color: 'rgba(0,0,0,0.25)', lineHeight: 1.5, textAlign: 'center', margin: '0 0 16px', padding: '0 0' }}>
           피부과 임상 기기(Corneometer, Mexameter 등)의 측정 원리를 컴퓨터 비전으로 구현하였으며, 임상 데이터와의 교차 검증을 통해 정확도를 개선하고 있습니다.
         </p>
 
