@@ -397,40 +397,6 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
             </div>
           )}
 
-          {/* 종합 점수 추이 — 토스 스타일 라인 차트 (점·x축 라벨 제거, 최고/최저·평균만 강조) */}
-          {recordCount >= 2 && (() => {
-            const series = getTimeSeries('overallScore');
-            if (series.length < 2) return null;
-            const vals = series.map(s => s.value);
-            const firstVal = vals[0];
-            const lastVal = vals[vals.length - 1];
-            const diffPct = firstVal > 0 ? ((lastVal - firstVal) / firstVal * 100).toFixed(1) : null;
-            return (
-              <div style={{ margin: '0 12px 12px', ...glass, padding: '14px 14px 10px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>종합 점수 추이</span>
-                  {diffPct && Number(diffPct) !== 0 && (
-                    <span style={{ fontSize: 11.5, fontWeight: 600, color: Number(diffPct) > 0 ? '#6598ef' : '#e05545' }}>
-                      {Number(diffPct) > 0 ? '▲' : '▼'} {Math.abs(Number(diffPct))}%
-                    </span>
-                  )}
-                </div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: -0.3, marginBottom: 2 }}>
-                  {lastVal}점
-                </div>
-                <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginBottom: 6 }}>
-                  최근 {series.length}회 측정
-                </div>
-                <TossLineChart
-                  data={series}
-                  height={150}
-                  valueFormatter={(v) => `${v}점`}
-                  averageLabel="평균"
-                />
-              </div>
-            );
-          })()}
-
           {/* 측정 기록 타임라인 */}
           {recordCount > 0 && (
             <div style={{ margin: '0 12px 12px', background: 'rgba(255,255,255,0.2)', borderRadius: 18, padding: 14 }}>
@@ -473,12 +439,10 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
             </div>
           )}
 
-          {/* ④ 트렌드 차트 */}
+          {/* ④ 점수 변화 — 종합 + 10개 지표 통합 */}
           <div style={{ margin: '0 12px 12px', background: 'rgba(255,255,255,0.2)', borderRadius: 18, padding: 14 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
-                {period === '7d' ? '7일' : period === '4w' ? '4주' : '3개월'} 변화
-              </span>
+              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>점수 변화</span>
               <div style={{ display: 'flex', gap: 6 }}>
                 {[{ k: '7d', l: '7일' }, { k: '4w', l: '4주' }, { k: '3m', l: '3개월' }].map(p => (
                   <button key={p.k} onClick={() => setPeriod(p.k)} style={{
@@ -491,10 +455,10 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
               </div>
             </div>
 
-            {/* 메트릭 chip — 한 번에 1개 메트릭만 단일 라인으로 (토스 스타일 가독성) */}
+            {/* 메트릭 chip — 종합 + 10개 지표 */}
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-              {METRICS.map((m) => {
-                const activeTrend = trendMetric || METRICS[0]?.key || 'moisture';
+              {[{ key: 'overallScore', label: '종합' }, ...ALL_METRICS].map((m) => {
+                const activeTrend = trendMetric || 'overallScore';
                 const active = activeTrend === m.key;
                 return (
                   <button key={m.key} onClick={() => setTrendMetric(m.key)} style={{
@@ -515,17 +479,18 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                 </div>
               </div>
             ) : (() => {
-              const activeTrendKey = trendMetric || METRICS[0]?.key || 'moisture';
+              const activeTrendKey = trendMetric || 'overallScore';
               const series = chartRecords.map(r => ({ date: r.date, value: r[activeTrendKey] ?? 50 }));
               const vals = series.map(s => s.value);
               const lastVal = vals[vals.length - 1];
               const firstVal = vals[0];
               const diff = lastVal - firstVal;
-              const metricLabel = METRICS.find(m => m.key === activeTrendKey)?.label || '';
+              const metricLabel = activeTrendKey === 'overallScore' ? '종합' : (ALL_METRICS.find(m => m.key === activeTrendKey)?.label || '');
+              const unit = activeTrendKey === 'skinAge' ? '세' : '점';
               return (
                 <>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 2 }}>
-                    <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: -0.3 }}>{lastVal}</span>
+                    <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: -0.3 }}>{lastVal}{unit}</span>
                     <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{metricLabel}</span>
                     {diff !== 0 && (
                       <span style={{ fontSize: 11, fontWeight: 600, color: diff > 0 ? '#6598ef' : '#e05545', marginLeft: 'auto' }}>
