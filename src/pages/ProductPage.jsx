@@ -1274,7 +1274,7 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
             }}>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
                 <span style={{ fontSize: 11, fontWeight: 600, color: '#d0d0d0' }}>사용</span>
-                <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{days}일째</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{days}일째</span>
               </div>
               <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{product.startDate} 시작</span>
             </div>
