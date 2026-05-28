@@ -307,7 +307,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
   const chartRecords = (() => {
     const now = Date.now();
     const ms = period === '7d' ? 7*86400000 : period === '4w' ? 28*86400000 : 90*86400000;
-    return records.filter(r => now - new Date(r.date).getTime() <= ms).reverse();
+    return records.filter(r => now - new Date(r.date).getTime() <= ms);
   })();
 
   return (
