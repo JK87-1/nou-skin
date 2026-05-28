@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { getLatestRecord, getPreviousRecord, getRecordCount, getRecords, getTimeSeries, getAllThumbnailsAsync } from '../storage/SkinStorage';
+import { getProducts, computeAllCorrelations } from '../storage/TrackerStorage';
 import TossLineChart from '../components/TossLineChart';
 import { AnimatedNumber } from '../components/UIComponents';
 
@@ -14,7 +15,7 @@ const glass = {
 const ALL_METRICS = [
   { key: 'moisture', label: '수분' },
   { key: 'skinTone', label: '피부톤' },
-  { key: 'troubleCount', label: '트러블' },
+  { key: 'troubleCount', label: '트러블', inverse: true },
   { key: 'oilBalance', label: '유수분' },
   { key: 'wrinkleScore', label: '주름' },
   { key: 'poreScore', label: '모공' },
@@ -37,15 +38,210 @@ function getTopChangedMetrics(latest, prev, count = 4) {
 const CHART_COLORS = ['#1E90E8', '#185FA5', '#7FB3E3', '#C5DEF5'];
 const DAY_LABELS = ['일','월','화','수','목','금','토'];
 
-// Mock impact factors (real implementation would compute from data)
+// ===== 실제 영향 요인 분석 =====
+// 루틴 체크 데이터 + 제품 사용 기록 ↔ 피부 측정 변화 상관분석
 function getImpactFactors(metricKey, records) {
   if (records.length < 2) return [];
-  return [
-    { name: '수분 섭취', type: 'habit', icon: '', impact: 76 },
-    { name: '수면 시간', type: 'habit', icon: '', impact: 42 },
-    { name: '자외선 차단', type: 'habit', icon: '', impact: 28 },
-    { name: '토너', type: 'product', icon: '', impact: -18 },
-  ];
+  const factors = [];
+  const metric = ALL_METRICS.find(m => m.key === metricKey);
+  const isInverse = metric?.inverse; // troubleCount: 낮을수록 좋음
+
+  // 1) 루틴 습관 체크 ↔ 다음 측정 변화
+  // lua_routine_YYYY-MM-DD 키에서 체크 데이터를 가져와 측정일 기준으로 매칭
+  const habitItems = (() => {
+    try { return JSON.parse(localStorage.getItem('lua_my_routines') || '[]'); } catch { return []; }
+  })();
+  const uniqueHabits = [...new Map(habitItems.filter(h => h.id?.startsWith('_')).map(h => [h.id, h])).values()];
+
+  for (const habit of uniqueHabits) {
+    const doneScores = [];
+    const notDoneScores = [];
+    for (let i = 0; i < records.length; i++) {
+      const r = records[i];
+      const val = r[metricKey];
+      if (val == null) continue;
+      // 이 측정 날짜의 루틴 체크 확인
+      try {
+        const checkData = JSON.parse(localStorage.getItem(`lua_routine_${r.date}`) || '{}');
+        if (checkData[habit.id] === true) doneScores.push(val);
+        else if (checkData[habit.id] === false || !(habit.id in checkData)) notDoneScores.push(val);
+      } catch { continue; }
+    }
+    if (doneScores.length >= 2 && notDoneScores.length >= 1) {
+      const avgDone = doneScores.reduce((a, b) => a + b, 0) / doneScores.length;
+      const avgNot = notDoneScores.reduce((a, b) => a + b, 0) / notDoneScores.length;
+      let diff = avgDone - avgNot;
+      if (isInverse) diff = -diff; // troubleCount: done 평균이 낮으면 좋음
+      if (Math.abs(diff) >= 1) {
+        factors.push({
+          name: habit.name,
+          type: 'habit',
+          impact: Math.round(diff),
+          samples: doneScores.length + notDoneScores.length,
+        });
+      }
+    }
+  }
+
+  // 2) 제품 사용 기간 ↔ 메트릭 변화 (computeAllCorrelations 활용)
+  const products = getProducts();
+  for (const p of products) {
+    if (!p.startDate) continue;
+    const before = records.filter(r => r.date < p.startDate);
+    const after = records.filter(r => r.date >= p.startDate);
+    if (before.length < 1 || after.length < 1) continue;
+    const avgBefore = before.reduce((s, r) => s + (r[metricKey] ?? 0), 0) / before.length;
+    const avgAfter = after.reduce((s, r) => s + (r[metricKey] ?? 0), 0) / after.length;
+    let diff = avgAfter - avgBefore;
+    if (isInverse) diff = -diff;
+    if (Math.abs(diff) >= 1) {
+      factors.push({
+        name: `${p.brand} ${p.name}`.trim(),
+        type: 'product',
+        impact: Math.round(diff),
+        samples: before.length + after.length,
+      });
+    }
+  }
+
+  // 3) 루틴 완료율 ↔ 메트릭 (높은 완료일 vs 낮은 완료일)
+  const completionScores = [];
+  for (const r of records) {
+    const val = r[metricKey];
+    if (val == null) continue;
+    try {
+      const checkData = JSON.parse(localStorage.getItem(`lua_routine_${r.date}`) || '{}');
+      const total = Object.keys(checkData).length;
+      const done = Object.values(checkData).filter(Boolean).length;
+      if (total > 0) completionScores.push({ val, rate: done / total });
+    } catch { continue; }
+  }
+  if (completionScores.length >= 4) {
+    const sorted = [...completionScores].sort((a, b) => a.rate - b.rate);
+    const half = Math.floor(sorted.length / 2);
+    const lowAvg = sorted.slice(0, half).reduce((s, x) => s + x.val, 0) / half;
+    const highAvg = sorted.slice(half).reduce((s, x) => s + x.val, 0) / (sorted.length - half);
+    let diff = highAvg - lowAvg;
+    if (isInverse) diff = -diff;
+    if (Math.abs(diff) >= 2) {
+      factors.push({
+        name: '루틴 꾸준함',
+        type: 'habit',
+        impact: Math.round(diff),
+        samples: completionScores.length,
+      });
+    }
+  }
+
+  // 영향력 절대값 순 정렬, 상위 5개
+  factors.sort((a, b) => Math.abs(b.impact) - Math.abs(a.impact));
+  return factors.slice(0, 5);
+}
+
+// ===== lua의 발견 — 실제 데이터 기반 인사이트 =====
+function getDiscoveries(records, products) {
+  if (records.length < 2) return [];
+  const discoveries = [];
+  const sorted = [...records].sort((a, b) => new Date(a.date) - new Date(b.date));
+  const latest = sorted[sorted.length - 1];
+  const first = sorted[0];
+
+  // 1) 가장 크게 개선된 메트릭
+  for (const m of ALL_METRICS) {
+    const firstVal = first[m.key];
+    const lastVal = latest[m.key];
+    if (firstVal == null || lastVal == null) continue;
+    let diff = lastVal - firstVal;
+    const improved = m.inverse ? diff < 0 : diff > 0;
+    if (improved && Math.abs(diff) >= 5) {
+      discoveries.push({
+        text: `${m.label}이 처음 측정 때보다 ${Math.abs(diff)}점 좋아졌어요. 꾸준한 관리 효과가 보이고 있어요.`,
+        tag: '피부 변화',
+      });
+      break; // 가장 큰 개선 1개만
+    }
+  }
+
+  // 2) 측정 주기 패턴
+  if (sorted.length >= 3) {
+    const gaps = [];
+    for (let i = 1; i < sorted.length; i++) {
+      gaps.push((new Date(sorted[i].date) - new Date(sorted[i - 1].date)) / 86400000);
+    }
+    const avgGap = gaps.reduce((a, b) => a + b, 0) / gaps.length;
+    const dayDist = new Map();
+    for (const r of sorted) {
+      const d = new Date(r.date).getDay();
+      dayDist.set(d, (dayDist.get(d) || 0) + 1);
+    }
+    const mostDay = [...dayDist.entries()].sort((a, b) => b[1] - a[1])[0];
+    if (mostDay && mostDay[1] >= 2) {
+      discoveries.push({
+        text: `주로 ${DAY_LABELS[mostDay[0]]}요일에 측정하고 있어요. 평균 ${avgGap.toFixed(0)}일 간격으로 기록 중이에요.`,
+        tag: '측정 패턴',
+      });
+    }
+  }
+
+  // 3) 제품 효과 발견
+  try {
+    const correlations = computeAllCorrelations();
+    const best = correlations.find(c => c.metrics?.length > 0 && c.metrics[0].improved);
+    if (best) {
+      const m = best.metrics[0];
+      discoveries.push({
+        text: `${best.brand} ${best.productName} 사용 후 ${m.label}이 ${m.diff}점 변화했어요. (${best.days}일 사용 기준)`,
+        tag: '제품 효과',
+      });
+    }
+  } catch {}
+
+  // 4) 최근 트렌드 (최근 5회 vs 이전 5회)
+  if (sorted.length >= 6) {
+    const recent5 = sorted.slice(-5);
+    const prev5 = sorted.slice(-10, -5);
+    if (prev5.length >= 3) {
+      const recentAvg = recent5.reduce((s, r) => s + (r.overallScore || 0), 0) / recent5.length;
+      const prevAvg = prev5.reduce((s, r) => s + (r.overallScore || 0), 0) / prev5.length;
+      const diff = recentAvg - prevAvg;
+      if (Math.abs(diff) >= 2) {
+        discoveries.push({
+          text: diff > 0
+            ? `최근 5회 종합점수 평균이 이전보다 ${diff.toFixed(0)}점 올랐어요. 좋은 흐름이에요.`
+            : `최근 5회 종합점수 평균이 이전보다 ${Math.abs(diff).toFixed(0)}점 내려갔어요. 루틴을 점검해보세요.`,
+          tag: diff > 0 ? '좋은 흐름' : '점검 필요',
+        });
+      }
+    }
+  }
+
+  // 5) 루틴 완료율과 피부 상태 상관
+  const withCompletion = [];
+  for (const r of sorted) {
+    try {
+      const checks = JSON.parse(localStorage.getItem(`lua_routine_${r.date}`) || '{}');
+      const total = Object.keys(checks).length;
+      const done = Object.values(checks).filter(Boolean).length;
+      if (total > 0) withCompletion.push({ score: r.overallScore || 0, rate: done / total });
+    } catch {}
+  }
+  if (withCompletion.length >= 4) {
+    const highRate = withCompletion.filter(x => x.rate >= 0.7);
+    const lowRate = withCompletion.filter(x => x.rate < 0.5);
+    if (highRate.length >= 2 && lowRate.length >= 1) {
+      const highAvg = highRate.reduce((s, x) => s + x.score, 0) / highRate.length;
+      const lowAvg = lowRate.reduce((s, x) => s + x.score, 0) / lowRate.length;
+      const diff = highAvg - lowAvg;
+      if (diff >= 3) {
+        discoveries.push({
+          text: `루틴을 70% 이상 지킨 날은 종합점수가 평균 ${diff.toFixed(0)}점 더 높았어요.`,
+          tag: '루틴 발견',
+        });
+      }
+    }
+  }
+
+  return discoveries.slice(0, 4);
 }
 
 function getHeadline(latest, prev) {
@@ -377,36 +573,48 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
               </div>
             </div>
 
-            {recordCount < 2 ? (
+            {recordCount < 2 || impacts.length === 0 ? (
               <div style={{ padding: '32px 16px', textAlign: 'center' }}>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>측정이 더 쌓이면 영향 요인을 분석해드릴게요</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                  {recordCount < 2 ? '측정이 더 쌓이면 영향 요인을 분석해드릴게요' : '아직 유의미한 영향 요인을 찾지 못했어요. 루틴을 꾸준히 체크해보세요.'}
+                </div>
               </div>
             ) : (
               <>
-                {impacts.map((f, i) => (
-                  <div key={i} style={{ padding: '8px 0', borderTop: i > 0 ? '0.5px solid rgba(255,255,255,0.2)' : 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{
-                      width: 32, height: 32, borderRadius: 8, flexShrink: 0,
-                      background: 'rgba(255,255,255,0.25)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16,
-                    }}>{f.icon}</div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 11.5, fontWeight: 500, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</div>
-                      <div style={{ fontSize: 8.5, color: 'var(--text-muted)', marginTop: 2 }}>{f.type === 'habit' ? '습관' : '화장품'}</div>
-                      <div style={{ marginTop: 5, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.25)', position: 'relative' }}>
-                        <div style={{ position: 'absolute', left: '50%', top: -2, width: 1, height: 8, background: 'rgba(255,255,255,0.4)' }} />
-                        {f.impact > 0 ? (
-                          <div style={{ position: 'absolute', left: '50%', top: 0, height: '100%', borderRadius: 2, background: 'var(--accent-primary, #6598ef)', width: `${Math.min(Math.abs(f.impact), 100) / 2}%` }} />
+                {impacts.map((f, i) => {
+                  const maxImpact = Math.max(...impacts.map(x => Math.abs(x.impact)), 1);
+                  const barWidth = Math.min(Math.abs(f.impact) / maxImpact * 50, 50);
+                  return (
+                    <div key={i} style={{ padding: '8px 0', borderTop: i > 0 ? '0.5px solid rgba(255,255,255,0.2)' : 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{
+                        width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+                        background: f.type === 'product' ? 'rgba(101,152,239,0.12)' : 'rgba(255,255,255,0.25)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        {f.type === 'product' ? (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="3" width="12" height="18" rx="2"/><line x1="9" y1="8" x2="15" y2="8"/></svg>
                         ) : (
-                          <div style={{ position: 'absolute', right: '50%', top: 0, height: '100%', borderRadius: 2, background: confidence === '낮음' ? '#888' : '#E24B4A', width: `${Math.min(Math.abs(f.impact), 100) / 2}%` }} />
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5l0 14"/><path d="M5 12l14 0"/></svg>
                         )}
                       </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 11.5, fontWeight: 500, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</div>
+                        <div style={{ fontSize: 8.5, color: 'var(--text-muted)', marginTop: 2 }}>{f.type === 'habit' ? '습관' : '화장품'}{f.samples ? ` · ${f.samples}회` : ''}</div>
+                        <div style={{ marginTop: 5, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.25)', position: 'relative' }}>
+                          <div style={{ position: 'absolute', left: '50%', top: -2, width: 1, height: 8, background: 'rgba(255,255,255,0.4)' }} />
+                          {f.impact > 0 ? (
+                            <div style={{ position: 'absolute', left: '50%', top: 0, height: '100%', borderRadius: 2, background: 'var(--accent-primary, #6598ef)', width: `${barWidth}%` }} />
+                          ) : (
+                            <div style={{ position: 'absolute', right: '50%', top: 0, height: '100%', borderRadius: 2, background: confidence === '낮음' ? '#888' : '#E24B4A', width: `${barWidth}%` }} />
+                          )}
+                        </div>
+                      </div>
+                      <span style={{ minWidth: 36, textAlign: 'right', fontSize: 12, fontWeight: 500, color: f.impact > 0 ? '#1976D2' : f.impact < 0 ? (confidence === '낮음' ? '#888' : '#A32D2D') : 'var(--text-muted)' }}>
+                        {f.impact > 0 ? `+${f.impact}점` : `${f.impact}점`}
+                      </span>
                     </div>
-                    <span style={{ minWidth: 36, textAlign: 'right', fontSize: 12, fontWeight: 500, color: f.impact > 0 ? '#1976D2' : f.impact < 0 ? (confidence === '낮음' ? '#888' : '#A32D2D') : 'var(--text-muted)' }}>
-                      {f.impact > 0 ? `+${f.impact}%` : `${f.impact}%`}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
                 <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 12 }}>
                   측정 {recordCount}회 기반 · 신뢰도 {confidence}
                 </div>
@@ -420,16 +628,14 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
           {/* ⑥ lua의 발견 */}
           <div style={{ margin: '0 12px 12px', background: 'rgba(255,255,255,0.2)', borderRadius: 18, padding: 14 }}>
             <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10 }}>lua의 발견</div>
-            {recordCount < 2 ? (
-              <div style={{ padding: '20px 8px', textAlign: 'center', fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                꾸준히 기록하면, lua가 패턴을 찾아드릴게요
-              </div>
-            ) : (
-              [
-                { text: '자기 전 토너를 챙긴 날, 다음날 모공 점수가 평균 4점 더 좋았어요.', tag: '루틴 발견' },
-                { text: '수분이 충분한 주에는 유수분 점수가 평균 6점 더 좋았어요.', tag: '피부 발견' },
-                { text: '측정 시각이 일정할수록 점수가 안정적이에요. 주로 일요일 저녁에 재고 있어요.', tag: '패턴 발견' },
-              ].map((d, i) => (
+            {(() => {
+              const discoveries = getDiscoveries(records, getProducts());
+              if (discoveries.length === 0) return (
+                <div style={{ padding: '20px 8px', textAlign: 'center', fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                  {recordCount < 2 ? '꾸준히 기록하면, lua가 패턴을 찾아드릴게요' : '아직 뚜렷한 패턴을 찾지 못했어요. 측정과 루틴을 계속 기록해보세요.'}
+                </div>
+              );
+              return discoveries.map((d, i) => (
                 <div key={i} onClick={handleConsult} style={{
                   padding: '12px 0', cursor: 'pointer',
                   borderTop: i > 0 ? '0.5px solid rgba(255,255,255,0.2)' : 'none',
@@ -448,8 +654,8 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                     <span style={{ display: 'inline-block', marginTop: 5, fontSize: 9, fontWeight: 500, padding: '2px 7px', borderRadius: 8, background: 'rgba(101,152,239,0.15)', color: 'var(--accent-primary)' }}>{d.tag}</span>
                   </div>
                 </div>
-              ))
-            )}
+              ));
+            })()}
           </div>
     </div>
   );
