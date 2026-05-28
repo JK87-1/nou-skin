@@ -405,8 +405,9 @@ export default function App() {
     img.src = image;
   }, [landmarks, stage, image]);
 
-  const openDetail = useCallback((key) => { setPrevStage(stage); setDetailKey(key); setStage('detail'); }, [stage]);
-  const closeDetail = useCallback(() => { setStage(prevStage); setDetailKey(null); }, [prevStage]);
+  const savedScrollY = useRef(0);
+  const openDetail = useCallback((key) => { savedScrollY.current = window.scrollY; setPrevStage(stage); setDetailKey(key); setStage('detail'); }, [stage]);
+  const closeDetail = useCallback(() => { setStage(prevStage); setDetailKey(null); requestAnimationFrame(() => window.scrollTo(0, savedScrollY.current)); }, [prevStage]);
   const goToHistory = useCallback(() => { refreshLandingData(); setHistoryInitMode(null); setActiveTab('care'); }, []);
   const goToLanding = useCallback(() => { refreshLandingData(); setHistoryInitMode(null); setActiveTab('home'); setStage('landing'); }, []);
 
@@ -1813,7 +1814,7 @@ export default function App() {
             justifyContent: 'space-between', alignItems: 'center',
             background: 'transparent',
           }}>
-            <div onClick={() => {
+            <div role="button" aria-label="뒤로 가기" onClick={() => {
               if (viewingHistory) {
                 setViewingHistory(false);
                 setResult(null);
@@ -1831,10 +1832,10 @@ export default function App() {
               </svg>
             </div>
             <div style={{ display: 'flex', gap: 4 }}>
-              <div onClick={handleSave} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+              <div role="button" aria-label="이미지 저장" onClick={handleSave} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               </div>
-              <div onClick={handleShare} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+              <div role="button" aria-label="공유하기" onClick={handleShare} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                 <svg width="18" height="18" viewBox="0 0 179.14 159.38" fill="#fff"><path d="M107.81,145.08c-5.95,9.54-13.61,15.45-24.89,14.11-8.98-1.07-18.15-8.13-19.99-18.29l-10.46-57.69L8.12,45.62C.3,38.98-2.04,28.17,1.83,18.68,5.44,9.79,14.01,4.52,24.5,4.18L154.27.02c5.63-.18,9.81,1.28,14.32,4.05,12.07,7.42,13.33,22.07,6.09,33.69l-66.87,107.33ZM112.25,58.81l-41.93,24.22,9.49,53.03c.57,3.19,2.53,5.19,5.17,5.48,2.82.32,4.76-.7,6.42-3.37L161.03,26.14c1.27-2.05.54-4.68-.6-6.19-.9-1.19-2.67-2.49-5.2-2.41L22.6,22.01c-2.6.09-4.84,2.43-5.01,3.98-.16,1.45-.05,4.52,1.46,5.8l42.64,36.1,34.48-19.99c4.57-2.65,8.51-5.7,14.43-5.97,3.78.54,6.7,4.44,7.06,7.87.38,3.71-1.6,6.81-5.41,9.01Z"/></svg>
               </div>
             </div>
@@ -1869,7 +1870,7 @@ export default function App() {
                 background: 'linear-gradient(180deg, rgba(4, 44, 83, 0.35) 0%, transparent 100%)',
               }}>
                 <span style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.85)' }}>{sigDate}</span>
-                <img src="/luastar.svg" alt="" style={{ width: 20, height: 20, opacity: 0.8, filter: 'brightness(0) invert(1)' }} />
+                <img src="/luastar.svg" alt="LUA" style={{ width: 20, height: 20, opacity: 0.8, filter: 'brightness(0) invert(1)' }} />
               </div>
 
               {/* 시그니처 핫존 (하단 그라데이션 + 정보) */}
@@ -1882,7 +1883,7 @@ export default function App() {
                 {/* 점수 — AnimatedNumber로 카운트업 */}
                 <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 4, marginBottom: 8 }}>
                   <span style={{
-                    fontSize: 54, fontWeight: 500, letterSpacing: -2, lineHeight: 1, color: '#FFFFFF',
+                    fontSize: 'clamp(40px, 12vw, 54px)', fontWeight: 500, letterSpacing: -2, lineHeight: 1, color: '#FFFFFF',
                   }}>
                     {result.overallScore != null ? <AnimatedNumber target={result.overallScore} duration={1300} /> : '—'}
                   </span>
@@ -1914,21 +1915,17 @@ export default function App() {
 
 
           {/* ═══════ Section 1: 컨디션 브리핑 ═══════ */}
-          <div style={{ margin: '0 16px 10px', background: 'rgba(255,255,255,0.5)', borderRadius: 14, boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)', overflow: 'hidden' }}>
-            <button onClick={() => toggleSection('briefing')} style={{
-              width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              padding: expandedSections.briefing ? '14px 16px 10px' : '14px 16px 18px',
-              background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-            }}>
-              <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>컨디션 브리핑</span>
+          <div className="result-section">
+            <button className="result-section-toggle" aria-expanded={expandedSections.briefing} onClick={() => toggleSection('briefing')}>
+              <span className="result-section-title">컨디션 브리핑</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"
                 style={{ transition: 'transform 0.3s ease', transform: expandedSections.briefing ? 'rotate(180deg)' : 'rotate(0deg)' }}>
                 <path d="M6 9l6 6 6-6" />
               </svg>
             </button>
             {expandedSections.briefing && (<>
-              <div style={{ height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 15%, rgba(255,255,255,0.3) 85%, transparent 100%)', margin: '0 16px' }} />
-              <div style={{ padding: '12px 16px 16px', animation: 'fadeUp 0.3s ease-out' }}>
+              <div className="result-section-divider" />
+              <div className="result-section-body">
                 {conditionBriefing && (() => {
                   const score = result.conditionScore ?? result.overallScore;
                   const grade = score >= 85 ? { letter: 'S', label: '최상' }
@@ -2071,6 +2068,8 @@ export default function App() {
                   borderRadius: 14, padding: '14px 16px',
                   boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)',
                   display: 'flex', gap: 10, alignItems: 'center',
+                  minHeight: 48,
+                  animation: 'fadeUp 0.3s ease-out',
                 }}>
                   <div style={{
                     width: 14, height: 14, borderRadius: '50%',
@@ -2095,6 +2094,7 @@ export default function App() {
                 background: 'rgba(255,255,255,0.5)',
                 borderRadius: 14, padding: '14px 16px',
                 boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)',
+                animation: 'fadeUp 0.3s ease-out',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
                   <div style={{ width: 5, height: 5, borderRadius: '50%', background: palette.dot, flexShrink: 0 }} />
@@ -2123,21 +2123,17 @@ export default function App() {
           })()}
 
           {/* ═══════ Section: 측정 정보 (컨디션 브리핑 바로 아래) ═══════ */}
-          <div style={{ margin: '0 16px 10px', background: 'rgba(255,255,255,0.5)', borderRadius: 14, boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)', overflow: 'hidden' }}>
-            <button onClick={() => toggleSection('meta')} style={{
-              width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              padding: expandedSections.meta ? '14px 16px 10px' : '14px 16px 18px',
-              background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-            }}>
-              <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>측정 정보</span>
+          <div className="result-section">
+            <button className="result-section-toggle" aria-expanded={expandedSections.meta} onClick={() => toggleSection('meta')}>
+              <span className="result-section-title">측정 정보</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"
                 style={{ transition: 'transform 0.3s ease', transform: expandedSections.meta ? 'rotate(180deg)' : 'rotate(0deg)' }}>
                 <path d="M6 9l6 6 6-6" />
               </svg>
             </button>
             {expandedSections.meta && (<>
-              <div style={{ height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 15%, rgba(255,255,255,0.3) 85%, transparent 100%)', margin: '0 16px' }} />
-              <div style={{ padding: '12px 16px 16px', animation: 'fadeUp 0.3s ease-out' }}>
+              <div className="result-section-divider" />
+              <div className="result-section-body">
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 13 }}>
                   <span style={{ color: 'rgba(0,0,0,0.35)' }}>피부 타입</span>
                   <span style={{ color: 'rgba(0,0,0,0.8)', fontWeight: 500 }}>{result.skinType}</span>
@@ -2230,21 +2226,17 @@ export default function App() {
 
 
           {/* ═══════ Section 3: 정밀 분석 ═══════ */}
-          <div style={{ margin: '0 16px 10px', background: 'rgba(255,255,255,0.5)', borderRadius: 14, boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)', overflow: 'hidden' }}>
-            <button onClick={() => toggleSection('analysis')} style={{
-              width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              padding: expandedSections.analysis ? '14px 16px 10px' : '14px 16px 18px',
-              background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-            }}>
-              <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>정밀 분석</span>
+          <div className="result-section">
+            <button className="result-section-toggle" aria-expanded={expandedSections.analysis} onClick={() => toggleSection('analysis')}>
+              <span className="result-section-title">정밀 분석</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"
                 style={{ transition: 'transform 0.3s ease', transform: expandedSections.analysis ? 'rotate(180deg)' : 'rotate(0deg)' }}>
                 <path d="M6 9l6 6 6-6" />
               </svg>
             </button>
             {expandedSections.analysis && (<>
-              <div style={{ height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 15%, rgba(255,255,255,0.3) 85%, transparent 100%)', margin: '0 16px' }} />
-              <div style={{ padding: '12px 16px 16px', animation: 'fadeUp 0.3s ease-out' }}>
+              <div className="result-section-divider" />
+              <div className="result-section-body">
                 <p style={{ fontSize: 13, color: 'rgba(0,0,0,0.8)', lineHeight: 1.7, margin: 0 }}>{result.advice}</p>
                 <AiCommentCard
                   aiNotes={result.aiNotes}
@@ -2273,22 +2265,18 @@ export default function App() {
           </div>
 
           {/* ═══════ Section 4: 전체 지표 ═══════ */}
-          <div style={{ margin: '0 16px 10px', background: 'rgba(255,255,255,0.5)', borderRadius: 14, boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)', overflow: 'hidden' }}>
-            <button onClick={() => toggleSection('indicators')} style={{
-              width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              padding: expandedSections.indicators ? '14px 16px 10px' : '14px 16px 18px',
-              background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-            }}>
-              <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>전체 지표</span>
+          <div className="result-section">
+            <button className="result-section-toggle" aria-expanded={expandedSections.indicators} onClick={() => toggleSection('indicators')}>
+              <span className="result-section-title">전체 지표</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"
                 style={{ transition: 'transform 0.3s ease', transform: expandedSections.indicators ? 'rotate(180deg)' : 'rotate(0deg)' }}>
                 <path d="M6 9l6 6 6-6" />
               </svg>
             </button>
             {expandedSections.indicators && (<>
-              <div style={{ height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 15%, rgba(255,255,255,0.3) 85%, transparent 100%)', margin: '0 16px' }} />
+              <div className="result-section-divider" />
               <div style={{ padding: '11px 10px 10px', animation: 'fadeUp 0.3s ease-out' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 5, gridAutoRows: '1fr' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 5, gridAutoRows: '1fr' }}>
                   {[
                     { label: '수분', value: result.moisture, unit: '%', icon: <DropletIcon size={14} />, diff: changes?.moisture?.diff, detail: 'moisture' },
                     { label: '유분', value: result.oilBalance, unit: '%', icon: <BubbleIcon size={14} />, diff: changes?.oilBalance?.diff, detail: 'oilBalance' },
@@ -2419,7 +2407,8 @@ export default function App() {
                               fontSize: 10, fontWeight: 600, color: scoreColor,
                               background: `${typeof scoreColor === 'string' && scoreColor.startsWith('#') ? scoreColor + '12' : 'rgba(0,0,0,0.04)'}`,
                               borderRadius: 6, padding: '2px 6px', lineHeight: 1.3, textAlign: 'center',
-                            }}>{label.length >= 4 ? <>{label.slice(0, 2)}<br/>{label.slice(2)}</> : label}</span>
+                              maxWidth: 40, wordBreak: 'keep-all', overflowWrap: 'break-word',
+                            }}>{label}</span>
                           </>;
                         })()}
                       </div>
@@ -2432,21 +2421,17 @@ export default function App() {
           </div>
 
           {/* ═══════ Section 5: 맞춤 케어 제안 ═══════ */}
-          <div style={{ margin: '0 16px 10px', background: 'rgba(255,255,255,0.5)', borderRadius: 14, boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)', overflow: 'hidden' }}>
-            <button onClick={() => toggleSection('care')} style={{
-              width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              padding: expandedSections.care ? '14px 16px 10px' : '14px 16px 18px',
-              background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-            }}>
-              <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>맞춤 케어 제안</span>
+          <div className="result-section">
+            <button className="result-section-toggle" aria-expanded={expandedSections.care} onClick={() => toggleSection('care')}>
+              <span className="result-section-title">맞춤 케어 제안</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"
                 style={{ transition: 'transform 0.3s ease', transform: expandedSections.care ? 'rotate(180deg)' : 'rotate(0deg)' }}>
                 <path d="M6 9l6 6 6-6" />
               </svg>
             </button>
             {expandedSections.care && (<>
-              <div style={{ height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 15%, rgba(255,255,255,0.3) 85%, transparent 100%)', margin: '0 16px' }} />
-              <div style={{ padding: '12px 16px 16px', animation: 'fadeUp 0.3s ease-out' }}>
+              <div className="result-section-divider" />
+              <div className="result-section-body">
                 {/* Product recommendations */}
                 {(() => {
                   const weakCats = getWeakestCategories(result);
