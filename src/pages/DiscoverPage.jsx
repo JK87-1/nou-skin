@@ -334,7 +334,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
               </div>
             </div>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-              {[{ key: 'overallScore', label: '종합' }, ...ALL_METRICS].map((m) => {
+              {[{ key: 'overallScore', label: '종합' }, { key: 'skinAge', label: '피부나이' }, ...ALL_METRICS].map((m) => {
                 const activeTrend = trendMetric || 'overallScore';
                 const active = activeTrend === m.key;
                 return (
@@ -361,7 +361,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
               const lastVal = vals[vals.length - 1];
               const firstVal = vals[0];
               const diff = lastVal - firstVal;
-              const metricLabel = activeTrendKey === 'overallScore' ? '종합' : (ALL_METRICS.find(m => m.key === activeTrendKey)?.label || '');
+              const metricLabel = activeTrendKey === 'overallScore' ? '종합' : activeTrendKey === 'skinAge' ? '피부나이' : (ALL_METRICS.find(m => m.key === activeTrendKey)?.label || '');
               const unit = activeTrendKey === 'skinAge' ? '세' : '점';
               return (
                 <>
