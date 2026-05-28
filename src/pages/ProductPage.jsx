@@ -12,7 +12,7 @@ import {
 import CareRecommendation from '../components/CareRecommendation';
 import ProductRegisteredModal from '../components/ProductRegisteredModal';
 import SwipeableRow from '../components/SwipeableRow';
-import { hapticLight } from '../utils/haptics';
+import { hapticLight, hapticSelection } from '../utils/haptics';
 import { getAllProductThumbs, migrateThumbsFromLocalStorage } from '../storage/ImageStore';
 import { PRODUCTS } from '../data/ProductCatalog';
 import { KOREAN_PRODUCTS, POPULAR_KOREAN_PRODUCTS } from '../data/KoreanProducts';
@@ -1118,6 +1118,50 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
   const [memo, setMemo] = useState(product.memo || '');
   const [memoSaved, setMemoSaved] = useState(false);
   const [feeling, setFeeling] = useState(product.feeling || null);
+  const [rating, setRating] = useState(product.rating || 0);
+  const ratingRef = useRef(null);
+  const lastRatingRef = useRef(product.rating || 0);
+
+  // 별점 터치/드래그 핸들러
+  const calcRating = (clientX) => {
+    const el = ratingRef.current;
+    if (!el) return 0;
+    const rect = el.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const starWidth = rect.width / 5;
+    return Math.max(0, Math.min(5, Math.ceil(x / starWidth)));
+  };
+  const handleRatingInteraction = (clientX) => {
+    const next = calcRating(clientX);
+    if (next !== lastRatingRef.current && next >= 1) {
+      lastRatingRef.current = next;
+      setRating(next);
+      hapticSelection();
+      // 웹 사운드 (Capacitor/네이티브 아닐 때)
+      try {
+        if (!window.Capacitor?.isNativePlatform?.()) {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.frequency.value = 600 + next * 80;
+          gain.gain.value = 0.04;
+          osc.start(); osc.stop(ctx.currentTime + 0.03);
+        }
+      } catch {}
+    }
+  };
+  const onRatingTouchStart = (e) => { e.preventDefault(); handleRatingInteraction(e.touches[0].clientX); };
+  const onRatingTouchMove = (e) => { e.preventDefault(); handleRatingInteraction(e.touches[0].clientX); };
+  const onRatingTouchEnd = () => { if (rating > 0) onEdit({ id: product.id, rating }); };
+  const onRatingClick = (star) => {
+    const next = rating === star ? 0 : star;
+    setRating(next);
+    lastRatingRef.current = next;
+    hapticSelection();
+    onEdit({ id: product.id, rating: next });
+  };
+
   const [form, setForm] = useState({
     brand: product.brand, name: product.name,
     category: product.category, timeSlot: product.timeSlot,
@@ -1182,6 +1226,47 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
                   </span>
                 </div>
               </div>
+            </div>
+
+            {/* 별점 */}
+            <div
+              ref={ratingRef}
+              onTouchStart={onRatingTouchStart}
+              onTouchMove={onRatingTouchMove}
+              onTouchEnd={onRatingTouchEnd}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '10px 16px',
+                background: 'rgba(0,0,0,0.03)',
+                borderRadius: 50,
+                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.06), 0 1px 2px rgba(255,255,255,0.8)',
+                marginBottom: 16,
+                cursor: 'pointer',
+                WebkitTapHighlightColor: 'transparent',
+                userSelect: 'none', WebkitUserSelect: 'none',
+              }}
+            >
+              {[1, 2, 3, 4, 5].map(star => {
+                const filled = star <= rating;
+                return (
+                  <svg
+                    key={star}
+                    onClick={() => onRatingClick(star)}
+                    width="26" height="26" viewBox="0 0 24 24"
+                    style={{
+                      transition: 'transform 0.15s ease',
+                      transform: filled ? 'scale(1.05)' : 'scale(0.92)',
+                      filter: filled ? 'drop-shadow(0 1px 2px rgba(230,140,60,0.3))' : 'none',
+                    }}
+                  >
+                    <path
+                      d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                      fill={filled ? '#E08C3C' : 'rgba(0,0,0,0.08)'}
+                      stroke="none"
+                    />
+                  </svg>
+                );
+              })}
             </div>
 
             <div style={{
