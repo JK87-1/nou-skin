@@ -1211,13 +1211,13 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
                       style={{
                         transition: 'transform 0.15s ease',
                         transform: filled ? 'scale(1.05)' : 'scale(0.92)',
-                        filter: filled ? 'drop-shadow(0 1px 2px rgba(230,140,60,0.3))' : 'drop-shadow(0 0.5px 0.5px rgba(0,0,0,0.1))',
+                        filter: filled ? 'drop-shadow(0 1px 2px rgba(120,189,253,0.4))' : 'drop-shadow(0 0.5px 0.5px rgba(0,0,0,0.1))',
                       }}
                     >
                       <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                       <path
                         d="M8.243 7.34l-6.38 .925l-.113 .023a1 1 0 0 0 -.44 1.684l4.622 4.499l-1.09 6.355l-.013 .11a1 1 0 0 0 1.464 .944l5.706 -3l5.693 3l.1 .046a1 1 0 0 0 1.352 -1.1l-1.091 -6.355l4.624 -4.5l.078 -.085a1 1 0 0 0 -.633 -1.62l-6.38 -.926l-2.852 -5.78a1 1 0 0 0 -1.794 0l-2.853 5.78z"
-                        fill={filled ? '#E08C3C' : 'rgba(0,0,0,0.1)'}
+                        fill={filled ? '#78bdfd' : 'rgba(0,0,0,0.1)'}
                         stroke="none"
                       />
                     </svg>
