@@ -1,11 +1,11 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import {
   getProfile, saveProfile,
   SKIN_TYPES, SKIN_CONCERNS, SENSITIVITY_OPTIONS, GENDER_OPTIONS,
 } from '../storage/ProfileStorage';
 import { getRecords, getTotalChanges, getAllThumbnailsAsync, deleteRecord } from '../storage/SkinStorage';
-import { RecordDetailModal } from './CarePage';
+
 import { clearBaseline, hasBaseline } from '../engine/HybridAnalysis';
 import { clearAllRecords } from '../storage/SkinStorage';
 import {
@@ -31,13 +31,12 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [bioModal, setBioModal] = useState(false);
   const [contentMode, setContentMode] = useState('album'); // album | history | record
-  const [selectedPhoto, setSelectedPhoto] = useState(null); // { record, thumb }
 
   const records = getRecords();
   const recordCount = records.length;
   const [thumbs, setThumbs] = useState({});
-  useEffect(() => { getAllThumbnailsAsync().then(setThumbs); }, []);
-  const recentPhotos = [...records].reverse().map(r => ({ date: r.date, record: r, thumb: thumbs[String(r.id)] || thumbs[r.date] })).filter(p => p.thumb);
+  useEffect(() => { let cancelled = false; getAllThumbnailsAsync().then(t => { if (!cancelled) setThumbs(t); }); return () => { cancelled = true; }; }, []);
+  const recentPhotos = useMemo(() => [...records].reverse().map(r => ({ date: r.date, record: r, thumb: thumbs[String(r.id)] || thumbs[r.date] })).filter(p => p.thumb), [records.length, thumbs]);
   const habitDays = (() => { let c = 0; for (let i = 0; i < localStorage.length; i++) { if (localStorage.key(i)?.startsWith('lua_habit_')) c++; } return c; })();
 
   const glass = { background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', borderRadius: 20 };
@@ -212,19 +211,19 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
             </div>
           ) : (
             <div className="photo-grid" style={{ padding: '0 16px 12px' }}>
-              {recentPhotos.map((p, i) => {
-                const d = new Date(p.date);
-                const shortDate = `${String(d.getMonth()+1).padStart(2,'0')}월${String(d.getDate()).padStart(2,'0')}일`;
+              {recentPhotos.map((p) => {
+                const [, mm, dd] = (p.date || '').split('-');
+                const shortDate = mm && dd ? `${mm}월${dd}일` : '';
                 return (
-                  <div key={i} className="photo-cell" onClick={() => { if (onViewRecord && p.record) { onViewRecord(p.record, p.thumb); } else { setSelectedPhoto(p); } }} style={{ cursor: 'pointer' }}>
-                    <img src={p.thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <div key={p.record.id || p.date} role="button" aria-label={`${shortDate} 측정 결과 ${p.record.overallScore ?? ''}점`} className="photo-cell" onClick={() => onViewRecord?.(p.record, p.thumb)} style={{ cursor: 'pointer' }}>
+                    <img src={p.thumb} alt={`${shortDate} 측정`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     <span style={{
                       position: 'absolute', bottom: 6, left: 6,
                       fontSize: 10, fontWeight: 600, color: '#fff',
                       textShadow: '0 1px 3px rgba(0,0,0,0.5)',
                       zIndex: 2, pointerEvents: 'none',
                     }}>{shortDate}</span>
-                    <span className="photo-score-badge">{p.record.overallScore}</span>
+                    <span className="photo-score-badge">{p.record.overallScore ?? '--'}</span>
                   </div>
                 );
               })}

@@ -1943,7 +1943,7 @@ export default function App() {
           {/* ═══════ Section 1: 컨디션 브리핑 ═══════ */}
           <div className="result-section">
             <button className="result-section-toggle" aria-expanded={expandedSections.briefing} onClick={() => toggleSection('briefing')}>
-              <span className="result-section-title">컨디션 브리핑</span>
+              <span className="result-section-title">오늘의 피부</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"
                 style={{ transition: 'transform 0.3s ease', transform: expandedSections.briefing ? 'rotate(180deg)' : 'rotate(0deg)' }}>
                 <path d="M6 9l6 6 6-6" />
@@ -1975,40 +1975,40 @@ export default function App() {
                   const _best = _sorted[0];
                   const _worst = _sorted[_sorted.length - 1];
                   const _bwItems = _best && _worst && _best.key !== _worst.key ? [
-                    { ..._best, tag: '베스트', tagBg: 'rgba(101,152,239,0.12)', tagColor: '#6598ef' },
-                    { ..._worst, tag: '관리필요', tagBg: 'rgba(0,0,0,0.06)', tagColor: 'rgba(0,0,0,0.4)' },
+                    { ..._best, arrow: '▲', arrowColor: '#6598ef', tag: '베스트', tagBg: 'rgba(101,152,239,0.12)', tagColor: '#6598ef' },
+                    { ..._worst, arrow: '▼', arrowColor: 'rgba(0,0,0,0.3)', tag: '관리필요', tagBg: 'rgba(0,0,0,0.06)', tagColor: 'rgba(0,0,0,0.4)' },
                   ] : [];
                   return (
                     <>
-                      {/* Grade + label */}
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 8 }}>
-                        <span style={{ fontSize: 22, fontWeight: 500, color: 'rgba(0,0,0,0.8)' }}>{grade.letter}</span>
-                        <span style={{ fontSize: 11, color: 'rgba(0,0,0,0.5)' }}>컨디션 등급</span>
-                      </div>
-                      {/* 베스트 / 워스트 지표 */}
-                      {_bwItems.length === 2 && (
-                        <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
-                          {_bwItems.map(bw => (
-                            <div key={bw.key} style={{
-                              flex: 1, display: 'flex', alignItems: 'center', gap: 8,
-                              padding: '8px 10px', borderRadius: 10,
-                              background: 'rgba(255,255,255,0.6)',
-                            }}>
-                              <div style={{ flexShrink: 0 }}>{bw.icon}</div>
-                              <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                  <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(0,0,0,0.7)' }}>{bw.label}</span>
-                                  <span style={{ fontSize: 9, fontWeight: 600, padding: '1px 5px', borderRadius: 4, background: bw.tagBg, color: bw.tagColor }}>{bw.tag}</span>
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'baseline', gap: 2, marginTop: 2 }}>
-                                  <span style={{ fontSize: 16, fontWeight: 600, color: bw.colors[0], letterSpacing: -0.5 }}>{bw.value}</span>
-                                  <span style={{ fontSize: 10, color: bw.colors[1] }}>{bw.unit}</span>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
+                      {/* 등급 + 베스트/케어포인트 통합 카드 */}
+                      {_bwItems.length === 2 && <div style={{ fontSize: 11, fontWeight: 500, color: 'rgba(0,0,0,0.35)', marginBottom: 6 }}>오늘의 피부 포인트</div>}
+                      <div style={{
+                        display: 'flex', alignItems: 'center', gap: 12,
+                        padding: '10px 12px', borderRadius: 12,
+                        background: 'rgba(255,255,255,0.55)',
+                        marginBottom: 10,
+                      }}>
+                        {/* 등급 */}
+                        <div style={{ textAlign: 'center', flexShrink: 0, minWidth: 44 }}>
+                          <div style={{ fontSize: 28, fontWeight: 600, color: 'rgba(0,0,0,0.8)', lineHeight: 1 }}>{grade.letter}</div>
+                          <div style={{ fontSize: 9, color: 'rgba(0,0,0,0.35)', marginTop: 3 }}>{grade.label}</div>
                         </div>
-                      )}
+                        {/* 구분선 */}
+                        {_bwItems.length === 2 && <div style={{ width: 1, height: 36, background: 'rgba(0,0,0,0.06)', flexShrink: 0 }} />}
+                        {/* 베스트 / 워스트 */}
+                        {_bwItems.length === 2 && (
+                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                            {_bwItems.map(bw => (
+                              <div key={bw.key} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <div style={{ flexShrink: 0, opacity: 0.85 }}>{bw.icon}</div>
+                                <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(0,0,0,0.6)', minWidth: 0 }}>{bw.label}</span>
+                                <span style={{ fontSize: 14, fontWeight: 600, color: bw.colors[0], letterSpacing: -0.3 }}>{bw.value}<span style={{ fontSize: 9, fontWeight: 500, color: bw.colors[1] }}>{bw.unit}</span></span>
+                                <span style={{ fontSize: 8, fontWeight: 600, padding: '1px 5px', borderRadius: 4, background: bw.tagBg, color: bw.tagColor, marginLeft: 'auto', whiteSpace: 'nowrap' }}>{bw.tag}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                       {/* Briefing text */}
                       <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(0,0,0,0.8)', lineHeight: 1.7, margin: 0 }}>{conditionBriefing}</p>
                       {/* Today's change badges */}
@@ -2032,6 +2032,32 @@ export default function App() {
                           </div>
                         );
                       })()}
+                      {/* AI 정밀 분석 (통합) */}
+                      {result.advice && (
+                        <p style={{ fontSize: 13, color: 'rgba(0,0,0,0.8)', lineHeight: 1.7, margin: '10px 0 0' }}>{result.advice}</p>
+                      )}
+                      <AiCommentCard
+                        aiNotes={result.aiNotes}
+                        aiDetails={result.aiDetails}
+                        accent={activeThemeColors.accent}
+                        analysisMode={result.analysisMode}
+                        makeupDetected={result.makeupDetected}
+                        animationDelay="0"
+                      />
+                      {result.makeupDetected && (
+                        <div style={{
+                          marginTop: 10, padding: '10px 12px', borderRadius: 12,
+                          background: 'linear-gradient(135deg, rgba(244,163,187,0.1), rgba(244,163,187,0.05))',
+                          border: '1px solid rgba(244,163,187,0.2)',
+                          display: 'flex', alignItems: 'center', gap: 8,
+                        }}>
+                          <span style={{ fontSize: 16, flexShrink: 0 }}></span>
+                          <div>
+                            <div style={{ fontSize: 11, fontWeight: 600, color: '#FFB8C8', marginBottom: 1 }}>메이크업이 감지되었어요</div>
+                            <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.35)', lineHeight: 1.4 }}>클렌징 후 다시 측정하면 더 정확한 피부 상태를 확인할 수 있어요</div>
+                          </div>
+                        </div>
+                      )}
                     </>
                   );
                 })()}
@@ -2194,7 +2220,7 @@ export default function App() {
           {/* ═══════ Section 3: 전체 지표 ═══════ */}
           <div className="result-section">
             <button className="result-section-toggle" aria-expanded={expandedSections.indicators} onClick={() => toggleSection('indicators')}>
-              <span className="result-section-title">전체 지표</span>
+              <span className="result-section-title">내 피부 지표</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"
                 style={{ transition: 'transform 0.3s ease', transform: expandedSections.indicators ? 'rotate(180deg)' : 'rotate(0deg)' }}>
                 <path d="M6 9l6 6 6-6" />
@@ -2347,49 +2373,10 @@ export default function App() {
             </>)}
           </div>
 
-          {/* ═══════ Section 4: 정밀 분석 ═══════ */}
-          <div className="result-section">
-            <button className="result-section-toggle" aria-expanded={expandedSections.analysis} onClick={() => toggleSection('analysis')}>
-              <span className="result-section-title">정밀 분석</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"
-                style={{ transition: 'transform 0.3s ease', transform: expandedSections.analysis ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                <path d="M6 9l6 6 6-6" />
-              </svg>
-            </button>
-            {expandedSections.analysis && (<>
-              <div className="result-section-divider" />
-              <div className="result-section-body">
-                <p style={{ fontSize: 13, color: 'rgba(0,0,0,0.8)', lineHeight: 1.7, margin: 0 }}>{result.advice}</p>
-                <AiCommentCard
-                  aiNotes={result.aiNotes}
-                  aiDetails={result.aiDetails}
-                  accent={activeThemeColors.accent}
-                  analysisMode={result.analysisMode}
-                  makeupDetected={result.makeupDetected}
-                  animationDelay="0"
-                />
-                {result.makeupDetected && (
-                  <div style={{
-                    marginTop: 10, padding: '10px 12px', borderRadius: 12,
-                    background: 'linear-gradient(135deg, rgba(244,163,187,0.1), rgba(244,163,187,0.05))',
-                    border: '1px solid rgba(244,163,187,0.2)',
-                    display: 'flex', alignItems: 'center', gap: 8,
-                  }}>
-                    <span style={{ fontSize: 16, flexShrink: 0 }}></span>
-                    <div>
-                      <div style={{ fontSize: 11, fontWeight: 600, color: '#FFB8C8', marginBottom: 1 }}>메이크업이 감지되었어요</div>
-                      <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.35)', lineHeight: 1.4 }}>클렌징 후 다시 측정하면 더 정확한 피부 상태를 확인할 수 있어요</div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </>)}
-          </div>
-
-          {/* ═══════ Section 5: 맞춤 케어 제안 ═══════ */}
+          {/* ═══════ Section 4: 맞춤 케어 ═══════ */}
           <div className="result-section">
             <button className="result-section-toggle" aria-expanded={expandedSections.care} onClick={() => toggleSection('care')}>
-              <span className="result-section-title">맞춤 케어 제안</span>
+              <span className="result-section-title">맞춤 케어</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"
                 style={{ transition: 'transform 0.3s ease', transform: expandedSections.care ? 'rotate(180deg)' : 'rotate(0deg)' }}>
                 <path d="M6 9l6 6 6-6" />
