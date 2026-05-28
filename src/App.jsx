@@ -1112,6 +1112,7 @@ export default function App() {
           setConditionBriefing(record.conditionBriefing || null);
           setSaved(true);
           setViewingHistory(true);
+          setExpandedSections({ briefing: true, change: true, analysis: false, indicators: true, care: false, meta: false });
           setActiveTab('home');
           setStage('result');
         }} />
@@ -1841,7 +1842,7 @@ export default function App() {
                 <path d="M15 18l-6-6 6-6" />
               </svg>
             </div>
-            <div style={{ display: 'flex', gap: 4 }}>
+            <div style={{ display: 'flex', gap: 2 }}>
               <div role="button" aria-label="이미지 저장" onClick={handleSave} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               </div>
@@ -1951,7 +1952,7 @@ export default function App() {
             </button>
             {expandedSections.briefing && (<>
               <div className="result-section-divider" />
-              <div className="result-section-body">
+              <div className="result-section-body" style={{ paddingBottom: (result.advice || result.aiNotes || result.aiDetails?.length || result.makeupDetected) ? 16 : 10 }}>
                 {conditionBriefing && (() => {
                   const score = result.conditionScore ?? result.overallScore;
                   const grade = score >= 85 ? { letter: 'S', label: '최상' }
@@ -1980,8 +1981,7 @@ export default function App() {
                   ] : [];
                   return (
                     <>
-                      {/* 등급 + 베스트/케어포인트 통합 카드 */}
-                      {_bwItems.length === 2 && <div style={{ fontSize: 11, fontWeight: 500, color: 'rgba(0,0,0,0.35)', marginBottom: 6 }}>오늘의 피부 포인트</div>}
+                      {/* 등급 + 베스트/관리필요 통합 카드 */}
                       <div style={{
                         display: 'flex', alignItems: 'center', gap: 12,
                         padding: '10px 12px', borderRadius: 12,

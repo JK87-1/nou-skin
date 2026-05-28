@@ -885,84 +885,47 @@ select:focus-visible {
 .photo-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: 3px;
 }
 .photo-cell {
   position: relative;
-  aspect-ratio: 1;
   overflow: hidden;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: all 0.3s ease;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  aspect-ratio: 4 / 5;
 }
-.photo-cell:hover {
-  z-index: 2;
+.photo-cell-img {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
-.photo-cell img {
+.photo-cell-img img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.4s ease;
 }
-.photo-cell:hover img {
-  transform: scale(1.05);
-}
-.photo-score-badge {
-  position: absolute;
-  bottom: 6px;
-  right: 6px;
-  background: none;
-  padding: 0;
-  font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 18px;
-  font-weight: 500;
-  color: #fff;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
-  line-height: 1;
-  z-index: 2;
-  pointer-events: none;
-  transition: all 0.3s;
-}
-.photo-info {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, transparent 30%, rgba(0,0,0,0.6) 100%);
+.photo-cell-info {
+  padding: 6px 6px 7px;
   display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 10px;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-.photo-cell:hover .photo-info,
-.photo-cell:active .photo-info {
-  opacity: 1;
-}
-.photo-info-date {
-  font-size: 10px;
-  color: rgba(255,255,255,0.8);
-  font-weight: 300;
-  letter-spacing: 0.5px;
-}
-.photo-info-score {
-  display: flex;
+  justify-content: space-between;
   align-items: baseline;
-  gap: 3px;
 }
-.photo-info-num {
+.photo-cell-date {
+  font-size: 9px;
+  font-weight: 500;
+  color: rgba(0,0,0,0.35);
+}
+.photo-cell-score {
   font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 22px;
-  color: white;
-  font-weight: 400;
-  line-height: 1;
-}
-.photo-info-unit {
-  font-size: 10px;
-  color: rgba(255,255,255,0.6);
-  font-weight: 300;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(0,0,0,0.7);
+  letter-spacing: -0.3px;
 }
 .photo-cell.empty-today {
   background: linear-gradient(135deg, rgba(101,152,239,0.06), rgba(101,152,239,0.12));
@@ -972,7 +935,7 @@ select:focus-visible {
   justify-content: center;
   gap: 6px;
   border: 1.5px dashed rgba(101,152,239,0.25);
-  border-radius: 14px;
+  border-radius: 4px;
 }
 .photo-cell.empty-today:active {
   background: linear-gradient(135deg, rgba(101,152,239,0.1), rgba(101,152,239,0.18));

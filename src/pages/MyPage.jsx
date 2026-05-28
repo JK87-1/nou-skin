@@ -31,6 +31,8 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [bioModal, setBioModal] = useState(false);
   const [contentMode, setContentMode] = useState('album'); // album | history | record
+  const [albumView, setAlbumView] = useState('list'); // list | grid
+  const [listPage, setListPage] = useState(1);
 
   const records = getRecords();
   const recordCount = records.length;
@@ -194,8 +196,34 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
         {/* Text below avatar */}
         <div style={{ paddingTop: 4 }}>
           <div style={{ fontSize: 14, fontWeight: 600, color: '#0f0f0f' }}>{profile.nickname || 'user'}</div>
-          <div onClick={() => setBioModal(true)} style={{ fontSize: 12, color: 'rgba(15,15,15,0.4)', marginTop: 6, marginBottom: 20, cursor: 'pointer' }}>
-            {profile.bio || '자기소개'}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 6, marginBottom: 20 }}>
+            <div onClick={() => setBioModal(true)} style={{ fontSize: 12, color: 'rgba(15,15,15,0.4)', cursor: 'pointer' }}>
+              {profile.bio || '자기소개'}
+            </div>
+            {contentMode === 'album' && recentPhotos.length > 0 && (
+              <div style={{ display: 'flex', background: 'rgba(0,0,0,0.04)', borderRadius: 6, padding: 1.5, flexShrink: 0, marginLeft: 12 }}>
+                <button onClick={() => setAlbumView('list')} aria-label="리스트 보기" style={{
+                  width: 24, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: albumView === 'list' ? '#fff' : 'transparent',
+                  border: 'none', borderRadius: 5, cursor: 'pointer',
+                  boxShadow: albumView === 'list' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                  color: albumView === 'list' ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.25)',
+                  transition: 'all 0.2s',
+                }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M21 6a1 1 0 0 1 -1 1h-10a1 1 0 1 1 0 -2h10a1 1 0 0 1 1 1"/><path d="M21 12a1 1 0 0 1 -1 1h-10a1 1 0 0 1 0 -2h10a1 1 0 0 1 1 1"/><path d="M21 18a1 1 0 0 1 -1 1h-10a1 1 0 0 1 0 -2h10a1 1 0 0 1 1 1"/><rect x="3" y="4" width="4" height="4" rx="1"/><rect x="3" y="10" width="4" height="4" rx="1"/><rect x="3" y="16" width="4" height="4" rx="1"/></svg>
+                </button>
+                <button onClick={() => setAlbumView('grid')} aria-label="그리드 보기" style={{
+                  width: 24, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: albumView === 'grid' ? '#fff' : 'transparent',
+                  border: 'none', borderRadius: 5, cursor: 'pointer',
+                  boxShadow: albumView === 'grid' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                  color: albumView === 'grid' ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.25)',
+                  transition: 'all 0.2s',
+                }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 3a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2v-4a2 2 0 0 1 2 -2z"/><path d="M19 3a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2v-4a2 2 0 0 1 2 -2z"/><path d="M9 13a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2v-4a2 2 0 0 1 2 -2z"/><path d="M19 13a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2v-4a2 2 0 0 1 2 -2z"/></svg>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -209,26 +237,104 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 12 }}>첫 측정을 시작해보세요</div>
                 <button onClick={() => onMeasure?.()} style={{ background: 'var(--accent-primary, #6598ef)', color: '#fff', fontSize: 11, fontWeight: 500, padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>첫 측정 시작</button>
             </div>
-          ) : (
-            <div className="photo-grid" style={{ padding: '0 16px 12px' }}>
-              {recentPhotos.map((p) => {
-                const [, mm, dd] = (p.date || '').split('-');
-                const shortDate = mm && dd ? `${mm}월${dd}일` : '';
-                return (
-                  <div key={p.record.id || p.date} role="button" aria-label={`${shortDate} 측정 결과 ${p.record.overallScore ?? ''}점`} className="photo-cell" onClick={() => onViewRecord?.(p.record, p.thumb)} style={{ cursor: 'pointer' }}>
-                    <img src={p.thumb} alt={`${shortDate} 측정`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    <span style={{
-                      position: 'absolute', bottom: 6, left: 6,
-                      fontSize: 10, fontWeight: 600, color: '#fff',
-                      textShadow: '0 1px 3px rgba(0,0,0,0.5)',
-                      zIndex: 2, pointerEvents: 'none',
-                    }}>{shortDate}</span>
-                    <span className="photo-score-badge">{p.record.overallScore ?? '--'}</span>
+          ) : (<>
+            {/* 그리드 뷰 */}
+            {albumView === 'grid' && (
+              <div className="photo-grid" style={{ padding: '0 16px 12px' }}>
+                {recentPhotos.map((p) => {
+                  const [, mm, dd] = (p.date || '').split('-');
+                  const shortDate = mm && dd ? `${mm}월${dd}일` : '';
+                  return (
+                    <div key={p.record.id || p.date} role="button" aria-label={`${shortDate} 측정 결과 ${p.record.overallScore ?? ''}점`} className="photo-cell" onClick={() => onViewRecord?.(p.record, p.thumb)}>
+                      <div className="photo-cell-img">
+                        <img src={p.thumb} alt={`${shortDate} 측정`} />
+                      </div>
+                      <div className="photo-cell-info">
+                        <span className="photo-cell-date">{shortDate}</span>
+                        <span className="photo-cell-score">{p.record.overallScore ?? '--'}점</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* 리스트 뷰 */}
+            {albumView === 'list' && (() => {
+              const perPage = 7;
+              const totalPages = Math.ceil(recentPhotos.length / perPage);
+              const pagePhotos = recentPhotos.slice((listPage - 1) * perPage, listPage * perPage);
+              return (
+              <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {pagePhotos.map((p) => {
+                  const [yyyy, mm, dd] = (p.date || '').split('-');
+                  const shortDate = mm && dd ? `${mm}월 ${dd}일` : '';
+                  const prev = recentPhotos.find(pp => pp.date < p.date);
+                  const diff = prev && p.record.overallScore != null && prev.record.overallScore != null
+                    ? p.record.overallScore - prev.record.overallScore : null;
+                  return (
+                    <div key={p.record.id || p.date} role="button" aria-label={`${shortDate} 측정 결과 ${p.record.overallScore ?? ''}점`} onClick={() => onViewRecord?.(p.record, p.thumb)} style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      background: '#fff', borderRadius: 12, padding: 10,
+                      cursor: 'pointer',
+                    }}>
+                      <div style={{ width: 52, height: 52, borderRadius: 8, overflow: 'hidden', flexShrink: 0 }}>
+                        <img src={p.thumb} alt={`${shortDate} 측정`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                          <span style={{ fontSize: 20, fontWeight: 700, color: 'rgba(0,0,0,0.8)', letterSpacing: -0.5 }}>{p.record.overallScore ?? '--'}</span>
+                          <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(0,0,0,0.3)' }}>점</span>
+                          {diff != null && diff !== 0 && (
+                            <span style={{ fontSize: 10, fontWeight: 600, marginLeft: 2, color: diff > 0 ? '#6598ef' : '#e05545' }}>
+                              {diff > 0 ? `+${diff}` : diff}
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.35)', marginTop: 1 }}>
+                          {shortDate}{p.record.skinAge != null ? ` · 피부나이 ${p.record.skinAge}세` : ''}
+                        </div>
+                      </div>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.15)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                    </div>
+                  );
+                })}
+                {totalPages > 1 && (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6, marginTop: 10 }}>
+                    <button onClick={() => setListPage(p => Math.max(1, p - 1))} disabled={listPage === 1} style={{
+                      width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: 'transparent', border: 'none', borderRadius: 10,
+                      cursor: listPage === 1 ? 'default' : 'pointer',
+                      color: listPage === 1 ? 'rgba(0,0,0,0.12)' : 'rgba(0,0,0,0.25)',
+                      transition: 'all 0.2s',
+                    }}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+                    </button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+                      <button key={n} onClick={() => setListPage(n)} style={{
+                        minWidth: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        background: 'transparent',
+                        border: 'none', borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit',
+                        fontSize: 12, fontWeight: n === listPage ? 700 : 400,
+                        color: n === listPage ? '#6598ef' : 'rgba(0,0,0,0.25)',
+                        transition: 'all 0.2s',
+                      }}>{n}</button>
+                    ))}
+                    <button onClick={() => setListPage(p => Math.min(totalPages, p + 1))} disabled={listPage === totalPages} style={{
+                      width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: 'transparent', border: 'none', borderRadius: 10,
+                      cursor: listPage === totalPages ? 'default' : 'pointer',
+                      color: listPage === totalPages ? 'rgba(0,0,0,0.12)' : 'rgba(0,0,0,0.25)',
+                      transition: 'all 0.2s',
+                    }}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                    </button>
                   </div>
-                );
-              })}
-            </div>
-          )}
+                )}
+              </div>
+              );
+            })()}
+          </>)}
         </div>
       )}
 
