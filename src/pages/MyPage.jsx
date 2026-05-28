@@ -31,7 +31,7 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [bioModal, setBioModal] = useState(false);
   const [contentMode, setContentMode] = useState('album'); // album | history | record
-  const [albumView, setAlbumView] = useState('list'); // list | grid
+  const [albumView, setAlbumView] = useState('grid'); // grid | list
   const [listPage, setListPage] = useState(1);
 
   const records = getRecords();
@@ -202,16 +202,6 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
             </div>
             {contentMode === 'album' && recentPhotos.length > 0 && (
               <div style={{ display: 'flex', background: 'rgba(0,0,0,0.04)', borderRadius: 6, padding: 1.5, flexShrink: 0, marginLeft: 12 }}>
-                <button onClick={() => setAlbumView('list')} aria-label="리스트 보기" style={{
-                  width: 24, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: albumView === 'list' ? '#fff' : 'transparent',
-                  border: 'none', borderRadius: 5, cursor: 'pointer',
-                  boxShadow: albumView === 'list' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-                  color: albumView === 'list' ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.25)',
-                  transition: 'all 0.2s',
-                }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M21 6a1 1 0 0 1 -1 1h-10a1 1 0 1 1 0 -2h10a1 1 0 0 1 1 1"/><path d="M21 12a1 1 0 0 1 -1 1h-10a1 1 0 0 1 0 -2h10a1 1 0 0 1 1 1"/><path d="M21 18a1 1 0 0 1 -1 1h-10a1 1 0 0 1 0 -2h10a1 1 0 0 1 1 1"/><rect x="3" y="4" width="4" height="4" rx="1"/><rect x="3" y="10" width="4" height="4" rx="1"/><rect x="3" y="16" width="4" height="4" rx="1"/></svg>
-                </button>
                 <button onClick={() => setAlbumView('grid')} aria-label="그리드 보기" style={{
                   width: 24, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center',
                   background: albumView === 'grid' ? '#fff' : 'transparent',
@@ -221,6 +211,16 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
                   transition: 'all 0.2s',
                 }}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 3a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2v-4a2 2 0 0 1 2 -2z"/><path d="M19 3a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2v-4a2 2 0 0 1 2 -2z"/><path d="M9 13a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2v-4a2 2 0 0 1 2 -2z"/><path d="M19 13a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2v-4a2 2 0 0 1 2 -2z"/></svg>
+                </button>
+                <button onClick={() => setAlbumView('list')} aria-label="리스트 보기" style={{
+                  width: 24, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: albumView === 'list' ? '#fff' : 'transparent',
+                  border: 'none', borderRadius: 5, cursor: 'pointer',
+                  boxShadow: albumView === 'list' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                  color: albumView === 'list' ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.25)',
+                  transition: 'all 0.2s',
+                }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M21 6a1 1 0 0 1 -1 1h-10a1 1 0 1 1 0 -2h10a1 1 0 0 1 1 1"/><path d="M21 12a1 1 0 0 1 -1 1h-10a1 1 0 0 1 0 -2h10a1 1 0 0 1 1 1"/><path d="M21 18a1 1 0 0 1 -1 1h-10a1 1 0 0 1 0 -2h10a1 1 0 0 1 1 1"/><rect x="3" y="4" width="4" height="4" rx="1"/><rect x="3" y="10" width="4" height="4" rx="1"/><rect x="3" y="16" width="4" height="4" rx="1"/></svg>
                 </button>
               </div>
             )}
