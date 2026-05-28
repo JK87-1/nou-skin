@@ -1314,10 +1314,7 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
               const ings = rawIngs.slice(0, 3);
               const benefitLabels = benefitKeys.map(k => METRIC_LABELS[k]).filter(Boolean);
               let summary = '';
-              if (correlation?.metrics?.length > 0 && correlation.metrics[0].improved) {
-                const best = correlation.metrics[0];
-                summary = `${best.label} ${best.diff}점 개선. ${ings.length > 0 ? ings[0] + ' 성분이 ' : ''}${product.category} 루틴에 효과적이에요.`;
-              } else if (ings.length > 0) {
+              if (ings.length > 0) {
                 summary = `${ings.slice(0, 2).join(', ')} 성분으로 ${benefitLabels.slice(0, 2).join('·')} 관리에 도움을 줘요.`;
               } else {
                 summary = `${product.category} 제품으로 ${benefitLabels.slice(0, 2).join('·')} 케어에 도움을 줘요.`;
