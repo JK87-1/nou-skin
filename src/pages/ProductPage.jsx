@@ -1207,7 +1207,7 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
                     <svg
                       key={star}
                       onClick={() => onRatingClick(star)}
-                      width="18" height="18" viewBox="0 0 24 24"
+                      width="15" height="15" viewBox="0 0 24 24"
                       style={{
                         transition: 'transform 0.15s ease',
                         transform: filled ? 'scale(1.05)' : 'scale(0.92)',
