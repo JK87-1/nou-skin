@@ -1183,7 +1183,7 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
         {!editing ? (
           <>
             {/* 상단: 별점 (좌) · 수정/하트/삭제 (우) */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               {/* 별점 */}
               <div
                 ref={ratingRef}
