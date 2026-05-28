@@ -1184,18 +1184,14 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
           <>
             {/* 상단: 별점 (좌) · 수정/하트/삭제 (우) */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              {/* 별점 pill */}
+              {/* 별점 */}
               <div
                 ref={ratingRef}
                 onTouchStart={onRatingTouchStart}
                 onTouchMove={onRatingTouchMove}
                 onTouchEnd={onRatingTouchEnd}
                 style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 3,
-                  padding: '6px 10px',
-                  background: '#fff',
-                  borderRadius: 50,
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                  display: 'inline-flex', alignItems: 'center', gap: 2,
                   cursor: 'pointer',
                   WebkitTapHighlightColor: 'transparent',
                   userSelect: 'none', WebkitUserSelect: 'none',
@@ -1207,10 +1203,10 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
                     <svg
                       key={star}
                       onClick={() => onRatingClick(star)}
-                      width="15" height="15" viewBox="0 0 24 24"
+                      width="22" height="22" viewBox="0 0 24 24"
                       style={{
                         transition: 'transform 0.15s ease',
-                        transform: filled ? 'scale(1.05)' : 'scale(0.92)',
+                        transform: filled ? 'scale(1.05)' : 'scale(1)',
                         filter: filled ? 'drop-shadow(0 1px 2px rgba(120,189,253,0.4))' : 'drop-shadow(0 0.5px 0.5px rgba(0,0,0,0.1))',
                       }}
                     >
