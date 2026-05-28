@@ -228,10 +228,12 @@ export default function TossLineChart({
         strokeLinejoin="round"
       />
 
-      {/* 데이터 포인트 dot */}
+      {/* 데이터 포인트 dot — 10개 이하일 때만 전체 표시, 초과 시 첫·끝만 */}
       <g opacity={active ? 0.3 : 1} style={{ transition: 'opacity 0.15s ease' }}>
-        {pts.map((p, i) => (
+        {pts.length <= 10 ? pts.map((p, i) => (
           <circle key={i} cx={p.x} cy={p.y} r="3" fill="#fff" stroke={strokeColor} strokeWidth="1.5" />
+        )) : [0, pts.length - 1].map(i => (
+          <circle key={i} cx={pts[i].x} cy={pts[i].y} r="3" fill="#fff" stroke={strokeColor} strokeWidth="1.5" />
         ))}
       </g>
 
