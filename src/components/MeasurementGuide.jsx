@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { hapticLight } from '../utils/haptics';
 import { getBaselineBuildingState } from '../engine/HybridAnalysis';
 import EternalPearl from './icons/EternalPearl';
@@ -129,38 +129,52 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
   const isFirstMeasure = baselineCount === 0;
 
   // 시퀀스 상태: 0=시작, 1~5=조건 순차, 6=오브
-  const [seqStep, setSeqStep] = useState(isFirstMeasure ? 0 : 0);
+  const [seqStep, setSeqStep] = useState(0);
   const [ctaReady, setCtaReady] = useState(false);
   const seqTimerRef = useRef(null);
+  // useRef로 진행 단계를 보관 — useEffect closure 밖(handleTapAccelerate)에서도 안전히 갱신.
+  // (예전엔 useEffect 내부의 currentStep 지역변수만 사용해, 가속 탭 후 자동 진행이 영영 멈췄음)
+  const stepRef = useRef(0);
 
-  // 시퀀스 자동 진행 (모든 측정 공통)
-  useEffect(() => {
-    const delays = isFirstMeasure
-      ? [600, 600, 600, 600, 600, 600]
-      : [600, 600, 600, 600, 600, 500];
-    let currentStep = 0;
+  const delays = isFirstMeasure
+    ? [600, 600, 600, 600, 600, 600]
+    : [600, 600, 600, 600, 600, 500];
 
-    const advance = () => {
-      currentStep++;
-      setSeqStep(currentStep);
-      if (currentStep >= 6) {
+  // 한 단계 진행 + 다음 setTimeout 재예약 (재귀적)
+  const scheduleNext = useCallback(() => {
+    clearTimeout(seqTimerRef.current);
+    if (stepRef.current >= 6) return;
+    const delay = delays[stepRef.current] ?? 600;
+    seqTimerRef.current = setTimeout(() => {
+      stepRef.current = Math.min(stepRef.current + 1, 6);
+      setSeqStep(stepRef.current);
+      if (stepRef.current >= 6) {
         setCtaReady(true);
         return;
       }
-      seqTimerRef.current = setTimeout(advance, delays[currentStep]);
-    };
-
-    seqTimerRef.current = setTimeout(advance, delays[0]);
-    return () => clearTimeout(seqTimerRef.current);
+      scheduleNext();
+    }, delay);
+    // delays는 isFirstMeasure 캡처. isFirstMeasure 변경 없으므로 무방.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFirstMeasure]);
 
-  // 탭으로 시퀀스 가속
+  // 시퀀스 자동 진행 (모든 측정 공통)
+  useEffect(() => {
+    scheduleNext();
+    return () => clearTimeout(seqTimerRef.current);
+  }, [scheduleNext]);
+
+  // 탭으로 시퀀스 가속 — 즉시 한 단계 진행 + 자동 진행도 끊기지 않게 재예약
   const handleTapAccelerate = () => {
-    if (seqStep >= 6) return;
+    if (stepRef.current >= 6) return;
     clearTimeout(seqTimerRef.current);
-    const next = seqStep + 1;
-    setSeqStep(next);
-    if (next >= 6) setCtaReady(true);
+    stepRef.current = Math.min(stepRef.current + 1, 6);
+    setSeqStep(stepRef.current);
+    if (stepRef.current >= 6) {
+      setCtaReady(true);
+      return;
+    }
+    scheduleNext(); // 핵심: 가속 후에도 자동 진행 이어가게 재시작
   };
 
   const handleStart = () => {
@@ -182,7 +196,8 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
         background: 'linear-gradient(180deg, #58aefe 0%, #8ec5f8 33%, #b8dafb 66%, #d7e9fa 100%)',
         display: 'flex', flexDirection: 'column',
         animation: 'mgFadeIn 300ms ease-out',
-        overflow: 'hidden',
+        // iOS Chrome 하단 toolbar로 CTA가 잘릴 때 스크롤로 도달 가능하게(안전망)
+        overflowY: 'auto', WebkitOverflowScrolling: 'touch',
       }}
     >
       {/* 전체 블랙 오버레이 5% */}
