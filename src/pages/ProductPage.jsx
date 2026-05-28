@@ -5,11 +5,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { SunIcon, MoonIcon, LotionIcon, PastelIcon } from '../components/icons/PastelIcons';
 import {
   TRACKER_CATEGORIES, getProducts, saveProduct, deleteProduct, toggleFavorite,
-  getProductsForMode, getTrackerChecks, toggleTrackerCheck,
-  getTrackerProgress, getTrackerWeekly,
   computeAllCorrelations, compressProductThumb, dedupeProductsByName, reorderProducts,
 } from '../storage/TrackerStorage';
 import CareRecommendation from '../components/CareRecommendation';
@@ -171,8 +168,8 @@ function CategorySelector({ value, onChange, accent }) {
 
 function TimeSlotSelector({ value, onChange, accent }) {
   const opts = [
-    { key: 'morning', label: ' 아침' },
-    { key: 'night', label: ' 저녁' },
+    { key: 'morning', label: '아침' },
+    { key: 'night', label: '저녁' },
     { key: 'both', label: '아침+저녁' },
   ];
   return (
@@ -866,16 +863,6 @@ function ProductBrandNameInputs({
   // 필드 입력 시 검색 query 업데이트
   // 사용자 의도 시그널: brand input에 친 거면 brand-only 검색, name이면 name 키워드 검색.
   // 검색 요청에 mode + brandHint 전달 → GPT가 다른 브랜드 섞지 않음.
-  const onFieldChange = (key, value) => {
-    setForm(prev => ({ ...prev, [key]: value }));
-    if (key === 'brand') {
-      setSearchQuery(value);
-    } else if (key === 'name') {
-      // brand가 채워져 있으면 brand + name 합쳐 검색, 비어있으면 name만
-      const composed = form.brand ? `${form.brand} ${value}`.trim() : value.trim();
-      setSearchQuery(composed);
-    }
-  };
   const onBrandFieldChange = (v) => { onBrandChange(v); setSearchQuery(v); };
   const onNameFieldChange = (v) => {
     onNameChange(v);
@@ -935,6 +922,7 @@ function ProductBrandNameInputs({
             maxHeight: 300, overflowY: 'auto',
             WebkitOverflowScrolling: 'touch',
           }}>
+            <style>{`@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
             {/* 입력 즉시 skeleton 카드 5개 (이미 매칭된 로컬 결과 아래로 누적) */}
             {searchLoading && (
               [...Array(Math.max(0, 5 - suggestions.length))].map((_, k) => (
@@ -1008,7 +996,6 @@ function ProductBrandNameInputs({
                       <rect x="6" y="3" width="12" height="18" rx="2"/><line x1="9" y1="8" x2="15" y2="8"/>
                     </svg>
                   )}
-                  <style>{`@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
                 </div>
                 {/* 텍스트 */}
                 <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -1386,57 +1373,10 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
 
 // ===== MAIN COMPONENT =====
 
-// 날짜 헬퍼 — selectedDate state용
-function dateToStr(d) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-function todayStrLocal() {
-  return dateToStr(new Date());
-}
-function formatDateLabel(dateStr) {
-  if (dateStr === todayStrLocal()) return '오늘';
-  const d = new Date(dateStr + 'T12:00:00');
-  const today = new Date();
-  const diff = Math.floor((today.setHours(0,0,0,0) - new Date(dateStr + 'T00:00:00').getTime()) / 86400000);
-  if (diff === 1) return '어제';
-  if (diff === 2) return '그제';
-  const days = ['일','월','화','수','목','금','토'];
-  return `${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
-}
-
 export default function ProductPage({ themeColors, onBack }) {
   const [section, setSection] = useState('products');
   const [products, setProducts] = useState(() => getProducts());
-  const [routineMode, setRoutineMode] = useState(new Date().getHours() >= 18 ? 'night' : 'morning');
-  const [selectedDate, setSelectedDate] = useState(() => todayStrLocal());
-  const [checks, setChecks] = useState(() => getTrackerChecks());
   const [analyses, setAnalyses] = useState([]);
-
-  // selectedDate 변경 시 checks 동기화
-  useEffect(() => {
-    setChecks(getTrackerChecks(selectedDate));
-  }, [selectedDate]);
-
-  const isToday = selectedDate === todayStrLocal();
-  const canGoPrev = (() => {
-    const d = new Date(selectedDate + 'T12:00:00');
-    const diff = Math.floor((Date.now() - d.getTime()) / 86400000);
-    return diff < 60; // 60일 retention
-  })();
-  const goPrev = () => {
-    const d = new Date(selectedDate + 'T12:00:00');
-    d.setDate(d.getDate() - 1);
-    setSelectedDate(dateToStr(d));
-  };
-  const goNext = () => {
-    const d = new Date(selectedDate + 'T12:00:00');
-    d.setDate(d.getDate() + 1);
-    const next = dateToStr(d);
-    // 미래 불가
-    if (next > todayStrLocal()) return;
-    setSelectedDate(next);
-  };
-  const goToday = () => setSelectedDate(todayStrLocal());
 
   // Sheets
   const [showAddSheet, setShowAddSheet] = useState(false);
@@ -1446,11 +1386,6 @@ export default function ProductPage({ themeColors, onBack }) {
 
   const accent = themeColors?.accent || '#6598ef';
   const getCat = (cat) => TRACKER_CATEGORIES[cat] || TRACKER_CATEGORIES['기타'];
-
-  // 루틴 데이터 — selectedDate 기준
-  const modeProducts = getProductsForMode(routineMode);
-  const progress = getTrackerProgress(routineMode, selectedDate);
-  const weekly = getTrackerWeekly();
 
   // 효과 분석 로드
   useEffect(() => {
@@ -1473,8 +1408,10 @@ export default function ProductPage({ themeColors, onBack }) {
   // 화장대 카드 좌/우 스와이프 핸들러
   const handleProductSwipeDelete = (id) => {
     const updated = deleteProduct(id);
-    setProducts(updated.map(p => ({ ...p, imageThumb: p.imageThumb || null })));
     setOpenSwipeRowId(null);
+    getAllProductThumbs().then(map => {
+      setProducts(updated.map(p => ({ ...p, imageThumb: map.get(String(p.id)) || null })));
+    });
   };
   const handleProductSwipeMove = (id, direction) => {
     const ids = products.map(p => p.id);
@@ -1756,14 +1693,9 @@ export default function ProductPage({ themeColors, onBack }) {
     setSelectedProduct(null);
   };
 
-  const handleToggleCheck = (productId) => {
-    const updated = toggleTrackerCheck(routineMode, productId, selectedDate);
-    setChecks(updated);
-  };
-
   const sections = [
-    { key: 'products', label: '내 제품', icon: '' },
-    { key: 'analysis', label: '효과 분석', icon: '' },
+    { key: 'products', label: '내 제품' },
+    { key: 'analysis', label: '효과 분석' },
   ];
 
   return (
@@ -1872,11 +1804,9 @@ export default function ProductPage({ themeColors, onBack }) {
                   }}>
                     {p.favorite && (
                       <div style={{ position: 'absolute', top: 14, right: 14 }}>
-                        {p.favorite && (
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="#ffdaf0" stroke="#fff" strokeWidth="1">
-                            <path d="M6.979 3.074a6 6 0 0 1 4.988 1.425l.037 .033l.034 -.03a6 6 0 0 1 4.733 -1.44l.246 .036a6 6 0 0 1 3.364 10.008l-.18 .185l-.048 .041l-7.45 7.379a1 1 0 0 1 -1.313 .082l-.094 -.082l-7.493 -7.422a6 6 0 0 1 3.176 -10.215z" />
-                          </svg>
-                        )}
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="#ffdaf0" stroke="#fff" strokeWidth="1">
+                          <path d="M6.979 3.074a6 6 0 0 1 4.988 1.425l.037 .033l.034 -.03a6 6 0 0 1 4.733 -1.44l.246 .036a6 6 0 0 1 3.364 10.008l-.18 .185l-.048 .041l-7.45 7.379a1 1 0 0 1 -1.313 .082l-.094 -.082l-7.493 -7.422a6 6 0 0 1 3.176 -10.215z" />
+                        </svg>
                       </div>
                     )}
                     {p.imageThumb ? (
@@ -1964,97 +1894,6 @@ export default function ProductPage({ themeColors, onBack }) {
         </div>
       )}
 
-      {/* ═══ SECTION 2: 오늘의 루틴 (케어 페이지로 이동됨) ═══ */}
-      {false && (
-        <div>
-
-          {modeProducts.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px 0' }}>
-              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
-                {routineMode === 'morning' ? '아침' : '저녁'} 루틴 제품이 없어요
-              </div>
-              <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>제품을 등록하고 루틴을 관리해보세요</div>
-              <button onClick={() => { setSection('products'); setShowAddSheet(true); }} style={{
-                padding: '10px 24px', borderRadius: 10, border: 'none', cursor: 'pointer',
-                background: accent, color: '#fff', fontSize: 13, fontWeight: 600,
-              }}>제품 등록하기</button>
-            </div>
-          ) : (
-            <>
-              {/* Progress */}
-              <div style={{ marginBottom: 20 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>오늘 진행률</span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: accent }}>{progress.done}/{progress.total} 완료</span>
-                </div>
-                <div style={{ height: 8, borderRadius: 4, overflow: 'hidden', background: 'var(--progress-track)' }}>
-                  <div style={{
-                    height: '100%', borderRadius: 4,
-                    background: `linear-gradient(90deg, ${accent}cc, ${accent})`,
-                    width: progress.total > 0 ? `${(progress.done / progress.total) * 100}%` : '0%',
-                    transition: 'width 0.4s ease',
-                  }} />
-                </div>
-              </div>
-
-              {/* Checklist */}
-              <div className="card" style={{ padding: '4px 16px', marginBottom: 20 }}>
-                {modeProducts.map((p, idx) => {
-                  const cat = getCat(p.category);
-                  const isChecked = !!checks[routineMode][p.id];
-                  return (
-                    <div key={p.id} style={{
-                      display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0',
-                      borderBottom: idx < modeProducts.length - 1 ? ('1px solid var(--border-separator)') : 'none',
-                      opacity: isChecked ? 0.6 : 1, transition: 'opacity 0.2s',
-                    }}>
-                      <button onClick={() => handleToggleCheck(p.id)} style={{
-                        width: 26, height: 26, borderRadius: 8, border: 'none', cursor: 'pointer', flexShrink: 0,
-                        background: isChecked ? `linear-gradient(135deg, ${accent}cc, ${accent})` : 'var(--progress-track)',
-                        ...(isChecked ? {} : { boxShadow: 'none' }),
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s',
-                      }}>
-                        {isChecked && <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 7" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" /></svg>}
-                      </button>
-                      {p.imageThumb ? (
-                        <img src={p.imageThumb} alt="" style={{ width: 32, height: 32, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} />
-                      ) : (
-                        <div style={{ width: 32, height: 32, borderRadius: 10, flexShrink: 0, background: `${cat.color}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>{cat.emoji}</div>
-                      )}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', textDecoration: isChecked ? 'line-through' : 'none' }}>{p.name}</div>
-                        <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 1 }}>{p.brand}</div>
-                      </div>
-                      <span style={{ fontSize: 10, fontWeight: 600, color: cat.color, background: `${cat.color}12`, borderRadius: 6, padding: '2px 7px', flexShrink: 0 }}>{p.category}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </>
-          )}
-
-          {/* Weekly Calendar */}
-          <div className="card" style={{ padding: '16px 18px' }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 14 }}>주간 루틴 현황</div>
-            <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-              {weekly.map((day) => (
-                <div key={day.dayLabel} style={{ textAlign: 'center' }}>
-                  <div style={{
-                    width: 32, height: 32, borderRadius: '50%',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 4,
-                    background: day.completed ? accent : day.isToday ? `${accent}20` : day.partial ? `${accent}10` : 'var(--item-bg)',
-                    border: day.isToday && !day.completed ? `2px solid ${accent}` : 'none',
-                  }}>
-                    {day.completed ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 7" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                      : day.partial ? <div style={{ width: 6, height: 6, borderRadius: '50%', background: accent }} /> : null}
-                  </div>
-                  <span style={{ fontSize: 10, fontWeight: day.isToday ? 600 : 400, color: day.isToday ? accent : ('var(--text-muted)') }}>{day.dayLabel}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ═══ SECTION 3: 효과 분석 ═══ */}
       {section === 'analysis' && (
