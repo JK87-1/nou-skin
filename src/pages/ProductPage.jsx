@@ -1268,7 +1268,7 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
             </div>
 
             {/* 제품 요약 카드 */}
-            {(() => {
+            {(() => { try {
               // 카테고리→기대 효과 메트릭 매핑
               const CAT_METRICS = {
                 '토너': ['moisture', 'poreScore', 'skinTone'],
@@ -1309,7 +1309,9 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
               }
 
               // 요약 텍스트 생성
-              const ings = product.ingredients?.slice(0, 3) || [];
+              const rawIngs = Array.isArray(product.ingredients) ? product.ingredients
+                : (product.ingredients?.estimated || product.ingredients?.known || []);
+              const ings = rawIngs.slice(0, 3);
               const benefitLabels = benefitKeys.map(k => METRIC_LABELS[k]).filter(Boolean);
               let summary = '';
               if (correlation?.metrics?.length > 0 && correlation.metrics[0].improved) {
@@ -1321,7 +1323,7 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
                 summary = `${product.category} 제품으로 ${benefitLabels.slice(0, 2).join('·')} 케어에 도움을 줘요.`;
               }
 
-              const displayIngs = (product.ingredients || []).slice(0, 5);
+              const displayIngs = rawIngs.slice(0, 5);
 
               return (
                 <div style={{
@@ -1358,7 +1360,7 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
                   )}
                 </div>
               );
-            })()}
+            } catch { return null; } })()}
 
             <div style={{
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
