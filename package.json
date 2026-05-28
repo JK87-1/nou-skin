@@ -15,7 +15,6 @@
   "dependencies": {
     "@capacitor/android": "^8.3.4",
     "@capacitor/camera": "^8.2.0",
-    "@capacitor/cli": "^8.3.4",
     "@capacitor/core": "^8.3.4",
     "@capacitor/haptics": "^8.0.2",
     "@capacitor/ios": "^8.3.4",
@@ -37,6 +36,7 @@
     "web-push": "^3.6.7"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.3.4",
     "@vitejs/plugin-basic-ssl": "^2.1.4",
     "@vitejs/plugin-react": "^4.3.4",
     "sharp": "^0.34.5",
