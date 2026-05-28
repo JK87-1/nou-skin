@@ -2152,7 +2152,7 @@ function RoutineChecklist() {
                   </div>
                   <div onClick={(e) => { e.stopPropagation(); handleToggle(item.id); }} style={{
                     width: 24, height: 24, borderRadius: 8, flexShrink: 0, cursor: 'pointer',
-                    border: checked ? 'none' : '2px solid rgba(200,210,220,0.6)',
+                    border: 'none',
                     background: checked ? 'var(--accent-primary, #6598ef)' : 'rgba(255,255,255,0.85)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     transition: 'all 0.2s',
