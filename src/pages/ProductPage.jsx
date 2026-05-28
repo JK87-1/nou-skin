@@ -1344,7 +1344,7 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
                           background: `${m.color}14`,
                         }}>
                           {m.icon(13)}
-                          <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-primary)' }}>{m.label}</span>
+                          <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-primary)' }}>{m.label}</span>
                         </div>
                       );
                     })}
