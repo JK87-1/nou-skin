@@ -1221,7 +1221,7 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
                 })}
               </div>
               {/* 우측 아이콘 */}
-              <div style={{ display: 'flex', gap: 2 }}>
+              <div style={{ display: 'flex', gap: 0 }}>
                 <div onClick={() => setEditing(true)} style={{ cursor: 'pointer', padding: 7, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d0d0d0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
