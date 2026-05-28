@@ -432,25 +432,29 @@ export default function App() {
     reader.onload = async (ev) => {
       const original = ev.target.result;
       setImage(original);
-      const compressed = await compressImage(original);
+
+      // imgEl 1회 로드 후, lm 무관 작업(landmarks·age·compress) 3개 병렬 → lm 의존 작업(pixel·quality) 2개 병렬.
+      // compressImage는 landmarks와 무관한데 기존엔 직렬로 기다렸음 → 병렬 이동.
+      const imgEl = new Image();
+      imgEl.src = original;
+      await new Promise(r => { imgEl.onload = r; imgEl.onerror = r; });
+      const [lm, ageResult, compressed] = await Promise.all([
+        detectLandmarks(imgEl),
+        estimateAge(imgEl),
+        compressImage(original),
+      ]);
+      setLandmarks(lm);
+      setMlAge(ageResult ? ageResult.age : null);
       const data = compressed.split(',')[1];
       setImageSize(`${Math.round(data.length * 3 / 4 / 1024)}KB`);
       setB64(data);
 
-      // Detect face landmarks (returns null on failure -> fallback to fixed regions)
-      const imgEl = new Image();
-      imgEl.src = original;
-      await new Promise(r => { imgEl.onload = r; imgEl.onerror = r; });
-      const [lm, ageResult] = await Promise.all([
-        detectLandmarks(imgEl),
-        estimateAge(imgEl),
+      // analyzePixels·checkPhotoQuality는 lm을 받지만 서로 독립 → 병렬.
+      const [px, quality] = await Promise.all([
+        analyzePixels(original, lm),
+        checkPhotoQuality(original, lm),
       ]);
-      setLandmarks(lm);
-      setMlAge(ageResult ? ageResult.age : null);
-
-      const px = await analyzePixels(original, lm);
       setPixelData(px);
-      const quality = await checkPhotoQuality(original, lm);
       setPhotoQuality(quality);
       setStage('upload');
     };
@@ -489,19 +493,22 @@ export default function App() {
   const handleCameraCapture = useCallback(async (dataUrl, lm) => {
     setImage(dataUrl);
     setLandmarks(lm);
-    // ML age estimation (parallel with compression + pixel analysis)
+    // CameraCapture가 이미 landmarks를 줬으므로 이후 4개 작업은 모두 독립 → 병렬 실행.
+    // (estimateAge·compressImage·analyzePixels·checkPhotoQuality는 서로 결과를 참조하지 않음)
     const imgEl = new Image();
     imgEl.src = dataUrl;
     await new Promise(r => { imgEl.onload = r; imgEl.onerror = r; });
-    const ageResult = await estimateAge(imgEl);
+    const [ageResult, compressed, px, quality] = await Promise.all([
+      estimateAge(imgEl),
+      compressImage(dataUrl),
+      analyzePixels(dataUrl, lm),
+      checkPhotoQuality(dataUrl, lm),
+    ]);
     setMlAge(ageResult ? ageResult.age : null);
-    const compressed = await compressImage(dataUrl);
     const data = compressed.split(',')[1];
     setImageSize(`${Math.round(data.length * 3 / 4 / 1024)}KB`);
     setB64(data);
-    const px = await analyzePixels(dataUrl, lm);
     setPixelData(px);
-    const quality = await checkPhotoQuality(dataUrl, lm);
     setPhotoQuality(quality);
     setStage('upload');
   }, []);
