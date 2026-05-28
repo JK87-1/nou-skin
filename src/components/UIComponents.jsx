@@ -172,6 +172,7 @@ export function DetailPage({ metricKey, value, onBack }) {
     wrinkles: <RulerIcon size={22} />, pores: <MicroscopeIcon size={22} />, darkCircles: <EyeIcon size={22} />,
   };
 
+
   // 또래(연령대) 대비 백분위 — 연령 보정 추정
   const _profile = (() => { try { return getProfile(); } catch { return {}; } })();
   const _age = _profile.birthYear ? (new Date().getFullYear() - parseInt(_profile.birthYear, 10)) : null;
@@ -236,11 +237,9 @@ export function DetailPage({ metricKey, value, onBack }) {
         </DetailAccordion>
 
         {/* 4. Disclaimer */}
-        <div style={{ padding: 14, background: 'rgba(255,255,255,0.3)', borderRadius: 18, marginBottom: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
-          <p style={{ fontSize: 11, color: 'rgba(0,0,0,0.4)', lineHeight: 1.6 }}>
-            피부과 임상 기기(Corneometer, Mexameter 등)의 측정 원리를 컴퓨터 비전으로 구현하였으며, 임상 데이터와의 교차 검증을 통해 정확도를 개선하고 있습니다.
-          </p>
-        </div>
+        <p style={{ fontSize: 10, color: 'rgba(0,0,0,0.25)', lineHeight: 1.5, textAlign: 'center', margin: '0 0 16px', padding: '0 14px' }}>
+          피부과 임상 기기(Corneometer, Mexameter 등)의 측정 원리를 컴퓨터 비전으로 구현하였으며, 임상 데이터와의 교차 검증을 통해 정확도를 개선하고 있습니다.
+        </p>
 
         {anyAccordionOpen > 0 && (
           <button onClick={onBack} style={{
