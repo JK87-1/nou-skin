@@ -68,7 +68,7 @@ export default function App() {
   const [landmarks, setLandmarks] = useState(null);
   const [saved, setSaved] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
-    briefing: true, change: true, analysis: false, indicators: false, care: false, meta: false,
+    briefing: true, change: true, analysis: false, indicators: true, care: false, meta: false,
   });
   const [showSaveToast, setShowSaveToast] = useState(false);
   const [photoQuality, setPhotoQuality] = useState(null);
@@ -412,13 +412,18 @@ export default function App() {
   const goToLanding = useCallback(() => { refreshLandingData(); setHistoryInitMode(null); setActiveTab('home'); setStage('landing'); }, []);
 
   const switchTab = useCallback((tab) => {
+    if (viewingHistory) {
+      setViewingHistory(false);
+      setResult(null);
+      setStage('landing');
+    }
     setActiveTab(tab);
     setUserLevel(getLevel());
     if (tab === 'home') {
       setStage('landing');
       refreshLandingData();
     }
-  }, []);
+  }, [viewingHistory]);
 
   const reset = useCallback(() => {
     setActiveTab('home'); setStage('landing'); setImage(null); setB64(null); setResult(null);
@@ -1949,6 +1954,25 @@ export default function App() {
                     : score >= 55 ? { letter: 'B', label: '양호' }
                     : score >= 40 ? { letter: 'C', label: '보통' }
                     : { letter: 'D', label: '관리필요' };
+                  // ── 베스트/워스트 지표 계산 ──
+                  const _bwMetrics = [
+                    { key: 'moisture', label: '수분', value: result.moisture, unit: '%', icon: <DropletIcon size={13} />, colors: ['#0e6bec', '#4d8ef2'] },
+                    { key: 'oilBalance', label: '유분', value: result.oilBalance, unit: '%', icon: <BubbleIcon size={13} />, colors: ['#00a0fc', '#4dbdfd'] },
+                    { key: 'skinTone', label: '피부톤', value: result.skinTone, unit: '점', icon: <LotionIcon size={13} />, colors: ['#f42f89', '#f86aaa'] },
+                    { key: 'textureScore', label: '피부결', value: result.textureScore, unit: '점', icon: <SparkleIcon size={13} />, colors: ['#ff5097', '#ff85b8'] },
+                    { key: 'elasticityScore', label: '탄력', value: result.elasticityScore, unit: '점', icon: <DiamondIcon size={13} />, colors: ['#ff8500', '#ffab4d'] },
+                    { key: 'poreScore', label: '모공', value: result.poreScore, unit: '점', icon: <MicroscopeIcon size={13} />, colors: ['#fc75c6', '#fda4db'] },
+                    { key: 'pigmentationScore', label: '색소', value: result.pigmentationScore, unit: '점', icon: <PaletteIcon size={13} />, colors: ['#9D1233', '#d44a68'] },
+                    { key: 'darkCircleScore', label: '다크서클', value: result.darkCircleScore, unit: '점', icon: <EyeIcon size={13} />, colors: ['#ffb600', '#ffd04d'] },
+                    { key: 'wrinkleScore', label: '주름', value: result.wrinkleScore, unit: '점', icon: <RulerIcon size={13} />, colors: ['#fccd03', '#fde04d'] },
+                  ].filter(m => m.value != null);
+                  const _sorted = [..._bwMetrics].sort((a, b) => b.value - a.value);
+                  const _best = _sorted[0];
+                  const _worst = _sorted[_sorted.length - 1];
+                  const _bwItems = _best && _worst && _best.key !== _worst.key ? [
+                    { ..._best, tag: '베스트', tagBg: 'rgba(101,152,239,0.12)', tagColor: '#6598ef' },
+                    { ..._worst, tag: '관리필요', tagBg: 'rgba(0,0,0,0.06)', tagColor: 'rgba(0,0,0,0.4)' },
+                  ] : [];
                   return (
                     <>
                       {/* Grade + label */}
@@ -1956,6 +1980,30 @@ export default function App() {
                         <span style={{ fontSize: 22, fontWeight: 500, color: 'rgba(0,0,0,0.8)' }}>{grade.letter}</span>
                         <span style={{ fontSize: 11, color: 'rgba(0,0,0,0.5)' }}>컨디션 등급</span>
                       </div>
+                      {/* 베스트 / 워스트 지표 */}
+                      {_bwItems.length === 2 && (
+                        <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+                          {_bwItems.map(bw => (
+                            <div key={bw.key} style={{
+                              flex: 1, display: 'flex', alignItems: 'center', gap: 8,
+                              padding: '8px 10px', borderRadius: 10,
+                              background: 'rgba(255,255,255,0.6)',
+                            }}>
+                              <div style={{ flexShrink: 0 }}>{bw.icon}</div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                  <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(0,0,0,0.7)' }}>{bw.label}</span>
+                                  <span style={{ fontSize: 9, fontWeight: 600, padding: '1px 5px', borderRadius: 4, background: bw.tagBg, color: bw.tagColor }}>{bw.tag}</span>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'baseline', gap: 2, marginTop: 2 }}>
+                                  <span style={{ fontSize: 16, fontWeight: 600, color: bw.colors[0], letterSpacing: -0.5 }}>{bw.value}</span>
+                                  <span style={{ fontSize: 10, color: bw.colors[1] }}>{bw.unit}</span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                       {/* Briefing text */}
                       <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(0,0,0,0.8)', lineHeight: 1.7, margin: 0 }}>{conditionBriefing}</p>
                       {/* Today's change badges */}
@@ -2138,149 +2186,7 @@ export default function App() {
             );
           })()}
 
-          {/* ═══════ Section: 측정 정보 (컨디션 브리핑 바로 아래) ═══════ */}
-          <div className="result-section">
-            <button className="result-section-toggle" aria-expanded={expandedSections.meta} onClick={() => toggleSection('meta')}>
-              <span className="result-section-title">측정 정보</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"
-                style={{ transition: 'transform 0.3s ease', transform: expandedSections.meta ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                <path d="M6 9l6 6 6-6" />
-              </svg>
-            </button>
-            {expandedSections.meta && (<>
-              <div className="result-section-divider" />
-              <div className="result-section-body">
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 13 }}>
-                  <span style={{ color: 'rgba(0,0,0,0.35)' }}>피부 타입</span>
-                  <span style={{ color: 'rgba(0,0,0,0.8)', fontWeight: 500 }}>{result.skinType}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 13 }}>
-                  <span style={{ color: 'rgba(0,0,0,0.35)' }}>분석 모드</span>
-                  <span style={{
-                    fontSize: 11, fontWeight: 500,
-                    color: result.analysisMode === 'hybrid' ? '#6598ef' : 'rgba(0,0,0,0.35)',
-                    background: result.analysisMode === 'hybrid' ? 'rgba(101,152,239,0.1)' : 'rgba(107,127,153,0.1)',
-                    padding: '2px 8px', borderRadius: 8,
-                  }}>{result.analysisMode === 'hybrid' ? 'AI + CV 하이브리드' : 'CV 비전 분석'}</span>
-                </div>
-                {result.confidence != null && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 13 }}>
-                    <span style={{ color: 'rgba(0,0,0,0.35)' }}>측정 신뢰도</span>
-                    <span style={{
-                      fontWeight: 500,
-                      color: result.confidence >= 70 ? '#6598ef' : result.confidence >= 50 ? 'rgba(101,152,239,0.6)' : '#FFB8C8',
-                    }}>{result.confidence}%</span>
-                  </div>
-                )}
-                {result.concerns?.length > 0 && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', fontSize: 13 }}>
-                    <span style={{ color: 'rgba(0,0,0,0.35)' }}>관심 사항</span>
-                    <div style={{ display: 'flex', gap: 4 }}>
-                      {result.concerns.map((concern, i) => (
-                        <span key={i} style={{
-                          fontSize: 11, fontWeight: 500,
-                          color: i === 0 ? '#6598ef' : 'rgba(101,152,239,0.6)',
-                          background: i === 0 ? 'rgba(101,152,239,0.1)' : 'rgba(101,152,239,0.12)',
-                          padding: '2px 8px', borderRadius: 8,
-                        }}>{concern}</span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {result?.analysisMode === 'cv_only' && (
-                  <div style={{
-                    marginTop: 8, padding: '10px 12px', borderRadius: 12,
-                    background: 'rgba(255,255,255,0.7)',
-                  }}>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: '#6598ef', marginBottom: 2 }}>AI 정밀 분석이 일시 지연됐어요</div>
-                    <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.35)', lineHeight: 1.5 }}>네트워크 또는 분석 서버 일시 지연으로 기본 분석(CV)으로 처리됐어요. 잠시 후 다시 측정하면 보통 정상 복귀됩니다.</div>
-                  </div>
-                )}
-                {/* 측정 정확도 디버그 (베타 임시) — 디바이스·얼굴 매칭·정규화 통계 */}
-                {result?.measureDebug && (() => {
-                  const d = result.measureDebug;
-                  const matchEmoji = d.faceMatch === 'same' ? '✓ 동일인'
-                    : d.faceMatch === 'different' ? '✗ 다른 사람'
-                    : d.faceMatch === 'ambiguous' ? '? 모호'
-                    : '— 비교 안 함';
-                  const sameDevText = d.sameDevice === true ? '같은 폰' : d.sameDevice === false ? '다른 폰' : '첫 측정';
-                  return (
-                    <div style={{
-                      marginTop: 8, padding: '8px 10px', borderRadius: 10,
-                      background: 'rgba(101,152,239,0.06)', border: '1px solid rgba(101,152,239,0.15)',
-                      fontSize: 10, color: 'rgba(0,0,0,0.35)', lineHeight: 1.6,
-                    }}>
-                      <div style={{ fontWeight: 600, marginBottom: 2 }}>측정 정확도 디버그 (베타 임시)</div>
-                      <div>디바이스: {d.device} ({sameDevText})</div>
-                      <div>얼굴 매칭: {matchEmoji}{d.faceDistance != null ? ` · distance ${d.faceDistance}` : ''}</div>
-                      {d.normalize && (
-                        <div>정규화: 밝기 {d.normalize.before.brightness}→{d.normalize.after.brightness} · exposure {d.normalize.factors.exposure}</div>
-                      )}
-                      {d.baselineBuild?.stage === 'building' && (
-                        <div style={{ color: '#6598ef', fontWeight: 600 }}>
-                          기준 구축 중 ({d.baselineBuild.count}/{d.baselineBuild.target}) — {d.baselineBuild.target}회 측정 평균으로 정확한 기준점 만들어요
-                        </div>
-                      )}
-                    </div>
-                  );
-                })()}
-                {result?.outlierWarning && (
-                  <div style={{
-                    marginTop: 8, padding: '8px 10px', borderRadius: 10,
-                    background: 'rgba(183,218,251,0.15)', border: '1px solid rgba(183,218,251,0.3)',
-                  }}>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(101,152,239,0.5)', marginBottom: 2 }}>오늘 결과가 평소와 크게 달라요</div>
-                    <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.35)', lineHeight: 1.5 }}>{result.outlierReason}. 조명/각도/메이크업 차이일 가능성이 있어요.</div>
-                  </div>
-                )}
-                <p style={{ fontSize: 11, color: 'rgba(0,0,0,0.35)', textAlign: 'center', marginTop: 10, marginBottom: 4, lineHeight: 1.4 }}>본 분석은 피부과 임상 기기를 참조한 AI 분석 결과이며, 의료 진단을 대체하지 않습니다. 정확한 진단은 피부과 전문의와 상담해주세요.</p>
-                {/* 쿠팡 파트너스 안내는 맞춤 제품 추천(화장대) 아래로 이동 */}
-              </div>
-            </>)}
-          </div>
-
-
-
-          {/* ═══════ Section 3: 정밀 분석 ═══════ */}
-          <div className="result-section">
-            <button className="result-section-toggle" aria-expanded={expandedSections.analysis} onClick={() => toggleSection('analysis')}>
-              <span className="result-section-title">정밀 분석</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"
-                style={{ transition: 'transform 0.3s ease', transform: expandedSections.analysis ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                <path d="M6 9l6 6 6-6" />
-              </svg>
-            </button>
-            {expandedSections.analysis && (<>
-              <div className="result-section-divider" />
-              <div className="result-section-body">
-                <p style={{ fontSize: 13, color: 'rgba(0,0,0,0.8)', lineHeight: 1.7, margin: 0 }}>{result.advice}</p>
-                <AiCommentCard
-                  aiNotes={result.aiNotes}
-                  aiDetails={result.aiDetails}
-                  accent={activeThemeColors.accent}
-                  analysisMode={result.analysisMode}
-                  makeupDetected={result.makeupDetected}
-                  animationDelay="0"
-                />
-                {result.makeupDetected && (
-                  <div style={{
-                    marginTop: 10, padding: '10px 12px', borderRadius: 12,
-                    background: 'linear-gradient(135deg, rgba(244,163,187,0.1), rgba(244,163,187,0.05))',
-                    border: '1px solid rgba(244,163,187,0.2)',
-                    display: 'flex', alignItems: 'center', gap: 8,
-                  }}>
-                    <span style={{ fontSize: 16, flexShrink: 0 }}></span>
-                    <div>
-                      <div style={{ fontSize: 11, fontWeight: 600, color: '#FFB8C8', marginBottom: 1 }}>메이크업이 감지되었어요</div>
-                      <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.35)', lineHeight: 1.4 }}>클렌징 후 다시 측정하면 더 정확한 피부 상태를 확인할 수 있어요</div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </>)}
-          </div>
-
-          {/* ═══════ Section 4: 전체 지표 ═══════ */}
+          {/* ═══════ Section 3: 전체 지표 ═══════ */}
           <div className="result-section">
             <button className="result-section-toggle" aria-expanded={expandedSections.indicators} onClick={() => toggleSection('indicators')}>
               <span className="result-section-title">전체 지표</span>
@@ -2432,6 +2338,45 @@ export default function App() {
                     );
                   })}
                 </div>
+              </div>
+            </>)}
+          </div>
+
+          {/* ═══════ Section 4: 정밀 분석 ═══════ */}
+          <div className="result-section">
+            <button className="result-section-toggle" aria-expanded={expandedSections.analysis} onClick={() => toggleSection('analysis')}>
+              <span className="result-section-title">정밀 분석</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"
+                style={{ transition: 'transform 0.3s ease', transform: expandedSections.analysis ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            {expandedSections.analysis && (<>
+              <div className="result-section-divider" />
+              <div className="result-section-body">
+                <p style={{ fontSize: 13, color: 'rgba(0,0,0,0.8)', lineHeight: 1.7, margin: 0 }}>{result.advice}</p>
+                <AiCommentCard
+                  aiNotes={result.aiNotes}
+                  aiDetails={result.aiDetails}
+                  accent={activeThemeColors.accent}
+                  analysisMode={result.analysisMode}
+                  makeupDetected={result.makeupDetected}
+                  animationDelay="0"
+                />
+                {result.makeupDetected && (
+                  <div style={{
+                    marginTop: 10, padding: '10px 12px', borderRadius: 12,
+                    background: 'linear-gradient(135deg, rgba(244,163,187,0.1), rgba(244,163,187,0.05))',
+                    border: '1px solid rgba(244,163,187,0.2)',
+                    display: 'flex', alignItems: 'center', gap: 8,
+                  }}>
+                    <span style={{ fontSize: 16, flexShrink: 0 }}></span>
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: '#FFB8C8', marginBottom: 1 }}>메이크업이 감지되었어요</div>
+                      <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.35)', lineHeight: 1.4 }}>클렌징 후 다시 측정하면 더 정확한 피부 상태를 확인할 수 있어요</div>
+                    </div>
+                  </div>
+                )}
               </div>
             </>)}
           </div>
@@ -2592,6 +2537,105 @@ export default function App() {
                     </div>
                   );
                 })()}
+              </div>
+            </>)}
+          </div>
+
+          {/* ═══════ Section 6: 측정 정보 ═══════ */}
+          <div className="result-section">
+            <button className="result-section-toggle" aria-expanded={expandedSections.meta} onClick={() => toggleSection('meta')}>
+              <span className="result-section-title">측정 정보</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="2" strokeLinecap="round"
+                style={{ transition: 'transform 0.3s ease', transform: expandedSections.meta ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            {expandedSections.meta && (<>
+              <div className="result-section-divider" />
+              <div className="result-section-body">
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 13 }}>
+                  <span style={{ color: 'rgba(0,0,0,0.35)' }}>피부 타입</span>
+                  <span style={{ color: 'rgba(0,0,0,0.8)', fontWeight: 500 }}>{result.skinType}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 13 }}>
+                  <span style={{ color: 'rgba(0,0,0,0.35)' }}>분석 모드</span>
+                  <span style={{
+                    fontSize: 11, fontWeight: 500,
+                    color: result.analysisMode === 'hybrid' ? '#6598ef' : 'rgba(0,0,0,0.35)',
+                    background: result.analysisMode === 'hybrid' ? 'rgba(101,152,239,0.1)' : 'rgba(107,127,153,0.1)',
+                    padding: '2px 8px', borderRadius: 8,
+                  }}>{result.analysisMode === 'hybrid' ? 'AI + CV 하이브리드' : 'CV 비전 분석'}</span>
+                </div>
+                {result.confidence != null && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 13 }}>
+                    <span style={{ color: 'rgba(0,0,0,0.35)' }}>측정 신뢰도</span>
+                    <span style={{
+                      fontWeight: 500,
+                      color: result.confidence >= 70 ? '#6598ef' : result.confidence >= 50 ? 'rgba(101,152,239,0.6)' : '#FFB8C8',
+                    }}>{result.confidence}%</span>
+                  </div>
+                )}
+                {result.concerns?.length > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', fontSize: 13 }}>
+                    <span style={{ color: 'rgba(0,0,0,0.35)' }}>관심 사항</span>
+                    <div style={{ display: 'flex', gap: 4 }}>
+                      {result.concerns.map((concern, i) => (
+                        <span key={i} style={{
+                          fontSize: 11, fontWeight: 500,
+                          color: i === 0 ? '#6598ef' : 'rgba(101,152,239,0.6)',
+                          background: i === 0 ? 'rgba(101,152,239,0.1)' : 'rgba(101,152,239,0.12)',
+                          padding: '2px 8px', borderRadius: 8,
+                        }}>{concern}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {result?.analysisMode === 'cv_only' && (
+                  <div style={{
+                    marginTop: 8, padding: '10px 12px', borderRadius: 12,
+                    background: 'rgba(255,255,255,0.7)',
+                  }}>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: '#6598ef', marginBottom: 2 }}>AI 정밀 분석이 일시 지연됐어요</div>
+                    <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.35)', lineHeight: 1.5 }}>네트워크 또는 분석 서버 일시 지연으로 기본 분석(CV)으로 처리됐어요. 잠시 후 다시 측정하면 보통 정상 복귀됩니다.</div>
+                  </div>
+                )}
+                {result?.measureDebug && (() => {
+                  const d = result.measureDebug;
+                  const matchEmoji = d.faceMatch === 'same' ? '✓ 동일인'
+                    : d.faceMatch === 'different' ? '✗ 다른 사람'
+                    : d.faceMatch === 'ambiguous' ? '? 모호'
+                    : '— 비교 안 함';
+                  const sameDevText = d.sameDevice === true ? '같은 폰' : d.sameDevice === false ? '다른 폰' : '첫 측정';
+                  return (
+                    <div style={{
+                      marginTop: 8, padding: '8px 10px', borderRadius: 10,
+                      background: 'rgba(101,152,239,0.06)', border: '1px solid rgba(101,152,239,0.15)',
+                      fontSize: 10, color: 'rgba(0,0,0,0.35)', lineHeight: 1.6,
+                    }}>
+                      <div style={{ fontWeight: 600, marginBottom: 2 }}>측정 정확도 디버그 (베타 임시)</div>
+                      <div>디바이스: {d.device} ({sameDevText})</div>
+                      <div>얼굴 매칭: {matchEmoji}{d.faceDistance != null ? ` · distance ${d.faceDistance}` : ''}</div>
+                      {d.normalize && (
+                        <div>정규화: 밝기 {d.normalize.before.brightness}→{d.normalize.after.brightness} · exposure {d.normalize.factors.exposure}</div>
+                      )}
+                      {d.baselineBuild?.stage === 'building' && (
+                        <div style={{ color: '#6598ef', fontWeight: 600 }}>
+                          기준 구축 중 ({d.baselineBuild.count}/{d.baselineBuild.target}) — {d.baselineBuild.target}회 측정 평균으로 정확한 기준점 만들어요
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+                {result?.outlierWarning && (
+                  <div style={{
+                    marginTop: 8, padding: '8px 10px', borderRadius: 10,
+                    background: 'rgba(183,218,251,0.15)', border: '1px solid rgba(183,218,251,0.3)',
+                  }}>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(101,152,239,0.5)', marginBottom: 2 }}>오늘 결과가 평소와 크게 달라요</div>
+                    <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.35)', lineHeight: 1.5 }}>{result.outlierReason}. 조명/각도/메이크업 차이일 가능성이 있어요.</div>
+                  </div>
+                )}
+                <p style={{ fontSize: 11, color: 'rgba(0,0,0,0.35)', textAlign: 'center', marginTop: 10, marginBottom: 4, lineHeight: 1.4 }}>본 분석은 피부과 임상 기기를 참조한 AI 분석 결과이며, 의료 진단을 대체하지 않습니다. 정확한 진단은 피부과 전문의와 상담해주세요.</p>
               </div>
             </>)}
           </div>
