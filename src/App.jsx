@@ -2078,9 +2078,10 @@ export default function App() {
             return (
               <div style={{
                 margin: '0 16px 10px',
-                background: 'linear-gradient(135deg, rgba(101,152,239,0.12), rgba(101,152,239,0.05))',
+                background: 'rgba(255,255,255,0.5)',
                 border: 'none',
                 borderRadius: 14, padding: '14px 16px',
+                boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                   <div style={{
@@ -2114,7 +2115,7 @@ export default function App() {
 
                 <div style={{
                   fontSize: 11, color: 'rgba(0,0,0,0.5)', lineHeight: 1.6,
-                  background: 'rgba(255,255,255,0.55)',
+                  background: 'rgba(101,152,239,0.06)',
                   padding: '8px 10px', borderRadius: 10,
                   wordBreak: 'keep-all',
                   marginBottom: 12,
