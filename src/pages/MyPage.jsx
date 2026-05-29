@@ -19,7 +19,8 @@ import { getGoal, saveGoal, clearGoal, getDaysRemaining, getGoalProgress, getOve
 import { getAllPhotosRaw, restorePhotos } from '../storage/PhotoDB';
 import { setProfileImage as setProfileImageIDB, getProfileImage as getProfileImageIDB } from '../storage/ImageStore';
 import { hapticLight, hapticWarning, hapticSuccess } from '../utils/haptics';
-import { getUserLocation } from '../storage/WeatherStorage';
+import { getUserLocation, saveUserLocation } from '../storage/WeatherStorage';
+import { Capacitor } from '@capacitor/core';
 import { MoonIcon, SunIcon, CameraIcon, SaveIcon, PastelIcon } from '../components/icons/PastelIcons';
 import { TERMS_OF_SERVICE, PRIVACY_POLICY, BIOMETRIC_CONSENT, OVERSEAS_TRANSFER_CONSENT, INQUIRY_FAQ, CONTACT_EMAIL } from '../legal/legalContent';
 import SiteFooter from '../components/SiteFooter';
@@ -559,6 +560,30 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
 
   const handleWeatherToggle = async () => {
     if (!weatherEnabled) {
+      // 네이티브 앱: 웹푸시 대신 OS 로컬 알림 사용
+      if (Capacitor.isNativePlatform()) {
+        setPushSubscribing(true);
+        try {
+          const { LocalNotifications } = await import('@capacitor/local-notifications');
+          let perm = await LocalNotifications.checkPermissions();
+          if (perm.display !== 'granted') perm = await LocalNotifications.requestPermissions();
+          if (perm.display !== 'granted') { showToast('알림 권한을 허용해주세요'); return; }
+          // 알림 문구에 쓸 위치 저장 (없으면 현재 위치 요청)
+          let loc = getUserLocation();
+          if (!loc && navigator.geolocation) {
+            try {
+              const pos = await new Promise((resolve, reject) =>
+                navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 }));
+              saveUserLocation(pos.coords.latitude, pos.coords.longitude, '');
+            } catch {}
+          }
+          setWeatherEnabled(true);
+          savePushSettings(reminderEnabled, reminderTime, tipEnabled, tipTime, true);
+          showToast('피부 날씨 알림이 설정되었어요!');
+        } catch { showToast('설정 중 오류가 발생했어요'); }
+        finally { setPushSubscribing(false); }
+        return;
+      }
       if (!isPushSupported()) { showToast('이 브라우저에서는 알림을 지원하지 않아요'); return; }
       if (isIOS() && !isStandalone()) { showToast('홈 화면에 추가한 후 알림을 설정할 수 있어요'); return; }
       if (getPermissionState() === 'denied') { showToast('알림이 차단되어 있어요. 설정에서 허용해주세요'); return; }
@@ -592,6 +617,19 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
       } catch { showToast('설정 중 오류가 발생했어요'); }
       finally { setPushSubscribing(false); }
     } else {
+      // 네이티브 앱: 예약된 로컬 알림 취소
+      if (Capacitor.isNativePlatform()) {
+        try {
+          const { LocalNotifications } = await import('@capacitor/local-notifications');
+          const pending = await LocalNotifications.getPending();
+          const ours = (pending.notifications || []).filter((n) => n.id >= 71000 && n.id < 71100);
+          if (ours.length) await LocalNotifications.cancel({ notifications: ours.map((n) => ({ id: n.id })) });
+        } catch {}
+        setWeatherEnabled(false);
+        savePushSettings(reminderEnabled, reminderTime, tipEnabled, tipTime, false);
+        showToast('피부 날씨 알림이 해제되었어요');
+        return;
+      }
       await updateWeatherSettings(false, 0, 0);
       if (!reminderEnabled && !tipEnabled) await unsubscribeFromPush();
       setWeatherEnabled(false);

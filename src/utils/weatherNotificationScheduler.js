@@ -1,9 +1,23 @@
 // 클라이언트 로컬 알림 스케줄러
-// 서버 크론 푸시와 병행하여, 앱이 열려있을 때 시간대별 알림을 직접 표시
+// - 웹/PWA: 서버 크론 푸시와 병행, 앱이 열려있을 때 시간대별 알림을 직접 표시
+// - 네이티브 앱: Capacitor LocalNotifications로 OS 레벨 예약 (앱이 닫혀도 발송)
+
+import { Capacitor } from '@capacitor/core';
 
 const STORAGE_KEY = 'lua_weather_notif_sent';
+// 네이티브 로컬 알림 ID 영역 (hour 더해서 사용: 71008 = 오전 8시)
+const NATIVE_ID_BASE = 71000;
 let activeTimers = [];
 let swListenerAttached = false;
+
+function weatherEnabledSetting() {
+  try {
+    const settings = JSON.parse(localStorage.getItem('lua_push_settings') || '{}');
+    return !!settings.weatherEnabled;
+  } catch {
+    return false;
+  }
+}
 
 /**
  * 오늘 이미 보낸 알림 시간 목록 가져오기
@@ -79,49 +93,94 @@ function attachSwListener() {
   });
 }
 
+/**
+ * 네이티브 앱: 이전에 예약한 날씨 로컬 알림 모두 취소
+ */
+async function cancelNativeWeather(LocalNotifications) {
+  try {
+    const pending = await LocalNotifications.getPending();
+    const ours = (pending.notifications || []).filter(
+      (n) => n.id >= NATIVE_ID_BASE && n.id < NATIVE_ID_BASE + 100,
+    );
+    if (ours.length) {
+      await LocalNotifications.cancel({ notifications: ours.map((n) => ({ id: n.id })) });
+    }
+  } catch {}
+}
+
+/**
+ * 네이티브 앱(iOS/Android): Capacitor LocalNotifications로 오늘 남은 알림을 OS에 예약.
+ * 웹 Notification API와 달리 앱이 닫혀 있어도 발송됨.
+ */
+async function scheduleNativeNotifications(notifications) {
+  try {
+    const { LocalNotifications } = await import('@capacitor/local-notifications');
+
+    // 설정 꺼져있으면 기존 예약 정리 후 종료
+    if (!weatherEnabledSetting()) {
+      await cancelNativeWeather(LocalNotifications);
+      return;
+    }
+
+    // 권한 확인 (없으면 요청)
+    let perm = await LocalNotifications.checkPermissions();
+    if (perm.display !== 'granted') {
+      perm = await LocalNotifications.requestPermissions();
+    }
+    if (perm.display !== 'granted') return;
+
+    // 중복 방지: 기존 날씨 알림 취소 후 재예약
+    await cancelNativeWeather(LocalNotifications);
+
+    const now = new Date();
+    const toSchedule = [];
+    for (const notif of notifications) {
+      if (typeof notif.hour !== 'number') continue;
+      const at = new Date(now);
+      at.setHours(notif.hour, 0, 0, 0);
+      if (at.getTime() <= now.getTime()) continue; // 이미 지난 시간 스킵
+
+      toSchedule.push({
+        id: NATIVE_ID_BASE + notif.hour,
+        title: notif.title,
+        body: notif.body,
+        schedule: { at },
+      });
+    }
+
+    if (toSchedule.length > 0) {
+      await LocalNotifications.schedule({ notifications: toSchedule });
+    }
+  } catch (e) {
+    console.warn('[native] 날씨 로컬 알림 예약 실패', e);
+  }
+}
+
 export function scheduleWeatherNotifications(notifications) {
   clearWeatherTimers();
+
+  // 네이티브 앱: OS 레벨 로컬 알림으로 예약 (앱이 닫혀도 발송)
+  if (Capacitor.isNativePlatform()) {
+    scheduleNativeNotifications(notifications);
+    return;
+  }
+
   attachSwListener();
 
   // 알림 권한 체크
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
 
   // 날씨 알림 설정 확인
-  try {
-    const settings = JSON.parse(localStorage.getItem('lua_push_settings') || '{}');
-    if (!settings.weatherEnabled) return;
-  } catch {
-    return;
-  }
+  if (!weatherEnabledSetting()) return;
 
   const now = new Date();
   const sent = getSentToday();
 
-  // 시간 문자열 → 시간(hour) 파싱
-  const parseHour = (timeStr) => {
-    if (timeStr.includes('오전')) {
-      const match = timeStr.match(/(\d+):(\d+)/);
-      if (match) return parseInt(match[1]);
-    }
-    if (timeStr.includes('오후')) {
-      const match = timeStr.match(/(\d+):(\d+)/);
-      if (match) {
-        const h = parseInt(match[1]);
-        return h === 12 ? 12 : h + 12;
-      }
-    }
-    return null;
-  };
-
-  const parseMinute = (timeStr) => {
-    const match = timeStr.match(/(\d+):(\d+)/);
-    return match ? parseInt(match[2]) : 0;
-  };
-
   for (const notif of notifications) {
-    const hour = parseHour(notif.time);
+    // 공유 스케줄의 hour 사용 (없으면 스킵)
+    const hour = typeof notif.hour === 'number' ? notif.hour : null;
     if (hour === null) continue;
-    const minute = parseMinute(notif.time);
+    const minute = 0;
 
     // 이미 보낸 알림 스킵
     if (sent.hours.includes(hour)) continue;
