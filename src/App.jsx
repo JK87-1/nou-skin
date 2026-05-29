@@ -2047,7 +2047,7 @@ export default function App() {
                         accent={activeThemeColors.accent}
                         analysisMode={result.analysisMode}
                         makeupDetected={result.makeupDetected}
-                        animationDelay="0"
+                        animationDelay="0s"
                       />
                       {result.makeupDetected && (
                         <div style={{
