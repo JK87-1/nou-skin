@@ -6,47 +6,9 @@
 //   14시 — 수분 보충 (습도 < 40%)
 //   18시 — 귀가 클렌징 (AQI > 50)
 //   21시 — 나이트 케어 (항상)
-
-const NOTIFICATION_SCHEDULE = [
-  {
-    hour: 8,
-    condition: () => true,
-    title: (w) => '오늘의 피부 날씨',
-    body: (w) => `${Math.round(w.temp)}°C · 습도 ${w.humidity}% · UV ${w.uv} · ${w.airLabel}`,
-  },
-  {
-    hour: 11,
-    condition: (w) => w.uv >= 3,
-    title: (w) => '선크림 리마인더',
-    body: (w) => `자외선 ${w.uvLabel}(UV ${w.uv}) — SPF50+ 선크림을 바르세요`,
-  },
-  {
-    hour: 13,
-    condition: (w) => w.uv >= 3,
-    title: () => '선크림 덧바르기',
-    body: () => '2시간이 지났어요. 선크림을 덧발라주세요!',
-  },
-  {
-    hour: 14,
-    condition: (w) => w.humidity < 40,
-    title: () => '수분 보충 타임',
-    body: (w) => `습도 ${w.humidity}% — 미스트를 뿌리고 물 한 잔 마시세요`,
-  },
-  {
-    hour: 18,
-    condition: (w) => w.airQuality > 50,
-    title: () => '귀가 클렌징 알림',
-    body: (w) => `미세먼지 ${w.airLabel} — 이중 세안으로 깨끗하게 씻어주세요`,
-  },
-  {
-    hour: 21,
-    condition: () => true,
-    title: () => '나이트 케어 시작',
-    body: (w) => w.humidity < 40
-      ? '건조한 날이었어요. 수분팩 + 보습크림으로 마무리하세요'
-      : '오늘도 수고했어요. 스킨케어 루틴을 시작하세요',
-  },
-];
+//
+// 알림 스케줄(시간·조건·문구)은 화면 표시·네이티브 알림과 공유하는 단일 소스를 사용.
+import { WEATHER_NOTIFICATION_SCHEDULE as NOTIFICATION_SCHEDULE } from '../src/data/weatherNotificationSchedule.js';
 
 function getUVLabel(uv) {
   if (uv <= 2) return '낮음';

@@ -1,5 +1,7 @@
 // ===== 피부 × 환경 매칭 알림 규칙 =====
 
+import { buildScheduledNotifications } from './weatherNotificationSchedule';
+
 export const ALERT_RULES = [
   {
     id: 'dry_warning',
@@ -196,57 +198,6 @@ export function getSeasonalTip() {
  * @returns {Array} 시간대별 알림 목록
  */
 export function getScheduledNotifications(weatherData, skinProfile) {
-  if (!weatherData) return [];
-
-  const notifications = [];
-
-  // 아침: 오늘의 피부 날씨
-  notifications.push({
-    time: '오전 8:00',
-    title: `오늘의 피부 날씨`,
-    body: `${weatherData.temp}°C · 습도 ${weatherData.humidity}% · ${weatherData.airLabel}`,
-  });
-
-  // UV 높으면 → 선크림 리마인더
-  if (weatherData.uv >= 3) {
-    notifications.push({
-      time: '오전 11:00',
-      title: '선크림 리마인더 ',
-      body: `자외선 ${weatherData.uvLabel}(UV ${weatherData.uv}) — SPF50+ 선크림을 바르세요`,
-    });
-    notifications.push({
-      time: '오후 1:00',
-      title: '선크림 덧바르기 ',
-      body: '2시간이 지났어요. 선크림을 덧발라주세요!',
-    });
-  }
-
-  // 건조하면 → 미스트 리마인더
-  if (weatherData.humidity < 40) {
-    notifications.push({
-      time: '오후 2:00',
-      title: '수분 보충 타임 ',
-      body: `습도 ${weatherData.humidity}% — 미스트를 뿌리고 물 한 잔 마시세요`,
-    });
-  }
-
-  // 미세먼지 나쁨 → 세안 알림
-  if (weatherData.airQuality > 50) {
-    notifications.push({
-      time: '오후 6:00',
-      title: '귀가 클렌징 알림 ',
-      body: `미세먼지 ${weatherData.airLabel} — 이중 세안으로 깨끗하게 씻어주세요`,
-    });
-  }
-
-  // 저녁 스킨케어
-  notifications.push({
-    time: '오후 9:00',
-    title: '나이트 케어 시작 ',
-    body: weatherData.humidity < 40
-      ? '건조한 날이었어요. 수분팩 + 보습크림으로 마무리하세요'
-      : '오늘도 수고했어요. 스킨케어 루틴을 시작하세요',
-  });
-
-  return notifications;
+  // 단일 소스(weatherNotificationSchedule)에 위임 — 서버 푸시·네이티브 알림과 항상 동일
+  return buildScheduledNotifications(weatherData);
 }
