@@ -418,22 +418,25 @@ export default function SkinWeather({ skinResult }) {
                 {isOpen && (
                   <div style={{ padding: '0 16px 16px' }}>
                     <div style={{
-                      padding: 12, background: 'rgba(255,255,255,0.02)', borderRadius: 12,
-                      fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 10,
+                      fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 14,
                     }}>
                       {alert.description}
                     </div>
-                    {alert.tips.map((tip, j) => (
-                      <div key={j} style={{
-                        display: 'flex', alignItems: 'center', gap: 10,
-                        padding: '10px 12px', background: 'rgba(255,255,255,0.02)', borderRadius: 10,
-                        marginBottom: 4,
-                        animation: `swSlideInRight 0.3s ease ${j * 0.08}s both`,
-                      }}>
-                        <span style={{ fontSize: 16, flexShrink: 0, display: 'inline-flex' }}>{tip.icon}</span>
-                        <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{tip.text}</span>
-                      </div>
-                    ))}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {alert.tips.map((tip, j) => (
+                        <div key={j} style={{
+                          display: 'flex', alignItems: 'flex-start', gap: 8,
+                          animation: `swSlideInRight 0.3s ease ${j * 0.08}s both`,
+                        }}>
+                          <span style={{
+                            width: 5, height: 5, borderRadius: '50%',
+                            background: alert.color, opacity: 0.7,
+                            flexShrink: 0, marginTop: 6,
+                          }} />
+                          <span style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{tip.text}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
