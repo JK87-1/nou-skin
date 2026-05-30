@@ -1929,7 +1929,7 @@ export default function ProductPage({ themeColors, onBack }) {
           }}>
             {/* 헤더 — 배경 영역 안 */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-              <span style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)' }}>등록된 제품</span>
+              <span style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 600, color: 'var(--text-primary)' }}>등록된 제품</span>
               <span style={{
                 fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--accent-primary)',
                 background: 'rgba(var(--accent-rgb),0.14)',
@@ -2063,7 +2063,7 @@ export default function ProductPage({ themeColors, onBack }) {
         <div style={{ padding: '20px 20px 0', animation: 'fadeUp 0.3s ease-out' }}>
           <div style={{ marginBottom: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)' }}>제품별 효과 분석</span>
+              <span style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 600, color: 'var(--text-primary)' }}>제품별 효과 분석</span>
               <span style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: accent, background: `${accent}15`, borderRadius: 8, padding: '3px 8px' }}>데이터 기반</span>
             </div>
             <p style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-muted)', margin: '4px 0 0' }}>

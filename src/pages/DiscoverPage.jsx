@@ -321,7 +321,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
       {/* ② 점수 변화 — 최상단 */}
           <div className="card" style={{ margin: '0 12px 12px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-              <span style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)' }}>내 피부 흐름</span>
+              <span style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 600, color: 'var(--text-primary)' }}>내 피부 흐름</span>
               <div style={{ display: 'flex', gap: 6 }}>
                 {[{ k: '7d', l: '7일' }, { k: '4w', l: '4주' }, { k: '3m', l: '3개월' }].map(p => (
                   <button key={p.k} onClick={() => setPeriod(p.k)} style={{
@@ -445,7 +445,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
           {/* ⑤ 영향 요인 차트 */}
           <div className="card" style={{ margin: '0 12px 12px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-              <span style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)' }}>영향 요인</span>
+              <span style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 600, color: 'var(--text-primary)' }}>영향 요인</span>
               <div ref={dropdownRef} style={{ position: 'relative' }}>
                 <span role="button" aria-label="메트릭 선택" aria-expanded={showMetricDropdown} onClick={() => setShowMetricDropdown(!showMetricDropdown)} style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', cursor: 'pointer' }}>
                   {METRICS.find(m => m.key === selectedMetric)?.label || '모공'} 기준 ▾
@@ -520,7 +520,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
 
           {/* ⑥ lua의 발견 */}
           <div className="card" style={{ margin: '0 12px 12px' }}>
-            <div style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 10 }}>인사이트</div>
+            <div style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10 }}>인사이트</div>
             {(() => {
               const discoveries = getDiscoveries(records, getProducts());
               if (discoveries.length === 0) return (

@@ -337,7 +337,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
 
               {/* Bio line */}
               <div style={{ marginTop: 14 }}>
-                <div style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)' }}>나의 피부 기록</div>
+                <div style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 600, color: 'var(--text-primary)' }}>나의 피부 기록</div>
                 {latestRecord && (
                   <div style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-muted)', marginTop: 4 }}>
                     최근 피부나이 {latestRecord.skinAge}세 · {latestRecord.skinType}
@@ -490,7 +490,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
             {/* === TREND GRAPH === */}
             <div className="card" style={{ padding: '16px 12px', marginBottom: 16, animation: 'breatheIn 0.6s ease 0.15s both' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <span style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-secondary)' }}>종합 점수 추이</span>
+                <span style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 600, color: 'var(--text-secondary)' }}>종합 점수 추이</span>
                 {improvementPct !== null && Number(improvementPct) !== 0 && (
                   <span style={{
                     fontSize: 12, lineHeight: 1.5, fontWeight: 500,

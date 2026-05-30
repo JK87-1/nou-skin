@@ -138,7 +138,7 @@ export default function RoutinePage() {
         {/* 나에게 맞는 성분 섹션 */}
         <div style={{ marginBottom: 20 }}>
           <div style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: 16, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-secondary)' }}>나에게 맞는 성분</div>
+            <div style={{ fontSize: 16, lineHeight: 1.3, fontWeight: 600, color: 'var(--text-secondary)' }}>나에게 맞는 성분</div>
             <div style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-muted)', marginTop: 2 }}>
               {latestRecord ? '피부 분석 기반 맞춤 추천' : '기본 추천 성분'}
             </div>
@@ -213,7 +213,7 @@ export default function RoutinePage() {
 
         {/* Weekly Completion Dots */}
         <div className="card" style={{ padding: '16px 18px' }}>
-          <div style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 14 }}>주간 루틴 현황</div>
+          <div style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 14 }}>주간 루틴 현황</div>
           <div style={{ display: 'flex', justifyContent: 'space-around' }}>
             {weekly.map((day) => (
               <div key={day.date} style={{ textAlign: 'center' }}>

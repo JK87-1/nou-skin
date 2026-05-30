@@ -1760,7 +1760,7 @@ export default function RoutineTracker({ themeColors, onBack }) {
         <div style={{ padding: '0 20px', animation: 'fadeUp 0.3s ease-out' }}>
           {/* 헤더 — 등록 제품 N개 + 카테고리 미니 분포 */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <span style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)' }}>등록된 제품</span>
+            <span style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 600, color: 'var(--text-primary)' }}>등록된 제품</span>
             <span style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)' }}>{products.length}개</span>
           </div>
 
@@ -2016,7 +2016,7 @@ export default function RoutineTracker({ themeColors, onBack }) {
 
           {/* Weekly Calendar */}
           <div className="card" style={{ padding: '16px 18px' }}>
-            <div style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 14 }}>주간 루틴 현황</div>
+            <div style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 14 }}>주간 루틴 현황</div>
             <div style={{ display: 'flex', justifyContent: 'space-around' }}>
               {weekly.map((day) => (
                 <div key={day.dayLabel} style={{ textAlign: 'center' }}>
@@ -2042,7 +2042,7 @@ export default function RoutineTracker({ themeColors, onBack }) {
         <div style={{ padding: '20px 20px 0', animation: 'fadeUp 0.3s ease-out' }}>
           <div style={{ marginBottom: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 16, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)' }}>제품별 효과 분석</span>
+              <span style={{ fontSize: 16, lineHeight: 1.3, fontWeight: 600, color: 'var(--text-primary)' }}>제품별 효과 분석</span>
               <span style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: accent, background: `${accent}15`, borderRadius: 8, padding: '3px 8px' }}>데이터 기반</span>
             </div>
             <p style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-muted)', margin: '4px 0 0' }}>
