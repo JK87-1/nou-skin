@@ -1027,7 +1027,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
             cursor: 'pointer', flexShrink: 0,
             boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
           }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#191F28" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="m15 18-6-6 6-6" />
             </svg>
           </button>
@@ -1065,7 +1065,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
             cursor: 'pointer', flexShrink: 0,
             boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
           }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#191F28" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
               <path d="M3 3v5h5"/>
             </svg>
@@ -1195,7 +1195,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
                 <span style={{ fontSize: 10, color: 'var(--accent-primary)', fontWeight: 600 }}>추가</span>
               </button>
             )}
-            <span style={{ fontSize: 12, color: 'var(--text-muted, #8B95A1)', width: '100%' }}>
+            <span style={{ fontSize: 12, color: 'var(--text-muted, #8C8C8C)', width: '100%' }}>
               {`사진 ${pendingImages.length}/${MAX_IMAGES}장`}
               {pendingImages.length >= 2 && ' · 비교 분석 가능'}
             </span>
@@ -1220,7 +1220,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
               <button onClick={() => { cameraInputRef.current?.click(); setShowAttachMenu(false); }} style={{
                 display: 'flex', alignItems: 'center', gap: 10, padding: '14px 20px',
                 border: 'none', background: 'none', width: '100%', fontSize: 14, fontWeight: 500,
-                color: 'var(--text-primary, #191F28)', cursor: 'pointer', fontFamily: 'inherit',
+                color: 'var(--text-primary, #1A1A1A)', cursor: 'pointer', fontFamily: 'inherit',
               }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/>
@@ -1230,7 +1230,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
               <button onClick={() => { albumInputRef.current?.click(); setShowAttachMenu(false); }} style={{
                 display: 'flex', alignItems: 'center', gap: 10, padding: '14px 20px',
                 border: 'none', background: 'none', width: '100%', fontSize: 14, fontWeight: 500,
-                color: 'var(--text-primary, #191F28)', cursor: 'pointer', fontFamily: 'inherit',
+                color: 'var(--text-primary, #1A1A1A)', cursor: 'pointer', fontFamily: 'inherit',
                 borderTop: '1px solid rgba(255,255,255,0.2)',
               }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

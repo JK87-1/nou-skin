@@ -126,7 +126,7 @@ export default function TroubleBreakdownCard({ breakdown }) {
       {/* 의료 진단 아님 고지 */}
       <div style={{
         marginTop: 8,
-        fontSize: 10, color: 'var(--text-dim, #B0B8C1)', lineHeight: 1.5,
+        fontSize: 10, color: 'var(--text-dim, #B3B3B3)', lineHeight: 1.5,
       }}>
         AI 시각 추정이에요. 의료 진단이 아니라 참고용입니다.
       </div>

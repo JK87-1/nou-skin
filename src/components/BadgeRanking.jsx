@@ -418,7 +418,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
                     padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600,
                     whiteSpace: 'nowrap', flexShrink: 0, cursor: 'pointer', fontFamily: 'inherit',
                     background: active ? 'rgba(124,92,252,0.08)' : 'var(--tag-bg)',
-                    color: active ? '#6598ef' : '#4E5968',
+                    color: active ? '#6598ef' : '#5C5C5C',
                     border: 'none', transition: 'all 0.25s',
                   }}>
                     {cat.subtitle || cat.label}
@@ -504,7 +504,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
               <div key={i} style={{
                 padding: '5px 10px', borderRadius: 8,
                 background: 'var(--tag-bg)',
-                fontSize: 11, color: '#4E5968', fontWeight: 500,
+                fontSize: 11, color: '#5C5C5C', fontWeight: 500,
               }}>{item}</div>
             ))}
           </div>

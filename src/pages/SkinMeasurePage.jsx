@@ -124,7 +124,7 @@ export default function SkinMeasurePage({ onClose, onCapture, colorMode }) {
             left: 16,
             width: 40, height: 40, borderRadius: '50%',
             background: 'rgba(255,255,255,0.85)', border: 'none',
-            color: '#191F28', fontSize: 18, cursor: 'pointer',
+            color: '#1A1A1A', fontSize: 18, cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
             zIndex: 10,
@@ -142,7 +142,7 @@ export default function SkinMeasurePage({ onClose, onCapture, colorMode }) {
             right: 16,
             padding: '8px 14px', borderRadius: 10,
             background: 'rgba(255,255,255,0.85)', border: 'none',
-            color: '#191F28', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            color: '#1A1A1A', fontSize: 12, fontWeight: 600, cursor: 'pointer',
             boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
             zIndex: 10,
           }}
@@ -159,7 +159,7 @@ export default function SkinMeasurePage({ onClose, onCapture, colorMode }) {
       }}>
         {/* 상태 텍스트 */}
         <p style={{
-          color: colorMode === 'light' ? '#191F28' : '#e0e0e0',
+          color: colorMode === 'light' ? '#1A1A1A' : '#e0e0e0',
           fontSize: 16, fontWeight: 600, textAlign: 'center',
           margin: 0, minHeight: 20,
         }}>

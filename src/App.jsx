@@ -205,7 +205,7 @@ export default function App() {
     document.documentElement.setAttribute('data-skin', colorSkin);
     const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg-primary').trim() || (colorMode === 'light' ? '#F7F8FA' : '#000000');
     document.body.style.background = bg;
-    document.body.style.color = colorMode === 'light' ? '#191F28' : '#f0f0f5';
+    document.body.style.color = colorMode === 'light' ? '#1A1A1A' : '#f0f0f5';
     // Gradient background — skin에 따라 변경
     const gradEl = document.getElementById('gradient-bg');
     const htmlEl = document.documentElement;
@@ -1043,7 +1043,7 @@ export default function App() {
           <span style={{ fontSize: 18, flexShrink: 0 }}></span>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: '#333' }}>데이터 백업을 권장해요</div>
-            <div style={{ fontSize: 11, color: '#8B95A1', marginTop: 2 }}>만약을 위해 백업 파일을 다운로드하세요</div>
+            <div style={{ fontSize: 11, color: '#8C8C8C', marginTop: 2 }}>만약을 위해 백업 파일을 다운로드하세요</div>
           </div>
           <button
             onClick={() => {
