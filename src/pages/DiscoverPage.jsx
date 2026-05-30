@@ -409,7 +409,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
               </div>
             ) : (
               <div style={{
-                ...glass, background: 'linear-gradient(135deg, rgba(220,238,251,0.6), rgba(240,247,254,0.4))',
+                ...glass,
                 padding: 16,
               }}>
                 {/* 메타 */}
