@@ -50,9 +50,9 @@ export default function ProductRegisteredModal({ product, totalCount, onClose })
         <div style={{
           width: 72, height: 72, borderRadius: '50%',
           margin: '0 auto 18px',
-          background: 'linear-gradient(135deg, #6598ef, #8ac4fe)',
+          background: 'linear-gradient(135deg, var(--accent-primary), #8ac4fe)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 8px 24px rgba(101,152,239,0.32)',
+          boxShadow: '0 8px 24px rgba(var(--accent-rgb),0.32)',
           animation: animated ? 'productRegPop 480ms cubic-bezier(0.34,1.56,0.64,1)' : 'none',
         }}>
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
@@ -110,7 +110,7 @@ export default function ProductRegisteredModal({ product, totalCount, onClose })
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
               {product.brand && (
-                <span style={{ fontSize: 11, fontWeight: 700, color: '#6598ef' }}>{product.brand}</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent-primary)' }}>{product.brand}</span>
               )}
               <span style={{
                 fontSize: 9.5, padding: '1px 6px', borderRadius: 5,
@@ -135,11 +135,11 @@ export default function ProductRegisteredModal({ product, totalCount, onClose })
           onClick={onClose}
           style={{
             width: '100%', padding: '14px',
-            background: 'linear-gradient(135deg, #6598ef, #8ac4fe)',
+            background: 'linear-gradient(135deg, var(--accent-primary), #8ac4fe)',
             border: 'none', borderRadius: 14,
             color: '#fff', fontSize: 15, fontWeight: 700,
             cursor: 'pointer', fontFamily: 'inherit',
-            boxShadow: '0 6px 18px rgba(101,152,239,0.35)',
+            boxShadow: '0 6px 18px rgba(var(--accent-rgb),0.35)',
             letterSpacing: -0.2,
           }}
         >확인</button>

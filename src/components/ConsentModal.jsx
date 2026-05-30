@@ -79,7 +79,7 @@ export default function ConsentModal({ onAccept }) {
       maxWidth: 480, margin: '0 auto',
     }}>
       <header style={{ padding: '24px 20px 14px', borderBottom: '1px solid var(--border, rgba(0,0,0,0.08))' }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: '#6598ef', letterSpacing: 0.4, marginBottom: 4 }}>BETA</div>
+        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent-primary)', letterSpacing: 0.4, marginBottom: 4 }}>BETA</div>
         <h1 style={{ fontSize: 19, fontWeight: 800, color: 'var(--text-primary)', margin: 0, lineHeight: 1.3 }}>
           {SERVICE_NAME}을(를) 시작하기 전<br />아래 사항에 동의해주세요
         </h1>
@@ -98,7 +98,7 @@ export default function ConsentModal({ onAccept }) {
               flex: '1 0 auto', padding: '12px 14px', background: 'none', border: 'none',
               fontSize: 12, fontWeight: 600, fontFamily: 'inherit', whiteSpace: 'nowrap',
               color: activeTab === key ? 'var(--text-primary)' : 'var(--text-muted)',
-              borderBottom: activeTab === key ? '2px solid #6598ef' : '2px solid transparent',
+              borderBottom: activeTab === key ? '2px solid var(--accent-primary)' : '2px solid transparent',
               cursor: 'pointer',
             }}
           >
@@ -122,7 +122,7 @@ export default function ConsentModal({ onAccept }) {
             type="checkbox"
             checked={current.agreed}
             onChange={e => current.setAgreed(e.target.checked)}
-            style={{ marginTop: 2, accentColor: '#6598ef' }}
+            style={{ marginTop: 2, accentColor: 'var(--accent-primary)' }}
           />
           <span style={{ color: 'var(--text-primary)', lineHeight: 1.5 }}>
             <strong>(필수) {current.title}</strong>의 내용을 모두 확인하였으며 이에 동의합니다.
@@ -135,7 +135,7 @@ export default function ConsentModal({ onAccept }) {
             type="checkbox"
             checked={ageConfirmed}
             onChange={e => setAgeConfirmed(e.target.checked)}
-            style={{ marginTop: 2, accentColor: '#6598ef' }}
+            style={{ marginTop: 2, accentColor: 'var(--accent-primary)' }}
           />
           <span style={{ color: 'var(--text-primary)', lineHeight: 1.5 }}>
             <strong>(필수)</strong> 본인은 <strong>만 14세 이상</strong>입니다. (만 14세 미만은 법정대리인의 동의가 필요합니다.)
@@ -147,7 +147,7 @@ export default function ConsentModal({ onAccept }) {
           onClick={handleAccept}
           style={{
             width: '100%', padding: '14px', borderRadius: 12,
-            background: allAgreed ? '#6598ef' : 'var(--border, rgba(0,0,0,0.1))',
+            background: allAgreed ? 'var(--accent-primary)' : 'var(--border, rgba(0,0,0,0.1))',
             color: allAgreed ? '#fff' : 'var(--text-muted)',
             border: 'none', fontSize: 15, fontWeight: 700, fontFamily: 'inherit',
             cursor: allAgreed ? 'pointer' : 'not-allowed',

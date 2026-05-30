@@ -148,9 +148,10 @@ select:focus-visible {
   /* Misc */
   --bar-track: rgba(255,255,255,0.06);
   --glass-inset: inset 0 1px 1px rgba(255,255,255,0.05);
-  --glass-accent-inset: inset 0 1px 0 rgba(101,152,239,0.06);
+  --glass-accent-inset: inset 0 1px 0 rgba(var(--accent-rgb),0.06);
   /* Accents (theme system overrides these dynamically) */
   --accent-primary: #6598ef;
+  --accent-rgb: 101,152,239; /* --accent-primary as RGB triplet for rgba(var(--accent-rgb), a) */
   --accent-secondary: #a8c8f8;
   --accent-gradient: linear-gradient(135deg, #6598ef, #85b0f5);
   --text-disabled: rgba(255,255,255,0.15);
@@ -197,12 +198,12 @@ select:focus-visible {
   --item-border: none;
   --item-hover-bg: rgba(255,255,255,0.06);
   /* Calendar / Weekly dots */
-  --day-today-bg: linear-gradient(135deg, rgba(101,152,239,0.15), rgba(90,176,232,0.1));
+  --day-today-bg: linear-gradient(135deg, rgba(var(--accent-rgb),0.15), rgba(90,176,232,0.1));
   --day-completed-bg: rgba(90,176,232,0.06);
   --day-default-bg: rgba(255,255,255,0.02);
   --day-today-accent: #6598ef;
   /* Hint / Context box */
-  --context-bg: rgba(101,152,239,0.06);
+  --context-bg: rgba(var(--accent-rgb),0.06);
   --context-border: none;
 }
 
@@ -290,7 +291,7 @@ select:focus-visible {
   /* Hint / Context box */
   --context-bg: #F2F8FC;
   --context-border: none;
-  --accent-bg: rgba(101,152,239,0.1);
+  --accent-bg: rgba(var(--accent-rgb),0.1);
 }
 
 /* Scroll reveal animations */
@@ -311,7 +312,7 @@ select:focus-visible {
   width: 40px;
   height: 2px;
   border-radius: 1px;
-  background: rgba(101,152,239,0.15);
+  background: rgba(var(--accent-rgb),0.15);
   margin: 0 auto;
   opacity: 0;
   transform: scaleX(0);
@@ -343,7 +344,7 @@ select:focus-visible {
   line-height: 30px;
   font-size: 20px;
   font-weight: 600;
-  color: #6598ef;
+  color: var(--accent-primary);
   text-align: center;
   letter-spacing: -0.2px;
   margin: 0;
@@ -646,7 +647,7 @@ select:focus-visible {
 
 /* Gut-Brain-Skin Box */
 .gbs-box {
-  background: linear-gradient(135deg, rgba(101,152,239,0.08), rgba(101,152,239,0.08));
+  background: linear-gradient(135deg, rgba(var(--accent-rgb),0.08), rgba(var(--accent-rgb),0.08));
   border: none;
   border-radius: 20px;
   padding: 18px;
@@ -730,11 +731,11 @@ select:focus-visible {
 @keyframes orbBreathe {
   0%, 100% {
     transform: scale(0.92);
-    box-shadow: 0 6px 24px rgba(101,152,239,0.15);
+    box-shadow: 0 6px 24px rgba(var(--accent-rgb),0.15);
   }
   50% {
     transform: scale(1.0);
-    box-shadow: 0 16px 56px rgba(101,152,239,0.3), 0 0 80px rgba(101,152,239,0.1);
+    box-shadow: 0 16px 56px rgba(var(--accent-rgb),0.3), 0 0 80px rgba(var(--accent-rgb),0.1);
   }
 }
 @keyframes orbAuraPulse {
@@ -850,7 +851,7 @@ select:focus-visible {
   font-weight: 400;
 }
 .calendar-day:active {
-  background: rgba(101,152,239,0.08);
+  background: rgba(var(--accent-rgb),0.08);
 }
 .calendar-day.today {
   background: var(--accent-gradient);
@@ -869,7 +870,7 @@ select:focus-visible {
   color: var(--text-muted);
 }
 .calendar-day.selected {
-  background: rgba(101,152,239,0.12);
+  background: rgba(var(--accent-rgb),0.12);
   font-weight: 600;
 }
 .calendar-dot {
@@ -935,17 +936,17 @@ select:focus-visible {
   pointer-events: none;
 }
 .photo-cell.empty-today {
-  background: linear-gradient(135deg, rgba(101,152,239,0.06), rgba(101,152,239,0.12));
+  background: linear-gradient(135deg, rgba(var(--accent-rgb),0.06), rgba(var(--accent-rgb),0.12));
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  border: 1.5px dashed rgba(101,152,239,0.25);
+  border: 1.5px dashed rgba(var(--accent-rgb),0.25);
   border-radius: 4px;
 }
 .photo-cell.empty-today:active {
-  background: linear-gradient(135deg, rgba(101,152,239,0.1), rgba(101,152,239,0.18));
+  background: linear-gradient(135deg, rgba(var(--accent-rgb),0.1), rgba(var(--accent-rgb),0.18));
 }
 .empty-label {
   font-size: 10px;
@@ -1038,10 +1039,10 @@ select:focus-visible {
   -webkit-tap-highlight-color: transparent;
 }
 .segment-btn.active {
-  background: rgba(101,152,239,0.15);
+  background: rgba(var(--accent-rgb),0.15);
   color: var(--accent-primary);
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(101,152,239,0.15);
+  box-shadow: 0 2px 8px rgba(var(--accent-rgb),0.15);
 }
 
 /* ===== Score Ring Animation ===== */
@@ -1126,7 +1127,7 @@ select:focus-visible {
   transform: translate(-50%, -50%);
   width: 36px; height: 36px;
   border-radius: 50%;
-  background: radial-gradient(circle, var(--tab-glow, rgba(101,152,239,0.2)) 0%, transparent 70%);
+  background: radial-gradient(circle, var(--tab-glow, rgba(var(--accent-rgb),0.2)) 0%, transparent 70%);
   opacity: 0;
   transition: opacity 0.3s ease;
   pointer-events: none;
@@ -1228,7 +1229,7 @@ select:focus-visible {
   transition: all 0.3s;
 }
 .cal-day:active {
-  background: rgba(101,152,239,0.08);
+  background: rgba(var(--accent-rgb),0.08);
 }
 .cal-day.recorded {
   color: var(--text-primary);
@@ -1248,7 +1249,7 @@ select:focus-visible {
   background: var(--accent-gradient);
   color: white;
   font-weight: 500;
-  box-shadow: 0 3px 10px rgba(101,152,239,0.3);
+  box-shadow: 0 3px 10px rgba(var(--accent-rgb),0.3);
 }
 .cal-day.cal-today::after {
   display: none;
@@ -1261,7 +1262,7 @@ select:focus-visible {
   color: var(--text-dim);
 }
 .cal-day.cal-selected {
-  background: rgba(101,152,239,0.15);
+  background: rgba(var(--accent-rgb),0.15);
   font-weight: 500;
   color: var(--accent-primary);
 }
@@ -1269,7 +1270,7 @@ select:focus-visible {
 /* Trend stats bar */
 .trend-bar {
   display: flex;
-  background: rgba(101,152,239,0.06);
+  background: rgba(var(--accent-rgb),0.06);
   border-radius: 16px;
   padding: 14px 0;
   margin-bottom: 28px;
@@ -1286,7 +1287,7 @@ select:focus-visible {
   top: 20%;
   height: 60%;
   width: 1px;
-  background: rgba(101,152,239,0.12);
+  background: rgba(var(--accent-rgb),0.12);
 }
 .trend-val {
   font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -1442,8 +1443,8 @@ select:focus-visible {
   transition: background 0.15s, border-color 0.15s;
 }
 .consult-chip:active {
-  background: rgba(101,152,239,0.12);
-  border-color: rgba(101,152,239,0.5);
+  background: rgba(var(--accent-rgb),0.12);
+  border-color: rgba(var(--accent-rgb),0.5);
 }
 
 .consult-bubble {
@@ -1471,11 +1472,11 @@ select:focus-visible {
 .consult-bubble.ai {
   align-self: flex-start;
   margin-right: 8%;
-  background: rgba(101,152,239,0.04);
+  background: rgba(var(--accent-rgb),0.04);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   border: none;
-  border-left: 2px solid rgba(101,152,239,0.1);
+  border-left: 2px solid rgba(var(--accent-rgb),0.1);
   box-shadow: 0 2px 12px rgba(0,0,0,0.15);
   color: var(--text-secondary);
   border-radius: 18px 18px 18px 6px;
@@ -1513,7 +1514,7 @@ select:focus-visible {
   height: 40px;
   border-radius: 50%;
   border: none;
-  background: rgba(101,152,239,0.12);
+  background: rgba(var(--accent-rgb),0.12);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1522,7 +1523,7 @@ select:focus-visible {
   transition: background 0.15s;
 }
 .consult-attach-btn:active {
-  background: rgba(101,152,239,0.25);
+  background: rgba(var(--accent-rgb),0.25);
 }
 
 .consult-attach-menu {
@@ -1556,7 +1557,7 @@ select:focus-visible {
   transition: background 0.15s;
 }
 .consult-attach-option:active {
-  background: rgba(101,152,239,0.08);
+  background: rgba(var(--accent-rgb),0.08);
 }
 .consult-attach-option + .consult-attach-option {
   border-top: 1px solid var(--border-subtle);
@@ -1620,7 +1621,7 @@ select:focus-visible {
   height: 40px;
   border-radius: 50%;
   border: none;
-  background: rgba(101,152,239,0.12);
+  background: rgba(var(--accent-rgb),0.12);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1629,16 +1630,16 @@ select:focus-visible {
   transition: background 0.15s, box-shadow 0.15s;
 }
 .consult-mic-btn:active {
-  background: rgba(101,152,239,0.25);
+  background: rgba(var(--accent-rgb),0.25);
 }
 .consult-mic-btn.listening {
-  background: rgba(101,152,239,0.3);
-  box-shadow: 0 0 0 4px rgba(101,152,239,0.15);
+  background: rgba(var(--accent-rgb),0.3);
+  box-shadow: 0 0 0 4px rgba(var(--accent-rgb),0.15);
   animation: micPulse 1.2s ease-in-out infinite;
 }
 @keyframes micPulse {
-  0%, 100% { box-shadow: 0 0 0 4px rgba(101,152,239,0.15); }
-  50% { box-shadow: 0 0 0 8px rgba(101,152,239,0.25); }
+  0%, 100% { box-shadow: 0 0 0 4px rgba(var(--accent-rgb),0.15); }
+  50% { box-shadow: 0 0 0 8px rgba(var(--accent-rgb),0.25); }
 }
 
 /* PWA Install Banner */
@@ -1654,12 +1655,12 @@ select:focus-visible {
 /* Product Recommendation Cards */
 .product-item-card:hover,
 .product-item-card:active {
-  background: rgba(101,152,239,0.08) !important;
-  border-color: rgba(101,152,239,0.2) !important;
+  background: rgba(var(--accent-rgb),0.08) !important;
+  border-color: rgba(var(--accent-rgb),0.2) !important;
 }
 
 .history-record-item:hover {
-  border-color: rgba(101,152,239,0.12) !important;
+  border-color: rgba(var(--accent-rgb),0.12) !important;
 }
 
 /* ===== Light Mode (Toss-Inspired) Class Overrides ===== */
@@ -1913,7 +1914,7 @@ select:focus-visible {
   border-radius: 50%;
   background: #fff;
   border: none;
-  box-shadow: 0 1px 4px rgba(101,152,239,0.3);
+  box-shadow: 0 1px 4px rgba(var(--accent-rgb),0.3);
   margin-top: -5px;
 }
 .lua-goal-slider::-moz-range-track {
@@ -1927,7 +1928,7 @@ select:focus-visible {
   border-radius: 50%;
   background: #fff;
   border: none;
-  box-shadow: 0 1px 4px rgba(101,152,239,0.3);
+  box-shadow: 0 1px 4px rgba(var(--accent-rgb),0.3);
   box-sizing: border-box;
 }
 
@@ -1938,6 +1939,7 @@ select:focus-visible {
 [data-skin="pink"][data-theme="light"] {
   --sub-gradient: linear-gradient(180deg, #f9eef5 0%, #f3edf8 25%, #fafbff 50%, #fafbff 100%);
   --accent-primary: #e9a8f0;
+  --accent-rgb: 233,168,240; /* pink skin — keeps rgba(var(--accent-rgb)) on-theme */
   --accent-secondary: #f0c8f5;
   --accent-gradient: linear-gradient(135deg, #e9a8f0, #f0c8f5);
   --btn-primary-bg: #e9a8f0;

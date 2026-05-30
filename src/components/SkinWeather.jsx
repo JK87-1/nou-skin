@@ -560,13 +560,13 @@ export default function SkinWeather({ skinResult }) {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>오늘 예정된 알림</div>
             {weatherEnabled ? (
-              <span style={{ fontSize: 10, fontWeight: 600, color: '#6598EF', background: 'rgba(101,152,239,0.1)', padding: '3px 8px', borderRadius: 8 }}>알림 ON</span>
+              <span style={{ fontSize: 10, fontWeight: 600, color: '#6598EF', background: 'rgba(var(--accent-rgb),0.1)', padding: '3px 8px', borderRadius: 8 }}>알림 ON</span>
             ) : (
               <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-dim)', background: 'rgba(255,255,255,0.08)', padding: '3px 8px', borderRadius: 8 }}>알림 OFF</span>
             )}
           </div>
           {!weatherEnabled && (
-            <div style={{ padding: '10px 14px', borderRadius: 12, marginBottom: 10, background: 'rgba(101,152,239,0.08)', border: 'none', fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+            <div style={{ padding: '10px 14px', borderRadius: 12, marginBottom: 10, background: 'rgba(var(--accent-rgb),0.08)', border: 'none', fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
               마이 &gt; 알림 설정에서 피부 날씨 알림을 켜면 시간대별로 알림을 받을 수 있어요
             </div>
           )}
@@ -585,7 +585,7 @@ export default function SkinWeather({ skinResult }) {
             }}>
               <div style={{
                 width: 8, height: 8, borderRadius: '50%', flexShrink: 0, marginTop: 4,
-                background: isPast ? 'rgba(101,152,239,0.3)' : isNext ? '#6598EF' : 'rgba(255,255,255,0.15)',
+                background: isPast ? 'rgba(var(--accent-rgb),0.3)' : isNext ? '#6598EF' : 'rgba(255,255,255,0.15)',
               }} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', textDecoration: isPast ? 'line-through' : 'none' }}>{n.title}</div>

@@ -1,11 +1,11 @@
 // 주간 변화 리포트 카드 — 매주 사용자에게 "정말 좋아지고 있다" 감각 제공.
-// 톤: 글래스(white 56%) + accent 블루(#6598ef) + spring 등장 + 부드러운 hover.
+// 톤: 글래스(white 56%) + accent 블루(var(--accent-primary)) + spring 등장 + 부드러운 hover.
 // 클릭 시 onOpenBeforeAfter callback으로 풀스크린 비교 trigger.
 import { useState, useEffect } from 'react';
 import { hapticLight } from '../utils/haptics';
 
-const ACCENT = '#6598ef';
-const POSITIVE = '#6598ef';
+const ACCENT = 'var(--accent-primary)';
+const POSITIVE = 'var(--accent-primary)';
 const NEGATIVE = '#e05545';
 
 export default function WeeklyReportCard({ report, onOpenBeforeAfter, onDismiss }) {
@@ -46,7 +46,7 @@ export default function WeeklyReportCard({ report, onOpenBeforeAfter, onDismiss 
         WebkitBackdropFilter: 'blur(18px)',
         border: 'none',
         borderRadius: 22,
-        boxShadow: '0 4px 16px rgba(101,152,239,0.10)',
+        boxShadow: '0 4px 16px rgba(var(--accent-rgb),0.10)',
         cursor: 'pointer',
         position: 'relative',
         animation: closing
@@ -88,7 +88,7 @@ export default function WeeklyReportCard({ report, onOpenBeforeAfter, onDismiss 
           display: 'inline-flex', alignItems: 'center', gap: 4,
           fontSize: 10.5, fontWeight: 700, letterSpacing: -0.1,
           color: ACCENT,
-          background: 'rgba(101,152,239,0.14)',
+          background: 'rgba(var(--accent-rgb),0.14)',
           padding: '3px 9px', borderRadius: 8,
         }}>
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={ACCENT} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

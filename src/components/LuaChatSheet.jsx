@@ -204,7 +204,7 @@ const LuaAssistantMessage = memo(function LuaAssistantMessage({
                 padding: '9px 14px',
                 borderRadius: 18,
                 border: 'none',
-                background: 'rgba(101,152,239,0.08)',
+                background: 'rgba(var(--accent-rgb),0.08)',
                 color: '#1F1F1F',
                 fontSize: 14, fontWeight: 500,
                 cursor: 'pointer', fontFamily: 'inherit',
@@ -1152,7 +1152,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 2px', height: 24 }}>
               {[0, 1, 2].map(j => (
                 <div key={j} style={{
-                  width: 6, height: 6, borderRadius: '50%', background: '#6598ef',
+                  width: 6, height: 6, borderRadius: '50%', background: 'var(--accent-primary)',
                   animation: `luaDot 1.2s ease-in-out ${j * 0.24}s infinite`,
                 }} />
               ))}
@@ -1185,14 +1185,14 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
             {pendingImages.length < MAX_IMAGES && (
               <button onClick={() => albumInputRef.current?.click()} style={{
                 width: 72, height: 72, borderRadius: 12,
-                border: '2px dashed rgba(101,152,239,0.4)', background: 'rgba(101,152,239,0.08)',
+                border: '2px dashed rgba(var(--accent-rgb),0.4)', background: 'rgba(var(--accent-rgb),0.08)',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 cursor: 'pointer', gap: 2, flexShrink: 0,
               }}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round">
                   <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                 </svg>
-                <span style={{ fontSize: 10, color: '#6598ef', fontWeight: 600 }}>추가</span>
+                <span style={{ fontSize: 10, color: 'var(--accent-primary)', fontWeight: 600 }}>추가</span>
               </button>
             )}
             <span style={{ fontSize: 12, color: 'var(--text-muted, #8B95A1)', width: '100%' }}>
@@ -1294,7 +1294,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
                 style={{
                   position: 'relative',
                   width: 52, height: 52, borderRadius: '50%', border: 'none',
-                  background: isListening ? 'rgba(101,152,239,0.18)' : isTranscribing ? 'rgba(101,152,239,0.10)' : 'transparent',
+                  background: isListening ? 'rgba(var(--accent-rgb),0.18)' : isTranscribing ? 'rgba(var(--accent-rgb),0.10)' : 'transparent',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   cursor: 'pointer', flexShrink: 0,
                   opacity: (isLoading || isTranscribing) ? 0.7 : 1, transition: 'background 0.18s',
@@ -1304,7 +1304,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
                   <span style={{
                     position: 'absolute', inset: 0, borderRadius: '50%',
                     border: 'none',
-                    borderTopColor: '#6598ef',
+                    borderTopColor: 'var(--accent-primary)',
                     animation: 'sttSpin 0.85s linear infinite',
                   }} />
                 )}
@@ -1326,7 +1326,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
                     <style>{`@keyframes sttPulseA { 0% { transform: scale(1); opacity: 0.55; } 100% { transform: scale(1.6); opacity: 0; } }`}</style>
                   </>
                 )}
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={isListening ? '#6598ef' : '#5F6368'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={isListening ? 'var(--accent-primary)' : '#5F6368'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="9" y="2" width="6" height="11" rx="3"/><path d="M19 10v1a7 7 0 01-14 0v-1"/><line x1="12" y1="19" x2="12" y2="22"/>
                 </svg>
               </button>
@@ -1339,7 +1339,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
               className="gem-input-btn"
               style={{
                 width: 52, height: 52, borderRadius: '50%', border: 'none',
-                background: canSend ? '#1F1F1F' : 'rgba(101,152,239,0.18)',
+                background: canSend ? '#1F1F1F' : 'rgba(var(--accent-rgb),0.18)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: canSend ? 'pointer' : 'pointer',
                 flexShrink: 0, transition: 'background 0.2s',
@@ -1418,7 +1418,7 @@ function ApplyRoutineCard({ routine, applied, onApply }) {
   return (
     <div style={{
       marginTop: 14,
-      background: applied ? 'rgba(101,152,239,0.08)' : 'linear-gradient(180deg, #F4F8FF 0%, #EAF1FE 100%)',
+      background: applied ? 'rgba(var(--accent-rgb),0.08)' : 'linear-gradient(180deg, #F4F8FF 0%, #EAF1FE 100%)',
       border: 'none',
       borderRadius: 18,
       padding: '14px 16px',
@@ -1437,7 +1437,7 @@ function ApplyRoutineCard({ routine, applied, onApply }) {
           if (slotItems.length === 0) return null;
           return (
             <div key={slot} style={{ marginBottom: 6 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#6598ef', letterSpacing: 0.5, marginBottom: 4 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent-primary)', letterSpacing: 0.5, marginBottom: 4 }}>
                 {slot === 'morning' ? '아침' : '저녁'} · {slotItems.length}개
               </div>
               {slotItems.map((it, idx) => (
@@ -1447,8 +1447,8 @@ function ApplyRoutineCard({ routine, applied, onApply }) {
                   padding: '2px 0',
                 }}>
                   <span style={{
-                    fontSize: 10, fontWeight: 700, color: '#6598ef',
-                    background: 'rgba(101,152,239,0.14)',
+                    fontSize: 10, fontWeight: 700, color: 'var(--accent-primary)',
+                    background: 'rgba(var(--accent-rgb),0.14)',
                     padding: '1px 6px', borderRadius: 6,
                     flexShrink: 0, marginRight: 2,
                   }}>{it.category}</span>
@@ -1466,12 +1466,12 @@ function ApplyRoutineCard({ routine, applied, onApply }) {
         disabled={applied}
         style={{
           width: '100%', padding: '12px 14px',
-          background: applied ? 'rgba(101,152,239,0.18)' : 'linear-gradient(135deg, #6598ef, #8ac4fe)',
+          background: applied ? 'rgba(var(--accent-rgb),0.18)' : 'linear-gradient(135deg, var(--accent-primary), #8ac4fe)',
           border: 'none', borderRadius: 12,
           color: applied ? '#3D7CA8' : '#fff',
           fontSize: 14, fontWeight: 700, letterSpacing: -0.2,
           cursor: applied ? 'default' : 'pointer',
-          boxShadow: applied ? 'none' : '0 4px 14px rgba(101,152,239,0.28)',
+          boxShadow: applied ? 'none' : '0 4px 14px rgba(var(--accent-rgb),0.28)',
           fontFamily: 'inherit',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
         }}

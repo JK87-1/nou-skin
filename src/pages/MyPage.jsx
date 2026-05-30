@@ -158,7 +158,7 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
             <div style={{
               position: 'absolute', right: -2, bottom: -2,
               width: 26, height: 26, borderRadius: '50%',
-              background: 'var(--accent-primary, #6598ef)',
+              background: 'var(--accent-primary, var(--accent-primary))',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               border: 'none',
               boxShadow: '0 1px 3px rgba(0,0,0,0.18)',
@@ -236,7 +236,7 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
             <div style={{ padding: '32px 16px', textAlign: 'center' }}>
                 <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 4 }}>측정한 셀카가 여기에 쌓여요</div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 12 }}>첫 측정을 시작해보세요</div>
-                <button onClick={() => onMeasure?.()} style={{ background: 'var(--accent-primary, #6598ef)', color: '#fff', fontSize: 11, fontWeight: 500, padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>첫 측정 시작</button>
+                <button onClick={() => onMeasure?.()} style={{ background: 'var(--accent-primary, var(--accent-primary))', color: '#fff', fontSize: 11, fontWeight: 500, padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>첫 측정 시작</button>
             </div>
           ) : (<>
             {/* 그리드 뷰 */}
@@ -286,7 +286,7 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: 2, flexShrink: 0 }}>
                         <span style={{ fontSize: 20, fontWeight: 700, color: 'rgba(0,0,0,0.8)', letterSpacing: -0.5 }}>{p.record.overallScore ?? '--'}</span>
                         <span style={{ fontSize: 10, fontWeight: 500, color: 'rgba(0,0,0,0.25)' }}>점</span>
-                        <span style={{ fontSize: 10, fontWeight: 600, minWidth: 20, marginLeft: 2, color: diff != null && diff !== 0 ? (diff > 0 ? '#6598ef' : '#e05545') : 'transparent' }}>
+                        <span style={{ fontSize: 10, fontWeight: 600, minWidth: 20, marginLeft: 2, color: diff != null && diff !== 0 ? (diff > 0 ? 'var(--accent-primary)' : '#e05545') : 'transparent' }}>
                           {diff != null && diff !== 0 ? (diff > 0 ? `+${diff}` : diff) : '\u00A0'}
                         </span>
                       </div>
@@ -310,7 +310,7 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
                         background: 'transparent',
                         border: 'none', borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit',
                         fontSize: 12, fontWeight: n === listPage ? 700 : 400,
-                        color: n === listPage ? '#6598ef' : 'rgba(0,0,0,0.25)',
+                        color: n === listPage ? 'var(--accent-primary)' : 'rgba(0,0,0,0.25)',
                         transition: 'all 0.2s',
                       }}>{n}</button>
                     ))}
@@ -367,7 +367,7 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
 
       {/* Toast */}
       {toast && (
-        <div style={{ position: 'fixed', bottom: 100, left: '50%', background: 'var(--accent-primary, #6598ef)', color: '#fff', padding: '10px 24px', borderRadius: 20, fontSize: 13, fontWeight: 500, zIndex: 999, boxShadow: '0 6px 22px rgba(101,152,239,0.32)', animation: 'toastSpringIn 0.42s cubic-bezier(0.34, 1.7, 0.5, 1)' }}>{toastMsg}<style>{`@keyframes toastSpringIn { 0% { opacity: 0; transform: translate(-50%, 20px) scale(0.85); } 60% { opacity: 1; transform: translate(-50%, -4px) scale(1.04); } 100% { transform: translate(-50%, 0) scale(1); } }`}</style></div>
+        <div style={{ position: 'fixed', bottom: 100, left: '50%', background: 'var(--accent-primary, var(--accent-primary))', color: '#fff', padding: '10px 24px', borderRadius: 20, fontSize: 13, fontWeight: 500, zIndex: 999, boxShadow: '0 6px 22px rgba(var(--accent-rgb),0.32)', animation: 'toastSpringIn 0.42s cubic-bezier(0.34, 1.7, 0.5, 1)' }}>{toastMsg}<style>{`@keyframes toastSpringIn { 0% { opacity: 0; transform: translate(-50%, 20px) scale(0.85); } 60% { opacity: 1; transform: translate(-50%, -4px) scale(1.04); } 100% { transform: translate(-50%, 0) scale(1); } }`}</style></div>
       )}
     </div>
   );
@@ -386,7 +386,7 @@ function BioEditModal({ bio, onSave, onClose }) {
         boxShadow: '0 -8px 28px rgba(0,0,0,0.08)', padding: '0 0 calc(env(safe-area-inset-bottom,0px))',
         maxWidth: 430, margin: '0 auto', animation: 'slideUp 0.3s ease',
       }}>
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(101,152,239,0.4)' }} /></div>
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(var(--accent-rgb),0.4)' }} /></div>
         <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>자기소개</span>
           <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: '#ffffff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -397,7 +397,7 @@ function BioEditModal({ bio, onSave, onClose }) {
           <textarea value={text} onChange={e => setText(e.target.value.slice(0, 50))} placeholder="입력해주세요"
             style={{ width: '100%', minHeight: 80, background: '#ffffff', border: 'none', borderRadius: 12, padding: '10px 14px', fontSize: 13, color: 'var(--text-primary)', outline: 'none', fontFamily: 'inherit', resize: 'none', boxSizing: 'border-box' }} />
           <div style={{ textAlign: 'right', fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>{text.length}/50</div>
-          <button onClick={() => onSave(text)} style={{ width: '100%', marginTop: 12, padding: 14, borderRadius: 10, border: 'none', background: 'var(--accent-primary, #6598ef)', color: '#fff', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>두기</button>
+          <button onClick={() => onSave(text)} style={{ width: '100%', marginTop: 12, padding: 14, borderRadius: 10, border: 'none', background: 'var(--accent-primary, var(--accent-primary))', color: '#fff', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>두기</button>
         </div>
       </div>
     </>
@@ -770,7 +770,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                     <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>진단 리마인더</div>
                     <div onClick={pushSubscribing ? undefined : handleReminderToggle} style={{
                       width: 39, height: 24, borderRadius: 10,
-                      background: reminderEnabled ? 'var(--accent-primary, #6598ef)' : 'rgba(0,0,0,0.12)',
+                      background: reminderEnabled ? 'var(--accent-primary, var(--accent-primary))' : 'rgba(0,0,0,0.12)',
                       position: 'relative', flexShrink: 0,
                       cursor: pushSubscribing ? 'wait' : 'pointer',
                       transition: 'background 0.3s',
@@ -794,7 +794,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                       background: 'rgba(255,255,255,0.5)', cursor: 'pointer',
                     }}>
                       <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>알림 시간</span>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent-primary, #6598ef)' }}>{formatPushTime(reminderTime)}</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent-primary, var(--accent-primary))' }}>{formatPushTime(reminderTime)}</span>
                     </div>
                   )}
                 </div>
@@ -810,7 +810,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                     <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>뷰티 팁</div>
                     <div onClick={pushSubscribing ? undefined : handleTipToggle} style={{
                       width: 39, height: 24, borderRadius: 10,
-                      background: tipEnabled ? 'var(--accent-primary, #6598ef)' : 'rgba(0,0,0,0.12)',
+                      background: tipEnabled ? 'var(--accent-primary, var(--accent-primary))' : 'rgba(0,0,0,0.12)',
                       position: 'relative', flexShrink: 0,
                       cursor: pushSubscribing ? 'wait' : 'pointer',
                       transition: 'background 0.3s',
@@ -834,7 +834,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                       background: 'rgba(255,255,255,0.5)', cursor: 'pointer',
                     }}>
                       <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>알림 시간</span>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent-primary, #6598ef)' }}>{formatPushTime(tipTime)}</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent-primary, var(--accent-primary))' }}>{formatPushTime(tipTime)}</span>
                     </div>
                   )}
                 </div>
@@ -850,7 +850,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                     <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>피부 날씨 알림</div>
                     <div onClick={pushSubscribing ? undefined : handleWeatherToggle} style={{
                       width: 39, height: 24, borderRadius: 10,
-                      background: weatherEnabled ? 'var(--accent-primary, #6598ef)' : 'rgba(0,0,0,0.12)',
+                      background: weatherEnabled ? 'var(--accent-primary, var(--accent-primary))' : 'rgba(0,0,0,0.12)',
                       position: 'relative', flexShrink: 0,
                       cursor: pushSubscribing ? 'wait' : 'pointer',
                       transition: 'background 0.3s',
@@ -927,7 +927,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                       </div>
                       {selected && (
                         <div style={{ textAlign: 'center', marginTop: 4 }}>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #6598ef)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, var(--accent-primary))" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                         </div>
                       )}
                     </div>
@@ -1051,7 +1051,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                     <div key={key} style={{ overflowX: 'auto', margin: '10px 0', borderRadius: 5, border: 'none', WebkitOverflowScrolling: 'touch' }}>
                       <table style={{ width: '100%', minWidth: 360, borderCollapse: 'collapse', fontSize: 12, tableLayout: 'auto' }}>
                         <thead>
-                          <tr style={{ background: 'var(--accent-bg, rgba(101,152,239,0.1))' }}>
+                          <tr style={{ background: 'var(--accent-bg, rgba(var(--accent-rgb),0.1))' }}>
                             {headerCells.map((c, j) => <th key={j} style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 600, color: 'var(--text-primary)', borderBottom: '1px solid rgba(0,0,0,0.1)', borderRight: j < headerCells.length - 1 ? '1px solid rgba(0,0,0,0.1)' : 'none', whiteSpace: 'nowrap' }}>{c}</th>)}
                           </tr>
                         </thead>
@@ -1161,7 +1161,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                 onClick={() => window.open(`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('[루아 문의]')}`, '_blank')}
                 style={{
                   width: '100%', padding: '12px', borderRadius: 10,
-                  border: 'none', background: 'var(--accent-bg, rgba(101,152,239,0.1))', color: 'var(--accent-primary, #6598ef)',
+                  border: 'none', background: 'var(--accent-bg, rgba(var(--accent-rgb),0.1))', color: 'var(--accent-primary, var(--accent-primary))',
                   fontSize: 14, fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
@@ -1207,7 +1207,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               <div onClick={() => profilePhotoRef.current?.click()} style={{
                 position: 'absolute', bottom: -2, right: -2,
                 width: 28, height: 28, borderRadius: '50%',
-                background: 'var(--accent-primary, #6598ef)', border: 'none',
+                background: 'var(--accent-primary, var(--accent-primary))', border: 'none',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
               }}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1284,8 +1284,8 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                     <div key={g} onClick={() => update('gender', g)} style={{
                       flex: 1, padding: '10px 0', borderRadius: 10, cursor: 'pointer', textAlign: 'center',
                       fontSize: 13, fontWeight: 500,
-                      background: selected ? 'rgba(101,152,239,0.1)' : 'rgba(255,255,255,0.5)',
-                      color: selected ? 'var(--accent-primary, #6598ef)' : 'var(--text-secondary)',
+                      background: selected ? 'rgba(var(--accent-rgb),0.1)' : 'rgba(255,255,255,0.5)',
+                      color: selected ? 'var(--accent-primary, var(--accent-primary))' : 'var(--text-secondary)',
                       border: 'none',
                       transition: 'all 0.2s',
                     }}>{g}</div>
@@ -1321,7 +1321,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           <div style={{ padding: '16px 40px calc(16px + env(safe-area-inset-bottom,0px))' }}>
             <button onClick={() => { showToast('저장되었어요'); setEditingProfile(false); }} style={{
               width: '100%', padding: 12, borderRadius: 10, border: 'none',
-              background: 'var(--accent-bg, rgba(101,152,239,0.1))', color: 'var(--accent-primary, #6598ef)', fontSize: 14, fontWeight: 600,
+              background: 'var(--accent-bg, rgba(var(--accent-rgb),0.1))', color: 'var(--accent-primary, var(--accent-primary))', fontSize: 14, fontWeight: 600,
               cursor: 'pointer', fontFamily: 'inherit',
             }}>저장</button>
           </div>
@@ -1361,7 +1361,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                 }}>
                   <div style={{
                     width: 30, height: 30, borderRadius: 12, flexShrink: 0,
-                    background: selected ? 'var(--accent-primary, #6598ef)' : 'rgba(255,255,255,0.5)',
+                    background: selected ? 'var(--accent-primary, var(--accent-primary))' : 'rgba(255,255,255,0.5)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s',
                   }}>
                     {selected && <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
@@ -1381,7 +1381,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
             }}>
               <div style={{
                 width: 30, height: 30, borderRadius: 12, flexShrink: 0,
-                background: profile.isSensitive ? 'var(--accent-primary, #6598ef)' : 'rgba(255,255,255,0.5)',
+                background: profile.isSensitive ? 'var(--accent-primary, var(--accent-primary))' : 'rgba(255,255,255,0.5)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s',
               }}>
                 {profile.isSensitive && <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
@@ -1400,7 +1400,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           <div style={{ padding: '16px 16px calc(16px + env(safe-area-inset-bottom,0px))' }}>
             <button onClick={() => { showToast('저장되었어요'); setEditingSkin(false); }} style={{
               width: '100%', padding: 12, borderRadius: 10, border: 'none',
-              background: 'var(--accent-bg, rgba(101,152,239,0.1))', color: 'var(--accent-primary, #6598ef)', fontSize: 14, fontWeight: 600,
+              background: 'var(--accent-bg, rgba(var(--accent-rgb),0.1))', color: 'var(--accent-primary, var(--accent-primary))', fontSize: 14, fontWeight: 600,
               cursor: 'pointer', fontFamily: 'inherit',
             }}>저장</button>
           </div>
@@ -1660,7 +1660,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16, lineHeight: 1.7 }}>
               지금까지의 측정 기준점(baseline)을 삭제해요.<br />
               <span style={{ color: 'var(--text-secondary)' }}>
-                다음 <strong style={{ color: 'var(--accent-primary, #6598ef)' }}>3회 측정의 평균</strong>으로 더 정확한 새 기준이 만들어집니다.
+                다음 <strong style={{ color: 'var(--accent-primary, var(--accent-primary))' }}>3회 측정의 평균</strong>으로 더 정확한 새 기준이 만들어집니다.
               </span>
               <br /><br />
               <span style={{ fontSize: 11, color: 'var(--text-dim)' }}>
@@ -1693,9 +1693,9 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                 }}
                 style={{
                   flex: 1, padding: 12, borderRadius: 14, border: 'none',
-                  background: 'var(--accent-primary, #6598ef)', color: '#fff',
+                  background: 'var(--accent-primary, var(--accent-primary))', color: '#fff',
                   fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-                  boxShadow: '0 2px 8px rgba(101,152,239,0.28)',
+                  boxShadow: '0 2px 8px rgba(var(--accent-rgb),0.28)',
                 }}
               >재설정</button>
             </div>
@@ -1877,7 +1877,7 @@ function GoalSettingModal({ onClose, showToast }) {
         {[1, 2, 3].map((s) => (
           <div key={s} style={{
             flex: 1, height: 3, borderRadius: 2,
-            background: s <= step ? 'var(--accent-primary, #6598ef)' : 'rgba(255,255,255,0.5)',
+            background: s <= step ? 'var(--accent-primary, var(--accent-primary))' : 'rgba(255,255,255,0.5)',
             transition: 'background 0.3s',
           }} />
         ))}
@@ -1889,9 +1889,9 @@ function GoalSettingModal({ onClose, showToast }) {
           {!latestRecord && (
             <div style={{
               padding: '12px 16px', borderRadius: 14, marginBottom: 8,
-              background: 'rgba(101,152,239,0.08)', border: 'none',
+              background: 'rgba(var(--accent-rgb),0.08)', border: 'none',
             }}>
-              <div style={{ fontSize: 13, color: 'var(--accent-primary, #6598ef)', lineHeight: 1.6 }}>
+              <div style={{ fontSize: 13, color: 'var(--accent-primary, var(--accent-primary))', lineHeight: 1.6 }}>
                 먼저 피부 분석을 해야 현재 점수를 확인할 수 있어요. 분석 후 목표를 설정해보세요!
               </div>
             </div>
@@ -1914,7 +1914,7 @@ function GoalSettingModal({ onClose, showToast }) {
                     {idx < 3 && latestRecord && (
                       <span style={{
                         fontSize: 10, padding: '1px 6px', borderRadius: 6,
-                        background: 'var(--accent-bg, rgba(101,152,239,0.1))', color: 'var(--accent-primary, #6598ef)',
+                        background: 'var(--accent-bg, rgba(var(--accent-rgb),0.1))', color: 'var(--accent-primary, var(--accent-primary))',
                       }}>추천</span>
                     )}
                   </div>
@@ -1923,7 +1923,7 @@ function GoalSettingModal({ onClose, showToast }) {
                   </div>
                 </div>
                 {selected && (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #6598ef)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}><polyline points="20 6 9 17 4 12"/></svg>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, var(--accent-primary))" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}><polyline points="20 6 9 17 4 12"/></svg>
                 )}
               </div>
             );
@@ -1947,7 +1947,7 @@ function GoalSettingModal({ onClose, showToast }) {
                   flex: 1, padding: '10px 8px', borderRadius: 14,
                   border: 'none',
                   background: 'transparent',
-                  color: 'var(--accent-primary, #6598ef)', fontSize: 12, fontWeight: 600,
+                  color: 'var(--accent-primary, var(--accent-primary))', fontSize: 12, fontWeight: 600,
                   cursor: 'pointer', fontFamily: 'inherit',
                 }}
               >+{p.delta}<br/><span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)' }}>{p.label}</span></button>
@@ -1966,7 +1966,7 @@ function GoalSettingModal({ onClose, showToast }) {
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                     <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{meta.label}</span>
-                    <span style={{ fontSize: 13, color: 'var(--accent-primary, #6598ef)', fontWeight: 600 }}>
+                    <span style={{ fontSize: 13, color: 'var(--accent-primary, var(--accent-primary))', fontWeight: 600 }}>
                       {current} → {target}
                     </span>
                   </div>
@@ -1976,14 +1976,14 @@ function GoalSettingModal({ onClose, showToast }) {
                     <div style={{
                       position: 'absolute', left: 0, right: 0, bottom: 8,
                       height: 4, borderRadius: 2,
-                      background: 'rgba(101,152,239,0.12)',
+                      background: 'rgba(var(--accent-rgb),0.12)',
                     }} />
                     {/* Filled portion */}
                     <div style={{
                       position: 'absolute', left: 0, bottom: 8,
                       height: 4, borderRadius: 2,
                       width: `calc(${target}% - ${target * 14 / 100}px + 7px)`,
-                      background: 'linear-gradient(90deg, rgba(101,152,239,0.35), #6598ef)',
+                      background: 'linear-gradient(90deg, rgba(var(--accent-rgb),0.35), var(--accent-primary))',
                     }} />
                     {/* Current position dot */}
                     <div style={{
@@ -1992,7 +1992,7 @@ function GoalSettingModal({ onClose, showToast }) {
                       bottom: 5,
                       transform: 'translate(-50%, 0)',
                       width: 10, height: 10, borderRadius: '50%',
-                      background: 'var(--accent-primary, #6598ef)',
+                      background: 'var(--accent-primary, var(--accent-primary))',
                       zIndex: 0,
                     }} />
                     {/* Current label */}
@@ -2001,7 +2001,7 @@ function GoalSettingModal({ onClose, showToast }) {
                       left: `calc(${current}% - ${current * 14 / 100}px + 7px)`,
                       top: -8,
                       transform: 'translateX(-50%)',
-                      fontSize: 9, fontWeight: 500, color: 'rgba(101,152,239,0.5)',
+                      fontSize: 9, fontWeight: 500, color: 'rgba(var(--accent-rgb),0.5)',
                       whiteSpace: 'nowrap',
                     }}>{current}</div>
                     {/* Range input (thumb on top) */}
@@ -2032,9 +2032,9 @@ function GoalSettingModal({ onClose, showToast }) {
                   onClick={() => setDuration(d)}
                   style={{
                     flex: 1, padding: '10px 0', borderRadius: 14,
-                    border: duration === d ? '1px solid var(--accent-primary, #6598ef)' : '1px solid rgba(0,0,0,0.06)',
-                    background: duration === d ? 'rgba(101,152,239,0.12)' : 'transparent',
-                    color: duration === d ? 'var(--accent-primary, #6598ef)' : 'var(--text-muted)',
+                    border: duration === d ? '1px solid var(--accent-primary, var(--accent-primary))' : '1px solid rgba(0,0,0,0.06)',
+                    background: duration === d ? 'rgba(var(--accent-rgb),0.12)' : 'transparent',
+                    color: duration === d ? 'var(--accent-primary, var(--accent-primary))' : 'var(--text-muted)',
                     fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
                   }}
                 >{d}일</button>
@@ -2050,7 +2050,7 @@ function GoalSettingModal({ onClose, showToast }) {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
               <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>목표 요약</span>
-              <span style={{ fontSize: 12, color: 'var(--accent-primary, #6598ef)', fontWeight: 500 }}>{duration}일</span>
+              <span style={{ fontSize: 12, color: 'var(--accent-primary, var(--accent-primary))', fontWeight: 500 }}>{duration}일</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {selectedMetrics.map((key) => {
@@ -2063,7 +2063,7 @@ function GoalSettingModal({ onClose, showToast }) {
                     <div style={{ fontSize: 13 }}>
                       <span style={{ color: 'var(--text-muted)' }}>{current}</span>
                       <span style={{ color: 'var(--text-muted)', margin: '0 6px' }}>→</span>
-                      <span style={{ color: 'var(--accent-primary, #6598ef)', fontWeight: 600 }}>{target}</span>
+                      <span style={{ color: 'var(--accent-primary, var(--accent-primary))', fontWeight: 600 }}>{target}</span>
                     </div>
                   </div>
                 );
@@ -2074,7 +2074,7 @@ function GoalSettingModal({ onClose, showToast }) {
           {existingGoal && existingGoal.status === 'active' && (
             <div style={{
               marginTop: 12, padding: '10px 16px', borderRadius: 14,
-              background: 'rgba(101,152,239,0.06)', border: 'none',
+              background: 'rgba(var(--accent-rgb),0.06)', border: 'none',
             }}>
               <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
                 기존 목표가 새 목표로 대체됩니다.
@@ -2117,8 +2117,8 @@ function GoalSettingModal({ onClose, showToast }) {
               style={{
                 flex: 1, padding: 12, borderRadius: 10, border: 'none',
                 background: (step === 1 && selectedMetrics.length === 0)
-                  ? 'rgba(0,0,0,0.04)' : 'rgba(101,152,239,0.1)',
-                color: (step === 1 && selectedMetrics.length === 0) ? 'var(--text-dim)' : '#6598ef',
+                  ? 'rgba(0,0,0,0.04)' : 'rgba(var(--accent-rgb),0.1)',
+                color: (step === 1 && selectedMetrics.length === 0) ? 'var(--text-dim)' : 'var(--accent-primary)',
                 fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
               }}
             >다음</button>
@@ -2128,8 +2128,8 @@ function GoalSettingModal({ onClose, showToast }) {
               onClick={handleSave}
               style={{
                 flex: 1, padding: 12, borderRadius: 10, border: 'none',
-                background: 'var(--accent-bg, rgba(101,152,239,0.1))',
-                color: 'var(--accent-primary, #6598ef)', fontSize: 14, fontWeight: 600,
+                background: 'var(--accent-bg, rgba(var(--accent-rgb),0.1))',
+                color: 'var(--accent-primary, var(--accent-primary))', fontSize: 14, fontWeight: 600,
                 cursor: 'pointer', fontFamily: 'inherit',
               }}
             >목표 시작하기</button>
@@ -2554,16 +2554,16 @@ function TimePicker({ value, onChange, onClose }) {
               onClick={() => onChange(`${String(t.h24).padStart(2, '0')}:00`)}
               style={{
                 padding: '13px 24px',
-                fontSize: 14, color: t.h24 === currentH ? '#6598ef' : 'var(--text-primary)',
+                fontSize: 14, color: t.h24 === currentH ? 'var(--accent-primary)' : 'var(--text-primary)',
                 fontWeight: t.h24 === currentH ? 600 : 400,
-                background: t.h24 === currentH ? 'rgba(101,152,239,0.08)' : 'transparent',
+                background: t.h24 === currentH ? 'rgba(var(--accent-rgb),0.08)' : 'transparent',
                 cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               }}
             >
               {t.label}
               {t.h24 === currentH && (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, #6598ef)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary, var(--accent-primary))" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               )}
             </div>
           ))}

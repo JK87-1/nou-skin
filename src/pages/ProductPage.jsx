@@ -1004,7 +1004,7 @@ function ProductBrandNameInputs({
                     <span style={{ fontSize: 12, fontWeight: 700, color: accent }}>{s.brand}</span>
                     <span style={{
                       fontSize: 9.5, padding: '1px 5px', borderRadius: 4,
-                      background: 'rgba(101,152,239,0.14)', color: '#6598ef', fontWeight: 600,
+                      background: 'rgba(var(--accent-rgb),0.14)', color: 'var(--accent-primary)', fontWeight: 600,
                     }}>{s.category}</span>
                     {s.source === 'gpt' && (
                       <span style={{ fontSize: 9, color: 'var(--text-muted)', marginLeft: 'auto' }}>AI 검색</span>
@@ -1545,7 +1545,7 @@ export default function ProductPage({ themeColors, onBack }) {
   const [showManualForm, setShowManualForm] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
-  const accent = themeColors?.accent || '#6598ef';
+  const accent = themeColors?.accent || 'var(--accent-primary)';
   const getCat = (cat) => TRACKER_CATEGORIES[cat] || TRACKER_CATEGORIES['기타'];
 
   // 효과 분석 로드
@@ -1880,7 +1880,7 @@ export default function ProductPage({ themeColors, onBack }) {
           <span style={{
             display: 'inline-block', width: 12, height: 12, borderRadius: '50%',
             border: 'none',
-            borderTopColor: '#6598ef',
+            borderTopColor: 'var(--accent-primary)',
             animation: 'ingredientSpin 0.9s linear infinite',
           }} />
           <span>{backfillProgress.done < backfillProgress.total
@@ -1909,7 +1909,7 @@ export default function ProductPage({ themeColors, onBack }) {
               fontWeight: active ? 700 : 500,
               background: active ? 'rgba(255,255,255,0.85)' : 'transparent',
               boxShadow: active ? '0 1px 4px rgba(0,0,0,0.06)' : 'none',
-              color: active ? '#6598ef' : 'var(--text-secondary)',
+              color: active ? 'var(--accent-primary)' : 'var(--text-secondary)',
               border: 'none',
               transition: 'background 0.18s ease, color 0.18s ease',
             }}>{s.label}</button>
@@ -1929,8 +1929,8 @@ export default function ProductPage({ themeColors, onBack }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
               <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>등록된 제품</span>
               <span style={{
-                fontSize: 10.5, fontWeight: 600, color: '#6598ef',
-                background: 'rgba(101,152,239,0.14)',
+                fontSize: 10.5, fontWeight: 600, color: 'var(--accent-primary)',
+                background: 'rgba(var(--accent-rgb),0.14)',
                 borderRadius: 8, padding: '2px 7px',
               }}>{products.length}</span>
             </div>
@@ -1980,7 +1980,7 @@ export default function ProductPage({ themeColors, onBack }) {
                           const parent = e.currentTarget.parentNode;
                           if (parent) {
                             const fallback = document.createElement('div');
-                            fallback.style.cssText = 'width:44px;height:44px;border-radius:12px;margin-bottom:10px;display:flex;align-items:center;justify-content:center;font-size:22px;background:rgba(101,152,239,0.08);';
+                            fallback.style.cssText = 'width:44px;height:44px;border-radius:12px;margin-bottom:10px;display:flex;align-items:center;justify-content:center;font-size:22px;background:rgba(var(--accent-rgb),0.08);';
                             fallback.textContent = cat.emoji || '';
                             parent.insertBefore(fallback, e.currentTarget);
                             e.currentTarget.remove();
@@ -1988,7 +1988,7 @@ export default function ProductPage({ themeColors, onBack }) {
                         }}
                       />
                     ) : (
-                      <div style={{ width: 44, height: 44, borderRadius: 12, marginBottom: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, background: 'rgba(101,152,239,0.08)' }}>
+                      <div style={{ width: 44, height: 44, borderRadius: 12, marginBottom: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, background: 'rgba(var(--accent-rgb),0.08)' }}>
                         {cat.emoji}
                       </div>
                     )}
@@ -2010,7 +2010,7 @@ export default function ProductPage({ themeColors, onBack }) {
               onClick={() => setShowAddSheet(true)}
               style={{
                 padding: '13px 24px', marginTop: 10, cursor: 'pointer',
-                background: '#6598ef', borderRadius: 14,
+                background: 'var(--accent-primary)', borderRadius: 14,
                 border: 'none',
                 boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
@@ -2031,7 +2031,7 @@ export default function ProductPage({ themeColors, onBack }) {
                   onClick={() => { hapticLight(); setRoutineExpanded(true); }}
                   style={{
                     width: '100%', padding: '16px 20px',
-                    background: 'linear-gradient(135deg, #6598ef 0%, #8ac4fe 100%)',
+                    background: 'linear-gradient(135deg, var(--accent-primary) 0%, #8ac4fe 100%)',
                     border: 'none', borderRadius: 18,
                     cursor: 'pointer', fontFamily: 'inherit',
                     boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
@@ -2106,8 +2106,8 @@ export default function ProductPage({ themeColors, onBack }) {
                         {a.metrics.map((m, mi) => (
                           <div key={mi} style={{
                             display: 'flex', alignItems: 'center', gap: 4, borderRadius: 10, padding: '6px 12px',
-                            background: m.improved ? 'rgba(101,152,239,0.1)' : 'rgba(239,68,68,0.1)',
-                            border: `1px solid ${m.improved ? 'rgba(101,152,239,0.2)' : 'rgba(239,68,68,0.2)'}`,
+                            background: m.improved ? 'rgba(var(--accent-rgb),0.1)' : 'rgba(239,68,68,0.1)',
+                            border: `1px solid ${m.improved ? 'rgba(var(--accent-rgb),0.2)' : 'rgba(239,68,68,0.2)'}`,
                           }}>
                             <span style={{ fontSize: 12, color: 'var(--tag-color)' }}>{m.label}</span>
                             <span style={{ fontSize: 14, fontWeight: 700, color: m.improved ? '#85b0f5' : '#ef4444' }}>

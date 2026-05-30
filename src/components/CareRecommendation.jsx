@@ -44,8 +44,8 @@ function ProductRow({ product, priority }) {
       </div>
       <span style={{
         fontSize: 10, fontWeight: 600,
-        color: isOccasional ? 'var(--text-muted)' : '#6598ef',
-        background: isOccasional ? 'rgba(0,0,0,0.05)' : 'rgba(101,152,239,0.12)',
+        color: isOccasional ? 'var(--text-muted)' : 'var(--accent-primary)',
+        background: isOccasional ? 'rgba(0,0,0,0.05)' : 'rgba(var(--accent-rgb),0.12)',
         borderRadius: 8, padding: '2px 8px',
         flexShrink: 0,
       }}>{isOccasional ? '가끔' : '매일'}</span>
@@ -61,7 +61,7 @@ function StepBlock({ stepDef, order }) {
         marginBottom: 4,
       }}>
         <span style={{
-          fontSize: 12, fontWeight: 700, color: '#6598ef',
+          fontSize: 12, fontWeight: 700, color: 'var(--accent-primary)',
           flexShrink: 0,
         }}>{order}</span>
         <span style={{
@@ -70,7 +70,7 @@ function StepBlock({ stepDef, order }) {
         <span style={{ flex: 1 }} />
         <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{stepDef.products.length}개</span>
       </div>
-      <div style={{ marginLeft: 20, borderLeft: '1px solid rgba(101,152,239,0.15)', paddingLeft: 12 }}>
+      <div style={{ marginLeft: 20, borderLeft: '1px solid rgba(var(--accent-rgb),0.15)', paddingLeft: 12 }}>
         {stepDef.products.map(p => (
           <ProductRow key={p.id} product={p} priority={p.priority} />
         ))}
@@ -178,8 +178,8 @@ export default function CareRecommendation({ products: productsProp, refreshKey 
               당신의 피부에 맞는 루틴
             </div>
             <span style={{
-              fontSize: 10, fontWeight: 600, color: '#6598ef',
-              background: 'rgba(101,152,239,0.18)', borderRadius: 8,
+              fontSize: 10, fontWeight: 600, color: 'var(--accent-primary)',
+              background: 'rgba(var(--accent-rgb),0.18)', borderRadius: 8,
               padding: '3px 8px', letterSpacing: -0.1,
             }}>표준 정렬</span>
           </div>
@@ -187,7 +187,7 @@ export default function CareRecommendation({ products: productsProp, refreshKey 
             등록한 화장품을 표준 순서대로 정리했어요.
             {result?.overallScore != null && ` 종합 ${result.overallScore}점 기준 매칭도 높은 순.`}
           </div>
-          <div style={{ fontSize: 11.5, color: '#6598ef', lineHeight: 1.55, marginTop: 6, fontWeight: 500 }}>
+          <div style={{ fontSize: 11.5, color: 'var(--accent-primary)', lineHeight: 1.55, marginTop: 6, fontWeight: 500 }}>
             내 피부 별 맞춤 추천은 상담으로 진행해보세요.
           </div>
         </div>
@@ -335,7 +335,7 @@ function RoutineTabs({ morningSteps, nightSteps, morningStats, nightStats }) {
                 border: 'none',
                 background: active ? 'rgba(255,255,255,0.85)' : 'transparent',
                 boxShadow: active ? '0 1px 4px rgba(0,0,0,0.06)' : 'none',
-                color: active ? '#6598ef' : 'var(--text-secondary)',
+                color: active ? 'var(--accent-primary)' : 'var(--text-secondary)',
                 fontSize: 13.5, fontWeight: active ? 700 : 500,
                 letterSpacing: -0.2,
                 transition: 'background 0.18s ease, color 0.18s ease',
@@ -344,8 +344,8 @@ function RoutineTabs({ morningSteps, nightSteps, morningStats, nightStats }) {
               <span>{t.label}</span>
               <span style={{
                 fontSize: 10.5, fontWeight: 600,
-                color: active ? '#6598ef' : 'var(--text-muted)',
-                background: active ? 'rgba(101,152,239,0.14)' : 'rgba(0,0,0,0.05)',
+                color: active ? 'var(--accent-primary)' : 'var(--text-muted)',
+                background: active ? 'rgba(var(--accent-rgb),0.14)' : 'rgba(0,0,0,0.05)',
                 borderRadius: 8, padding: '2px 7px',
               }}>{t.count}</span>
             </button>

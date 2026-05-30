@@ -610,7 +610,7 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
                             {diff > 0 && (
                               <div style={{
                                 width: 4, height: 4, borderRadius: '50%',
-                                background: '#6598ef',
+                                background: 'var(--accent-primary)',
                                 boxShadow: 'none',
                                 flexShrink: 0,
                               }} />
@@ -2045,7 +2045,7 @@ function RoutineChecklist() {
                   disabled={day.isFuture}
                   style={{
                     flex: 1, textAlign: 'center', padding: '10px 0 8px', borderRadius: 12,
-                    background: day.isSelected ? 'var(--accent-primary, #6598ef)' : day.isToday ? 'var(--day-today-bg)' : 'var(--day-default-bg)',
+                    background: day.isSelected ? 'var(--accent-primary, var(--accent-primary))' : day.isToday ? 'var(--day-today-bg)' : 'var(--day-default-bg)',
                     color: day.isSelected ? '#fff' : 'inherit',
                     border: 'none', cursor: day.isFuture ? 'default' : 'pointer',
                     opacity: day.isFuture ? 0.3 : 1,
@@ -2093,7 +2093,7 @@ function RoutineChecklist() {
         <div style={{ position: 'relative', width: 44, height: 44, flexShrink: 0 }}>
           <svg width="44" height="44" viewBox="0 0 44 44">
             <circle cx="22" cy="22" r="19" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="3.5" />
-            <circle cx="22" cy="22" r="19" fill="none" stroke="var(--accent-primary, #6598ef)" strokeWidth="3.5"
+            <circle cx="22" cy="22" r="19" fill="none" stroke="var(--accent-primary, var(--accent-primary))" strokeWidth="3.5"
               strokeDasharray={`${(pct / 100) * 119.38} 119.38`} strokeLinecap="round" transform="rotate(-90 22 22)"
               style={{ transition: 'stroke-dasharray 0.5s ease' }} />
           </svg>
@@ -2117,8 +2117,8 @@ function RoutineChecklist() {
             }}
             style={{
               width: '100%', padding: '12px 16px', marginBottom: 16,
-              background: allChecked ? 'rgba(101,152,239,0.18)' : 'linear-gradient(135deg, #6598ef, #8ac4fe)',
-              border: allChecked ? '1px solid rgba(101,152,239,0.4)' : 'none',
+              background: allChecked ? 'rgba(var(--accent-rgb),0.18)' : 'linear-gradient(135deg, var(--accent-primary), #8ac4fe)',
+              border: allChecked ? '1px solid rgba(var(--accent-rgb),0.4)' : 'none',
               borderRadius: 14,
               color: allChecked ? '#3D7CA8' : '#fff',
               fontSize: 14, fontWeight: 700, letterSpacing: -0.2,
@@ -2160,9 +2160,9 @@ function RoutineChecklist() {
               <div style={{
                 padding: gi === 0 ? '10px 14px 4px' : '14px 14px 4px',
                 display: 'flex', alignItems: 'center', gap: 6,
-                borderTop: gi > 0 ? '1px solid rgba(101,152,239,0.1)' : 'none',
+                borderTop: gi > 0 ? '1px solid rgba(var(--accent-rgb),0.1)' : 'none',
               }}>
-                <span style={{ fontSize: 11.5, fontWeight: 700, color: '#6598ef', letterSpacing: -0.2 }}>{group.label}</span>
+                <span style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--accent-primary)', letterSpacing: -0.2 }}>{group.label}</span>
                 <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{group.items.length}</span>
               </div>
               {group.items.map((item) => {
@@ -2184,13 +2184,13 @@ function RoutineChecklist() {
                       display: 'flex', alignItems: 'center', gap: 10,
                       padding: '13px 14px 13px 14px',
                       opacity: isDragging ? 0.4 : checked ? 0.5 : 1,
-                      background: isOver ? 'rgba(101,152,239,0.1)' : 'rgba(255,255,255,0.0)',
+                      background: isOver ? 'rgba(var(--accent-rgb),0.1)' : 'rgba(255,255,255,0.0)',
                       transition: 'opacity 0.2s, background 0.15s',
                     }}>
                       <div style={{
                         width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
-                        background: 'rgba(101,152,239,0.14)',
-                        color: '#6598ef', fontSize: 11, fontWeight: 700,
+                        background: 'rgba(var(--accent-rgb),0.14)',
+                        color: 'var(--accent-primary)', fontSize: 11, fontWeight: 700,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontFamily: 'inherit',
                       }}>{idx + 1}</div>
@@ -2203,7 +2203,7 @@ function RoutineChecklist() {
                             const parent = e.currentTarget.parentNode;
                             if (parent) {
                               const fb = document.createElement('div');
-                              fb.style.cssText = 'width:32px;height:32px;border-radius:8px;background:rgba(101,152,239,0.1);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;';
+                              fb.style.cssText = 'width:32px;height:32px;border-radius:8px;background:rgba(var(--accent-rgb),0.1);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;';
                               fb.textContent = '';
                               parent.insertBefore(fb, e.currentTarget);
                               e.currentTarget.remove();
@@ -2228,7 +2228,7 @@ function RoutineChecklist() {
                       <div onClick={(e) => { e.stopPropagation(); handleToggle(item.id); }} style={{
                         width: 24, height: 24, borderRadius: 8, flexShrink: 0, cursor: 'pointer',
                         border: 'none',
-                        background: checked ? 'var(--accent-primary, #6598ef)' : 'rgba(255,255,255,0.85)',
+                        background: checked ? 'var(--accent-primary, var(--accent-primary))' : 'rgba(255,255,255,0.85)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         transition: 'all 0.2s',
                       }}>
@@ -2257,7 +2257,7 @@ function RoutineChecklist() {
             animation: 'careSheetUp 280ms cubic-bezier(0.32,0.72,0,1) forwards',
           }}>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}>
-              <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(101,152,239,0.4)' }} />
+              <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(var(--accent-rgb),0.4)' }} />
             </div>
             <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -2279,9 +2279,9 @@ function RoutineChecklist() {
                     <button key={t.id} onClick={() => { setTagOverride(detailItem.id, t.id); setDetailItem({ ...detailItem }); }} style={{
                       padding: '7px 14px', borderRadius: 20, cursor: 'pointer',
                       fontSize: 12, fontWeight: active ? 700 : 500, fontFamily: 'inherit',
-                      background: active ? 'rgba(101,152,239,0.18)' : 'rgba(0,0,0,0.04)',
-                      color: active ? '#6598ef' : 'var(--text-primary)',
-                      border: active ? '1px solid rgba(101,152,239,0.35)' : '1px solid rgba(0,0,0,0.06)',
+                      background: active ? 'rgba(var(--accent-rgb),0.18)' : 'rgba(0,0,0,0.04)',
+                      color: active ? 'var(--accent-primary)' : 'var(--text-primary)',
+                      border: active ? '1px solid rgba(var(--accent-rgb),0.35)' : '1px solid rgba(0,0,0,0.06)',
                     }}>{t.label}</button>
                   );
                 })}
@@ -2329,11 +2329,11 @@ function RoutineChecklist() {
                   return (
                     <div key={idx} onClick={() => toggleDay(detailItem.id, idx)} style={{
                       flex: 1, textAlign: 'center', padding: '10px 0', borderRadius: 12, cursor: 'pointer',
-                      background: active ? 'rgba(101,152,239,0.2)' : 'rgba(255,255,255,0.3)',
-                      border: active ? '1px solid rgba(101,152,239,0.4)' : '1px solid rgba(255,255,255,0.3)',
+                      background: active ? 'rgba(var(--accent-rgb),0.2)' : 'rgba(255,255,255,0.3)',
+                      border: active ? '1px solid rgba(var(--accent-rgb),0.4)' : '1px solid rgba(255,255,255,0.3)',
                       transition: 'all 0.2s',
                     }}>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: active ? 'var(--accent-primary, #6598ef)' : 'var(--text-muted)' }}>{label}</div>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: active ? 'var(--accent-primary, var(--accent-primary))' : 'var(--text-muted)' }}>{label}</div>
                     </div>
                   );
                 })}
@@ -2405,7 +2405,7 @@ function RoutineChecklist() {
           }}>
             <style>{`@keyframes careSheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}>
-              <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(101,152,239,0.4)' }} />
+              <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(var(--accent-rgb),0.4)' }} />
             </div>
             <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>케어 항목 추가</span>
@@ -2441,9 +2441,9 @@ function RoutineChecklist() {
                     }} style={{
                       padding: '8px 14px', borderRadius: 20, cursor: 'pointer',
                       fontSize: 12, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6,
-                      background: added ? 'rgba(101,152,239,0.15)' : 'rgba(255,255,255,0.4)',
-                      color: added ? 'var(--accent-primary, #6598ef)' : 'var(--text-primary)',
-                      border: added ? '1px solid rgba(101,152,239,0.3)' : '1px solid rgba(255,255,255,0.3)',
+                      background: added ? 'rgba(var(--accent-rgb),0.15)' : 'rgba(255,255,255,0.4)',
+                      color: added ? 'var(--accent-primary, var(--accent-primary))' : 'var(--text-primary)',
+                      border: added ? '1px solid rgba(var(--accent-rgb),0.3)' : '1px solid rgba(255,255,255,0.3)',
                       transition: 'all 0.2s',
                     }}>
                       <span>{r.icon}</span>
@@ -2472,9 +2472,9 @@ function RoutineChecklist() {
                           }} style={{
                             padding: '8px 14px', borderRadius: 20, cursor: 'pointer',
                             fontSize: 12, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6,
-                            background: added ? 'rgba(101,152,239,0.15)' : 'rgba(255,255,255,0.4)',
-                            color: added ? 'var(--accent-primary, #6598ef)' : 'var(--text-primary)',
-                            border: added ? '1px solid rgba(101,152,239,0.3)' : '1px solid rgba(255,255,255,0.3)',
+                            background: added ? 'rgba(var(--accent-rgb),0.15)' : 'rgba(255,255,255,0.4)',
+                            color: added ? 'var(--accent-primary, var(--accent-primary))' : 'var(--text-primary)',
+                            border: added ? '1px solid rgba(var(--accent-rgb),0.3)' : '1px solid rgba(255,255,255,0.3)',
                             transition: 'all 0.2s',
                           }}>
                             <span></span>
@@ -2506,7 +2506,7 @@ function RoutineChecklist() {
                   if (customName.trim()) { addCustomRoutine(customName.trim(), addMode); setCustomName(''); }
                 }} style={{
                   padding: '11px 18px', borderRadius: 12, border: 'none',
-                  background: customName.trim() ? 'var(--accent-primary, #6598ef)' : 'rgba(101,152,239,0.2)',
+                  background: customName.trim() ? 'var(--accent-primary, var(--accent-primary))' : 'rgba(var(--accent-rgb),0.2)',
                   color: customName.trim() ? '#fff' : 'var(--text-muted)',
                   fontSize: 13, fontWeight: 500, cursor: customName.trim() ? 'pointer' : 'default',
                   fontFamily: 'inherit',
@@ -2518,9 +2518,9 @@ function RoutineChecklist() {
                   <button key={t.id} onClick={() => setCustomTag(t.id)} style={{
                     padding: '5px 12px', borderRadius: 16, cursor: 'pointer',
                     fontSize: 11, fontWeight: customTag === t.id ? 700 : 500, fontFamily: 'inherit',
-                    background: customTag === t.id ? 'rgba(101,152,239,0.18)' : 'rgba(0,0,0,0.04)',
-                    color: customTag === t.id ? '#6598ef' : 'var(--text-muted)',
-                    border: customTag === t.id ? '1px solid rgba(101,152,239,0.35)' : '1px solid rgba(0,0,0,0.06)',
+                    background: customTag === t.id ? 'rgba(var(--accent-rgb),0.18)' : 'rgba(0,0,0,0.04)',
+                    color: customTag === t.id ? 'var(--accent-primary)' : 'var(--text-muted)',
+                    border: customTag === t.id ? '1px solid rgba(var(--accent-rgb),0.35)' : '1px solid rgba(0,0,0,0.06)',
                   }}>{t.label}</button>
                 ))}
                 {showNewTagInput ? (
@@ -2611,7 +2611,7 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
       <div onClick={closeModal} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,44,83,0.18)', backdropFilter: 'none', WebkitBackdropFilter: 'none' }} />
       <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201, background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none', border: 'none', borderRadius: '20px 20px 0 0', boxShadow: '0 -8px 28px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.4)', paddingBottom: 'calc(env(safe-area-inset-bottom,0px) + 16px)', maxWidth: 430, margin: '0 auto', animation: 'careSheetUp 280ms cubic-bezier(0.32,0.72,0,1) forwards' }}>
         <style>{`@keyframes careSheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(101,152,239,0.4)' }} /></div>
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(var(--accent-rgb),0.4)' }} /></div>
         <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>{title}</span>
           <button onClick={closeModal} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: '#ffffff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -2658,7 +2658,7 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 11, color: 'var(--text-primary)', lineHeight: 1.5 }}>수분이 충분한 주에는 모공 점수가 평균 4점 더 좋았어요.</div>
-              <span style={{ display: 'inline-block', marginTop: 5, fontSize: 9, fontWeight: 500, padding: '2px 7px', borderRadius: 8, background: 'rgba(101,152,239,0.15)', color: 'var(--accent-primary)' }}>피부 발견</span>
+              <span style={{ display: 'inline-block', marginTop: 5, fontSize: 9, fontWeight: 500, padding: '2px 7px', borderRadius: 8, background: 'rgba(var(--accent-rgb),0.15)', color: 'var(--accent-primary)' }}>피부 발견</span>
             </div>
           </div>
         </div>
@@ -2739,7 +2739,7 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
                 <button onClick={()=>setApplied(true)} style={{ flex:1, padding:'16px 12px', borderRadius:20, border:applied===true?'none':'1px solid rgba(255,255,255,0.3)', cursor:'pointer', fontFamily:'inherit', background:applied===true?'var(--accent-primary)':'rgba(255,255,255,0.4)', color:applied===true?'#fff':'var(--text-primary)', fontSize:13, fontWeight:500, textAlign:'center' }}>선크림 챙겼어요</button>
                 <button onClick={()=>setApplied(false)} style={{ flex:1, padding:'16px 12px', borderRadius:20, border:applied===false?'1px solid var(--accent-primary)':'1px solid rgba(255,255,255,0.3)', cursor:'pointer', fontFamily:'inherit', background:'rgba(255,255,255,0.4)', color:'var(--text-primary)', fontSize:13, fontWeight:500, textAlign:'center' }}>오늘은 못 챙겼어요</button>
               </div>
-              <button onClick={()=>{if(applied!==null){saveHabitLog({sunscreen_applied:applied});refreshHabit();showToast();closeModal();}}} disabled={applied===null} style={{ width:'100%',padding:14,borderRadius:10,border:'none',background:applied!==null?'var(--accent-primary)':'rgba(101,152,239,0.2)',color:applied!==null?'#fff':'var(--text-muted)',fontSize:13,fontWeight:500,cursor:applied!==null?'pointer':'default',fontFamily:'inherit' }}>두기</button>
+              <button onClick={()=>{if(applied!==null){saveHabitLog({sunscreen_applied:applied});refreshHabit();showToast();closeModal();}}} disabled={applied===null} style={{ width:'100%',padding:14,borderRadius:10,border:'none',background:applied!==null?'var(--accent-primary)':'rgba(var(--accent-rgb),0.2)',color:applied!==null?'#fff':'var(--text-muted)',fontSize:13,fontWeight:500,cursor:applied!==null?'pointer':'default',fontFamily:'inherit' }}>두기</button>
             </div>
           );
         };

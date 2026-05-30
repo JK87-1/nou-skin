@@ -4,7 +4,7 @@
 //
 // props:
 //   data: [{ date, value }] 또는 [number] (sparkline용)
-//   accent: 라인 색 (기본 var(--accent-primary, #6598ef))
+//   accent: 라인 색 (기본 var(--accent-primary, var(--accent-primary)))
 //   inverse: 값이 낮을수록 좋은 메트릭(피부나이·트러블)일 때 추세 색 반전
 //   height: 차트 높이 (px)
 //   showAverage: 평균선 점선 표시
@@ -16,7 +16,7 @@
 
 import { useState, useRef } from 'react';
 
-const POSITIVE = '#6598ef'; // 토스 블루 톤
+const POSITIVE = 'var(--accent-primary)'; // 토스 블루 톤
 const NEGATIVE = '#e05545'; // 토스 빨강
 
 // hex 색상을 밝게/어둡게 조절 (amount: -1~1, 양수=밝게, 음수=어둡게)
