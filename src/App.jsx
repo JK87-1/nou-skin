@@ -33,6 +33,7 @@ import { CATEGORY_META, getProductsByCategory, getWeakestCategories, calcMatchSc
 import { getPercentile, getSkinAgePercentile, bucketLabel } from './engine/SkinPercentile';
 import { getRecommendedTreatments, TREATMENT_CATEGORIES } from './data/TreatmentData';
 import { syncSkinDataToServer } from './utils/pushNotification';
+import PrecisionMode from './components/PrecisionMode';
 import { getProfile, saveProfile, getDeviceId } from './storage/ProfileStorage';
 import GoalProgressCard from './components/GoalProgressCard';
 import SkinWeather from './components/SkinWeather';
@@ -59,6 +60,8 @@ import EternalPearl from './components/icons/EternalPearl';
 export default function App() {
   const [stage, setStage] = useState('landing');
   const [image, setImage] = useState(null);
+  // 정밀 측정 모드 — 메인 UI 진입점은 미배치 (사용자 요청). window.luaPrecision() 또는 'lua:precision-open' 이벤트로만 진입.
+  const [precisionOpen, setPrecisionOpen] = useState(false);
   const [b64, setB64] = useState(null);
   const [result, setResult] = useState(null);
   const [progress, setProgress] = useState(0);
@@ -931,6 +934,13 @@ export default function App() {
 
   const showTabBar = activeTab !== 'home' || stage === 'landing' || stage === 'result';
 
+  // 정밀 측정 모드 글로벌 진입점 — UI 버튼 없이 console/외부에서 호출 가능
+  useEffect(() => {
+    const handler = () => setPrecisionOpen(true);
+    window.addEventListener('lua:precision-open', handler);
+    return () => window.removeEventListener('lua:precision-open', handler);
+  }, []);
+
   return (
     <PullToRefresh onRefresh={() => setRefreshKey(k => k + 1)}>
     <div className="app-container">
@@ -938,6 +948,9 @@ export default function App() {
       <style>{`@keyframes landingPearlReveal { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }`}</style>
       {/* 약관 모달은 MyPage > 설정 > 정보에서 자율적으로 (김준 결정) */}
       {showSplash && <SplashScreen exiting={splashExiting} onAnimationEnd={() => setShowSplash(false)} />}
+
+      {/* 정밀 측정 모드 — paywall → capture → result 통합 컨테이너 */}
+      <PrecisionMode open={precisionOpen} onClose={() => setPrecisionOpen(false)} />
 
       {/* 표준 측정 가이드 modal — 정확도 향상 핵심 */}
       {measureGuideOpen && (
