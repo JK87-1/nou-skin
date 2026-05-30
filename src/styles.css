@@ -126,12 +126,12 @@
   --white-40: rgba(255,255,255,0.4);
   --white-20: rgba(255,255,255,0.2);
 
-  /* 네이비/검정 투명도 5단계 (구분선·오버레이) */
-  --navy-08: rgba(4,44,83,0.08);
-  --navy-15: rgba(4,44,83,0.15);
-  --navy-40: rgba(4,44,83,0.4);
-  --navy-55: rgba(4,44,83,0.55);
-  --navy-78: rgba(4,44,83,0.78);
+  /* 검정 투명도 5단계 (구분선·오버레이) */
+  --ink-08: rgba(0,0,0,0.08);
+  --ink-15: rgba(0,0,0,0.15);
+  --ink-40: rgba(0,0,0,0.4);
+  --ink-55: rgba(0,0,0,0.55);
+  --ink-78: rgba(0,0,0,0.78);
 
   /* 어두운 배경 위 텍스트 3종 */
   --text-on-dark: #FFFFFF;
@@ -334,12 +334,12 @@ select:focus-visible {
   --border-subtle: transparent;
   --border-light: transparent;
   --border-separator: transparent;
-  /* Text — 텍스트 시스템 v1.0 네이비 팔레트 */
-  --text-primary: #042C53;            /* 메인 (가장 진한 네이비) */
-  --text-secondary: #185FA5;          /* 보조·라벨 (블루) */
-  --text-muted: rgba(4,44,83,0.5);    /* tertiary — 비활성·메타 */
-  --text-dim: rgba(4,44,83,0.4);      /* 더 흐림 */
-  --text-disabled: rgba(4,44,83,0.3); /* 비활성 */
+  /* Text — 텍스트 시스템 v1.0 블랙 계열(중립) */
+  --text-primary: #1A1A1A;            /* 메인 (니어 블랙) */
+  --text-secondary: rgba(0,0,0,0.6);  /* 보조·라벨 */
+  --text-muted: rgba(0,0,0,0.45);     /* tertiary — 비활성·메타 */
+  --text-dim: rgba(0,0,0,0.35);       /* 더 흐림 */
+  --text-disabled: rgba(0,0,0,0.25);  /* 비활성 */
   /* Shadows — subtle black 0.03 */
   --shadow-card: 0 2px 8px rgba(0,0,0,0.03);
   --shadow-elevated: 0 2px 8px rgba(0,0,0,0.03);
