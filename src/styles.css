@@ -228,7 +228,7 @@ select:focus-visible {
   --card-border-radius: var(--card-radius);
   /* Card system (배경·그림자·패딩 — 곡률은 --card-*-radius / 다크 기본) */
   --card-bg: rgba(255,255,255,0.05);
-  --card-shadow: none;
+  --card-shadow: 0 2px 8px rgba(0,0,0,0.3); /* 다크: 탭바 세기에 맞춘 아래방향 */
   --card-pad: 20px;
   --card-nested-bg: rgba(255,255,255,0.03);
   --card-nested-pad: 16px;
@@ -324,7 +324,7 @@ select:focus-visible {
   --card-border-radius: var(--card-radius);
   /* Card system — Sky Glass 라이트 (흰 80%, 블러X, soft shadow) */
   --card-bg: rgba(255,255,255,0.8);
-  --card-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  --card-shadow: 0 2px 8px rgba(0,0,0,0.03); /* 메인 탭바 그림자 세기에 맞춤 */
   --card-nested-bg: #F1F3F5;
   --card-sm-bg: rgba(255,255,255,0.8);
   --card-alert-bg: var(--context-bg);
@@ -1755,7 +1755,7 @@ select:focus-visible {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   border: none;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
 }
 
 /* Section icon: 40x40 rounded square with tinted bg */
