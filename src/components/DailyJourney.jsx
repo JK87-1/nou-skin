@@ -58,7 +58,7 @@ export default function DailyJourney({ onTodayTap, onPastTap }) {
                 width: 56, height: 56, borderRadius: '50%',
                 border: '2px dashed #ADEBB3',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'rgba(240,144,112,0.06)',
+                background: 'rgba(var(--accent-rgb),0.06)',
               }}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                   <path d="M12 5v14M5 12h14" stroke="#ADEBB3" strokeWidth="2" strokeLinecap="round" />
@@ -75,7 +75,7 @@ export default function DailyJourney({ onTodayTap, onPastTap }) {
               /* 기록은 있지만 사진 없음 */
               <div className={`journey-thumb${day.isToday ? ' today-border' : ''}`} style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'linear-gradient(135deg, rgba(240,144,112,0.1), rgba(240,144,112,0.05))',
+                background: 'linear-gradient(135deg, rgba(var(--accent-rgb),0.1), rgba(var(--accent-rgb),0.05))',
                 fontSize: 16, fontWeight: 700, color: '#ADEBB3',
                 fontFamily: "'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif",
               }}>

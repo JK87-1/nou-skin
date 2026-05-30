@@ -41,13 +41,13 @@ export default function TroubleBreakdownCard({ breakdown }) {
 
   return (
     <div style={{
-      background: 'rgba(255,255,255,0.35)',
-      backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+      background: 'var(--card-bg)',
+      backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)',
       border: 'none',
-      borderRadius: 16,
+      borderRadius: 'var(--card-radius)',
       padding: '14px 16px',
       marginTop: 8, marginBottom: 8,
-      boxShadow: '0 2px 10px rgba(0,0,0,0.04)',
+      boxShadow: 'var(--card-shadow)',
     }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>

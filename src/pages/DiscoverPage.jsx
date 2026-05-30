@@ -5,11 +5,11 @@ import TossLineChart from '../components/TossLineChart';
 import { AnimatedNumber } from '../components/UIComponents';
 
 const glass = {
-  background: 'rgba(255,255,255,0.5)',
-  backdropFilter: 'none', WebkitBackdropFilter: 'none',
+  background: 'var(--card-bg)',
+  backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)',
   border: 'none',
-  boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
-  borderRadius: 20,
+  boxShadow: 'var(--card-shadow)',
+  borderRadius: 'var(--card-radius)',
 };
 
 const ALL_METRICS = [
@@ -319,14 +319,14 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
       <div style={{ padding: '30px 16px 4px' }} />
 
       {/* ② 점수 변화 — 최상단 */}
-          <div style={{ margin: '0 12px 12px', background: 'rgba(255,255,255,0.2)', borderRadius: 18, padding: 14 }}>
+          <div className="card" style={{ margin: '0 12px 12px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
               <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>내 피부 흐름</span>
               <div style={{ display: 'flex', gap: 6 }}>
                 {[{ k: '7d', l: '7일' }, { k: '4w', l: '4주' }, { k: '3m', l: '3개월' }].map(p => (
                   <button key={p.k} onClick={() => setPeriod(p.k)} style={{
                     padding: '4px 10px', borderRadius: 10, border: period === p.k ? 'none' : '1px solid rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 500,
-                    background: period === p.k ? 'var(--accent-primary, #6598ef)' : 'rgba(255,255,255,0.4)',
+                    background: period === p.k ? 'var(--accent-primary, var(--accent-primary))' : 'rgba(255,255,255,0.4)',
                     color: period === p.k ? '#fff' : 'var(--text-muted)',
                     cursor: 'pointer', fontFamily: 'inherit',
                   }}>{p.l}</button>
@@ -340,8 +340,8 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                 return (
                   <button key={m.key} onClick={() => setTrendMetric(m.key)} style={{
                     padding: '3px 8px', borderRadius: 7, border: 'none',
-                    background: active ? '#6598ef12' : 'rgba(0,0,0,0.04)',
-                    color: active ? '#6598ef' : 'rgba(0,0,0,0.35)',
+                    background: active ? 'var(--accent-primary)12' : 'rgba(0,0,0,0.04)',
+                    color: active ? 'var(--accent-primary)' : 'rgba(0,0,0,0.35)',
                     fontSize: 11, fontWeight: 600, lineHeight: 1.3,
                     cursor: 'pointer', fontFamily: 'inherit',
                     flexShrink: 0, whiteSpace: 'nowrap',
@@ -370,7 +370,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                     <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: -0.3 }}>{lastVal}{unit}</span>
                     <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{metricLabel}</span>
                     {diff !== 0 && (
-                      <span style={{ fontSize: 11, fontWeight: 600, color: diff > 0 ? '#6598ef' : '#e05545', marginLeft: 'auto' }}>
+                      <span style={{ fontSize: 11, fontWeight: 600, color: diff > 0 ? 'var(--accent-primary)' : '#e05545', marginLeft: 'auto' }}>
                         {diff > 0 ? '▲' : '▼'} {Math.abs(diff).toFixed(0)}
                       </span>
                     )}
@@ -395,13 +395,15 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
           <div style={{ margin: '0 12px 12px' }}>
             {recordCount === 0 ? (
               <div role="button" aria-label="첫 측정 시작" onClick={handleMeasure} style={{
-                background: 'rgba(255,255,255,0.2)',
-                borderRadius: 20,
+                background: 'var(--card-bg)',
+                backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)',
+                borderRadius: 'var(--card-radius)',
+                boxShadow: 'var(--card-shadow)',
                 padding: '32px 16px', textAlign: 'center', cursor: 'pointer',
               }}>
                 <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 8 }}>첫 측정을 해볼까요?</div>
                 <button style={{
-                  background: 'var(--accent-primary, #6598ef)', color: '#fff', fontSize: 13, fontWeight: 500,
+                  background: 'var(--accent-primary, var(--accent-primary))', color: '#fff', fontSize: 13, fontWeight: 500,
                   padding: '10px 24px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: 'inherit',
                 }}>측정 시작</button>
               </div>
@@ -416,7 +418,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                   {daysSince !== null && prev && <span>이전 측정 → {daysSince > 7 ? `${Math.floor(daysSince/7)}주 전` : `${daysSince}일 전`}</span>}
                 </div>
                 {/* 헤드라인 */}
-                <div style={{ fontSize: 17, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.3, lineHeight: 1.35, marginTop: 8 }}>
+                <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.3, lineHeight: 1.35, marginTop: 8 }}>
                   {headline}
                 </div>
                 {/* 4분할 */}
@@ -426,10 +428,10 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                     const prevVal = prev?.[m.key] ?? null;
                     const diff = val !== null && prevVal !== null ? val - prevVal : null;
                     return (
-                      <div key={m.key} style={{ background: 'rgba(255,255,255,0.6)', borderRadius: 10, padding: '8px 6px', textAlign: 'center' }}>
-                        <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>{m.label}</div>
+                      <div key={m.key} style={{ background: 'var(--card-sm-bg)', backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)', borderRadius: 'var(--card-sm-radius)', padding: '8px 6px', textAlign: 'center' }}>
+                        <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{m.label}</div>
                         <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)', marginTop: 2 }}>{val != null ? <AnimatedNumber target={val} duration={600} /> : '—'}</div>
-                        <div style={{ fontSize: 9, fontWeight: 500, marginTop: 1, color: diff === null ? 'var(--text-muted)' : diff > 0 ? '#6598ef' : diff < 0 ? '#e05545' : 'var(--text-muted)' }}>
+                        <div style={{ fontSize: 10, fontWeight: 500, marginTop: 1, color: diff === null ? 'var(--text-muted)' : diff > 0 ? 'var(--accent-primary)' : diff < 0 ? '#e05545' : 'var(--text-muted)' }}>
                           {diff === null ? '기준선' : diff > 0 ? <>+<AnimatedNumber target={diff} duration={800} /></> : diff < 0 ? <>-<AnimatedNumber target={Math.abs(diff)} duration={800} /></> : '0'}
                         </div>
                       </div>
@@ -441,7 +443,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
           </div>
 
           {/* ⑤ 영향 요인 차트 */}
-          <div style={{ margin: '0 12px 12px', background: 'rgba(255,255,255,0.2)', borderRadius: 18, padding: 14 }}>
+          <div className="card" style={{ margin: '0 12px 12px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
               <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>영향 요인</span>
               <div ref={dropdownRef} style={{ position: 'relative' }}>
@@ -479,7 +481,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                     <div key={i} style={{ padding: '8px 0', borderTop: i > 0 ? '0.5px solid rgba(255,255,255,0.2)' : 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
                       <div style={{
                         width: 32, height: 32, borderRadius: 8, flexShrink: 0,
-                        background: f.type === 'product' ? 'rgba(101,152,239,0.12)' : 'rgba(255,255,255,0.25)',
+                        background: f.type === 'product' ? 'rgba(var(--accent-rgb),0.12)' : 'rgba(255,255,255,0.25)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                       }}>
                         {f.type === 'product' ? (
@@ -490,11 +492,11 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 11.5, fontWeight: 500, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</div>
-                        <div style={{ fontSize: 8.5, color: 'var(--text-muted)', marginTop: 2 }}>{f.type === 'habit' ? '습관' : '화장품'}{f.samples ? ` · ${f.samples}회` : ''}</div>
+                        <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginTop: 2 }}>{f.type === 'habit' ? '습관' : '화장품'}{f.samples ? ` · ${f.samples}회` : ''}</div>
                         <div style={{ marginTop: 5, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.25)', position: 'relative' }}>
                           <div style={{ position: 'absolute', left: '50%', top: -2, width: 1, height: 8, background: 'rgba(255,255,255,0.4)' }} />
                           {f.impact > 0 ? (
-                            <div style={{ position: 'absolute', left: '50%', top: 0, height: '100%', borderRadius: 2, background: 'var(--accent-primary, #6598ef)', width: `${barWidth}%` }} />
+                            <div style={{ position: 'absolute', left: '50%', top: 0, height: '100%', borderRadius: 2, background: 'var(--accent-primary, var(--accent-primary))', width: `${barWidth}%` }} />
                           ) : (
                             <div style={{ position: 'absolute', right: '50%', top: 0, height: '100%', borderRadius: 2, background: confidence === '낮음' ? '#888' : '#E24B4A', width: `${barWidth}%` }} />
                           )}
@@ -517,7 +519,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
           </div>
 
           {/* ⑥ lua의 발견 */}
-          <div style={{ margin: '0 12px 12px', background: 'rgba(255,255,255,0.2)', borderRadius: 18, padding: 14 }}>
+          <div className="card" style={{ margin: '0 12px 12px' }}>
             <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10 }}>인사이트</div>
             {(() => {
               const discoveries = getDiscoveries(records, getProducts());
@@ -542,7 +544,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                   </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 11.5, color: 'var(--text-primary)', lineHeight: 1.5 }}>{d.text}</div>
-                    <span style={{ display: 'inline-block', marginTop: 5, fontSize: 9, fontWeight: 500, padding: '2px 7px', borderRadius: 8, background: 'rgba(101,152,239,0.15)', color: 'var(--accent-primary)' }}>{d.tag}</span>
+                    <span style={{ display: 'inline-block', marginTop: 5, fontSize: 10, fontWeight: 500, padding: '2px 7px', borderRadius: 8, background: 'rgba(var(--accent-rgb),0.15)', color: 'var(--accent-primary)' }}>{d.tag}</span>
                   </div>
                 </div>
               ));

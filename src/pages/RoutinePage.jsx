@@ -222,8 +222,8 @@ export default function RoutinePage() {
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   marginBottom: 4,
                   background: day.completed ? 'var(--ingredient-accent)'
-                    : day.isToday ? 'rgba(240,144,112,0.15)'
-                    : day.partial ? 'rgba(240,144,112,0.08)'
+                    : day.isToday ? 'rgba(var(--accent-rgb),0.15)'
+                    : day.partial ? 'rgba(var(--accent-rgb),0.08)'
                     : 'var(--item-bg)',
                   border: day.isToday && !day.completed ? '2px solid var(--ingredient-accent)' : 'none',
                 }}>

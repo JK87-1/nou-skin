@@ -19,7 +19,7 @@ import { useState } from 'react';
 export default function AiCommentCard({
   aiNotes,
   aiDetails,
-  accent = '#FF8C42',
+  accent = '#6598ef',
   analysisMode,
   makeupDetected,
   animationDelay = '0.85s',
@@ -43,11 +43,11 @@ export default function AiCommentCard({
 
   return (
     <div style={{
-      marginTop: 14, padding: 18, borderRadius: 18,
-      background: 'rgba(255,255,255,0.42)',
-      backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+      marginTop: 14, padding: 18, borderRadius: 'var(--card-radius)',
+      background: 'var(--card-bg)',
+      backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)',
       border: 'none',
-      boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+      boxShadow: 'var(--card-shadow)',
       animation: `fadeUp 0.5s ease-out ${animationDelay} both`,
     }}>
       {/* Header */}

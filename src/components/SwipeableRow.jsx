@@ -157,13 +157,13 @@ export default function SwipeableRow({
           aria-label="위로"
           style={{
             width: 40, height: 36, borderRadius: 10, border: 'none',
-            background: onMoveUp ? 'rgba(101,152,239,0.9)' : 'rgba(0,0,0,0.08)',
+            background: onMoveUp ? 'rgba(var(--accent-rgb),0.9)' : 'rgba(0,0,0,0.08)',
             color: '#fff', fontFamily: 'inherit',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: onMoveUp ? 'pointer' : 'default',
             transform: translateX > 4 ? 'scale(1)' : 'scale(0.86)',
             transition: 'transform 0.22s cubic-bezier(0.32,0.72,0,1), background 0.15s',
-            boxShadow: onMoveUp ? '0 2px 8px rgba(101,152,239,0.32)' : 'none',
+            boxShadow: onMoveUp ? '0 2px 8px rgba(var(--accent-rgb),0.32)' : 'none',
           }}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
@@ -176,13 +176,13 @@ export default function SwipeableRow({
           aria-label="아래로"
           style={{
             width: 40, height: 36, borderRadius: 10, border: 'none',
-            background: onMoveDown ? 'rgba(101,152,239,0.9)' : 'rgba(0,0,0,0.08)',
+            background: onMoveDown ? 'rgba(var(--accent-rgb),0.9)' : 'rgba(0,0,0,0.08)',
             color: '#fff', fontFamily: 'inherit',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: onMoveDown ? 'pointer' : 'default',
             transform: translateX > 4 ? 'scale(1)' : 'scale(0.86)',
             transition: 'transform 0.22s cubic-bezier(0.32,0.72,0,1) 30ms, background 0.15s',
-            boxShadow: onMoveDown ? '0 2px 8px rgba(101,152,239,0.32)' : 'none',
+            boxShadow: onMoveDown ? '0 2px 8px rgba(var(--accent-rgb),0.32)' : 'none',
           }}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">

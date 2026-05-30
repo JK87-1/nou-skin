@@ -116,10 +116,10 @@ export default function InstallBanner() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
             <div style={{
               width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-              background: 'linear-gradient(135deg, rgba(240,144,112,0.2), rgba(240,144,112,0.2))',
+              background: 'linear-gradient(135deg, rgba(var(--accent-rgb),0.2), rgba(var(--accent-rgb),0.2))',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <span style={{ fontSize: 13, fontWeight: 800, color: '#81E4BD', fontFamily: "'Outfit', sans-serif", letterSpacing: 2 }}>루아</span>
+              <span style={{ fontSize: 13, fontWeight: 800, color: '#6598ef', fontFamily: "'Outfit', sans-serif", letterSpacing: 2 }}>루아</span>
             </div>
             <div>
               <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 2px' }}>Safari에서 열어주세요</p>
@@ -134,7 +134,7 @@ export default function InstallBanner() {
             <div style={{ flex: 1, textAlign: 'center' }}>
               <div style={{
                 width: 36, height: 36, borderRadius: 10, margin: '0 auto 6px',
-                background: 'rgba(240,144,112,0.12)',
+                background: 'rgba(var(--accent-rgb),0.12)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ADEBB3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -155,7 +155,7 @@ export default function InstallBanner() {
             <div style={{ flex: 1, textAlign: 'center' }}>
               <div style={{
                 width: 36, height: 36, borderRadius: 10, margin: '0 auto 6px',
-                background: 'rgba(240,144,112,0.12)',
+                background: 'rgba(var(--accent-rgb),0.12)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ADEBB3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -175,7 +175,7 @@ export default function InstallBanner() {
             }).catch(() => {});
           }} id="lua-copy-btn" style={{
             width: '100%', marginTop: 10, padding: '10px 0', borderRadius: 12,
-            border: 'none', background: 'rgba(240,144,112,0.1)',
+            border: 'none', background: 'rgba(var(--accent-rgb),0.1)',
             color: '#a5b4fc', fontSize: 13, fontWeight: 600, cursor: 'pointer',
             fontFamily: 'inherit',
           }}>URL 복사하기</button>
@@ -185,10 +185,10 @@ export default function InstallBanner() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <div style={{
             width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-            background: 'linear-gradient(135deg, rgba(240,144,112,0.2), rgba(240,144,112,0.2))',
+            background: 'linear-gradient(135deg, rgba(var(--accent-rgb),0.2), rgba(var(--accent-rgb),0.2))',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <span style={{ fontSize: 13, fontWeight: 800, color: '#81E4BD', fontFamily: "'Outfit', sans-serif", letterSpacing: 2 }}>루아</span>
+            <span style={{ fontSize: 13, fontWeight: 800, color: '#6598ef', fontFamily: "'Outfit', sans-serif", letterSpacing: 2 }}>루아</span>
           </div>
           <div style={{ flex: 1 }}>
             <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 2px' }}>홈 화면에 추가</p>
@@ -208,10 +208,10 @@ export default function InstallBanner() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
             <div style={{
               width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-              background: 'linear-gradient(135deg, rgba(240,144,112,0.2), rgba(240,144,112,0.2))',
+              background: 'linear-gradient(135deg, rgba(var(--accent-rgb),0.2), rgba(var(--accent-rgb),0.2))',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <span style={{ fontSize: 13, fontWeight: 800, color: '#81E4BD', fontFamily: "'Outfit', sans-serif", letterSpacing: 2 }}>루아</span>
+              <span style={{ fontSize: 13, fontWeight: 800, color: '#6598ef', fontFamily: "'Outfit', sans-serif", letterSpacing: 2 }}>루아</span>
             </div>
             <div>
               <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 2px' }}>홈 화면에 추가하기</p>
@@ -227,7 +227,7 @@ export default function InstallBanner() {
             <div style={{ flex: 1, textAlign: 'center' }}>
               <div style={{
                 width: 36, height: 36, borderRadius: 10, margin: '0 auto 6px',
-                background: 'rgba(240,144,112,0.12)',
+                background: 'rgba(var(--accent-rgb),0.12)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 {/* Share icon (iOS style) */}
@@ -251,7 +251,7 @@ export default function InstallBanner() {
             <div style={{ flex: 1, textAlign: 'center' }}>
               <div style={{
                 width: 36, height: 36, borderRadius: 10, margin: '0 auto 6px',
-                background: 'rgba(240,144,112,0.12)',
+                background: 'rgba(var(--accent-rgb),0.12)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 {/* Plus square icon */}

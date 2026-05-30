@@ -1,4 +1,4 @@
-import { COLORS, ANIMATION } from './tokens';
+import { ANIMATION } from './tokens';
 
 export default function GlobalStyles() {
   return (
@@ -15,7 +15,7 @@ export default function GlobalStyles() {
         position: absolute;
         top: 0; left: 0; right: 0;
         height: 600px;
-        background: radial-gradient(ellipse at 50% 20%, rgba(240,144,112,0.06) 0%, rgba(255,207,170,0.03) 40%, transparent 70%);
+        background: radial-gradient(ellipse at 50% 20%, rgba(var(--accent-rgb),0.06) 0%, rgba(var(--accent-rgb),0.03) 40%, transparent 70%);
         pointer-events: none;
         z-index: 0;
       }

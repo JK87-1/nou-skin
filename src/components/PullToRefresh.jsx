@@ -9,7 +9,7 @@ const THRESHOLD = 72;     // 이만큼 당기면 트리거
 const MAX_PULL = 130;     // 풍선이 더 이상 안 내려오는 한계
 const RESISTANCE = 2.4;   // 손가락 이동 대비 풍선 이동 비율 (작을수록 잘 따라옴)
 
-export default function PullToRefresh({ onRefresh, children, color = '#6598ef' }) {
+export default function PullToRefresh({ onRefresh, children, color = 'var(--accent-primary)' }) {
   const [pullY, setPullY] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const startY = useRef(null);
