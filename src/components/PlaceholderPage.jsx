@@ -17,16 +17,16 @@ export function RoutinePlaceholder() {
         </svg>
       </div>
       <h2 style={{
-        fontSize: 18, fontWeight: 600, color: '#2d2520',
+        fontSize: 18, fontWeight: 500, color: '#2d2520',
         fontFamily: "'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif",
         marginBottom: 8,
       }}>루틴</h2>
-      <p style={{ fontSize: 14, color: '#A89890', textAlign: 'center', lineHeight: 1.6, marginBottom: 6 }}>
+      <p style={{ fontSize: 14, fontWeight: 500, color: '#A89890', textAlign: 'center', lineHeight: 1.6, marginBottom: 6 }}>
         나만의 스킨케어 루틴을<br />설정하고 관리할 수 있어요
       </p>
       <span style={{
         fontSize: 12, color: '#c4705a', background: 'rgba(196,112,90,0.1)',
-        padding: '6px 16px', borderRadius: 20, fontWeight: 600, marginTop: 12,
+        padding: '6px 16px', borderRadius: 20, fontWeight: 500, marginTop: 12,
       }}>준비 중</span>
     </div>
   );
@@ -50,16 +50,16 @@ export function MyPlaceholder() {
         </svg>
       </div>
       <h2 style={{
-        fontSize: 18, fontWeight: 600, color: '#2d2520',
+        fontSize: 18, fontWeight: 500, color: '#2d2520',
         fontFamily: "'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif",
         marginBottom: 8,
       }}>마이페이지</h2>
-      <p style={{ fontSize: 14, color: '#A89890', textAlign: 'center', lineHeight: 1.6, marginBottom: 6 }}>
+      <p style={{ fontSize: 14, fontWeight: 500, color: '#A89890', textAlign: 'center', lineHeight: 1.6, marginBottom: 6 }}>
         피부 프로필과 설정을<br />관리할 수 있어요
       </p>
       <span style={{
         fontSize: 12, color: '#c4705a', background: 'rgba(196,112,90,0.1)',
-        padding: '6px 16px', borderRadius: 20, fontWeight: 600, marginTop: 12,
+        padding: '6px 16px', borderRadius: 20, fontWeight: 500, marginTop: 12,
       }}>준비 중</span>
     </div>
   );

@@ -84,7 +84,7 @@ function MatchScoreRing({ score }) {
       </svg>
       <div style={{
         position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 11, fontWeight: 600, color: '#a5b4fc',
+        fontSize: 11, fontWeight: 500, color: '#a5b4fc',
       }}>{score}</div>
     </div>
   );
@@ -110,7 +110,7 @@ function ProductItem({ product, matchScore, delay = 0 }) {
         width: 44, height: 44, borderRadius: 10, flexShrink: 0,
         background: 'linear-gradient(135deg, rgba(var(--accent-rgb),0.15), rgba(var(--accent-rgb),0.15))',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 18,
+        fontSize: 18, fontWeight: 500,
       }}>
         {product.tags?.[0]?.includes('히알루론') ? <DropletIcon size={18} /> :
          product.tags?.[0]?.includes('비타민') ? '' :
@@ -123,18 +123,18 @@ function ProductItem({ product, matchScore, delay = 0 }) {
       </div>
       {/* Center: name + tags + volume */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)',
+        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)',
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {product.brand} {product.name}
         </div>
         <div style={{ display: 'flex', gap: 4, marginTop: 4, flexWrap: 'wrap', alignItems: 'center' }}>
           {product.tags?.slice(0, 2).map((tag, ti) => (
             <span key={ti} style={{
-              fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 8,
+              fontSize: 10, fontWeight: 500, padding: '2px 7px', borderRadius: 8,
               background: 'rgba(var(--accent-rgb),0.15)', color: '#6598ef',
             }}>{tag}</span>
           ))}
-          <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{product.volume}</span>
+          <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-muted)' }}>{product.volume}</span>
         </div>
       </div>
       {/* Right: match score ring */}
@@ -163,10 +163,10 @@ function ProductRecommendSection({ category, result, delay = 0 }) {
         border: 'none',
         marginBottom: 8,
       }}>
-        <span style={{ fontSize: 18 }}>{meta.icon}</span>
+        <span style={{ fontSize: 18, fontWeight: 500 }}>{meta.icon}</span>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>{meta.label}</div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{meta.ingredient}</div>
+          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)' }}>{meta.label}</div>
+          <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)' }}>{meta.ingredient}</div>
         </div>
       </div>
       {/* Product items */}
@@ -221,8 +221,8 @@ function renderMarkdown(text) {
 
   return compact.map((b, i) => {
     if (b.type === 'gap') return <div key={i} style={{ height: 10 }} />;
-    if (b.type === 'h2') return <div key={i} style={{ fontSize: 16, fontWeight: 600, marginTop: i === 0 ? 0 : 14, marginBottom: 6, letterSpacing: -0.2 }}>{renderInline(b.text)}</div>;
-    if (b.type === 'h3') return <div key={i} style={{ fontSize: 16, fontWeight: 600, marginTop: i === 0 ? 0 : 10, marginBottom: 4 }}>{renderInline(b.text)}</div>;
+    if (b.type === 'h2') return <div key={i} style={{ fontSize: 16, fontWeight: 500, marginTop: i === 0 ? 0 : 14, marginBottom: 6, letterSpacing: -0.2 }}>{renderInline(b.text)}</div>;
+    if (b.type === 'h3') return <div key={i} style={{ fontSize: 16, fontWeight: 500, marginTop: i === 0 ? 0 : 10, marginBottom: 4 }}>{renderInline(b.text)}</div>;
     if (b.type === 'ul') return (
       <ul key={i} style={{ margin: '4px 0', paddingLeft: 18 }}>
         {b.items.map((it, j) => <li key={j} style={{ marginBottom: 2, lineHeight: 1.6 }}>{renderInline(it)}</li>)}
@@ -827,7 +827,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
             fontFamily: 'var(--font-display), Pretendard, -apple-system, sans-serif',
           }}>lua</span>
           <span style={{
-            fontSize: 16, fontWeight: 400, color: '#5F6368',
+            fontSize: 16, fontWeight: 500, color: '#5F6368',
             letterSpacing: -0.2, lineHeight: 1, marginLeft: 2,
           }}>{persona.short}</span>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5F6368" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginTop: 2, transition: 'transform 0.18s', transform: personaPickerOpen ? 'rotate(180deg)' : 'none' }}>
@@ -937,7 +937,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
           if (isAI) {
             // Gemini 스타일: 버블·아바타·"루아" 라벨 모두 없음. 평문 마크다운만 + 액션 row.
             return (
-              <div key={i} style={{ padding: '10px 2px 4px', fontSize: 16, color: 'var(--text-primary)' }}>
+              <div key={i} style={{ padding: '10px 2px 4px', fontSize: 16, fontWeight: 500, color: 'var(--text-primary)' }}>
                 {msg.imageThumbs && msg.imageThumbs.length > 0 && (
                   <div className="consult-bubble-images" style={{ marginBottom: 8 }}>
                     {msg.imageThumbs.map((thumb, ti) => (
@@ -966,7 +966,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
                       <ProductRecommendSection key={cat} category={cat} result={result} delay={ci * 0.15} />
                     ))}
                     <div style={{
-                      fontSize: 10, color: 'var(--text-dim)', textAlign: 'center',
+                      fontSize: 10, fontWeight: 500, color: 'var(--text-dim)', textAlign: 'center',
                       padding: '6px 12px 2px', lineHeight: 1.4,
                     }}>
                       이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
@@ -992,7 +992,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
                   padding: '11px 18px',
                   borderRadius: 20,
                   maxWidth: '82%',
-                  fontSize: 16, color: 'var(--text-primary)', lineHeight: 1.55,
+                  fontSize: 16, fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.55,
                   whiteSpace: 'pre-wrap',
                   letterSpacing: -0.1,
                 }}>{msg.content}</div>
@@ -1040,10 +1040,10 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round">
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
-              <span style={{ fontSize: 10, color: '#6598ef', fontWeight: 600 }}>추가</span>
+              <span style={{ fontSize: 10, color: '#6598ef', fontWeight: 500 }}>추가</span>
             </button>
           )}
-          <span style={{ fontSize: 12, color: 'var(--text-muted)', width: '100%' }}>
+          <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', width: '100%' }}>
             {`사진 ${pendingImages.length}/${MAX_IMAGES}장`}
             {pendingImages.length >= 2 && ' · 비교 분석 가능'}
           </span>
@@ -1109,7 +1109,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
             flex: 1, minWidth: 0, padding: '10px 4px', borderRadius: 0,
             border: 'none',
             background: 'transparent',
-            fontSize: 14, color: '#333',
+            fontSize: 14, fontWeight: 500, color: '#333',
             fontFamily: 'inherit', outline: 'none',
           }}
         />

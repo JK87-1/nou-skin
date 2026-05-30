@@ -151,24 +151,24 @@ function CameraErrorScreen({ reason, onFallback, onClose, onRetry, colorMode }) 
         width: 80, height: 80, borderRadius: 24, marginBottom: 24,
         background: 'var(--context-bg)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 40,
+        fontSize: 40, fontWeight: 400,
       }}>
         {isInsecure ? <LockIcon size={36} /> : isDenied ? '' : <CameraIcon size={36} />}
       </div>
 
-      <h2 style={{ color: 'var(--text-primary)', fontSize: 18, fontWeight: 600, marginBottom: 8 }}>
+      <h2 style={{ color: 'var(--text-primary)', fontSize: 18, fontWeight: 500, marginBottom: 8 }}>
         {isInsecure ? '보안 연결이 필요합니다' :
          isDenied ? '카메라 권한이 거부되었습니다' :
          '카메라를 사용할 수 없습니다'}
       </h2>
 
-      <div style={{ color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.6, marginBottom: 24, maxWidth: 320, textAlign: 'left' }}>
+      <div style={{ color: 'var(--text-muted)', fontSize: 14, fontWeight: 500, lineHeight: 1.6, marginBottom: 24, maxWidth: 320, textAlign: 'left' }}>
         {isInsecure ? (
           <p style={{ margin: 0, textAlign: 'center' }}>모바일에서 카메라를 사용하려면 HTTPS 연결이 필요합니다.<br />앨범에서 사진을 선택해주세요.</p>
         ) : isDenied ? (
           <>
             <p style={{ margin: '0 0 12px', textAlign: 'center' }}>브라우저 설정에서 카메라 권한을 허용한 후 [다시 시도]를 눌러주세요.</p>
-            <div style={{ fontSize: 12, color: 'var(--text-dim)', lineHeight: 1.7, padding: '10px 14px', background: 'var(--context-bg)', borderRadius: 10 }}>
+            <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-dim)', lineHeight: 1.7, padding: '10px 14px', background: 'var(--context-bg)', borderRadius: 10 }}>
               <div><strong style={{ color: 'var(--text-secondary)' }}>iPhone Safari</strong>: 주소창 좌측 「ⓐⓐ」 → 웹사이트 설정 → 카메라 → 허용</div>
               <div style={{ marginTop: 4 }}><strong style={{ color: 'var(--text-secondary)' }}>Android Chrome</strong>: 주소창 좌측  → 권한 → 카메라 허용</div>
               <div style={{ marginTop: 4 }}><strong style={{ color: 'var(--text-secondary)' }}>PC 브라우저</strong>: 주소창 좌측 자물쇠/카메라 아이콘 → 허용</div>
@@ -182,7 +182,7 @@ function CameraErrorScreen({ reason, onFallback, onClose, onRetry, colorMode }) 
       <button onClick={onFallback} style={{
         width: '100%', maxWidth: 300, padding: 16, borderRadius: 12, border: 'none',
         background: 'var(--accent-primary)',
-        color: '#fff', fontSize: 16, fontWeight: 600, cursor: 'pointer', marginBottom: 12,
+        color: '#fff', fontSize: 16, fontWeight: 500, cursor: 'pointer', marginBottom: 12,
       }}>
         앨범에서 사진 선택
       </button>
@@ -192,7 +192,7 @@ function CameraErrorScreen({ reason, onFallback, onClose, onRetry, colorMode }) 
           width: '100%', maxWidth: 300, padding: 14, borderRadius: 12,
           background: 'var(--bg-secondary)',
           border: 'var(--item-border)',
-          color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600, cursor: 'pointer', marginBottom: 12,
+          color: 'var(--text-secondary)', fontSize: 14, fontWeight: 500, cursor: 'pointer', marginBottom: 12,
         }}>
           다시 시도
         </button>
@@ -201,7 +201,7 @@ function CameraErrorScreen({ reason, onFallback, onClose, onRetry, colorMode }) 
       <button onClick={onClose} style={{
         background: 'none', border: 'none',
         color: 'var(--text-dim)',
-        fontSize: 14, cursor: 'pointer', padding: '8px 16px',
+        fontSize: 14, fontWeight: 500, cursor: 'pointer', padding: '8px 16px',
       }}>
         돌아가기
       </button>
@@ -895,7 +895,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
           <div
             key={autoCountdown}
             style={{
-              fontSize: 64, fontWeight: 600, color: '#fff',
+              fontSize: 64, fontWeight: 400, color: '#fff',
               fontFamily: 'var(--font-display), Pretendard, sans-serif',
               textShadow: '0 2px 12px rgba(0,0,0,0.4)',
               animation: 'countdownPop 0.45s cubic-bezier(0.34,1.56,0.64,1) both',

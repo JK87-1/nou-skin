@@ -91,9 +91,9 @@ export default function BeforeAfterSlider() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         marginBottom: 10,
       }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Before & After</span>
+        <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>Before & After</span>
         {period > 0 && (
-          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{period}일간의 변화</span>
+          <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)' }}>{period}일간의 변화</span>
         )}
       </div>
 
@@ -189,8 +189,8 @@ export default function BeforeAfterSlider() {
           borderRadius: 8, padding: '4px 10px',
           zIndex: 5, pointerEvents: 'none',
         }}>
-          <div style={{ fontSize: 10, fontWeight: 600, color: '#fff', letterSpacing: 0.8 }}>BEFORE</div>
-          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)' }}>{formatDate(photos.before.date)}</div>
+          <div style={{ fontSize: 10, fontWeight: 500, color: '#fff', letterSpacing: 0.8 }}>BEFORE</div>
+          <div style={{ fontSize: 10, fontWeight: 500, color: 'rgba(255,255,255,0.7)' }}>{formatDate(photos.before.date)}</div>
         </div>
 
         {/* AFTER label */}
@@ -201,8 +201,8 @@ export default function BeforeAfterSlider() {
           borderRadius: 8, padding: '4px 10px',
           zIndex: 5, pointerEvents: 'none',
         }}>
-          <div style={{ fontSize: 10, fontWeight: 600, color: '#fff', letterSpacing: 0.8 }}>AFTER</div>
-          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.85)' }}>{formatDate(photos.after.date)}</div>
+          <div style={{ fontSize: 10, fontWeight: 500, color: '#fff', letterSpacing: 0.8 }}>AFTER</div>
+          <div style={{ fontSize: 10, fontWeight: 500, color: 'rgba(255,255,255,0.85)' }}>{formatDate(photos.after.date)}</div>
         </div>
 
         {/* Score change overlay */}
@@ -220,19 +220,19 @@ export default function BeforeAfterSlider() {
             {ageDiff !== null && ageDiff !== 0 && (
               <div style={{ textAlign: 'center' }}>
                 <div style={{
-                  fontSize: 16, fontWeight: 600, fontFamily: 'Outfit, sans-serif',
+                  fontSize: 16, fontWeight: 500, fontFamily: 'Outfit, sans-serif',
                   color: ageDiff <= 0 ? '#4ade80' : '#f0a050',
                 }}>{ageDiff > 0 ? '+' : ''}{ageDiff}세</div>
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)', marginTop: 1 }}>피부나이</div>
+                <div style={{ fontSize: 10, fontWeight: 500, color: 'rgba(255,255,255,0.7)', marginTop: 1 }}>피부나이</div>
               </div>
             )}
             {scoreDiff !== null && scoreDiff !== 0 && (
               <div style={{ textAlign: 'center' }}>
                 <div style={{
-                  fontSize: 16, fontWeight: 600, fontFamily: 'Outfit, sans-serif',
+                  fontSize: 16, fontWeight: 500, fontFamily: 'Outfit, sans-serif',
                   color: scoreDiff >= 0 ? '#4ade80' : '#f0a050',
                 }}>{scoreDiff > 0 ? '+' : ''}{scoreDiff}점</div>
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)', marginTop: 1 }}>종합점수</div>
+                <div style={{ fontSize: 10, fontWeight: 500, color: 'rgba(255,255,255,0.7)', marginTop: 1 }}>종합점수</div>
               </div>
             )}
           </div>

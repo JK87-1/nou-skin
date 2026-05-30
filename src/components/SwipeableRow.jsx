@@ -206,7 +206,7 @@ export default function SwipeableRow({
           aria-label="삭제"
           style={{
             width: '100%', height: '100%', border: 'none', background: 'transparent',
-            color: '#fff', fontSize: 13, fontWeight: 600, letterSpacing: -0.2,
+            color: '#fff', fontSize: 13, fontWeight: 500, letterSpacing: -0.2,
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
             cursor: 'pointer', fontFamily: 'inherit',
             transform: translateX < -4 ? 'scale(1)' : 'scale(0.9)',

@@ -177,7 +177,7 @@ const LuaAssistantMessage = memo(function LuaAssistantMessage({
   const showActions = !isLoading || !isLast;
 
   return (
-    <div style={{ padding: '10px 2px 4px', fontSize: 16, animation: 'luaMsgFadeIn 0.32s cubic-bezier(0.22, 0.84, 0.36, 1)' }}>
+    <div style={{ padding: '10px 2px 4px', fontSize: 16, fontWeight: 500, animation: 'luaMsgFadeIn 0.32s cubic-bezier(0.22, 0.84, 0.36, 1)' }}>
       <style>{`@keyframes luaMsgFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }`}</style>
       {renderChatMarkdown(cleanText)}
       {routine && (
@@ -331,8 +331,8 @@ function renderChatMarkdown(text) {
 
   return compact.map((b, i) => {
     if (b.type === 'gap') return <div key={i} style={{ height: 10 }} />;
-    if (b.type === 'h2') return <div key={i} style={{ fontSize: 16, fontWeight: 600, color: '#1F1F1F', marginTop: i === 0 ? 0 : 14, marginBottom: 6, letterSpacing: -0.2 }}>{renderInline(b.text)}</div>;
-    if (b.type === 'h3') return <div key={i} style={{ fontSize: 16, fontWeight: 600, color: '#1F1F1F', marginTop: i === 0 ? 0 : 10, marginBottom: 4, letterSpacing: -0.1 }}>{renderInline(b.text)}</div>;
+    if (b.type === 'h2') return <div key={i} style={{ fontSize: 16, fontWeight: 500, color: '#1F1F1F', marginTop: i === 0 ? 0 : 14, marginBottom: 6, letterSpacing: -0.2 }}>{renderInline(b.text)}</div>;
+    if (b.type === 'h3') return <div key={i} style={{ fontSize: 16, fontWeight: 500, color: '#1F1F1F', marginTop: i === 0 ? 0 : 10, marginBottom: 4, letterSpacing: -0.1 }}>{renderInline(b.text)}</div>;
     if (b.type === 'ul') return (
       <ul key={i} style={{ margin: '4px 0 4px 0', paddingLeft: 18, color: '#1F1F1F' }}>
         {b.items.map((it, j) => (
@@ -1049,7 +1049,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
               fontFamily: 'var(--font-display), Pretendard, -apple-system, sans-serif',
             }}>lua</span>
             <span style={{
-              fontSize: 16, fontWeight: 400, color: '#5F6368',
+              fontSize: 16, fontWeight: 500, color: '#5F6368',
               letterSpacing: -0.2, lineHeight: 1, marginLeft: 2,
             }}>{persona.short}</span>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5F6368" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginTop: 2, transition: 'transform 0.18s', transform: personaPickerOpen ? 'rotate(180deg)' : 'none' }}>
@@ -1138,7 +1138,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
                     padding: '11px 18px',
                     borderRadius: 20,
                     maxWidth: '82%',
-                    fontSize: 16, color: '#1F1F1F', lineHeight: 1.55,
+                    fontSize: 16, fontWeight: 500, color: '#1F1F1F', lineHeight: 1.55,
                     whiteSpace: 'pre-wrap',
                     letterSpacing: -0.1,
                   }}>{msg.content}</div>
@@ -1173,7 +1173,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
                 <img src={img.dataUrl} alt="" style={{ width: 72, height: 72, borderRadius: 12, objectFit: 'cover', border: 'none' }} />
                 <button onClick={() => setPendingImages(prev => prev.filter((_, i) => i !== idx))} style={{
                   position: 'absolute', top: -6, right: -6, width: 24, height: 24, borderRadius: '50%',
-                  border: 'none', background: 'rgba(0,0,0,0.55)', color: '#fff', fontSize: 14,
+                  border: 'none', background: 'rgba(0,0,0,0.55)', color: '#fff', fontSize: 14, fontWeight: 500,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
                 }}>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round">
@@ -1192,10 +1192,10 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round">
                   <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                 </svg>
-                <span style={{ fontSize: 10, color: 'var(--accent-primary)', fontWeight: 600 }}>추가</span>
+                <span style={{ fontSize: 10, color: 'var(--accent-primary)', fontWeight: 500 }}>추가</span>
               </button>
             )}
-            <span style={{ fontSize: 12, color: 'var(--text-muted, #8C8C8C)', width: '100%' }}>
+            <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted, #8C8C8C)', width: '100%' }}>
               {`사진 ${pendingImages.length}/${MAX_IMAGES}장`}
               {pendingImages.length >= 2 && ' · 비교 분석 가능'}
             </span>
@@ -1277,7 +1277,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
               style={{
                 flex: 1, minWidth: 0, padding: '18px 6px', borderRadius: 0,
                 border: 'none', background: 'transparent',
-                fontSize: 18, color: '#1F1F1F',
+                fontSize: 18, fontWeight: 500, color: '#1F1F1F',
                 fontFamily: 'inherit', outline: 'none',
                 letterSpacing: -0.1,
                 lineHeight: 1.4,
@@ -1371,7 +1371,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
           background: '#1F2937', color: '#fff',
           padding: toast.action ? '10px 10px 10px 18px' : '12px 18px',
           borderRadius: 22,
-          fontSize: 14, fontWeight: 600, letterSpacing: -0.2,
+          fontSize: 14, fontWeight: 500, letterSpacing: -0.2,
           boxShadow: '0 8px 28px rgba(0,0,0,0.4)',
           zIndex: 10500,
           animation: 'toastRise 220ms ease-out',
@@ -1387,7 +1387,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
                 background: 'rgba(255,255,255,0.2)',
                 border: 'none', borderRadius: 16,
                 padding: '7px 13px', color: '#A8C9F5',
-                fontSize: 13, fontWeight: 600, letterSpacing: -0.2,
+                fontSize: 13, fontWeight: 500, letterSpacing: -0.2,
                 cursor: 'pointer', fontFamily: 'inherit',
               }}
             >{toast.action.label}</button>
@@ -1427,7 +1427,7 @@ function ApplyRoutineCard({ routine, applied, onApply }) {
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
         </svg>
-        <div style={{ fontSize: 14, fontWeight: 600, color: '#1F2937', letterSpacing: -0.2 }}>이 루틴 케어에 적용</div>
+        <div style={{ fontSize: 14, fontWeight: 500, color: '#1F2937', letterSpacing: -0.2 }}>이 루틴 케어에 적용</div>
       </div>
       <div style={{ marginBottom: 12 }}>
         {['morning', 'night'].map((slot) => {
@@ -1437,17 +1437,17 @@ function ApplyRoutineCard({ routine, applied, onApply }) {
           if (slotItems.length === 0) return null;
           return (
             <div key={slot} style={{ marginBottom: 6 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent-primary)', letterSpacing: 0.5, marginBottom: 4 }}>
+              <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--accent-primary)', letterSpacing: 0.5, marginBottom: 4 }}>
                 {slot === 'morning' ? '아침' : '저녁'} · {slotItems.length}개
               </div>
               {slotItems.map((it, idx) => (
                 <div key={idx} style={{
                   display: 'flex', alignItems: 'baseline', gap: 6,
-                  fontSize: 13, color: '#374151', lineHeight: 1.55,
+                  fontSize: 13, fontWeight: 500, color: '#374151', lineHeight: 1.55,
                   padding: '2px 0',
                 }}>
                   <span style={{
-                    fontSize: 10, fontWeight: 600, color: 'var(--accent-primary)',
+                    fontSize: 10, fontWeight: 500, color: 'var(--accent-primary)',
                     background: 'rgba(var(--accent-rgb),0.14)',
                     padding: '1px 6px', borderRadius: 6,
                     flexShrink: 0, marginRight: 2,
@@ -1469,7 +1469,7 @@ function ApplyRoutineCard({ routine, applied, onApply }) {
           background: applied ? 'rgba(var(--accent-rgb),0.18)' : 'linear-gradient(135deg, var(--accent-primary), #8ac4fe)',
           border: 'none', borderRadius: 12,
           color: applied ? '#3D7CA8' : '#fff',
-          fontSize: 14, fontWeight: 600, letterSpacing: -0.2,
+          fontSize: 14, fontWeight: 500, letterSpacing: -0.2,
           cursor: applied ? 'default' : 'pointer',
           boxShadow: applied ? 'none' : '0 4px 14px rgba(var(--accent-rgb),0.28)',
           fontFamily: 'inherit',

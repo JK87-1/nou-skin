@@ -92,7 +92,7 @@ export default function SkinMeasurePage({ onClose, onCapture, colorMode }) {
               background: zone.color,
               color: '#fff',
               fontSize: 12,
-              fontWeight: 600,
+              fontWeight: 500,
               fontFamily: '"Pretendard Variable", Pretendard, -apple-system, system-ui, sans-serif',
               boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
               animation: 'skinMeasureZoneFadeIn 0.5s ease-out both',
@@ -124,7 +124,7 @@ export default function SkinMeasurePage({ onClose, onCapture, colorMode }) {
             left: 16,
             width: 40, height: 40, borderRadius: '50%',
             background: 'rgba(255,255,255,0.85)', border: 'none',
-            color: '#1A1A1A', fontSize: 18, cursor: 'pointer',
+            color: '#1A1A1A', fontSize: 18, fontWeight: 500, cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
             zIndex: 10,
@@ -142,7 +142,7 @@ export default function SkinMeasurePage({ onClose, onCapture, colorMode }) {
             right: 16,
             padding: '8px 14px', borderRadius: 10,
             background: 'rgba(255,255,255,0.85)', border: 'none',
-            color: '#1A1A1A', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            color: '#1A1A1A', fontSize: 12, fontWeight: 500, cursor: 'pointer',
             boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
             zIndex: 10,
           }}
@@ -160,7 +160,7 @@ export default function SkinMeasurePage({ onClose, onCapture, colorMode }) {
         {/* 상태 텍스트 */}
         <p style={{
           color: colorMode === 'light' ? '#1A1A1A' : '#e0e0e0',
-          fontSize: 16, fontWeight: 600, textAlign: 'center',
+          fontSize: 16, fontWeight: 500, textAlign: 'center',
           margin: 0, minHeight: 20,
         }}>
           얼굴을 화면에 맞춰주세요
@@ -185,12 +185,12 @@ export default function SkinMeasurePage({ onClose, onCapture, colorMode }) {
                 transition: 'all 0.3s',
               }}>
                 {ok && (
-                  <span style={{ color: '#fff', fontSize: 12, fontWeight: 600 }}>&#10003;</span>
+                  <span style={{ color: '#fff', fontSize: 12, fontWeight: 500 }}>&#10003;</span>
                 )}
               </div>
               <span style={{
                 color: ok ? '#FF8C42' : (colorMode === 'light' ? '#999' : '#666'),
-                fontSize: 10, fontWeight: 600,
+                fontSize: 10, fontWeight: 500,
               }}>
                 {label}
               </span>

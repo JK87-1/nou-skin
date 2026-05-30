@@ -201,8 +201,8 @@ export default function DailyMission() {
               flex: 1, textAlign: 'center', padding: '10px 0 8px', borderRadius: 12,
               background: day.isToday ? 'var(--day-today-bg)' : 'var(--day-default-bg)',
             }}>
-              <div style={{ fontSize: 11, color: day.isToday ? 'var(--day-today-accent)' : 'var(--text-muted)', fontWeight: 600, marginBottom: 2 }}>{day.dayLabel}</div>
-              <div style={{ fontSize: 16, fontWeight: 600, color: day.isToday ? 'var(--day-today-accent)' : 'var(--text-primary)' }}>{new Date(day.date).getDate()}</div>
+              <div style={{ fontSize: 11, color: day.isToday ? 'var(--day-today-accent)' : 'var(--text-muted)', fontWeight: 500, marginBottom: 2 }}>{day.dayLabel}</div>
+              <div style={{ fontSize: 16, fontWeight: 500, color: day.isToday ? 'var(--day-today-accent)' : 'var(--text-primary)' }}>{new Date(day.date).getDate()}</div>
               {day.isToday && <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--day-today-accent)', margin: '4px auto 0' }} />}
             </div>
           ))}
@@ -219,13 +219,13 @@ export default function DailyMission() {
             <svg width="50" height="50" viewBox="0 0 50 50">
               <circle cx="25" cy="25" r="22" fill="none" stroke="var(--progress-track)" strokeWidth="4" />
             </svg>
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>0%</div>
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>0%</div>
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>오늘의 달성률</div>
-            <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>0 / 3 완료</div>
+            <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-muted)' }}>오늘의 달성률</div>
+            <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)' }}>0 / 3 완료</div>
           </div>
-          <div style={{ fontSize: 11, fontWeight: 600, borderRadius: 8, padding: '5px 10px', background: 'var(--bg-card)', color: 'var(--text-muted)', border: 'none' }}>+0 P</div>
+          <div style={{ fontSize: 11, fontWeight: 500, borderRadius: 8, padding: '5px 10px', background: 'var(--bg-card)', color: 'var(--text-muted)', border: 'none' }}>+0 P</div>
         </div>
 
         {/* PLACEHOLDER MISSIONS */}
@@ -238,11 +238,11 @@ export default function DailyMission() {
             <div style={{ width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><TargetIcon size={20} /></div>
             <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
-                <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 8, background: 'var(--context-bg)', color: 'var(--accent-primary)' }}>메인 미션</span>
-                <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 8, background: 'var(--tag-bg)', color: 'var(--accent-streak)' }}>+30 P</span>
+                <span style={{ fontSize: 10, fontWeight: 500, padding: '2px 8px', borderRadius: 8, background: 'var(--context-bg)', color: 'var(--accent-primary)' }}>메인 미션</span>
+                <span style={{ fontSize: 10, fontWeight: 500, padding: '2px 8px', borderRadius: 8, background: 'var(--tag-bg)', color: 'var(--accent-streak)' }}>+30 P</span>
               </div>
-              <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>피부 측정 후 미션이 생성돼요</div>
-              <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>분석 결과에 맞는 맞춤 미션을 준비해드릴게요</div>
+              <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 4 }}>피부 측정 후 미션이 생성돼요</div>
+              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-muted)', lineHeight: 1.5 }}>분석 결과에 맞는 맞춤 미션을 준비해드릴게요</div>
             </div>
           </div>
         </div>
@@ -254,13 +254,13 @@ export default function DailyMission() {
             opacity: 0.4, display: 'flex', alignItems: 'center', gap: 12,
           }}>
             <div style={{ width: 32, height: 32, borderRadius: 10, background: 'var(--tag-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: 14, opacity: 0.5 }}></span>
+              <span style={{ fontSize: 14, fontWeight: 500, opacity: 0.5 }}></span>
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{b.title}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>측정 후 공개</div>
+              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{b.title}</div>
+              <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)' }}>측정 후 공개</div>
             </div>
-            <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 8, background: 'var(--tag-bg)', color: 'var(--text-muted)' }}>+{b.xp} P</span>
+            <span style={{ fontSize: 10, fontWeight: 500, padding: '2px 8px', borderRadius: 8, background: 'var(--tag-bg)', color: 'var(--text-muted)' }}>+{b.xp} P</span>
           </div>
         ))}
       </div>
@@ -295,10 +295,10 @@ export default function DailyMission() {
             <div style={{
               fontSize: 11,
               color: day.isToday ? 'var(--day-today-accent)' : 'var(--text-muted)',
-              fontWeight: 600, marginBottom: 2,
+              fontWeight: 500, marginBottom: 2,
             }}>{day.dayLabel}</div>
             <div style={{
-              fontSize: 16, fontWeight: 600,
+              fontSize: 16, fontWeight: 500,
               color: day.isToday
                 ? 'var(--day-today-accent)'
                 : day.completed ? 'var(--accent-success)' : 'var(--text-primary)',
@@ -306,7 +306,7 @@ export default function DailyMission() {
               {new Date(day.date).getDate()}
             </div>
             {day.completed && !day.isToday && (
-              <div style={{ fontSize: 10, color: 'var(--accent-success)', marginTop: 2 }}>&#10003;</div>
+              <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--accent-success)', marginTop: 2 }}>&#10003;</div>
             )}
             {day.isToday && (
               <div style={{
@@ -339,18 +339,18 @@ export default function DailyMission() {
           </svg>
           <div style={{
             position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-display)',
+            fontSize: 13, fontWeight: 500, fontFamily: 'var(--font-display)',
             color: 'var(--text-primary)',
           }}>{completionPct}%</div>
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>오늘의 달성률</div>
-          <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>
+          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-muted)' }}>오늘의 달성률</div>
+          <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)' }}>
             {totalCompleted} / {totalMissions} 완료
           </div>
         </div>
         <div style={{
-          fontSize: 11, fontWeight: 600, borderRadius: 8, padding: '5px 10px',
+          fontSize: 11, fontWeight: 500, borderRadius: 8, padding: '5px 10px',
           background: remainingCount === 0 ? 'var(--accent-success-bg)' : 'var(--bg-card)',
           color: remainingCount === 0 ? 'var(--accent-success)' : 'var(--text-muted)',
           border: 'none',
@@ -382,12 +382,12 @@ export default function DailyMission() {
               {/* Tags */}
               <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
                 <span style={{
-                  fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 8,
+                  fontSize: 10, fontWeight: 500, padding: '2px 8px', borderRadius: 8,
                   background: 'var(--context-bg)',
                   color: 'var(--accent-primary)',
                 }}>{missions.main.category}</span>
                 <span style={{
-                  fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 8,
+                  fontSize: 10, fontWeight: 500, padding: '2px 8px', borderRadius: 8,
                   background: 'var(--tag-bg)',
                   color: 'var(--accent-streak)',
                 }}>+{missions.main.xp} P</span>
@@ -395,13 +395,13 @@ export default function DailyMission() {
 
               {/* Title */}
               <div style={{
-                fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4,
+                fontSize: 16, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 4,
                 textDecoration: progress.mainCompleted ? 'line-through' : 'none',
                 opacity: progress.mainCompleted ? 0.6 : 1,
               }}>{missions.main.title}</div>
 
               {/* Description */}
-              <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>{missions.main.description}</div>
+              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-muted)', lineHeight: 1.5 }}>{missions.main.description}</div>
             </div>
           </div>
 
@@ -423,7 +423,7 @@ export default function DailyMission() {
                   }} />
                 </div>
                 {/* Count label */}
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
                   {progress.trackProgress || 0}/{missions.main.trackTotal}{missions.main.trackUnit}
                 </span>
                 {/* Track button */}
@@ -431,7 +431,7 @@ export default function DailyMission() {
                   padding: '6px 12px', border: 'var(--item-border)',
                   borderRadius: 8,
                   background: 'var(--bg-elevated)',
-                  color: 'var(--text-secondary)', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                  color: 'var(--text-secondary)', fontSize: 13, fontWeight: 500, cursor: 'pointer',
                   boxShadow: 'none',
                   whiteSpace: 'nowrap',
                 }}>{missions.main.icon && <span style={{ display: 'inline-flex', verticalAlign: 'middle', marginRight: 4 }}><PastelIcon emoji={missions.main.icon} size={14} /></span>}{(missions.main.buttonText || '완료!').replace(/[\u{1F300}-\u{1FAF8}]/gu, '').trim()}</button>
@@ -444,7 +444,7 @@ export default function DailyMission() {
             <button onClick={handleMainComplete} style={{
               width: '100%', padding: 12, border: 'none', borderRadius: 14, marginTop: 16,
               background: 'var(--btn-primary-bg)',
-              color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+              color: '#fff', fontSize: 14, fontWeight: 500, cursor: 'pointer',
               boxShadow: 'none',
             }}>미션 완료!</button>
           )}
@@ -454,7 +454,7 @@ export default function DailyMission() {
             <div style={{
               marginTop: 14, padding: '10px 14px', borderRadius: 12,
               background: 'var(--accent-success-bg)',
-              fontSize: 13, fontWeight: 600, color: 'var(--accent-success)',
+              fontSize: 13, fontWeight: 500, color: 'var(--accent-success)',
               position: 'relative', overflow: 'hidden',
             }}>
               {celebrating === 'main' && (
@@ -471,7 +471,7 @@ export default function DailyMission() {
                 <span> 메인 미션 완료! +{missions.main.xp} P 획득</span>
                 <button onClick={(e) => { e.stopPropagation(); handleUndoMain(); }} style={{
                   background: 'var(--bg-input)', border: 'none',
-                  borderRadius: 8, padding: '3px 10px', fontSize: 11, fontWeight: 600,
+                  borderRadius: 8, padding: '3px 10px', fontSize: 11, fontWeight: 500,
                   color: 'var(--text-muted)', cursor: 'pointer', whiteSpace: 'nowrap',
                 }}>되돌리기</button>
               </div>
@@ -480,7 +480,7 @@ export default function DailyMission() {
 
           {/* Source info */}
           {missions.sourceScore !== null && (
-            <div style={{ fontSize: 10, color: 'var(--text-dim)', marginTop: 8, textAlign: 'right' }}>
+            <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-dim)', marginTop: 8, textAlign: 'right' }}>
                {missions.sourceLabel} {missions.sourceScore}점 기반 추천
             </div>
           )}
@@ -490,8 +490,8 @@ export default function DailyMission() {
       {/* === 3-5. BONUS MISSIONS === */}
       <div style={{ marginBottom: 20, ...fadeUp(0.3) }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-          <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}>보너스 미션</span>
-          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+          <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-secondary)' }}>보너스 미션</span>
+          <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted)' }}>
             {progress.bonusCompleted?.filter(Boolean).length || 0}/{missions.bonus.length} 완료
           </span>
         </div>
@@ -515,14 +515,14 @@ export default function DailyMission() {
                     animation: completed && celebrating === i ? 'missionCheckPop 0.3s ease' : undefined,
                   }}>
                     <span style={{
-                      fontSize: 14,
+                      fontSize: 14, fontWeight: 500,
                       color: completed ? 'var(--accent-success)' : 'var(--text-dim)',
                     }}>{completed ? '\u2713' : '\u25CB'}</span>
                   </div>
 
                   {/* Title */}
                   <span style={{
-                    flex: 1, fontSize: 14,
+                    flex: 1, fontSize: 14, fontWeight: 500,
                     color: completed ? 'var(--text-muted)' : 'var(--text-primary)',
                     textDecoration: completed ? 'line-through' : 'none',
                   }}>{b.title}</span>
@@ -530,11 +530,11 @@ export default function DailyMission() {
                   {/* Right: XP chip or chevron */}
                   {completed ? (
                     <span style={{
-                      fontSize: 10, padding: '2px 6px', borderRadius: 8,
+                      fontSize: 10, fontWeight: 500, padding: '2px 6px', borderRadius: 8,
                       background: 'var(--tag-bg)', color: 'var(--tag-color)',
                     }}>+{b.xp} P</span>
                   ) : (
-                    <span style={{ color: 'var(--text-dim)', fontSize: 14 }}>{'\u203A'}</span>
+                    <span style={{ color: 'var(--text-dim)', fontSize: 14, fontWeight: 500 }}>{'\u203A'}</span>
                   )}
                 </div>
                 {i < missions.bonus.length - 1 && (
@@ -549,8 +549,8 @@ export default function DailyMission() {
       {/* === 3-6. BADGES === */}
       <div style={{ marginBottom: 20, ...fadeUp(0.4) }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-          <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}>획득한 뱃지</span>
-          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+          <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-secondary)' }}>획득한 뱃지</span>
+          <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)' }}>
             {badges.filter(b => b.achieved).length}/{badges.length}
           </span>
         </div>
@@ -569,11 +569,11 @@ export default function DailyMission() {
               }}
             >
               <div style={{
-                fontSize: 24, marginBottom: 4,
+                fontSize: 24, fontWeight: 500, marginBottom: 4,
                 filter: badge.achieved ? 'none' : 'grayscale(1) brightness(0.4)',
               }}><PastelIcon emoji={badge.icon} size={24} /></div>
               <div style={{
-                fontSize: 10, fontWeight: 600, lineHeight: 1.3,
+                fontSize: 10, fontWeight: 500, lineHeight: 1.3,
                 color: badge.achieved ? 'var(--text-secondary)' : 'var(--text-dim)',
               }}>{badge.name}</div>
 
@@ -596,7 +596,7 @@ export default function DailyMission() {
                 <div style={{
                   position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)',
                   background: 'var(--bg-modal)', borderRadius: 10, padding: '8px 12px',
-                  fontSize: 10, color: 'var(--text-secondary)', whiteSpace: 'nowrap', marginBottom: 6,
+                  fontSize: 10, fontWeight: 500, color: 'var(--text-secondary)', whiteSpace: 'nowrap', marginBottom: 6,
                   border: 'none',
                   boxShadow: 'none', zIndex: 10,
                 }}>
@@ -625,10 +625,10 @@ export default function DailyMission() {
           }}><SparkleIcon size={24} /></div>
           <div style={{ flex: 1 }}>
             <div style={{
-              fontSize: 12, fontWeight: 600, marginBottom: 4,
+              fontSize: 12, fontWeight: 500, marginBottom: 4,
               color: '#2EAA7B',
             }}>AI 피부 코치</div>
-            <div style={{ fontSize: 14, color: '#5C5C5C', lineHeight: 1.5 }}>{coachComment}</div>
+            <div style={{ fontSize: 14, fontWeight: 500, color: '#5C5C5C', lineHeight: 1.5 }}>{coachComment}</div>
           </div>
         </div>
       </div>
@@ -644,7 +644,7 @@ export default function DailyMission() {
           animation: 'missionToastIn 0.3s ease-out',
           zIndex: 1000,
         }}>
-          <span style={{ fontSize: 18 }}><CheckIcon size={20} /></span>
+          <span style={{ fontSize: 18, fontWeight: 500 }}><CheckIcon size={20} /></span>
           <span style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500 }}>{undoToast.label}</span>
           <button onClick={() => {
             if (undoToast.type === 'main') handleUndoMain();
@@ -652,7 +652,7 @@ export default function DailyMission() {
           }} style={{
             background: 'var(--context-bg)', border: 'none',
             color: 'var(--accent-primary)',
-            borderRadius: 10, padding: '6px 14px', fontSize: 12, fontWeight: 600,
+            borderRadius: 10, padding: '6px 14px', fontSize: 12, fontWeight: 500,
             cursor: 'pointer', whiteSpace: 'nowrap',
           }}>되돌리기</button>
         </div>
@@ -662,7 +662,7 @@ export default function DailyMission() {
       {xpFloat && (
         <div style={{
           position: 'fixed', top: '40%', left: '50%', transform: 'translateX(-50%)',
-          fontSize: 18, fontWeight: 600, color: '#F0B870', fontFamily: 'var(--font-display)',
+          fontSize: 18, fontWeight: 500, color: '#F0B870', fontFamily: 'var(--font-display)',
           animation: 'missionXpFloat 1.2s ease-out forwards', pointerEvents: 'none', zIndex: 999,
           textShadow: '0 2px 10px rgba(251,191,36,0.5)',
         }}>+{xpFloat} P</div>

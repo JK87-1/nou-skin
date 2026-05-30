@@ -84,13 +84,13 @@ function QuickSlider({ icon, label, min, max, step, def, unit, color }) {
   const [val, setVal] = useState(def);
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, padding: "8px 0" }}>
-      <span style={{ fontSize: 16 }}>{icon}</span>
+      <span style={{ fontSize: 16, fontWeight: 500 }}>{icon}</span>
       <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', width: 30, flexShrink: 0 }}>{label}</span>
       <input type="range" min={min} max={max} step={step} value={val}
         onChange={e => setVal(Number(e.target.value))}
         style={{ flex: 1, accentColor: color }}
       />
-      <span style={{ fontSize: 14, fontWeight: 600, color, fontFamily: 'var(--font-display)', width: 36, textAlign: "right" }}>
+      <span style={{ fontSize: 14, fontWeight: 500, color, fontFamily: 'var(--font-display)', width: 36, textAlign: "right" }}>
         {val}{unit}
       </span>
     </div>
@@ -108,17 +108,17 @@ function MockMetricBar({ label, value, unit = '점', icon, color, description })
       <div style={{
         width: 36, height: 36, borderRadius: 10, flexShrink: 0,
         background: `${color}18`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 500,
       }}>{icon}</div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{label}</span>
-          <span style={{ fontSize: 16, fontWeight: 600, color, fontFamily: 'var(--font-display)' }}>{value}{unit}</span>
+          <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{label}</span>
+          <span style={{ fontSize: 16, fontWeight: 500, color, fontFamily: 'var(--font-display)' }}>{value}{unit}</span>
         </div>
         <div style={{ height: 4, borderRadius: 2, background: 'var(--bar-track)', overflow: 'hidden' }}>
           <div style={{ width: `${value}%`, height: '100%', borderRadius: 2, background: color, transition: 'width 1s ease-out' }} />
         </div>
-        <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>{description}</div>
+        <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-muted)', marginTop: 4 }}>{description}</div>
       </div>
     </div>
   );
@@ -151,7 +151,7 @@ export default function DiaryMockup() {
         background: 'var(--bg-modal)', backdropFilter: 'none',
         borderBottom: '1px solid var(--border-subtle)',
       }}>
-        <div style={{ fontSize: 10, color: '#888', alignSelf: 'center', marginRight: 4 }}>MOCKUP</div>
+        <div style={{ fontSize: 10, fontWeight: 500, color: '#888', alignSelf: 'center', marginRight: 4 }}>MOCKUP</div>
         {[
           { id: "result", label: "결과 페이지" },
           { id: "history", label: "기록 탭" },
@@ -163,7 +163,7 @@ export default function DiaryMockup() {
               border: screen === t.id ? '1.5px solid rgba(var(--accent-rgb),0.4)' : '1.5px solid rgba(255,255,255,0.1)',
               background: screen === t.id ? 'rgba(var(--accent-rgb),0.15)' : 'transparent',
               color: screen === t.id ? '#6598ef' : '#666',
-              fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+              fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
             }}
           >{t.label}</button>
         ))}
@@ -214,7 +214,7 @@ export default function DiaryMockup() {
                 background: 'linear-gradient(180deg, #1a1028 0%, #12101a 50%, #08080c 100%)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <div style={{ fontSize: 64, opacity: 0.15 }}></div>
+                <div style={{ fontSize: 64, fontWeight: 400, opacity: 0.15 }}></div>
               </div>
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(transparent 50%, rgba(0,0,0,0.4))' }} />
             </div>
@@ -259,9 +259,9 @@ export default function DiaryMockup() {
               marginBottom: 18, animation: 'fadeUp 0.5s ease-out 0.6s both',
             }}>
               <div>
-                <span style={{ fontSize: 12, color: accentColor, fontWeight: 600, letterSpacing: 0.3 }}>분석 완료</span>
-                <h2 style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', margin: '4px 0 4px', letterSpacing: -0.3 }}>피부 컨디션</h2>
-                <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 300 }}>
+                <span style={{ fontSize: 12, color: accentColor, fontWeight: 500, letterSpacing: 0.3 }}>분석 완료</span>
+                <h2 style={{ fontSize: 24, fontWeight: 500, color: 'var(--text-primary)', margin: '4px 0 4px', letterSpacing: -0.3 }}>피부 컨디션</h2>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500 }}>
                   2026년 3월 11일 · 오전 9:41
                 </span>
               </div>
@@ -274,9 +274,9 @@ export default function DiaryMockup() {
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                   boxShadow: 'none',
                 }}>
-                  <span style={{ fontSize: 24, fontWeight: 600, color: accentColor, lineHeight: 1, fontFamily: 'var(--font-display)' }}>33</span>
+                  <span style={{ fontSize: 24, fontWeight: 500, color: accentColor, lineHeight: 1, fontFamily: 'var(--font-display)' }}>33</span>
                   <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 500, marginTop: 2 }}>피부나이</span>
-                  <span style={{ fontSize: 10, color: '#34d399', fontWeight: 600, marginTop: 1 }}>측정값</span>
+                  <span style={{ fontSize: 10, color: '#34d399', fontWeight: 500, marginTop: 1 }}>측정값</span>
                 </div>
                 {/* Overall Score card with gauge */}
                 <div style={{
@@ -299,9 +299,9 @@ export default function DiaryMockup() {
                       strokeDasharray={157} strokeDashoffset={157 - (78 / 100) * 157}
                       strokeLinecap="round" />
                   </svg>
-                  <span style={{ fontSize: 24, fontWeight: 600, color: accentColor, lineHeight: 1, fontFamily: 'var(--font-display)', zIndex: 1 }}>78</span>
+                  <span style={{ fontSize: 24, fontWeight: 500, color: accentColor, lineHeight: 1, fontFamily: 'var(--font-display)', zIndex: 1 }}>78</span>
                   <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 500, marginTop: 1, zIndex: 1 }}>종합</span>
-                  <span style={{ fontSize: 10, fontWeight: 600, color: '#4ecb71', zIndex: 1 }}>+3</span>
+                  <span style={{ fontSize: 10, fontWeight: 500, color: '#4ecb71', zIndex: 1 }}>+3</span>
                 </div>
               </div>
             </div>
@@ -310,14 +310,14 @@ export default function DiaryMockup() {
             <div style={{ display: 'flex', gap: 10, marginBottom: 16, animation: 'fadeUp 0.5s ease-out 0.7s both' }}>
               <button style={{
                 flex: 1, padding: '12px 0', borderRadius: 'var(--btn-radius)', border: 'none',
-                fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
                 background: 'rgba(74,222,128,0.15)', color: '#4ade80',
               }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><CheckIcon size={14} /></span> 저장 완료</button>
               <button style={{
                 padding: '12px 20px', borderRadius: 'var(--btn-radius)', fontFamily: 'inherit',
                 background: 'var(--bg-card)', border: 'none',
                 backdropFilter: 'var(--card-backdrop)',
-                color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                color: 'var(--text-secondary)', fontSize: 14, fontWeight: 500, cursor: 'pointer',
               }}> 공유</button>
             </div>
 
@@ -328,19 +328,19 @@ export default function DiaryMockup() {
               background: `linear-gradient(135deg, ${accentColor}0f, ${accentColor}0a)`,
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                <span style={{ fontSize: 14, fontWeight: 600, color: accentColor }}>오늘의 피부 컨디션</span>
+                <span style={{ fontSize: 14, fontWeight: 500, color: accentColor }}>오늘의 피부 컨디션</span>
                 <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 20, background: `${accentColor}26`, border: `1px solid ${accentColor}4d` }}>
-                  <span style={{ fontSize: 16, fontWeight: 600, color: accentColor, fontFamily: 'var(--font-display)' }}>A</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: accentColor }}>78점</span>
+                  <span style={{ fontSize: 16, fontWeight: 500, color: accentColor, fontFamily: 'var(--font-display)' }}>A</span>
+                  <span style={{ fontSize: 12, fontWeight: 500, color: accentColor }}>78점</span>
                 </div>
               </div>
-              <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.8, margin: 0 }}>
+              <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-secondary)', lineHeight: 1.8, margin: 0 }}>
                 전체적으로 안정적이에요. 수분과 피부톤이 개선되고 있어요. 모공 점수만 소폭 하락했는데, 꾸준한 관리로 충분히 회복할 수 있어요.
               </p>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
-                <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 20, background: 'rgba(78,203,113,0.1)', color: '#4ecb71' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><DropletIcon size={12} /></span> 수분 +3점</span>
-                <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 20, background: 'rgba(78,203,113,0.1)', color: '#4ecb71' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><SparkleIcon size={12} /></span> 피부톤 +2점</span>
-                <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 20, background: 'rgba(240,160,80,0.1)', color: '#f0a050' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><MicroscopeIcon size={12} /></span> 모공 -1점</span>
+                <span style={{ fontSize: 12, fontWeight: 500, padding: '3px 10px', borderRadius: 20, background: 'rgba(78,203,113,0.1)', color: '#4ecb71' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><DropletIcon size={12} /></span> 수분 +3점</span>
+                <span style={{ fontSize: 12, fontWeight: 500, padding: '3px 10px', borderRadius: 20, background: 'rgba(78,203,113,0.1)', color: '#4ecb71' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><SparkleIcon size={12} /></span> 피부톤 +2점</span>
+                <span style={{ fontSize: 12, fontWeight: 500, padding: '3px 10px', borderRadius: 20, background: 'rgba(240,160,80,0.1)', color: '#f0a050' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><MicroscopeIcon size={12} /></span> 모공 -1점</span>
               </div>
             </div>
 
@@ -361,19 +361,19 @@ export default function DiaryMockup() {
                 style={{ padding: '16px 18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: 16 }}>{conditionSaved ? <CheckIcon size={16} /> : <MemoIcon size={16} />}</span>
+                  <span style={{ fontSize: 16, fontWeight: 500 }}>{conditionSaved ? <CheckIcon size={16} /> : <MemoIcon size={16} />}</span>
                   <div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: conditionSaved ? '#34d399' : 'var(--text-primary)' }}>
+                    <div style={{ fontSize: 14, fontWeight: 500, color: conditionSaved ? '#34d399' : 'var(--text-primary)' }}>
                       {conditionSaved ? "오늘 컨디션 기록 완료" : "오늘 컨디션도 기록할래요?"}
                     </div>
-                    <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 2 }}>
+                    <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-dim)', marginTop: 2 }}>
                       {conditionSaved ? "기록이 분석에 반영될 거예요" : "기록하면 더 정확한 피부 인사이트를 받아요"}
                     </div>
                   </div>
                 </div>
                 {!conditionSaved && (
                   <span style={{
-                    fontSize: 14, color: 'var(--text-dim)',
+                    fontSize: 14, fontWeight: 500, color: 'var(--text-dim)',
                     transform: conditionOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                     transition: 'transform 0.2s ease', display: 'inline-block',
                   }}>▾</span>
@@ -396,15 +396,15 @@ export default function DiaryMockup() {
                       <div key={i} style={{
                         padding: '4px 10px', borderRadius: 8,
                         background: 'rgba(52,211,153,0.08)', border: 'none',
-                        fontSize: 11, color: '#34d399', display: 'flex', alignItems: 'center', gap: 4,
+                        fontSize: 11, fontWeight: 500, color: '#34d399', display: 'flex', alignItems: 'center', gap: 4,
                       }}>
                         {tag.icon} {tag.label}
-                        <span style={{ fontSize: 10, color: 'var(--text-dim)' }}>자동</span>
+                        <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-dim)' }}>자동</span>
                       </div>
                     ))}
                   </div>
 
-                  <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 12, letterSpacing: 0.3 }}>
+                  <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 12, letterSpacing: 0.3 }}>
                     아래 항목은 선택이에요 (기록하면 분석이 더 풍부해져요)
                   </div>
 
@@ -412,7 +412,7 @@ export default function DiaryMockup() {
 
                   {/* Alcohol */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, padding: '8px 0' }}>
-                    <span style={{ fontSize: 16 }}></span>
+                    <span style={{ fontSize: 16, fontWeight: 500 }}></span>
                     <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', flex: 1 }}>어제 음주</span>
                     <div style={{ display: 'flex', gap: 4 }}>
                       {["없음", "가볍게", "많이"].map((opt, i) => (
@@ -420,7 +420,7 @@ export default function DiaryMockup() {
                           padding: '6px 12px', borderRadius: 10, border: 'none',
                           background: alcoholVal === i ? (i === 0 ? 'rgba(52,211,153,0.12)' : 'rgba(248,113,113,0.12)') : 'var(--bg-input)',
                           color: alcoholVal === i ? (i === 0 ? '#34d399' : '#f87171') : 'var(--text-dim)',
-                          fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                          fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
                         }}>{opt}</button>
                       ))}
                     </div>
@@ -428,7 +428,7 @@ export default function DiaryMockup() {
 
                   {/* Stress */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, padding: '8px 0' }}>
-                    <span style={{ fontSize: 16 }}></span>
+                    <span style={{ fontSize: 16, fontWeight: 500 }}></span>
                     <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', flex: 1 }}>스트레스</span>
                     <div style={{ display: 'flex', gap: 4 }}>
                       {[1, 2, 3, 4, 5].map(n => (
@@ -436,7 +436,7 @@ export default function DiaryMockup() {
                           width: 30, height: 30, borderRadius: 10,
                           background: n <= stressVal ? 'rgba(var(--accent-rgb),0.12)' : 'var(--bg-input)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                          fontSize: 12, fontWeight: 500, cursor: 'pointer',
                           color: n <= stressVal ? 'var(--accent-primary)' : 'var(--text-dim)',
                           border: n === stressVal ? '1.5px solid rgba(var(--accent-rgb),0.3)' : '1.5px solid transparent',
                           transition: 'all 0.15s',
@@ -459,14 +459,14 @@ export default function DiaryMockup() {
                 <div style={{ padding: '0 18px 16px', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                   {[" 7h", " 없음", " 2/5"].map((t, i) => (
                     <span key={i} style={{
-                      fontSize: 11, padding: '4px 10px', borderRadius: 20,
+                      fontSize: 11, fontWeight: 500, padding: '4px 10px', borderRadius: 20,
                       background: 'var(--bg-input)', color: 'var(--text-secondary)',
                       border: 'none',
                     }}>{t}</span>
                   ))}
                   <span style={{
                     padding: '4px 10px', borderRadius: 20,
-                    background: 'rgba(52,211,153,0.1)', fontSize: 11, color: '#34d399', fontWeight: 600,
+                    background: 'rgba(52,211,153,0.1)', fontSize: 11, color: '#34d399', fontWeight: 500,
                   }}>+ 자동 4개</span>
                 </div>
               )}
@@ -478,29 +478,29 @@ export default function DiaryMockup() {
             {/* ── AI Analysis (App.jsx 동일) ── */}
             <div className="glass-card" style={{ animation: 'fadeUp 0.5s ease-out 0.9s both', boxShadow: 'none' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                <span style={{ fontSize: 14 }}></span>
-                <span style={{ fontSize: 14, fontWeight: 600, color: accentColor }}>전체 피부 분석</span>
+                <span style={{ fontSize: 14, fontWeight: 500 }}></span>
+                <span style={{ fontSize: 14, fontWeight: 500, color: accentColor }}>전체 피부 분석</span>
               </div>
-              <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.75, margin: 0 }}>
+              <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-secondary)', lineHeight: 1.75, margin: 0 }}>
                 수분 지표가 지속적으로 상승하고 있어요. 코스알엑스 에센스 사용 이후 수분 흡수력이 좋아진 것으로 보여요. 모공 점수가 소폭 하락했지만 계절 영향일 수 있어요.
               </p>
               <div style={{
                 marginTop: 14, padding: '12px 14px', borderRadius: 12,
                 background: 'var(--bg-card)', border: 'none',
               }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>지난 측정 대비 변화</div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 10 }}>수분·피부톤 개선, 모공은 조금만 신경 쓰면 돼요</div>
+                <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 4 }}>지난 측정 대비 변화</div>
+                <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 10 }}>수분·피부톤 개선, 모공은 조금만 신경 쓰면 돼요</div>
                 <div style={{ marginBottom: 4 }}>
-                  <div style={{ fontSize: 11, color: '#4ecb71', fontWeight: 600, marginBottom: 6 }}>개선됨</div>
+                  <div style={{ fontSize: 11, color: '#4ecb71', fontWeight: 500, marginBottom: 6 }}>개선됨</div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                    <span style={{ fontSize: 12, padding: '4px 10px', borderRadius: 20, background: 'rgba(78,203,113,0.1)', color: '#4ecb71' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><DropletIcon size={12} /></span> 수분 +3점</span>
-                    <span style={{ fontSize: 12, padding: '4px 10px', borderRadius: 20, background: 'rgba(78,203,113,0.1)', color: '#4ecb71' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><SparkleIcon size={12} /></span> 피부톤 +2점</span>
+                    <span style={{ fontSize: 12, fontWeight: 500, padding: '4px 10px', borderRadius: 20, background: 'rgba(78,203,113,0.1)', color: '#4ecb71' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><DropletIcon size={12} /></span> 수분 +3점</span>
+                    <span style={{ fontSize: 12, fontWeight: 500, padding: '4px 10px', borderRadius: 20, background: 'rgba(78,203,113,0.1)', color: '#4ecb71' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><SparkleIcon size={12} /></span> 피부톤 +2점</span>
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, color: '#f0a050', fontWeight: 600, marginBottom: 6 }}>케어 포인트</div>
+                  <div style={{ fontSize: 11, color: '#f0a050', fontWeight: 500, marginBottom: 6 }}>케어 포인트</div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                    <span style={{ fontSize: 12, padding: '4px 10px', borderRadius: 20, background: 'rgba(240,160,80,0.1)', color: '#f0a050' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><MicroscopeIcon size={12} /></span> 모공 -1점</span>
+                    <span style={{ fontSize: 12, fontWeight: 500, padding: '4px 10px', borderRadius: 20, background: 'rgba(240,160,80,0.1)', color: '#f0a050' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><MicroscopeIcon size={12} /></span> 모공 -1점</span>
                   </div>
                 </div>
               </div>
@@ -508,10 +508,10 @@ export default function DiaryMockup() {
 
             {/* ── GROUP 1: 컨디션 지표 (App.jsx MetricBar 패턴) ── */}
             <div className="glass-card" style={{ padding: '18px 10px', animation: 'fadeUp 0.5s ease-out 1.0s both' }}>
-              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4, paddingLeft: 8, color: 'var(--text-primary)' }}>
-                컨디션 지표 <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 400 }}>일상 관리 포인트</span>
+              <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 4, paddingLeft: 8, color: 'var(--text-primary)' }}>
+                컨디션 지표 <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 500 }}>일상 관리 포인트</span>
               </div>
-              <div style={{ fontSize: 10, color: 'var(--text-muted)', paddingLeft: 8, marginBottom: 14 }}>탭하면 과학적 근거</div>
+              <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-muted)', paddingLeft: 8, marginBottom: 14 }}>탭하면 과학적 근거</div>
               <MockMetricBar label="수분도" value={75} unit="%" icon="" color="#A8DEFF" description="정상 범위" />
               <MockMetricBar label="유분" value={58} unit="%" icon="" color="#F0E0A8" description="균형 상태" />
               <MockMetricBar label="피부톤" value={68} icon="" color="#FFE082" description="색소 관리 추천" />
@@ -521,8 +521,8 @@ export default function DiaryMockup() {
 
             {/* ── GROUP 2: 노화 지표 ── */}
             <div className="glass-card" style={{ padding: '18px 10px', animation: 'fadeUp 0.5s ease-out 1.1s both' }}>
-              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 14, paddingLeft: 8, color: 'var(--text-primary)' }}>
-                노화 지표 <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 400 }}>피부 나이에 큰 영향</span>
+              <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 14, paddingLeft: 8, color: 'var(--text-primary)' }}>
+                노화 지표 <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 500 }}>피부 나이에 큰 영향</span>
               </div>
               <MockMetricBar label="피부결" value={80} icon="" color="#FFB0C8" description="매끈한 피부" />
               <MockMetricBar label="탄력" value={72} icon="" color="#FFD080" description="턱선 선명" />
@@ -536,7 +536,7 @@ export default function DiaryMockup() {
               width: '100%', padding: '14px 0', borderRadius: 'var(--btn-radius)', border: 'none',
               background: 'linear-gradient(135deg, rgba(var(--accent-rgb),0.12), rgba(var(--accent-rgb),0.12))',
               backdropFilter: 'var(--card-backdrop)',
-              color: '#ADEBB3', fontSize: 16, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+              color: '#ADEBB3', fontSize: 16, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
               marginBottom: 14, boxShadow: 'none',
               animation: 'fadeUp 0.5s ease-out 1.25s both',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
@@ -551,11 +551,11 @@ export default function DiaryMockup() {
               width: '100%', padding: 14, borderRadius: 'var(--btn-radius)', fontFamily: 'inherit',
               background: 'var(--bg-card)', border: 'none',
               backdropFilter: 'var(--card-backdrop)',
-              color: 'var(--text-secondary)', fontSize: 16, fontWeight: 600, cursor: 'pointer',
+              color: 'var(--text-secondary)', fontSize: 16, fontWeight: 500, cursor: 'pointer',
               animation: 'fadeUp 0.5s ease-out 1.4s both',
             }}> 다시 측정하기</button>
 
-            <p style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-muted)', marginTop: 14, marginBottom: 0 }}>
+            <p style={{ textAlign: 'center', fontSize: 11, fontWeight: 500, color: 'var(--text-muted)', marginTop: 14, marginBottom: 0 }}>
               AI 추정치이며 의료 진단이 아닙니다 · 루아 © 2026
             </p>
             <div style={{ height: 80 }} />
@@ -587,13 +587,13 @@ export default function DiaryMockup() {
           {historyMode !== "insight" && (
             <div style={{ padding: '0 20px' }}>
               <div className="glass-card" style={{ textAlign: 'center', padding: '50px 20px' }}>
-                <div style={{ fontSize: 40, marginBottom: 12 }}>
+                <div style={{ fontSize: 40, fontWeight: 400, marginBottom: 12 }}>
                   {historyMode === "mission" ? <TargetIcon size={40} /> : historyMode === "insights" ? <ChartIcon size={40} /> : <CameraIcon size={40} />}
                 </div>
-                <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>
+                <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)' }}>
                   {historyMode === "mission" ? "미션" : historyMode === "insights" ? "분석" : "앨범"}
                 </div>
-                <div style={{ fontSize: 13, color: 'var(--text-dim)', marginTop: 6 }}>
+                <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-dim)', marginTop: 6 }}>
                   기존 HistoryPage 콘텐츠 (변경 없음)
                 </div>
               </div>
@@ -608,7 +608,7 @@ export default function DiaryMockup() {
 
               {/* 데이터 수집 현황 */}
               <div className="glass-card" style={{ animation: 'breatheIn 0.6s ease both' }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12 }}>데이터 수집 현황</div>
+                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 12 }}>데이터 수집 현황</div>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                   {[
                     { label: "피부 측정", count: 60, icon: "", status: "good" },
@@ -625,9 +625,9 @@ export default function DiaryMockup() {
                       border: `1px solid ${d.status === "good" ? 'rgba(52,211,153,0.15)' : d.status === "partial" ? 'rgba(var(--accent-rgb),0.15)' : 'var(--border-light)'}`,
                       display: 'flex', alignItems: 'center', gap: 4,
                     }}>
-                      <span style={{ fontSize: 12 }}>{d.icon}</span>
+                      <span style={{ fontSize: 12, fontWeight: 500 }}>{d.icon}</span>
                       <span style={{ fontSize: 11, fontWeight: 500, color: d.status === "good" ? '#34d399' : d.status === "partial" ? 'var(--accent-primary)' : 'var(--text-dim)' }}>{d.count}일</span>
-                      {d.status === "good" && <span style={{ fontSize: 10, color: '#34d399', fontWeight: 600 }}>자동</span>}
+                      {d.status === "good" && <span style={{ fontSize: 10, color: '#34d399', fontWeight: 500 }}>자동</span>}
                     </div>
                   ))}
                 </div>
@@ -636,8 +636,8 @@ export default function DiaryMockup() {
               {/* 피부 변화 추이 */}
               <div className="glass-card" style={{ animation: 'breatheIn 0.6s ease 0.1s both' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>피부 변화 추이</span>
-                  <span style={{ fontSize: 10, color: 'var(--text-dim)' }}> 음주 · --- 제품 시작</span>
+                  <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>피부 변화 추이</span>
+                  <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-dim)' }}> 음주 · --- 제품 시작</span>
                 </div>
                 <div style={{ display: 'flex', gap: 4, marginBottom: 12 }}>
                   {[
@@ -650,7 +650,7 @@ export default function DiaryMockup() {
                       padding: '5px 12px', borderRadius: 10, border: 'none',
                       background: activeMetric === m.id ? 'rgba(var(--accent-rgb),0.15)' : 'var(--bg-input)',
                       color: activeMetric === m.id ? 'var(--accent-primary)' : 'var(--text-dim)',
-                      fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                      fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
                     }}>{m.label}</button>
                   ))}
                 </div>
@@ -659,9 +659,9 @@ export default function DiaryMockup() {
                   {PRODUCTS.map(p => (
                     <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                       <div style={{ width: 8, height: 8, borderRadius: 2, background: p.color, border: `1px dashed ${p.color}` }} />
-                      <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{p.name.slice(0, 8)}</span>
-                      {!p.endDay && <span style={{ fontSize: 10, color: '#34d399', fontWeight: 600 }}>사용 중</span>}
-                      {p.endDay && <span style={{ fontSize: 10, color: '#f87171', fontWeight: 600 }}>중단</span>}
+                      <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-muted)' }}>{p.name.slice(0, 8)}</span>
+                      {!p.endDay && <span style={{ fontSize: 10, color: '#34d399', fontWeight: 500 }}>사용 중</span>}
+                      {p.endDay && <span style={{ fontSize: 10, color: '#f87171', fontWeight: 500 }}>중단</span>}
                     </div>
                   ))}
                 </div>
@@ -669,8 +669,8 @@ export default function DiaryMockup() {
 
               {/* 상관관계 */}
               <div className="glass-card" style={{ animation: 'breatheIn 0.6s ease 0.2s both' }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>내 피부에 영향을 주는 것들</div>
-                <div style={{ fontSize: 11, color: 'var(--text-dim)', marginBottom: 14 }}>60일 데이터 기반 · 상관관계 순위</div>
+                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 4 }}>내 피부에 영향을 주는 것들</div>
+                <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-dim)', marginBottom: 14 }}>60일 데이터 기반 · 상관관계 순위</div>
 
                 {CORRELATIONS.map((c, idx) => {
                   const hasEnoughData = c.source === "auto" || c.dataCount >= (c.minRequired || 14);
@@ -686,32 +686,32 @@ export default function DiaryMockup() {
                           width: 32, height: 32, borderRadius: 10,
                           background: c.dir === "+" ? 'rgba(52,211,153,0.1)' : 'rgba(248,113,113,0.1)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 16, flexShrink: 0,
+                          fontSize: 16, fontWeight: 500, flexShrink: 0,
                         }}>{c.icon}</div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{c.factor}</span>
-                            {c.source === "auto" && <span style={{ fontSize: 10, color: '#34d399', background: 'rgba(52,211,153,0.1)', padding: '1px 5px', borderRadius: 4, fontWeight: 600 }}>자동</span>}
-                            {c.source === "manual" && <span style={{ fontSize: 10, color: 'var(--accent-primary)', background: 'rgba(var(--accent-rgb),0.1)', padding: '1px 5px', borderRadius: 4, fontWeight: 600 }}>수동</span>}
+                            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{c.factor}</span>
+                            {c.source === "auto" && <span style={{ fontSize: 10, color: '#34d399', background: 'rgba(52,211,153,0.1)', padding: '1px 5px', borderRadius: 4, fontWeight: 500 }}>자동</span>}
+                            {c.source === "manual" && <span style={{ fontSize: 10, color: 'var(--accent-primary)', background: 'rgba(var(--accent-rgb),0.1)', padding: '1px 5px', borderRadius: 4, fontWeight: 500 }}>수동</span>}
                           </div>
                         </div>
                         {hasEnoughData ? (
-                          <span style={{ fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-display)', color: c.dir === "+" ? '#34d399' : '#f87171' }}>
+                          <span style={{ fontSize: 14, fontWeight: 500, fontFamily: 'var(--font-display)', color: c.dir === "+" ? '#34d399' : '#f87171' }}>
                             {c.dir}{Math.round(c.corr * 100)}%
                           </span>
                         ) : (
-                          <span style={{ fontSize: 10, color: 'var(--text-dim)' }}>{c.dataCount}/{c.minRequired}일</span>
+                          <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-dim)' }}>{c.dataCount}/{c.minRequired}일</span>
                         )}
                       </div>
                       <Bar value={hasEnoughData ? c.corr : c.dataCount / (c.minRequired || 14)} max={1} color={hasEnoughData ? (c.dir === "+" ? '#34d399' : '#f87171') : 'var(--text-dim)'} h={3} />
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8, lineHeight: 1.6 }}>
+                      <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)', marginTop: 8, lineHeight: 1.6 }}>
                         {hasEnoughData ? c.insight : `데이터 수집 중... ${c.minRequired - c.dataCount}일 더 기록하면 분석이 시작돼요`}
                       </div>
                     </div>
                   );
                 })}
 
-                <div style={{ marginTop: 8, padding: '8px 12px', borderRadius: 10, background: 'var(--bg-card)', textAlign: 'center', fontSize: 10, color: 'var(--text-dim)', lineHeight: 1.6 }}>
+                <div style={{ marginTop: 8, padding: '8px 12px', borderRadius: 10, background: 'var(--bg-card)', textAlign: 'center', fontSize: 10, fontWeight: 500, color: 'var(--text-dim)', lineHeight: 1.6 }}>
                   상관관계는 인과관계가 아니에요 · 여러 요인이 복합적으로 작용해요
                 </div>
               </div>
@@ -723,10 +723,10 @@ export default function DiaryMockup() {
                 animation: 'breatheIn 0.6s ease 0.3s both',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                  <span style={{ fontSize: 14 }}></span>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--accent-primary)' }}>AI 종합 분석</span>
+                  <span style={{ fontSize: 14, fontWeight: 500 }}></span>
+                  <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--accent-primary)' }}>AI 종합 분석</span>
                 </div>
-                <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.8 }}>
+                <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-muted)', lineHeight: 1.8 }}>
                   60일간의 데이터를 종합하면, <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>루틴 완료율</span>과 <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>습도</span>가 자동 수집 데이터 중 가장 높은 상관관계를 보여요.
                   <br /><br />
                   최근 15일간 수동 기록 결과, <span style={{ color: '#34d399', fontWeight: 600 }}>수면 시간</span>이 가장 강한 양의 상관관계(+72%)를 보여요. 다만 아직 15일분이라 더 쌓이면 정확도가 올라가요.
@@ -737,8 +737,8 @@ export default function DiaryMockup() {
                   marginTop: 14, padding: '12px 14px', borderRadius: 12,
                   background: 'var(--bg-card)', border: 'none',
                 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent-primary)', marginBottom: 4 }}> 이번 주 추천</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--accent-primary)', marginBottom: 4 }}> 이번 주 추천</div>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', lineHeight: 1.6 }}>
                     루틴 완료율 80% 이상 유지 + 수면 7시간 이상 + 에센스 계속 사용
                   </div>
                 </div>
@@ -779,8 +779,8 @@ export default function DiaryMockup() {
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
               opacity: tab.active ? 1 : 0.5, cursor: 'pointer',
             }}>
-              <span style={{ fontSize: 18 }}>{tab.icon}</span>
-              <span style={{ fontSize: 10, color: tab.active ? 'var(--accent-primary)' : 'var(--tab-inactive)' }}>{tab.label}</span>
+              <span style={{ fontSize: 18, fontWeight: 500 }}>{tab.icon}</span>
+              <span style={{ fontSize: 10, fontWeight: 500, color: tab.active ? 'var(--accent-primary)' : 'var(--tab-inactive)' }}>{tab.label}</span>
             </div>
           ))}
         </div>

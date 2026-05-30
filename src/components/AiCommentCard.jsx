@@ -53,7 +53,7 @@ export default function AiCommentCard({
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 11, fontWeight: 600, color: accent, letterSpacing: 0.2 }}>
+          <span style={{ fontSize: 11, fontWeight: 500, color: accent, letterSpacing: 0.2 }}>
             AI 정밀 분석
           </span>
         </div>
@@ -98,7 +98,7 @@ export default function AiCommentCard({
                     border: 'none',
                     background: open ? accent : 'rgba(0,0,0,0.04)',
                     color: open ? '#fff' : 'var(--text-secondary)',
-                    fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                    fontSize: 12, fontWeight: 500, cursor: 'pointer',
                     fontFamily: 'inherit',
                     transition: 'all 0.16s',
                     WebkitTapHighlightColor: 'transparent',
@@ -118,10 +118,10 @@ export default function AiCommentCard({
                 animation: 'aiDetailFade 0.22s ease-out',
               }}
             >
-              <div style={{ fontSize: 11, fontWeight: 600, color: accent, marginBottom: 4 }}>
+              <div style={{ fontSize: 11, fontWeight: 500, color: accent, marginBottom: 4 }}>
                 {parsedDetails[openIdx].label}
               </div>
-              <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.6 }}>
+              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.6 }}>
                 {parsedDetails[openIdx].body}
               </div>
             </div>
@@ -144,7 +144,7 @@ function Badge({ label, color, bg }) {
     <span style={{
       fontSize: 10, padding: '3px 8px', borderRadius: 999,
       background: bg, color,
-      fontWeight: 600,
+      fontWeight: 500,
     }}>{label}</span>
   );
 }

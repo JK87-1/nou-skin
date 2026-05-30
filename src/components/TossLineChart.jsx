@@ -66,7 +66,7 @@ export default function TossLineChart({
     return (
       <div style={{ height, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {!compact && (
-          <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.5 }}>{emptyText}</div>
+          <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.5 }}>{emptyText}</div>
         )}
       </div>
     );

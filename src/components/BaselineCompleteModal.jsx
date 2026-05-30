@@ -60,13 +60,13 @@ export default function BaselineCompleteModal({ avgScore, onClose }) {
 
         {/* Headline */}
         <div style={{
-          fontSize: 24, fontWeight: 600, color: '#1A1A1A',
+          fontSize: 24, fontWeight: 500, color: '#1A1A1A',
           letterSpacing: -0.4, marginBottom: 8,
         }}>
           기준점 완성!
         </div>
         <div style={{
-          fontSize: 14, color: '#374E66', lineHeight: 1.6,
+          fontSize: 14, fontWeight: 500, color: '#374E66', lineHeight: 1.6,
           marginBottom: 20, wordBreak: 'keep-all',
         }}>
           3회 측정 평균으로 정확한 기준점이 만들어졌어요.<br />
@@ -82,9 +82,9 @@ export default function BaselineCompleteModal({ avgScore, onClose }) {
             border: 'none',
             marginBottom: 22,
           }}>
-            <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent-primary)', letterSpacing: 0.3 }}>평균 종합 점수</span>
-            <span style={{ fontSize: 24, fontWeight: 600, color: '#1A1A1A', letterSpacing: -0.5 }}>{Math.round(avgScore)}</span>
-            <span style={{ fontSize: 12, color: '#6B7F99' }}>점</span>
+            <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--accent-primary)', letterSpacing: 0.3 }}>평균 종합 점수</span>
+            <span style={{ fontSize: 24, fontWeight: 500, color: '#1A1A1A', letterSpacing: -0.5 }}>{Math.round(avgScore)}</span>
+            <span style={{ fontSize: 12, fontWeight: 500, color: '#6B7F99' }}>점</span>
           </div>
         )}
 
@@ -102,7 +102,7 @@ export default function BaselineCompleteModal({ avgScore, onClose }) {
             '💬 변화 원인이 궁금하면 상담사에게 물어보기',
           ].map((t, i) => (
             <div key={i} style={{
-              fontSize: 13, color: '#374E66', lineHeight: 1.7,
+              fontSize: 13, fontWeight: 500, color: '#374E66', lineHeight: 1.7,
               wordBreak: 'keep-all',
               padding: i > 0 ? '6px 0 0' : 0,
             }}>{t}</div>
@@ -116,7 +116,7 @@ export default function BaselineCompleteModal({ avgScore, onClose }) {
             width: '100%', padding: '14px',
             background: 'linear-gradient(135deg, var(--accent-primary), #8ac4fe)',
             border: 'none', borderRadius: 14,
-            color: '#fff', fontSize: 16, fontWeight: 600,
+            color: '#fff', fontSize: 16, fontWeight: 500,
             cursor: 'pointer', fontFamily: 'inherit',
             boxShadow: '0 6px 18px rgba(var(--accent-rgb),0.35)',
             letterSpacing: -0.2,
