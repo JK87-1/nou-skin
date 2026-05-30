@@ -1556,7 +1556,13 @@ function _care_dateLabel(dateStr) {
 
 // ===== Routine Checklist (Morning / Night) =====
 function RoutineChecklist() {
-  const [mode, setMode] = useState('morning');
+  // 현재 시각 기반 자동 디폴트 — 사용자가 토글 안 해도 시간대에 맞는 모드로 진입.
+  // 새벽 5시 이전·저녁 6시 이후는 night, 5~11시 morning, 11~18시 day.
+  // useState 초기화라 페이지 안에서 사용자가 다른 모드를 클릭하면 그 선택은 그대로 유지됨.
+  const [mode, setMode] = useState(() => {
+    const h = new Date().getHours();
+    return h < 5 ? 'night' : h < 11 ? 'morning' : h < 18 ? 'day' : 'night';
+  });
   const [selectedDate, setSelectedDate] = useState(() => _care_todayStr());
   const [weekStartOffset, setWeekStartOffset] = useState(0); // 0=이번 주, -1=지난 주, ...
   const [checks, setChecks] = useState(() => getTrackerChecks(_care_todayStr()));
