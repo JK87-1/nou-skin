@@ -300,7 +300,9 @@ export default function SkinWeather({ skinResult }) {
 
           return (
             <div style={{
-              background: 'var(--card-weather-bg)',
+              background: 'rgba(34,113,208,0.05)',
+              backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)',
+              boxShadow: 'var(--card-shadow)',
               borderRadius: 'var(--card-radius)', padding: '14px 16px',
             }}>
               {/* 시간 */}
@@ -362,7 +364,7 @@ export default function SkinWeather({ skinResult }) {
 
       {/* ── Skin Alerts ── */}
       {alerts.length > 0 && (
-        <div style={{ marginBottom: 16, animation: 'swFadeInUp 0.5s ease 0.15s both', background: 'var(--card-weather-bg)', borderRadius: 'var(--card-radius)', padding: '16px 16px 8px' }}>
+        <div style={{ marginBottom: 16, animation: 'swFadeInUp 0.5s ease 0.15s both', background: 'rgba(34,113,208,0.02)', backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)', boxShadow: 'var(--card-shadow)', borderRadius: 'var(--card-radius)', padding: '16px 16px 8px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
             <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>내 피부 맞춤 알림</span>
             {highCount > 0 && (
@@ -449,7 +451,9 @@ export default function SkinWeather({ skinResult }) {
       {!skinResult && (
         <div style={{
           padding: 16, borderRadius: 'var(--card-radius)',
-          background: 'var(--card-weather-bg)',
+          background: 'rgba(34,113,208,0.02)',
+          backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)',
+          boxShadow: 'var(--card-shadow)',
           marginBottom: 16, textAlign: 'center',
           animation: 'swFadeInUp 0.5s ease 0.15s both',
         }}>
@@ -463,7 +467,9 @@ export default function SkinWeather({ skinResult }) {
       {weather.weekForecast && weather.weekForecast.length > 0 && (
         <div style={{ marginBottom: 16, animation: 'swFadeInUp 0.5s ease 0.2s both' }}>
           <div style={{
-            background: 'var(--card-weather-bg)', borderRadius: 'var(--card-radius)',
+            background: 'rgba(34,113,208,0.05)',
+            backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)',
+            boxShadow: 'var(--card-shadow)', borderRadius: 'var(--card-radius)',
             padding: '14px 14px 6px',
           }}>
             <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10 }}>
@@ -514,7 +520,9 @@ export default function SkinWeather({ skinResult }) {
       {/* ── Seasonal Guide ── */}
       <div style={{
         borderRadius: 'var(--card-radius)', padding: 18,
-        background: 'var(--card-weather-bg)',
+        background: 'rgba(34,113,208,0.02)',
+        backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)',
+        boxShadow: 'var(--card-shadow)',
         marginBottom: 16, animation: 'swFadeInUp 0.5s ease 0.3s both',
       }}>
         <div style={{ marginBottom: 12 }}>
@@ -556,7 +564,7 @@ export default function SkinWeather({ skinResult }) {
         };
         const nextIdx = notifications.findIndex(n => parseNotifHour(n.time) > nowHour);
         return (
-        <div style={{ marginBottom: 8, animation: 'swFadeInUp 0.5s ease 0.4s both', background: 'var(--card-weather-bg)', borderRadius: 'var(--card-radius)', padding: 16 }}>
+        <div style={{ marginBottom: 8, animation: 'swFadeInUp 0.5s ease 0.4s both', background: 'rgba(34,113,208,0.02)', backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)', boxShadow: 'var(--card-shadow)', borderRadius: 'var(--card-radius)', padding: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>오늘 예정된 알림</div>
             {weatherEnabled ? (

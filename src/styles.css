@@ -237,7 +237,6 @@ select:focus-visible {
   --card-sm-pad: 10px 12px;
   --card-alert-bg: var(--context-bg);
   --card-alert-pad: 16px;
-  --card-weather-bg: rgba(255,255,255,0.04); /* 날씨 패널 전용 — 더 투명한 스카이 글래스 */
   --segment-radius: var(--radius-pill);
   --segment-item-radius: var(--radius-pill);
   --float-pill-bg: rgba(30,30,40,0.9);
@@ -331,7 +330,6 @@ select:focus-visible {
   --card-nested-bg: #F1F3F5;
   --card-sm-bg: rgba(255,255,255,0.7);
   --card-alert-bg: var(--context-bg);
-  --card-weather-bg: rgba(225,240,255,0.45); /* 날씨 패널 전용 — 쿨한 스카이 글래스(콘텐츠 카드보다 투명) */
   --segment-radius: 14px;
   --segment-item-radius: var(--radius-sm);
   --float-pill-bg: #FFFFFF;
