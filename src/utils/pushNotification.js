@@ -12,6 +12,22 @@ function urlBase64ToUint8Array(base64String) {
   return outputArray;
 }
 
+// navigator.serviceWorker.ready can hang forever on iOS standalone PWA when
+// the service worker isn't controlling the page. Race it against a timeout so
+// callers fail fast (→ catch/toast) instead of stalling silently and leaving
+// the UI stuck (e.g. a toggle that never responds again).
+export function swReady(timeoutMs = 8000) {
+  if (!('serviceWorker' in navigator)) {
+    return Promise.reject(new Error('serviceWorker unsupported'));
+  }
+  return Promise.race([
+    navigator.serviceWorker.ready,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('serviceWorker.ready timeout')), timeoutMs),
+    ),
+  ]);
+}
+
 export function isPushSupported() {
   return (
     'serviceWorker' in navigator &&
@@ -46,7 +62,7 @@ export async function subscribeToPush() {
   const permission = await Notification.requestPermission();
   if (permission !== 'granted') return null;
 
-  const registration = await navigator.serviceWorker.ready;
+  const registration = await swReady();
 
   let subscription = await registration.pushManager.getSubscription();
 
@@ -74,7 +90,7 @@ export async function saveSubscriptionToServer(subscription, reminderTime, nickn
 }
 
 export async function unsubscribeFromPush() {
-  const registration = await navigator.serviceWorker.ready;
+  const registration = await swReady();
   const subscription = await registration.pushManager.getSubscription();
 
   if (subscription) {
@@ -89,7 +105,7 @@ export async function unsubscribeFromPush() {
 }
 
 export async function updateReminderTime(reminderTime, nickname) {
-  const registration = await navigator.serviceWorker.ready;
+  const registration = await swReady();
   const subscription = await registration.pushManager.getSubscription();
 
   if (subscription) {
@@ -99,7 +115,7 @@ export async function updateReminderTime(reminderTime, nickname) {
 }
 
 export async function updateTipSettings(tipEnabled, tipTime) {
-  const registration = await navigator.serviceWorker.ready;
+  const registration = await swReady();
   const subscription = await registration.pushManager.getSubscription();
   if (!subscription) return false;
 
@@ -116,7 +132,7 @@ export async function updateTipSettings(tipEnabled, tipTime) {
 }
 
 export async function updateWeatherSettings(weatherEnabled, lat, lon) {
-  const registration = await navigator.serviceWorker.ready;
+  const registration = await swReady();
   const subscription = await registration.pushManager.getSubscription();
   if (!subscription) return false;
 
@@ -134,7 +150,7 @@ export async function updateWeatherSettings(weatherEnabled, lat, lon) {
 }
 
 export async function syncSkinDataToServer(skinData, profile, goalMetrics) {
-  const registration = await navigator.serviceWorker.ready;
+  const registration = await swReady();
   const subscription = await registration.pushManager.getSubscription();
   if (!subscription) return false;
 

@@ -12,7 +12,7 @@ import {
   isPushSupported, isStandalone, isIOS, getPermissionState,
   subscribeToPush, saveSubscriptionToServer,
   unsubscribeFromPush, updateReminderTime,
-  updateTipSettings, updateWeatherSettings, syncSkinDataToServer,
+  updateTipSettings, updateWeatherSettings, syncSkinDataToServer, swReady,
 } from '../utils/pushNotification';
 import { getLatestRecord } from '../storage/SkinStorage';
 import { getGoal, saveGoal, clearGoal, getDaysRemaining, getGoalProgress, getOverallProgress, METRIC_META } from '../storage/GoalStorage';
@@ -522,7 +522,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
       if (getPermissionState() === 'denied') { showToast('알림이 차단되어 있어요. 설정에서 허용해주세요'); return; }
       setPushSubscribing(true);
       try {
-        let subscription = await (await navigator.serviceWorker.ready).pushManager.getSubscription();
+        let subscription = await (await swReady()).pushManager.getSubscription();
         if (!subscription) {
           subscription = await subscribeToPush();
           if (!subscription) { showToast('알림 권한을 허용해주세요'); return; }
@@ -589,12 +589,13 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
       if (getPermissionState() === 'denied') { showToast('알림이 차단되어 있어요. 설정에서 허용해주세요'); return; }
       setPushSubscribing(true);
       try {
-        let subscription = await (await navigator.serviceWorker.ready).pushManager.getSubscription();
+        let subscription = await (await swReady()).pushManager.getSubscription();
         if (!subscription) {
           subscription = await subscribeToPush();
           if (!subscription) { showToast('알림 권한을 허용해주세요'); return; }
-          await saveSubscriptionToServer(subscription, reminderTime, profile?.nickname);
         }
+        // 서버에 구독이 항상 존재하도록 등록(POST는 멱등 — 이미 있으면 갱신)
+        await saveSubscriptionToServer(subscription, reminderTime, profile?.nickname);
         // Get location from saved or request
         let loc = getUserLocation();
         if (!loc) {
@@ -630,8 +631,11 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
         showToast('피부 날씨 알림이 해제되었어요');
         return;
       }
-      await updateWeatherSettings(false, 0, 0);
-      if (!reminderEnabled && !tipEnabled) await unsubscribeFromPush();
+      // 서버 해제가 실패해도 로컬 상태는 끄고 안내 (토글이 멈추지 않도록)
+      try {
+        await updateWeatherSettings(false, 0, 0);
+        if (!reminderEnabled && !tipEnabled) await unsubscribeFromPush();
+      } catch {}
       setWeatherEnabled(false);
       savePushSettings(reminderEnabled, reminderTime, tipEnabled, tipTime, false);
       showToast('피부 날씨 알림이 해제되었어요');
@@ -2410,7 +2414,7 @@ function BeautyTipItem({ enabled, time, onToggle, onTimeChange, profile, reminde
 
       setSubscribing(true);
       try {
-        let subscription = await (await navigator.serviceWorker.ready).pushManager.getSubscription();
+        let subscription = await (await swReady()).pushManager.getSubscription();
         if (!subscription) {
           subscription = await subscribeToPush();
           if (!subscription) {
