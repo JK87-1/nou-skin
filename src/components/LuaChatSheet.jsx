@@ -1020,7 +1020,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
           <button onClick={handleClose} aria-label="채팅 닫기" className="gem-btn" style={{
-            width: 36, height: 36, borderRadius: 18,
+            width: 36, height: 36, borderRadius: 12,
             background: '#ffffff',
             border: 'none',
             display: 'flex', alignItems: 'center', justifyContent: 'center',

@@ -978,7 +978,7 @@ function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#6598ef' 
             </div>
           </div>
           <button onClick={onClose} style={{
-            width: 32, height: 32, borderRadius: 10, border: 'none',
+            width: 32, height: 32, borderRadius: 12, border: 'none',
             background: 'var(--bg-card)', color: 'var(--text-muted)', fontSize: 16, lineHeight: 1.3, fontWeight: 500,
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}></button>
@@ -1240,7 +1240,7 @@ export function BadgeCelebration({ badge, onClose, accent = '#6598ef' }) {
         <button
           onClick={onClose}
           style={{
-            padding: '12px 48px', borderRadius: 16, border: 'none',
+            padding: '12px 48px', borderRadius: 12, border: 'none',
             background: 'var(--btn-primary-bg)',
             color: '#fff', fontSize: 16, lineHeight: 1.3, fontWeight: 500,
             cursor: 'pointer', fontFamily: 'inherit',

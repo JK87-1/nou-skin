@@ -404,7 +404,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                 <div style={{ fontSize: 16, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 8 }}>첫 측정을 해볼까요?</div>
                 <button style={{
                   background: 'var(--accent-primary, var(--accent-primary))', color: '#fff', fontSize: 13, lineHeight: 1.5, fontWeight: 500,
-                  padding: '10px 24px', borderRadius: 50, border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                  padding: '10px 24px', borderRadius: 12, border: 'none', cursor: 'pointer', fontFamily: 'inherit',
                 }}>측정 시작</button>
               </div>
             ) : (

@@ -2132,7 +2132,7 @@ function GoalSettingModal({ onClose, showToast }) {
             <button
               onClick={handleSave}
               style={{
-                flex: 1, padding: 12, borderRadius: 10, border: 'none',
+                flex: 1, padding: 12, borderRadius: 12, border: 'none',
                 background: 'var(--accent-bg, rgba(var(--accent-rgb),0.1))',
                 color: 'var(--accent-primary, var(--accent-primary))', fontSize: 14, lineHeight: 1.5, fontWeight: 500,
                 cursor: 'pointer', fontFamily: 'inherit',

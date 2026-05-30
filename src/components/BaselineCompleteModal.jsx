@@ -115,7 +115,7 @@ export default function BaselineCompleteModal({ avgScore, onClose }) {
           style={{
             width: '100%', padding: '14px',
             background: 'linear-gradient(135deg, var(--accent-primary), #8ac4fe)',
-            border: 'none', borderRadius: 14,
+            border: 'none', borderRadius: 12,
             color: '#fff', fontSize: 16, lineHeight: 1.3, fontWeight: 500,
             cursor: 'pointer', fontFamily: 'inherit',
             boxShadow: '0 6px 18px rgba(var(--accent-rgb),0.35)',
