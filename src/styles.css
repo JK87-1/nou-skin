@@ -100,6 +100,49 @@
   --fw-bold: 700;
   --fw-extrabold: 800;
 
+  /* ===== 텍스트 시스템 v1.0 (시맨틱 — 신규 UI는 이걸 사용) ===== */
+  /* 폰트 크기 9종 */
+  --text-display: 40px;    /* 시그니처 점수·히어로 숫자 */
+  --text-display-lg: 64px; /* 큰 숫자 필요시만 */
+  --text-h1: 24px;         /* 페이지 헤드라인 */
+  --text-h2: 18px;         /* 섹션·카드 제목 */
+  --text-h3: 16px;         /* 서브 헤딩 */
+  --text-body: 14px;       /* 본문 강조 */
+  --text-body-sm: 13px;    /* 본문 일반 */
+  --text-caption: 12px;    /* 보조·버튼 */
+  --text-footnote: 11px;   /* 메타·작은 라벨 */
+  --text-micro: 10px;      /* 매거진 라벨·워터마크 */
+
+  /* 폰트 두께 4종 (700+ 금지) */
+  --weight-light: 300;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  /* 흰색 투명도 5단계 (어두운 배경/사진 위) */
+  --white-92: rgba(255,255,255,0.92);
+  --white-85: rgba(255,255,255,0.85);
+  --white-70: rgba(255,255,255,0.7);
+  --white-40: rgba(255,255,255,0.4);
+  --white-20: rgba(255,255,255,0.2);
+
+  /* 네이비/검정 투명도 5단계 (구분선·오버레이) */
+  --navy-08: rgba(4,44,83,0.08);
+  --navy-15: rgba(4,44,83,0.15);
+  --navy-40: rgba(4,44,83,0.4);
+  --navy-55: rgba(4,44,83,0.55);
+  --navy-78: rgba(4,44,83,0.78);
+
+  /* 어두운 배경 위 텍스트 3종 */
+  --text-on-dark: #FFFFFF;
+  --text-on-dark-soft: rgba(255,255,255,0.7);
+  --text-on-dark-disabled: rgba(255,255,255,0.4);
+
+  /* 의미·링크 색 */
+  --text-link: #1E90E8;
+  --text-positive: #1976D2;
+  --text-negative: #A32D2D;
+
   /* Font family (display는 테마별로 --font-display가 재정의됨) */
   --font-body: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif;
 }
@@ -291,12 +334,12 @@ select:focus-visible {
   --border-subtle: transparent;
   --border-light: transparent;
   --border-separator: transparent;
-  /* Text — Toss palette */
-  --text-primary: #191F28;
-  --text-secondary: #4E5968;
-  --text-muted: #8B95A1;
-  --text-dim: #B0B8C1;
-  --text-disabled: #D1D6DB;
+  /* Text — 텍스트 시스템 v1.0 네이비 팔레트 */
+  --text-primary: #042C53;            /* 메인 (가장 진한 네이비) */
+  --text-secondary: #185FA5;          /* 보조·라벨 (블루) */
+  --text-muted: rgba(4,44,83,0.5);    /* tertiary — 비활성·메타 */
+  --text-dim: rgba(4,44,83,0.4);      /* 더 흐림 */
+  --text-disabled: rgba(4,44,83,0.3); /* 비활성 */
   /* Shadows — subtle black 0.03 */
   --shadow-card: 0 2px 8px rgba(0,0,0,0.03);
   --shadow-elevated: 0 2px 8px rgba(0,0,0,0.03);
