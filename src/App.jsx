@@ -955,43 +955,41 @@ export default function App() {
     return () => window.removeEventListener('lua:face-coach-open', handler);
   }, []);
 
-  // 제품 목록 백업 복구 — 콘솔(window.luaRestoreProducts) 또는 URL(?restore_products=1)로 실행.
-  // 모바일에선 콘솔 접근 어려워서 URL 쿼리 트리거 + 화면 배너 결과 표시.
-  const [restoreBanner, setRestoreBanner] = useState(null);
+  // 제품 목록 자동 복구 — 앱 시작 시 'LS 제품 0개 + IDB 백업엔 N개' 감지 시 조용히 복구.
+  // 사용자 액션 0번. 정상 상태면 아무것도 하지 않음. 토스트만 3.5초 표시.
+  // 콘솔(window.luaRestoreProducts)은 폴백용으로 유지.
+  const [autoRestoreToast, setAutoRestoreToast] = useState(null);
   useEffect(() => {
     if (typeof window === 'undefined') return;
+
+    // console 폴백 (고급 사용자용)
     window.luaRestoreProducts = async () => {
-      const keys = ['nou_tracker_products', 'nou_tracker_checks'];
-      const result = await restoreKeysFromAutoBackup(keys);
-      if (result.restored) {
-        const when = result.timestamp ? new Date(result.timestamp).toLocaleString('ko-KR') : '시점 미상';
-        console.log(`✅ 제품 복원 완료 (백업: ${when})`);
-        return result;
-      }
-      console.warn('❌ 백업을 찾지 못했어요.');
+      const result = await restoreKeysFromAutoBackup(['nou_tracker_products', 'nou_tracker_checks']);
+      console.log(result.restored ? '✅ 복구됨' : '❌ 백업 없음', result);
       return result;
     };
 
-    // URL 트리거: https://luaskin.co/?restore_products=1
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('restore_products') !== '1') return;
+    // 자동 복구 — 비정상 상태(LS 제품 0개)만 감지해 조용히 동작
     (async () => {
-      setRestoreBanner({ type: 'loading', message: '백업에서 제품 목록 복구 중…' });
       try {
+        const lsProducts = (() => { try { return JSON.parse(localStorage.getItem('nou_tracker_products') || '[]'); } catch { return []; } })();
+        // 정상 상태면 종료 (제품 이미 있음)
+        if (Array.isArray(lsProducts) && lsProducts.length > 0) return;
+
+        // 0개 → 백업에서 복구 시도
         const result = await restoreKeysFromAutoBackup(['nou_tracker_products', 'nou_tracker_checks']);
-        if (result.restored) {
-          const when = result.timestamp ? new Date(result.timestamp).toLocaleString('ko-KR') : '시점 미상';
-          const cnt = (() => {
-            try { return JSON.parse(localStorage.getItem('nou_tracker_products') || '[]').length; } catch { return 0; }
-          })();
-          setRestoreBanner({ type: 'success', message: `복구 완료 · 제품 ${cnt}개\n백업 시점: ${when}` });
-        } else {
-          setRestoreBanner({ type: 'error', message: '복구할 백업이 없어요.\n사고 전에 백업이 만들어지지 않았거나, 이 브라우저에 백업이 없는 상태입니다.' });
-        }
+        if (!result.restored) return; // 백업 없음 → 조용히 종료
+
+        const afterCount = (() => { try { return JSON.parse(localStorage.getItem('nou_tracker_products') || '[]').length; } catch { return 0; } })();
+        if (afterCount === 0) return; // 백업도 비어있었음 → 조용히
+
+        // 성공 — 토스트 + 화면 갱신 이벤트
+        setAutoRestoreToast(`제품 ${afterCount}개 자동 복구됨`);
+        try { window.dispatchEvent(new CustomEvent('lua:tracker-products-changed')); } catch {}
+        setTimeout(() => setAutoRestoreToast(null), 3500);
       } catch (e) {
-        setRestoreBanner({ type: 'error', message: '복구 실패: ' + (e?.message || e) });
+        console.warn('[auto-restore] failed:', e);
       }
-      try { window.history.replaceState({}, '', window.location.pathname); } catch {}
     })();
   }, []);
 
@@ -1003,36 +1001,21 @@ export default function App() {
       {/* 약관 모달은 MyPage > 설정 > 정보에서 자율적으로 (김준 결정) */}
       {showSplash && <SplashScreen exiting={splashExiting} onAnimationEnd={() => setShowSplash(false)} />}
 
-      {/* 데이터 복구 배너 — URL ?restore_products=1 트리거 시 표시 */}
-      {restoreBanner && (
+      {/* 자동 복구 토스트 — 사고 자동 감지·복구 시에만 잠깐 노출 (3.5초 fade) */}
+      {autoRestoreToast && (
         <div style={{
-          position: 'fixed', top: 'calc(env(safe-area-inset-top, 0px) + 12px)', left: 12, right: 12,
-          zIndex: 99999,
-          background: restoreBanner.type === 'success' ? 'rgba(34,139,80,0.96)' :
-                      restoreBanner.type === 'error' ? 'rgba(200,70,70,0.96)' :
-                      'rgba(40,60,110,0.96)',
-          color: '#fff', borderRadius: 14, padding: '14px 16px',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
-          fontSize: 13.5, lineHeight: 1.55, fontWeight: 500,
-          whiteSpace: 'pre-line',
-          display: 'flex', flexDirection: 'column', gap: 10,
+          position: 'fixed', top: 'calc(env(safe-area-inset-top, 0px) + 12px)', left: 16, right: 16,
+          zIndex: 99999, maxWidth: 360, margin: '0 auto',
+          background: 'rgba(34,139,80,0.95)', color: '#fff',
+          borderRadius: 12, padding: '12px 16px',
+          boxShadow: '0 6px 20px rgba(0,0,0,0.3)',
+          fontSize: 13.5, fontWeight: 600, letterSpacing: -0.2,
+          display: 'flex', alignItems: 'center', gap: 10,
+          animation: 'autoToastIn 0.3s ease-out',
         }}>
-          <div>{restoreBanner.message}</div>
-          {restoreBanner.type !== 'loading' && (
-            <div style={{ display: 'flex', gap: 8 }}>
-              {restoreBanner.type === 'success' && (
-                <button onClick={() => window.location.reload()} style={{
-                  flex: 1, padding: '10px 14px', borderRadius: 10, border: 'none',
-                  background: '#fff', color: '#1a5e3a', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit',
-                }}>새로고침해서 확인</button>
-              )}
-              <button onClick={() => setRestoreBanner(null)} style={{
-                flex: restoreBanner.type === 'success' ? '0 0 auto' : 1,
-                padding: '10px 14px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.35)',
-                background: 'transparent', color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit',
-              }}>닫기</button>
-            </div>
-          )}
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7"/></svg>
+          <span>{autoRestoreToast}</span>
+          <style>{`@keyframes autoToastIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
         </div>
       )}
 

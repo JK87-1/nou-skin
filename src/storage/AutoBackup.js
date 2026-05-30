@@ -70,11 +70,48 @@ function countRecordsQuick() {
  * 자동 백업 생성 — localStorage 전체를 IndexedDB에 스냅샷
  * @returns {Promise<boolean>} 성공 여부
  */
+// 보존가치 키 — 이 키들이 기존 백업엔 있고 새 데이터엔 0개가 되면 백업 덮어쓰기 거부.
+// 사용자가 정말 의도적으로 전부 비우는 경우는 드물고, 사고가 훨씬 흔하므로 보수적으로 보호.
+const PROTECTED_KEYS = ['nou_tracker_products', 'nou_skin_records'];
+
+function arrayLengthFromJson(jsonStr) {
+  try {
+    if (!jsonStr) return 0;
+    const arr = JSON.parse(jsonStr);
+    return Array.isArray(arr) ? arr.length : 0;
+  } catch { return 0; }
+}
+
+async function readExistingBackup() {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const req = tx.objectStore(STORE_NAME).get('latest');
+    return await new Promise((resolve) => {
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => resolve(null);
+    });
+  } catch { return null; }
+}
+
 export async function createAutoBackup() {
   try {
     const lsData = collectLocalStorageData();
     const keyCount = Object.keys(lsData).length;
     if (keyCount === 0) return false;
+
+    // 가드: 보존가치 키가 기존 백업 N>0 → 새 데이터 0이면 덮어쓰기 거부 (사고 보존)
+    const existing = await readExistingBackup();
+    if (existing && existing.data) {
+      for (const key of PROTECTED_KEYS) {
+        const before = arrayLengthFromJson(existing.data[key]);
+        const now = arrayLengthFromJson(lsData[key]);
+        if (before > 0 && now === 0) {
+          console.warn(`[AutoBackup] guard: ${key} ${before}→0 (사고 의심) 백업 덮어쓰기 거부. 기존 백업 보존.`);
+          return false;
+        }
+      }
+    }
 
     const backup = {
       id: 'latest',
