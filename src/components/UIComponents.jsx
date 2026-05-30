@@ -67,7 +67,7 @@ export function ScoreRing({ score, size = 110, label = '종합점수' }) {
         />
       </svg>
       <div style={{ textAlign: 'center', zIndex: 1 }}>
-        <div style={{ fontSize: size * 0.26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1 }}>
+        <div style={{ fontSize: size * 0.26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>
           <AnimatedNumber target={score} />
         </div>
         <div style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', marginTop: 2 }}>{label}</div>

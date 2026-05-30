@@ -1915,7 +1915,7 @@ export default function App() {
                 {/* 점수 — AnimatedNumber로 카운트업 */}
                 <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 4, marginBottom: 8 }}>
                   <span style={{
-                    fontSize: 'clamp(40px, 12vw, 54px)', fontWeight: 500, letterSpacing: -2, lineHeight: 1, color: '#FFFFFF',
+                    fontSize: 'clamp(40px, 12vw, 54px)', fontWeight: 500, letterSpacing: -2, lineHeight: 1.1, color: '#FFFFFF',
                   }}>
                     {result.overallScore != null ? <AnimatedNumber target={result.overallScore} duration={1300} /> : '—'}
                   </span>
