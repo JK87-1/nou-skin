@@ -299,7 +299,7 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
                     }}>{c.title}</div>
                     <div style={{
                       fontSize: 12, fontWeight: 500, lineHeight: 1.5,
-                      color: 'rgba(0,0,0,0.4)',
+                      color: 'var(--text-muted)',
                     }}>{c.desc}</div>
                   </div>
                 </div>

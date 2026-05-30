@@ -280,13 +280,13 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
                         <img src={p.thumb} alt={`${shortDate} 측정`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 11, fontWeight: 500, color: 'rgba(0,0,0,0.4)' }}>
+                        <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)' }}>
                           {shortDate}{p.record.skinAge != null ? ` · 피부나이 ${p.record.skinAge}세` : ''}
                         </div>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: 2, flexShrink: 0 }}>
-                        <span style={{ fontSize: 18, fontWeight: 500, color: 'rgba(0,0,0,0.78)', letterSpacing: -0.5 }}>{p.record.overallScore ?? '--'}</span>
-                        <span style={{ fontSize: 10, fontWeight: 500, color: 'rgba(0,0,0,0.15)' }}>점</span>
+                        <span style={{ fontSize: 18, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.5 }}>{p.record.overallScore ?? '--'}</span>
+                        <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-disabled)' }}>점</span>
                         <span style={{ fontSize: 10, fontWeight: 500, minWidth: 20, marginLeft: 2, color: diff != null && diff !== 0 ? (diff > 0 ? 'var(--accent-primary)' : '#e05545') : 'transparent' }}>
                           {diff != null && diff !== 0 ? (diff > 0 ? `+${diff}` : diff) : '\u00A0'}
                         </span>
@@ -698,7 +698,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
   );
 
   const SectionHeader = ({ label }) => (
-    <div style={{ padding: '18px 28px 6px', fontSize: 12, fontWeight: 500, color: 'rgba(0,0,0,0.4)', letterSpacing: 0.8 }}>{label}</div>
+    <div style={{ padding: '18px 28px 6px', fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', letterSpacing: 0.8 }}>{label}</div>
   );
 
   return (

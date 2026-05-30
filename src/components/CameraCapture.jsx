@@ -867,7 +867,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
             position: 'absolute', top: 'calc(12px + env(safe-area-inset-top, 0px))', right: 12,
             padding: '7px 12px', borderRadius: 16,
             background: 'rgba(255,255,255,0.92)', border: 'none',
-            color: '#1A1A1A', fontSize: 11, fontWeight: 500, cursor: 'pointer',
+            color: 'var(--text-primary)', fontSize: 11, fontWeight: 500, cursor: 'pointer',
             zIndex: 10, fontFamily: 'inherit',
           }}
         >

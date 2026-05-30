@@ -504,7 +504,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
               <div key={i} style={{
                 padding: '5px 10px', borderRadius: 8,
                 background: 'var(--tag-bg)',
-                fontSize: 11, color: '#5C5C5C', fontWeight: 500,
+                fontSize: 11, color: 'var(--text-secondary)', fontWeight: 500,
               }}>{item}</div>
             ))}
           </div>

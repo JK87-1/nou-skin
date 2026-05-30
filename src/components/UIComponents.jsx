@@ -140,7 +140,7 @@ function DetailAccordion({ title, children, onToggle }) {
         width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0,
       }}>
-        <span style={{ fontSize: 16, fontWeight: 500, color: 'rgba(0,0,0,0.78)' }}>{title}</span>
+        <span style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)' }}>{title}</span>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.4)" strokeWidth="2" strokeLinecap="round"
           style={{ transition: 'transform 0.3s ease', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}>
           <path d="M6 9l6 6 6-6" />
@@ -192,11 +192,11 @@ export function DetailPage({ metricKey, value, onBack }) {
         <div style={{ padding: '10px 15px 0' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {metricIconMap[metricKey]}
-            <h1 style={{ fontSize: 18, fontWeight: 500, color: 'rgba(0,0,0,0.78)', margin: 0 }}>
+            <h1 style={{ fontSize: 18, fontWeight: 500, color: 'var(--text-primary)', margin: 0 }}>
               {data.title}
             </h1>
           </div>
-          <p style={{ fontSize: 13, fontWeight: 500, color: 'rgba(0,0,0,0.4)', lineHeight: 1.7, margin: '10px 0 0' }}>{data.hero}</p>
+          <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-muted)', lineHeight: 1.7, margin: '10px 0 0' }}>{data.hero}</p>
         </div>
       </div>
 
@@ -204,7 +204,7 @@ export function DetailPage({ metricKey, value, onBack }) {
       <div style={{ padding: '20px 16px' }}>
         {/* 1. Score Ranges — 가장 먼저 */}
         <div className="card">
-          <div style={{ fontSize: 16, fontWeight: 500, marginBottom: 14, color: 'rgba(0,0,0,0.78)' }}>결과 해석</div>
+          <div style={{ fontSize: 16, fontWeight: 500, marginBottom: 14, color: 'var(--text-primary)' }}>결과 해석</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             {data.ranges.map((r, i) => (
               <div key={i} style={{
@@ -214,7 +214,7 @@ export function DetailPage({ metricKey, value, onBack }) {
               }}>
                 <span style={{ fontSize: 10, color: '#fff', background: r.color, padding: '3px 8px', borderRadius: 6, fontWeight: 500, alignSelf: 'flex-start', whiteSpace: 'nowrap' }}>{r.label}</span>
                 <span style={{ fontSize: 13, fontWeight: 500, color: r.color, lineHeight: 1.3 }}>{r.range}</span>
-                <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(0,0,0,0.4)', lineHeight: 1.5 }}>{r.description}</span>
+                <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', lineHeight: 1.5 }}>{r.description}</span>
               </div>
             ))}
           </div>
@@ -222,7 +222,7 @@ export function DetailPage({ metricKey, value, onBack }) {
 
         {/* 2. Methodology — 아코디언 */}
         <DetailAccordion title="측정 원리" onToggle={(open) => setAnyAccordionOpen(p => p + (open ? 1 : -1))}>
-          <p style={{ fontSize: 13, fontWeight: 500, color: 'rgba(0,0,0,0.4)', lineHeight: 1.85, whiteSpace: 'pre-line', margin: 0 }}>{data.methodology}</p>
+          <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-muted)', lineHeight: 1.85, whiteSpace: 'pre-line', margin: 0 }}>{data.methodology}</p>
         </DetailAccordion>
 
         {/* 3. Scientific References — 아코디언 */}
@@ -232,22 +232,22 @@ export function DetailPage({ metricKey, value, onBack }) {
               marginBottom: i < data.references.length - 1 ? 10 : 0,
               borderRadius: 5, border: 'none', overflow: 'hidden',
             }}>
-              <div style={{ padding: '8px 10px', background: 'rgba(255,255,255,0.1)', fontWeight: 500, fontSize: 12, color: 'rgba(0,0,0,0.55)', borderBottom: '1px solid rgba(0,0,0,0.08)' }}>{ref.name}</div>
-              <div style={{ padding: '7px 10px', fontSize: 12, fontWeight: 500, color: 'rgba(0,0,0,0.4)', lineHeight: 1.5 }}>{ref.description}</div>
-              <div style={{ padding: '7px 10px', fontSize: 11, fontWeight: 500, color: 'rgba(0,0,0,0.4)', fontStyle: 'italic', lineHeight: 1.5 }}>{ref.source}</div>
+              <div style={{ padding: '8px 10px', background: 'rgba(255,255,255,0.1)', fontWeight: 500, fontSize: 12, color: 'var(--text-secondary)', borderBottom: '1px solid rgba(0,0,0,0.08)' }}>{ref.name}</div>
+              <div style={{ padding: '7px 10px', fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', lineHeight: 1.5 }}>{ref.description}</div>
+              <div style={{ padding: '7px 10px', fontSize: 11, fontWeight: 500, color: 'var(--text-muted)', fontStyle: 'italic', lineHeight: 1.5 }}>{ref.source}</div>
             </div>
           ))}
         </DetailAccordion>
 
         {/* 4. Disclaimer */}
-        <p style={{ fontSize: 10, fontWeight: 500, color: 'rgba(0,0,0,0.15)', lineHeight: 1.5, textAlign: 'center', margin: '0 0 16px', padding: '0 19px' }}>
+        <p style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-disabled)', lineHeight: 1.5, textAlign: 'center', margin: '0 0 16px', padding: '0 19px' }}>
           피부과 임상 기기(Corneometer, Mexameter 등)의 측정 원리를 컴퓨터 비전으로 구현하였으며, 임상 데이터와의 교차 검증을 통해 정확도를 개선하고 있습니다.
         </p>
 
         {anyAccordionOpen > 0 && (
           <button onClick={onBack} style={{
             width: '100%', padding: '12px 0', border: 'none', borderRadius: 12,
-            background: 'rgba(0,0,0,0.04)', color: 'rgba(0,0,0,0.15)',
+            background: 'rgba(0,0,0,0.04)', color: 'var(--text-disabled)',
             fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
           }}>돌아가기</button>
         )}

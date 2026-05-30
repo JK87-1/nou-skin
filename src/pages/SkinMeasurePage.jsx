@@ -124,7 +124,7 @@ export default function SkinMeasurePage({ onClose, onCapture, colorMode }) {
             left: 16,
             width: 40, height: 40, borderRadius: '50%',
             background: 'rgba(255,255,255,0.85)', border: 'none',
-            color: '#1A1A1A', fontSize: 18, fontWeight: 500, cursor: 'pointer',
+            color: 'var(--text-primary)', fontSize: 18, fontWeight: 500, cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
             zIndex: 10,
@@ -142,7 +142,7 @@ export default function SkinMeasurePage({ onClose, onCapture, colorMode }) {
             right: 16,
             padding: '8px 14px', borderRadius: 10,
             background: 'rgba(255,255,255,0.85)', border: 'none',
-            color: '#1A1A1A', fontSize: 12, fontWeight: 500, cursor: 'pointer',
+            color: 'var(--text-primary)', fontSize: 12, fontWeight: 500, cursor: 'pointer',
             boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
             zIndex: 10,
           }}

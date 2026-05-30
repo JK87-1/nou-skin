@@ -628,7 +628,7 @@ export default function DailyMission() {
               fontSize: 12, fontWeight: 500, marginBottom: 4,
               color: '#2EAA7B',
             }}>AI 피부 코치</div>
-            <div style={{ fontSize: 14, fontWeight: 500, color: '#5C5C5C', lineHeight: 1.5 }}>{coachComment}</div>
+            <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{coachComment}</div>
           </div>
         </div>
       </div>

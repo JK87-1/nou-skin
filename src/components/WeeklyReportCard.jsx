@@ -97,7 +97,7 @@ export default function WeeklyReportCard({ report, onOpenBeforeAfter, onDismiss 
           </svg>
           이번 주 변화
         </span>
-        <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(0,0,0,0.4)' }}>{measuredThisWeek}회 측정</span>
+        <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)' }}>{measuredThisWeek}회 측정</span>
       </div>
 
       {/* 메인 헤드라인 */}
@@ -156,7 +156,7 @@ function ChangeChip({ change, positive }) {
       background: `${color}12`,
       border: `1px solid ${color}28`,
     }}>
-      <span style={{ fontSize: 11, color: 'rgba(0,0,0,0.55)', fontWeight: 500 }}>{change.label}</span>
+      <span style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 500 }}>{change.label}</span>
       <span style={{ fontSize: 13, color, fontWeight: 500, letterSpacing: -0.2 }}>{value}</span>
     </div>
   );

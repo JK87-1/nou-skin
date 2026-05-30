@@ -738,17 +738,17 @@ select:focus-visible {
   font-family: 'Outfit', sans-serif;
 }
 
-/* ===== 타이포 프리셋 — 크기별 기본 두께 고정 (크기+두께 한 세트) ===== */
-.t-micro     { font-size: var(--text-micro);      font-weight: var(--weight-medium); }   /* 10 / 500 */
-.t-footnote  { font-size: var(--text-footnote);   font-weight: var(--weight-medium); }   /* 11 / 500 */
-.t-caption   { font-size: var(--text-caption);    font-weight: var(--weight-medium); }   /* 12 / 500 */
-.t-body-sm   { font-size: var(--text-body-sm);    font-weight: var(--weight-medium); }   /* 13 / 500 */
-.t-body      { font-size: var(--text-body);       font-weight: var(--weight-medium); }   /* 14 / 500 */
-.t-h3        { font-size: var(--text-h3);         font-weight: var(--weight-medium); }    /* 16 / 500 */
-.t-h2        { font-size: var(--text-h2);         font-weight: var(--weight-medium); }    /* 18 / 500 */
-.t-h1        { font-size: var(--text-h1);         font-weight: var(--weight-medium); }    /* 24 / 500 */
-.t-display   { font-size: var(--text-display);    font-weight: var(--weight-regular); }   /* 40 / 400 */
-.t-display-lg{ font-size: var(--text-display-lg); font-weight: var(--weight-regular); }   /* 64 / 400 */
+/* ===== 타이포 프리셋 — 크기+두께+기본색 한 세트 (색은 인라인으로 오버라이드 가능) ===== */
+.t-micro     { font-size: var(--text-micro);      font-weight: var(--weight-medium);  color: var(--text-muted); }     /* 10 / 500 / muted */
+.t-footnote  { font-size: var(--text-footnote);   font-weight: var(--weight-medium);  color: var(--text-muted); }     /* 11 / 500 / muted */
+.t-caption   { font-size: var(--text-caption);    font-weight: var(--weight-medium);  color: var(--text-secondary); } /* 12 / 500 / secondary */
+.t-body-sm   { font-size: var(--text-body-sm);    font-weight: var(--weight-medium);  color: var(--text-primary); }   /* 13 / 500 / primary */
+.t-body      { font-size: var(--text-body);       font-weight: var(--weight-medium);  color: var(--text-primary); }   /* 14 / 500 / primary */
+.t-h3        { font-size: var(--text-h3);         font-weight: var(--weight-medium);  color: var(--text-primary); }   /* 16 / 500 / primary */
+.t-h2        { font-size: var(--text-h2);         font-weight: var(--weight-medium);  color: var(--text-primary); }   /* 18 / 500 / primary */
+.t-h1        { font-size: var(--text-h1);         font-weight: var(--weight-medium);  color: var(--text-primary); }   /* 24 / 500 / primary */
+.t-display   { font-size: var(--text-display);    font-weight: var(--weight-regular); color: var(--text-primary); }   /* 40 / 400 / primary */
+.t-display-lg{ font-size: var(--text-display-lg); font-weight: var(--weight-regular); color: var(--text-primary); }   /* 64 / 400 / primary */
 
 /* Gradient Header */
 .gradient-header {

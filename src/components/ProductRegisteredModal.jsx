@@ -62,7 +62,7 @@ export default function ProductRegisteredModal({ product, totalCount, onClose })
 
         {/* Headline */}
         <div style={{
-          fontSize: 18, fontWeight: 500, color: '#1A1A1A',
+          fontSize: 18, fontWeight: 500, color: 'var(--text-primary)',
           letterSpacing: -0.4, marginBottom: 6,
         }}>
           케어에 등록 완료!

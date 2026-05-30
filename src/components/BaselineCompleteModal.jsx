@@ -60,7 +60,7 @@ export default function BaselineCompleteModal({ avgScore, onClose }) {
 
         {/* Headline */}
         <div style={{
-          fontSize: 24, fontWeight: 500, color: '#1A1A1A',
+          fontSize: 24, fontWeight: 500, color: 'var(--text-primary)',
           letterSpacing: -0.4, marginBottom: 8,
         }}>
           기준점 완성!
@@ -83,7 +83,7 @@ export default function BaselineCompleteModal({ avgScore, onClose }) {
             marginBottom: 22,
           }}>
             <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--accent-primary)', letterSpacing: 0.3 }}>평균 종합 점수</span>
-            <span style={{ fontSize: 24, fontWeight: 500, color: '#1A1A1A', letterSpacing: -0.5 }}>{Math.round(avgScore)}</span>
+            <span style={{ fontSize: 24, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.5 }}>{Math.round(avgScore)}</span>
             <span style={{ fontSize: 12, fontWeight: 500, color: '#6B7F99' }}>점</span>
           </div>
         )}
