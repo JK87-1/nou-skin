@@ -946,9 +946,9 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
     <div style={{
       width: size, height: size, minWidth: size, minHeight: size,
       borderRadius: '50%', flexShrink: 0,
-      background: 'radial-gradient(circle at 40% 35%, rgba(255,255,255,0.8), rgba(172,226,252,0.35))',
+      background: 'radial-gradient(circle at 40% 35%, rgba(255,255,255,0.85), rgba(172,226,252,0.35))',
       border: 'none',
-      boxShadow: '0 0 0 1px rgba(255,255,255,0.4), 0 2px 6px rgba(0,0,0,0.06)',
+      boxShadow: '0 0 0 1px rgba(255,255,255,0.4), 0 2px 6px rgba(0,0,0,0.08)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       aspectRatio: '1 / 1', boxSizing: 'border-box',
     }}>
@@ -965,7 +965,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
       {/* Scrim */}
       <div onClick={handleClose} style={{
         position: 'fixed', top: 'calc(-1 * env(safe-area-inset-top, 50px))', left: 0, right: 0, bottom: 0, zIndex: 200,
-        background: 'rgba(0,0,0,0.12)',
+        background: 'rgba(0,0,0,0.15)',
         backdropFilter: 'none', WebkitBackdropFilter: 'none',
         opacity: closing ? 0 : 1, transition: 'opacity 200ms',
       }} />
@@ -996,7 +996,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
           .gem-input-btn { transition: transform 0.12s ease, opacity 0.12s ease, background 0.12s ease; -webkit-tap-highlight-color: transparent; }
           .gem-input-btn:active { transform: scale(0.9); opacity: 0.7; }
           .gem-act { background: transparent; border: none; cursor: pointer; padding: 6px; border-radius: 10px; transition: background 0.15s, transform 0.12s; -webkit-tap-highlight-color: transparent; display: inline-flex; align-items: center; justify-content: center; }
-          .gem-act:active { transform: scale(0.92); background: rgba(0,0,0,0.06); }
+          .gem-act:active { transform: scale(0.92); background: rgba(0,0,0,0.08); }
         `}</style>
 
         {/* Persona Picker — chevron 클릭 시 헤더 아래 슬라이드 다운 */}
@@ -1025,7 +1025,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
             border: 'none',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer', flexShrink: 0,
-            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
           }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#191F28" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="m15 18-6-6 6-6" />
@@ -1063,7 +1063,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
             border: 'none',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer', flexShrink: 0,
-            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
           }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#191F28" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
@@ -1166,14 +1166,14 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
         {pendingImages.length > 0 && (
           <div style={{
             display: 'flex', alignItems: 'center', gap: 10, padding: '8px 14px',
-            flexWrap: 'wrap', borderTop: '1px solid rgba(255,255,255,0.3)',
+            flexWrap: 'wrap', borderTop: '1px solid rgba(255,255,255,0.2)',
           }}>
             {pendingImages.map((img, idx) => (
               <div key={idx} style={{ position: 'relative', display: 'inline-block' }}>
                 <img src={img.dataUrl} alt="" style={{ width: 72, height: 72, borderRadius: 12, objectFit: 'cover', border: 'none' }} />
                 <button onClick={() => setPendingImages(prev => prev.filter((_, i) => i !== idx))} style={{
                   position: 'absolute', top: -6, right: -6, width: 24, height: 24, borderRadius: '50%',
-                  border: 'none', background: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: 14,
+                  border: 'none', background: 'rgba(0,0,0,0.55)', color: '#fff', fontSize: 14,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
                 }}>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round">
@@ -1215,7 +1215,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
               position: 'absolute', bottom: '100%', left: 14, marginBottom: 8,
               ...glass, background: '#ffffff',
               borderRadius: 22, overflow: 'hidden', zIndex: 10,
-              boxShadow: '0 4px 24px rgba(0,0,0,0.12)',
+              boxShadow: '0 4px 24px rgba(0,0,0,0.15)',
             }}>
               <button onClick={() => { cameraInputRef.current?.click(); setShowAttachMenu(false); }} style={{
                 display: 'flex', alignItems: 'center', gap: 10, padding: '14px 20px',
@@ -1231,7 +1231,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
                 display: 'flex', alignItems: 'center', gap: 10, padding: '14px 20px',
                 border: 'none', background: 'none', width: '100%', fontSize: 14, fontWeight: 500,
                 color: 'var(--text-primary, #191F28)', cursor: 'pointer', fontFamily: 'inherit',
-                borderTop: '1px solid rgba(255,255,255,0.3)',
+                borderTop: '1px solid rgba(255,255,255,0.2)',
               }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
@@ -1246,7 +1246,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
             background: '#ffffff', borderRadius: 44,
             border: 'none',
             padding: '10px 12px', boxSizing: 'border-box',
-            boxShadow: '0 2px 14px rgba(0,0,0,0.06)',
+            boxShadow: '0 2px 14px rgba(0,0,0,0.08)',
             minHeight: 64,
           }}>
             {/* + Attach Button — Gemini와 동일하게 평면 큰 + 아이콘 */}
@@ -1372,7 +1372,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
           padding: toast.action ? '10px 10px 10px 18px' : '12px 18px',
           borderRadius: 22,
           fontSize: 14, fontWeight: 600, letterSpacing: -0.2,
-          boxShadow: '0 8px 28px rgba(0,0,0,0.28)',
+          boxShadow: '0 8px 28px rgba(0,0,0,0.4)',
           zIndex: 10500,
           animation: 'toastRise 220ms ease-out',
           maxWidth: '86vw',
@@ -1384,7 +1384,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
             <button
               onClick={() => { try { toast.action.onClick(); } catch {}; setToast(null); }}
               style={{
-                background: 'rgba(255,255,255,0.16)',
+                background: 'rgba(255,255,255,0.2)',
                 border: 'none', borderRadius: 16,
                 padding: '7px 13px', color: '#A8C9F5',
                 fontSize: 13, fontWeight: 600, letterSpacing: -0.2,

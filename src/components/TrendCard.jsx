@@ -181,14 +181,14 @@ function BarChart({ series, inverse, accent, max }) {
   return (
     <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} preserveAspectRatio="xMidYMid meet">
       {/* baseline */}
-      <line x1={0} x2={W} y1={H - padBottom} y2={H - padBottom} stroke="rgba(0,0,0,0.06)" strokeWidth="1" />
+      <line x1={0} x2={W} y1={H - padBottom} y2={H - padBottom} stroke="rgba(0,0,0,0.08)" strokeWidth="1" />
       {series.map((s, i) => {
         const x = i * colW + colW / 2 - barW / 2;
         const norm = (s.value - yMin) / yRange; // 0..1
         const h = Math.max(3, norm * chartH);
         const y = H - padBottom - h;
         const isLast = i === n - 1;
-        const fill = isLast ? accent : 'rgba(0,0,0,0.14)';
+        const fill = isLast ? accent : 'rgba(0,0,0,0.15)';
         const dow = DOW[new Date(s.date + 'T00:00:00').getDay()] || '';
         return (
           <g key={s.date + i}>

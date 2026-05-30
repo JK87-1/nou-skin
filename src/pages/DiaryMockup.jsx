@@ -216,7 +216,7 @@ export default function DiaryMockup() {
               }}>
                 <div style={{ fontSize: 64, opacity: 0.15 }}></div>
               </div>
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(transparent 50%, rgba(0,0,0,0.3))' }} />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(transparent 50%, rgba(0,0,0,0.4))' }} />
             </div>
 
             {/* Floating metric labels */}

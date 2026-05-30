@@ -152,7 +152,7 @@ function SheetOverlay({ onClose, children }) {
       onClick={e => { if (e.target === e.currentTarget) handleClose(); }}
       style={{
         position: 'fixed', inset: 0, zIndex: 9999,
-        background: 'rgba(0,0,0,0.5)', backdropFilter: 'none',
+        background: 'rgba(0,0,0,0.55)', backdropFilter: 'none',
         display: 'flex', alignItems: 'flex-end',
         animation: closing ? 'fadeOut 0.22s ease forwards' : 'fadeIn 0.2s ease',
       }}
@@ -990,20 +990,20 @@ function ProductBrandNameInputs({
                 }}>
                   <div style={{
                     width: 52, height: 52, borderRadius: 10, flexShrink: 0,
-                    background: 'linear-gradient(90deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.05) 100%)',
+                    background: 'linear-gradient(90deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.05) 100%)',
                     backgroundSize: '200% 100%',
                     animation: `shimmer 1.2s ease-in-out infinite ${k * 0.08}s`,
                   }} />
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
                     <div style={{
                       width: '40%', height: 11, borderRadius: 4,
-                      background: 'linear-gradient(90deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.05) 100%)',
+                      background: 'linear-gradient(90deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.05) 100%)',
                       backgroundSize: '200% 100%',
                       animation: `shimmer 1.2s ease-in-out infinite ${k * 0.08}s`,
                     }} />
                     <div style={{
                       width: '78%', height: 13, borderRadius: 4,
-                      background: 'linear-gradient(90deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.05) 100%)',
+                      background: 'linear-gradient(90deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.05) 100%)',
                       backgroundSize: '200% 100%',
                       animation: `shimmer 1.2s ease-in-out infinite ${k * 0.08 + 0.04}s`,
                     }} />
@@ -1717,7 +1717,7 @@ export default function RoutineTracker({ themeColors, onBack }) {
           backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
           borderRadius: 16, padding: '8px 14px',
           fontSize: 12, fontWeight: 500, letterSpacing: -0.1,
-          boxShadow: '0 4px 18px rgba(0,0,0,0.18)', zIndex: 950,
+          boxShadow: '0 4px 18px rgba(0,0,0,0.15)', zIndex: 950,
           display: 'flex', alignItems: 'center', gap: 8,
           animation: 'breatheIn 0.25s ease both',
         }}>
@@ -1744,7 +1744,7 @@ export default function RoutineTracker({ themeColors, onBack }) {
             <button key={s.key} onClick={() => setSection(s.key)} style={{
               flex: 1, padding: '12px 0', borderRadius: 18, cursor: 'pointer',
               fontFamily: 'inherit', fontSize: 13, fontWeight: 600, textAlign: 'center',
-              background: active ? 'rgba(255,255,255,0.42)' : 'transparent',
+              background: active ? 'rgba(255,255,255,0.4)' : 'transparent',
               color: active ? 'var(--text-primary)' : 'var(--text-muted)',
               backdropFilter: active ? 'blur(14px)' : 'none', WebkitBackdropFilter: active ? 'blur(14px)' : 'none',
               border: 'none',
@@ -1908,7 +1908,7 @@ export default function RoutineTracker({ themeColors, onBack }) {
                       aria-label="새로고침"
                       style={{
                         width: 36, height: 36, borderRadius: 12,
-                        background: 'rgba(255,255,255,0.6)',
+                        background: 'rgba(255,255,255,0.7)',
                         border: 'none',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         cursor: 'pointer', flexShrink: 0,
@@ -2187,7 +2187,7 @@ export default function RoutineTracker({ themeColors, onBack }) {
           background: '#1F2937', color: '#fff',
           padding: '12px 18px', borderRadius: 22,
           fontSize: 14, fontWeight: 600, letterSpacing: -0.2,
-          boxShadow: '0 8px 28px rgba(0,0,0,0.28)',
+          boxShadow: '0 8px 28px rgba(0,0,0,0.4)',
           zIndex: 10500, pointerEvents: 'none', maxWidth: '86vw', textAlign: 'center',
           animation: 'dedupeRise 220ms ease-out',
         }}>

@@ -801,7 +801,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
             background: '#ffffff', border: 'none',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer', flexShrink: 0,
-            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
           }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#191F28" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"/>
@@ -842,7 +842,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
           setPendingImages([]);
         }} aria-label="새 상담" className="gem-btn" style={{
           width: 44, height: 44, borderRadius: 22,
-          background: '#ffffff', border: '1.5px dashed rgba(0,0,0,0.18)',
+          background: '#ffffff', border: '1.5px dashed rgba(0,0,0,0.15)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: 'pointer', flexShrink: 0,
         }}>
@@ -856,7 +856,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
         .gem-btn { transition: transform 0.12s ease, opacity 0.12s ease; -webkit-tap-highlight-color: transparent; }
         .gem-btn:active { transform: scale(0.92); opacity: 0.75; }
         .gem-act { background: transparent; border: none; cursor: pointer; padding: 6px; border-radius: 10px; transition: background 0.15s, transform 0.12s; -webkit-tap-highlight-color: transparent; color: #5F6368; display: inline-flex; align-items: center; justify-content: center; }
-        .gem-act:active { transform: scale(0.92); background: rgba(0,0,0,0.06); }
+        .gem-act:active { transform: scale(0.92); background: rgba(0,0,0,0.08); }
       `}</style>
 
       {/* Persona Picker — chevron 클릭 시 헤더 아래 슬라이드 다운 */}

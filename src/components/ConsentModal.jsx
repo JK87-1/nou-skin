@@ -147,7 +147,7 @@ export default function ConsentModal({ onAccept }) {
           onClick={handleAccept}
           style={{
             width: '100%', padding: '14px', borderRadius: 12,
-            background: allAgreed ? 'var(--accent-primary)' : 'var(--border, rgba(0,0,0,0.1))',
+            background: allAgreed ? 'var(--accent-primary)' : 'var(--border, rgba(0,0,0,0.08))',
             color: allAgreed ? '#fff' : 'var(--text-muted)',
             border: 'none', fontSize: 16, fontWeight: 600, fontFamily: 'inherit',
             cursor: allAgreed ? 'pointer' : 'not-allowed',

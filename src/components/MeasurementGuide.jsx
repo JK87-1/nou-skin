@@ -201,7 +201,7 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
       }}
     >
       {/* 전체 블랙 오버레이 5% */}
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.1)', pointerEvents: 'none', zIndex: 1 }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.08)', pointerEvents: 'none', zIndex: 1 }} />
       <style>{`
         @keyframes mgFadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes mgSlideUp { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
@@ -299,7 +299,7 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
                     }}>{c.title}</div>
                     <div style={{
                       fontSize: 12, lineHeight: 1.5,
-                      color: 'rgba(0,0,0,0.45)',
+                      color: 'rgba(0,0,0,0.4)',
                     }}>{c.desc}</div>
                   </div>
                 </div>

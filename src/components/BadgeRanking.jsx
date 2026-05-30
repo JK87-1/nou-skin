@@ -854,7 +854,7 @@ function TitleSelectionSheet({ currentLevel, totalXP, activeTheme, selectedTitle
       >
         {/* Handle */}
         <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 6px' }}>
-          <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.15)' }} />
+          <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.2)' }} />
         </div>
 
         {/* Header */}

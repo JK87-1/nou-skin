@@ -52,7 +52,7 @@ export default function SkinScoreCircle({ score, change, onTap }) {
           {/* 내부 은은한 레이어 */}
           <div style={{
             position: 'absolute', inset: '8px', borderRadius: '50%',
-            background: 'radial-gradient(circle at 40% 35%, rgba(255,255,255,0.5) 0%, rgba(253,246,178,0.2) 40%, transparent 70%)',
+            background: 'radial-gradient(circle at 40% 35%, rgba(255,255,255,0.4) 0%, rgba(253,246,178,0.2) 40%, transparent 70%)',
             pointerEvents: 'none',
           }} />
 

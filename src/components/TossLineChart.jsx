@@ -201,7 +201,7 @@ export default function TossLineChart({
         <>
           <line
             x1={PAD_X} y1={avgY} x2={W - PAD_X} y2={avgY}
-            stroke="rgba(0,0,0,0.10)" strokeWidth="1"
+            stroke="rgba(0,0,0,0.08)" strokeWidth="1"
             strokeDasharray="2 4"
           />
           <text

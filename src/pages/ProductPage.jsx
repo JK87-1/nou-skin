@@ -117,7 +117,7 @@ function SheetOverlay({ onClose, children }) {
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
       style={{
         position: 'fixed', inset: 0, zIndex: 9999,
-        background: 'rgba(0,0,0,0.5)', backdropFilter: 'none',
+        background: 'rgba(0,0,0,0.55)', backdropFilter: 'none',
         display: 'flex', alignItems: 'flex-end',
         animation: 'fadeIn 0.2s ease',
       }}
@@ -934,20 +934,20 @@ function ProductBrandNameInputs({
                 }}>
                   <div style={{
                     width: 52, height: 52, borderRadius: 10, flexShrink: 0,
-                    background: 'linear-gradient(90deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.05) 100%)',
+                    background: 'linear-gradient(90deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.05) 100%)',
                     backgroundSize: '200% 100%',
                     animation: `shimmer 1.2s ease-in-out infinite ${k * 0.08}s`,
                   }} />
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
                     <div style={{
                       width: '40%', height: 11, borderRadius: 4,
-                      background: 'linear-gradient(90deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.05) 100%)',
+                      background: 'linear-gradient(90deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.05) 100%)',
                       backgroundSize: '200% 100%',
                       animation: `shimmer 1.2s ease-in-out infinite ${k * 0.08}s`,
                     }} />
                     <div style={{
                       width: '78%', height: 13, borderRadius: 4,
-                      background: 'linear-gradient(90deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.05) 100%)',
+                      background: 'linear-gradient(90deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.05) 100%)',
                       backgroundSize: '200% 100%',
                       animation: `shimmer 1.2s ease-in-out infinite ${k * 0.08 + 0.04}s`,
                     }} />
@@ -1208,13 +1208,13 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
                       style={{
                         transition: 'transform 0.15s ease',
                         transform: filled ? 'scale(1.05)' : 'scale(1)',
-                        filter: filled ? 'drop-shadow(0 1px 2px rgba(120,189,253,0.4))' : 'drop-shadow(0 0.5px 0.5px rgba(0,0,0,0.1))',
+                        filter: filled ? 'drop-shadow(0 1px 2px rgba(120,189,253,0.4))' : 'drop-shadow(0 0.5px 0.5px rgba(0,0,0,0.08))',
                       }}
                     >
                       <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                       <path
                         d="M8.243 7.34l-6.38 .925l-.113 .023a1 1 0 0 0 -.44 1.684l4.622 4.499l-1.09 6.355l-.013 .11a1 1 0 0 0 1.464 .944l5.706 -3l5.693 3l.1 .046a1 1 0 0 0 1.352 -1.1l-1.091 -6.355l4.624 -4.5l.078 -.085a1 1 0 0 0 -.633 -1.62l-6.38 -.926l-2.852 -5.78a1 1 0 0 0 -1.794 0l-2.853 5.78z"
-                        fill={filled ? '#78bdfd' : 'rgba(0,0,0,0.1)'}
+                        fill={filled ? '#78bdfd' : 'rgba(0,0,0,0.08)'}
                         stroke="none"
                       />
                     </svg>
@@ -1873,7 +1873,7 @@ export default function ProductPage({ themeColors, onBack }) {
           backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
           borderRadius: 16, padding: '8px 14px',
           fontSize: 12, fontWeight: 500, letterSpacing: -0.1,
-          boxShadow: '0 2px 12px rgba(0,0,0,0.1)', zIndex: 950,
+          boxShadow: '0 2px 12px rgba(0,0,0,0.08)', zIndex: 950,
           display: 'flex', alignItems: 'center', gap: 8,
           animation: 'breatheIn 0.25s ease both',
         }}>
@@ -1895,7 +1895,7 @@ export default function ProductPage({ themeColors, onBack }) {
       {/* Section Tabs */}
       <div style={{
         display: 'flex', gap: 4, padding: 4, margin: '20px 20px 16px',
-        background: 'rgba(255,255,255,0.35)',
+        background: 'rgba(255,255,255,0.4)',
         border: 'none',
         borderRadius: 14,
       }}>
@@ -1908,7 +1908,7 @@ export default function ProductPage({ themeColors, onBack }) {
               fontFamily: 'inherit', fontSize: 14, letterSpacing: -0.2,
               fontWeight: active ? 600 : 500,
               background: active ? 'rgba(255,255,255,0.85)' : 'transparent',
-              boxShadow: active ? '0 1px 4px rgba(0,0,0,0.06)' : 'none',
+              boxShadow: active ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
               color: active ? 'var(--accent-primary)' : 'var(--text-secondary)',
               border: 'none',
               transition: 'background 0.18s ease, color 0.18s ease',
@@ -2014,7 +2014,7 @@ export default function ProductPage({ themeColors, onBack }) {
                 padding: '13px 24px', marginTop: 10, cursor: 'pointer',
                 background: 'var(--accent-primary)', borderRadius: 14,
                 border: 'none',
-                boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
+                boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
               }}
             >
@@ -2036,7 +2036,7 @@ export default function ProductPage({ themeColors, onBack }) {
                     background: 'linear-gradient(135deg, var(--accent-primary) 0%, #8ac4fe 100%)',
                     border: 'none', borderRadius: 18,
                     cursor: 'pointer', fontFamily: 'inherit',
-                    boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9,
                     color: '#fff',
                   }}
@@ -2213,7 +2213,7 @@ export default function ProductPage({ themeColors, onBack }) {
           background: '#1F2937', color: '#fff',
           padding: '12px 18px', borderRadius: 22,
           fontSize: 14, fontWeight: 600, letterSpacing: -0.2,
-          boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
           zIndex: 10500, pointerEvents: 'none', maxWidth: '86vw', textAlign: 'center',
           animation: 'dedupeRise 220ms ease-out',
         }}>

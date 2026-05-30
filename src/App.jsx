@@ -958,7 +958,7 @@ export default function App() {
       {/* AI 분석 실패 — CV로 진행하지 않고 재측정 유도 (정확도 우선) */}
       {aiFailedOpen && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9600, background: 'rgba(15,20,30,0.66)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-          <div style={{ width: '100%', maxWidth: 340, background: 'linear-gradient(180deg, #ffffff 0%, #f4f8fc 100%)', borderRadius: 24, padding: '30px 24px 22px', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.18)' }}>
+          <div style={{ width: '100%', maxWidth: 340, background: 'linear-gradient(180deg, #ffffff 0%, #f4f8fc 100%)', borderRadius: 24, padding: '30px 24px 22px', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }}>
             <div style={{ width: 64, height: 64, borderRadius: '50%', margin: '0 auto 16px', background: 'rgba(var(--accent-rgb),0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 9v4" /><path d="M12 17h.01" /><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /></svg>
             </div>
@@ -976,7 +976,7 @@ export default function App() {
       {showDataRecovery && recoveryInfo && (
         <div onClick={() => setShowDataRecovery(false)} style={{
           position: 'fixed', inset: 0, zIndex: 1100,
-          background: 'rgba(0,0,0,0.65)',
+          background: 'rgba(0,0,0,0.55)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           padding: 24,
         }}>
@@ -1341,7 +1341,7 @@ export default function App() {
                         </div>
                         <svg width="52" height="52" viewBox="0 0 52 52">
                           <defs><linearGradient id="waterRingGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#5BA3D4" /><stop offset="100%" stopColor="#B8E0F5" /></linearGradient></defs>
-                          <circle cx="26" cy="26" r={rR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" />
+                          <circle cx="26" cy="26" r={rR} fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="5" />
                           <circle cx="26" cy="26" r={rR} fill="none" stroke="url(#waterRingGrad)" strokeWidth="5" strokeDasharray={`${dash} ${rC - dash}`} strokeLinecap="round" transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
                         </svg>
                       </div>
@@ -1362,7 +1362,7 @@ export default function App() {
                           </div>
                           <svg width="52" height="52" viewBox="0 0 52 52">
                             <defs><linearGradient id="sleepRingGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#5B6AAF" /><stop offset="100%" stopColor="#C8D0F0" /></linearGradient></defs>
-                            <circle cx="26" cy="26" r={sR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" />
+                            <circle cx="26" cy="26" r={sR} fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="5" />
                             <circle cx="26" cy="26" r={sR} fill="none" stroke="url(#sleepRingGrad)" strokeWidth="5" strokeDasharray={`${sDash} ${sC - sDash}`} strokeLinecap="round" transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
                           </svg>
                         </div>
@@ -1372,7 +1372,7 @@ export default function App() {
                             <div style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
                             <div style={{ fontSize: 10, color: 'var(--accent-primary, var(--accent-primary))', marginTop: 4, minHeight: 14 }}>기록하기</div>
                           </div>
-                          <svg width="52" height="52" viewBox="0 0 52 52"><circle cx="26" cy="26" r={sR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" /></svg>
+                          <svg width="52" height="52" viewBox="0 0 52 52"><circle cx="26" cy="26" r={sR} fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="5" /></svg>
                         </div>
                       )}
                     </div>
@@ -1399,7 +1399,7 @@ export default function App() {
                       </div>
                       <svg width="52" height="52" viewBox="0 0 52 52">
                         <defs><linearGradient id="waterRingGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#5BA3D4" /><stop offset="100%" stopColor="#B8E0F5" /></linearGradient></defs>
-                        <circle cx="26" cy="26" r={rR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" />
+                        <circle cx="26" cy="26" r={rR} fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="5" />
                         <circle cx="26" cy="26" r={rR} fill="none" stroke="url(#waterRingGrad)" strokeWidth="5" strokeDasharray={`${dash} ${rC - dash}`} strokeLinecap="round" transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
                       </svg>
                     </div>
@@ -1433,7 +1433,7 @@ export default function App() {
                         </div>
                         <svg width="52" height="52" viewBox="0 0 52 52">
                           <defs><linearGradient id="sleepRingGrad2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#5B6AAF" /><stop offset="100%" stopColor="#C8D0F0" /></linearGradient></defs>
-                          <circle cx="26" cy="26" r={sR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" />
+                          <circle cx="26" cy="26" r={sR} fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="5" />
                           <circle cx="26" cy="26" r={sR} fill="none" stroke="url(#sleepRingGrad2)" strokeWidth="5" strokeDasharray={`${sDash} ${sC - sDash}`} strokeLinecap="round" transform="rotate(-90 26 26)" style={{ transition: 'stroke-dasharray 0.3s ease' }} />
                         </svg>
                       </div>
@@ -1443,7 +1443,7 @@ export default function App() {
                           <div style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
                           <div style={{ fontSize: 10, color: 'var(--accent-primary, var(--accent-primary))', marginTop: 4, minHeight: 14 }}>기록하기</div>
                         </div>
-                        <svg width="52" height="52" viewBox="0 0 52 52"><circle cx="26" cy="26" r={sR} fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="5" /></svg>
+                        <svg width="52" height="52" viewBox="0 0 52 52"><circle cx="26" cy="26" r={sR} fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="5" /></svg>
                       </div>
                     )}
                   </div>
@@ -1560,7 +1560,7 @@ export default function App() {
           <div style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             padding: '6px 0',
-            borderBottom: isLast ? 'none' : '0.5px solid rgba(0,0,0, 0.08)',
+            borderBottom: isLast ? 'none' : '0.5px solid rgba(0,0,0,0.08)',
           }}>
             <span style={{ color: '#185FA5', fontSize: 11, fontWeight: 400, letterSpacing: 0.2 }}>{label}</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -1581,7 +1581,7 @@ export default function App() {
           {/* Cinematic vignette */}
           <div style={{
             position: 'absolute', inset: 0, pointerEvents: 'none',
-            background: 'radial-gradient(ellipse at 50% 44%, transparent 30%, rgba(0,0,0,0.3) 100%)',
+            background: 'radial-gradient(ellipse at 50% 44%, transparent 30%, rgba(0,0,0,0.4) 100%)',
           }} />
 
           {/* Back button */}
@@ -1599,7 +1599,7 @@ export default function App() {
           <div style={{
             position: 'absolute', top: 'calc(56px + env(safe-area-inset-top, 0px))',
             left: '50%', transform: 'translateX(-50%)',
-            padding: '6px 11px', background: 'rgba(0, 0, 0, 0.78)',
+            padding: '6px 11px', background: 'rgba(0,0,0,0.78)',
             borderRadius: 14, display: 'flex', alignItems: 'center', gap: 6, zIndex: 10,
           }}>
             {allGood
@@ -1632,13 +1632,13 @@ export default function App() {
                 { label: '화질', s: sharp.status, v: sharp.label },
               ].map(({ label, s, v }) => (
                 <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: 10, fontWeight: 500 }}>{label}</span>
+                  <span style={{ color: 'rgba(255,255,255,0.92)', fontSize: 10, fontWeight: 500 }}>{label}</span>
                   {s === 'good' ? <svg width="10" height="10" viewBox="0 0 24 24" fill="#58aefe"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.707 8.707l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 111.414-1.414L11 13.586l4.293-4.293a1 1 0 111.414 1.414z"/></svg>
                    : s === 'moderate' ? <svg width="10" height="10" viewBox="0 0 24 24" fill="#999"><path d="M12 1.67L1.21 21.5h21.57L12 1.67zm1 14.83h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
                    : <svg width="10" height="10" viewBox="0 0 24 24" fill="#A32D2D"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>}
                   <span style={{
                     fontSize: 10, fontWeight: 400,
-                    color: s === 'good' ? 'rgba(88,174,254,0.9)' : s === 'moderate' ? 'rgba(255,255,255,0.5)' : 'rgba(163,45,45,0.9)',
+                    color: s === 'good' ? 'rgba(88,174,254,0.9)' : s === 'moderate' ? 'rgba(255,255,255,0.4)' : 'rgba(163,45,45,0.9)',
                   }}>{v}</span>
                 </div>
               ))}
@@ -1673,7 +1673,7 @@ export default function App() {
                 color: '#fff',
                 fontSize: 16, fontWeight: 600,
                 cursor: 'pointer', fontFamily: 'inherit',
-                boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
+                boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
                 marginBottom: 8,
               }}>
                 {isBlocked ? '다시 촬영하기'
@@ -1710,7 +1710,7 @@ export default function App() {
           {/* Cinematic vignette */}
           <div style={{
             position: 'absolute', inset: 0, pointerEvents: 'none',
-            background: 'radial-gradient(ellipse at 50% 44%, rgba(0,0,0,0.1) 20%, rgba(0,0,0,0.5) 100%)',
+            background: 'radial-gradient(ellipse at 50% 44%, rgba(0,0,0,0.08) 20%, rgba(0,0,0,0.55) 100%)',
           }} />
 
           {/* Circular progress ring */}
@@ -1738,7 +1738,7 @@ export default function App() {
           <div style={{
             position: 'absolute', top: 'calc(56px + env(safe-area-inset-top, 0px))',
             left: '50%', transform: 'translateX(-50%)',
-            padding: '6px 11px', background: 'rgba(0, 0, 0, 0.78)',
+            padding: '6px 11px', background: 'rgba(0,0,0,0.78)',
             borderRadius: 14, display: 'flex', alignItems: 'center', gap: 6, zIndex: 10,
           }}>
             <div style={{
@@ -1768,7 +1768,7 @@ export default function App() {
             <p style={{ color: '#fff', fontSize: 16, fontWeight: 600, margin: 0, letterSpacing: -0.3 }}>
               피부 분석중
             </p>
-            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, margin: 0 }}>
+            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, margin: 0 }}>
               수분 · 탄력 · 피부결을 분석하고 있어요
             </p>
 
@@ -1783,14 +1783,14 @@ export default function App() {
                 }} />
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10 }}>
-                <span style={{ color: 'rgba(255,255,255,0.5)' }}>{getProgressText(progress)}</span>
+                <span style={{ color: 'rgba(255,255,255,0.4)' }}>{getProgressText(progress)}</span>
                 <span style={{ color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>{Math.round(Math.min(progress, 99))}%</span>
               </div>
             </div>
 
             {/* Tip */}
             <p key={getProgressTip(progress)} style={{
-              color: 'rgba(255,255,255,0.5)', fontSize: 11, textAlign: 'center',
+              color: 'rgba(255,255,255,0.4)', fontSize: 11, textAlign: 'center',
               margin: '8px 0 0', letterSpacing: -0.2, lineHeight: 1.5,
               animation: 'fadeIn 0.6s ease',
             }}>
@@ -1877,7 +1877,7 @@ export default function App() {
           <div style={{ padding: '0 16px 16px' }}>
             <div ref={sigCardRef} role="region" aria-label="피부 측정 결과 시그니처 카드" style={{
               borderRadius: 16,
-              boxShadow: '0 4px 16px rgba(0,0,0, 0.1)',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
               overflow: 'hidden',
               aspectRatio: '4 / 5',
               position: 'relative',
@@ -1899,7 +1899,7 @@ export default function App() {
                 position: 'absolute', top: 0, left: 0, right: 0, zIndex: 2,
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                 padding: '14px 16px',
-                background: 'linear-gradient(180deg, rgba(0,0,0, 0.35) 0%, transparent 100%)',
+                background: 'linear-gradient(180deg, rgba(0,0,0,0.4) 0%, transparent 100%)',
               }}>
                 <span style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.85)' }}>{sigDate}</span>
                 <img src="/luastar.svg" alt="LUA" style={{ width: 20, height: 20, opacity: 0.8, filter: 'brightness(0) invert(1)' }} />
@@ -1908,7 +1908,7 @@ export default function App() {
               {/* 시그니처 핫존 (하단 그라데이션 + 정보) */}
               <div style={{
                 position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 2,
-                background: 'linear-gradient(180deg, transparent 0%, rgba(0,0,0, 0.7) 80%)',
+                background: 'linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.78) 80%)',
                 padding: '60px 14px 16px',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end',
               }}>
@@ -1920,23 +1920,23 @@ export default function App() {
                     {result.overallScore != null ? <AnimatedNumber target={result.overallScore} duration={1300} /> : '—'}
                   </span>
                   <span style={{
-                    fontSize: 16, letterSpacing: -0.3, color: 'rgba(255,255,255,0.5)', marginBottom: 6,
+                    fontSize: 16, letterSpacing: -0.3, color: 'rgba(255,255,255,0.4)', marginBottom: 6,
                   }}>점</span>
                 </div>
                 {/* 또래 상위 % — 연령 보정 추정 (핵심 비교 지표) */}
                 {overallPct && (
-                  <div style={{ display: 'inline-flex', alignItems: 'center', padding: '5px 14px', borderRadius: 20, background: 'rgba(255,255,255,0.15)', marginBottom: 8 }}>
-                    <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: 0.3, color: 'rgba(255,255,255,0.8)' }}>{pctPeerLabel} 상위 {overallPct.top}%</span>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', padding: '5px 14px', borderRadius: 20, background: 'rgba(255,255,255,0.2)', marginBottom: 8 }}>
+                    <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: 0.3, color: 'rgba(255,255,255,0.85)' }}>{pctPeerLabel} 상위 {overallPct.top}%</span>
                   </div>
                 )}
                 {/* 피부나이 · 레벨 배지 */}
-                <div style={{ display: 'inline-flex', alignItems: 'center', padding: '5px 14px', borderRadius: 20, background: 'rgba(255,255,255,0.15)', marginBottom: 8 }}>
-                  <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: 0.3, color: 'rgba(255,255,255,0.8)' }}>{result.skinAge}세 · {sigLevel}{skinAgePct && skinAgePct.diffYears > 0 ? ` · 또래보다 -${skinAgePct.diffYears}세` : ''}</span>
+                <div style={{ display: 'inline-flex', alignItems: 'center', padding: '5px 14px', borderRadius: 20, background: 'rgba(255,255,255,0.2)', marginBottom: 8 }}>
+                  <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: 0.3, color: 'rgba(255,255,255,0.85)' }}>{result.skinAge}세 · {sigLevel}{skinAgePct && skinAgePct.diffYears > 0 ? ` · 또래보다 -${skinAgePct.diffYears}세` : ''}</span>
                 </div>
                 {/* 시그니처 한 줄 */}
                 <div style={{
                   fontSize: 13, fontWeight: 400,
-                  color: 'rgba(255,255,255,0.6)', letterSpacing: 0.2, lineHeight: 1.4,
+                  color: 'rgba(255,255,255,0.7)', letterSpacing: 0.2, lineHeight: 1.4,
                   marginBottom: 10, marginTop: 'calc(8px * 1.4)', textAlign: 'center',
                 }}>
                   "{sigComment}"
@@ -1982,7 +1982,7 @@ export default function App() {
                   const _worst = _sorted[_sorted.length - 1];
                   const _bwItems = _best && _worst && _best.key !== _worst.key ? [
                     { ..._best, arrow: '▲', arrowColor: 'var(--accent-primary)', tag: '베스트', tagBg: 'rgba(var(--accent-rgb),0.12)', tagColor: 'var(--accent-primary)' },
-                    { ..._worst, arrow: '▼', arrowColor: 'rgba(0,0,0,0.3)', tag: '관리필요', tagBg: 'rgba(0,0,0,0.06)', tagColor: 'rgba(0,0,0,0.4)' },
+                    { ..._worst, arrow: '▼', arrowColor: 'rgba(0,0,0,0.4)', tag: '관리필요', tagBg: 'rgba(0,0,0,0.08)', tagColor: 'rgba(0,0,0,0.4)' },
                   ] : [];
                   return (
                     <>
@@ -1995,18 +1995,18 @@ export default function App() {
                       }}>
                         {/* 등급 */}
                         <div style={{ textAlign: 'center', flexShrink: 0, minWidth: 44 }}>
-                          <div style={{ fontSize: 24, fontWeight: 600, color: 'rgba(0,0,0,0.8)', lineHeight: 1 }}>{grade.letter}</div>
-                          <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.35)', marginTop: 3 }}>{grade.label}</div>
+                          <div style={{ fontSize: 24, fontWeight: 600, color: 'rgba(0,0,0,0.78)', lineHeight: 1 }}>{grade.letter}</div>
+                          <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.4)', marginTop: 3 }}>{grade.label}</div>
                         </div>
                         {/* 구분선 */}
-                        {_bwItems.length === 2 && <div style={{ width: 1, height: 36, background: 'rgba(0,0,0,0.06)', flexShrink: 0 }} />}
+                        {_bwItems.length === 2 && <div style={{ width: 1, height: 36, background: 'rgba(0,0,0,0.08)', flexShrink: 0 }} />}
                         {/* 베스트 / 워스트 */}
                         {_bwItems.length === 2 && (
                           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
                             {_bwItems.map(bw => (
                               <div key={bw.key} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                 <div style={{ flexShrink: 0, opacity: 0.85 }}>{bw.icon}</div>
-                                <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(0,0,0,0.6)', minWidth: 0 }}>{bw.label}</span>
+                                <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(0,0,0,0.55)', minWidth: 0 }}>{bw.label}</span>
                                 <span style={{ fontSize: 14, fontWeight: 600, color: bw.colors[0], letterSpacing: -0.3 }}>{bw.value}<span style={{ fontSize: 10, fontWeight: 500, color: bw.colors[1] }}>{bw.unit}</span></span>
                                 <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 5px', borderRadius: 4, background: bw.tagBg, color: bw.tagColor, marginLeft: 'auto', whiteSpace: 'nowrap' }}>{bw.tag}</span>
                               </div>
@@ -2015,7 +2015,7 @@ export default function App() {
                         )}
                       </div>
                       {/* Briefing text */}
-                      <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(0,0,0,0.8)', lineHeight: 1.7, margin: 0 }}>{conditionBriefing}</p>
+                      <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(0,0,0,0.78)', lineHeight: 1.7, margin: 0 }}>{conditionBriefing}</p>
                       {/* Today's change badges */}
                       {changes && getTodayRecords().length > 1 && (() => {
                         const keyMetrics = ['moisture', 'oilBalance', 'skinTone', 'darkCircleScore'];
@@ -2039,7 +2039,7 @@ export default function App() {
                       })()}
                       {/* AI 정밀 분석 (통합) */}
                       {result.advice && (
-                        <p style={{ fontSize: 13, color: 'rgba(0,0,0,0.8)', lineHeight: 1.7, margin: '10px 0 0' }}>{result.advice}</p>
+                        <p style={{ fontSize: 13, color: 'rgba(0,0,0,0.78)', lineHeight: 1.7, margin: '10px 0 0' }}>{result.advice}</p>
                       )}
                       <AiCommentCard
                         aiNotes={result.aiNotes}
@@ -2059,7 +2059,7 @@ export default function App() {
                           <span style={{ fontSize: 16, flexShrink: 0 }}></span>
                           <div>
                             <div style={{ fontSize: 11, fontWeight: 600, color: '#FFB8C8', marginBottom: 1 }}>메이크업이 감지되었어요</div>
-                            <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.35)', lineHeight: 1.4 }}>클렌징 후 다시 측정하면 더 정확한 피부 상태를 확인할 수 있어요</div>
+                            <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.4)', lineHeight: 1.4 }}>클렌징 후 다시 측정하면 더 정확한 피부 상태를 확인할 수 있어요</div>
                           </div>
                         </div>
                       )}
@@ -2095,7 +2095,7 @@ export default function App() {
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent-primary)', letterSpacing: 0.3, marginBottom: 2 }}>기준점 구축 중</div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(0,0,0,0.8)', letterSpacing: -0.2 }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(0,0,0,0.78)', letterSpacing: -0.2 }}>
                       {b.count}회 완료 · {remaining}회 더 측정해주세요
                     </div>
                   </div>
@@ -2115,7 +2115,7 @@ export default function App() {
                 </div>
 
                 <div style={{
-                  fontSize: 11, color: 'rgba(0,0,0,0.5)', lineHeight: 1.6,
+                  fontSize: 11, color: 'rgba(0,0,0,0.55)', lineHeight: 1.6,
                   background: 'rgba(var(--accent-rgb),0.06)',
                   padding: '8px 10px', borderRadius: 10,
                   wordBreak: 'keep-all',
@@ -2166,7 +2166,7 @@ export default function App() {
               return (
                 <div style={{
                   margin: '0 16px 10px',
-                  background: 'rgba(255,255,255,0.5)',
+                  background: 'rgba(255,255,255,0.4)',
                   borderRadius: 14, padding: '14px 16px',
                   boxShadow: '0 1px 4px rgba(0,0,0, 0.04)',
                   display: 'flex', gap: 10, alignItems: 'center',
@@ -2203,17 +2203,17 @@ export default function App() {
                   <div style={{ width: 5, height: 5, borderRadius: '50%', background: palette.dot, flexShrink: 0 }} />
                   <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: 0.2 }}>AI 자동 인사이트</div>
                 </div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(0,0,0,0.8)', marginBottom: 6, lineHeight: 1.5 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(0,0,0,0.78)', marginBottom: 6, lineHeight: 1.5 }}>
                   {autoInsight.headline}
                 </div>
                 {autoInsight.cause && (
-                  <div style={{ fontSize: 13, color: 'rgba(0,0,0,0.5)', lineHeight: 1.7, marginBottom: 8, wordBreak: 'keep-all' }}>
+                  <div style={{ fontSize: 13, color: 'rgba(0,0,0,0.55)', lineHeight: 1.7, marginBottom: 8, wordBreak: 'keep-all' }}>
                     {autoInsight.cause}
                   </div>
                 )}
                 {autoInsight.action && (
                   <div style={{
-                    fontSize: 13, color: 'rgba(0,0,0,0.5)', fontWeight: 500,
+                    fontSize: 13, color: 'rgba(0,0,0,0.55)', fontWeight: 500,
                     background: 'rgba(var(--accent-rgb),0.06)',
                     padding: '8px 10px', borderRadius: 10,
                     lineHeight: 1.7, wordBreak: 'keep-all',
@@ -2261,7 +2261,7 @@ export default function App() {
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         {m.icon}
-                        <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(0,0,0,0.8)' }}>{m.label}</span>
+                        <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(0,0,0,0.78)' }}>{m.label}</span>
                         {pct && pct.top <= 30 && (() => {
                           const _ic = {
                             moisture: '#4d8ef2', oilBalance: '#4dbdfd', oilMoistureBalance: '#8fe2ff',
@@ -2291,71 +2291,71 @@ export default function App() {
                           if (d === 'moisture') {
                             if (v >= 75) { scoreColor = dark; label = '촉촉'; }
                             else if (v >= 60) { scoreColor = light; label = '정상'; }
-                            else if (v >= 40) { scoreColor = 'rgba(0,0,0,0.35)'; label = '건조'; }
-                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '건조'; }
+                            else if (v >= 40) { scoreColor = 'rgba(0,0,0,0.4)'; label = '건조'; }
+                            else { scoreColor = 'rgba(0,0,0,0.78)'; label = '건조'; }
                           } else if (d === 'oilBalance') {
                             if (v >= 40 && v <= 60) { scoreColor = dark; label = '적당'; }
                             else if (v > 60 && v <= 80) { scoreColor = light; label = '과다'; }
-                            else if (v < 40) { scoreColor = 'rgba(0,0,0,0.35)'; label = '부족'; }
-                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '나쁨'; }
+                            else if (v < 40) { scoreColor = 'rgba(0,0,0,0.4)'; label = '부족'; }
+                            else { scoreColor = 'rgba(0,0,0,0.78)'; label = '나쁨'; }
                           } else if (d === 'oilMoistureBalance') {
                             const mst = result.moisture ?? 50, oil = result.oilBalance ?? 50;
                             const mid = '#79dfff'; // 아이콘 중간톤
                             if (mst >= 60 && oil >= 40 && oil <= 60) { scoreColor = dark; label = '중성'; }
                             else if (mst >= 50 && oil >= 70) { scoreColor = light; label = '지성'; }
-                            else if (mst <= 40 && oil >= 70) { scoreColor = 'rgba(0,0,0,0.7)'; label = '수부지'; }
-                            else if (mst <= 40 && oil <= 30) { scoreColor = 'rgba(0,0,0,0.35)'; label = '건성'; }
+                            else if (mst <= 40 && oil >= 70) { scoreColor = 'rgba(0,0,0,0.78)'; label = '수부지'; }
+                            else if (mst <= 40 && oil <= 30) { scoreColor = 'rgba(0,0,0,0.4)'; label = '건성'; }
                             else { scoreColor = mid; label = '복합성'; }
                           } else if (d === 'skinTone') {
                             if (v >= 80) { scoreColor = dark; label = '균일'; }
                             else if (v >= 60) { scoreColor = light; label = '양호'; }
-                            else if (v >= 40) { scoreColor = 'rgba(0,0,0,0.35)'; label = '불균일'; }
-                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '칙칙'; }
+                            else if (v >= 40) { scoreColor = 'rgba(0,0,0,0.4)'; label = '불균일'; }
+                            else { scoreColor = 'rgba(0,0,0,0.78)'; label = '칙칙'; }
                           } else if (d === 'redness') {
                             if (v >= 75) { scoreColor = dark; label = '깨끗'; }
                             else if (v >= 55) { scoreColor = light; label = '양호'; }
-                            else if (v >= 35) { scoreColor = 'rgba(0,0,0,0.35)'; label = '홍조'; }
-                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '나쁨'; }
+                            else if (v >= 35) { scoreColor = 'rgba(0,0,0,0.4)'; label = '홍조'; }
+                            else { scoreColor = 'rgba(0,0,0,0.78)'; label = '나쁨'; }
                           } else if (d === 'pigmentation') {
                             if (v >= 80) { scoreColor = dark; label = '맑음'; }
                             else if (v >= 60) { scoreColor = light; label = '양호'; }
-                            else if (v >= 40) { scoreColor = 'rgba(0,0,0,0.35)'; label = '주의'; }
-                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '나쁨'; }
+                            else if (v >= 40) { scoreColor = 'rgba(0,0,0,0.4)'; label = '주의'; }
+                            else { scoreColor = 'rgba(0,0,0,0.78)'; label = '나쁨'; }
                           } else if (d === 'trouble') {
                             if (v <= 2) { scoreColor = dark; label = '깨끗'; }
                             else if (v <= 5) { scoreColor = light; label = '경증'; }
-                            else if (v <= 10) { scoreColor = 'rgba(0,0,0,0.35)'; label = '중등도'; }
-                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '중증'; }
+                            else if (v <= 10) { scoreColor = 'rgba(0,0,0,0.4)'; label = '중등도'; }
+                            else { scoreColor = 'rgba(0,0,0,0.78)'; label = '중증'; }
                           } else if (d === 'texture') {
                             if (v >= 80) { scoreColor = dark; label = '좋음'; }
                             else if (v >= 60) { scoreColor = light; label = '양호'; }
-                            else if (v >= 40) { scoreColor = 'rgba(0,0,0,0.35)'; label = '거칠음'; }
-                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '나쁨'; }
+                            else if (v >= 40) { scoreColor = 'rgba(0,0,0,0.4)'; label = '거칠음'; }
+                            else { scoreColor = 'rgba(0,0,0,0.78)'; label = '나쁨'; }
                           } else if (d === 'elasticity') {
                             if (v >= 80) { scoreColor = dark; label = '탄탄'; }
                             else if (v >= 60) { scoreColor = light; label = '양호'; }
-                            else if (v >= 40) { scoreColor = 'rgba(0,0,0,0.35)'; label = '처짐'; }
-                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '나쁨'; }
+                            else if (v >= 40) { scoreColor = 'rgba(0,0,0,0.4)'; label = '처짐'; }
+                            else { scoreColor = 'rgba(0,0,0,0.78)'; label = '나쁨'; }
                           } else if (d === 'pores') {
                             if (v >= 80) { scoreColor = dark; label = '좋음'; }
                             else if (v >= 60) { scoreColor = light; label = '정상'; }
-                            else if (v >= 40) { scoreColor = 'rgba(0,0,0,0.35)'; label = '넓음'; }
-                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '나쁨'; }
+                            else if (v >= 40) { scoreColor = 'rgba(0,0,0,0.4)'; label = '넓음'; }
+                            else { scoreColor = 'rgba(0,0,0,0.78)'; label = '나쁨'; }
                           } else if (d === 'wrinkles') {
                             if (v >= 85) { scoreColor = dark; label = '좋음'; }
                             else if (v >= 65) { scoreColor = light; label = '양호'; }
-                            else if (v >= 45) { scoreColor = 'rgba(0,0,0,0.35)'; label = '보통'; }
-                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '나쁨'; }
+                            else if (v >= 45) { scoreColor = 'rgba(0,0,0,0.4)'; label = '보통'; }
+                            else { scoreColor = 'rgba(0,0,0,0.78)'; label = '나쁨'; }
                           } else if (d === 'darkCircles') {
                             if (v >= 80) { scoreColor = dark; label = '밝음'; }
                             else if (v >= 60) { scoreColor = light; label = '양호'; }
-                            else if (v >= 40) { scoreColor = 'rgba(0,0,0,0.35)'; label = '눈에띔'; }
-                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '나쁨'; }
+                            else if (v >= 40) { scoreColor = 'rgba(0,0,0,0.4)'; label = '눈에띔'; }
+                            else { scoreColor = 'rgba(0,0,0,0.78)'; label = '나쁨'; }
                           } else {
                             if (v >= 75) { scoreColor = dark; label = '좋음'; }
                             else if (v >= 55) { scoreColor = light; label = '보통'; }
-                            else if (v >= 35) { scoreColor = 'rgba(0,0,0,0.35)'; label = '주의'; }
-                            else { scoreColor = 'rgba(0,0,0,0.7)'; label = '나쁨'; }
+                            else if (v >= 35) { scoreColor = 'rgba(0,0,0,0.4)'; label = '주의'; }
+                            else { scoreColor = 'rgba(0,0,0,0.78)'; label = '나쁨'; }
                           }
                           return <>
                             <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3 }}>
@@ -2399,7 +2399,7 @@ export default function App() {
                   if (weakCats.length === 0) return null;
                   return (
                     <div style={{ marginBottom: 12 }}>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(0,0,0,0.8)', marginBottom: 8 }}>제품</div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(0,0,0,0.78)', marginBottom: 8 }}>제품</div>
                       {weakCats.slice(0, 2).map((cat) => {
                         const meta = CATEGORY_META[cat];
                         if (!meta) return null;
@@ -2414,7 +2414,7 @@ export default function App() {
                             <div style={{
                               padding: '12px 14px',
                             }}>
-                              <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                              <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(0,0,0,0.78)', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                                 <span style={{ opacity: 0.9, display: 'inline-flex' }}>{({moisture: <DropletIcon size={10}/>, oilBalance: <BubbleIcon size={10}/>, pigmentationScore: <PaletteIcon size={10}/>, wrinkleScore: <RulerIcon size={10}/>, troubleCount: <RednessIcon size={10}/>, darkCircleScore: <EyeIcon size={10}/>})[meta.metricKey]}</span>
                                 {meta.label}
                                 {(() => {
@@ -2437,7 +2437,7 @@ export default function App() {
                                   transition: 'background 0.2s',
                                 }}>
                                 <div style={{ flex: 1, minWidth: 0 }}>
-                                  <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(0,0,0,0.6)',
+                                  <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(0,0,0,0.55)',
                                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                     {product.brand} {product.name}
                                   </div>
@@ -2445,14 +2445,14 @@ export default function App() {
                                     {product.tags?.slice(0, 2).map((tag, ti) => (
                                       <span key={ti} style={{
                                         fontSize: 10, fontWeight: 500, padding: '2px 6px', borderRadius: 4,
-                                        background: 'rgba(0,0,0,0.04)', color: 'rgba(0,0,0,0.35)',
+                                        background: 'rgba(0,0,0,0.04)', color: 'rgba(0,0,0,0.4)',
                                       }}>{tag}</span>
                                     ))}
-                                    <span style={{ fontSize: 10, color: 'rgba(0,0,0,0.35)' }}>{product.volume}</span>
+                                    <span style={{ fontSize: 10, color: 'rgba(0,0,0,0.4)' }}>{product.volume}</span>
                                   </div>
                                 </div>
                                 <span style={{
-                                  fontSize: 10, fontWeight: 500, color: 'rgba(0,0,0,0.35)', flexShrink: 0,
+                                  fontSize: 10, fontWeight: 500, color: 'rgba(0,0,0,0.4)', flexShrink: 0,
                                 }}>구매 ›</span>
                               </a>
                             ))}
@@ -2462,7 +2462,7 @@ export default function App() {
                     </div>
                   );
                 })()}
-                <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.35)', textAlign: 'center', marginBottom: 24, lineHeight: 1.4 }}>
+                <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.4)', textAlign: 'center', marginBottom: 24, lineHeight: 1.4 }}>
                   이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
                 </div>
                 {/* Treatment recommendations */}
@@ -2471,7 +2471,7 @@ export default function App() {
                   if (treatments.length === 0) return null;
                   return (
                     <div style={{ marginBottom: 12 }}>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(0,0,0,0.8)', marginBottom: 8 }}>시술</div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(0,0,0,0.78)', marginBottom: 8 }}>시술</div>
                       {(() => {
                         const grouped = {};
                         treatments.forEach(t => {
@@ -2489,20 +2489,20 @@ export default function App() {
                               <div style={{
                                 padding: '12px 14px',
                               }}>
-                                <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ opacity: 0.9, display: 'inline-flex' }}>{({lifting: <DiamondIcon size={10}/>, pigmentation: <PaletteIcon size={10}/>, texture: <SparkleIcon size={10}/>, wrinkle: <RulerIcon size={10}/>, acne: <RednessIcon size={10}/>, rejuvenation: <DropletIcon size={10}/>})[cat]}</span>{catMeta?.label}</div>
+                                <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(0,0,0,0.78)', display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ opacity: 0.9, display: 'inline-flex' }}>{({lifting: <DiamondIcon size={10}/>, pigmentation: <PaletteIcon size={10}/>, texture: <SparkleIcon size={10}/>, wrinkle: <RulerIcon size={10}/>, acne: <RednessIcon size={10}/>, rejuvenation: <DropletIcon size={10}/>})[cat]}</span>{catMeta?.label}</div>
                               </div>
                               {items.map((t, ti) => (
                                 <div key={t.id} style={{
                                   padding: '12px 14px',
                                   borderTop: '1px solid rgba(0,0,0,0.04)',
                                 }}>
-                                  <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(0,0,0,0.6)' }}>
+                                  <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(0,0,0,0.55)' }}>
                                     {t.name}
                                   </div>
-                                  <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.35)', marginTop: 2, lineHeight: 1.3 }}>
+                                  <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.4)', marginTop: 2, lineHeight: 1.3 }}>
                                     {t.mechanism.length > 35 ? t.mechanism.slice(0, 35) + '...' : t.mechanism}
                                   </div>
-                                  <div style={{ display: 'flex', gap: 8, marginTop: 3, fontSize: 10, color: 'rgba(0,0,0,0.35)' }}>
+                                  <div style={{ display: 'flex', gap: 8, marginTop: 3, fontSize: 10, color: 'rgba(0,0,0,0.4)' }}>
                                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
                                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8a3 3 0 013-3h12a3 3 0 013 3v8a3 3 0 01-3 3H6a3 3 0 01-3-3z"/><path d="M3 10h18"/></svg>
                                       {t.costRange}
@@ -2524,14 +2524,14 @@ export default function App() {
                       })()}
                       <button onClick={() => setFabChatOpen(true)} style={{
                         width: '100%', padding: '10px 0', borderRadius: 10, border: 'none',
-                        background: 'rgba(0,0,0,0.03)', color: 'rgba(0,0,0,0.35)',
+                        background: 'rgba(0,0,0,0.03)', color: 'rgba(0,0,0,0.4)',
                         fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
                         marginTop: 8,
                       }}>
                         루아에게 문의
                       </button>
-                      <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.35)', textAlign: 'center', marginTop: 6, lineHeight: 1.4 }}>
+                      <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.4)', textAlign: 'center', marginTop: 6, lineHeight: 1.4 }}>
                         <span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><ShieldIcon size={10} /></span> 의료 행위가 아닌 정보 제공 목적입니다. 시술은 전문 의료진과 상담 후 결정하세요.
                       </div>
                     </div>
@@ -2554,21 +2554,21 @@ export default function App() {
               <div className="result-section-divider" />
               <div className="result-section-body">
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 13 }}>
-                  <span style={{ color: 'rgba(0,0,0,0.35)' }}>피부 타입</span>
-                  <span style={{ color: 'rgba(0,0,0,0.8)', fontWeight: 500 }}>{result.skinType}</span>
+                  <span style={{ color: 'rgba(0,0,0,0.4)' }}>피부 타입</span>
+                  <span style={{ color: 'rgba(0,0,0,0.78)', fontWeight: 500 }}>{result.skinType}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 13 }}>
-                  <span style={{ color: 'rgba(0,0,0,0.35)' }}>분석 모드</span>
+                  <span style={{ color: 'rgba(0,0,0,0.4)' }}>분석 모드</span>
                   <span style={{
                     fontSize: 11, fontWeight: 500,
-                    color: result.analysisMode === 'hybrid' ? 'var(--accent-primary)' : 'rgba(0,0,0,0.35)',
+                    color: result.analysisMode === 'hybrid' ? 'var(--accent-primary)' : 'rgba(0,0,0,0.4)',
                     background: result.analysisMode === 'hybrid' ? 'rgba(var(--accent-rgb),0.1)' : 'rgba(107,127,153,0.1)',
                     padding: '2px 8px', borderRadius: 8,
                   }}>{result.analysisMode === 'hybrid' ? 'AI + CV 하이브리드' : 'CV 비전 분석'}</span>
                 </div>
                 {result.confidence != null && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 13 }}>
-                    <span style={{ color: 'rgba(0,0,0,0.35)' }}>측정 신뢰도</span>
+                    <span style={{ color: 'rgba(0,0,0,0.4)' }}>측정 신뢰도</span>
                     <span style={{
                       fontWeight: 500,
                       color: result.confidence >= 70 ? 'var(--accent-primary)' : result.confidence >= 50 ? 'rgba(var(--accent-rgb),0.6)' : '#FFB8C8',
@@ -2577,7 +2577,7 @@ export default function App() {
                 )}
                 {result.concerns?.length > 0 && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', fontSize: 13 }}>
-                    <span style={{ color: 'rgba(0,0,0,0.35)' }}>관심 사항</span>
+                    <span style={{ color: 'rgba(0,0,0,0.4)' }}>관심 사항</span>
                     <div style={{ display: 'flex', gap: 4 }}>
                       {result.concerns.map((concern, i) => (
                         <span key={i} style={{
@@ -2596,7 +2596,7 @@ export default function App() {
                     background: 'var(--card-sm-bg)',
                   }}>
                     <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent-primary)', marginBottom: 2 }}>AI 정밀 분석이 일시 지연됐어요</div>
-                    <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.35)', lineHeight: 1.5 }}>네트워크 또는 분석 서버 일시 지연으로 기본 분석(CV)으로 처리됐어요. 잠시 후 다시 측정하면 보통 정상 복귀됩니다.</div>
+                    <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.4)', lineHeight: 1.5 }}>네트워크 또는 분석 서버 일시 지연으로 기본 분석(CV)으로 처리됐어요. 잠시 후 다시 측정하면 보통 정상 복귀됩니다.</div>
                   </div>
                 )}
                 {result?.measureDebug && (() => {
@@ -2610,7 +2610,7 @@ export default function App() {
                     <div style={{
                       marginTop: 8, padding: '8px 10px', borderRadius: 10,
                       background: 'rgba(var(--accent-rgb),0.06)', border: 'none',
-                      fontSize: 10, color: 'rgba(0,0,0,0.35)', lineHeight: 1.6,
+                      fontSize: 10, color: 'rgba(0,0,0,0.4)', lineHeight: 1.6,
                     }}>
                       <div style={{ fontWeight: 600, marginBottom: 2 }}>측정 정확도 디버그 (베타 임시)</div>
                       <div>디바이스: {d.device} ({sameDevText})</div>
@@ -2632,10 +2632,10 @@ export default function App() {
                     background: 'rgba(183,218,251,0.15)', border: 'none',
                   }}>
                     <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(var(--accent-rgb),0.5)', marginBottom: 2 }}>오늘 결과가 평소와 크게 달라요</div>
-                    <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.35)', lineHeight: 1.5 }}>{result.outlierReason}. 조명/각도/메이크업 차이일 가능성이 있어요.</div>
+                    <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.4)', lineHeight: 1.5 }}>{result.outlierReason}. 조명/각도/메이크업 차이일 가능성이 있어요.</div>
                   </div>
                 )}
-                <p style={{ fontSize: 11, color: 'rgba(0,0,0,0.35)', textAlign: 'center', marginTop: 10, marginBottom: 4, lineHeight: 1.4 }}>본 분석은 피부과 임상 기기를 참조한 AI 분석 결과이며, 의료 진단을 대체하지 않습니다. 정확한 진단은 피부과 전문의와 상담해주세요.</p>
+                <p style={{ fontSize: 11, color: 'rgba(0,0,0,0.4)', textAlign: 'center', marginTop: 10, marginBottom: 4, lineHeight: 1.4 }}>본 분석은 피부과 임상 기기를 참조한 AI 분석 결과이며, 의료 진단을 대체하지 않습니다. 정확한 진단은 피부과 전문의와 상담해주세요.</p>
               </div>
             </>)}
           </div>
@@ -2720,11 +2720,11 @@ export default function App() {
           {!fabChatOpen && !localStorage.getItem('fab_hint_dismissed') && (
             <div onClick={(e) => { e.stopPropagation(); localStorage.setItem('fab_hint_dismissed', '1'); }} style={{
               position: 'absolute', bottom: '100%', right: 0, marginBottom: 10,
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(240,240,240,0.85) 100%)',
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(240,240,240,0.85) 100%)',
               backdropFilter: 'none', WebkitBackdropFilter: 'none',
               borderRadius: '30px 30px 4px 30px', padding: '9px 14px', whiteSpace: 'nowrap',
               border: 'none',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
               animation: 'fabHintIn 0.5s ease-out 1.5s both, fabHintOut 0.4s ease-in 10s both',
               fontSize: 11, color: 'rgba(0,0,0,0.4)', fontWeight: 600, letterSpacing: -0.2,
             }}>
@@ -2791,7 +2791,7 @@ export default function App() {
           onClick={() => setShowCelebration(false)}
           style={{
             position: 'fixed', inset: 0, zIndex: 2000,
-            background: 'rgba(0,0,0,0.75)',
+            background: 'rgba(0,0,0,0.78)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             animation: 'fadeIn 0.3s ease',
           }}
@@ -2864,7 +2864,7 @@ export default function App() {
           onClick={() => setWeeklyBeforeAfterOpen(false)}
           style={{
             position: 'fixed', inset: 0, zIndex: 99999,
-            background: 'rgba(0,0,0,0.92)',
+            background: 'rgba(0,0,0,0.78)',
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
             padding: 'calc(60px + env(safe-area-inset-top, 0px)) 16px calc(40px + env(safe-area-inset-bottom, 0px))',
             animation: 'uxFadeIn 0.28s var(--ease-out-smooth)',
@@ -2876,7 +2876,7 @@ export default function App() {
             style={{
               position: 'absolute', top: 'calc(20px + env(safe-area-inset-top, 0px))', right: 20,
               width: 40, height: 40, borderRadius: 20,
-              background: 'rgba(255,255,255,0.16)', backdropFilter: 'blur(10px)',
+              background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)',
               border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
               cursor: 'pointer', zIndex: 2,
             }}
@@ -2935,7 +2935,7 @@ function WaterIntakeModal({ onClose, onUpdate }) {
   return (
     <div onClick={onClose} style={{
       position: 'fixed', inset: 0, zIndex: 1100,
-      background: 'rgba(0,0,0,0.5)',
+      background: 'rgba(0,0,0,0.55)',
       display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
     }}>
       <div onClick={e => e.stopPropagation()} style={{
@@ -3035,7 +3035,7 @@ function SleepInputModal({ onClose, onUpdate }) {
   return (
     <div onClick={onClose} style={{
       position: 'fixed', inset: 0, zIndex: 1100,
-      background: 'rgba(0,0,0,0.5)',
+      background: 'rgba(0,0,0,0.55)',
       display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
     }}>
       <div onClick={e => e.stopPropagation()} style={{
@@ -3055,7 +3055,7 @@ function SleepInputModal({ onClose, onUpdate }) {
             <button key={m.key} onClick={() => setMode(m.key)} style={{
               flex: 1, padding: '8px 0', borderRadius: 8, fontSize: 12, fontWeight: mode === m.key ? 600 : 400,
               border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-              background: mode === m.key ? 'rgba(255,255,255,.95)' : 'transparent',
+              background: mode === m.key ? 'rgba(255,255,255,0.92)' : 'transparent',
               color: mode === m.key ? '#5B6AAF' : 'var(--text-muted)',
               boxShadow: mode === m.key ? '0 1px 4px rgba(91,106,175,.15)' : 'none',
               transition: 'all 0.15s ease',

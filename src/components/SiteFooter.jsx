@@ -8,7 +8,7 @@ import { COMPANY_INFO, DPO_INFO } from '../legal/legalContent';
 export default function SiteFooter() {
   const [expanded, setExpanded] = useState(false);
 
-  const c = 'rgba(0,0,0,0.25)';
+  const c = 'rgba(0,0,0,0.15)';
 
   return (
     <div style={{

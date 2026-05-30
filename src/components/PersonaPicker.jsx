@@ -55,7 +55,7 @@ export default function PersonaPicker({ open, activeId, onSelect, onClose, ancho
           width: 'min(280px, calc(100% - 28px))',
           background: '#ffffff',
           borderRadius: 24,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.14), 0 1px 2px rgba(0,0,0,0.04)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.15), 0 1px 2px rgba(0,0,0,0.04)',
           zIndex: 320,
           overflow: 'hidden',
           padding: '3px 0',

@@ -57,7 +57,7 @@ export default function SkinMeasurePage({ onClose, onCapture, colorMode }) {
                 <ellipse cx="50%" cy="42%" rx="34%" ry="28%" fill="black" />
               </mask>
             </defs>
-            <rect width="100%" height="100%" fill="rgba(0,0,0,0.5)" mask="url(#oval-mask)" />
+            <rect width="100%" height="100%" fill="rgba(0,0,0,0.55)" mask="url(#oval-mask)" />
             <ellipse
               cx="50%" cy="42%" rx="34%" ry="28%"
               fill="none"
@@ -126,7 +126,7 @@ export default function SkinMeasurePage({ onClose, onCapture, colorMode }) {
             background: 'rgba(255,255,255,0.85)', border: 'none',
             color: '#191F28', fontSize: 18, cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
             zIndex: 10,
           }}
         >
@@ -143,7 +143,7 @@ export default function SkinMeasurePage({ onClose, onCapture, colorMode }) {
             padding: '8px 14px', borderRadius: 10,
             background: 'rgba(255,255,255,0.85)', border: 'none',
             color: '#191F28', fontSize: 12, fontWeight: 600, cursor: 'pointer',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
             zIndex: 10,
           }}
         >
@@ -213,7 +213,7 @@ export default function SkinMeasurePage({ onClose, onCapture, colorMode }) {
         >
           <div style={{
             width: 56, height: 56, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.3)',
+            background: 'rgba(255,255,255,0.2)',
           }} />
         </button>
       </div>

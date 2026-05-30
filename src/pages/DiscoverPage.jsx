@@ -325,7 +325,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
               <div style={{ display: 'flex', gap: 6 }}>
                 {[{ k: '7d', l: '7일' }, { k: '4w', l: '4주' }, { k: '3m', l: '3개월' }].map(p => (
                   <button key={p.k} onClick={() => setPeriod(p.k)} style={{
-                    padding: '4px 10px', borderRadius: 10, border: period === p.k ? 'none' : '1px solid rgba(255,255,255,0.3)', fontSize: 10, fontWeight: 500,
+                    padding: '4px 10px', borderRadius: 10, border: period === p.k ? 'none' : '1px solid rgba(255,255,255,0.2)', fontSize: 10, fontWeight: 500,
                     background: period === p.k ? 'var(--accent-primary, var(--accent-primary))' : 'rgba(255,255,255,0.4)',
                     color: period === p.k ? '#fff' : 'var(--text-muted)',
                     cursor: 'pointer', fontFamily: 'inherit',
@@ -341,7 +341,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                   <button key={m.key} onClick={() => setTrendMetric(m.key)} style={{
                     padding: '3px 8px', borderRadius: 7, border: 'none',
                     background: active ? 'var(--accent-primary)12' : 'rgba(0,0,0,0.04)',
-                    color: active ? 'var(--accent-primary)' : 'rgba(0,0,0,0.35)',
+                    color: active ? 'var(--accent-primary)' : 'rgba(0,0,0,0.4)',
                     fontSize: 11, fontWeight: 600, lineHeight: 1.3,
                     cursor: 'pointer', fontFamily: 'inherit',
                     flexShrink: 0, whiteSpace: 'nowrap',
@@ -481,7 +481,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                     <div key={i} style={{ padding: '8px 0', borderTop: i > 0 ? '0.5px solid rgba(255,255,255,0.2)' : 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
                       <div style={{
                         width: 32, height: 32, borderRadius: 8, flexShrink: 0,
-                        background: f.type === 'product' ? 'rgba(var(--accent-rgb),0.12)' : 'rgba(255,255,255,0.25)',
+                        background: f.type === 'product' ? 'rgba(var(--accent-rgb),0.12)' : 'rgba(255,255,255,0.2)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                       }}>
                         {f.type === 'product' ? (
@@ -493,7 +493,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</div>
                         <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{f.type === 'habit' ? '습관' : '화장품'}{f.samples ? ` · ${f.samples}회` : ''}</div>
-                        <div style={{ marginTop: 5, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.25)', position: 'relative' }}>
+                        <div style={{ marginTop: 5, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.2)', position: 'relative' }}>
                           <div style={{ position: 'absolute', left: '50%', top: -2, width: 1, height: 8, background: 'rgba(255,255,255,0.4)' }} />
                           {f.impact > 0 ? (
                             <div style={{ position: 'absolute', left: '50%', top: 0, height: '100%', borderRadius: 2, background: 'var(--accent-primary, var(--accent-primary))', width: `${barWidth}%` }} />

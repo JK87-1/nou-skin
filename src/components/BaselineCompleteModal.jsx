@@ -40,7 +40,7 @@ export default function BaselineCompleteModal({ avgScore, onClose }) {
         width: '100%', maxWidth: 360,
         background: 'linear-gradient(180deg, #ffffff 0%, #f4f8fc 100%)',
         borderRadius: 28, padding: '32px 24px 24px',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.18)',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
         textAlign: 'center',
         animation: 'baselineRise 360ms cubic-bezier(0.32,0.72,0,1)',
       }}>

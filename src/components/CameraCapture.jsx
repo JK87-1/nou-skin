@@ -301,8 +301,8 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
     ctx.save();
     const vignette = ctx.createRadialGradient(cx, cy, Math.min(rx, ry) * 0.5, cx, cy, Math.max(W, H) * 0.7);
     vignette.addColorStop(0, 'rgba(0,0,0,0)');
-    vignette.addColorStop(0.6, 'rgba(0,0,0,0.1)');
-    vignette.addColorStop(1, 'rgba(0,0,0,0.3)');
+    vignette.addColorStop(0.6, 'rgba(0,0,0,0.08)');
+    vignette.addColorStop(1, 'rgba(0,0,0,0.4)');
     ctx.fillStyle = vignette;
     ctx.fillRect(0, 0, W, H);
     ctx.restore();
@@ -318,7 +318,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
     if (scanComplete && !scanStopped) setScanStopped(true);
     if (!scanComplete && scanStopped) setScanStopped(false);
     ctx.save();
-    ctx.strokeStyle = scanComplete ? 'rgba(255, 255, 255, 0.6)' : 'rgba(30, 144, 232, 0.55)';
+    ctx.strokeStyle = scanComplete ? 'rgba(255,255,255,0.7)' : 'rgba(30, 144, 232, 0.55)';
     ctx.lineWidth = 2.5;
     ctx.setLineDash(scanComplete ? [3, 4] : [2, 5]);
     // faceline.svg path (viewBox 302x437) — 얼굴 윤곽선
@@ -337,7 +337,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
     const mL = cx - rx - pad, mR = cx + rx + pad;
     const mT = cy - ry - pad, mB = cy + ry + pad;
     ctx.save();
-    ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)';
     ctx.lineWidth = 1.2;
     ctx.lineCap = 'round';
     ctx.beginPath(); ctx.moveTo(mL, mT + markerLen); ctx.lineTo(mL, mT); ctx.lineTo(mL + markerLen, mT); ctx.stroke();
@@ -409,7 +409,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
         ctx.textBaseline = 'middle';
         const tw = ctx.measureText(zone.label).width;
         const bw = tw + 20, bh = 20;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
         ctx.beginPath();
         ctx.roundRect(-bw / 2, -bh / 2, bw, bh, bh / 2);
         ctx.fill();
@@ -799,7 +799,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
             <div style={{
               position: 'absolute', left: 0, right: 0,
               height: 60,
-              background: 'linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.25) 50%, rgba(255,255,255,0) 100%)',
+              background: 'linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%)',
               animation: 'luaScan 3s ease-in-out infinite',
               pointerEvents: 'none',
             }} />
@@ -839,7 +839,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
             position: 'absolute', top: 'calc(56px + env(safe-area-inset-top, 0px))',
             left: '50%', transform: 'translateX(-50%)',
             padding: '6px 11px',
-            background: 'rgba(0, 0, 0, 0.78)',
+            background: 'rgba(0,0,0,0.78)',
             borderRadius: 14,
             display: 'flex', alignItems: 'center', gap: 6,
             zIndex: 10,
@@ -897,7 +897,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
             style={{
               fontSize: 64, fontWeight: 600, color: '#fff',
               fontFamily: 'var(--font-display), Pretendard, sans-serif',
-              textShadow: '0 2px 12px rgba(0,0,0,0.3)',
+              textShadow: '0 2px 12px rgba(0,0,0,0.4)',
               animation: 'countdownPop 0.45s cubic-bezier(0.34,1.56,0.64,1) both',
             }}
           >{autoCountdown}</div>
@@ -928,7 +928,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
                 transition: 'all 0.3s',
               }} />
               <span style={{
-                color: conditions[key] ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)',
+                color: conditions[key] ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.2)',
                 fontSize: 10, fontWeight: 500, transition: 'color 0.3s',
               }}>{label}</span>
             </div>
@@ -942,7 +942,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
           style={{
             width: 64, height: 64, borderRadius: '50%',
             background: 'transparent',
-            border: `2px solid ${canCapture ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.15)'}`,
+            border: `2px solid ${canCapture ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.2)'}`,
             cursor: canCapture && !isCapturing ? 'pointer' : 'default',
             transition: 'all 0.3s',
             opacity: isCapturing ? 0.5 : 1,
@@ -952,7 +952,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
         >
           <div style={{
             width: 52, height: 52, borderRadius: '50%',
-            background: canCapture ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.08)',
+            background: canCapture ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.08)',
             transition: 'all 0.3s',
           }} />
         </button>

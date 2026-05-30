@@ -224,7 +224,7 @@ select:focus-visible {
   --bg-card-solid: #111118;
   --bg-elevated: rgba(255,255,255,0.04);
   --bg-modal: rgba(20,20,30,0.95);
-  --bg-modal-overlay: rgba(0,0,0,0.6);
+  --bg-modal-overlay: rgba(0,0,0,0.55);
   --bg-input: rgba(255,255,255,0.06);
   --bg-photo-stage: #08080c;
   /* Borders */
@@ -244,7 +244,7 @@ select:focus-visible {
   --tab-bg: rgba(8,8,14,0.88);
   --tab-border: rgba(255,255,255,0.06);
   --tab-inactive: #444458;
-  --tab-shadow: 0 -1px 20px rgba(var(--accent-rgb),0.06), 0 8px 32px rgba(0,0,0,0.6);
+  --tab-shadow: 0 -1px 20px rgba(var(--accent-rgb),0.06), 0 8px 32px rgba(0,0,0,0.55);
   /* Misc */
   --bar-track: rgba(255,255,255,0.06);
   --glass-inset: inset 0 1px 1px rgba(255,255,255,0.05);
@@ -254,7 +254,7 @@ select:focus-visible {
   --accent-rgb: 101,152,239; /* --accent-primary as RGB triplet for rgba(var(--accent-rgb), a) */
   --accent-secondary: #a8c8f8;
   --accent-gradient: linear-gradient(135deg, #6598ef, #85b0f5);
-  --text-disabled: rgba(255,255,255,0.15);
+  --text-disabled: rgba(255,255,255,0.2);
   --consult-bg: linear-gradient(180deg, #08080c 0%, #0c0c10 100%);
 
   /* Structural variables (dark defaults) */
@@ -272,7 +272,7 @@ select:focus-visible {
   /* Card system (배경·그림자·패딩 — 곡률은 --card-*-radius / 다크 기본) */
   --card-bg: rgba(255,255,255,0.05);
   --card-blur: none;
-  --card-shadow: 0 2px 8px rgba(0,0,0,0.3); /* 다크: 탭바 세기에 맞춘 아래방향 */
+  --card-shadow: 0 2px 8px rgba(0,0,0,0.4); /* 다크: 탭바 세기에 맞춘 아래방향 */
   --card-pad: 20px;
   --card-nested-bg: rgba(255,255,255,0.03);
   --card-nested-pad: 16px;
@@ -291,7 +291,7 @@ select:focus-visible {
 
   /* Sheet / Modal */
   --sheet-bg: #1a1a24;
-  --sheet-handle: rgba(255,255,255,0.15);
+  --sheet-handle: rgba(255,255,255,0.2);
   /* Progress */
   --progress-track: rgba(255,255,255,0.06);
   --progress-fill: linear-gradient(90deg, #85b0f5, #6598ef, #a8c8f8);
@@ -323,23 +323,23 @@ select:focus-visible {
   /* Surfaces — Sky glassmorphism */
   --bg-primary: transparent;
   --bg-secondary: transparent;
-  --bg-card: rgba(255,255,255,0.5);
-  --bg-card-hover: rgba(255,255,255,0.5);
-  --bg-card-solid: rgba(255,255,255,0.5);
-  --bg-elevated: rgba(255,255,255,0.5);
+  --bg-card: rgba(255,255,255,0.4);
+  --bg-card-hover: rgba(255,255,255,0.4);
+  --bg-card-solid: rgba(255,255,255,0.4);
+  --bg-elevated: rgba(255,255,255,0.4);
   --bg-modal: #FFFFFF;
   --bg-modal-overlay: rgba(0,0,0,0.4);
-  --bg-input: rgba(255,255,255,0.5);
+  --bg-input: rgba(255,255,255,0.4);
   /* Borders — no glass */
   --border-subtle: transparent;
   --border-light: transparent;
   --border-separator: transparent;
   /* Text — 텍스트 시스템 v1.0 블랙 계열(중립) */
   --text-primary: #1A1A1A;            /* 메인 (니어 블랙) */
-  --text-secondary: rgba(0,0,0,0.6);  /* 보조·라벨 */
-  --text-muted: rgba(0,0,0,0.45);     /* tertiary — 비활성·메타 */
-  --text-dim: rgba(0,0,0,0.35);       /* 더 흐림 */
-  --text-disabled: rgba(0,0,0,0.25);  /* 비활성 */
+  --text-secondary: rgba(0,0,0,0.55);  /* 보조·라벨 */
+  --text-muted: rgba(0,0,0,0.4);     /* tertiary — 비활성·메타 */
+  --text-dim: rgba(0,0,0,0.4);       /* 더 흐림 */
+  --text-disabled: rgba(0,0,0,0.15);  /* 비활성 */
   /* Shadows — subtle black 0.03 */
   --shadow-card: 0 2px 8px rgba(0,0,0,0.03);
   --shadow-elevated: 0 2px 8px rgba(0,0,0,0.03);
@@ -347,10 +347,10 @@ select:focus-visible {
   /* Tab bar */
   --tab-bg: #ffffff;
   --tab-border: transparent;
-  --tab-inactive: rgba(0,0,0,0.3);
+  --tab-inactive: rgba(0,0,0,0.4);
   --tab-shadow: 0 -2px 8px rgba(0,0,0,0.03);
   /* Misc */
-  --bar-track: rgba(255,255,255,0.35);
+  --bar-track: rgba(255,255,255,0.4);
   --glass-inset: none;
   --glass-accent-inset: none;
   --consult-bg: transparent;
@@ -358,11 +358,11 @@ select:focus-visible {
   /* Structural variables — Sky glass style */
   --btn-radius: var(--radius-md);
   --btn-primary-bg: var(--accent-primary);
-  --btn-primary-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  --btn-primary-shadow: 0 2px 8px rgba(0,0,0,0.08);
   --btn-secondary-bg: rgba(255,255,255,0.4);
   --btn-secondary-border: none;
   --chip-radius: var(--radius-sm);
-  --chip-bg: rgba(255,255,255,0.3);
+  --chip-bg: rgba(255,255,255,0.2);
   --chip-border: none;
   --chip-text: var(--text-secondary);
   --card-backdrop: blur(16px);
@@ -617,7 +617,7 @@ select:focus-visible {
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
 }
 .btn-primary:active {
   transform: scale(0.98);
@@ -673,7 +673,7 @@ select:focus-visible {
   transition: background 0.2s;
 }
 .btn-back:active {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255,255,255,0.2);
 }
 
 /* Cards */
@@ -1039,7 +1039,7 @@ select:focus-visible {
   left: 0;
   right: 0;
   height: 25%;
-  background: linear-gradient(to top, rgba(0,0,0,0.3) 0%, transparent 100%);
+  background: linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 100%);
   pointer-events: none;
   border-radius: 0 0 10px 10px;
 }
@@ -1698,7 +1698,7 @@ select:focus-visible {
   height: 24px;
   border-radius: 50%;
   border: none;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0,0,0,0.55);
   color: #fff;
   font-size: 14px;
   display: flex;
@@ -1830,7 +1830,7 @@ select:focus-visible {
 
 /* Segment control: glass style */
 [data-theme="light"] .segment-control {
-  background: rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.2);
   border: none;
   border-radius: 14px;
   padding: 4px;
@@ -1843,27 +1843,27 @@ select:focus-visible {
   border: none;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
 }
 [data-theme="light"] .segment-btn.active {
-  background: rgba(255,255,255,0.5);
+  background: rgba(255,255,255,0.4);
   color: #191F28;
   font-weight: var(--fw-semibold);
   border: none;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.3);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.2);
 }
 
 /* Button primary: flat solid */
 [data-theme="light"] .btn-primary {
   background: var(--accent-primary);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   border-radius: var(--radius-md);
 }
 [data-theme="light"] .btn-primary::after { display: none; }
 [data-theme="light"] .btn-primary:active {
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 }
 
 /* Button secondary: glass fill */
@@ -1875,17 +1875,17 @@ select:focus-visible {
   -webkit-backdrop-filter: none;
 }
 [data-theme="light"] .btn-secondary:active {
-  background: rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.7);
 }
 
 /* Button ghost: glass fill */
 [data-theme="light"] .btn-ghost {
   border: none;
-  background: rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.2);
   color: #4E5968;
 }
 [data-theme="light"] .btn-ghost:active {
-  background: rgba(255,255,255,0.5);
+  background: rgba(255,255,255,0.4);
 }
 
 /* Tags: glass fill */
@@ -1893,7 +1893,7 @@ select:focus-visible {
   border-radius: var(--radius-xs);
 }
 [data-theme="light"] .tag-secondary {
-  background: rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.2);
   color: #4E5968;
 }
 
@@ -1911,7 +1911,7 @@ select:focus-visible {
   color: #4E5968;
 }
 [data-theme="light"] .consult-chip:active {
-  background: rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.7);
   border: none;
 }
 [data-theme="light"] .consult-bubble.ai {
@@ -1934,7 +1934,7 @@ select:focus-visible {
   border-radius: 20px 4px 20px 20px;
 }
 [data-theme="light"] .consult-typing {
-  background: rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.2);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   border: none;
@@ -1959,7 +1959,7 @@ select:focus-visible {
 
 /* Trend bar */
 [data-theme="light"] .trend-bar {
-  background: rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.2);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   border: none;
@@ -1989,7 +1989,7 @@ select:focus-visible {
   background: rgba(255,255,255,0.4);
 }
 [data-theme="light"] .history-divider {
-  background: rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.2);
 }
 
 /* ===== Goal Slider — LUA style ===== */
@@ -2055,7 +2055,7 @@ select:focus-visible {
   --chip-text: #c080d0;
 }
 [data-skin="pink"] .tab-bar {
-  background: rgba(255,255,255,0.95);
+  background: rgba(255,255,255,0.92);
 }
 [data-skin="pink"] .lua-goal-slider::-webkit-slider-thumb {
   border-color: #e9a8f0;
@@ -2091,11 +2091,11 @@ select:focus-visible {
 .result-section-title {
   font-size: 14px;
   font-weight: var(--fw-semibold);
-  color: rgba(0,0,0,0.8);
+  color: rgba(0,0,0,0.78);
 }
 .result-section-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 15%, rgba(255,255,255,0.3) 85%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 15%, rgba(255,255,255,0.2) 85%, transparent 100%);
   margin: 0 16px;
 }
 .result-section-body {

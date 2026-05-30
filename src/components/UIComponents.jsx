@@ -140,15 +140,15 @@ function DetailAccordion({ title, children, onToggle }) {
         width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0,
       }}>
-        <span style={{ fontSize: 16, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>{title}</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.3)" strokeWidth="2" strokeLinecap="round"
+        <span style={{ fontSize: 16, fontWeight: 600, color: 'rgba(0,0,0,0.78)' }}>{title}</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.4)" strokeWidth="2" strokeLinecap="round"
           style={{ transition: 'transform 0.3s ease', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}>
           <path d="M6 9l6 6 6-6" />
         </svg>
       </button>
       {open && (
         <>
-          <div style={{ height: 1, background: 'rgba(0,0,0,0.06)', margin: '14px 0' }} />
+          <div style={{ height: 1, background: 'rgba(0,0,0,0.08)', margin: '14px 0' }} />
           <div style={{ animation: 'fadeUp 0.3s ease-out' }}>
             {children}
           </div>
@@ -192,7 +192,7 @@ export function DetailPage({ metricKey, value, onBack }) {
         <div style={{ padding: '10px 15px 0' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {metricIconMap[metricKey]}
-            <h1 style={{ fontSize: 18, fontWeight: 600, color: 'rgba(0,0,0,0.8)', margin: 0 }}>
+            <h1 style={{ fontSize: 18, fontWeight: 600, color: 'rgba(0,0,0,0.78)', margin: 0 }}>
               {data.title}
             </h1>
           </div>
@@ -204,7 +204,7 @@ export function DetailPage({ metricKey, value, onBack }) {
       <div style={{ padding: '20px 16px' }}>
         {/* 1. Score Ranges — 가장 먼저 */}
         <div className="card">
-          <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 14, color: 'rgba(0,0,0,0.8)' }}>결과 해석</div>
+          <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 14, color: 'rgba(0,0,0,0.78)' }}>결과 해석</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             {data.ranges.map((r, i) => (
               <div key={i} style={{
@@ -232,7 +232,7 @@ export function DetailPage({ metricKey, value, onBack }) {
               marginBottom: i < data.references.length - 1 ? 10 : 0,
               borderRadius: 5, border: 'none', overflow: 'hidden',
             }}>
-              <div style={{ padding: '8px 10px', background: 'rgba(255,255,255,0.1)', fontWeight: 600, fontSize: 12, color: 'rgba(0,0,0,0.6)', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>{ref.name}</div>
+              <div style={{ padding: '8px 10px', background: 'rgba(255,255,255,0.1)', fontWeight: 600, fontSize: 12, color: 'rgba(0,0,0,0.55)', borderBottom: '1px solid rgba(0,0,0,0.08)' }}>{ref.name}</div>
               <div style={{ padding: '7px 10px', fontSize: 12, color: 'rgba(0,0,0,0.4)', lineHeight: 1.5 }}>{ref.description}</div>
               <div style={{ padding: '7px 10px', fontSize: 11, color: 'rgba(0,0,0,0.4)', fontStyle: 'italic', lineHeight: 1.5 }}>{ref.source}</div>
             </div>
@@ -240,14 +240,14 @@ export function DetailPage({ metricKey, value, onBack }) {
         </DetailAccordion>
 
         {/* 4. Disclaimer */}
-        <p style={{ fontSize: 10, color: 'rgba(0,0,0,0.25)', lineHeight: 1.5, textAlign: 'center', margin: '0 0 16px', padding: '0 19px' }}>
+        <p style={{ fontSize: 10, color: 'rgba(0,0,0,0.15)', lineHeight: 1.5, textAlign: 'center', margin: '0 0 16px', padding: '0 19px' }}>
           피부과 임상 기기(Corneometer, Mexameter 등)의 측정 원리를 컴퓨터 비전으로 구현하였으며, 임상 데이터와의 교차 검증을 통해 정확도를 개선하고 있습니다.
         </p>
 
         {anyAccordionOpen > 0 && (
           <button onClick={onBack} style={{
             width: '100%', padding: '12px 0', border: 'none', borderRadius: 12,
-            background: 'rgba(0,0,0,0.04)', color: 'rgba(0,0,0,0.25)',
+            background: 'rgba(0,0,0,0.04)', color: 'rgba(0,0,0,0.15)',
             fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
           }}>돌아가기</button>
         )}

@@ -161,7 +161,7 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
               background: 'var(--accent-primary, var(--accent-primary))',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               border: 'none',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.18)',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
             }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.8" strokeLinecap="round">
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
@@ -208,7 +208,7 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
                   background: albumView === 'grid' ? '#fff' : 'transparent',
                   border: 'none', borderRadius: 5, cursor: 'pointer',
                   boxShadow: albumView === 'grid' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-                  color: albumView === 'grid' ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.25)',
+                  color: albumView === 'grid' ? 'rgba(0,0,0,0.78)' : 'rgba(0,0,0,0.15)',
                   transition: 'all 0.2s',
                 }}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 3a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2v-4a2 2 0 0 1 2 -2z"/><path d="M19 3a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2v-4a2 2 0 0 1 2 -2z"/><path d="M9 13a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2v-4a2 2 0 0 1 2 -2z"/><path d="M19 13a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2v-4a2 2 0 0 1 2 -2z"/></svg>
@@ -218,7 +218,7 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
                   background: albumView === 'list' ? '#fff' : 'transparent',
                   border: 'none', borderRadius: 5, cursor: 'pointer',
                   boxShadow: albumView === 'list' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-                  color: albumView === 'list' ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.25)',
+                  color: albumView === 'list' ? 'rgba(0,0,0,0.78)' : 'rgba(0,0,0,0.15)',
                   transition: 'all 0.2s',
                 }}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M21 6a1 1 0 0 1 -1 1h-10a1 1 0 1 1 0 -2h10a1 1 0 0 1 1 1"/><path d="M21 12a1 1 0 0 1 -1 1h-10a1 1 0 0 1 0 -2h10a1 1 0 0 1 1 1"/><path d="M21 18a1 1 0 0 1 -1 1h-10a1 1 0 0 1 0 -2h10a1 1 0 0 1 1 1"/><rect x="3" y="4" width="4" height="4" rx="1"/><rect x="3" y="10" width="4" height="4" rx="1"/><rect x="3" y="16" width="4" height="4" rx="1"/></svg>
@@ -280,13 +280,13 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
                         <img src={p.thumb} alt={`${shortDate} 측정`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.35)' }}>
+                        <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.4)' }}>
                           {shortDate}{p.record.skinAge != null ? ` · 피부나이 ${p.record.skinAge}세` : ''}
                         </div>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: 2, flexShrink: 0 }}>
-                        <span style={{ fontSize: 18, fontWeight: 600, color: 'rgba(0,0,0,0.8)', letterSpacing: -0.5 }}>{p.record.overallScore ?? '--'}</span>
-                        <span style={{ fontSize: 10, fontWeight: 500, color: 'rgba(0,0,0,0.25)' }}>점</span>
+                        <span style={{ fontSize: 18, fontWeight: 600, color: 'rgba(0,0,0,0.78)', letterSpacing: -0.5 }}>{p.record.overallScore ?? '--'}</span>
+                        <span style={{ fontSize: 10, fontWeight: 500, color: 'rgba(0,0,0,0.15)' }}>점</span>
                         <span style={{ fontSize: 10, fontWeight: 600, minWidth: 20, marginLeft: 2, color: diff != null && diff !== 0 ? (diff > 0 ? 'var(--accent-primary)' : '#e05545') : 'transparent' }}>
                           {diff != null && diff !== 0 ? (diff > 0 ? `+${diff}` : diff) : '\u00A0'}
                         </span>
@@ -300,7 +300,7 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
                       width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center',
                       background: 'transparent', border: 'none', borderRadius: 10,
                       cursor: listPage === 1 ? 'default' : 'pointer',
-                      color: listPage === 1 ? 'rgba(0,0,0,0.12)' : 'rgba(0,0,0,0.25)',
+                      color: listPage === 1 ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.15)',
                       transition: 'all 0.2s',
                     }}>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
@@ -311,7 +311,7 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
                         background: 'transparent',
                         border: 'none', borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit',
                         fontSize: 12, fontWeight: n === listPage ? 600 : 400,
-                        color: n === listPage ? 'var(--accent-primary)' : 'rgba(0,0,0,0.25)',
+                        color: n === listPage ? 'var(--accent-primary)' : 'rgba(0,0,0,0.15)',
                         transition: 'all 0.2s',
                       }}>{n}</button>
                     ))}
@@ -319,7 +319,7 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
                       width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center',
                       background: 'transparent', border: 'none', borderRadius: 10,
                       cursor: listPage === totalPages ? 'default' : 'pointer',
-                      color: listPage === totalPages ? 'rgba(0,0,0,0.12)' : 'rgba(0,0,0,0.25)',
+                      color: listPage === totalPages ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.15)',
                       transition: 'all 0.2s',
                     }}>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 6l6 6-6 6"/></svg>
@@ -379,7 +379,7 @@ function BioEditModal({ bio, onSave, onClose }) {
   const [text, setText] = useState(bio);
   return (
     <>
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.18)', backdropFilter: 'none', WebkitBackdropFilter: 'none' }} />
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.15)', backdropFilter: 'none', WebkitBackdropFilter: 'none' }} />
       <div style={{
         position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201,
         background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none',
@@ -691,14 +691,14 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
       {icon}
       <span style={{ fontSize: 16, fontWeight: 500, flex: 1 }}>{label}</span>
       {right && <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{right}</span>}
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.3)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.4)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M9 6l6 6-6 6" />
       </svg>
     </div>
   );
 
   const SectionHeader = ({ label }) => (
-    <div style={{ padding: '18px 28px 6px', fontSize: 12, fontWeight: 600, color: 'rgba(0,0,0,0.35)', letterSpacing: 0.8 }}>{label}</div>
+    <div style={{ padding: '18px 28px 6px', fontSize: 12, fontWeight: 600, color: 'rgba(0,0,0,0.4)', letterSpacing: 0.8 }}>{label}</div>
   );
 
   return (
@@ -767,7 +767,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
             <div style={{ padding: '50px 40px 0', display: 'flex', flexDirection: 'column', gap: 16 }}>
               {/* 진단 리마인더 */}
               <div style={{ padding: '6px 0', display: 'flex', alignItems: 'flex-start', gap: 16 }}>
-                <div style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.5)', borderRadius: 16 }}>
+                <div style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.4)', borderRadius: 16 }}>
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6" /><path d="M9 17v1a3 3 0 0 0 6 0v-1" /></svg>
                 </div>
                 <div style={{ flex: 1 }}>
@@ -775,7 +775,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                     <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>진단 리마인더</div>
                     <div onClick={pushSubscribing ? undefined : handleReminderToggle} style={{
                       width: 39, height: 24, borderRadius: 10,
-                      background: reminderEnabled ? 'var(--accent-primary, var(--accent-primary))' : 'rgba(0,0,0,0.12)',
+                      background: reminderEnabled ? 'var(--accent-primary, var(--accent-primary))' : 'rgba(0,0,0,0.15)',
                       position: 'relative', flexShrink: 0,
                       cursor: pushSubscribing ? 'wait' : 'pointer',
                       transition: 'background 0.3s',
@@ -796,7 +796,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                     <div onClick={() => setShowTimePicker('reminder')} style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                       padding: '10px 14px', borderRadius: 12, marginTop: 10,
-                      background: 'rgba(255,255,255,0.5)', cursor: 'pointer',
+                      background: 'rgba(255,255,255,0.4)', cursor: 'pointer',
                     }}>
                       <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>알림 시간</span>
                       <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent-primary, var(--accent-primary))' }}>{formatPushTime(reminderTime)}</span>
@@ -807,7 +807,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
 
               {/* 뷰티 팁 */}
               <div style={{ padding: '6px 0', display: 'flex', alignItems: 'flex-start', gap: 16 }}>
-                <div style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.5)', borderRadius: 16 }}>
+                <div style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.4)', borderRadius: 16 }}>
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h1m8 -9v1m8 8h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7" /><path d="M9 16a5 5 0 1 1 6 0a3.5 3.5 0 0 0 -1 3a2 2 0 0 1 -4 0a3.5 3.5 0 0 0 -1 -3" /></svg>
                 </div>
                 <div style={{ flex: 1 }}>
@@ -815,7 +815,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                     <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>뷰티 팁</div>
                     <div onClick={pushSubscribing ? undefined : handleTipToggle} style={{
                       width: 39, height: 24, borderRadius: 10,
-                      background: tipEnabled ? 'var(--accent-primary, var(--accent-primary))' : 'rgba(0,0,0,0.12)',
+                      background: tipEnabled ? 'var(--accent-primary, var(--accent-primary))' : 'rgba(0,0,0,0.15)',
                       position: 'relative', flexShrink: 0,
                       cursor: pushSubscribing ? 'wait' : 'pointer',
                       transition: 'background 0.3s',
@@ -836,7 +836,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                     <div onClick={() => setShowTimePicker('tip')} style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                       padding: '10px 14px', borderRadius: 12, marginTop: 10,
-                      background: 'rgba(255,255,255,0.5)', cursor: 'pointer',
+                      background: 'rgba(255,255,255,0.4)', cursor: 'pointer',
                     }}>
                       <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>알림 시간</span>
                       <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent-primary, var(--accent-primary))' }}>{formatPushTime(tipTime)}</span>
@@ -847,7 +847,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
 
               {/* 피부 날씨 알림 */}
               <div style={{ padding: '6px 0', display: 'flex', alignItems: 'flex-start', gap: 16 }}>
-                <div style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.5)', borderRadius: 16 }}>
+                <div style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.4)', borderRadius: 16 }}>
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-12" /></svg>
                 </div>
                 <div style={{ flex: 1 }}>
@@ -855,7 +855,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                     <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>피부 날씨 알림</div>
                     <div onClick={pushSubscribing ? undefined : handleWeatherToggle} style={{
                       width: 39, height: 24, borderRadius: 10,
-                      background: weatherEnabled ? 'var(--accent-primary, var(--accent-primary))' : 'rgba(0,0,0,0.12)',
+                      background: weatherEnabled ? 'var(--accent-primary, var(--accent-primary))' : 'rgba(0,0,0,0.15)',
                       position: 'relative', flexShrink: 0,
                       cursor: pushSubscribing ? 'wait' : 'pointer',
                       transition: 'background 0.3s',
@@ -918,8 +918,8 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                       <div style={{
                         height: 100, borderRadius: 16,
                         background: t.gradient,
-                        border: selected ? '2px solid rgba(255,255,255,0.9)' : '2px solid transparent',
-                        boxShadow: selected ? '0 2px 12px rgba(0,0,0,0.1)' : 'none',
+                        border: selected ? '2px solid rgba(255,255,255,0.92)' : '2px solid transparent',
+                        boxShadow: selected ? '0 2px 12px rgba(0,0,0,0.08)' : 'none',
                         position: 'relative', overflow: 'hidden',
                       }}>
                         {/* 미니 UI 미리보기 */}
@@ -1057,13 +1057,13 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                       <table style={{ width: '100%', minWidth: 360, borderCollapse: 'collapse', fontSize: 12, tableLayout: 'auto' }}>
                         <thead>
                           <tr style={{ background: 'var(--accent-bg, rgba(var(--accent-rgb),0.1))' }}>
-                            {headerCells.map((c, j) => <th key={j} style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 600, color: 'var(--text-primary)', borderBottom: '1px solid rgba(0,0,0,0.1)', borderRight: j < headerCells.length - 1 ? '1px solid rgba(0,0,0,0.1)' : 'none', whiteSpace: 'nowrap' }}>{c}</th>)}
+                            {headerCells.map((c, j) => <th key={j} style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 600, color: 'var(--text-primary)', borderBottom: '1px solid rgba(0,0,0,0.08)', borderRight: j < headerCells.length - 1 ? '1px solid rgba(0,0,0,0.08)' : 'none', whiteSpace: 'nowrap' }}>{c}</th>)}
                           </tr>
                         </thead>
                         <tbody>
                           {dataRows.map((row, ri) => (
                             <tr key={ri}>
-                              {row.map((c, ci) => <td key={ci} style={{ padding: '7px 10px', color: 'var(--text-secondary)', borderBottom: ri < dataRows.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none', borderRight: ci < row.length - 1 ? '1px solid rgba(0,0,0,0.1)' : 'none', whiteSpace: 'normal', wordBreak: 'keep-all', lineHeight: 1.5 }}>{c}</td>)}
+                              {row.map((c, ci) => <td key={ci} style={{ padding: '7px 10px', color: 'var(--text-secondary)', borderBottom: ri < dataRows.length - 1 ? '1px solid rgba(0,0,0,0.08)' : 'none', borderRight: ci < row.length - 1 ? '1px solid rgba(0,0,0,0.08)' : 'none', whiteSpace: 'normal', wordBreak: 'keep-all', lineHeight: 1.5 }}>{c}</td>)}
                             </tr>
                           ))}
                         </tbody>
@@ -1236,7 +1236,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                 maxLength={20}
                 style={{
                   width: '100%', boxSizing: 'border-box',
-                  background: 'rgba(255,255,255,0.5)', border: 'none', borderRadius: 12,
+                  background: 'rgba(255,255,255,0.4)', border: 'none', borderRadius: 12,
                   padding: '12px 14px', fontSize: 13, color: 'var(--text-primary)',
                   outline: 'none', fontFamily: 'inherit',
                 }}
@@ -1272,7 +1272,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                 }}
                 style={{
                   width: '100%', boxSizing: 'border-box',
-                  background: 'rgba(255,255,255,0.5)', border: 'none', borderRadius: 12,
+                  background: 'rgba(255,255,255,0.4)', border: 'none', borderRadius: 12,
                   padding: '12px 14px', fontSize: 13, color: 'var(--text-primary)',
                   outline: 'none', fontFamily: 'inherit',
                 }}
@@ -1289,7 +1289,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                     <div key={g} onClick={() => update('gender', g)} style={{
                       flex: 1, padding: '10px 0', borderRadius: 10, cursor: 'pointer', textAlign: 'center',
                       fontSize: 13, fontWeight: 500,
-                      background: selected ? 'rgba(var(--accent-rgb),0.1)' : 'rgba(255,255,255,0.5)',
+                      background: selected ? 'rgba(var(--accent-rgb),0.1)' : 'rgba(255,255,255,0.4)',
                       color: selected ? 'var(--accent-primary, var(--accent-primary))' : 'var(--text-secondary)',
                       border: 'none',
                       transition: 'all 0.2s',
@@ -1308,7 +1308,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                   onChange={(e) => update('bio', e.target.value.slice(0, 50))}
                   style={{
                     width: '100%', minHeight: 50, boxSizing: 'border-box',
-                    background: 'rgba(255,255,255,0.5)', border: 'none',
+                    background: 'rgba(255,255,255,0.4)', border: 'none',
                     borderRadius: 12, padding: '12px 14px', fontSize: 12, color: 'var(--text-primary)',
                     lineHeight: 1.5, outline: 'none', fontFamily: 'inherit', resize: 'none',
                   }}
@@ -1366,7 +1366,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                 }}>
                   <div style={{
                     width: 30, height: 30, borderRadius: 12, flexShrink: 0,
-                    background: selected ? 'var(--accent-primary, var(--accent-primary))' : 'rgba(255,255,255,0.5)',
+                    background: selected ? 'var(--accent-primary, var(--accent-primary))' : 'rgba(255,255,255,0.4)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s',
                   }}>
                     {selected && <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
@@ -1379,14 +1379,14 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               );
             })}
             {/* 민감성 — 중복 선택 가능 */}
-            <div style={{ height: 1, background: 'rgba(0,0,0,0.06)', margin: '12px 0' }} />
+            <div style={{ height: 1, background: 'rgba(0,0,0,0.08)', margin: '12px 0' }} />
             <div onClick={() => update('isSensitive', !profile.isSensitive)} style={{
               padding: '6px 0', cursor: 'pointer',
               display: 'flex', alignItems: 'flex-start', gap: 16, transition: 'all 0.2s',
             }}>
               <div style={{
                 width: 30, height: 30, borderRadius: 12, flexShrink: 0,
-                background: profile.isSensitive ? 'var(--accent-primary, var(--accent-primary))' : 'rgba(255,255,255,0.5)',
+                background: profile.isSensitive ? 'var(--accent-primary, var(--accent-primary))' : 'rgba(255,255,255,0.4)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s',
               }}>
                 {profile.isSensitive && <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
@@ -1479,7 +1479,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               }}
               style={{ padding: '6px 0', cursor: 'pointer', display: 'flex', alignItems: 'flex-start', gap: 16 }}
             >
-              <div style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.5)', borderRadius: 16 }}>
+              <div style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.4)', borderRadius: 16 }}>
                 {icons.download}
               </div>
               <div style={{ flex: 1 }}>
@@ -1495,7 +1495,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               onClick={() => fileInputRef.current?.click()}
               style={{ padding: '6px 0', cursor: 'pointer', display: 'flex', alignItems: 'flex-start', gap: 16 }}
             >
-              <div style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.5)', borderRadius: 16 }}>
+              <div style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.4)', borderRadius: 16 }}>
                 {icons.upload}
               </div>
               <div style={{ flex: 1 }}>
@@ -1528,7 +1528,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               onClick={() => { setDataManageOpen(false); setBaselineResetConfirm(true); }}
               style={{ padding: '6px 0', cursor: 'pointer', display: 'flex', alignItems: 'flex-start', gap: 16 }}
             >
-              <div style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.5)', borderRadius: 16 }}>
+              <div style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.4)', borderRadius: 16 }}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><polyline points="21 3 21 8 16 8"/><polyline points="3 21 3 16 8 16"/></svg>
               </div>
               <div style={{ flex: 1 }}>
@@ -1541,7 +1541,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               onClick={() => { setDataManageOpen(false); setAllRecordsResetConfirm(true); }}
               style={{ padding: '6px 0', cursor: 'pointer', display: 'flex', alignItems: 'flex-start', gap: 16 }}
             >
-              <div style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.5)', borderRadius: 16 }}>
+              <div style={{ width: 38, height: 38, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.4)', borderRadius: 16 }}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#dc4444" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>
               </div>
               <div style={{ flex: 1 }}>
@@ -1882,7 +1882,7 @@ function GoalSettingModal({ onClose, showToast }) {
         {[1, 2, 3].map((s) => (
           <div key={s} style={{
             flex: 1, height: 3, borderRadius: 2,
-            background: s <= step ? 'var(--accent-primary, var(--accent-primary))' : 'rgba(255,255,255,0.5)',
+            background: s <= step ? 'var(--accent-primary, var(--accent-primary))' : 'rgba(255,255,255,0.4)',
             transition: 'background 0.3s',
           }} />
         ))}
@@ -2037,7 +2037,7 @@ function GoalSettingModal({ onClose, showToast }) {
                   onClick={() => setDuration(d)}
                   style={{
                     flex: 1, padding: '10px 0', borderRadius: 14,
-                    border: duration === d ? '1px solid var(--accent-primary, var(--accent-primary))' : '1px solid rgba(0,0,0,0.06)',
+                    border: duration === d ? '1px solid var(--accent-primary, var(--accent-primary))' : '1px solid rgba(0,0,0,0.08)',
                     background: duration === d ? 'rgba(var(--accent-rgb),0.12)' : 'transparent',
                     color: duration === d ? 'var(--accent-primary, var(--accent-primary))' : 'var(--text-muted)',
                     fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
@@ -2358,7 +2358,7 @@ function ReminderItem({ enabled, time, onToggle, onTimeChange, profile, tipEnabl
           onClick={subscribing ? undefined : handleToggle}
           style={{
             width: 44, height: 26, borderRadius: 13,
-            background: enabled ? '#ADEBB3' : 'rgba(255,255,255,0.15)',
+            background: enabled ? '#ADEBB3' : 'rgba(255,255,255,0.2)',
             position: 'relative', flexShrink: 0, cursor: subscribing ? 'wait' : 'pointer',
             transition: 'background 0.3s',
             opacity: subscribing ? 0.6 : 1,
@@ -2491,7 +2491,7 @@ function BeautyTipItem({ enabled, time, onToggle, onTimeChange, profile, reminde
           onClick={subscribing ? undefined : handleToggle}
           style={{
             width: 44, height: 26, borderRadius: 13,
-            background: enabled ? '#ADEBB3' : 'rgba(255,255,255,0.15)',
+            background: enabled ? '#ADEBB3' : 'rgba(255,255,255,0.2)',
             position: 'relative', flexShrink: 0,
             cursor: subscribing ? 'wait' : 'pointer',
             transition: 'background 0.3s',
@@ -2535,7 +2535,7 @@ function TimePicker({ value, onChange, onClose }) {
       onClick={onClose}
       style={{
         position: 'fixed', inset: 0, zIndex: 1200,
-        background: 'rgba(0,0,0,0.35)',
+        background: 'rgba(0,0,0,0.4)',
         display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
       }}
     >
@@ -2599,7 +2599,7 @@ function DarkModeItem({ enabled, onToggle }) {
       </div>
       <div style={{
         width: 44, height: 26, borderRadius: 13,
-        background: enabled ? '#ADEBB3' : 'rgba(255,255,255,0.15)',
+        background: enabled ? '#ADEBB3' : 'rgba(255,255,255,0.2)',
         position: 'relative', flexShrink: 0,
         transition: 'background 0.3s',
       }}>

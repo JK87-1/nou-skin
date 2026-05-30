@@ -391,13 +391,13 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
                       <span style={{
                         position: 'absolute', bottom: 5, left: 6,
                         fontSize: 10, fontWeight: 500, color: '#fff',
-                        textShadow: '0 1px 3px rgba(0,0,0,0.6)',
+                        textShadow: '0 1px 3px rgba(0,0,0,0.55)',
                         pointerEvents: 'none',
                       }}>{String(new Date(r.date).getMonth() + 1).padStart(2, '0')}월 {String(new Date(r.date).getDate()).padStart(2, '0')}일</span>
                       <span style={{
                         position: 'absolute', bottom: 5, right: 6,
                         fontSize: 13, fontWeight: 600, color: '#fff',
-                        textShadow: '0 1px 4px rgba(0,0,0,0.6)',
+                        textShadow: '0 1px 4px rgba(0,0,0,0.55)',
                         pointerEvents: 'none',
                       }}>{r.overallScore}</span>
                     </div>
@@ -910,7 +910,7 @@ function PhotoGallery({ records, thumbs, onMeasure, onSelectRecord, onThumbsChan
                   <span style={{
                     position: 'absolute', bottom: 6, left: 6,
                     fontSize: 10, fontWeight: 600, color: '#fff',
-                    textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+                    textShadow: '0 1px 3px rgba(0,0,0,0.55)',
                     zIndex: 2, pointerEvents: 'none',
                   }}>{shortDate}</span>
                 </>
@@ -1104,7 +1104,7 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
         </div>
 
         {/* ② 시그니처 카드 */}
-        <div ref={captureRef} style={{ margin: '0 16px 12px', borderRadius: 24, overflow: 'hidden', background: C.cardBg, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+        <div ref={captureRef} style={{ margin: '0 16px 12px', borderRadius: 24, overflow: 'hidden', background: C.cardBg, boxShadow: '0 2px 12px rgba(0,0,0,0.08)' }}>
           {/* 상단 그라데이션 */}
           <div style={{ background: `linear-gradient(180deg, ${C.gradTop} 0%, ${C.gradMid} 50%, ${C.cardBg} 100%)`, padding: '20px 20px 0', textAlign: 'center' }}>
             {/* 날짜 + LUA */}
@@ -1164,7 +1164,7 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
                       width: 26, height: 26, borderRadius: '50%',
                       background: '#fff', border: `2px solid ${C.accent}`,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      boxShadow: '0 1px 4px rgba(0,0,0,0.18)',
+                      boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
                     }}>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={C.accent} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M3 8V3h5M21 8V3h-5M3 16v5h5M21 16v5h-5" />
@@ -1183,7 +1183,7 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
                 onClick={() => setPhotoZoomed(false)}
                 style={{
                   position: 'fixed', inset: 0, zIndex: 99999,
-                  background: 'rgba(0,0,0,0.94)',
+                  background: 'rgba(0,0,0,0.78)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   cursor: 'zoom-out',
                   animation: 'photoZoomFadeIn 0.2s ease',
@@ -1205,7 +1205,7 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
                   style={{
                     position: 'absolute', top: 'calc(20px + env(safe-area-inset-top, 0px))', right: 20,
                     width: 40, height: 40, borderRadius: 20,
-                    background: 'rgba(255,255,255,0.16)', backdropFilter: 'blur(10px)',
+                    background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)',
                     border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
                     cursor: 'pointer',
                   }}
@@ -1216,7 +1216,7 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
                 </button>
                 <div style={{
                   position: 'absolute', bottom: 'calc(24px + env(safe-area-inset-bottom, 0px))', left: 0, right: 0,
-                  textAlign: 'center', color: 'rgba(255,255,255,0.75)', fontSize: 12,
+                  textAlign: 'center', color: 'rgba(255,255,255,0.7)', fontSize: 12,
                   pointerEvents: 'none',
                 }}>
                   {dateShort}
@@ -1322,14 +1322,14 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
                       }}>
                         <div style={{
                           width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-                          background: 'linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(150,215,248,0.5) 100%)',
-                          boxShadow: '0 0 0 1px rgba(255,255,255,0.4), 0 2px 6px rgba(0,0,0,0.06)',
+                          background: 'linear-gradient(180deg, rgba(255,255,255,0.85) 0%, rgba(150,215,248,0.5) 100%)',
+                          boxShadow: '0 0 0 1px rgba(255,255,255,0.4), 0 2px 6px rgba(0,0,0,0.08)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           position: 'relative', overflow: 'hidden',
                         }}>
                           <div style={{
                             position: 'absolute', top: 0, left: '-100%', width: '300%', height: '100%',
-                            background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.25) 45%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0.25) 55%, transparent 70%)',
+                            background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.2) 45%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0.2) 55%, transparent 70%)',
                             animation: 'fabShine 3.5s ease-in-out infinite',
                             pointerEvents: 'none',
                           }} />
@@ -1991,7 +1991,7 @@ function RoutineChecklist() {
           <button key={m.key} onClick={() => setMode(m.key)} style={{
             flex: 1, padding: '12px 0', borderRadius: 18, cursor: 'pointer',
             fontFamily: 'inherit', fontSize: 13, fontWeight: 600, textAlign: 'center',
-            background: mode === m.key ? 'rgba(255,255,255,0.42)' : 'transparent',
+            background: mode === m.key ? 'rgba(255,255,255,0.4)' : 'transparent',
             color: mode === m.key ? 'var(--text-primary)' : 'var(--text-muted)',
             backdropFilter: mode === m.key ? 'blur(14px)' : 'none', WebkitBackdropFilter: mode === m.key ? 'blur(14px)' : 'none',
             border: 'none',
@@ -2005,7 +2005,7 @@ function RoutineChecklist() {
       <div style={{ ...glass, padding: '14px 18px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 14 }}>
         <div style={{ position: 'relative', width: 44, height: 44, flexShrink: 0 }}>
           <svg width="44" height="44" viewBox="0 0 44 44">
-            <circle cx="22" cy="22" r="19" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="3.5" />
+            <circle cx="22" cy="22" r="19" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="3.5" />
             <circle cx="22" cy="22" r="19" fill="none" stroke="var(--accent-primary, var(--accent-primary))" strokeWidth="3.5"
               strokeDasharray={`${(pct / 100) * 119.38} 119.38`} strokeLinecap="round" transform="rotate(-90 22 22)"
               style={{ transition: 'stroke-dasharray 0.5s ease' }} />
@@ -2083,7 +2083,7 @@ function RoutineChecklist() {
                 <div style={{
                   display: 'flex', alignItems: 'center', gap: 10,
                   padding: '13px 14px 13px 14px',
-                  borderTop: i > 0 ? '1px solid rgba(255,255,255,0.15)' : 'none',
+                  borderTop: i > 0 ? '1px solid rgba(255,255,255,0.2)' : 'none',
                   opacity: isDragging ? 0.4 : checked ? 0.5 : 1,
                   background: isOver ? 'rgba(var(--accent-rgb),0.1)' : 'rgba(255,255,255,0.0)',
                   transition: 'opacity 0.2s, background 0.15s',
@@ -2146,7 +2146,7 @@ function RoutineChecklist() {
       {/* Routine Detail Modal */}
       {detailItem && createPortal(
         <>
-          <div onClick={() => setDetailItem(null)} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.18)', backdropFilter: 'none', WebkitBackdropFilter: 'none' }} />
+          <div onClick={() => setDetailItem(null)} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.15)', backdropFilter: 'none', WebkitBackdropFilter: 'none' }} />
           <div style={{
             position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201,
             background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none',
@@ -2178,8 +2178,8 @@ function RoutineChecklist() {
                   return (
                     <div key={idx} onClick={() => toggleDay(detailItem.id, idx)} style={{
                       flex: 1, textAlign: 'center', padding: '10px 0', borderRadius: 12, cursor: 'pointer',
-                      background: active ? 'rgba(var(--accent-rgb),0.2)' : 'rgba(255,255,255,0.3)',
-                      border: active ? '1px solid rgba(var(--accent-rgb),0.4)' : '1px solid rgba(255,255,255,0.3)',
+                      background: active ? 'rgba(var(--accent-rgb),0.2)' : 'rgba(255,255,255,0.2)',
+                      border: active ? '1px solid rgba(var(--accent-rgb),0.4)' : '1px solid rgba(255,255,255,0.2)',
                       transition: 'all 0.2s',
                     }}>
                       <div style={{ fontSize: 12, fontWeight: 600, color: active ? 'var(--accent-primary, var(--accent-primary))' : 'var(--text-muted)' }}>{label}</div>
@@ -2202,7 +2202,7 @@ function RoutineChecklist() {
                     setDaySettings(next);
                   }} style={{
                     flex: 1, padding: '8px 0', borderRadius: 18, border: 'none', cursor: 'pointer',
-                    background: 'rgba(255,255,255,0.42)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+                    background: 'rgba(255,255,255,0.4)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
                     boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
                     color: 'var(--text-primary)',
                     fontSize: 12, fontWeight: 500, fontFamily: 'inherit',
@@ -2216,7 +2216,7 @@ function RoutineChecklist() {
                 setDetailItem(null);
               }} style={{
                 width: '100%', padding: 12, borderRadius: 12, border: 'none',
-                background: 'rgba(0,0,0,0.25)', color: '#fff',
+                background: 'rgba(0,0,0,0.15)', color: '#fff',
                 fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
               }}>이 루틴 삭제</button>
             </div>
@@ -2228,7 +2228,7 @@ function RoutineChecklist() {
       {/* Add Routine Button */}
       <div onClick={() => { setAddMode(mode); setAddModal(true); }} style={{
         padding: '12px 24px', marginBottom: 16, cursor: 'pointer',
-        background: 'rgba(255,255,255,0.42)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+        background: 'rgba(255,255,255,0.4)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
         border: 'none', borderRadius: 18,
         boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
@@ -2242,7 +2242,7 @@ function RoutineChecklist() {
       {/* Add Routine Modal */}
       {addModal && createPortal(
         <>
-          <div onClick={() => setAddModal(false)} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.18)', backdropFilter: 'none', WebkitBackdropFilter: 'none' }} />
+          <div onClick={() => setAddModal(false)} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.15)', backdropFilter: 'none', WebkitBackdropFilter: 'none' }} />
           <div style={{
             position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201,
             background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none',
@@ -2269,7 +2269,7 @@ function RoutineChecklist() {
                   <button key={m.key} onClick={() => setAddMode(m.key)} style={{
                     flex: 1, padding: '10px 0', borderRadius: 18, cursor: 'pointer',
                     fontFamily: 'inherit', fontSize: 13, fontWeight: 600, textAlign: 'center',
-                    background: addMode === m.key ? 'rgba(255,255,255,0.42)' : 'transparent',
+                    background: addMode === m.key ? 'rgba(255,255,255,0.4)' : 'transparent',
                     color: addMode === m.key ? 'var(--text-primary)' : 'var(--text-muted)',
                     backdropFilter: addMode === m.key ? 'blur(14px)' : 'none', WebkitBackdropFilter: addMode === m.key ? 'blur(14px)' : 'none',
                     border: 'none',
@@ -2292,7 +2292,7 @@ function RoutineChecklist() {
                       fontSize: 12, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6,
                       background: added ? 'rgba(var(--accent-rgb),0.15)' : 'rgba(255,255,255,0.4)',
                       color: added ? 'var(--accent-primary, var(--accent-primary))' : 'var(--text-primary)',
-                      border: added ? '1px solid rgba(var(--accent-rgb),0.3)' : '1px solid rgba(255,255,255,0.3)',
+                      border: added ? '1px solid rgba(var(--accent-rgb),0.3)' : '1px solid rgba(255,255,255,0.2)',
                       transition: 'all 0.2s',
                     }}>
                       <span>{r.icon}</span>
@@ -2323,7 +2323,7 @@ function RoutineChecklist() {
                             fontSize: 12, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6,
                             background: added ? 'rgba(var(--accent-rgb),0.15)' : 'rgba(255,255,255,0.4)',
                             color: added ? 'var(--accent-primary, var(--accent-primary))' : 'var(--text-primary)',
-                            border: added ? '1px solid rgba(var(--accent-rgb),0.3)' : '1px solid rgba(255,255,255,0.3)',
+                            border: added ? '1px solid rgba(var(--accent-rgb),0.3)' : '1px solid rgba(255,255,255,0.2)',
                             transition: 'all 0.2s',
                           }}>
                             <span></span>
@@ -2412,7 +2412,7 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
   const closeModal = () => setModal(null);
   const ModalWrap = ({ title, children }) => createPortal(
     <>
-      <div onClick={closeModal} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.18)', backdropFilter: 'none', WebkitBackdropFilter: 'none' }} />
+      <div onClick={closeModal} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.15)', backdropFilter: 'none', WebkitBackdropFilter: 'none' }} />
       <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201, background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none', border: 'none', borderRadius: '20px 20px 0 0', boxShadow: '0 -8px 28px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.4)', paddingBottom: 'calc(env(safe-area-inset-bottom,0px) + 16px)', maxWidth: 430, margin: '0 auto', animation: 'careSheetUp 280ms cubic-bezier(0.32,0.72,0,1) forwards' }}>
         <style>{`@keyframes careSheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
         <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(var(--accent-rgb),0.4)' }} /></div>
@@ -2505,7 +2505,7 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
               <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 8 }}>한 모금 더 두기</div>
               <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
                 {[{ml:200,l:'한 컵'},{ml:250,l:'텀블러'},{ml:330,l:'병'},{ml:500,l:'큰 병'}].map(b=>(
-                  <button key={b.ml} onClick={()=>add(b.ml)} style={{ flex:1, background:'rgba(255,255,255,0.4)', border:'1px solid rgba(255,255,255,0.3)', borderRadius:12, padding:'10px 4px', fontSize:11, fontWeight:500, color:'var(--text-primary)', cursor:'pointer', fontFamily:'inherit', textAlign:'center' }}>+{b.ml}ml<br/><span style={{fontSize:10,color:'var(--text-muted)',fontWeight:400}}>{b.l}</span></button>
+                  <button key={b.ml} onClick={()=>add(b.ml)} style={{ flex:1, background:'rgba(255,255,255,0.4)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:12, padding:'10px 4px', fontSize:11, fontWeight:500, color:'var(--text-primary)', cursor:'pointer', fontFamily:'inherit', textAlign:'center' }}>+{b.ml}ml<br/><span style={{fontSize:10,color:'var(--text-muted)',fontWeight:400}}>{b.l}</span></button>
                 ))}
               </div>
               <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>오늘 누적 · {(amt/1000).toFixed(1)}L / {waterGoal/1000}L</div>
@@ -2540,8 +2540,8 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
           return (
             <div>
               <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-                <button onClick={()=>setApplied(true)} style={{ flex:1, padding:'16px 12px', borderRadius:20, border:applied===true?'none':'1px solid rgba(255,255,255,0.3)', cursor:'pointer', fontFamily:'inherit', background:applied===true?'var(--accent-primary)':'rgba(255,255,255,0.4)', color:applied===true?'#fff':'var(--text-primary)', fontSize:13, fontWeight:500, textAlign:'center' }}>선크림 챙겼어요</button>
-                <button onClick={()=>setApplied(false)} style={{ flex:1, padding:'16px 12px', borderRadius:20, border:applied===false?'1px solid var(--accent-primary)':'1px solid rgba(255,255,255,0.3)', cursor:'pointer', fontFamily:'inherit', background:'rgba(255,255,255,0.4)', color:'var(--text-primary)', fontSize:13, fontWeight:500, textAlign:'center' }}>오늘은 못 챙겼어요</button>
+                <button onClick={()=>setApplied(true)} style={{ flex:1, padding:'16px 12px', borderRadius:20, border:applied===true?'none':'1px solid rgba(255,255,255,0.2)', cursor:'pointer', fontFamily:'inherit', background:applied===true?'var(--accent-primary)':'rgba(255,255,255,0.4)', color:applied===true?'#fff':'var(--text-primary)', fontSize:13, fontWeight:500, textAlign:'center' }}>선크림 챙겼어요</button>
+                <button onClick={()=>setApplied(false)} style={{ flex:1, padding:'16px 12px', borderRadius:20, border:applied===false?'1px solid var(--accent-primary)':'1px solid rgba(255,255,255,0.2)', cursor:'pointer', fontFamily:'inherit', background:'rgba(255,255,255,0.4)', color:'var(--text-primary)', fontSize:13, fontWeight:500, textAlign:'center' }}>오늘은 못 챙겼어요</button>
               </div>
               <button onClick={()=>{if(applied!==null){saveHabitLog({sunscreen_applied:applied});refreshHabit();showToast();closeModal();}}} disabled={applied===null} style={{ width:'100%',padding:14,borderRadius:10,border:'none',background:applied!==null?'var(--accent-primary)':'rgba(var(--accent-rgb),0.2)',color:applied!==null?'#fff':'var(--text-muted)',fontSize:13,fontWeight:500,cursor:applied!==null?'pointer':'default',fontFamily:'inherit' }}>두기</button>
             </div>

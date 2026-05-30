@@ -234,7 +234,7 @@ export default function SwipeableRow({
           willChange: 'transform',
           // 드래그 중 미세 lift
           boxShadow: isDragging && Math.abs(translateX) > 12
-            ? '0 4px 18px rgba(0,0,0,0.06)'
+            ? '0 4px 18px rgba(0,0,0,0.08)'
             : 'none',
         }}
       >

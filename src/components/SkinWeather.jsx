@@ -220,7 +220,7 @@ export default function SkinWeather({ skinResult }) {
       {/* ── Weather Overview ── */}
       <div style={{ marginBottom: 16, animation: 'swFadeInUp 0.5s ease 0.05s both' }}>
         {/* 날짜 */}
-        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', marginBottom: 16, textAlign: 'center' }}>{weather.date} · {weather.condition}</div>
+        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', marginBottom: 16, textAlign: 'center' }}>{weather.date} · {weather.condition}</div>
 
         {/* 온도 + 상태 */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, padding: '0 16px' }}>
@@ -228,7 +228,7 @@ export default function SkinWeather({ skinResult }) {
           <WeatherIconFilled emoji={weather.conditionIcon} size={80} />
         </div>
         <div style={{ padding: '0 16px', marginBottom: 40 }}>
-          <span style={{ fontSize: 16, fontWeight: 600, color: 'rgba(255,255,255,0.8)' }}>{weather.tempMax}° / {weather.tempMin}°</span>
+          <span style={{ fontSize: 16, fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>{weather.tempMax}° / {weather.tempMin}°</span>
         </div>
 
         {/* ── Environment Indicators ── */}
@@ -244,7 +244,7 @@ export default function SkinWeather({ skinResult }) {
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6.8 11a6 6 0 1 0 10.396 0l-5.197 -8l-5.2 8z" /></svg>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>{weather.humidity}<span style={{ fontSize: 11, fontWeight: 400 }}>%</span></div>
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)' }}>습도 · {hi.label}</div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)' }}>습도 · {hi.label}</div>
               </div>
             </div>
           );
@@ -258,7 +258,7 @@ export default function SkinWeather({ skinResult }) {
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3.5 9.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M8.5 4.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M8.5 14.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M3.5 19.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M13.5 9.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M18.5 4.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M13.5 19.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M18.5 14.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /></svg>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>{weather.airQuality}<span style={{ fontSize: 10, fontWeight: 400, marginLeft: 2 }}>AQI</span></div>
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)' }}>미세먼지 · {ai.label}</div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)' }}>미세먼지 · {ai.label}</div>
               </div>
             </div>
           );
@@ -269,7 +269,7 @@ export default function SkinWeather({ skinResult }) {
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h1m16 0h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7m-9.7 5.7a4 4 0 1 1 8 0" /><path d="M12 4v-1" /><path d="M13 16l2 5h1l2 -5" /><path d="M6 16v3a2 2 0 1 0 4 0v-3" /></svg>
           <div>
             <div style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>{weather.uv}<span style={{ fontSize: 11, fontWeight: 400 }}>/10</span></div>
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)' }}>자외선 · {weather.uvLabel}</div>
+            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)' }}>자외선 · {weather.uvLabel}</div>
           </div>
         </div>
       </div>
@@ -308,7 +308,7 @@ export default function SkinWeather({ skinResult }) {
               {/* 시간 */}
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                 {fc.map((f, i) => (
-                  <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: 11, color: 'rgba(255,255,255,0.6)', fontWeight: 500 }}>
+                  <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: 11, color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>
                     {formatTimeAMPM(f.time)}
                   </div>
                 ))}
@@ -352,8 +352,8 @@ export default function SkinWeather({ skinResult }) {
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 {fc.map((f, i) => (
                   <div key={i} style={{ flex: 1, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="rgba(255,255,255,0.5)" stroke="none"><path d="M6.8 11a6 6 0 1 0 10.396 0l-5.197 -8l-5.2 8z" /></svg>
-                    <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)' }}>{f.rain ?? 0}%</span>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="rgba(255,255,255,0.4)" stroke="none"><path d="M6.8 11a6 6 0 1 0 10.396 0l-5.197 -8l-5.2 8z" /></svg>
+                    <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>{f.rain ?? 0}%</span>
                   </div>
                 ))}
               </div>
@@ -381,7 +381,7 @@ export default function SkinWeather({ skinResult }) {
             return (
               <div key={alert.id} style={{
                 marginBottom: 8,
-                background: 'rgba(255,255,255,0.5)',
+                background: 'rgba(255,255,255,0.4)',
                 border: 'none',
                 boxShadow: 'none',
                 borderRadius: 14, overflow: 'hidden',
@@ -593,7 +593,7 @@ export default function SkinWeather({ skinResult }) {
             }}>
               <div style={{
                 width: 8, height: 8, borderRadius: '50%', flexShrink: 0, marginTop: 4,
-                background: isPast ? 'rgba(var(--accent-rgb),0.3)' : isNext ? '#6598EF' : 'rgba(255,255,255,0.15)',
+                background: isPast ? 'rgba(var(--accent-rgb),0.3)' : isNext ? '#6598EF' : 'rgba(255,255,255,0.2)',
               }} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', textDecoration: isPast ? 'line-through' : 'none' }}>{n.title}</div>

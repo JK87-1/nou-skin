@@ -156,7 +156,7 @@ export default function BeforeAfterSlider() {
           width: 2,
           background: '#fff',
           transform: 'translateX(-1px)',
-          boxShadow: '0 0 10px rgba(0,0,0,0.5)',
+          boxShadow: '0 0 10px rgba(0,0,0,0.55)',
           pointerEvents: 'none',
           zIndex: 10,
         }} />
@@ -168,7 +168,7 @@ export default function BeforeAfterSlider() {
           top: '50%',
           width: 36, height: 36,
           borderRadius: '50%',
-          background: 'rgba(255,255,255,0.95)',
+          background: 'rgba(255,255,255,0.92)',
           boxShadow: '0 2px 12px rgba(0,0,0,0.4)',
           transform: 'translate(-50%, -50%)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -190,7 +190,7 @@ export default function BeforeAfterSlider() {
           zIndex: 5, pointerEvents: 'none',
         }}>
           <div style={{ fontSize: 10, fontWeight: 600, color: '#fff', letterSpacing: 0.8 }}>BEFORE</div>
-          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.65)' }}>{formatDate(photos.before.date)}</div>
+          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)' }}>{formatDate(photos.before.date)}</div>
         </div>
 
         {/* AFTER label */}
@@ -223,7 +223,7 @@ export default function BeforeAfterSlider() {
                   fontSize: 16, fontWeight: 600, fontFamily: 'Outfit, sans-serif',
                   color: ageDiff <= 0 ? '#4ade80' : '#f0a050',
                 }}>{ageDiff > 0 ? '+' : ''}{ageDiff}세</div>
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', marginTop: 1 }}>피부나이</div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)', marginTop: 1 }}>피부나이</div>
               </div>
             )}
             {scoreDiff !== null && scoreDiff !== 0 && (
@@ -232,7 +232,7 @@ export default function BeforeAfterSlider() {
                   fontSize: 16, fontWeight: 600, fontFamily: 'Outfit, sans-serif',
                   color: scoreDiff >= 0 ? '#4ade80' : '#f0a050',
                 }}>{scoreDiff > 0 ? '+' : ''}{scoreDiff}점</div>
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', marginTop: 1 }}>종합점수</div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)', marginTop: 1 }}>종합점수</div>
               </div>
             )}
           </div>

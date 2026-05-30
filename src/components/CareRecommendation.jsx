@@ -317,7 +317,7 @@ function RoutineTabs({ morningSteps, nightSteps, morningStats, nightStats }) {
       {/* 세그먼트 탭 — 글래스 카드 안에 두 칸. 활성 탭은 흰색 pill로 강조 */}
       <div style={{
         display: 'flex', gap: 4, padding: 4, marginBottom: 16,
-        background: 'rgba(255,255,255,0.35)',
+        background: 'rgba(255,255,255,0.4)',
         backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
         border: 'none',
         borderRadius: 14,
@@ -334,7 +334,7 @@ function RoutineTabs({ morningSteps, nightSteps, morningStats, nightStats }) {
                 padding: '10px 0', borderRadius: 11, cursor: 'pointer',
                 border: 'none',
                 background: active ? 'rgba(255,255,255,0.85)' : 'transparent',
-                boxShadow: active ? '0 1px 4px rgba(0,0,0,0.06)' : 'none',
+                boxShadow: active ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
                 color: active ? 'var(--accent-primary)' : 'var(--text-secondary)',
                 fontSize: 14, fontWeight: active ? 600 : 500,
                 letterSpacing: -0.2,
