@@ -1922,7 +1922,9 @@ export default function ProductPage({ themeColors, onBack }) {
         <div style={{ padding: '0 20px', animation: 'fadeUp 0.3s ease-out' }}>
           {/* 등록 제품 grid */}
           <div style={{
-            background: 'rgba(255,255,255,0.2)', borderRadius: 18,
+            background: 'var(--card-bg)', borderRadius: 'var(--card-radius)',
+            backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)',
+            boxShadow: 'var(--card-shadow)',
             padding: '14px 14px 14px', marginBottom: 16,
           }}>
             {/* 헤더 — 배경 영역 안 */}
@@ -1945,7 +1947,7 @@ export default function ProductPage({ themeColors, onBack }) {
                 const cat = getCat(p.category);
                 const days = Math.max(0, Math.floor((Date.now() - new Date(p.startDate)) / 86400000));
                 return (
-                <div key={p.id} style={{ borderRadius: 18, overflow: 'hidden' }}>
+                <div key={p.id} style={{ borderRadius: 'var(--card-sm-radius)', overflow: 'hidden' }}>
                 <SwipeableRow
                   rowId={p.id}
                   openRowId={openSwipeRowId}
@@ -1955,10 +1957,10 @@ export default function ProductPage({ themeColors, onBack }) {
                   onMoveDown={pIdx < products.length - 1 ? () => handleProductSwipeMove(p.id, 'down') : null}
                 >
                   <div onClick={() => setSelectedProduct(p)} style={{
-                    background: 'rgba(255,255,255,0.42)', borderRadius: 18,
-                    backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+                    background: 'var(--card-bg)', borderRadius: 'var(--card-sm-radius)',
+                    backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)',
                     border: 'none',
-                    boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
+                    boxShadow: 'var(--card-shadow)',
                     padding: 14, cursor: 'pointer',
                     display: 'flex', flexDirection: 'column',
                     position: 'relative',

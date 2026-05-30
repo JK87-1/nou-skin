@@ -480,10 +480,10 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
             {totalChanges && (
               <div style={{ display: 'flex', gap: 12, marginBottom: 16, animation: 'breatheIn 0.6s ease 0.1s both' }}>
                 <div style={{
-                  flex: 1, background: 'rgba(255,255,255,0.42)',
-                  backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-                  border: 'none', borderRadius: 18, padding: '14px 16px',
-                  boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+                  flex: 1, background: 'var(--card-bg)',
+                  backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)',
+                  border: 'none', borderRadius: 'var(--card-radius)', padding: '14px 16px',
+                  boxShadow: 'var(--card-shadow)',
                   display: 'flex', alignItems: 'center', gap: 12,
                 }}>
                   <div style={{
@@ -500,10 +500,10 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
                   </div>
                 </div>
                 <div style={{
-                  flex: 1, background: 'rgba(255,255,255,0.42)',
-                  backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-                  border: 'none', borderRadius: 18, padding: '14px 16px',
-                  boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+                  flex: 1, background: 'var(--card-bg)',
+                  backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)',
+                  border: 'none', borderRadius: 'var(--card-radius)', padding: '14px 16px',
+                  boxShadow: 'var(--card-shadow)',
                   display: 'flex', alignItems: 'center', gap: 12,
                 }}>
                   <div style={{
@@ -1917,7 +1917,7 @@ function RoutineChecklist() {
   const totalItems = allItems.length;
   const pct = totalItems > 0 ? Math.round((totalDone / totalItems) * 100) : 0;
 
-  const glass = { background: 'rgba(255,255,255,0.42)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', border: 'none', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', borderRadius: 18 };
+  const glass = { background: 'var(--card-bg)', backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)', border: 'none', boxShadow: 'var(--card-shadow)', borderRadius: 'var(--card-radius)' };
 
   // 주 단위 weekDays 빌더 — carousel용 3개 주(이전·현재·다음) 렌더에 재사용
   const buildWeek = (offset) => {
@@ -2585,7 +2585,7 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
   const sleepH = habit.sleep_hours;
   const sunscreen = habit.sunscreen_applied;
 
-  const glass = { background: 'rgba(255,255,255,0.42)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', border: 'none', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', borderRadius: 18 };
+  const glass = { background: 'var(--card-bg)', backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)', border: 'none', boxShadow: 'var(--card-shadow)', borderRadius: 'var(--card-radius)' };
 
   const summaryParts = [];
   if (habit.water_amount) summaryParts.push(`수분 ${waterL}L`);

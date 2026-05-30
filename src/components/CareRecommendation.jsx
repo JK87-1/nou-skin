@@ -127,11 +127,11 @@ export default function CareRecommendation({ products: productsProp, refreshKey 
     return (
       <div style={{
         padding: '28px 18px', marginBottom: 20,
-        background: 'rgba(255,255,255,0.42)',
-        backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+        background: 'var(--card-bg)',
+        backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)',
         border: 'none',
-        borderRadius: 18, textAlign: 'center',
-        boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+        borderRadius: 'var(--card-radius)', textAlign: 'center',
+        boxShadow: 'var(--card-shadow)',
       }}>
         <div style={{ marginBottom: 10 }}><IconBottle size={30} /></div>
         <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
@@ -148,11 +148,11 @@ export default function CareRecommendation({ products: productsProp, refreshKey 
     return (
       <div style={{
         padding: '24px 18px', marginBottom: 20,
-        background: 'rgba(255,255,255,0.42)',
-        backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+        background: 'var(--card-bg)',
+        backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)',
         border: 'none',
-        borderRadius: 18, textAlign: 'center',
-        boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+        borderRadius: 'var(--card-radius)', textAlign: 'center',
+        boxShadow: 'var(--card-shadow)',
       }}>
         <div style={{ marginBottom: 8 }}><IconSearch size={28} /></div>
         <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
@@ -166,7 +166,7 @@ export default function CareRecommendation({ products: productsProp, refreshKey 
   }
 
   return (
-    <div style={{ marginTop: 8, marginBottom: 24, background: 'rgba(255,255,255,0.2)', borderRadius: 18, padding: '20px 14px' }}>
+    <div style={{ marginTop: 8, marginBottom: 24, background: 'var(--card-bg)', backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)', borderRadius: 'var(--card-radius)', boxShadow: 'var(--card-shadow)', padding: '20px 14px' }}>
       {/* Section Header — hideHeader=true면 부모가 자체 헤더 노출 */}
       {!hideHeader && (
         <div style={{ padding: '0 4px', marginBottom: 16 }}>

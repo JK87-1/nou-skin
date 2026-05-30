@@ -1216,11 +1216,11 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, accent }) {
             </div>
 
             <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
-              <div style={{ flex: 1, borderRadius: 18, padding: '14px', textAlign: 'center', background: 'rgba(255,255,255,0.42)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', border: 'none', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}>
+              <div style={{ flex: 1, borderRadius: 'var(--card-radius)', padding: '14px', textAlign: 'center', background: 'var(--card-bg)', backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)', border: 'none', boxShadow: 'var(--card-shadow)' }}>
                 <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>사용 기간</div>
                 <div style={{ fontSize: 20, fontWeight: 700, color: accent, fontFamily: 'var(--font-display)' }}>{days}일</div>
               </div>
-              <div style={{ flex: 1, borderRadius: 18, padding: '14px', textAlign: 'center', background: 'rgba(255,255,255,0.42)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', border: 'none', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}>
+              <div style={{ flex: 1, borderRadius: 'var(--card-radius)', padding: '14px', textAlign: 'center', background: 'var(--card-bg)', backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)', border: 'none', boxShadow: 'var(--card-shadow)' }}>
                 <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>시작일</div>
                 <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}>{product.startDate}</div>
               </div>
@@ -1783,10 +1783,10 @@ export default function RoutineTracker({ themeColors, onBack }) {
 
           {/* 등록 제품 grid */}
           <div style={{
-            background: 'rgba(255,255,255,0.42)', borderRadius: 18,
-            backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+            background: 'var(--card-bg)', borderRadius: 'var(--card-radius)',
+            backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)',
             border: 'none',
-            boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+            boxShadow: 'var(--card-shadow)',
             padding: '6px 0', marginBottom: 16,
           }}>
             {products.length === 0 ? (
@@ -1810,10 +1810,10 @@ export default function RoutineTracker({ themeColors, onBack }) {
                   onMoveDown={pIdx < products.length - 1 ? () => handleProductSwipeMove(p.id, 'down') : null}
                 >
                   <div onClick={() => setSelectedProduct(p)} style={{
-                    background: 'rgba(255,255,255,0.42)', borderRadius: 18,
-                    backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+                    background: 'var(--card-bg)', borderRadius: 'var(--card-radius)',
+                    backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)',
                     border: 'none',
-                    boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+                    boxShadow: 'var(--card-shadow)',
                     padding: 14, cursor: 'pointer',
                     display: 'flex', flexDirection: 'column',
                   }}>
