@@ -45,8 +45,8 @@ export default function TrendCard({ accent = '#6598ef', changes = null, animatio
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <div>
-          <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)' }}>이번 주 추세</div>
-          <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)', marginTop: 1 }}>최근 7번 측정 흐름</div>
+          <div style={{ fontSize: 16, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)' }}>이번 주 추세</div>
+          <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', marginTop: 1 }}>최근 7번 측정 흐름</div>
         </div>
         <MetricToggle metric={metric} setMetric={setMetric} accent={accent} />
       </div>
@@ -102,7 +102,7 @@ function MetricToggle({ metric, setMetric, accent }) {
             onClick={() => setMetric(it.key)}
             style={{
               padding: '6px 12px', borderRadius: 999,
-              fontSize: 11, fontWeight: 500,
+              fontSize: 11, lineHeight: 1.3, fontWeight: 500,
               background: on ? accent : 'transparent',
               color: on ? '#fff' : 'var(--text-muted)',
               border: 'none', cursor: 'pointer',
@@ -120,10 +120,10 @@ function DeltaDisplay({ value, unit, inverse, accent }) {
   if (value == null) {
     return (
       <div>
-        <div style={{ fontSize: 40, fontWeight: 400, color: 'var(--text-primary)', fontFamily: 'Outfit, sans-serif', lineHeight: 1 }}>
+        <div style={{ fontSize: 40, fontWeight: 400, color: 'var(--text-primary)', fontFamily: 'Outfit, sans-serif', lineHeight: 1.1 }}>
           첫 측정
         </div>
-        <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)', marginTop: 6 }}>비교할 이전 기록이 아직 없어요</div>
+        <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', marginTop: 6 }}>비교할 이전 기록이 아직 없어요</div>
       </div>
     );
   }
@@ -145,12 +145,12 @@ function DeltaDisplay({ value, unit, inverse, accent }) {
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
         <span style={{
           fontSize: 40, fontWeight: 400, color,
-          fontFamily: 'Outfit, sans-serif', lineHeight: 1,
+          fontFamily: 'Outfit, sans-serif', lineHeight: 1.1,
           letterSpacing: -0.5,
         }}>{sign}{abs}</span>
-        <span style={{ fontSize: 14, color: 'var(--text-muted)', fontWeight: 500 }}>{unit}</span>
+        <span style={{ fontSize: 14, lineHeight: 1.5, color: 'var(--text-muted)', fontWeight: 500 }}>{unit}</span>
       </div>
-      <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)', marginTop: 6 }}>{subtleLabel}</div>
+      <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', marginTop: 6 }}>{subtleLabel}</div>
     </div>
   );
 }
@@ -228,7 +228,7 @@ function BaselineLine({ totalChanges, metric, meta, accent }) {
         첫 측정{period > 0 ? ` (${period}일 전)` : ''}보다
       </div>
       <div style={{
-        fontSize: 13, fontWeight: 500,
+        fontSize: 13, lineHeight: 1.5, fontWeight: 500,
         color: value === 0 ? 'var(--text-muted)' : (good ? accent : 'var(--text-secondary)'),
         fontFamily: 'Outfit, sans-serif',
       }}>
@@ -243,9 +243,9 @@ function EmptyHint() {
     <div style={{ padding: '14px 4px 4px' }}>
       <div style={{
         fontSize: 24, fontWeight: 500, color: 'var(--text-primary)',
-        fontFamily: 'Outfit, sans-serif', lineHeight: 1, letterSpacing: -0.5,
+        fontFamily: 'Outfit, sans-serif', lineHeight: 1.3, letterSpacing: -0.5,
       }}>첫 측정</div>
-      <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginTop: 8, lineHeight: 1.55 }}>
+      <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginTop: 8, lineHeight: 1.5 }}>
         다음 측정부터 변화 흐름이 보여요.<br />
         하루 한 번씩 짧게 기록해주세요.
       </div>

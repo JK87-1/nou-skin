@@ -45,7 +45,7 @@ export default function SplashScreen({ exiting, onAnimationEnd }) {
 
       <div style={{
         marginTop: 16,
-        fontSize: 10, fontWeight: 500, letterSpacing: 2,
+        fontSize: 10, lineHeight: 1.3, fontWeight: 500, letterSpacing: 2,
         color: 'var(--text-dim)',
         animation: exiting
           ? 'splashTextExit 0.15s ease-in forwards'

@@ -7,27 +7,27 @@ function renderMarkdown(text) {
   return text.split('\n').map((line, i) => {
     const key = `l-${i}`;
     if (line.startsWith('### ')) {
-      return <h3 key={key} style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', margin: '14px 0 6px' }}>{line.slice(4)}</h3>;
+      return <h3 key={key} style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)', margin: '14px 0 6px' }}>{line.slice(4)}</h3>;
     }
     if (line.startsWith('## ')) {
-      return <h2 key={key} style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)', margin: '18px 0 8px' }}>{line.slice(3)}</h2>;
+      return <h2 key={key} style={{ fontSize: 16, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)', margin: '18px 0 8px' }}>{line.slice(3)}</h2>;
     }
     if (line.startsWith('# ')) {
-      return <h1 key={key} style={{ fontSize: 18, fontWeight: 500, color: 'var(--text-primary)', margin: '8px 0 14px' }}>{line.slice(2)}</h1>;
+      return <h1 key={key} style={{ fontSize: 18, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)', margin: '8px 0 14px' }}>{line.slice(2)}</h1>;
     }
     if (line.startsWith('|')) {
-      return <div key={key} style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: 500, color: 'var(--text-secondary)', whiteSpace: 'pre', lineHeight: 1.6 }}>{line}</div>;
+      return <div key={key} style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: 500, color: 'var(--text-secondary)', whiteSpace: 'pre', lineHeight: 1.3 }}>{line}</div>;
     }
     if (line.startsWith('- ')) {
-      return <div key={key} style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', margin: '3px 0', paddingLeft: 14, lineHeight: 1.6 }}>• {line.slice(2)}</div>;
+      return <div key={key} style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', margin: '3px 0', paddingLeft: 14, lineHeight: 1.5 }}>• {line.slice(2)}</div>;
     }
     if (/^\d+\. /.test(line)) {
-      return <div key={key} style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', margin: '3px 0', paddingLeft: 14, lineHeight: 1.6 }}>{line}</div>;
+      return <div key={key} style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', margin: '3px 0', paddingLeft: 14, lineHeight: 1.5 }}>{line}</div>;
     }
     if (line === '') return <div key={key} style={{ height: 6 }} />;
     const parts = line.split(/(\*\*[^*]+\*\*)/g);
     return (
-      <p key={key} style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', lineHeight: 1.75, margin: 0 }}>
+      <p key={key} style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
         {parts.map((p, j) =>
           p.startsWith('**') && p.endsWith('**')
             ? <strong key={j} style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{p.slice(2, -2)}</strong>
@@ -79,7 +79,7 @@ export default function ConsentModal({ onAccept }) {
       maxWidth: 480, margin: '0 auto',
     }}>
       <header style={{ padding: '24px 20px 14px', borderBottom: '1px solid var(--border, rgba(0,0,0,0.08))' }}>
-        <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--accent-primary)', letterSpacing: 0.4, marginBottom: 4 }}>BETA</div>
+        <div style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--accent-primary)', letterSpacing: 0.4, marginBottom: 4 }}>BETA</div>
         <h1 style={{ fontSize: 18, fontWeight: 500, color: 'var(--text-primary)', margin: 0, lineHeight: 1.3 }}>
           {SERVICE_NAME}을(를) 시작하기 전<br />아래 사항에 동의해주세요
         </h1>
@@ -96,7 +96,7 @@ export default function ConsentModal({ onAccept }) {
             onClick={() => setActiveTab(key)}
             style={{
               flex: '1 0 auto', padding: '12px 14px', background: 'none', border: 'none',
-              fontSize: 12, fontWeight: 500, fontFamily: 'inherit', whiteSpace: 'nowrap',
+              fontSize: 12, lineHeight: 1.5, fontWeight: 500, fontFamily: 'inherit', whiteSpace: 'nowrap',
               color: activeTab === key ? 'var(--text-primary)' : 'var(--text-muted)',
               borderBottom: activeTab === key ? '2px solid var(--accent-primary)' : '2px solid transparent',
               cursor: 'pointer',
@@ -117,7 +117,7 @@ export default function ConsentModal({ onAccept }) {
         background: '#ffffff',
       }}>
         {/* 현재 탭 동의 체크박스 */}
-        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, fontWeight: 500, marginBottom: 8, cursor: 'pointer' }}>
+        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, lineHeight: 1.5, fontWeight: 500, marginBottom: 8, cursor: 'pointer' }}>
           <input
             type="checkbox"
             checked={current.agreed}
@@ -130,7 +130,7 @@ export default function ConsentModal({ onAccept }) {
         </label>
 
         {/* 만 14세 이상 확인 — PIPA 제22조의2 */}
-        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, fontWeight: 500, marginBottom: 12, cursor: 'pointer' }}>
+        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 13, lineHeight: 1.5, fontWeight: 500, marginBottom: 12, cursor: 'pointer' }}>
           <input
             type="checkbox"
             checked={ageConfirmed}
@@ -149,7 +149,7 @@ export default function ConsentModal({ onAccept }) {
             width: '100%', padding: '14px', borderRadius: 12,
             background: allAgreed ? 'var(--accent-primary)' : 'var(--border, rgba(0,0,0,0.08))',
             color: allAgreed ? '#fff' : 'var(--text-muted)',
-            border: 'none', fontSize: 16, fontWeight: 500, fontFamily: 'inherit',
+            border: 'none', fontSize: 16, lineHeight: 1.3, fontWeight: 500, fontFamily: 'inherit',
             cursor: allAgreed ? 'pointer' : 'not-allowed',
             transition: 'background 0.2s',
           }}

@@ -62,12 +62,12 @@ export default function SkinScoreCircle({ score, change, onTap }) {
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           }}>
             <span style={{
-              fontSize: 40, fontWeight: 400, color: '#1a1a2e', lineHeight: 1,
+              fontSize: 40, fontWeight: 400, color: '#1a1a2e', lineHeight: 1.1,
               fontFamily: "'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif",
               opacity: 0.85,
             }}>{score}</span>
             <span style={{
-              fontSize: 10, fontWeight: 500, color: '#4a5568', marginTop: 4, letterSpacing: 1, opacity: 0.7,
+              fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: '#4a5568', marginTop: 4, letterSpacing: 1, opacity: 0.7,
             }}>skin score</span>
           </div>
         </div>
@@ -76,7 +76,7 @@ export default function SkinScoreCircle({ score, change, onTap }) {
         {change != null && change !== 0 && (
           <div style={{
             marginTop: 12,
-            fontSize: 12, fontWeight: 500,
+            fontSize: 12, lineHeight: 1.5, fontWeight: 500,
             color: change > 0 ? '#4ade80' : '#F0B870',
           }}>
             지난주 대비 {change > 0 ? '+' : ''}{change}점

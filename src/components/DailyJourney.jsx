@@ -40,7 +40,7 @@ export default function DailyJourney({ onTodayTap, onPastTap }) {
     <div style={{ padding: '0 20px', marginTop: 48 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <span className="section-label">SKIN JOURNEY</span>
-        <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)' }}>최근 7일</span>
+        <span style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)' }}>최근 7일</span>
       </div>
       <div className="journey-scroll">
         {days.map((day) => (
@@ -76,7 +76,7 @@ export default function DailyJourney({ onTodayTap, onPastTap }) {
               <div className={`journey-thumb${day.isToday ? ' today-border' : ''}`} style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 background: 'linear-gradient(135deg, rgba(var(--accent-rgb),0.1), rgba(var(--accent-rgb),0.05))',
-                fontSize: 16, fontWeight: 500, color: '#ADEBB3',
+                fontSize: 16, lineHeight: 1.3, fontWeight: 500, color: '#ADEBB3',
                 fontFamily: "'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif",
               }}>
                 {day.record.overallScore}

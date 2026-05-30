@@ -162,7 +162,7 @@ function TrendGraph({ data, color = '#a8c8f8', height = 160, metricKey = 'skinAg
 
   if (data.length < 2) {
     return (
-      <div style={{ height, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-dim)', fontSize: 13, fontWeight: 500 }}>
+      <div style={{ height, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-dim)', fontSize: 13, lineHeight: 1.5, fontWeight: 500 }}>
         2회 이상 측정하면 그래프가 나타나요 <span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><ChartIcon size={13} /></span>
       </div>
     );
@@ -330,21 +330,21 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
                 {/* Stats row */}
                 <div style={{ display: 'flex', flex: 1, justifyContent: 'space-around', textAlign: 'center' }}>
                   <div>
-                    <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 500, color: 'var(--text-primary)' }}>{records.length}</div>
-                    <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)', marginTop: 2 }}>기록</div>
+                    <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)' }}>{records.length}</div>
+                    <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', marginTop: 2 }}>기록</div>
                   </div>
                   <div>
-                    <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 500, color: 'var(--text-primary)' }}>{avgScore}</div>
-                    <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)', marginTop: 2 }}>평균점수</div>
+                    <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)' }}>{avgScore}</div>
+                    <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', marginTop: 2 }}>평균점수</div>
                   </div>
                 </div>
               </div>
 
               {/* Bio line */}
               <div style={{ marginTop: 14 }}>
-                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>나의 피부 기록</div>
+                <div style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)' }}>나의 피부 기록</div>
                 {latestRecord && (
-                  <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', marginTop: 4 }}>
+                  <div style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-muted)', marginTop: 4 }}>
                     최근 피부나이 {latestRecord.skinAge}세 · {latestRecord.skinType}
                   </div>
                 )}
@@ -368,8 +368,8 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
                   <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
                   <circle cx="12" cy="13" r="3" />
                 </svg>
-                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-muted)' }}>아직 기록이 없어요</div>
-                <div style={{ fontSize: 12, fontWeight: 500, marginTop: 6 }}>첫 측정을 시작해보세요</div>
+                <div style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-muted)' }}>아직 기록이 없어요</div>
+                <div style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, marginTop: 6 }}>첫 측정을 시작해보세요</div>
               </div>
             ) : (
               <div style={{
@@ -390,18 +390,18 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
                           background: 'linear-gradient(135deg, rgba(var(--accent-rgb),0.06), rgba(var(--accent-rgb),0.1))',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                         }}>
-                          <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)' }}>No Photo</span>
+                          <span style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)' }}>No Photo</span>
                         </div>
                       )}
                       <span style={{
                         position: 'absolute', bottom: 5, left: 6,
-                        fontSize: 10, fontWeight: 500, color: '#fff',
+                        fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: '#fff',
                         textShadow: '0 1px 3px rgba(0,0,0,0.55)',
                         pointerEvents: 'none',
                       }}>{String(new Date(r.date).getMonth() + 1).padStart(2, '0')}월 {String(new Date(r.date).getDate()).padStart(2, '0')}일</span>
                       <span style={{
                         position: 'absolute', bottom: 5, right: 6,
-                        fontSize: 13, fontWeight: 500, color: '#fff',
+                        fontSize: 13, lineHeight: 1.5, fontWeight: 500, color: '#fff',
                         textShadow: '0 1px 4px rgba(0,0,0,0.55)',
                         pointerEvents: 'none',
                       }}>{r.overallScore}</span>
@@ -447,17 +447,17 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
             {/* === HEADER === */}
             <div style={{ paddingTop: 30, marginBottom: 20, animation: 'breatheIn 0.6s ease both' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-                <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: 1.5, color: 'var(--text-muted)' }}>SKIN TIMELINE</span>
+                <span style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, letterSpacing: 1.5, color: 'var(--text-muted)' }}>SKIN TIMELINE</span>
                 {period > 0 && (
                   <span style={{
-                    fontSize: 11, fontWeight: 500, color: '#fff',
+                    fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: '#fff',
                     background: 'rgba(255,120,50,0.2)', border: 'none',
                     borderRadius: 20, padding: '2px 10px',
                   }}><span style={{ color: '#FF6B35' }}>●</span> {period}일째</span>
                 )}
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 style={{ fontSize: 24, fontWeight: 500, color: 'var(--text-primary)', textAlign: 'center', margin: 0 }}>나의 피부 여정</h2>
+                <h2 style={{ fontSize: 24, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)', textAlign: 'center', margin: 0 }}>나의 피부 여정</h2>
                 <div style={{
                   display: 'flex', background: 'rgba(255,255,255,0.4)',
                   backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
@@ -469,7 +469,7 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
                       border: insightMode === m ? '1.5px solid rgba(255,255,255,0.2)' : '1.5px solid transparent',
                       background: insightMode === m ? 'var(--bg-input)' : 'transparent',
                       color: insightMode === m ? 'var(--text-primary)' : 'var(--text-muted)',
-                      borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 500, cursor: 'pointer',
+                      borderRadius: 8, padding: '6px 14px', fontSize: 12, lineHeight: 1.5, fontWeight: 500, cursor: 'pointer',
                     }}>{m === 'timeline' ? '타임라인' : '비교'}</button>
                   ))}
                 </div>
@@ -489,12 +489,12 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
                   <div style={{
                     width: 44, height: 44, borderRadius: 12,
                     background: 'transparent',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, fontWeight: 500,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, lineHeight: 1.3, fontWeight: 500,
                   }}><ChartIcon size={26} /></div>
                   <div>
-                    <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 2 }}>총 변화</div>
+                    <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 2 }}>총 변화</div>
                     <div style={{
-                      fontSize: 24, fontWeight: 500, fontFamily: 'var(--font-display)',
+                      fontSize: 24, lineHeight: 1.3, fontWeight: 500, fontFamily: 'var(--font-display)',
                       color: overallDiff >= 0 ? '#4ade80' : '#f0a050',
                     }}>{overallDiff > 0 ? '+' : ''}{overallDiff}점</div>
                   </div>
@@ -509,12 +509,12 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
                   <div style={{
                     width: 44, height: 44, borderRadius: 12,
                     background: 'transparent',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, fontWeight: 500,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, lineHeight: 1.3, fontWeight: 500,
                   }}><ClockIcon size={26} /></div>
                   <div>
-                    <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 2 }}>피부나이</div>
+                    <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 2 }}>피부나이</div>
                     <div style={{
-                      fontSize: 24, fontWeight: 500, fontFamily: 'var(--font-display)',
+                      fontSize: 24, lineHeight: 1.3, fontWeight: 500, fontFamily: 'var(--font-display)',
                       color: skinAgeDiff <= 0 ? '#4ade80' : '#f0a050',
                     }}>{skinAgeDiff > 0 ? '+' : ''}{skinAgeDiff}세</div>
                   </div>
@@ -525,10 +525,10 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
             {/* === TREND GRAPH === */}
             <div className="card" style={{ padding: '16px 12px', marginBottom: 16, animation: 'breatheIn 0.6s ease 0.15s both' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-secondary)' }}>종합 점수 추이</span>
+                <span style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-secondary)' }}>종합 점수 추이</span>
                 {improvementPct !== null && Number(improvementPct) !== 0 && (
                   <span style={{
-                    fontSize: 12, fontWeight: 500,
+                    fontSize: 12, lineHeight: 1.5, fontWeight: 500,
                     color: Number(improvementPct) > 0 ? '#4ade80' : '#f0a050',
                   }}>
                     {Number(improvementPct) > 0 ? '▲' : '▼'} {Math.abs(Number(improvementPct))}% {Number(improvementPct) > 0 ? '개선' : '변화'}
@@ -547,11 +547,11 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
             {/* === TIMELINE MODE === */}
             {insightMode === 'timeline' && (
               <div style={{ animation: 'breatheIn 0.5s ease both' }}>
-                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 12 }}>측정 기록</div>
+                <div style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 12 }}>측정 기록</div>
                 {records.length === 0 ? (
                   <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
-                    <div style={{ fontSize: 40, fontWeight: 400, marginBottom: 8 }}></div>
-                    <div style={{ fontSize: 13, fontWeight: 500 }}>아직 기록이 없어요</div>
+                    <div style={{ fontSize: 40, lineHeight: 1.1, fontWeight: 400, marginBottom: 8 }}></div>
+                    <div style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 500 }}>아직 기록이 없어요</div>
                   </div>
                 ) : (
                   sorted.map((r, i) => {
@@ -577,8 +577,8 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
                       }}>
                         {/* Date */}
                         <div style={{ textAlign: 'center', minWidth: 36 }}>
-                          <div style={{ fontSize: 24, fontWeight: 500, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', lineHeight: 1 }}>{dayNum}</div>
-                          <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-muted)', marginTop: 2 }}>{monthLabel}</div>
+                          <div style={{ fontSize: 24, fontWeight: 500, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', lineHeight: 1.3 }}>{dayNum}</div>
+                          <div style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', marginTop: 2 }}>{monthLabel}</div>
                         </div>
 
                         {/* Divider */}
@@ -599,10 +599,10 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
                         {/* Score info */}
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>종합 {r.overallScore}점</span>
+                            <span style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)' }}>종합 {r.overallScore}점</span>
                             {diff !== 0 && (
                               <span style={{
-                                fontSize: 10, fontWeight: 500, padding: '1px 6px', borderRadius: 8,
+                                fontSize: 10, lineHeight: 1.3, fontWeight: 500, padding: '1px 6px', borderRadius: 8,
                                 background: diff > 0 ? 'rgba(74,222,128,0.15)' : 'rgba(240,160,80,0.15)',
                                 color: diff > 0 ? '#4ade80' : '#f0a050',
                               }}>{diff > 0 ? '+' : ''}{diff}</span>
@@ -616,7 +616,7 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
                               }} />
                             )}
                           </div>
-                          <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)', marginTop: 2 }}>
+                          <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', marginTop: 2 }}>
                             피부나이 {r.skinAge}세 · {dayOfWeek}
                           </div>
                         </div>
@@ -633,7 +633,7 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
                           <div style={{
                             position: 'absolute', inset: 0,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 13, fontWeight: 500, fontFamily: 'var(--font-display)', color: 'var(--text-secondary)',
+                            fontSize: 13, lineHeight: 1.5, fontWeight: 500, fontFamily: 'var(--font-display)', color: 'var(--text-secondary)',
                           }}>{r.overallScore}</div>
                         </div>
                       </div>
@@ -648,8 +648,8 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
               if (!firstRecord || !lastRecord || records.length < 2) {
                 return (
                   <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
-                    <div style={{ fontSize: 40, fontWeight: 400, marginBottom: 8 }}></div>
-                    <div style={{ fontSize: 13, fontWeight: 500 }}>2회 이상 측정하면 비교 분석을 볼 수 있어요</div>
+                    <div style={{ fontSize: 40, lineHeight: 1.1, fontWeight: 400, marginBottom: 8 }}></div>
+                    <div style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 500 }}>2회 이상 측정하면 비교 분석을 볼 수 있어요</div>
                   </div>
                 );
               }
@@ -662,17 +662,17 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
                     gap: 16, marginBottom: 28, padding: '0 8px',
                   }}>
                     <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 4 }}>시작</div>
+                      <div style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 4 }}>시작</div>
                       <div style={{
-                        fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)',
+                        fontSize: 13, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-secondary)',
                         background: 'var(--bg-card-hover)', borderRadius: 10, padding: '6px 14px',
                       }}>{formatShortDate(firstRecord.date)}</div>
                     </div>
-                    <div style={{ fontSize: 18, fontWeight: 500, color: 'var(--text-dim)' }}>→</div>
+                    <div style={{ fontSize: 18, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-dim)' }}>→</div>
                     <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 4 }}>현재</div>
+                      <div style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 4 }}>현재</div>
                       <div style={{
-                        fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)',
+                        fontSize: 13, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-secondary)',
                         background: 'rgba(var(--accent-rgb),0.12)', border: 'none',
                         borderRadius: 10, padding: '6px 14px',
                       }}>{formatShortDate(lastRecord.date)}</div>
@@ -697,19 +697,19 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
                         <div style={{
                           position: 'absolute', inset: 0,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 24, fontWeight: 500, fontFamily: 'var(--font-display)', color: 'var(--text-secondary)',
+                          fontSize: 24, lineHeight: 1.3, fontWeight: 500, fontFamily: 'var(--font-display)', color: 'var(--text-secondary)',
                         }}>{firstRecord.overallScore}</div>
                       </div>
-                      <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)' }}>시작</div>
+                      <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)' }}>시작</div>
                     </div>
 
                     {/* Diff */}
                     <div style={{ textAlign: 'center' }}>
                       <div style={{
-                        fontSize: 24, fontWeight: 500, fontFamily: 'var(--font-display)',
+                        fontSize: 24, lineHeight: 1.3, fontWeight: 500, fontFamily: 'var(--font-display)',
                         color: overallDiff >= 0 ? '#4ade80' : '#f0a050',
                       }}>{overallDiff > 0 ? '+' : ''}{overallDiff}</div>
-                      <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)' }}>점 {overallDiff >= 0 ? '상승' : '변화'}</div>
+                      <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)' }}>점 {overallDiff >= 0 ? '상승' : '변화'}</div>
                     </div>
 
                     {/* Current ring */}
@@ -725,15 +725,15 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
                         <div style={{
                           position: 'absolute', inset: 0,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 24, fontWeight: 500, fontFamily: 'var(--font-display)', color: 'var(--text-primary)',
+                          fontSize: 24, lineHeight: 1.3, fontWeight: 500, fontFamily: 'var(--font-display)', color: 'var(--text-primary)',
                         }}>{lastRecord.overallScore}</div>
                       </div>
-                      <div style={{ fontSize: 11, color: '#a8c8f8', fontWeight: 500 }}>현재</div>
+                      <div style={{ fontSize: 11, lineHeight: 1.3, color: '#a8c8f8', fontWeight: 500 }}>현재</div>
                     </div>
                   </div>
 
                   {/* Metric-by-metric comparison */}
-                  <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 12 }}>항목별 변화</div>
+                  <div style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 12 }}>항목별 변화</div>
                   <div className="card" style={{ padding: '4px 14px' }}>
                     {compareMetrics.map((m, i) => {
                       const firstVal = firstRecord[m.key] ?? 0;
@@ -748,13 +748,13 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
                         }}>
                           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
                             <span style={{ display: 'inline-flex', alignItems: 'center', width: 26 }}>{m.icon}</span>
-                            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', flex: 1 }}>{m.label}</span>
-                            <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted)' }}>{firstVal}</span>
-                            <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-dim)', margin: '0 4px' }}>→</span>
-                            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{lastVal}</span>
+                            <span style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-secondary)', flex: 1 }}>{m.label}</span>
+                            <span style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-muted)' }}>{firstVal}</span>
+                            <span style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-dim)', margin: '0 4px' }}>→</span>
+                            <span style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)' }}>{lastVal}</span>
                             {diff !== 0 && (
                               <span style={{
-                                fontSize: 10, fontWeight: 500, padding: '1px 6px', borderRadius: 8, marginLeft: 6,
+                                fontSize: 10, lineHeight: 1.3, fontWeight: 500, padding: '1px 6px', borderRadius: 8, marginLeft: 6,
                                 background: improved ? 'rgba(74,222,128,0.15)' : 'rgba(240,160,80,0.15)',
                                 color: improved ? '#4ade80' : '#f0a050',
                               }}>{improved ? '↑' : '↓'}{diff > 0 ? '+' : ''}{diff}</span>
@@ -781,7 +781,7 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
             })()}
 
             {records.length > 0 && (
-              <p style={{ textAlign: 'center', fontSize: 11, fontWeight: 500, color: 'var(--text-dim)', marginTop: 16, marginBottom: 8 }}>
+              <p style={{ textAlign: 'center', fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-dim)', marginTop: 16, marginBottom: 8 }}>
                 매주 같은 조건(시간, 조명, 맨얼굴)에서 측정하면 정확도가 높아져요
               </p>
             )}
@@ -916,7 +916,7 @@ function PhotoGallery({ records, thumbs, onMeasure, onSelectRecord, onThumbsChan
 
       <div className="card" style={{ padding: '16px 12px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-secondary)', letterSpacing: -0.3 }}>Album</div>
+        <div style={{ fontSize: 16, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-secondary)', letterSpacing: -0.3 }}>Album</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div onClick={onMeasure} style={{
             width: 34, height: 34, borderRadius: '50%', cursor: 'pointer',
@@ -944,7 +944,7 @@ function PhotoGallery({ records, thumbs, onMeasure, onSelectRecord, onThumbsChan
                   <img src={thumb} alt={r.date} />
                   <span style={{
                     position: 'absolute', bottom: 6, left: 6,
-                    fontSize: 10, fontWeight: 500, color: '#fff',
+                    fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: '#fff',
                     textShadow: '0 1px 3px rgba(0,0,0,0.55)',
                     zIndex: 2, pointerEvents: 'none',
                   }}>{shortDate}</span>
@@ -1155,8 +1155,8 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
   // ── 변화 행 ──
   const ChangeRow = ({ label, diff, unit }) => (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: `1px solid ${C.divLight}` }}>
-      <span style={{ fontSize: 12, fontWeight: 500, color: C.main }}>{label}</span>
-      <span style={{ fontSize: 10, fontWeight: 500, color: diff > 0 ? C.positive : diff < 0 ? C.negative : C.sub }}>
+      <span style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: C.main }}>{label}</span>
+      <span style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: diff > 0 ? C.positive : diff < 0 ? C.negative : C.sub }}>
         {diff > 0 ? `+${diff}` : diff < 0 ? `${diff}` : '0'}{unit || ''}
       </span>
     </div>
@@ -1203,8 +1203,8 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
           <div style={{ background: `linear-gradient(180deg, ${C.gradTop} 0%, ${C.gradMid} 50%, ${C.cardBg} 100%)`, padding: '20px 20px 0', textAlign: 'center' }}>
             {/* 날짜 + LUA */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: 0.4, color: C.sub }}>{dateShort}</span>
-              <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: 2.5, color: C.sub }}>LUA</span>
+              <span style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, letterSpacing: 0.4, color: C.sub }}>{dateShort}</span>
+              <span style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, letterSpacing: 2.5, color: C.sub }}>LUA</span>
             </div>
 
             {/* 두 줄 요약 멘트 */}
@@ -1230,7 +1230,7 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
               }
               return (
                 <div style={{ textAlign: 'center', marginBottom: 16, padding: '0 12px' }}>
-                  <div style={{ fontSize: 14, fontWeight: 500, color: C.main, lineHeight: 1.6 }}>{text}</div>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: C.main, lineHeight: 1.5 }}>{text}</div>
                 </div>
               );
             })()}
@@ -1256,18 +1256,18 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
           {/* 점수 영역 */}
           <div style={{ padding: '0 20px 16px', textAlign: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 4, marginBottom: 8 }}>
-              <span style={{ fontSize: 64, fontWeight: 400, letterSpacing: -2.5, lineHeight: 1, color: C.main }}>{record.overallScore ?? '—'}</span>
-              <span style={{ fontSize: 16, fontWeight: 500, letterSpacing: -0.3, color: C.sub, marginBottom: 8 }}>/ 100</span>
+              <span style={{ fontSize: 64, fontWeight: 400, letterSpacing: -2.5, lineHeight: 1.1, color: C.main }}>{record.overallScore ?? '—'}</span>
+              <span style={{ fontSize: 16, lineHeight: 1.3, fontWeight: 500, letterSpacing: -0.3, color: C.sub, marginBottom: 8 }}>/ 100</span>
             </div>
             {/* 스킨 레벨 배지 */}
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 14px', borderRadius: 20, background: C.badgeBg, marginBottom: 14 }}>
-              <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: 0.3, color: C.badgeText }}>스킨 레벨 · {level}</span>
+              <span style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, letterSpacing: 0.3, color: C.badgeText }}>스킨 레벨 · {level}</span>
             </div>
             {/* 태그 */}
             <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 6 }}>
               {tags.map((t, i) => (
                 <span key={i} style={{
-                  fontSize: 10, fontWeight: 500, padding: '4px 10px', borderRadius: 20,
+                  fontSize: 10, lineHeight: 1.3, fontWeight: 500, padding: '4px 10px', borderRadius: 20,
                   background: t.accent ? C.tagAccentBg : C.tagBg,
                   border: `1px solid ${t.accent ? C.tagAccentBorder : C.tagBorder}`,
                   color: t.accent ? C.accent : C.sub,
@@ -1303,16 +1303,16 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
               return (
                 <>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                    <span style={{ fontSize: 13, fontWeight: 500, letterSpacing: -0.2, color: C.main }}>
+                    <span style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 500, letterSpacing: -0.2, color: C.main }}>
                       {isFirst ? '기준선' : '지난 측정에서 달라진 점'}
                     </span>
-                    <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: 0.3, color: C.sub }}>
+                    <span style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, letterSpacing: 0.3, color: C.sub }}>
                       {isFirst ? '첫 측정' : `${daysSincePrev}일 전`}
                     </span>
                   </div>
 
                   {isFirst ? (
-                    <div style={{ fontSize: 12, fontWeight: 500, color: C.sub, lineHeight: 1.6, textAlign: 'center', padding: '16px 0' }}>
+                    <div style={{ fontSize: 12, fontWeight: 500, color: C.sub, lineHeight: 1.5, textAlign: 'center', padding: '16px 0' }}>
                       첫 번째 측정이에요. 다음 측정부터 변화를 추적할 수 있어요.
                     </div>
                   ) : (
@@ -1326,16 +1326,16 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
                             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8, opacity: 0.5 }}>
                               {m.icon}
                             </div>
-                            <div style={{ fontSize: 24, fontWeight: 500, letterSpacing: -1, color: C.main, lineHeight: 1 }}>
+                            <div style={{ fontSize: 24, fontWeight: 500, letterSpacing: -1, color: C.main, lineHeight: 1.3 }}>
                               {m.value ?? '—'}
                             </div>
                             <div style={{
-                              fontSize: 12, fontWeight: 500, marginTop: 4,
+                              fontSize: 12, lineHeight: 1.5, fontWeight: 500, marginTop: 4,
                               color: m.diff > 0 ? C.positive : m.diff < 0 ? C.negative : C.sub,
                             }}>
                               {m.diff > 0 ? `+${m.diff}` : m.diff}
                             </div>
-                            <div style={{ fontSize: 11, fontWeight: 500, color: C.sub, marginTop: 4 }}>{m.label}</div>
+                            <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: C.sub, marginTop: 4 }}>{m.label}</div>
                           </div>
                         ))}
                       </div>
@@ -1403,7 +1403,7 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
               style={{ transform: detailOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.25s cubic-bezier(0.32,0.72,0,1)' }}>
               <polyline points="6 9 12 15 18 9" />
             </svg>
-            <span style={{ fontSize: 11, fontWeight: 500, color: C.main }}>{detailOpen ? '자세한 측정 접기' : '자세한 측정 보기'}</span>
+            <span style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: C.main }}>{detailOpen ? '자세한 측정 접기' : '자세한 측정 보기'}</span>
           </div>
           <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
             <div onClick={handleSave} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
@@ -1433,16 +1433,16 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
               return (
                 <div style={cardStyle}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-                    <span style={{ fontSize: 13, fontWeight: 500, letterSpacing: -0.2, color: C.main }}>컨디션 브리핑</span>
+                    <span style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 500, letterSpacing: -0.2, color: C.main }}>컨디션 브리핑</span>
                     <div style={{ marginLeft: 'auto', padding: '4px 10px', borderRadius: 8, background: cGrade.bg, border: `1px solid ${cGrade.border}`, display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <span style={{ fontSize: 13, fontWeight: 500, color: cGrade.color, fontFamily: 'var(--font-display)' }}>{cGrade.letter}</span>
-                      <span style={{ fontSize: 10, fontWeight: 500, color: cGrade.color }}>{cScore}점</span>
+                      <span style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 500, color: cGrade.color, fontFamily: 'var(--font-display)' }}>{cGrade.letter}</span>
+                      <span style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: cGrade.color }}>{cScore}점</span>
                     </div>
                   </div>
                   {record.conditionBriefing ? (
-                    <p style={{ fontSize: 12, fontWeight: 500, color: C.sub, lineHeight: 1.8, margin: 0 }}>{record.conditionBriefing}</p>
+                    <p style={{ fontSize: 12, fontWeight: 500, color: C.sub, lineHeight: 1.5, margin: 0 }}>{record.conditionBriefing}</p>
                   ) : (
-                    <p style={{ fontSize: 12, fontWeight: 500, color: C.sub, lineHeight: 1.8, margin: 0, fontStyle: 'italic' }}>컨디션 브리핑은 이후 측정부터 저장됩니다.</p>
+                    <p style={{ fontSize: 12, fontWeight: 500, color: C.sub, lineHeight: 1.5, margin: 0, fontStyle: 'italic' }}>컨디션 브리핑은 이후 측정부터 저장됩니다.</p>
                   )}
                 </div>
               );
@@ -1451,8 +1451,8 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
             {/* 전체 피부 분석 + AI 정밀 분석 */}
             {record.advice && (
               <div style={cardStyle}>
-                <div style={{ fontSize: 13, fontWeight: 500, letterSpacing: -0.2, color: C.main, marginBottom: 10 }}>전체 피부 분석</div>
-                <p style={{ fontSize: 12, fontWeight: 500, color: C.sub, lineHeight: 1.75, margin: 0 }}>{record.advice}</p>
+                <div style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 500, letterSpacing: -0.2, color: C.main, marginBottom: 10 }}>전체 피부 분석</div>
+                <p style={{ fontSize: 12, fontWeight: 500, color: C.sub, lineHeight: 1.5, margin: 0 }}>{record.advice}</p>
                 {record.aiNotes && (() => {
                   const filtered = record.aiNotes
                     .replace(/[^.。!]*(?:동일\s*인물|같은\s*(?:사람|인물)|다른\s*(?:사람|인물)|differentPerson|두\s*사진\s*(?:은|이|를))[^.。!]*[.。!]\s*/gi, '')
@@ -1460,8 +1460,8 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
                   if (!filtered) return null;
                   return (
                     <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 12, background: 'rgba(30,144,232,0.04)', border: `1px solid ${C.divLight}` }}>
-                      <div style={{ fontSize: 10, fontWeight: 500, color: C.accent, marginBottom: 4 }}>AI 정밀 분석</div>
-                      <p style={{ fontSize: 11, fontWeight: 500, color: C.sub, lineHeight: 1.7, margin: 0 }}>{filtered}</p>
+                      <div style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: C.accent, marginBottom: 4 }}>AI 정밀 분석</div>
+                      <p style={{ fontSize: 11, fontWeight: 500, color: C.sub, lineHeight: 1.3, margin: 0 }}>{filtered}</p>
                     </div>
                   );
                 })()}
@@ -1471,8 +1471,8 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
             {/* 컨디션 지표 */}
             <div style={{ ...cardStyle, padding: '14px 6px 2px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 14, paddingRight: 14, marginBottom: 4 }}>
-                <span style={{ fontSize: 13, fontWeight: 500, letterSpacing: -0.2, color: C.main }}>컨디션 지표</span>
-                <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: 0.3, color: C.sub }}>5가지</span>
+                <span style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 500, letterSpacing: -0.2, color: C.main }}>컨디션 지표</span>
+                <span style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, letterSpacing: 0.3, color: C.sub }}>5가지</span>
               </div>
               {conditionMetrics.map((m, i) => (
                 <MetricBar key={m.label} label={m.label} value={record[m.key]} unit={m.unit || ''} color={m.color} icon={m.icon} delay={i * 80} />
@@ -1482,8 +1482,8 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
             {/* ④-3 노화 지표 */}
             <div style={{ ...cardStyle, padding: '14px 6px 2px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 14, paddingRight: 14, marginBottom: 4 }}>
-                <span style={{ fontSize: 13, fontWeight: 500, letterSpacing: -0.2, color: C.main }}>노화 지표</span>
-                <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: 0.3, color: C.sub }}>5가지</span>
+                <span style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 500, letterSpacing: -0.2, color: C.main }}>노화 지표</span>
+                <span style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, letterSpacing: 0.3, color: C.sub }}>5가지</span>
               </div>
               {agingMetrics.map((m, i) => (
                 <MetricBar key={m.label} label={m.label} value={record[m.key]} unit="" color={m.color} icon={m.icon} delay={i * 80} />
@@ -1509,16 +1509,16 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
               background: '#fff', borderRadius: 20, padding: '28px 24px',
               width: 280, textAlign: 'center',
             }}>
-              <div style={{ fontSize: 16, fontWeight: 500, color: C.main, marginBottom: 8 }}>이 기록을 삭제할까요?</div>
-              <div style={{ fontSize: 12, fontWeight: 500, color: C.sub, marginBottom: 20 }}>삭제된 기록은 복구할 수 없습니다.</div>
+              <div style={{ fontSize: 16, lineHeight: 1.3, fontWeight: 500, color: C.main, marginBottom: 8 }}>이 기록을 삭제할까요?</div>
+              <div style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: C.sub, marginBottom: 20 }}>삭제된 기록은 복구할 수 없습니다.</div>
               <div style={{ display: 'flex', gap: 10 }}>
                 <button onClick={() => setShowConfirm(false)} style={{
                   flex: 1, padding: '12px 0', borderRadius: 12, border: 'none',
-                  background: '#F0F4F8', color: C.main, fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+                  background: '#F0F4F8', color: C.main, fontSize: 14, lineHeight: 1.5, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
                 }}>아니오</button>
                 <button onClick={() => { onDelete(record.id || record.date); setShowConfirm(false); }} style={{
                   flex: 1, padding: '12px 0', borderRadius: 12, border: 'none',
-                  background: '#A32D2D', color: '#fff', fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+                  background: '#A32D2D', color: '#fff', fontSize: 14, lineHeight: 1.5, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
                 }}>삭제</button>
               </div>
             </div>
@@ -1530,7 +1530,7 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
           <div style={{
             position: 'fixed', top: 60, left: '50%', transform: 'translateX(-50%)',
             background: C.accent, color: '#fff', padding: '10px 22px', borderRadius: 30,
-            fontSize: 13, fontWeight: 500, zIndex: 999, animation: 'fadeIn 0.2s ease',
+            fontSize: 13, lineHeight: 1.5, fontWeight: 500, zIndex: 999, animation: 'fadeIn 0.2s ease',
           }}>앨범에 두었어요</div>
         )}
       </div>
@@ -2060,10 +2060,10 @@ function RoutineChecklist() {
                     minWidth: 0, // flex 안 안전
                   }}
                 >
-                  <div style={{ fontSize: 11, fontWeight: 500, marginBottom: 2,
+                  <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, marginBottom: 2,
                     color: day.isSelected ? '#fff' : day.isToday ? 'var(--day-today-accent)' : 'var(--text-muted)',
                   }}>{day.dayLabel}</div>
-                  <div style={{ fontSize: 16, fontWeight: 500,
+                  <div style={{ fontSize: 16, lineHeight: 1.3, fontWeight: 500,
                     color: day.isSelected ? '#fff' : day.isToday ? 'var(--day-today-accent)' : 'var(--text-primary)',
                   }}>{new Date(day.date + 'T12:00:00').getDate()}</div>
                   {day.isToday && !day.isSelected && <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--day-today-accent)', margin: '4px auto 0' }} />}
@@ -2083,7 +2083,7 @@ function RoutineChecklist() {
         ].map(m => (
           <button key={m.key} onClick={() => setMode(m.key)} style={{
             flex: 1, padding: '12px 0', borderRadius: 18, cursor: 'pointer',
-            fontFamily: 'inherit', fontSize: 13, fontWeight: 500, textAlign: 'center',
+            fontFamily: 'inherit', fontSize: 13, lineHeight: 1.5, fontWeight: 500, textAlign: 'center',
             background: mode === m.key ? 'rgba(255,255,255,0.4)' : 'transparent',
             color: mode === m.key ? 'var(--text-primary)' : 'var(--text-muted)',
             backdropFilter: mode === m.key ? 'blur(14px)' : 'none', WebkitBackdropFilter: mode === m.key ? 'blur(14px)' : 'none',
@@ -2103,11 +2103,11 @@ function RoutineChecklist() {
               strokeDasharray={`${(pct / 100) * 119.38} 119.38`} strokeLinecap="round" transform="rotate(-90 22 22)"
               style={{ transition: 'stroke-dasharray 0.5s ease' }} />
           </svg>
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 500, color: 'var(--text-primary)' }}>{pct}%</div>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)' }}>{pct}%</div>
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted)' }}>{mode === 'morning' ? '모닝' : mode === 'day' ? '데이' : '나이트'} 케어 달성률</div>
-          <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)' }}>{totalDone} / {totalItems} 완료</div>
+          <div style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-muted)' }}>{mode === 'morning' ? '모닝' : mode === 'day' ? '데이' : '나이트'} 케어 달성률</div>
+          <div style={{ fontSize: 16, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)' }}>{totalDone} / {totalItems} 완료</div>
         </div>
       </div>
 
@@ -2127,7 +2127,7 @@ function RoutineChecklist() {
               border: allChecked ? '1px solid rgba(var(--accent-rgb),0.4)' : 'none',
               borderRadius: 14,
               color: allChecked ? '#3D7CA8' : '#fff',
-              fontSize: 14, fontWeight: 500, letterSpacing: -0.2,
+              fontSize: 14, lineHeight: 1.5, fontWeight: 500, letterSpacing: -0.2,
               cursor: 'pointer', fontFamily: 'inherit',
               boxShadow: allChecked ? 'none' : '0 2px 12px rgba(0,0,0,0.08)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
@@ -2155,7 +2155,7 @@ function RoutineChecklist() {
       {/* Checklist — 태그별 그룹 */}
       <div onTouchMove={handleDragMove} onTouchEnd={handleDragEnd} style={{ ...glass, padding: '6px 0', marginBottom: 16 }}>
         {allItems.length === 0 ? (
-          <div style={{ padding: '24px 16px', textAlign: 'center', fontSize: 13, fontWeight: 500, color: 'var(--text-muted)' }}>
+          <div style={{ padding: '24px 16px', textAlign: 'center', fontSize: 13, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-muted)' }}>
             케어 항목 추가 버튼으로 루틴을 추가해보세요
           </div>
         ) : (() => {
@@ -2168,8 +2168,8 @@ function RoutineChecklist() {
                 display: 'flex', alignItems: 'center', gap: 6,
                 borderTop: gi > 0 ? '1px solid rgba(var(--accent-rgb),0.1)' : 'none',
               }}>
-                <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--accent-primary)', letterSpacing: -0.2 }}>{group.label}</span>
-                <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-muted)' }}>{group.items.length}</span>
+                <span style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--accent-primary)', letterSpacing: -0.2 }}>{group.label}</span>
+                <span style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)' }}>{group.items.length}</span>
               </div>
               {group.items.map((item) => {
                 const idx = globalIdx++;
@@ -2196,7 +2196,7 @@ function RoutineChecklist() {
                       <div style={{
                         width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
                         background: 'rgba(var(--accent-rgb),0.14)',
-                        color: 'var(--accent-primary)', fontSize: 11, fontWeight: 500,
+                        color: 'var(--accent-primary)', fontSize: 11, lineHeight: 1.3, fontWeight: 500,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontFamily: 'inherit',
                       }}>{idx + 1}</div>
@@ -2217,11 +2217,11 @@ function RoutineChecklist() {
                           }}
                         />
                       ) : (
-                        <span style={{ fontSize: 18, fontWeight: 500, width: 22, textAlign: 'center', flexShrink: 0 }}>{item.icon}</span>
+                        <span style={{ fontSize: 18, lineHeight: 1.3, fontWeight: 500, width: 22, textAlign: 'center', flexShrink: 0 }}>{item.icon}</span>
                       )}
                       <div onClick={() => setDetailItem(item)} style={{ flex: 1, cursor: 'pointer' }}>
-                        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', textDecoration: checked ? 'line-through' : 'none' }}>{item.name}</div>
-                        <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-muted)', marginTop: 1 }}>
+                        <div style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)', textDecoration: checked ? 'line-through' : 'none' }}>{item.name}</div>
+                        <div style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', marginTop: 1 }}>
                           {(() => {
                             const days = getItemDays(item.id);
                             const allDays = days.every(Boolean);
@@ -2267,8 +2267,8 @@ function RoutineChecklist() {
             </div>
             <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 18, fontWeight: 500 }}>{detailItem.icon}</span>
-                <span style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)' }}>{detailItem.name}</span>
+                <span style={{ fontSize: 18, lineHeight: 1.3, fontWeight: 500 }}>{detailItem.icon}</span>
+                <span style={{ fontSize: 16, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)' }}>{detailItem.name}</span>
               </div>
               <div onClick={() => setDetailItem(null)} style={{ width: 32, height: 32, borderRadius: '50%', background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -2277,14 +2277,14 @@ function RoutineChecklist() {
             <div style={{ padding: '0 16px 16px' }}>
               {/* Day selector */}
               {/* 태그 변경 */}
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500, marginBottom: 8 }}>태그</div>
+              <div style={{ fontSize: 12, lineHeight: 1.5, color: 'var(--text-muted)', fontWeight: 500, marginBottom: 8 }}>태그</div>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
                 {tagDefs.map(t => {
                   const active = resolveTag(detailItem) === t.id;
                   return (
                     <button key={t.id} onClick={() => { setTagOverride(detailItem.id, t.id); setDetailItem({ ...detailItem }); }} style={{
                       padding: '7px 14px', borderRadius: 20, cursor: 'pointer',
-                      fontSize: 12, fontWeight: 500, fontWeight: active ? 600 : 500, fontFamily: 'inherit',
+                      fontSize: 12, lineHeight: 1.5, fontWeight: 500, fontWeight: active ? 600 : 500, fontFamily: 'inherit',
                       background: active ? 'rgba(var(--accent-rgb),0.18)' : 'rgba(0,0,0,0.04)',
                       color: active ? 'var(--accent-primary)' : 'var(--text-primary)',
                       border: active ? '1px solid rgba(var(--accent-rgb),0.35)' : '1px solid rgba(0,0,0,0.08)',
@@ -2314,20 +2314,20 @@ function RoutineChecklist() {
                         setNewTagNameDetail(''); setShowNewTagInputDetail(false);
                       }}
                       placeholder="새 태그"
-                      style={{ width: 80, padding: '7px 10px', borderRadius: 20, border: 'none', background: '#fff', fontSize: 12, fontWeight: 500, outline: 'none', fontFamily: 'inherit', color: 'var(--text-primary)' }}
+                      style={{ width: 80, padding: '7px 10px', borderRadius: 20, border: 'none', background: '#fff', fontSize: 12, lineHeight: 1.5, fontWeight: 500, outline: 'none', fontFamily: 'inherit', color: 'var(--text-primary)' }}
                     />
                   </div>
                 ) : (
                   <button onClick={() => { setNewTagNameDetail(''); setShowNewTagInputDetail(true); }} style={{
                     padding: '7px 12px', borderRadius: 20, cursor: 'pointer',
-                    fontSize: 12, fontWeight: 500, fontFamily: 'inherit',
+                    fontSize: 12, lineHeight: 1.5, fontWeight: 500, fontFamily: 'inherit',
                     background: 'rgba(0,0,0,0.04)', color: 'var(--text-muted)',
                     border: '1px dashed rgba(0,0,0,0.15)',
                   }}>+</button>
                 )}
               </div>
 
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500, marginBottom: 10 }}>반복 요일</div>
+              <div style={{ fontSize: 12, lineHeight: 1.5, color: 'var(--text-muted)', fontWeight: 500, marginBottom: 10 }}>반복 요일</div>
               <div style={{ display: 'flex', gap: 6, marginBottom: 20 }}>
                 {dayLabels.map((label, idx) => {
                   const days = getItemDays(detailItem.id);
@@ -2339,7 +2339,7 @@ function RoutineChecklist() {
                       border: active ? '1px solid rgba(var(--accent-rgb),0.4)' : '1px solid rgba(255,255,255,0.2)',
                       transition: 'all 0.2s',
                     }}>
-                      <div style={{ fontSize: 12, fontWeight: 500, color: active ? 'var(--accent-primary, var(--accent-primary))' : 'var(--text-muted)' }}>{label}</div>
+                      <div style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: active ? 'var(--accent-primary, var(--accent-primary))' : 'var(--text-muted)' }}>{label}</div>
                     </div>
                   );
                 })}
@@ -2362,7 +2362,7 @@ function RoutineChecklist() {
                     background: 'rgba(255,255,255,0.4)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
                     boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
                     color: 'var(--text-primary)',
-                    fontSize: 12, fontWeight: 500, fontFamily: 'inherit',
+                    fontSize: 12, lineHeight: 1.5, fontWeight: 500, fontFamily: 'inherit',
                   }}>{preset.label}</button>
                 ))}
               </div>
@@ -2374,7 +2374,7 @@ function RoutineChecklist() {
               }} style={{
                 width: '100%', padding: 12, borderRadius: 12, border: 'none',
                 background: 'rgba(0,0,0,0.15)', color: '#fff',
-                fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+                fontSize: 13, lineHeight: 1.5, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
               }}>이 루틴 삭제</button>
             </div>
           </div>
@@ -2393,7 +2393,7 @@ function RoutineChecklist() {
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round">
           <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
-        <span style={{ fontSize: 13, fontWeight: 500, color: '#fff' }}>케어 항목 추가</span>
+        <span style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 500, color: '#fff' }}>케어 항목 추가</span>
       </div>
 
       {/* Add Routine Modal */}
@@ -2414,7 +2414,7 @@ function RoutineChecklist() {
               <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(var(--accent-rgb),0.4)' }} />
             </div>
             <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)' }}>케어 항목 추가</span>
+              <span style={{ fontSize: 16, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)' }}>케어 항목 추가</span>
               <div onClick={() => setAddModal(false)} style={{ width: 32, height: 32, borderRadius: '50%', background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </div>
@@ -2425,7 +2425,7 @@ function RoutineChecklist() {
                 {[{ key: 'morning', label: ' 모닝' }, { key: 'day', label: ' 데이' }, { key: 'night', label: ' 나이트' }].map(m => (
                   <button key={m.key} onClick={() => setAddMode(m.key)} style={{
                     flex: 1, padding: '10px 0', borderRadius: 18, cursor: 'pointer',
-                    fontFamily: 'inherit', fontSize: 13, fontWeight: 500, textAlign: 'center',
+                    fontFamily: 'inherit', fontSize: 13, lineHeight: 1.5, fontWeight: 500, textAlign: 'center',
                     background: addMode === m.key ? 'rgba(255,255,255,0.4)' : 'transparent',
                     color: addMode === m.key ? 'var(--text-primary)' : 'var(--text-muted)',
                     backdropFilter: addMode === m.key ? 'blur(14px)' : 'none', WebkitBackdropFilter: addMode === m.key ? 'blur(14px)' : 'none',
@@ -2436,7 +2436,7 @@ function RoutineChecklist() {
               </div>
 
               {/* Recommended routines */}
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 500, marginBottom: 8 }}>추천 루틴</div>
+              <div style={{ fontSize: 11, lineHeight: 1.3, color: 'var(--text-muted)', fontWeight: 500, marginBottom: 8 }}>추천 루틴</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
                 {recommendedRoutines.map(r => {
                   const added = addedIds.includes(r.id);
@@ -2446,7 +2446,7 @@ function RoutineChecklist() {
                       else addRoutine(r, addMode);
                     }} style={{
                       padding: '8px 14px', borderRadius: 20, cursor: 'pointer',
-                      fontSize: 12, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6,
+                      fontSize: 12, lineHeight: 1.5, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6,
                       background: added ? 'rgba(var(--accent-rgb),0.15)' : 'rgba(255,255,255,0.4)',
                       color: added ? 'var(--accent-primary, var(--accent-primary))' : 'var(--text-primary)',
                       border: added ? '1px solid rgba(var(--accent-rgb),0.3)' : '1px solid rgba(255,255,255,0.2)',
@@ -2454,7 +2454,7 @@ function RoutineChecklist() {
                     }}>
                       <span>{r.icon}</span>
                       <span>{r.name}</span>
-                      {added && <span style={{ fontSize: 10, fontWeight: 500 }}></span>}
+                      {added && <span style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500 }}></span>}
                     </div>
                   );
                 })}
@@ -2466,7 +2466,7 @@ function RoutineChecklist() {
                 if (allProducts.length === 0) return null;
                 return (
                   <>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 500, marginBottom: 8 }}>내 화장품</div>
+                    <div style={{ fontSize: 11, lineHeight: 1.3, color: 'var(--text-muted)', fontWeight: 500, marginBottom: 8 }}>내 화장품</div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
                       {allProducts.map(p => {
                         const pid = `_product_${p.id}`;
@@ -2477,7 +2477,7 @@ function RoutineChecklist() {
                             else addRoutine({ id: pid, name: `${p.brand} ${p.name}`, icon: '', type: 'product', tag: 'skincare' }, addMode);
                           }} style={{
                             padding: '8px 14px', borderRadius: 20, cursor: 'pointer',
-                            fontSize: 12, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6,
+                            fontSize: 12, lineHeight: 1.5, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6,
                             background: added ? 'rgba(var(--accent-rgb),0.15)' : 'rgba(255,255,255,0.4)',
                             color: added ? 'var(--accent-primary, var(--accent-primary))' : 'var(--text-primary)',
                             border: added ? '1px solid rgba(var(--accent-rgb),0.3)' : '1px solid rgba(255,255,255,0.2)',
@@ -2485,7 +2485,7 @@ function RoutineChecklist() {
                           }}>
                             <span></span>
                             <span>{p.brand} {p.name}</span>
-                            {added && <span style={{ fontSize: 10, fontWeight: 500 }}></span>}
+                            {added && <span style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500 }}></span>}
                           </div>
                         );
                       })}
@@ -2495,7 +2495,7 @@ function RoutineChecklist() {
               })()}
 
               {/* Custom input */}
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 500, marginBottom: 8 }}>직접 입력</div>
+              <div style={{ fontSize: 11, lineHeight: 1.3, color: 'var(--text-muted)', fontWeight: 500, marginBottom: 8 }}>직접 입력</div>
               <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
                 <input
                   value={customName}
@@ -2504,7 +2504,7 @@ function RoutineChecklist() {
                   placeholder="예: 유산균 먹기"
                   style={{
                     flex: 1, background: '#ffffff', border: 'none',
-                    borderRadius: 12, padding: '11px 14px', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)',
+                    borderRadius: 12, padding: '11px 14px', fontSize: 13, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)',
                     outline: 'none', fontFamily: 'inherit',
                   }}
                 />
@@ -2514,7 +2514,7 @@ function RoutineChecklist() {
                   padding: '11px 18px', borderRadius: 12, border: 'none',
                   background: customName.trim() ? 'var(--accent-primary, var(--accent-primary))' : 'rgba(var(--accent-rgb),0.2)',
                   color: customName.trim() ? '#fff' : 'var(--text-muted)',
-                  fontSize: 13, fontWeight: 500, cursor: customName.trim() ? 'pointer' : 'default',
+                  fontSize: 13, lineHeight: 1.5, fontWeight: 500, cursor: customName.trim() ? 'pointer' : 'default',
                   fontFamily: 'inherit',
                 }}>추가</button>
               </div>
@@ -2523,7 +2523,7 @@ function RoutineChecklist() {
                 {tagDefs.map(t => (
                   <button key={t.id} onClick={() => setCustomTag(t.id)} style={{
                     padding: '5px 12px', borderRadius: 16, cursor: 'pointer',
-                    fontSize: 11, fontWeight: 500, fontWeight: customTag === t.id ? 600 : 500, fontFamily: 'inherit',
+                    fontSize: 11, lineHeight: 1.3, fontWeight: 500, fontWeight: customTag === t.id ? 600 : 500, fontFamily: 'inherit',
                     background: customTag === t.id ? 'rgba(var(--accent-rgb),0.18)' : 'rgba(0,0,0,0.04)',
                     color: customTag === t.id ? 'var(--accent-primary)' : 'var(--text-muted)',
                     border: customTag === t.id ? '1px solid rgba(var(--accent-rgb),0.35)' : '1px solid rgba(0,0,0,0.08)',
@@ -2551,13 +2551,13 @@ function RoutineChecklist() {
                         setNewTagName(''); setShowNewTagInput(false);
                       }}
                       placeholder="새 태그"
-                      style={{ width: 80, padding: '5px 10px', borderRadius: 16, border: 'none', background: '#fff', fontSize: 11, fontWeight: 500, outline: 'none', fontFamily: 'inherit', color: 'var(--text-primary)' }}
+                      style={{ width: 80, padding: '5px 10px', borderRadius: 16, border: 'none', background: '#fff', fontSize: 11, lineHeight: 1.3, fontWeight: 500, outline: 'none', fontFamily: 'inherit', color: 'var(--text-primary)' }}
                     />
                   </div>
                 ) : (
                   <button onClick={() => { setNewTagName(''); setShowNewTagInput(true); }} style={{
                     padding: '5px 10px', borderRadius: 16, cursor: 'pointer',
-                    fontSize: 11, fontWeight: 500, fontFamily: 'inherit',
+                    fontSize: 11, lineHeight: 1.3, fontWeight: 500, fontFamily: 'inherit',
                     background: 'rgba(0,0,0,0.04)', color: 'var(--text-muted)',
                     border: '1px dashed rgba(0,0,0,0.15)',
                   }}>+</button>
@@ -2601,10 +2601,10 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
 
   const HabitCard = ({ icon, label, value, meta, metaHL, progress, onTap }) => (
     <div onClick={onTap} style={{ ...glass, borderRadius: 20, padding: '12px 10px', textAlign: 'center', cursor: 'pointer' }}>
-      <div style={{ width: 36, height: 36, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 500 }}>{icon}</div>
-      <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 500, marginTop: 8 }}>{label}</div>
-      <div style={{ fontSize: 18, fontWeight: 500, color: 'var(--text-primary)', marginTop: 4 }}>{value}</div>
-      <div style={{ fontSize: 10, fontWeight: 500, marginTop: 1, color: metaHL ? 'var(--accent-primary)' : 'var(--text-muted)', fontWeight: metaHL ? 500 : 400 }}>{meta}</div>
+      <div style={{ width: 36, height: 36, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, lineHeight: 1.3, fontWeight: 500 }}>{icon}</div>
+      <div style={{ fontSize: 10, lineHeight: 1.3, color: 'var(--text-muted)', fontWeight: 500, marginTop: 8 }}>{label}</div>
+      <div style={{ fontSize: 18, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)', marginTop: 4 }}>{value}</div>
+      <div style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, marginTop: 1, color: metaHL ? 'var(--accent-primary)' : 'var(--text-muted)', fontWeight: metaHL ? 500 : 400 }}>{meta}</div>
       <div style={{ marginTop: 8, height: 3, borderRadius: 1.5, background: '#ffffff', overflow: 'hidden' }}>
         <div style={{ height: '100%', borderRadius: 1.5, background: 'var(--accent-primary)', width: `${Math.min(progress, 1) * 100}%`, transition: 'width 0.4s' }} />
       </div>
@@ -2619,7 +2619,7 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
         <style>{`@keyframes careSheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
         <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(var(--accent-rgb),0.4)' }} /></div>
         <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)' }}>{title}</span>
+          <span style={{ fontSize: 16, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)' }}>{title}</span>
           <button onClick={closeModal} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: '#ffffff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
@@ -2634,19 +2634,19 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
     <div>
       {/* 헤더 + 추가 버튼 */}
       <div style={{ padding: '0 20px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 18, fontWeight: 500, color: 'var(--text-primary)' }}>케어</span>
+        <span style={{ fontSize: 18, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)' }}>케어</span>
         <button onClick={() => setModal('add')} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: 'var(--accent-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         </button>
       </div>
 
       {/* 오늘의 기록 요약 */}
-      <div style={{ padding: '0 20px 14px', fontSize: 11, fontWeight: 500, color: 'var(--text-muted)', lineHeight: 1.45 }}>
+      <div style={{ padding: '0 20px 14px', fontSize: 11, fontWeight: 500, color: 'var(--text-muted)', lineHeight: 1.3 }}>
         {summaryParts.length > 0 ? (<><span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>오늘 두고 있는 것들</span> · {summaryParts.join(' · ')}</>) : '오늘의 기록을 시작해볼까요?'}
       </div>
 
       {/* 섹션 헤더: 오늘의 기록 */}
-      <div style={{ padding: '6px 20px 8px', fontSize: 10, color: 'var(--text-muted)', fontWeight: 500, letterSpacing: 0.3, textTransform: 'uppercase' }}>오늘의 기록</div>
+      <div style={{ padding: '6px 20px 8px', fontSize: 10, lineHeight: 1.3, color: 'var(--text-muted)', fontWeight: 500, letterSpacing: 0.3, textTransform: 'uppercase' }}>오늘의 기록</div>
 
       {/* 습관 카드 3개 */}
       <div style={{ padding: '0 12px 12px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
@@ -2663,8 +2663,8 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
               <svg width="10" height="10" viewBox="0 0 24 24"><path fill="#6598ef" d="M10.48,23.25c-.15.41-.5.71-.86.75-.27.03-.78-.29-.9-.59l-1.53-4.02c-.48-1.26-1.41-2.1-2.67-2.58l-3.91-1.48c-.29-.11-.59-.51-.6-.76-.01-.39.23-.79.6-.93l3.9-1.49c1.27-.48,2.19-1.31,2.68-2.59l1.57-4.14c.08-.2.52-.44.74-.46.24-.02.77.21.86.46l1.57,4.14c.5,1.32,1.47,2.15,2.78,2.63l3.7,1.37c.31.11.66.55.67.83.02.42-.29.82-.68.97l-3.8,1.44c-1.26.48-2.2,1.32-2.67,2.58l-1.45,3.86Z"/><path fill="#6598ef" d="M21.48,6.29c-1.03.59-.9,2.91-2.01,2.98-1.23.08-.99-1.68-1.94-2.78-.77-.88-2.68-.63-2.74-1.78-.07-1.27,2.01-1.1,2.74-1.91.87-.95.73-2.72,1.78-2.8,1.29-.1.98,1.81,1.95,2.77.87.86,2.67.71,2.73,1.8.07,1.08-1.29,1.02-2.51,1.72Z"/></svg>
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.5 }}>수분이 충분한 주에는 모공 점수가 평균 4점 더 좋았어요.</div>
-              <span style={{ display: 'inline-block', marginTop: 5, fontSize: 10, fontWeight: 500, padding: '2px 7px', borderRadius: 8, background: 'rgba(var(--accent-rgb),0.15)', color: 'var(--accent-primary)' }}>피부 발견</span>
+              <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.3 }}>수분이 충분한 주에는 모공 점수가 평균 4점 더 좋았어요.</div>
+              <span style={{ display: 'inline-block', marginTop: 5, fontSize: 10, lineHeight: 1.3, fontWeight: 500, padding: '2px 7px', borderRadius: 8, background: 'rgba(var(--accent-rgb),0.15)', color: 'var(--accent-primary)' }}>피부 발견</span>
             </div>
           </div>
         </div>
@@ -2674,15 +2674,15 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
       <div style={{ height: 6, background: '#ffffff', margin: '8px 0 4px' }} />
 
       {/* 섹션 헤더: 화장품 */}
-      <div style={{ padding: '6px 20px 8px', fontSize: 10, color: 'var(--text-muted)', fontWeight: 500, letterSpacing: 0.3, textTransform: 'uppercase' }}>화장품</div>
+      <div style={{ padding: '6px 20px 8px', fontSize: 10, lineHeight: 1.3, color: 'var(--text-muted)', fontWeight: 500, letterSpacing: 0.3, textTransform: 'uppercase' }}>화장품</div>
 
       {/* 화장품 빈 상태 */}
       <div style={{ padding: '0 12px 12px' }}>
         <div style={{ ...glass, padding: '32px 16px', textAlign: 'center' }}>
-          <div style={{ fontSize: 40, fontWeight: 400, opacity: 0.3, marginBottom: 8 }}></div>
-          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 4 }}>아직 등록된 화장품이 없어요</div>
-          <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 12 }}>지금 쓰는 화장품을 등록해보세요</div>
-          <button onClick={() => onAddProduct?.()} style={{ background: 'var(--accent-primary)', color: '#fff', fontSize: 11, fontWeight: 500, padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>+ 추가하기</button>
+          <div style={{ fontSize: 40, lineHeight: 1.1, fontWeight: 400, opacity: 0.3, marginBottom: 8 }}></div>
+          <div style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 4 }}>아직 등록된 화장품이 없어요</div>
+          <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 12 }}>지금 쓰는 화장품을 등록해보세요</div>
+          <button onClick={() => onAddProduct?.()} style={{ background: 'var(--accent-primary)', color: '#fff', fontSize: 11, lineHeight: 1.3, fontWeight: 500, padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>+ 추가하기</button>
         </div>
       </div>
 
@@ -2691,8 +2691,8 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
         <ModalWrap title="추가">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {[{ label: '수분 두기', icon: '', key: 'water' }, { label: '수면 두기', icon: '', key: 'sleep' }, { label: '자외선 두기', icon: '', key: 'sunscreen' }].map(item => (
-              <button key={item.key} onClick={() => setModal(item.key)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: '#ffffff', border: 'none', borderRadius: 20, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', textAlign: 'left' }}>
-                <span style={{ fontSize: 18, fontWeight: 500 }}>{item.icon}</span>{item.label}
+              <button key={item.key} onClick={() => setModal(item.key)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: '#ffffff', border: 'none', borderRadius: 20, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)', textAlign: 'left' }}>
+                <span style={{ fontSize: 18, lineHeight: 1.3, fontWeight: 500 }}>{item.icon}</span>{item.label}
               </button>
             ))}
           </div>
@@ -2704,13 +2704,13 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
           const add = (ml) => { const n = amt + ml; setAmt(n); saveHabitLog({ water_amount: n }); refreshHabit(); showToast(); };
           return (
             <div>
-              <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 8 }}>한 모금 더 두기</div>
+              <div style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 8 }}>한 모금 더 두기</div>
               <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
                 {[{ml:200,l:'한 컵'},{ml:250,l:'텀블러'},{ml:330,l:'병'},{ml:500,l:'큰 병'}].map(b=>(
-                  <button key={b.ml} onClick={()=>add(b.ml)} style={{ flex:1, background:'rgba(255,255,255,0.4)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:12, padding:'10px 4px', fontSize:11, fontWeight: 500, color:'var(--text-primary)', cursor:'pointer', fontFamily:'inherit', textAlign:'center' }}>+{b.ml}ml<br/><span style={{fontSize:10,color:'var(--text-muted)',fontWeight: 500}}>{b.l}</span></button>
+                  <button key={b.ml} onClick={()=>add(b.ml)} style={{ flex:1, background:'rgba(255,255,255,0.4)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:12, padding:'10px 4px', fontSize:11, lineHeight: 1.3, fontWeight: 500, color:'var(--text-primary)', cursor:'pointer', fontFamily:'inherit', textAlign:'center' }}>+{b.ml}ml<br/><span style={{fontSize:10, lineHeight: 1.3,color:'var(--text-muted)',fontWeight: 500}}>{b.l}</span></button>
                 ))}
               </div>
-              <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted)' }}>오늘 누적 · {(amt/1000).toFixed(1)}L / {waterGoal/1000}L</div>
+              <div style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-muted)' }}>오늘 누적 · {(amt/1000).toFixed(1)}L / {waterGoal/1000}L</div>
               <div style={{ marginTop: 6, height: 4, borderRadius: 2, background: '#ffffff', overflow: 'hidden' }}>
                 <div style={{ height: '100%', borderRadius: 2, background: 'var(--accent-primary)', width: `${Math.min(amt/waterGoal,1)*100}%` }} />
               </div>
@@ -2724,13 +2724,13 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
           const [hrs, setHrs] = useState(habit.sleep_hours ?? 7);
           return (
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 16 }}>어젯밤 수면 시간</div>
+              <div style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 16 }}>어젯밤 수면 시간</div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 24, marginBottom: 20 }}>
-                <button onClick={()=>setHrs(Math.max(0,hrs-0.5))} style={{ width:44,height:44,borderRadius:'50%',border:'none',background:'rgba(255,255,255,0.4)',fontSize:18, fontWeight: 500,cursor:'pointer',color:'var(--text-primary)',display:'flex',alignItems:'center',justifyContent:'center' }}>−</button>
-                <div style={{ fontSize:40,fontWeight: 400,color:'var(--text-primary)' }}>{hrs}<span style={{fontSize:16, fontWeight: 500,color:'var(--text-muted)'}}>h</span></div>
-                <button onClick={()=>setHrs(Math.min(12,hrs+0.5))} style={{ width:44,height:44,borderRadius:'50%',border:'none',background:'rgba(255,255,255,0.4)',fontSize:18, fontWeight: 500,cursor:'pointer',color:'var(--text-primary)',display:'flex',alignItems:'center',justifyContent:'center' }}>+</button>
+                <button onClick={()=>setHrs(Math.max(0,hrs-0.5))} style={{ width:44,height:44,borderRadius:'50%',border:'none',background:'rgba(255,255,255,0.4)',fontSize:18, lineHeight: 1.3, fontWeight: 500,cursor:'pointer',color:'var(--text-primary)',display:'flex',alignItems:'center',justifyContent:'center' }}>−</button>
+                <div style={{ fontSize:40, lineHeight: 1.1,fontWeight: 400,color:'var(--text-primary)' }}>{hrs}<span style={{fontSize:16, lineHeight: 1.3, fontWeight: 500,color:'var(--text-muted)'}}>h</span></div>
+                <button onClick={()=>setHrs(Math.min(12,hrs+0.5))} style={{ width:44,height:44,borderRadius:'50%',border:'none',background:'rgba(255,255,255,0.4)',fontSize:18, lineHeight: 1.3, fontWeight: 500,cursor:'pointer',color:'var(--text-primary)',display:'flex',alignItems:'center',justifyContent:'center' }}>+</button>
               </div>
-              <button onClick={()=>{saveHabitLog({sleep_hours:hrs});refreshHabit();showToast();closeModal();}} style={{ width:'100%',padding:14,borderRadius:10,border:'none',background:'var(--accent-primary)',color:'#fff',fontSize:13,fontWeight: 500,cursor:'pointer',fontFamily:'inherit' }}>두기</button>
+              <button onClick={()=>{saveHabitLog({sleep_hours:hrs});refreshHabit();showToast();closeModal();}} style={{ width:'100%',padding:14,borderRadius:10,border:'none',background:'var(--accent-primary)',color:'#fff',fontSize:13, lineHeight: 1.5,fontWeight: 500,cursor:'pointer',fontFamily:'inherit' }}>두기</button>
             </div>
           );
         };
@@ -2742,10 +2742,10 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
           return (
             <div>
               <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-                <button onClick={()=>setApplied(true)} style={{ flex:1, padding:'16px 12px', borderRadius:20, border:applied===true?'none':'1px solid rgba(255,255,255,0.2)', cursor:'pointer', fontFamily:'inherit', background:applied===true?'var(--accent-primary)':'rgba(255,255,255,0.4)', color:applied===true?'#fff':'var(--text-primary)', fontSize:13, fontWeight: 500, textAlign:'center' }}>선크림 챙겼어요</button>
-                <button onClick={()=>setApplied(false)} style={{ flex:1, padding:'16px 12px', borderRadius:20, border:applied===false?'1px solid var(--accent-primary)':'1px solid rgba(255,255,255,0.2)', cursor:'pointer', fontFamily:'inherit', background:'rgba(255,255,255,0.4)', color:'var(--text-primary)', fontSize:13, fontWeight: 500, textAlign:'center' }}>오늘은 못 챙겼어요</button>
+                <button onClick={()=>setApplied(true)} style={{ flex:1, padding:'16px 12px', borderRadius:20, border:applied===true?'none':'1px solid rgba(255,255,255,0.2)', cursor:'pointer', fontFamily:'inherit', background:applied===true?'var(--accent-primary)':'rgba(255,255,255,0.4)', color:applied===true?'#fff':'var(--text-primary)', fontSize:13, lineHeight: 1.5, fontWeight: 500, textAlign:'center' }}>선크림 챙겼어요</button>
+                <button onClick={()=>setApplied(false)} style={{ flex:1, padding:'16px 12px', borderRadius:20, border:applied===false?'1px solid var(--accent-primary)':'1px solid rgba(255,255,255,0.2)', cursor:'pointer', fontFamily:'inherit', background:'rgba(255,255,255,0.4)', color:'var(--text-primary)', fontSize:13, lineHeight: 1.5, fontWeight: 500, textAlign:'center' }}>오늘은 못 챙겼어요</button>
               </div>
-              <button onClick={()=>{if(applied!==null){saveHabitLog({sunscreen_applied:applied});refreshHabit();showToast();closeModal();}}} disabled={applied===null} style={{ width:'100%',padding:14,borderRadius:10,border:'none',background:applied!==null?'var(--accent-primary)':'rgba(var(--accent-rgb),0.2)',color:applied!==null?'#fff':'var(--text-muted)',fontSize:13,fontWeight: 500,cursor:applied!==null?'pointer':'default',fontFamily:'inherit' }}>두기</button>
+              <button onClick={()=>{if(applied!==null){saveHabitLog({sunscreen_applied:applied});refreshHabit();showToast();closeModal();}}} disabled={applied===null} style={{ width:'100%',padding:14,borderRadius:10,border:'none',background:applied!==null?'var(--accent-primary)':'rgba(var(--accent-rgb),0.2)',color:applied!==null?'#fff':'var(--text-muted)',fontSize:13, lineHeight: 1.5,fontWeight: 500,cursor:applied!==null?'pointer':'default',fontFamily:'inherit' }}>두기</button>
             </div>
           );
         };
@@ -2753,7 +2753,7 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
       })()}
 
       {toast && (
-        <div style={{ position:'fixed',bottom:120,left:'50%',transform:'translateX(-50%)',background:'var(--accent-primary)',color:'#fff',padding:'10px 24px',borderRadius:20,fontSize:13,fontWeight: 500,zIndex:999 }}>기록되었어요</div>
+        <div style={{ position:'fixed',bottom:120,left:'50%',transform:'translateX(-50%)',background:'var(--accent-primary)',color:'#fff',padding:'10px 24px',borderRadius:20,fontSize:13, lineHeight: 1.5,fontWeight: 500,zIndex:999 }}>기록되었어요</div>
       )}
     </div>
   );

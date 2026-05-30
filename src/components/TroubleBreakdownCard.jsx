@@ -52,10 +52,10 @@ export default function TroubleBreakdownCard({ breakdown }) {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
         <div style={{
-          fontSize: 13, fontWeight: 500, color: 'var(--text-primary)',
+          fontSize: 13, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)',
           letterSpacing: -0.2,
         }}>트러블 종류별 분류</div>
-        <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)' }}>총 {total}개</div>
+        <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)' }}>총 {total}개</div>
       </div>
 
       {/* 5종 row */}
@@ -71,9 +71,9 @@ export default function TroubleBreakdownCard({ breakdown }) {
             }}>
               {/* Emoji + Label */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 110, flexShrink: 0 }}>
-                <span style={{ fontSize: 13, fontWeight: 500 }}>{t.emoji}</span>
+                <span style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 500 }}>{t.emoji}</span>
                 <span style={{
-                  fontSize: 13, fontWeight: 500, color: 'var(--text-primary)',
+                  fontSize: 13, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)',
                   letterSpacing: -0.1,
                 }}>{t.label}</span>
               </div>
@@ -93,7 +93,7 @@ export default function TroubleBreakdownCard({ breakdown }) {
 
               {/* Count */}
               <div style={{
-                fontSize: 13, fontWeight: 500,
+                fontSize: 13, lineHeight: 1.5, fontWeight: 500,
                 color: isZero ? 'var(--text-muted)' : 'var(--text-primary)',
                 minWidth: 26, textAlign: 'right',
               }}>{count}</div>
@@ -115,7 +115,7 @@ export default function TroubleBreakdownCard({ breakdown }) {
             marginTop: 11, paddingTop: 10,
             borderTop: '1px solid rgba(0,0,0,0.05)',
             fontSize: 11, fontWeight: 500, color: 'var(--text-secondary)',
-            lineHeight: 1.55, letterSpacing: -0.1,
+            lineHeight: 1.3, letterSpacing: -0.1,
           }}>
             <strong style={{ color: 'var(--text-primary)' }}>{top.label}</strong>
             {`이(가) 중심이에요. ${top.hint}`}
@@ -126,7 +126,7 @@ export default function TroubleBreakdownCard({ breakdown }) {
       {/* 의료 진단 아님 고지 */}
       <div style={{
         marginTop: 8,
-        fontSize: 10, fontWeight: 500, color: 'var(--text-dim, #B3B3B3)', lineHeight: 1.5,
+        fontSize: 10, fontWeight: 500, color: 'var(--text-dim, #B3B3B3)', lineHeight: 1.3,
       }}>
         AI 시각 추정이에요. 의료 진단이 아니라 참고용입니다.
       </div>

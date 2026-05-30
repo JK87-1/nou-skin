@@ -79,13 +79,13 @@ export default function PersonaPicker({ open, activeId, onSelect, onClose, ancho
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{
                   display: 'flex', alignItems: 'baseline', gap: 6,
-                  fontSize: 16, fontWeight: 500, color: '#1F1F1F', letterSpacing: -0.2,
+                  fontSize: 16, lineHeight: 1.3, fontWeight: 500, color: '#1F1F1F', letterSpacing: -0.2,
                 }}>
                   <span style={{ fontWeight: 500 }}>{p.label}</span>
                 </div>
                 <div style={{
                   marginTop: 3,
-                  fontSize: 13, fontWeight: 500, color: '#5F6368', letterSpacing: -0.1, lineHeight: 1.45,
+                  fontSize: 13, fontWeight: 500, color: '#5F6368', letterSpacing: -0.1, lineHeight: 1.5,
                 }}>
                   {p.tagline}
                 </div>

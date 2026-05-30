@@ -111,7 +111,7 @@ export default function WeatherChip({ onTap }) {
       }}
     >
       <WeatherIcon emoji={weather.conditionIcon} size={26} color="#ffffff" />
-      <span style={{ fontSize: 16, fontWeight: 500, color: '#ffffff', lineHeight: 1 }}>{weather.temp}°</span>
+      <span style={{ fontSize: 16, fontWeight: 500, color: '#ffffff', lineHeight: 1.3 }}>{weather.temp}°</span>
     </div>
   );
 }

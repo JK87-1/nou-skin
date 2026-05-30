@@ -92,12 +92,12 @@ export default function AiInsightCard({ onOpenChat, greeting, dateInfo }) {
     }}>
       {/* 본문 영역 */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-        <span style={{ fontSize: 13, fontWeight: 500, color: '#58aefe', fontFamily: "'Pretendard Variable', Pretendard, sans-serif", flexShrink: 0, lineHeight: 1.8 }}>lua</span>
+        <span style={{ fontSize: 13, fontWeight: 500, color: '#58aefe', fontFamily: "'Pretendard Variable', Pretendard, sans-serif", flexShrink: 0, lineHeight: 1.5 }}>lua</span>
         {/* 본문 */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          {greeting && <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary, #1A1A1A)', letterSpacing: -0.3, lineHeight: 1.8, marginBottom: 0 }}>{greeting}</div>}
+          {greeting && <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary, #1A1A1A)', letterSpacing: -0.3, lineHeight: 1.5, marginBottom: 0 }}>{greeting}</div>}
           {/* 인사이트 본문 */}
-          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary, #1A1A1A)', lineHeight: 1.8 }}>
+          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary, #1A1A1A)', lineHeight: 1.5 }}>
             {(() => {
               const match = insight.match(/^([^.!?]+[.!?])\s*(.*)$/);
               if (match && match[2]) return <>{match[1]}<br/>{match[2]}</>;
@@ -107,7 +107,7 @@ export default function AiInsightCard({ onOpenChat, greeting, dateInfo }) {
           {/* 하단: sub + 시간/버튼 */}
           <div style={{ display: 'flex', alignItems: 'center', marginTop: 6 }}>
             {sub ? (
-              <div style={{ fontSize: 12, color: '#4a9ec7', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
+              <div style={{ fontSize: 12, lineHeight: 1.5, color: '#4a9ec7', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
                   <circle cx="12" cy="12" r="10" fill="#d0eaf8" />
                   <text x="12" y="16.5" textAnchor="middle" fontSize="14" fontWeight="700" fill="#5aaad8" fontFamily="inherit">!</text>
@@ -117,7 +117,7 @@ export default function AiInsightCard({ onOpenChat, greeting, dateInfo }) {
             ) : <span />}
             <span style={{ flex: 1 }} />
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 9, whiteSpace: 'nowrap' }}>
-              <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-muted, #8C8C8C)' }}>{getTimeLabel()}</span>
+              <span style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted, #8C8C8C)' }}>{getTimeLabel()}</span>
               <button onClick={(e) => { e.stopPropagation(); setLiked(false); setRefreshKey(k => k + 1); }} style={{
                 border: 'none', background: 'transparent', cursor: 'pointer', padding: 0,
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',

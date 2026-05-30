@@ -234,7 +234,7 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
               ))}
             </div>
             <div style={{
-              fontSize: 10, fontWeight: 500,
+              fontSize: 10, lineHeight: 1.3, fontWeight: 500,
               color: 'rgba(255,255,255,0.7)', letterSpacing: 0.2,
             }}>{step} / 3번째 측정</div>
           </div>
@@ -247,12 +247,12 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
           animation: 'mgSlideUp 500ms ease 200ms both',
         }}>
           <div style={{
-            fontSize: 18, fontWeight: 500, letterSpacing: -0.3, lineHeight: 1.4,
+            fontSize: 18, fontWeight: 500, letterSpacing: -0.3, lineHeight: 1.3,
             color: 'white',
             textShadow: '0 1px 2px rgba(0,0,0,0.05)',
           }}>{copy.headline}</div>
           <div style={{
-            fontSize: 18, fontWeight: 500, letterSpacing: -0.3, lineHeight: 1.4,
+            fontSize: 18, fontWeight: 500, letterSpacing: -0.3, lineHeight: 1.3,
             color: 'white',
             textShadow: '0 1px 2px rgba(0,0,0,0.05)',
           }}>{copy.sub}</div>
@@ -294,7 +294,7 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
                   }}>{c.icon}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
-                      fontSize: 16, fontWeight: 500, letterSpacing: -0.2, lineHeight: 1.5,
+                      fontSize: 16, fontWeight: 500, letterSpacing: -0.2, lineHeight: 1.3,
                       color: '#333',
                     }}>{c.title}</div>
                     <div style={{

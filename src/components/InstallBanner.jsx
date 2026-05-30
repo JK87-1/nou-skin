@@ -107,7 +107,7 @@ export default function InstallBanner() {
       <button onClick={dismiss} style={{
         position: 'absolute', top: 10, right: 12,
         background: 'none', border: 'none', color: 'var(--text-muted)',
-        fontSize: 18, fontWeight: 500, cursor: 'pointer', padding: 4, lineHeight: 1,
+        fontSize: 18, fontWeight: 500, cursor: 'pointer', padding: 4, lineHeight: 1.3,
       }}>&times;</button>
 
       {platform === 'ios-nonsafari' ? (
@@ -119,11 +119,11 @@ export default function InstallBanner() {
               background: 'linear-gradient(135deg, rgba(var(--accent-rgb),0.2), rgba(var(--accent-rgb),0.2))',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <span style={{ fontSize: 13, fontWeight: 500, color: '#6598ef', fontFamily: "'Outfit', sans-serif", letterSpacing: 2 }}>루아</span>
+              <span style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 500, color: '#6598ef', fontFamily: "'Outfit', sans-serif", letterSpacing: 2 }}>루아</span>
             </div>
             <div>
-              <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', margin: '0 0 2px' }}>Safari에서 열어주세요</p>
-              <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', margin: 0 }}>홈 화면에 추가하려면 Safari가 필요해요</p>
+              <p style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)', margin: '0 0 2px' }}>Safari에서 열어주세요</p>
+              <p style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-muted)', margin: 0 }}>홈 화면에 추가하려면 Safari가 필요해요</p>
             </div>
           </div>
           <div style={{
@@ -176,7 +176,7 @@ export default function InstallBanner() {
           }} id="lua-copy-btn" style={{
             width: '100%', marginTop: 10, padding: '10px 0', borderRadius: 12,
             border: 'none', background: 'rgba(var(--accent-rgb),0.1)',
-            color: '#a5b4fc', fontSize: 13, fontWeight: 500, cursor: 'pointer',
+            color: '#a5b4fc', fontSize: 13, lineHeight: 1.5, fontWeight: 500, cursor: 'pointer',
             fontFamily: 'inherit',
           }}>URL 복사하기</button>
         </div>
@@ -188,16 +188,16 @@ export default function InstallBanner() {
             background: 'linear-gradient(135deg, rgba(var(--accent-rgb),0.2), rgba(var(--accent-rgb),0.2))',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <span style={{ fontSize: 13, fontWeight: 500, color: '#6598ef', fontFamily: "'Outfit', sans-serif", letterSpacing: 2 }}>루아</span>
+            <span style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 500, color: '#6598ef', fontFamily: "'Outfit', sans-serif", letterSpacing: 2 }}>루아</span>
           </div>
           <div style={{ flex: 1 }}>
-            <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', margin: '0 0 2px' }}>홈 화면에 추가</p>
-            <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', margin: 0 }}>앱처럼 빠르게 실행하세요</p>
+            <p style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)', margin: '0 0 2px' }}>홈 화면에 추가</p>
+            <p style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-muted)', margin: 0 }}>앱처럼 빠르게 실행하세요</p>
           </div>
           <button onClick={handleInstall} style={{
             padding: '8px 18px', borderRadius: 'var(--btn-radius)', border: 'none',
             background: 'var(--btn-primary-bg)',
-            color: '#fff', fontSize: 13, fontWeight: 500, cursor: 'pointer',
+            color: '#fff', fontSize: 13, lineHeight: 1.5, fontWeight: 500, cursor: 'pointer',
             fontFamily: 'inherit', whiteSpace: 'nowrap',
             boxShadow: 'none',
           }}>설치</button>
@@ -211,11 +211,11 @@ export default function InstallBanner() {
               background: 'linear-gradient(135deg, rgba(var(--accent-rgb),0.2), rgba(var(--accent-rgb),0.2))',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <span style={{ fontSize: 13, fontWeight: 500, color: '#6598ef', fontFamily: "'Outfit', sans-serif", letterSpacing: 2 }}>루아</span>
+              <span style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 500, color: '#6598ef', fontFamily: "'Outfit', sans-serif", letterSpacing: 2 }}>루아</span>
             </div>
             <div>
-              <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', margin: '0 0 2px' }}>홈 화면에 추가하기</p>
-              <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', margin: 0 }}>앱처럼 빠르게 실행할 수 있어요</p>
+              <p style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)', margin: '0 0 2px' }}>홈 화면에 추가하기</p>
+              <p style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-muted)', margin: 0 }}>앱처럼 빠르게 실행할 수 있어요</p>
             </div>
           </div>
           {/* Steps */}

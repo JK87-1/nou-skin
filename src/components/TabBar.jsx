@@ -75,7 +75,7 @@ export default function TabBar({ activeTab, onTabChange, themeColors, colorMode 
       >
         {tab.icon(activeTab === tab.key)}
         <span style={{
-          fontSize: 11, fontWeight: 500,
+          fontSize: 11, lineHeight: 1.3, fontWeight: 500,
           color: activeTab === tab.key ? '#0f0f0f' : '#d0d0d0',
         }}>{tab.label}</span>
       </button>
