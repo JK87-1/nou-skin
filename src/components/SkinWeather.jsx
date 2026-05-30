@@ -370,7 +370,7 @@ export default function SkinWeather({ skinResult }) {
             {highCount > 0 && (
               <span style={{
                 fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: '#fff',
-                background: '#3558A8', borderRadius: 10, padding: '2px 7px',
+                background: '#3558A8', borderRadius: 8, padding: '2px 7px',
                 minWidth: 18, textAlign: 'center',
               }}>{highCount}</span>
             )}

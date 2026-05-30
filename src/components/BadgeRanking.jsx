@@ -1145,7 +1145,7 @@ function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#6598ef' 
                       {detailBadge.earned && (
                         <span style={{
                           fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: '#6598ef',
-                          background: 'rgba(52,211,153,0.1)', padding: '2px 6px', borderRadius: 4,
+                          background: 'rgba(52,211,153,0.1)', padding: '2px 6px', borderRadius: 8,
                         }}>획득</span>
                       )}
                     </div>

@@ -338,9 +338,9 @@ export default function DiaryMockup() {
                 전체적으로 안정적이에요. 수분과 피부톤이 개선되고 있어요. 모공 점수만 소폭 하락했는데, 꾸준한 관리로 충분히 회복할 수 있어요.
               </p>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
-                <span style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, padding: '3px 10px', borderRadius: 20, background: 'rgba(78,203,113,0.1)', color: '#4ecb71' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><DropletIcon size={12} /></span> 수분 +3점</span>
-                <span style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, padding: '3px 10px', borderRadius: 20, background: 'rgba(78,203,113,0.1)', color: '#4ecb71' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><SparkleIcon size={12} /></span> 피부톤 +2점</span>
-                <span style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, padding: '3px 10px', borderRadius: 20, background: 'rgba(240,160,80,0.1)', color: '#f0a050' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><MicroscopeIcon size={12} /></span> 모공 -1점</span>
+                <span style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, padding: '3px 10px', borderRadius: 8, background: 'rgba(78,203,113,0.1)', color: '#4ecb71' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><DropletIcon size={12} /></span> 수분 +3점</span>
+                <span style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, padding: '3px 10px', borderRadius: 8, background: 'rgba(78,203,113,0.1)', color: '#4ecb71' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><SparkleIcon size={12} /></span> 피부톤 +2점</span>
+                <span style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, padding: '3px 10px', borderRadius: 8, background: 'rgba(240,160,80,0.1)', color: '#f0a050' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><MicroscopeIcon size={12} /></span> 모공 -1점</span>
               </div>
             </div>
 
@@ -465,7 +465,7 @@ export default function DiaryMockup() {
                     }}>{t}</span>
                   ))}
                   <span style={{
-                    padding: '4px 10px', borderRadius: 20,
+                    padding: '4px 10px', borderRadius: 8,
                     background: 'rgba(52,211,153,0.1)', fontSize: 11, lineHeight: 1.3, color: '#6598ef', fontWeight: 500,
                   }}>+ 자동 4개</span>
                 </div>
@@ -493,14 +493,14 @@ export default function DiaryMockup() {
                 <div style={{ marginBottom: 4 }}>
                   <div style={{ fontSize: 11, lineHeight: 1.3, color: '#4ecb71', fontWeight: 500, marginBottom: 6 }}>개선됨</div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                    <span style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, padding: '4px 10px', borderRadius: 20, background: 'rgba(78,203,113,0.1)', color: '#4ecb71' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><DropletIcon size={12} /></span> 수분 +3점</span>
-                    <span style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, padding: '4px 10px', borderRadius: 20, background: 'rgba(78,203,113,0.1)', color: '#4ecb71' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><SparkleIcon size={12} /></span> 피부톤 +2점</span>
+                    <span style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, padding: '4px 10px', borderRadius: 8, background: 'rgba(78,203,113,0.1)', color: '#4ecb71' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><DropletIcon size={12} /></span> 수분 +3점</span>
+                    <span style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, padding: '4px 10px', borderRadius: 8, background: 'rgba(78,203,113,0.1)', color: '#4ecb71' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><SparkleIcon size={12} /></span> 피부톤 +2점</span>
                   </div>
                 </div>
                 <div>
                   <div style={{ fontSize: 11, lineHeight: 1.3, color: '#f0a050', fontWeight: 500, marginBottom: 6 }}>케어 포인트</div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                    <span style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, padding: '4px 10px', borderRadius: 20, background: 'rgba(240,160,80,0.1)', color: '#f0a050' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><MicroscopeIcon size={12} /></span> 모공 -1점</span>
+                    <span style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, padding: '4px 10px', borderRadius: 8, background: 'rgba(240,160,80,0.1)', color: '#f0a050' }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><MicroscopeIcon size={12} /></span> 모공 -1점</span>
                   </div>
                 </div>
               </div>
@@ -691,8 +691,8 @@ export default function DiaryMockup() {
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                             <span style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)' }}>{c.factor}</span>
-                            {c.source === "auto" && <span style={{ fontSize: 10, lineHeight: 1.3, color: '#6598ef', background: 'rgba(52,211,153,0.1)', padding: '1px 5px', borderRadius: 4, fontWeight: 500 }}>자동</span>}
-                            {c.source === "manual" && <span style={{ fontSize: 10, lineHeight: 1.3, color: 'var(--accent-primary)', background: 'rgba(var(--accent-rgb),0.1)', padding: '1px 5px', borderRadius: 4, fontWeight: 500 }}>수동</span>}
+                            {c.source === "auto" && <span style={{ fontSize: 10, lineHeight: 1.3, color: '#6598ef', background: 'rgba(52,211,153,0.1)', padding: '1px 5px', borderRadius: 8, fontWeight: 500 }}>자동</span>}
+                            {c.source === "manual" && <span style={{ fontSize: 10, lineHeight: 1.3, color: 'var(--accent-primary)', background: 'rgba(var(--accent-rgb),0.1)', padding: '1px 5px', borderRadius: 8, fontWeight: 500 }}>수동</span>}
                           </div>
                         </div>
                         {hasEnoughData ? (

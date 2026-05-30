@@ -1003,7 +1003,7 @@ function ProductBrandNameInputs({
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
                     <span style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: accent }}>{s.brand}</span>
                     <span style={{
-                      fontSize: 11, lineHeight: 1.3, padding: '1px 5px', borderRadius: 4,
+                      fontSize: 11, lineHeight: 1.3, padding: '1px 5px', borderRadius: 8,
                       background: 'rgba(var(--accent-rgb),0.14)', color: 'var(--accent-primary)', fontWeight: 500,
                     }}>{s.category}</span>
                     {s.source === 'gpt' && (

@@ -1449,7 +1449,7 @@ function ApplyRoutineCard({ routine, applied, onApply }) {
                   <span style={{
                     fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: 'var(--accent-primary)',
                     background: 'rgba(var(--accent-rgb),0.14)',
-                    padding: '1px 6px', borderRadius: 6,
+                    padding: '1px 6px', borderRadius: 8,
                     flexShrink: 0, marginRight: 2,
                   }}>{it.category}</span>
                   <span style={{ color: '#1F2937' }}>
