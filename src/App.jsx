@@ -962,10 +962,10 @@ export default function App() {
             <div style={{ width: 64, height: 64, borderRadius: '50%', margin: '0 auto 16px', background: 'rgba(var(--accent-rgb),0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 9v4" /><path d="M12 17h.01" /><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /></svg>
             </div>
-            <div style={{ fontSize: 18, fontWeight: 600, color: '#1A1A1A', marginBottom: 8 }}>AI 분석에 실패했어요</div>
-            <div style={{ fontSize: 14, color: '#374E66', lineHeight: 1.6, marginBottom: 22, wordBreak: 'keep-all' }}>네트워크가 잠시 불안정했던 것 같아요. 정확한 측정을 위해 다시 측정해주세요.</div>
-            <button onClick={() => { setAiFailedOpen(false); setStage('camera'); }} style={{ width: '100%', padding: 14, background: 'linear-gradient(135deg, var(--accent-primary), #85b0f5)', border: 'none', borderRadius: 14, color: '#fff', fontSize: 16, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>다시 측정하기</button>
-            <button onClick={() => { setAiFailedOpen(false); goToLanding(); }} style={{ width: '100%', padding: '12px 0 2px', background: 'none', border: 'none', color: '#8095ad', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', marginTop: 6 }}>홈으로</button>
+            <div style={{ fontSize: 18, fontWeight: 500, color: '#1A1A1A', marginBottom: 8 }}>AI 분석에 실패했어요</div>
+            <div style={{ fontSize: 14, fontWeight: 400, color: '#374E66', lineHeight: 1.6, marginBottom: 22, wordBreak: 'keep-all' }}>네트워크가 잠시 불안정했던 것 같아요. 정확한 측정을 위해 다시 측정해주세요.</div>
+            <button onClick={() => { setAiFailedOpen(false); setStage('camera'); }} style={{ width: '100%', padding: 14, background: 'linear-gradient(135deg, var(--accent-primary), #85b0f5)', border: 'none', borderRadius: 14, color: '#fff', fontSize: 16, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>다시 측정하기</button>
+            <button onClick={() => { setAiFailedOpen(false); goToLanding(); }} style={{ width: '100%', padding: '12px 0 2px', background: 'none', border: 'none', color: '#8095ad', fontSize: 13, fontWeight: 400, cursor: 'pointer', fontFamily: 'inherit', marginTop: 6 }}>홈으로</button>
           </div>
         </div>
       )}
@@ -986,14 +986,14 @@ export default function App() {
             border: 'none',
             textAlign: 'center',
           }}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}><ShieldIcon size={40} /></div>
-            <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 8 }}>
+            <div style={{ fontSize: 40, fontWeight: 300, marginBottom: 12 }}><ShieldIcon size={40} /></div>
+            <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 8 }}>
               데이터 복구 가능
             </div>
-            <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: 20 }}>
+            <div style={{ fontSize: 13, fontWeight: 400, color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: 20 }}>
               이전 데이터가 사라진 것 같아요.<br/>
               자동 백업에서 <strong>{recoveryInfo.recordCount}개 기록</strong>을 복원할 수 있어요.<br/>
-              <span style={{ fontSize: 11, opacity: 0.7 }}>
+              <span style={{ fontSize: 11, fontWeight: 400, opacity: 0.7 }}>
                 백업 시간: {new Date(recoveryInfo.timestamp).toLocaleString('ko-KR')}
               </span>
             </div>
@@ -1004,7 +1004,7 @@ export default function App() {
                   flex: 1, padding: 13, borderRadius: 14,
                   border: 'none',
                   background: 'transparent', color: 'var(--text-muted)',
-                  fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+                  fontSize: 14, fontWeight: 400, cursor: 'pointer', fontFamily: 'inherit',
                 }}
               >무시</button>
               <button
@@ -1018,7 +1018,7 @@ export default function App() {
                 style={{
                   flex: 1, padding: 13, borderRadius: 14, border: 'none',
                   background: 'linear-gradient(135deg, #6598ef, #6598ef)',
-                  color: '#fff', fontSize: 14, fontWeight: 600,
+                  color: '#fff', fontSize: 14, fontWeight: 400,
                   cursor: 'pointer', fontFamily: 'inherit',
                   boxShadow: 'none',
                 }}
@@ -1040,10 +1040,10 @@ export default function App() {
           border: 'none',
           boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
         }}>
-          <span style={{ fontSize: 18, flexShrink: 0 }}></span>
+          <span style={{ fontSize: 18, fontWeight: 500, flexShrink: 0 }}></span>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: '#333' }}>데이터 백업을 권장해요</div>
-            <div style={{ fontSize: 11, color: '#8C8C8C', marginTop: 2 }}>만약을 위해 백업 파일을 다운로드하세요</div>
+            <div style={{ fontSize: 13, fontWeight: 400, color: '#333' }}>데이터 백업을 권장해요</div>
+            <div style={{ fontSize: 11, fontWeight: 400, color: '#8C8C8C', marginTop: 2 }}>만약을 위해 백업 파일을 다운로드하세요</div>
           </div>
           <button
             onClick={() => {
@@ -1053,7 +1053,7 @@ export default function App() {
             style={{
               padding: '7px 14px', borderRadius: 12, border: 'none',
               background: '#E0E0E0', color: '#333',
-              fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+              fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'inherit',
               flexShrink: 0, whiteSpace: 'nowrap',
             }}
           >백업</button>
@@ -1061,7 +1061,7 @@ export default function App() {
             onClick={() => setShowBackupReminder(false)}
             style={{
               background: 'none', border: 'none', color: '#999',
-              fontSize: 18, cursor: 'pointer', padding: 4, flexShrink: 0, lineHeight: 1,
+              fontSize: 18, fontWeight: 500, cursor: 'pointer', padding: 4, flexShrink: 0, lineHeight: 1,
             }}
           >&times;</button>
         </div>
@@ -1069,7 +1069,7 @@ export default function App() {
 
       {/* Save Toast */}
       {showSaveToast && (
-        <div style={{ position: 'fixed', top: 60, left: '50%', transform: 'translateX(-50%)', background: 'rgba(var(--accent-rgb),0.9)', color: '#fff', padding: '10px 22px', borderRadius: 30, fontSize: 13, fontWeight: 600, zIndex: 999, boxShadow: 'none' }}>
+        <div style={{ position: 'fixed', top: 60, left: '50%', transform: 'translateX(-50%)', background: 'rgba(var(--accent-rgb),0.9)', color: '#fff', padding: '10px 22px', borderRadius: 30, fontSize: 13, fontWeight: 400, zIndex: 999, boxShadow: 'none' }}>
           <span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><CheckIcon size={18} /></span> 기록이 저장되었어요!
         </div>
       )}
@@ -1200,7 +1200,7 @@ export default function App() {
               </div>
               <div style={{ display: 'flex', justifyContent: 'center', gap: 14, marginTop: 28 }}>
                 {['정면 셀카', '밝은 자연광', '맨 얼굴'].map(tag => (
-                  <div key={tag} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.7)', textShadow: '0 1px 8px rgba(0,0,0,0.15)'}}>
+                  <div key={tag} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 400, color: 'rgba(255,255,255,0.7)', textShadow: '0 1px 8px rgba(0,0,0,0.15)'}}>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="16 8.5 10.5 14.5 8 12"/></svg>
                     {tag}
                   </div>
@@ -1233,7 +1233,7 @@ export default function App() {
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(240,168,136,0.3))' }}><defs><linearGradient id="sparkCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#FFD4C0"/><stop offset="100%" stopColor="#F0A888"/></linearGradient></defs><path d="M14.504 8.522l-1.758 -4.032a.814 .814 0 0 0 -1.492 0l-1.759 4.032c-.19 .436 -.537 .784 -.973 .973l-4.032 1.759a.814 .814 0 0 0 0 1.492l4.033 1.758c.436 .19 .784 .538 .973 .974l1.759 4.033a.814 .814 0 0 0 1.492 0l1.758 -4.033c.19 -.436 .538 -.784 .974 -.974l4.033 -1.758a.814 .814 0 0 0 0 -1.492l-4.033 -1.759a1.88 1.88 0 0 1 -.974 -.973" fill="url(#sparkCard)" opacity="0.6"/></svg>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>피부</span>
+                    <span style={{ fontSize: 13, fontWeight: 400, color: '#b1b8ba' }}>피부</span>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0 }}>
                     {metrics.map((m) => {
@@ -1243,10 +1243,10 @@ export default function App() {
                       return (
                         <div key={m.key} style={{ textAlign: 'left', padding: '0 4px' }}>
                           <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
-                            <span style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{val !== null ? val : '—'}</span>
-                            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>점</span>
+                            <span style={{ fontSize: 24, fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{val !== null ? val : '—'}</span>
+                            <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-muted)' }}>점</span>
                           </div>
-                          <div style={{ fontSize: 10, marginTop: 4, minHeight: 14, color: diff === null ? 'var(--text-muted)' : diff > 0 ? 'var(--accent-primary, var(--accent-primary))' : diff < 0 ? '#e05545' : 'var(--text-muted)' }}>
+                          <div style={{ fontSize: 10, fontWeight: 500, marginTop: 4, minHeight: 14, color: diff === null ? 'var(--text-muted)' : diff > 0 ? 'var(--accent-primary, var(--accent-primary))' : diff < 0 ? '#e05545' : 'var(--text-muted)' }}>
                             {m.label}{diff !== null && diff !== 0 ? ` ${Math.abs(diff)}${diff > 0 ? '▲' : '▼'}` : ''}
                           </div>
                         </div>
@@ -1275,15 +1275,15 @@ export default function App() {
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(var(--accent-rgb),0.3))' }}><defs><linearGradient id="weatherCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#B8E4F8"/><stop offset="100%" stopColor="#6AB4E0"/></linearGradient></defs><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" fill="url(#weatherCard)" opacity="0.6"/></svg>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>날씨</span>
+                        <span style={{ fontSize: 13, fontWeight: 400, color: '#b1b8ba' }}>날씨</span>
                       </div>
                       {_w ? (
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
-                          <span style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_w.temp}°</span>
-                          <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>{_w.condition}</span>
+                          <span style={{ fontSize: 24, fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{_w.temp}°</span>
+                          <span style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-muted)' }}>{_w.condition}</span>
                         </div>
                       ) : (
-                        <div style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
+                        <div style={{ fontSize: 24, fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
                       )}
                     </div>
                     {_w && <WeatherIcon emoji={_w.conditionIcon} size={36} color="#6598ef" />}
@@ -1296,12 +1296,12 @@ export default function App() {
                     ].map(d => (
                       <div key={d.label} style={cb}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{d.label}</span>
-                          {d.info && <span style={{ fontSize: 10, fontWeight: 600, color: d.info.color, background: `${d.info.color}15`, padding: '2px 6px', borderRadius: 6 }}>{d.info.label}</span>}
+                          <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-muted)' }}>{d.label}</span>
+                          {d.info && <span style={{ fontSize: 10, fontWeight: 500, color: d.info.color, background: `${d.info.color}15`, padding: '2px 6px', borderRadius: 6 }}>{d.info.label}</span>}
                         </div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
-                          <span style={{ fontSize: 24, fontWeight: 600, color: d.info ? d.info.color : 'var(--text-muted)', filter: 'brightness(0.7)' }}>{d.val ?? '—'}</span>
-                          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{d.unit}</span>
+                          <span style={{ fontSize: 24, fontWeight: 500, color: d.info ? d.info.color : 'var(--text-muted)', filter: 'brightness(0.7)' }}>{d.val ?? '—'}</span>
+                          <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-muted)' }}>{d.unit}</span>
                         </div>
                       </div>
                     ))}
@@ -1327,15 +1327,15 @@ export default function App() {
                     <div onClick={() => setShowWaterModal(true)} style={cs}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: '0 0 auto' }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(91,163,212,0.3))' }}><defs><linearGradient id="dropCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#B8E0F5"/><stop offset="100%" stopColor="#5BA3D4"/></linearGradient></defs><path d="M12 2.5c0 0-7.5 8-7.5 13a7.5 7.5 0 0015 0c0-5-7.5-13-7.5-13z" fill="url(#dropCard)" opacity="0.6"/></svg>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>수분</span>
+                        <span style={{ fontSize: 13, fontWeight: 400, color: '#b1b8ba' }}>수분</span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
                         <div>
                           <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                            <span style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{waterCups > 0 ? waterMl.toLocaleString() : '—'}</span>
-                            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>ml</span>
+                            <span style={{ fontSize: 24, fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{waterCups > 0 ? waterMl.toLocaleString() : '—'}</span>
+                            <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-muted)' }}>ml</span>
                           </div>
-                          <div style={{ fontSize: 10, color: waterCups > 0 ? (waterCups >= waterGoal ? '#22C55E' : 'var(--text-muted)') : 'var(--accent-primary, var(--accent-primary))', marginTop: 4, minHeight: 14 }}>
+                          <div style={{ fontSize: 10, fontWeight: 500, color: waterCups > 0 ? (waterCups >= waterGoal ? '#22C55E' : 'var(--text-muted)') : 'var(--accent-primary, var(--accent-primary))', marginTop: 4, minHeight: 14 }}>
                             {waterCups > 0 ? (waterCups >= waterGoal ? '목표 달성!' : `${((waterGoal - waterCups) * cupMl).toLocaleString()}ml 남음`) : '기록하기'}
                           </div>
                         </div>
@@ -1349,16 +1349,16 @@ export default function App() {
                     <div onClick={() => setShowSleepModal(true)} style={cs}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: '0 0 auto' }}>
                         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(91,106,175,0.3))' }}><defs><linearGradient id="moonCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#C8D0F0"/><stop offset="100%" stopColor="#5B6AAF"/></linearGradient></defs><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="url(#moonCard)" opacity="0.6"/></svg>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>수면</span>
+                        <span style={{ fontSize: 13, fontWeight: 400, color: '#b1b8ba' }}>수면</span>
                       </div>
                       {sleepHours !== null ? (
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
                           <div>
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                              <span style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{sleepHours}</span>
-                              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>시간</span>
+                              <span style={{ fontSize: 24, fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{sleepHours}</span>
+                              <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-muted)' }}>시간</span>
                             </div>
-                            <div style={{ fontSize: 10, color: sleepHours >= 7 ? '#22C55E' : sleepHours >= 5 ? 'var(--text-muted)' : '#E05050', marginTop: 4, minHeight: 14 }}>{sleepHours >= 7 ? '충분' : sleepHours >= 5 ? '보통' : '부족'}</div>
+                            <div style={{ fontSize: 10, fontWeight: 500, color: sleepHours >= 7 ? '#22C55E' : sleepHours >= 5 ? 'var(--text-muted)' : '#E05050', marginTop: 4, minHeight: 14 }}>{sleepHours >= 7 ? '충분' : sleepHours >= 5 ? '보통' : '부족'}</div>
                           </div>
                           <svg width="52" height="52" viewBox="0 0 52 52">
                             <defs><linearGradient id="sleepRingGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#5B6AAF" /><stop offset="100%" stopColor="#C8D0F0" /></linearGradient></defs>
@@ -1369,8 +1369,8 @@ export default function App() {
                       ) : (
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
                           <div>
-                            <div style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
-                            <div style={{ fontSize: 10, color: 'var(--accent-primary, var(--accent-primary))', marginTop: 4, minHeight: 14 }}>기록하기</div>
+                            <div style={{ fontSize: 24, fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
+                            <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--accent-primary, var(--accent-primary))', marginTop: 4, minHeight: 14 }}>기록하기</div>
                           </div>
                           <svg width="52" height="52" viewBox="0 0 52 52"><circle cx="26" cy="26" r={sR} fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="5" /></svg>
                         </div>
@@ -1385,15 +1385,15 @@ export default function App() {
                   <div onClick={() => setShowWaterModal(true)} style={cs}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: '0 0 auto' }}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(91,163,212,0.3))' }}><defs><linearGradient id="dropCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#B8E0F5"/><stop offset="100%" stopColor="#5BA3D4"/></linearGradient></defs><path d="M12 2.5c0 0-7.5 8-7.5 13a7.5 7.5 0 0015 0c0-5-7.5-13-7.5-13z" fill="url(#dropCard)" opacity="0.6"/></svg>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>수분</span>
+                      <span style={{ fontSize: 13, fontWeight: 400, color: '#b1b8ba' }}>수분</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
                       <div>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                          <span style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{waterCups > 0 ? (waterCups * 250).toLocaleString() : '—'}</span>
-                          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>ml</span>
+                          <span style={{ fontSize: 24, fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{waterCups > 0 ? (waterCups * 250).toLocaleString() : '—'}</span>
+                          <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-muted)' }}>ml</span>
                         </div>
-                        <div style={{ fontSize: 10, color: waterCups > 0 ? (waterCups >= 8 ? '#22C55E' : 'var(--text-muted)') : 'var(--accent-primary, var(--accent-primary))', marginTop: 4, minHeight: 14 }}>
+                        <div style={{ fontSize: 10, fontWeight: 500, color: waterCups > 0 ? (waterCups >= 8 ? '#22C55E' : 'var(--text-muted)') : 'var(--accent-primary, var(--accent-primary))', marginTop: 4, minHeight: 14 }}>
                           {waterCups > 0 ? (waterCups >= 8 ? '목표 달성!' : `${((8 - waterCups) * 250).toLocaleString()}ml 남음`) : '기록하기'}
                         </div>
                       </div>
@@ -1420,16 +1420,16 @@ export default function App() {
                   <div onClick={() => setShowSleepModal(true)} style={cs}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: '0 0 auto' }}>
                       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(91,106,175,0.3))' }}><defs><linearGradient id="moonCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#C8D0F0"/><stop offset="100%" stopColor="#5B6AAF"/></linearGradient></defs><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="url(#moonCard)" opacity="0.6"/></svg>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: '#b1b8ba' }}>수면</span>
+                      <span style={{ fontSize: 13, fontWeight: 400, color: '#b1b8ba' }}>수면</span>
                     </div>
                     {sleepHours !== null ? (
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
                         <div>
                           <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                            <span style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{sleepHours}</span>
-                            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>시간</span>
+                            <span style={{ fontSize: 24, fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>{sleepHours}</span>
+                            <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-muted)' }}>시간</span>
                           </div>
-                          <div style={{ fontSize: 10, color: sleepHours >= 7 ? '#22C55E' : sleepHours >= 5 ? 'var(--text-muted)' : '#E05050', marginTop: 4, minHeight: 14 }}>{sleepHours >= 7 ? '충분' : sleepHours >= 5 ? '보통' : '부족'}</div>
+                          <div style={{ fontSize: 10, fontWeight: 500, color: sleepHours >= 7 ? '#22C55E' : sleepHours >= 5 ? 'var(--text-muted)' : '#E05050', marginTop: 4, minHeight: 14 }}>{sleepHours >= 7 ? '충분' : sleepHours >= 5 ? '보통' : '부족'}</div>
                         </div>
                         <svg width="52" height="52" viewBox="0 0 52 52">
                           <defs><linearGradient id="sleepRingGrad2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#5B6AAF" /><stop offset="100%" stopColor="#C8D0F0" /></linearGradient></defs>
@@ -1440,8 +1440,8 @@ export default function App() {
                     ) : (
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
                         <div>
-                          <div style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
-                          <div style={{ fontSize: 10, color: 'var(--accent-primary, var(--accent-primary))', marginTop: 4, minHeight: 14 }}>기록하기</div>
+                          <div style={{ fontSize: 24, fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1.1 }}>—</div>
+                          <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--accent-primary, var(--accent-primary))', marginTop: 4, minHeight: 14 }}>기록하기</div>
                         </div>
                         <svg width="52" height="52" viewBox="0 0 52 52"><circle cx="26" cy="26" r={sR} fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="5" /></svg>
                       </div>
@@ -1490,7 +1490,7 @@ export default function App() {
                 </div>
                 <div style={{ position: 'absolute', left: 0, right: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
                   <svg width="16" height="16" viewBox="0 0 256 256" fill={colorSkin === 'pink' ? 'var(--text-primary)' : '#fff'} stroke="none"><path d="M128,16a88.1,88.1,0,0,0-88,88c0,31.4,14.51,64.68,42,96.25a254.19,254.19,0,0,0,41.45,38.3,8,8,0,0,0,9.18,0A254.19,254.19,0,0,0,174,200.25c27.45-31.57,42-64.85,42-96.25A88.1,88.1,0,0,0,128,16Zm0,56a48,48,0,1,1-48,48A48,48,0,0,1,128,72Z" /></svg>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: colorSkin === 'pink' ? 'var(--text-primary)' : '#fff' }}>{(() => { try { const w = JSON.parse(localStorage.getItem('nou_weather_data')); return w?.location || '서울'; } catch { return '서울'; } })()}</span>
+                  <span style={{ fontSize: 14, fontWeight: 400, color: colorSkin === 'pink' ? 'var(--text-primary)' : '#fff' }}>{(() => { try { const w = JSON.parse(localStorage.getItem('nou_weather_data')); return w?.location || '서울'; } catch { return '서울'; } })()}</span>
                 </div>
               </div>
               {/* Content */}
@@ -1565,7 +1565,7 @@ export default function App() {
             <span style={{ color: '#185FA5', fontSize: 11, fontWeight: 400, letterSpacing: 0.2 }}>{label}</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               {icon}
-              <span style={{ color: '#1A1A1A', fontSize: 11, fontWeight: 500 }}>{value}</span>
+              <span style={{ color: '#1A1A1A', fontSize: 11, fontWeight: 400 }}>{value}</span>
             </div>
           </div>
         );
@@ -1637,7 +1637,7 @@ export default function App() {
                    : s === 'moderate' ? <svg width="10" height="10" viewBox="0 0 24 24" fill="#999"><path d="M12 1.67L1.21 21.5h21.57L12 1.67zm1 14.83h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
                    : <svg width="10" height="10" viewBox="0 0 24 24" fill="#A32D2D"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>}
                   <span style={{
-                    fontSize: 10, fontWeight: 400,
+                    fontSize: 10, fontWeight: 500,
                     color: s === 'good' ? 'rgba(88,174,254,0.9)' : s === 'moderate' ? 'rgba(255,255,255,0.4)' : 'rgba(163,45,45,0.9)',
                   }}>{v}</span>
                 </div>
@@ -1655,10 +1655,10 @@ export default function App() {
               }}>
                 <span style={{ flexShrink: 0, display: 'flex' }}><svg width="16" height="16" viewBox="0 0 24 24" fill="#6598ef" stroke="none"><path d="M12 1.67c.955 0 1.845 .467 2.39 1.247l.105 .16l8.114 13.548a2.914 2.914 0 0 1 -2.307 4.363l-.195 .012h-16.214a2.914 2.914 0 0 1 -2.513 -4.4l8.114 -13.548a2.914 2.914 0 0 1 2.506 -1.382zm.01 13.33l-.127 .007a1 1 0 0 0 0 1.986l.117 .007l.127 -.007a1 1 0 0 0 0 -1.986l-.117 -.007zm-.01 -7a1 1 0 0 0 -.993 .883l-.007 .117v4l.007 .117a1 1 0 0 0 1.986 0l.007 -.117v-4l-.007 -.117a1 1 0 0 0 -.993 -.883z" /></svg></span>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: '#fff', marginBottom: 3 }}>
+                  <div style={{ fontSize: 13, fontWeight: 400, color: '#fff', marginBottom: 3 }}>
                     {QUALITY_ISSUE_LABELS[q.critical[0]]?.title || '재촬영이 필요해요'}
                   </div>
-                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.92)', lineHeight: 1.5 }}>
+                  <div style={{ fontSize: 12, fontWeight: 400, color: 'rgba(255,255,255,0.92)', lineHeight: 1.5 }}>
                     {QUALITY_ISSUE_LABELS[q.critical[0]]?.advice || '다시 촬영해주세요.'}
                   </div>
                 </div>
@@ -1671,7 +1671,7 @@ export default function App() {
                 width: '100%', height: 50, borderRadius: 14, border: 'none',
                 background: '#58aefe',
                 color: '#fff',
-                fontSize: 16, fontWeight: 600,
+                fontSize: 16, fontWeight: 500,
                 cursor: 'pointer', fontFamily: 'inherit',
                 boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
                 marginBottom: 8,
@@ -1684,7 +1684,7 @@ export default function App() {
                 width: '100%', height: 40, borderRadius: 14,
                 border: 'none',
                 background: 'transparent',
-                color: 'rgba(255,255,255,0.85)', fontSize: 13, fontWeight: 500,
+                color: 'rgba(255,255,255,0.85)', fontSize: 13, fontWeight: 400,
                 cursor: 'pointer', fontFamily: 'inherit',
               }}>
                 {allGood ? '다른 사진 선택' : isBlocked ? '앨범에서 선택' : '다시 촬영하기'}
@@ -1765,10 +1765,10 @@ export default function App() {
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
           }}>
             {/* Title */}
-            <p style={{ color: '#fff', fontSize: 16, fontWeight: 600, margin: 0, letterSpacing: -0.3 }}>
+            <p style={{ color: '#fff', fontSize: 16, fontWeight: 500, margin: 0, letterSpacing: -0.3 }}>
               피부 분석중
             </p>
-            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, margin: 0 }}>
+            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: 400, margin: 0 }}>
               수분 · 탄력 · 피부결을 분석하고 있어요
             </p>
 
@@ -1782,7 +1782,7 @@ export default function App() {
                   transition: 'width 0.4s',
                 }} />
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, fontWeight: 500 }}>
                 <span style={{ color: 'rgba(255,255,255,0.4)' }}>{getProgressText(progress)}</span>
                 <span style={{ color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>{Math.round(Math.min(progress, 99))}%</span>
               </div>
@@ -1790,7 +1790,7 @@ export default function App() {
 
             {/* Tip */}
             <p key={getProgressTip(progress)} style={{
-              color: 'rgba(255,255,255,0.4)', fontSize: 11, textAlign: 'center',
+              color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 400, textAlign: 'center',
               margin: '8px 0 0', letterSpacing: -0.2, lineHeight: 1.5,
               animation: 'fadeIn 0.6s ease',
             }}>
@@ -1920,7 +1920,7 @@ export default function App() {
                     {result.overallScore != null ? <AnimatedNumber target={result.overallScore} duration={1300} /> : '—'}
                   </span>
                   <span style={{
-                    fontSize: 16, letterSpacing: -0.3, color: 'rgba(255,255,255,0.4)', marginBottom: 6,
+                    fontSize: 16, fontWeight: 500, letterSpacing: -0.3, color: 'rgba(255,255,255,0.4)', marginBottom: 6,
                   }}>점</span>
                 </div>
                 {/* 또래 상위 % — 연령 보정 추정 (핵심 비교 지표) */}
@@ -1931,7 +1931,7 @@ export default function App() {
                 )}
                 {/* 피부나이 · 레벨 배지 */}
                 <div style={{ display: 'inline-flex', alignItems: 'center', padding: '5px 14px', borderRadius: 20, background: 'rgba(255,255,255,0.2)', marginBottom: 8 }}>
-                  <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: 0.3, color: 'rgba(255,255,255,0.85)' }}>{result.skinAge}세 · {sigLevel}{skinAgePct && skinAgePct.diffYears > 0 ? ` · 또래보다 -${skinAgePct.diffYears}세` : ''}</span>
+                  <span style={{ fontSize: 11, fontWeight: 400, letterSpacing: 0.3, color: 'rgba(255,255,255,0.85)' }}>{result.skinAge}세 · {sigLevel}{skinAgePct && skinAgePct.diffYears > 0 ? ` · 또래보다 -${skinAgePct.diffYears}세` : ''}</span>
                 </div>
                 {/* 시그니처 한 줄 */}
                 <div style={{
@@ -1995,8 +1995,8 @@ export default function App() {
                       }}>
                         {/* 등급 */}
                         <div style={{ textAlign: 'center', flexShrink: 0, minWidth: 44 }}>
-                          <div style={{ fontSize: 24, fontWeight: 600, color: 'rgba(0,0,0,0.78)', lineHeight: 1 }}>{grade.letter}</div>
-                          <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.4)', marginTop: 3 }}>{grade.label}</div>
+                          <div style={{ fontSize: 24, fontWeight: 500, color: 'rgba(0,0,0,0.78)', lineHeight: 1 }}>{grade.letter}</div>
+                          <div style={{ fontSize: 10, fontWeight: 500, color: 'rgba(0,0,0,0.4)', marginTop: 3 }}>{grade.label}</div>
                         </div>
                         {/* 구분선 */}
                         {_bwItems.length === 2 && <div style={{ width: 1, height: 36, background: 'rgba(0,0,0,0.08)', flexShrink: 0 }} />}
@@ -2006,9 +2006,9 @@ export default function App() {
                             {_bwItems.map(bw => (
                               <div key={bw.key} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                 <div style={{ flexShrink: 0, opacity: 0.85 }}>{bw.icon}</div>
-                                <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(0,0,0,0.55)', minWidth: 0 }}>{bw.label}</span>
-                                <span style={{ fontSize: 14, fontWeight: 600, color: bw.colors[0], letterSpacing: -0.3 }}>{bw.value}<span style={{ fontSize: 10, fontWeight: 500, color: bw.colors[1] }}>{bw.unit}</span></span>
-                                <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 5px', borderRadius: 4, background: bw.tagBg, color: bw.tagColor, marginLeft: 'auto', whiteSpace: 'nowrap' }}>{bw.tag}</span>
+                                <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(0,0,0,0.55)', minWidth: 0 }}>{bw.label}</span>
+                                <span style={{ fontSize: 14, fontWeight: 400, color: bw.colors[0], letterSpacing: -0.3 }}>{bw.value}<span style={{ fontSize: 10, fontWeight: 500, color: bw.colors[1] }}>{bw.unit}</span></span>
+                                <span style={{ fontSize: 10, fontWeight: 500, padding: '1px 5px', borderRadius: 4, background: bw.tagBg, color: bw.tagColor, marginLeft: 'auto', whiteSpace: 'nowrap' }}>{bw.tag}</span>
                               </div>
                             ))}
                           </div>
@@ -2027,7 +2027,7 @@ export default function App() {
                           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                             {badges.map(c => (
                               <span key={c.key} style={{
-                                fontSize: 13, padding: '3px 10px', borderRadius: 20,
+                                fontSize: 13, fontWeight: 400, padding: '3px 10px', borderRadius: 20,
                                 background: c.improved ? 'rgba(144,196,248,0.15)' : 'rgba(216,168,240,0.15)',
                                 color: c.improved ? 'rgba(var(--accent-rgb),0.7)' : 'rgba(160,120,200,0.7)',
                               }}>
@@ -2039,7 +2039,7 @@ export default function App() {
                       })()}
                       {/* AI 정밀 분석 (통합) */}
                       {result.advice && (
-                        <p style={{ fontSize: 13, color: 'rgba(0,0,0,0.78)', lineHeight: 1.7, margin: '10px 0 0' }}>{result.advice}</p>
+                        <p style={{ fontSize: 13, fontWeight: 400, color: 'rgba(0,0,0,0.78)', lineHeight: 1.7, margin: '10px 0 0' }}>{result.advice}</p>
                       )}
                       <AiCommentCard
                         aiNotes={result.aiNotes}
@@ -2056,10 +2056,10 @@ export default function App() {
                           border: 'none',
                           display: 'flex', alignItems: 'center', gap: 8,
                         }}>
-                          <span style={{ fontSize: 16, flexShrink: 0 }}></span>
+                          <span style={{ fontSize: 16, fontWeight: 500, flexShrink: 0 }}></span>
                           <div>
-                            <div style={{ fontSize: 11, fontWeight: 600, color: '#FFB8C8', marginBottom: 1 }}>메이크업이 감지되었어요</div>
-                            <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.4)', lineHeight: 1.4 }}>클렌징 후 다시 측정하면 더 정확한 피부 상태를 확인할 수 있어요</div>
+                            <div style={{ fontSize: 11, fontWeight: 400, color: '#FFB8C8', marginBottom: 1 }}>메이크업이 감지되었어요</div>
+                            <div style={{ fontSize: 10, fontWeight: 500, color: 'rgba(0,0,0,0.4)', lineHeight: 1.4 }}>클렌징 후 다시 측정하면 더 정확한 피부 상태를 확인할 수 있어요</div>
                           </div>
                         </div>
                       )}
@@ -2094,8 +2094,8 @@ export default function App() {
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="#6598ef"><path d="M12 2a10 10 0 1 1 0 20a10 10 0 0 1 0 -20zm0 4a6 6 0 1 0 0 12a6 6 0 0 0 0 -12zm0 3a3 3 0 1 1 0 6a3 3 0 0 1 0 -6z"/></svg>
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent-primary)', letterSpacing: 0.3, marginBottom: 2 }}>기준점 구축 중</div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(0,0,0,0.78)', letterSpacing: -0.2 }}>
+                    <div style={{ fontSize: 11, fontWeight: 400, color: 'var(--accent-primary)', letterSpacing: 0.3, marginBottom: 2 }}>기준점 구축 중</div>
+                    <div style={{ fontSize: 14, fontWeight: 400, color: 'rgba(0,0,0,0.78)', letterSpacing: -0.2 }}>
                       {b.count}회 완료 · {remaining}회 더 측정해주세요
                     </div>
                   </div>
@@ -2115,7 +2115,7 @@ export default function App() {
                 </div>
 
                 <div style={{
-                  fontSize: 11, color: 'rgba(0,0,0,0.55)', lineHeight: 1.6,
+                  fontSize: 11, fontWeight: 400, color: 'rgba(0,0,0,0.55)', lineHeight: 1.6,
                   background: 'rgba(var(--accent-rgb),0.06)',
                   padding: '8px 10px', borderRadius: 10,
                   wordBreak: 'keep-all',
@@ -2131,7 +2131,7 @@ export default function App() {
                     width: '100%', padding: '14px',
                     background: 'linear-gradient(135deg, var(--accent-primary), #85b0f5)',
                     border: 'none', borderRadius: 14,
-                    color: '#fff', fontSize: 14, fontWeight: 600,
+                    color: '#fff', fontSize: 14, fontWeight: 400,
                     cursor: 'pointer', fontFamily: 'inherit',
                     boxShadow: '0 6px 18px rgba(var(--accent-rgb),0.32)',
                     letterSpacing: -0.2,
@@ -2151,7 +2151,7 @@ export default function App() {
                     marginTop: 10, padding: '8px 10px', borderRadius: 10,
                     background: 'rgba(216,168,240,0.12)',
                     border: 'none',
-                    fontSize: 11, color: '#9070B0', lineHeight: 1.55,
+                    fontSize: 11, fontWeight: 400, color: '#9070B0', lineHeight: 1.55,
                   }}>
                     ⚠️ 이번 측정은 동일인 인식이 약했어요. 다음 측정 시 정면·자연광에서 시도해주세요.
                   </div>
@@ -2179,7 +2179,7 @@ export default function App() {
                     borderTopColor: 'var(--accent-primary)',
                     animation: 'autoInsightSpin 0.9s linear infinite',
                   }} />
-                  <span style={{ fontSize: 11, color: 'rgba(var(--accent-rgb),0.7)', fontWeight: 600 }}>AI가 변화 원인 분석 중…</span>
+                  <span style={{ fontSize: 11, color: 'rgba(var(--accent-rgb),0.7)', fontWeight: 400 }}>AI가 변화 원인 분석 중…</span>
                   <style>{`@keyframes autoInsightSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
                 </div>
               );
@@ -2201,19 +2201,19 @@ export default function App() {
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
                   <div style={{ width: 5, height: 5, borderRadius: '50%', background: palette.dot, flexShrink: 0 }} />
-                  <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: 0.2 }}>AI 자동 인사이트</div>
+                  <div style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-muted)', letterSpacing: 0.2 }}>AI 자동 인사이트</div>
                 </div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(0,0,0,0.78)', marginBottom: 6, lineHeight: 1.5 }}>
+                <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(0,0,0,0.78)', marginBottom: 6, lineHeight: 1.5 }}>
                   {autoInsight.headline}
                 </div>
                 {autoInsight.cause && (
-                  <div style={{ fontSize: 13, color: 'rgba(0,0,0,0.55)', lineHeight: 1.7, marginBottom: 8, wordBreak: 'keep-all' }}>
+                  <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(0,0,0,0.55)', lineHeight: 1.7, marginBottom: 8, wordBreak: 'keep-all' }}>
                     {autoInsight.cause}
                   </div>
                 )}
                 {autoInsight.action && (
                   <div style={{
-                    fontSize: 13, color: 'rgba(0,0,0,0.55)', fontWeight: 500,
+                    fontSize: 13, color: 'rgba(0,0,0,0.55)', fontWeight: 400,
                     background: 'rgba(var(--accent-rgb),0.06)',
                     padding: '8px 10px', borderRadius: 10,
                     lineHeight: 1.7, wordBreak: 'keep-all',
@@ -2261,7 +2261,7 @@ export default function App() {
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         {m.icon}
-                        <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(0,0,0,0.78)' }}>{m.label}</span>
+                        <span style={{ fontSize: 11, fontWeight: 400, color: 'rgba(0,0,0,0.78)' }}>{m.label}</span>
                         {pct && pct.top <= 30 && (() => {
                           const _ic = {
                             moisture: '#4d8ef2', oilBalance: '#4dbdfd', oilMoistureBalance: '#8fe2ff',
@@ -2362,10 +2362,10 @@ export default function App() {
                               <span style={{ fontSize: 24, fontWeight: 500, color: scoreColor, letterSpacing: -1, lineHeight: 1 }}>
                                 <AnimatedNumber target={v} />
                               </span>
-                              <span style={{ fontSize: 11, fontWeight: 500, color: scoreColor, opacity: 0.6, lineHeight: 1, paddingBottom: 1 }}>{m.unit}</span>
+                              <span style={{ fontSize: 11, fontWeight: 400, color: scoreColor, opacity: 0.6, lineHeight: 1, paddingBottom: 1 }}>{m.unit}</span>
                             </div>
                             <span style={{
-                              fontSize: 10, fontWeight: 600, color: scoreColor,
+                              fontSize: 10, fontWeight: 500, color: scoreColor,
                               background: `${typeof scoreColor === 'string' && scoreColor.startsWith('#') ? scoreColor + '12' : 'rgba(0,0,0,0.04)'}`,
                               borderRadius: 6, padding: '2px 6px', lineHeight: 1.3, textAlign: 'center',
                               maxWidth: 40, wordBreak: 'keep-all', overflowWrap: 'break-word',
@@ -2399,7 +2399,7 @@ export default function App() {
                   if (weakCats.length === 0) return null;
                   return (
                     <div style={{ marginBottom: 12 }}>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(0,0,0,0.78)', marginBottom: 8 }}>제품</div>
+                      <div style={{ fontSize: 14, fontWeight: 400, color: 'rgba(0,0,0,0.78)', marginBottom: 8 }}>제품</div>
                       {weakCats.slice(0, 2).map((cat) => {
                         const meta = CATEGORY_META[cat];
                         if (!meta) return null;
@@ -2414,7 +2414,7 @@ export default function App() {
                             <div style={{
                               padding: '12px 14px',
                             }}>
-                              <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(0,0,0,0.78)', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                              <div style={{ fontSize: 14, fontWeight: 400, color: 'rgba(0,0,0,0.78)', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                                 <span style={{ opacity: 0.9, display: 'inline-flex' }}>{({moisture: <DropletIcon size={10}/>, oilBalance: <BubbleIcon size={10}/>, pigmentationScore: <PaletteIcon size={10}/>, wrinkleScore: <RulerIcon size={10}/>, troubleCount: <RednessIcon size={10}/>, darkCircleScore: <EyeIcon size={10}/>})[meta.metricKey]}</span>
                                 {meta.label}
                                 {(() => {
@@ -2437,7 +2437,7 @@ export default function App() {
                                   transition: 'background 0.2s',
                                 }}>
                                 <div style={{ flex: 1, minWidth: 0 }}>
-                                  <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(0,0,0,0.55)',
+                                  <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(0,0,0,0.55)',
                                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                     {product.brand} {product.name}
                                   </div>
@@ -2448,7 +2448,7 @@ export default function App() {
                                         background: 'rgba(0,0,0,0.04)', color: 'rgba(0,0,0,0.4)',
                                       }}>{tag}</span>
                                     ))}
-                                    <span style={{ fontSize: 10, color: 'rgba(0,0,0,0.4)' }}>{product.volume}</span>
+                                    <span style={{ fontSize: 10, fontWeight: 500, color: 'rgba(0,0,0,0.4)' }}>{product.volume}</span>
                                   </div>
                                 </div>
                                 <span style={{
@@ -2462,7 +2462,7 @@ export default function App() {
                     </div>
                   );
                 })()}
-                <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.4)', textAlign: 'center', marginBottom: 24, lineHeight: 1.4 }}>
+                <div style={{ fontSize: 10, fontWeight: 500, color: 'rgba(0,0,0,0.4)', textAlign: 'center', marginBottom: 24, lineHeight: 1.4 }}>
                   이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
                 </div>
                 {/* Treatment recommendations */}
@@ -2471,7 +2471,7 @@ export default function App() {
                   if (treatments.length === 0) return null;
                   return (
                     <div style={{ marginBottom: 12 }}>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(0,0,0,0.78)', marginBottom: 8 }}>시술</div>
+                      <div style={{ fontSize: 14, fontWeight: 400, color: 'rgba(0,0,0,0.78)', marginBottom: 8 }}>시술</div>
                       {(() => {
                         const grouped = {};
                         treatments.forEach(t => {
@@ -2489,20 +2489,20 @@ export default function App() {
                               <div style={{
                                 padding: '12px 14px',
                               }}>
-                                <div style={{ fontSize: 14, fontWeight: 600, color: 'rgba(0,0,0,0.78)', display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ opacity: 0.9, display: 'inline-flex' }}>{({lifting: <DiamondIcon size={10}/>, pigmentation: <PaletteIcon size={10}/>, texture: <SparkleIcon size={10}/>, wrinkle: <RulerIcon size={10}/>, acne: <RednessIcon size={10}/>, rejuvenation: <DropletIcon size={10}/>})[cat]}</span>{catMeta?.label}</div>
+                                <div style={{ fontSize: 14, fontWeight: 400, color: 'rgba(0,0,0,0.78)', display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ opacity: 0.9, display: 'inline-flex' }}>{({lifting: <DiamondIcon size={10}/>, pigmentation: <PaletteIcon size={10}/>, texture: <SparkleIcon size={10}/>, wrinkle: <RulerIcon size={10}/>, acne: <RednessIcon size={10}/>, rejuvenation: <DropletIcon size={10}/>})[cat]}</span>{catMeta?.label}</div>
                               </div>
                               {items.map((t, ti) => (
                                 <div key={t.id} style={{
                                   padding: '12px 14px',
                                   borderTop: '1px solid rgba(0,0,0,0.04)',
                                 }}>
-                                  <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(0,0,0,0.55)' }}>
+                                  <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(0,0,0,0.55)' }}>
                                     {t.name}
                                   </div>
-                                  <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.4)', marginTop: 2, lineHeight: 1.3 }}>
+                                  <div style={{ fontSize: 10, fontWeight: 500, color: 'rgba(0,0,0,0.4)', marginTop: 2, lineHeight: 1.3 }}>
                                     {t.mechanism.length > 35 ? t.mechanism.slice(0, 35) + '...' : t.mechanism}
                                   </div>
-                                  <div style={{ display: 'flex', gap: 8, marginTop: 3, fontSize: 10, color: 'rgba(0,0,0,0.4)' }}>
+                                  <div style={{ display: 'flex', gap: 8, marginTop: 3, fontSize: 10, fontWeight: 500, color: 'rgba(0,0,0,0.4)' }}>
                                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
                                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8a3 3 0 013-3h12a3 3 0 013 3v8a3 3 0 01-3 3H6a3 3 0 01-3-3z"/><path d="M3 10h18"/></svg>
                                       {t.costRange}
@@ -2525,13 +2525,13 @@ export default function App() {
                       <button onClick={() => setFabChatOpen(true)} style={{
                         width: '100%', padding: '10px 0', borderRadius: 10, border: 'none',
                         background: 'rgba(0,0,0,0.03)', color: 'rgba(0,0,0,0.4)',
-                        fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+                        fontSize: 11, fontWeight: 400, cursor: 'pointer', fontFamily: 'inherit',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
                         marginTop: 8,
                       }}>
                         루아에게 문의
                       </button>
-                      <div style={{ fontSize: 10, color: 'rgba(0,0,0,0.4)', textAlign: 'center', marginTop: 6, lineHeight: 1.4 }}>
+                      <div style={{ fontSize: 10, fontWeight: 500, color: 'rgba(0,0,0,0.4)', textAlign: 'center', marginTop: 6, lineHeight: 1.4 }}>
                         <span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><ShieldIcon size={10} /></span> 의료 행위가 아닌 정보 제공 목적입니다. 시술은 전문 의료진과 상담 후 결정하세요.
                       </div>
                     </div>
@@ -2553,21 +2553,21 @@ export default function App() {
             {expandedSections.meta && (<>
               <div className="result-section-divider" />
               <div className="result-section-body">
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 13 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 13, fontWeight: 400 }}>
                   <span style={{ color: 'rgba(0,0,0,0.4)' }}>피부 타입</span>
                   <span style={{ color: 'rgba(0,0,0,0.78)', fontWeight: 500 }}>{result.skinType}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 13 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 13, fontWeight: 400 }}>
                   <span style={{ color: 'rgba(0,0,0,0.4)' }}>분석 모드</span>
                   <span style={{
-                    fontSize: 11, fontWeight: 500,
+                    fontSize: 11, fontWeight: 400,
                     color: result.analysisMode === 'hybrid' ? 'var(--accent-primary)' : 'rgba(0,0,0,0.4)',
                     background: result.analysisMode === 'hybrid' ? 'rgba(var(--accent-rgb),0.1)' : 'rgba(107,127,153,0.1)',
                     padding: '2px 8px', borderRadius: 8,
                   }}>{result.analysisMode === 'hybrid' ? 'AI + CV 하이브리드' : 'CV 비전 분석'}</span>
                 </div>
                 {result.confidence != null && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 13 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 13, fontWeight: 400 }}>
                     <span style={{ color: 'rgba(0,0,0,0.4)' }}>측정 신뢰도</span>
                     <span style={{
                       fontWeight: 500,
@@ -2576,12 +2576,12 @@ export default function App() {
                   </div>
                 )}
                 {result.concerns?.length > 0 && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', fontSize: 13 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', fontSize: 13, fontWeight: 400 }}>
                     <span style={{ color: 'rgba(0,0,0,0.4)' }}>관심 사항</span>
                     <div style={{ display: 'flex', gap: 4 }}>
                       {result.concerns.map((concern, i) => (
                         <span key={i} style={{
-                          fontSize: 11, fontWeight: 500,
+                          fontSize: 11, fontWeight: 400,
                           color: i === 0 ? 'var(--accent-primary)' : 'rgba(var(--accent-rgb),0.6)',
                           background: i === 0 ? 'rgba(var(--accent-rgb),0.1)' : 'rgba(var(--accent-rgb),0.12)',
                           padding: '2px 8px', borderRadius: 8,
@@ -2595,8 +2595,8 @@ export default function App() {
                     marginTop: 8, padding: '10px 12px', borderRadius: 'var(--card-sm-radius)',
                     background: 'var(--card-sm-bg)',
                   }}>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent-primary)', marginBottom: 2 }}>AI 정밀 분석이 일시 지연됐어요</div>
-                    <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.4)', lineHeight: 1.5 }}>네트워크 또는 분석 서버 일시 지연으로 기본 분석(CV)으로 처리됐어요. 잠시 후 다시 측정하면 보통 정상 복귀됩니다.</div>
+                    <div style={{ fontSize: 11, fontWeight: 400, color: 'var(--accent-primary)', marginBottom: 2 }}>AI 정밀 분석이 일시 지연됐어요</div>
+                    <div style={{ fontSize: 11, fontWeight: 400, color: 'rgba(0,0,0,0.4)', lineHeight: 1.5 }}>네트워크 또는 분석 서버 일시 지연으로 기본 분석(CV)으로 처리됐어요. 잠시 후 다시 측정하면 보통 정상 복귀됩니다.</div>
                   </div>
                 )}
                 {result?.measureDebug && (() => {
@@ -2610,7 +2610,7 @@ export default function App() {
                     <div style={{
                       marginTop: 8, padding: '8px 10px', borderRadius: 10,
                       background: 'rgba(var(--accent-rgb),0.06)', border: 'none',
-                      fontSize: 10, color: 'rgba(0,0,0,0.4)', lineHeight: 1.6,
+                      fontSize: 10, fontWeight: 500, color: 'rgba(0,0,0,0.4)', lineHeight: 1.6,
                     }}>
                       <div style={{ fontWeight: 600, marginBottom: 2 }}>측정 정확도 디버그 (베타 임시)</div>
                       <div>디바이스: {d.device} ({sameDevText})</div>
@@ -2631,11 +2631,11 @@ export default function App() {
                     marginTop: 8, padding: '8px 10px', borderRadius: 10,
                     background: 'rgba(183,218,251,0.15)', border: 'none',
                   }}>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(var(--accent-rgb),0.5)', marginBottom: 2 }}>오늘 결과가 평소와 크게 달라요</div>
-                    <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.4)', lineHeight: 1.5 }}>{result.outlierReason}. 조명/각도/메이크업 차이일 가능성이 있어요.</div>
+                    <div style={{ fontSize: 11, fontWeight: 400, color: 'rgba(var(--accent-rgb),0.5)', marginBottom: 2 }}>오늘 결과가 평소와 크게 달라요</div>
+                    <div style={{ fontSize: 11, fontWeight: 400, color: 'rgba(0,0,0,0.4)', lineHeight: 1.5 }}>{result.outlierReason}. 조명/각도/메이크업 차이일 가능성이 있어요.</div>
                   </div>
                 )}
-                <p style={{ fontSize: 11, color: 'rgba(0,0,0,0.4)', textAlign: 'center', marginTop: 10, marginBottom: 4, lineHeight: 1.4 }}>본 분석은 피부과 임상 기기를 참조한 AI 분석 결과이며, 의료 진단을 대체하지 않습니다. 정확한 진단은 피부과 전문의와 상담해주세요.</p>
+                <p style={{ fontSize: 11, fontWeight: 400, color: 'rgba(0,0,0,0.4)', textAlign: 'center', marginTop: 10, marginBottom: 4, lineHeight: 1.4 }}>본 분석은 피부과 임상 기기를 참조한 AI 분석 결과이며, 의료 진단을 대체하지 않습니다. 정확한 진단은 피부과 전문의와 상담해주세요.</p>
               </div>
             </>)}
           </div>
@@ -2647,7 +2647,7 @@ export default function App() {
               <button onClick={reset} style={{
                 width: '100%', padding: 12, borderRadius: 12, fontFamily: 'inherit',
                 background: '#FFFFFF', border: 'none',
-                color: '#1A1A1A', fontSize: 13, fontWeight: 500, cursor: 'pointer',
+                color: '#1A1A1A', fontSize: 13, fontWeight: 400, cursor: 'pointer',
                 boxShadow: '0 1px 4px rgba(0,0,0, 0.04)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
               }}>
@@ -2663,7 +2663,7 @@ export default function App() {
               <button onClick={() => setFabChatOpen(true)} style={{
                 flex: 1, height: 44, borderRadius: 12, border: 'none',
                 background: 'rgba(30, 144, 232, 0.1)', color: '#185FA5',
-                fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+                fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'inherit',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
               }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v12a1 1 0 01-1 1H6l-3 3z"/></svg>
@@ -2673,7 +2673,7 @@ export default function App() {
                 flex: 1, height: 44, borderRadius: 12, border: 'none',
                 background: saved ? 'rgba(144,196,248,0.15)' : '#1E90E8',
                 color: saved ? '#70B0F0' : '#FFFFFF',
-                fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+                fontSize: 12, fontWeight: 400, cursor: 'pointer', fontFamily: 'inherit',
                 boxShadow: saved ? 'none' : '0 2px 8px rgba(30, 144, 232, 0.25)',
             }}>
               {saved ? '기록 완료 ' : '이 결과 기록하기'}
@@ -2726,7 +2726,7 @@ export default function App() {
               border: 'none',
               boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
               animation: 'fabHintIn 0.5s ease-out 1.5s both, fabHintOut 0.4s ease-in 10s both',
-              fontSize: 11, color: 'rgba(0,0,0,0.4)', fontWeight: 600, letterSpacing: -0.2,
+              fontSize: 11, color: 'rgba(0,0,0,0.4)', fontWeight: 400, letterSpacing: -0.2,
             }}>
               피부 고민을 물어봐
             </div>
@@ -2803,10 +2803,10 @@ export default function App() {
               maxWidth: 340,
             }}
           >
-            <div style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>
+            <div style={{ fontSize: 24, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 8 }}>
               목표에 도달했어요
             </div>
-            <div style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 8 }}>
+            <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 8 }}>
               설정한 피부 목표를 모두 달성했어요.
               <br />꾸준히 관리한 결과가 기록에 남았어요.
             </div>
@@ -2822,7 +2822,7 @@ export default function App() {
                   {g.metrics.map((m) => (
                     <div key={m.key} style={{
                       display: 'flex', justifyContent: 'space-between',
-                      padding: '6px 0', fontSize: 13,
+                      padding: '6px 0', fontSize: 13, fontWeight: 400,
                     }}>
                       <span style={{ color: 'var(--text-secondary)' }}>{m.icon} {m.label}</span>
                       <span style={{ color: '#34d399', fontWeight: 600 }}>
@@ -2840,7 +2840,7 @@ export default function App() {
                   flex: 1, padding: 14, borderRadius: 16,
                   border: 'none',
                   background: 'transparent', color: 'var(--text-muted)',
-                  fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+                  fontSize: 14, fontWeight: 400, cursor: 'pointer', fontFamily: 'inherit',
                 }}
               >닫기</button>
               <button
@@ -2848,7 +2848,7 @@ export default function App() {
                 style={{
                   flex: 1, padding: 14, borderRadius: 16, border: 'none',
                   background: 'var(--btn-primary-bg)',
-                  color: '#fff', fontSize: 14, fontWeight: 600,
+                  color: '#fff', fontSize: 14, fontWeight: 400,
                   cursor: 'pointer', fontFamily: 'inherit',
                 }}
               >새 목표 설정</button>
@@ -2886,7 +2886,7 @@ export default function App() {
             </svg>
           </button>
           <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 480 }}>
-            <div style={{ color: '#fff', textAlign: 'center', marginBottom: 18, fontSize: 14, fontWeight: 600, letterSpacing: -0.2, opacity: 0.85 }}>
+            <div style={{ color: '#fff', textAlign: 'center', marginBottom: 18, fontSize: 14, fontWeight: 400, letterSpacing: -0.2, opacity: 0.85 }}>
               7일 전 vs 지금
             </div>
             <BeforeAfterSlider />
@@ -2944,7 +2944,7 @@ function WaterIntakeModal({ onClose, onUpdate }) {
       }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: '#ececec', margin: '0 auto 20px' }} />
 
-        <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 20 }}>수분</div>
+        <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 20 }}>수분</div>
 
         {/* 물병 */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 24 }}>
@@ -2962,10 +2962,10 @@ function WaterIntakeModal({ onClose, onUpdate }) {
             </svg>
           </div>
           <div style={{ marginTop: 12, textAlign: 'center' }}>
-            <span style={{ fontSize: 40, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{currentMl.toLocaleString()}</span>
-            <span style={{ fontSize: 14, color: 'var(--text-muted)', marginLeft: 4 }}>ml</span>
+            <span style={{ fontSize: 40, fontWeight: 300, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{currentMl.toLocaleString()}</span>
+            <span style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-muted)', marginLeft: 4 }}>ml</span>
           </div>
-          <div style={{ fontSize: 12, color: goalReached ? '#22C55E' : 'var(--text-muted)', marginTop: 4, fontWeight: goalReached ? 600 : 400 }}>
+          <div style={{ fontSize: 12, fontWeight: 400, color: goalReached ? '#22C55E' : 'var(--text-muted)', marginTop: 4, fontWeight: goalReached ? 600 : 400 }}>
             {goalReached ? '목표 달성!' : `목표 ${goalMl.toLocaleString()}ml · ${(goalMl - currentMl).toLocaleString()}ml 남음`}
           </div>
         </div>
@@ -2975,18 +2975,18 @@ function WaterIntakeModal({ onClose, onUpdate }) {
           <button onClick={removeCup} style={{
             width: 44, height: 44, borderRadius: '50%', border: 'none',
             background: cups > 0 ? 'var(--bg-input, #F2F3F5)' : 'transparent',
-            fontSize: 24, fontWeight: 600, color: cups > 0 ? 'var(--text-primary)' : 'transparent',
+            fontSize: 24, fontWeight: 500, color: cups > 0 ? 'var(--text-primary)' : 'transparent',
             cursor: cups > 0 ? 'pointer' : 'default', fontFamily: 'inherit',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>−</button>
           <div style={{ textAlign: 'center', minWidth: 60 }}>
-            <span style={{ fontSize: 40, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{cups}</span>
-            <span style={{ fontSize: 13, color: 'var(--text-muted)', marginLeft: 2 }}>잔</span>
+            <span style={{ fontSize: 40, fontWeight: 300, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{cups}</span>
+            <span style={{ fontSize: 13, fontWeight: 400, color: 'var(--text-muted)', marginLeft: 2 }}>잔</span>
           </div>
           <button onClick={addCup} style={{
             width: 44, height: 44, borderRadius: '50%', border: 'none',
             background: 'rgba(91,163,212,0.15)',
-            fontSize: 24, fontWeight: 600, color: '#5BA3D4',
+            fontSize: 24, fontWeight: 500, color: '#5BA3D4',
             cursor: 'pointer', fontFamily: 'inherit',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>+</button>
@@ -2995,7 +2995,7 @@ function WaterIntakeModal({ onClose, onUpdate }) {
         <button onClick={onUpdate} style={{
           width: '100%', padding: '14px 0', borderRadius: 'var(--btn-radius)',
           border: 'none', background: goalReached ? '#22C55E' : 'var(--accent-primary, var(--accent-primary))',
-          color: '#fff', fontSize: 14, fontWeight: 600,
+          color: '#fff', fontSize: 14, fontWeight: 400,
           cursor: 'pointer', fontFamily: 'inherit',
         }}>완료</button>
       </div>
@@ -3044,8 +3044,8 @@ function SleepInputModal({ onClose, onUpdate }) {
       }}>
         <div style={{ width: 40, height: 4, borderRadius: 2, background: '#ececec', margin: '0 auto 20px' }} />
 
-        <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 6 }}>수면</div>
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 24 }}>
+        <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 6 }}>수면</div>
+        <div style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 24 }}>
           {quality ? `${hours}시간 · ${quality}` : `${hours}시간`}
         </div>
 
@@ -3053,7 +3053,7 @@ function SleepInputModal({ onClose, onUpdate }) {
         <div style={{ display: 'flex', background: 'rgba(91,106,175,.08)', borderRadius: 10, padding: 3, marginBottom: 20 }}>
           {[{ key: 'simple', label: '간단 입력' }, { key: 'time', label: '시간 입력' }].map(m => (
             <button key={m.key} onClick={() => setMode(m.key)} style={{
-              flex: 1, padding: '8px 0', borderRadius: 8, fontSize: 12, fontWeight: mode === m.key ? 600 : 400,
+              flex: 1, padding: '8px 0', borderRadius: 8, fontSize: 12, fontWeight: 400, fontWeight: mode === m.key ? 600 : 400,
               border: 'none', cursor: 'pointer', fontFamily: 'inherit',
               background: mode === m.key ? 'rgba(255,255,255,0.92)' : 'transparent',
               color: mode === m.key ? '#5B6AAF' : 'var(--text-muted)',
@@ -3067,8 +3067,8 @@ function SleepInputModal({ onClose, onUpdate }) {
         {mode === 'simple' && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
             <div style={{ textAlign: 'center', minWidth: 56 }}>
-              <span style={{ fontSize: 40, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{hours}</span>
-              <span style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 2 }}>시간</span>
+              <span style={{ fontSize: 40, fontWeight: 300, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{hours}</span>
+              <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-muted)', marginLeft: 2 }}>시간</span>
             </div>
             <div style={{ flex: 1 }}>
               <input type="range" min="2" max="12" step="0.5" value={hours}
@@ -3087,35 +3087,35 @@ function SleepInputModal({ onClose, onUpdate }) {
           <div style={{ marginBottom: 24 }}>
             <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end', marginBottom: 12 }}>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>잠든 시간</div>
+                <div style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-muted)', marginBottom: 6 }}>잠든 시간</div>
                 <input type="time" value={bedtime || ''} onChange={e => { setBedtime(e.target.value); if (e.target.value && wakeTime) calcFromTime(e.target.value, wakeTime); }}
-                  style={{ width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 14, fontWeight: 500, border: 'none', background: 'rgba(91,106,175,.04)', color: 'var(--text-primary)', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', height: 42 }} />
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 14, fontWeight: 400, border: 'none', background: 'rgba(91,106,175,.04)', color: 'var(--text-primary)', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', height: 42 }} />
               </div>
               <div style={{ fontSize: 16, color: '#5B6AAF', paddingBottom: 12, fontWeight: 500 }}>→</div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>일어난 시간</div>
+                <div style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-muted)', marginBottom: 6 }}>일어난 시간</div>
                 <input type="time" value={wakeTime || ''} onChange={e => { setWakeTime(e.target.value); if (bedtime && e.target.value) calcFromTime(bedtime, e.target.value); }}
-                  style={{ width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 14, fontWeight: 500, border: 'none', background: 'rgba(91,106,175,.04)', color: 'var(--text-primary)', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', height: 42 }} />
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 14, fontWeight: 400, border: 'none', background: 'rgba(91,106,175,.04)', color: 'var(--text-primary)', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box', height: 42 }} />
               </div>
             </div>
             {bedtime && wakeTime && (
               <div style={{ textAlign: 'center', padding: '10px 0', borderRadius: 10, background: 'rgba(91,106,175,.05)' }}>
-                <span style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{hours}</span>
-                <span style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 4 }}>시간 수면</span>
+                <span style={{ fontSize: 24, fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>{hours}</span>
+                <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-muted)', marginLeft: 4 }}>시간 수면</span>
               </div>
             )}
           </div>
         )}
 
         {/* 수면의 질 */}
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10, fontWeight: 500 }}>수면의 질</div>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10, fontWeight: 400 }}>수면의 질</div>
         <div style={{ display: 'flex', gap: 8, marginBottom: 28 }}>
           {SLEEP_QUALITIES.map(q => {
             const active = quality === q;
             return (
               <button key={q} onClick={() => setQuality(active ? null : q)}
                 style={{
-                  flex: 1, padding: '10px 0', borderRadius: 10, fontSize: 12, fontWeight: active ? 600 : 400,
+                  flex: 1, padding: '10px 0', borderRadius: 10, fontSize: 12, fontWeight: 400, fontWeight: active ? 600 : 400,
                   border: `1.5px solid ${active ? 'rgba(91,106,175,.4)' : 'rgba(91,106,175,.12)'}`,
                   background: active ? 'rgba(91,106,175,.1)' : 'var(--bg-input, #F2F3F5)',
                   color: active ? '#5B6AAF' : 'var(--text-muted)',
@@ -3129,13 +3129,13 @@ function SleepInputModal({ onClose, onUpdate }) {
           <button onClick={onClose} style={{
             flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
             border: 'none', background: 'var(--bg-input, #F2F3F5)',
-            color: 'var(--text-muted)', fontSize: 14, fontWeight: 600,
+            color: 'var(--text-muted)', fontSize: 14, fontWeight: 400,
             cursor: 'pointer', fontFamily: 'inherit',
           }}>취소</button>
           <button onClick={handleSave} style={{
             flex: 1, padding: '14px 0', borderRadius: 'var(--btn-radius)',
             border: 'none', background: '#5B6AAF',
-            color: '#fff', fontSize: 14, fontWeight: 600,
+            color: '#fff', fontSize: 14, fontWeight: 400,
             cursor: 'pointer', fontFamily: 'inherit',
           }}>저장</button>
         </div>
@@ -3208,11 +3208,11 @@ function HomeEditPage({ cards, order, onToggle, onReorder, onClose }) {
         <div onClick={onClose} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 1 }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
         </div>
-        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>홈 화면 편집</span>
+        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 14, fontWeight: 400, color: 'var(--text-primary)' }}>홈 화면 편집</span>
       </div>
 
       <div style={{ padding: '20px 20px 8px' }}>
-        <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+        <div style={{ fontSize: 13, fontWeight: 400, color: 'var(--text-muted)', lineHeight: 1.5 }}>
           카드를 길게 눌러 순서를 변경하세요
         </div>
       </div>
@@ -3248,10 +3248,10 @@ function HomeEditPage({ cards, order, onToggle, onReorder, onClose }) {
                 <div style={{ width: 16, height: 2, borderRadius: 1, background: 'rgba(0,0,0,0.15)' }} />
                 <div style={{ width: 16, height: 2, borderRadius: 1, background: 'rgba(0,0,0,0.15)' }} />
               </div>
-              <span style={{ fontSize: 18, width: 28, textAlign: 'center', flexShrink: 0 }}>{item.icon}</span>
+              <span style={{ fontSize: 18, fontWeight: 500, width: 28, textAlign: 'center', flexShrink: 0 }}>{item.icon}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)' }}>{item.label}</div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{item.desc}</div>
+                <div style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-muted)', marginTop: 2 }}>{item.desc}</div>
               </div>
               <div onClick={(e) => { e.stopPropagation(); onToggle(key); }} style={{
                 width: 48, height: 28, borderRadius: 14,
