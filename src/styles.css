@@ -46,6 +46,58 @@
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-pop: cubic-bezier(0.34, 1.7, 0.5, 1);
 }
+
+/* ===== 디자인 스케일 토큰 (테마 무관 원시값 · 단일 출처) =====
+   새 UI는 raw px 대신 아래 토큰을 사용. 값은 기존 앱에서 가장 많이 쓰던 수치 기준. */
+:root {
+  /* Spacing — 4px 베이스 */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+
+  /* Radius */
+  --radius-xs: 8px;
+  --radius-sm: 10px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-3xl: 30px;
+  --radius-pill: 50px;
+  --radius-full: 9999px;
+
+  /* Type scale (font-size) */
+  --text-2xs: 10px;
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 13px;
+  --text-md: 14px;
+  --text-lg: 15px;
+  --text-xl: 16px;
+  --text-2xl: 18px;
+  --text-3xl: 20px;
+  --text-4xl: 22px;
+  --display-sm: 24px;
+  --display-md: 28px;
+  --display-lg: 32px;
+  --display-xl: 40px;
+
+  /* Font weight */
+  --fw-light: 300;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-extrabold: 800;
+
+  /* Font family (display는 테마별로 --font-display가 재정의됨) */
+  --font-body: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif;
+}
 /* 페이지·모달·sheet 공통 페이드인 */
 @keyframes uxFadeIn {
   from { opacity: 0; transform: translateY(8px); }
@@ -168,7 +220,7 @@ select:focus-visible {
   --chip-border: none;
   --chip-text: var(--accent-primary);
   --card-backdrop: blur(16px);
-  --card-border-radius: 30px;
+  --card-border-radius: var(--radius-3xl);
   --segment-radius: 50px;
   --segment-item-radius: 50px;
   --float-pill-bg: rgba(30,30,40,0.9);
@@ -254,7 +306,7 @@ select:focus-visible {
   --chip-border: none;
   --chip-text: var(--text-secondary);
   --card-backdrop: blur(16px);
-  --card-border-radius: 20px;
+  --card-border-radius: var(--radius-xl);
   --segment-radius: 14px;
   --segment-item-radius: 10px;
   --float-pill-bg: #FFFFFF;
@@ -343,7 +395,7 @@ select:focus-visible {
   height: 30px;
   line-height: 30px;
   font-size: 20px;
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   color: var(--accent-primary);
   text-align: center;
   letter-spacing: -0.2px;
@@ -481,9 +533,9 @@ select:focus-visible {
   color: #fff;
   border: none;
   padding: 16px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   font-size: 16px;
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   cursor: pointer;
   width: 100%;
   box-shadow: 0 4px 20px rgba(167, 139, 250, 0.35);
@@ -509,9 +561,9 @@ select:focus-visible {
   color: var(--accent-primary);
   border: none;
   padding: 14px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   font-size: 15px;
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   cursor: pointer;
   width: 100%;
   font-family: inherit;
@@ -526,9 +578,9 @@ select:focus-visible {
   color: var(--text-muted);
   border: none;
   padding: 12px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   cursor: pointer;
   width: 100%;
   font-family: inherit;
@@ -560,7 +612,7 @@ select:focus-visible {
 .card {
   background: var(--bg-card);
   border: none;
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   padding: 22px;
   box-shadow: var(--shadow-card);
   margin-bottom: 15px;
@@ -572,9 +624,9 @@ select:focus-visible {
 .tag {
   display: inline-block;
   padding: 5px 12px;
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   margin: 2px 3px;
 }
 .tag-primary {
@@ -639,7 +691,7 @@ select:focus-visible {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   border: none;
-  border-radius: 30px;
+  border-radius: var(--radius-3xl);
   padding: 18px;
   margin-bottom: 14px;
   box-shadow: var(--shadow-elevated);
@@ -649,7 +701,7 @@ select:focus-visible {
 .gbs-box {
   background: linear-gradient(135deg, rgba(var(--accent-rgb),0.08), rgba(var(--accent-rgb),0.08));
   border: none;
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   padding: 18px;
   margin-bottom: 14px;
 }
@@ -814,11 +866,11 @@ select:focus-visible {
 .journey-day {
   font-size: 10px;
   color: var(--text-muted);
-  font-weight: 400;
+  font-weight: var(--fw-regular);
 }
 .journey-day.today {
   color: var(--accent-primary);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
 }
 
 /* ===== Calendar ===== */
@@ -830,7 +882,7 @@ select:focus-visible {
 }
 .calendar-header {
   font-size: 11px;
-  font-weight: 400;
+  font-weight: var(--fw-regular);
   color: var(--text-muted);
   padding: 8px 0;
   letter-spacing: 2px;
@@ -845,10 +897,10 @@ select:focus-visible {
   font-size: 13px;
   color: var(--text-secondary);
   cursor: pointer;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   transition: background 0.15s;
   -webkit-tap-highlight-color: transparent;
-  font-weight: 400;
+  font-weight: var(--fw-regular);
 }
 .calendar-day:active {
   background: rgba(var(--accent-rgb),0.08);
@@ -856,7 +908,7 @@ select:focus-visible {
 .calendar-day.today {
   background: var(--accent-gradient);
   color: #fff;
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   border-radius: 50%;
   width: 36px;
   height: 36px;
@@ -871,7 +923,7 @@ select:focus-visible {
 }
 .calendar-day.selected {
   background: rgba(var(--accent-rgb),0.12);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
 }
 .calendar-dot {
   width: 5px;
@@ -893,7 +945,7 @@ select:focus-visible {
   overflow: hidden;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   aspect-ratio: 5 / 6;
 }
 .photo-cell img {
@@ -918,7 +970,7 @@ select:focus-visible {
   bottom: 8px;
   left: 8px;
   font-size: 10px;
-  font-weight: 400;
+  font-weight: var(--fw-regular);
   color: #fff;
   z-index: 2;
   pointer-events: none;
@@ -929,7 +981,7 @@ select:focus-visible {
   right: 7px;
   font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 22px;
-  font-weight: 500;
+  font-weight: var(--fw-medium);
   color: #fff;
   line-height: 1;
   z-index: 2;
@@ -951,7 +1003,7 @@ select:focus-visible {
 .empty-label {
   font-size: 10px;
   color: var(--accent-primary);
-  font-weight: 400;
+  font-weight: var(--fw-regular);
   letter-spacing: 0.3px;
 }
 
@@ -994,13 +1046,13 @@ select:focus-visible {
 }
 .routine-step-num {
   font-size: 10px;
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   color: var(--text-muted);
   letter-spacing: 1px;
 }
 .routine-step-name {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   color: var(--text-primary);
   transition: color 0.3s;
 }
@@ -1021,17 +1073,17 @@ select:focus-visible {
   display: flex;
   background: var(--bg-card);
   border: none;
-  border-radius: 50px;
+  border-radius: var(--radius-pill);
   padding: 3px;
 }
 .segment-btn {
   flex: 1;
   padding: 10px 0;
   border: none;
-  border-radius: 50px;
+  border-radius: var(--radius-pill);
   background: none;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: var(--fw-medium);
   color: var(--text-muted);
   cursor: pointer;
   font-family: inherit;
@@ -1041,7 +1093,7 @@ select:focus-visible {
 .segment-btn.active {
   background: rgba(var(--accent-rgb),0.15);
   color: var(--accent-primary);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   box-shadow: 0 2px 8px rgba(var(--accent-rgb),0.15);
 }
 
@@ -1054,7 +1106,7 @@ select:focus-visible {
 /* ===== Section Label ===== */
 .section-label {
   font-size: 11px;
-  font-weight: 400;
+  font-weight: var(--fw-regular);
   color: var(--text-muted);
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -1172,7 +1224,7 @@ select:focus-visible {
 .month-label {
   font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 22px;
-  font-weight: 400;
+  font-weight: var(--fw-regular);
   color: var(--text-primary);
   letter-spacing: 1px;
 }
@@ -1207,7 +1259,7 @@ select:focus-visible {
 .cal-weekday {
   font-size: 10px;
   color: var(--text-muted);
-  font-weight: 400;
+  font-weight: var(--fw-regular);
   letter-spacing: 1px;
 }
 .cal-days {
@@ -1222,7 +1274,7 @@ select:focus-visible {
   align-items: center;
   justify-content: center;
   font-size: 11px;
-  font-weight: 300;
+  font-weight: var(--fw-light);
   color: var(--text-muted);
   position: relative;
   cursor: pointer;
@@ -1233,7 +1285,7 @@ select:focus-visible {
 }
 .cal-day.recorded {
   color: var(--text-primary);
-  font-weight: 400;
+  font-weight: var(--fw-regular);
 }
 .cal-day.recorded::after {
   content: '';
@@ -1248,7 +1300,7 @@ select:focus-visible {
 .cal-day.cal-today {
   background: var(--accent-gradient);
   color: white;
-  font-weight: 500;
+  font-weight: var(--fw-medium);
   box-shadow: 0 3px 10px rgba(var(--accent-rgb),0.3);
 }
 .cal-day.cal-today::after {
@@ -1263,7 +1315,7 @@ select:focus-visible {
 }
 .cal-day.cal-selected {
   background: rgba(var(--accent-rgb),0.15);
-  font-weight: 500;
+  font-weight: var(--fw-medium);
   color: var(--accent-primary);
 }
 
@@ -1271,7 +1323,7 @@ select:focus-visible {
 .trend-bar {
   display: flex;
   background: rgba(var(--accent-rgb),0.06);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   padding: 14px 0;
   margin-bottom: 28px;
 }
@@ -1292,7 +1344,7 @@ select:focus-visible {
 .trend-val {
   font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 22px;
-  font-weight: 400;
+  font-weight: var(--fw-regular);
   color: var(--accent-primary);
   line-height: 1;
 }
@@ -1303,7 +1355,7 @@ select:focus-visible {
 .trend-lbl {
   font-size: 10px;
   color: var(--text-muted);
-  font-weight: 300;
+  font-weight: var(--fw-light);
   margin-top: 4px;
   letter-spacing: 0.5px;
 }
@@ -1327,7 +1379,7 @@ select:focus-visible {
   color: var(--text-muted);
   background: none;
   border: none;
-  font-weight: 300;
+  font-weight: var(--fw-light);
   cursor: pointer;
   font-family: inherit;
   padding: 0;
@@ -1341,7 +1393,7 @@ select:focus-visible {
   text-align: center;
   font-size: 11px;
   color: var(--text-muted);
-  font-weight: 300;
+  font-weight: var(--fw-light);
   margin-top: 12px;
   letter-spacing: 0.3px;
 }
@@ -1429,14 +1481,14 @@ select:focus-visible {
 .consult-chip {
   flex-shrink: 0;
   padding: 8px 16px;
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   border: none;
   background: var(--bg-card);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   color: var(--accent-primary);
   font-size: 13px;
-  font-weight: 500;
+  font-weight: var(--fw-medium);
   cursor: pointer;
   white-space: nowrap;
   font-family: inherit;
@@ -1458,7 +1510,7 @@ select:focus-visible {
   letter-spacing: -0.1px;
 }
 .consult-bubble strong {
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   color: inherit;
 }
 .consult-bubble.user {
@@ -1535,7 +1587,7 @@ select:focus-visible {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   border: none;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   box-shadow: 0 4px 24px rgba(0,0,0,0.4);
   overflow: hidden;
   animation: fadeUp 0.2s ease-out;
@@ -1550,7 +1602,7 @@ select:focus-visible {
   background: none;
   width: 100%;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: var(--fw-medium);
   color: var(--text-secondary);
   cursor: pointer;
   font-family: inherit;
@@ -1588,7 +1640,7 @@ select:focus-visible {
 }
 .consult-bubble-image {
   max-width: 200px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   margin-bottom: 6px;
   display: block;
 }
@@ -1610,7 +1662,7 @@ select:focus-visible {
 .consult-image-preview img {
   width: 72px;
   height: 72px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   object-fit: cover;
   border: none;
 }
@@ -1688,7 +1740,7 @@ select:focus-visible {
 /* Card-flat: nested glass card */
 [data-theme="light"] .card-flat {
   background: #F5F5F5;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   padding: 16px 18px;
 }
 
@@ -1704,7 +1756,7 @@ select:focus-visible {
 [data-theme="light"] .sec-icon {
   width: 40px;
   height: 40px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1716,7 +1768,7 @@ select:focus-visible {
 /* Journey thumbnails in light mode */
 [data-theme="light"] .journey-thumb {
   border: none;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
 }
 
 /* Tab bar: same floating style as dark, no light overrides */
@@ -1729,9 +1781,9 @@ select:focus-visible {
   padding: 4px;
 }
 [data-theme="light"] .segment-btn {
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   color: #8B95A1;
-  font-weight: 500;
+  font-weight: var(--fw-medium);
   background: transparent;
   border: none;
   backdrop-filter: none;
@@ -1741,7 +1793,7 @@ select:focus-visible {
 [data-theme="light"] .segment-btn.active {
   background: rgba(255,255,255,0.5);
   color: #191F28;
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   border: none;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
@@ -1752,7 +1804,7 @@ select:focus-visible {
 [data-theme="light"] .btn-primary {
   background: var(--accent-primary);
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
 }
 [data-theme="light"] .btn-primary::after { display: none; }
 [data-theme="light"] .btn-primary:active {
@@ -1783,7 +1835,7 @@ select:focus-visible {
 
 /* Tags: glass fill */
 [data-theme="light"] .tag {
-  border-radius: 8px;
+  border-radius: var(--radius-xs);
 }
 [data-theme="light"] .tag-secondary {
   background: rgba(255,255,255,0.3);
@@ -1800,7 +1852,7 @@ select:focus-visible {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   color: #4E5968;
 }
 [data-theme="light"] .consult-chip:active {
@@ -1988,7 +2040,7 @@ select:focus-visible {
 .result-section-toggle[aria-expanded="false"] { padding: 14px 16px 18px; }
 .result-section-title {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   color: rgba(0,0,0,0.8);
 }
 .result-section-divider {
