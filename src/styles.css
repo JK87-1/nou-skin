@@ -226,6 +226,16 @@ select:focus-visible {
   --chip-text: var(--accent-primary);
   --card-backdrop: blur(16px);
   --card-border-radius: var(--card-radius);
+  /* Card system (배경·그림자·패딩 — 곡률은 --card-*-radius / 다크 기본) */
+  --card-bg: rgba(255,255,255,0.05);
+  --card-shadow: none;
+  --card-pad: 20px;
+  --card-nested-bg: rgba(255,255,255,0.03);
+  --card-nested-pad: 16px;
+  --card-sm-bg: rgba(255,255,255,0.06);
+  --card-sm-pad: 10px 12px;
+  --card-alert-bg: var(--context-bg);
+  --card-alert-pad: 16px;
   --segment-radius: var(--radius-pill);
   --segment-item-radius: var(--radius-pill);
   --float-pill-bg: rgba(30,30,40,0.9);
@@ -312,6 +322,12 @@ select:focus-visible {
   --chip-text: var(--text-secondary);
   --card-backdrop: blur(16px);
   --card-border-radius: var(--card-radius);
+  /* Card system — Sky Glass 라이트 (흰 80%, 블러X, soft shadow) */
+  --card-bg: rgba(255,255,255,0.8);
+  --card-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  --card-nested-bg: #F1F3F5;
+  --card-sm-bg: rgba(255,255,255,0.8);
+  --card-alert-bg: var(--context-bg);
   --segment-radius: 14px;
   --segment-item-radius: var(--radius-sm);
   --float-pill-bg: #FFFFFF;
@@ -614,15 +630,40 @@ select:focus-visible {
 }
 
 /* Cards */
-.card {
-  background: var(--bg-card);
+/* ===== Card System (배경+곡률+패딩 한 세트) ===== */
+/* 큰 카드 — 페이지에 바로 놓이는 최상위 콘텐츠 카드 */
+.card,
+.glass-card {
+  background: var(--card-bg);
   border: none;
   border-radius: var(--card-radius);
-  padding: 22px;
-  box-shadow: var(--shadow-card);
-  margin-bottom: 15px;
+  padding: var(--card-pad);
+  box-shadow: var(--card-shadow);
+  margin-bottom: 14px;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
+}
+/* 중첩 카드 — 카드 안에 든 박스 (그림자 없음) */
+.card-nested,
+.card-flat {
+  background: var(--card-nested-bg);
+  border: none;
+  border-radius: var(--card-nested-radius);
+  padding: var(--card-nested-pad);
+}
+/* 소형 카드 — 앨범 썸네일·리스트 작은 칸 (그림자 없음) */
+.card-sm {
+  background: var(--card-sm-bg);
+  border: none;
+  border-radius: var(--card-sm-radius);
+  padding: var(--card-sm-pad);
+}
+/* 알림 카드 — 시맨틱 틴트 */
+.card-alert {
+  background: var(--card-alert-bg);
+  border: none;
+  border-radius: var(--card-nested-radius);
+  padding: var(--card-alert-pad);
 }
 
 /* Tags */
@@ -691,25 +732,8 @@ select:focus-visible {
 }
 
 /* Glass Card (Glassmorphism - Dark) */
-.glass-card {
-  background: var(--bg-card);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border: none;
-  border-radius: var(--card-radius);
-  padding: 18px;
-  margin-bottom: 14px;
-  box-shadow: var(--shadow-elevated);
-}
+/* .glass-card는 .card와 동일 recipe로 통합 (위 Card System 참조) */
 
-/* Gut-Brain-Skin Box */
-.gbs-box {
-  background: linear-gradient(135deg, rgba(var(--accent-rgb),0.08), rgba(var(--accent-rgb),0.08));
-  border: none;
-  border-radius: var(--radius-xl);
-  padding: 18px;
-  margin-bottom: 14px;
-}
 
 /* Voice Orb — blur kept, mix-blend-mode removed for mobile compat */
 .voice-orb {
@@ -1723,38 +1747,15 @@ select:focus-visible {
 /* ===== Light Mode (Toss-Inspired) Class Overrides ===== */
 
 /* Cards: glassmorphism */
-[data-theme="light"] .card {
-  background: rgba(255,255,255,0.3);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: none;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-  border-radius: var(--card-radius);
-}
-[data-theme="light"] .glass-card {
-  background: rgba(255,255,255,0.42);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: none;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
-  border-radius: var(--card-radius);
-  padding: 24px;
-  margin: 0 0 12px;
-}
 
 /* Card-flat: nested glass card */
-[data-theme="light"] .card-flat {
-  background: #F5F5F5;
-  border-radius: var(--card-nested-radius);
-  padding: 16px 18px;
-}
 
 /* Global glass effect for light mode */
 [data-theme="light"] [style*="--bg-card"] {
-  backdrop-filter: blur(14px) !important;
-  -webkit-backdrop-filter: blur(14px) !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border: none;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.05) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
 /* Section icon: 40x40 rounded square with tinted bg */
@@ -1906,13 +1907,6 @@ select:focus-visible {
 /* Background aura: remove in light mode */
 [data-theme="light"] .app-container::before { display: none; }
 
-/* GBS box */
-[data-theme="light"] .gbs-box {
-  background: rgba(255,255,255,0.25);
-  border: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-}
 
 /* Trend bar */
 [data-theme="light"] .trend-bar {
