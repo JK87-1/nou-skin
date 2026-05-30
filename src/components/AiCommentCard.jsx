@@ -142,7 +142,7 @@ export default function AiCommentCard({
 function Badge({ label, color, bg }) {
   return (
     <span style={{
-      fontSize: 10, lineHeight: 1.3, padding: '3px 8px', borderRadius: 999,
+      fontSize: 10, lineHeight: 1.3, padding: '3px 8px', borderRadius: 8,
       background: bg, color,
       fontWeight: 500,
     }}>{label}</span>

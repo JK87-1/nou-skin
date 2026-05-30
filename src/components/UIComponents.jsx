@@ -212,7 +212,7 @@ export function DetailPage({ metricKey, value, onBack }) {
                 background: `${r.color}10`,
                 display: 'flex', flexDirection: 'column', gap: 8,
               }}>
-                <span style={{ fontSize: 10, lineHeight: 1.3, color: '#fff', background: r.color, padding: '3px 8px', borderRadius: 6, fontWeight: 500, alignSelf: 'flex-start', whiteSpace: 'nowrap' }}>{r.label}</span>
+                <span style={{ fontSize: 10, lineHeight: 1.3, color: '#fff', background: r.color, padding: '3px 8px', borderRadius: 8, fontWeight: 500, alignSelf: 'flex-start', whiteSpace: 'nowrap' }}>{r.label}</span>
                 <span style={{ fontSize: 13, fontWeight: 500, color: r.color, lineHeight: 1.5 }}>{r.range}</span>
                 <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', lineHeight: 1.5 }}>{r.description}</span>
               </div>

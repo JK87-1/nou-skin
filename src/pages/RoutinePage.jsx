@@ -162,7 +162,7 @@ export default function RoutinePage() {
                       <span style={{
                         flexShrink: 0, marginLeft: 'auto', marginRight: 8,
                         fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: 'var(--ingredient-accent)',
-                        background: 'var(--context-bg)', borderRadius: 20,
+                        background: 'var(--context-bg)', borderRadius: 8,
                         padding: '3px 8px',
                       }}>{ing.reason}</span>
                     )}

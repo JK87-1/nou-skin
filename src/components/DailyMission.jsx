@@ -429,7 +429,7 @@ export default function DailyMission() {
                 {/* Track button */}
                 <button onClick={handleTrackIncrement} style={{
                   padding: '6px 12px', border: 'var(--item-border)',
-                  borderRadius: 8,
+                  borderRadius: 12,
                   background: 'var(--bg-elevated)',
                   color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.5, fontWeight: 500, cursor: 'pointer',
                   boxShadow: 'none',
@@ -442,7 +442,7 @@ export default function DailyMission() {
           {/* Non-trackable complete button */}
           {!missions.main.trackable && !progress.mainCompleted && (
             <button onClick={handleMainComplete} style={{
-              width: '100%', padding: 12, border: 'none', borderRadius: 14, marginTop: 16,
+              width: '100%', padding: 12, border: 'none', borderRadius: 12, marginTop: 16,
               background: 'var(--btn-primary-bg)',
               color: '#fff', fontSize: 14, lineHeight: 1.5, fontWeight: 500, cursor: 'pointer',
               boxShadow: 'none',

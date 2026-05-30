@@ -797,7 +797,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
       }}>
         {!isTab ? (
           <button onClick={handleClose} aria-label="채팅 닫기" className="gem-btn" style={{
-            width: 44, height: 44, borderRadius: 22,
+            width: 44, height: 44, borderRadius: 12,
             background: '#ffffff', border: 'none',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer', flexShrink: 0,

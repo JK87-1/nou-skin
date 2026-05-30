@@ -501,13 +501,13 @@ function PhotoRegistrationFlow({ onClose, onSave, saving, accent }) {
 
             <div style={{ display: 'flex', gap: 10 }}>
               <button type="button" onClick={handleRetake} disabled={saving} style={{
-                flex: '0 0 38%', padding: '14px 0', borderRadius: 14,
+                flex: '0 0 38%', padding: '14px 0', borderRadius: 12,
                 border: 'var(--item-border)', background: 'transparent',
                 color: 'var(--tag-color)', fontSize: 14, lineHeight: 1.5, fontWeight: 500,
                 cursor: saving ? 'default' : 'pointer',
               }}>다시 촬영</button>
               <button type="button" onClick={handleSave} disabled={!form.brand.trim() || !form.name.trim() || saving} style={{
-                flex: 1, padding: '14px 0', borderRadius: 14, border: 'none',
+                flex: 1, padding: '14px 0', borderRadius: 12, border: 'none',
                 cursor: (form.brand.trim() && form.name.trim() && !saving) ? 'pointer' : 'default',
                 background: (!form.brand.trim() || !form.name.trim() || saving) ? ('var(--text-disabled)') : accent,
                 color: (!form.brand.trim() || !form.name.trim() || saving) ? ('var(--text-dim)') : '#fff',
@@ -1003,7 +1003,7 @@ function ProductBrandNameInputs({
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
                     <span style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: accent }}>{s.brand}</span>
                     <span style={{
-                      fontSize: 11, lineHeight: 1.3, padding: '1px 5px', borderRadius: 4,
+                      fontSize: 11, lineHeight: 1.3, padding: '1px 5px', borderRadius: 8,
                       background: 'rgba(var(--accent-rgb),0.14)', color: 'var(--accent-primary)', fontWeight: 500,
                     }}>{s.category}</span>
                     {s.source === 'gpt' && (
@@ -1100,7 +1100,7 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
         </div>
 
         <button type="button" onClick={handleSave} disabled={!canSave} style={{
-          width: '100%', padding: '14px 0', borderRadius: 14, border: 'none',
+          width: '100%', padding: '14px 0', borderRadius: 12, border: 'none',
           cursor: canSave ? 'pointer' : 'default',
           background: canSave ? accent : ('var(--text-disabled)'),
           color: canSave ? '#fff' : ('var(--text-dim)'),
@@ -1519,7 +1519,7 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
                 fontSize: 16, lineHeight: 1.3, fontWeight: 500, cursor: 'pointer',
               }}>취소</button>
               <button onClick={handleSaveEdit} disabled={!form.brand.trim() || !form.name.trim()} style={{
-                flex: 1, padding: '14px 0', borderRadius: 14, border: 'none',
+                flex: 1, padding: '14px 0', borderRadius: 12, border: 'none',
                 background: (form.brand.trim() && form.name.trim()) ? accent : ('var(--text-disabled)'),
                 color: (form.brand.trim() && form.name.trim()) ? '#fff' : ('var(--text-dim)'),
                 fontSize: 16, lineHeight: 1.3, fontWeight: 500, cursor: 'pointer',

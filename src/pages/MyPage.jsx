@@ -1394,7 +1394,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <div style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)' }}>민감성</div>
-                  <span style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', background: 'rgba(0,0,0,0.04)', padding: '1px 6px', borderRadius: 4 }}>중복 선택 가능</span>
+                  <span style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', background: 'rgba(0,0,0,0.04)', padding: '1px 6px', borderRadius: 8 }}>중복 선택 가능</span>
                 </div>
                 <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginTop: 4, lineHeight: 1.5 }}>쉽게 자극받고 환절기에 트러블이 잘 나요</div>
               </div>
@@ -1918,7 +1918,7 @@ function GoalSettingModal({ onClose, showToast }) {
                     <span style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)' }}>{m.label}</span>
                     {idx < 3 && latestRecord && (
                       <span style={{
-                        fontSize: 10, lineHeight: 1.3, fontWeight: 500, padding: '1px 6px', borderRadius: 6,
+                        fontSize: 10, lineHeight: 1.3, fontWeight: 500, padding: '1px 6px', borderRadius: 8,
                         background: 'var(--accent-bg, rgba(var(--accent-rgb),0.1))', color: 'var(--accent-primary, var(--accent-primary))',
                       }}>추천</span>
                     )}
@@ -2132,7 +2132,7 @@ function GoalSettingModal({ onClose, showToast }) {
             <button
               onClick={handleSave}
               style={{
-                flex: 1, padding: 12, borderRadius: 10, border: 'none',
+                flex: 1, padding: 12, borderRadius: 12, border: 'none',
                 background: 'var(--accent-bg, rgba(var(--accent-rgb),0.1))',
                 color: 'var(--accent-primary, var(--accent-primary))', fontSize: 14, lineHeight: 1.5, fontWeight: 500,
                 cursor: 'pointer', fontFamily: 'inherit',
@@ -2256,7 +2256,7 @@ function SettingsMenuItem({ icon, label, desc, right, onTap }) {
       )}
       {right === 'badge-new' && (
         <span style={{
-          padding: '3px 10px', borderRadius: 10, fontSize: 11, lineHeight: 1.3, fontWeight: 500,
+          padding: '3px 10px', borderRadius: 8, fontSize: 11, lineHeight: 1.3, fontWeight: 500,
           background: 'rgba(74,222,128,0.12)', color: '#6598ef',
         }}>NEW</span>
       )}

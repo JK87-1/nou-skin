@@ -26,7 +26,7 @@ export function RoutinePlaceholder() {
       </p>
       <span style={{
         fontSize: 12, lineHeight: 1.5, color: '#c4705a', background: 'rgba(196,112,90,0.1)',
-        padding: '6px 16px', borderRadius: 20, fontWeight: 500, marginTop: 12,
+        padding: '6px 16px', borderRadius: 8, fontWeight: 500, marginTop: 12,
       }}>준비 중</span>
     </div>
   );
@@ -59,7 +59,7 @@ export function MyPlaceholder() {
       </p>
       <span style={{
         fontSize: 12, lineHeight: 1.5, color: '#c4705a', background: 'rgba(196,112,90,0.1)',
-        padding: '6px 16px', borderRadius: 20, fontWeight: 500, marginTop: 12,
+        padding: '6px 16px', borderRadius: 8, fontWeight: 500, marginTop: 12,
       }}>준비 중</span>
     </div>
   );

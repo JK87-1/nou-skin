@@ -452,7 +452,7 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
                   <span style={{
                     fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: '#fff',
                     background: 'rgba(255,120,50,0.2)', border: 'none',
-                    borderRadius: 20, padding: '2px 10px',
+                    borderRadius: 8, padding: '2px 10px',
                   }}><span style={{ color: '#FF6B35' }}>●</span> {period}일째</span>
                 )}
               </div>

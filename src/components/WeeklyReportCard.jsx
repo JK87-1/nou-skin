@@ -71,7 +71,7 @@ export default function WeeklyReportCard({ report, onOpenBeforeAfter, onDismiss 
         aria-label="닫기"
         style={{
           position: 'absolute', top: 10, right: 10,
-          width: 26, height: 26, borderRadius: 13,
+          width: 26, height: 26, borderRadius: 12,
           background: 'rgba(0,0,0,0.04)', border: 'none',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: 'pointer',
