@@ -92,7 +92,7 @@ export default function AiInsightCard({ onOpenChat, greeting, dateInfo }) {
     }}>
       {/* 본문 영역 */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: '#58aefe', fontFamily: "'Pretendard Variable', Pretendard, sans-serif", flexShrink: 0, lineHeight: 1.8 }}>lua</span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: '#58aefe', fontFamily: "'Pretendard Variable', Pretendard, sans-serif", flexShrink: 0, lineHeight: 1.8 }}>lua</span>
         {/* 본문 */}
         <div style={{ flex: 1, minWidth: 0 }}>
           {greeting && <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #191F28)', letterSpacing: -0.3, lineHeight: 1.8, marginBottom: 0 }}>{greeting}</div>}

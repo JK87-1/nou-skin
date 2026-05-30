@@ -202,7 +202,7 @@ export default function DailyMission() {
               background: day.isToday ? 'var(--day-today-bg)' : 'var(--day-default-bg)',
             }}>
               <div style={{ fontSize: 11, color: day.isToday ? 'var(--day-today-accent)' : 'var(--text-muted)', fontWeight: 600, marginBottom: 2 }}>{day.dayLabel}</div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: day.isToday ? 'var(--day-today-accent)' : 'var(--text-primary)' }}>{new Date(day.date).getDate()}</div>
+              <div style={{ fontSize: 16, fontWeight: 600, color: day.isToday ? 'var(--day-today-accent)' : 'var(--text-primary)' }}>{new Date(day.date).getDate()}</div>
               {day.isToday && <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--day-today-accent)', margin: '4px auto 0' }} />}
             </div>
           ))}
@@ -219,11 +219,11 @@ export default function DailyMission() {
             <svg width="50" height="50" viewBox="0 0 50 50">
               <circle cx="25" cy="25" r="22" fill="none" stroke="var(--progress-track)" strokeWidth="4" />
             </svg>
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>0%</div>
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>0%</div>
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>오늘의 달성률</div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>0 / 3 완료</div>
+            <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>0 / 3 완료</div>
           </div>
           <div style={{ fontSize: 11, fontWeight: 600, borderRadius: 8, padding: '5px 10px', background: 'var(--bg-card)', color: 'var(--text-muted)', border: 'none' }}>+0 P</div>
         </div>
@@ -241,7 +241,7 @@ export default function DailyMission() {
                 <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 8, background: 'var(--context-bg)', color: 'var(--accent-primary)' }}>메인 미션</span>
                 <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 8, background: 'var(--tag-bg)', color: 'var(--accent-streak)' }}>+30 P</span>
               </div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>피부 측정 후 미션이 생성돼요</div>
+              <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>피부 측정 후 미션이 생성돼요</div>
               <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>분석 결과에 맞는 맞춤 미션을 준비해드릴게요</div>
             </div>
           </div>
@@ -298,7 +298,7 @@ export default function DailyMission() {
               fontWeight: 600, marginBottom: 2,
             }}>{day.dayLabel}</div>
             <div style={{
-              fontSize: 15, fontWeight: 700,
+              fontSize: 16, fontWeight: 600,
               color: day.isToday
                 ? 'var(--day-today-accent)'
                 : day.completed ? 'var(--accent-success)' : 'var(--text-primary)',
@@ -339,13 +339,13 @@ export default function DailyMission() {
           </svg>
           <div style={{
             position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-display)',
+            fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-display)',
             color: 'var(--text-primary)',
           }}>{completionPct}%</div>
         </div>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>오늘의 달성률</div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>
+          <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>
             {totalCompleted} / {totalMissions} 완료
           </div>
         </div>
@@ -395,7 +395,7 @@ export default function DailyMission() {
 
               {/* Title */}
               <div style={{
-                fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4,
+                fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4,
                 textDecoration: progress.mainCompleted ? 'line-through' : 'none',
                 opacity: progress.mainCompleted ? 0.6 : 1,
               }}>{missions.main.title}</div>
@@ -644,7 +644,7 @@ export default function DailyMission() {
           animation: 'missionToastIn 0.3s ease-out',
           zIndex: 1000,
         }}>
-          <span style={{ fontSize: 20 }}><CheckIcon size={20} /></span>
+          <span style={{ fontSize: 18 }}><CheckIcon size={20} /></span>
           <span style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500 }}>{undoToast.label}</span>
           <button onClick={() => {
             if (undoToast.type === 'main') handleUndoMain();
@@ -662,7 +662,7 @@ export default function DailyMission() {
       {xpFloat && (
         <div style={{
           position: 'fixed', top: '40%', left: '50%', transform: 'translateX(-50%)',
-          fontSize: 20, fontWeight: 800, color: '#F0B870', fontFamily: 'var(--font-display)',
+          fontSize: 18, fontWeight: 600, color: '#F0B870', fontFamily: 'var(--font-display)',
           animation: 'missionXpFloat 1.2s ease-out forwards', pointerEvents: 'none', zIndex: 999,
           textShadow: '0 2px 10px rgba(251,191,36,0.5)',
         }}>+{xpFloat} P</div>

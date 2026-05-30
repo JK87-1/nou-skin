@@ -7,13 +7,13 @@ function renderMarkdown(text) {
   return text.split('\n').map((line, i) => {
     const key = `l-${i}`;
     if (line.startsWith('### ')) {
-      return <h3 key={key} style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', margin: '14px 0 6px' }}>{line.slice(4)}</h3>;
+      return <h3 key={key} style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: '14px 0 6px' }}>{line.slice(4)}</h3>;
     }
     if (line.startsWith('## ')) {
-      return <h2 key={key} style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: '18px 0 8px' }}>{line.slice(3)}</h2>;
+      return <h2 key={key} style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', margin: '18px 0 8px' }}>{line.slice(3)}</h2>;
     }
     if (line.startsWith('# ')) {
-      return <h1 key={key} style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)', margin: '8px 0 14px' }}>{line.slice(2)}</h1>;
+      return <h1 key={key} style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', margin: '8px 0 14px' }}>{line.slice(2)}</h1>;
     }
     if (line.startsWith('|')) {
       return <div key={key} style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--text-secondary)', whiteSpace: 'pre', lineHeight: 1.6 }}>{line}</div>;
@@ -30,7 +30,7 @@ function renderMarkdown(text) {
       <p key={key} style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.75, margin: 0 }}>
         {parts.map((p, j) =>
           p.startsWith('**') && p.endsWith('**')
-            ? <strong key={j} style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{p.slice(2, -2)}</strong>
+            ? <strong key={j} style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{p.slice(2, -2)}</strong>
             : p
         )}
       </p>
@@ -80,7 +80,7 @@ export default function ConsentModal({ onAccept }) {
     }}>
       <header style={{ padding: '24px 20px 14px', borderBottom: '1px solid var(--border, rgba(0,0,0,0.08))' }}>
         <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent-primary)', letterSpacing: 0.4, marginBottom: 4 }}>BETA</div>
-        <h1 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)', margin: 0, lineHeight: 1.3 }}>
+        <h1 style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', margin: 0, lineHeight: 1.3 }}>
           {SERVICE_NAME}을(를) 시작하기 전<br />아래 사항에 동의해주세요
         </h1>
       </header>
@@ -149,7 +149,7 @@ export default function ConsentModal({ onAccept }) {
             width: '100%', padding: '14px', borderRadius: 12,
             background: allAgreed ? 'var(--accent-primary)' : 'var(--border, rgba(0,0,0,0.1))',
             color: allAgreed ? '#fff' : 'var(--text-muted)',
-            border: 'none', fontSize: 15, fontWeight: 700, fontFamily: 'inherit',
+            border: 'none', fontSize: 16, fontWeight: 600, fontFamily: 'inherit',
             cursor: allAgreed ? 'pointer' : 'not-allowed',
             transition: 'background 0.2s',
           }}

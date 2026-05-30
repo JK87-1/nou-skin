@@ -62,7 +62,7 @@ export default function SkinScoreCircle({ score, change, onTap }) {
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           }}>
             <span style={{
-              fontSize: 42, fontWeight: 300, color: '#1a1a2e', lineHeight: 1,
+              fontSize: 40, fontWeight: 300, color: '#1a1a2e', lineHeight: 1,
               fontFamily: "'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif",
               opacity: 0.85,
             }}>{score}</span>

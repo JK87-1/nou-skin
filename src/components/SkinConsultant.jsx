@@ -84,7 +84,7 @@ function MatchScoreRing({ score }) {
       </svg>
       <div style={{
         position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 11, fontWeight: 700, color: '#a5b4fc',
+        fontSize: 11, fontWeight: 600, color: '#a5b4fc',
       }}>{score}</div>
     </div>
   );
@@ -165,7 +165,7 @@ function ProductRecommendSection({ category, result, delay = 0 }) {
       }}>
         <span style={{ fontSize: 18 }}>{meta.icon}</span>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)' }}>{meta.label}</div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>{meta.label}</div>
           <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{meta.ingredient}</div>
         </div>
       </div>
@@ -187,7 +187,7 @@ function renderInline(text) {
   const parts = text.split(/(\*\*[^*]+\*\*)/g);
   return parts.map((p, i) => {
     if (/^\*\*[^*]+\*\*$/.test(p)) {
-      return <strong key={i} style={{ fontWeight: 700, color: 'inherit' }}>{p.slice(2, -2)}</strong>;
+      return <strong key={i} style={{ fontWeight: 600, color: 'inherit' }}>{p.slice(2, -2)}</strong>;
     }
     return <span key={i}>{p}</span>;
   });
@@ -221,8 +221,8 @@ function renderMarkdown(text) {
 
   return compact.map((b, i) => {
     if (b.type === 'gap') return <div key={i} style={{ height: 10 }} />;
-    if (b.type === 'h2') return <div key={i} style={{ fontSize: 16, fontWeight: 700, marginTop: i === 0 ? 0 : 14, marginBottom: 6, letterSpacing: -0.2 }}>{renderInline(b.text)}</div>;
-    if (b.type === 'h3') return <div key={i} style={{ fontSize: 15, fontWeight: 700, marginTop: i === 0 ? 0 : 10, marginBottom: 4 }}>{renderInline(b.text)}</div>;
+    if (b.type === 'h2') return <div key={i} style={{ fontSize: 16, fontWeight: 600, marginTop: i === 0 ? 0 : 14, marginBottom: 6, letterSpacing: -0.2 }}>{renderInline(b.text)}</div>;
+    if (b.type === 'h3') return <div key={i} style={{ fontSize: 16, fontWeight: 600, marginTop: i === 0 ? 0 : 10, marginBottom: 4 }}>{renderInline(b.text)}</div>;
     if (b.type === 'ul') return (
       <ul key={i} style={{ margin: '4px 0', paddingLeft: 18 }}>
         {b.items.map((it, j) => <li key={j} style={{ marginBottom: 2, lineHeight: 1.6 }}>{renderInline(it)}</li>)}
@@ -822,12 +822,12 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
           }}
         >
           <span style={{
-            fontSize: 22, fontWeight: 500, color: '#1F1F1F',
+            fontSize: 24, fontWeight: 500, color: '#1F1F1F',
             letterSpacing: -0.3, lineHeight: 1,
             fontFamily: 'var(--font-display), Pretendard, -apple-system, sans-serif',
           }}>lua</span>
           <span style={{
-            fontSize: 15, fontWeight: 400, color: '#5F6368',
+            fontSize: 16, fontWeight: 400, color: '#5F6368',
             letterSpacing: -0.2, lineHeight: 1, marginLeft: 2,
           }}>{persona.short}</span>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5F6368" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginTop: 2, transition: 'transform 0.18s', transform: personaPickerOpen ? 'rotate(180deg)' : 'none' }}>
@@ -912,7 +912,7 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
               />
             </svg>
             <div style={{
-              fontSize: 28, fontWeight: 500, color: '#1F1F1F',
+              fontSize: 24, fontWeight: 500, color: '#1F1F1F',
               letterSpacing: -0.5, lineHeight: 1.3,
               fontFamily: 'var(--font-display), Pretendard, -apple-system, sans-serif',
               maxWidth: 320,

@@ -462,7 +462,7 @@ select:focus-visible {
 .orb-hint-text {
   height: 30px;
   line-height: 30px;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: var(--fw-semibold);
   color: var(--accent-primary);
   text-align: center;
@@ -603,7 +603,7 @@ select:focus-visible {
   padding: 16px;
   border-radius: var(--radius-md);
   font-size: 16px;
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-semibold);
   cursor: pointer;
   width: 100%;
   box-shadow: 0 4px 20px rgba(167, 139, 250, 0.35);
@@ -630,8 +630,8 @@ select:focus-visible {
   border: none;
   padding: 14px;
   border-radius: var(--radius-md);
-  font-size: 15px;
-  font-weight: var(--fw-bold);
+  font-size: 16px;
+  font-weight: var(--fw-semibold);
   cursor: pointer;
   width: 100%;
   font-family: inherit;
@@ -1058,7 +1058,7 @@ select:focus-visible {
   bottom: 7px;
   right: 7px;
   font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: var(--fw-medium);
   color: #fff;
   line-height: 1;
@@ -1301,7 +1301,7 @@ select:focus-visible {
 }
 .month-label {
   font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: var(--fw-regular);
   color: var(--text-primary);
   letter-spacing: 1px;
@@ -1421,7 +1421,7 @@ select:focus-visible {
 }
 .trend-val {
   font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: var(--fw-regular);
   color: var(--accent-primary);
   line-height: 1;
@@ -1588,7 +1588,7 @@ select:focus-visible {
   letter-spacing: -0.1px;
 }
 .consult-bubble strong {
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-semibold);
   color: inherit;
 }
 .consult-bubble.user {

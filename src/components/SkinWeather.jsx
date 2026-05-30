@@ -224,7 +224,7 @@ export default function SkinWeather({ skinResult }) {
 
         {/* 온도 + 상태 */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, padding: '0 16px' }}>
-          <span style={{ fontSize: 80, fontWeight: 500, color: '#fff', lineHeight: 1, letterSpacing: -3 }}>{weather.temp}°</span>
+          <span style={{ fontSize: 64, fontWeight: 500, color: '#fff', lineHeight: 1, letterSpacing: -3 }}>{weather.temp}°</span>
           <WeatherIconFilled emoji={weather.conditionIcon} size={80} />
         </div>
         <div style={{ padding: '0 16px', marginBottom: 40 }}>
@@ -243,7 +243,7 @@ export default function SkinWeather({ skinResult }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6.8 11a6 6 0 1 0 10.396 0l-5.197 -8l-5.2 8z" /></svg>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>{weather.humidity}<span style={{ fontSize: 11, fontWeight: 400 }}>%</span></div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>{weather.humidity}<span style={{ fontSize: 11, fontWeight: 400 }}>%</span></div>
                 <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)' }}>습도 · {hi.label}</div>
               </div>
             </div>
@@ -257,7 +257,7 @@ export default function SkinWeather({ skinResult }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3.5 9.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M8.5 4.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M8.5 14.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M3.5 19.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M13.5 9.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M18.5 4.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M13.5 19.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M18.5 14.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /></svg>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>{weather.airQuality}<span style={{ fontSize: 10, fontWeight: 400, marginLeft: 2 }}>AQI</span></div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>{weather.airQuality}<span style={{ fontSize: 10, fontWeight: 400, marginLeft: 2 }}>AQI</span></div>
                 <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)' }}>미세먼지 · {ai.label}</div>
               </div>
             </div>
@@ -268,7 +268,7 @@ export default function SkinWeather({ skinResult }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h1m16 0h1m-15.4 -6.4l.7 .7m12.1 -.7l-.7 .7m-9.7 5.7a4 4 0 1 1 8 0" /><path d="M12 4v-1" /><path d="M13 16l2 5h1l2 -5" /><path d="M6 16v3a2 2 0 1 0 4 0v-3" /></svg>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>{weather.uv}<span style={{ fontSize: 11, fontWeight: 400 }}>/10</span></div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>{weather.uv}<span style={{ fontSize: 11, fontWeight: 400 }}>/10</span></div>
             <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)' }}>자외선 · {weather.uvLabel}</div>
           </div>
         </div>
@@ -324,7 +324,7 @@ export default function SkinWeather({ skinResult }) {
               {/* 온도 */}
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                 {fc.map((f, i) => (
-                  <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: 15, fontWeight: 600, color: '#fff' }}>
+                  <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: 16, fontWeight: 600, color: '#fff' }}>
                     {f.temp}°
                   </div>
                 ))}
@@ -369,7 +369,7 @@ export default function SkinWeather({ skinResult }) {
             <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>내 피부 맞춤 알림</span>
             {highCount > 0 && (
               <span style={{
-                fontSize: 10, fontWeight: 700, color: '#fff',
+                fontSize: 10, fontWeight: 600, color: '#fff',
                 background: '#3558A8', borderRadius: 10, padding: '2px 7px',
                 minWidth: 18, textAlign: 'center',
               }}>{highCount}</span>
@@ -407,7 +407,7 @@ export default function SkinWeather({ skinResult }) {
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{alert.subtitle}</div>
                   </div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: alert.color, marginRight: 4 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: alert.color, marginRight: 4 }}>
                     {alert.matchScore}
                   </div>
                   <span style={{

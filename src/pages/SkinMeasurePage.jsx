@@ -124,7 +124,7 @@ export default function SkinMeasurePage({ onClose, onCapture, colorMode }) {
             left: 16,
             width: 40, height: 40, borderRadius: '50%',
             background: 'rgba(255,255,255,0.85)', border: 'none',
-            color: '#191F28', fontSize: 20, cursor: 'pointer',
+            color: '#191F28', fontSize: 18, cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
             zIndex: 10,
@@ -160,7 +160,7 @@ export default function SkinMeasurePage({ onClose, onCapture, colorMode }) {
         {/* 상태 텍스트 */}
         <p style={{
           color: colorMode === 'light' ? '#191F28' : '#e0e0e0',
-          fontSize: 15, fontWeight: 600, textAlign: 'center',
+          fontSize: 16, fontWeight: 600, textAlign: 'center',
           margin: 0, minHeight: 20,
         }}>
           얼굴을 화면에 맞춰주세요
@@ -185,7 +185,7 @@ export default function SkinMeasurePage({ onClose, onCapture, colorMode }) {
                 transition: 'all 0.3s',
               }}>
                 {ok && (
-                  <span style={{ color: '#fff', fontSize: 12, fontWeight: 700 }}>&#10003;</span>
+                  <span style={{ color: '#fff', fontSize: 12, fontWeight: 600 }}>&#10003;</span>
                 )}
               </div>
               <span style={{

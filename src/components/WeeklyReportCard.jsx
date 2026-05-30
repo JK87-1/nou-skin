@@ -86,7 +86,7 @@ export default function WeeklyReportCard({ report, onOpenBeforeAfter, onDismiss 
       <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8 }}>
         <span style={{
           display: 'inline-flex', alignItems: 'center', gap: 4,
-          fontSize: 10.5, fontWeight: 700, letterSpacing: -0.1,
+          fontSize: 11, fontWeight: 600, letterSpacing: -0.1,
           color: ACCENT,
           background: 'rgba(var(--accent-rgb),0.14)',
           padding: '3px 9px', borderRadius: 8,
@@ -97,12 +97,12 @@ export default function WeeklyReportCard({ report, onOpenBeforeAfter, onDismiss 
           </svg>
           이번 주 변화
         </span>
-        <span style={{ fontSize: 10.5, color: 'rgba(0,0,0,0.4)' }}>{measuredThisWeek}회 측정</span>
+        <span style={{ fontSize: 11, color: 'rgba(0,0,0,0.4)' }}>{measuredThisWeek}회 측정</span>
       </div>
 
       {/* 메인 헤드라인 */}
       <div style={{
-        fontSize: 16, fontWeight: 700,
+        fontSize: 16, fontWeight: 600,
         color: '#1f1f1f', letterSpacing: -0.3,
         lineHeight: 1.4, marginBottom: 10,
       }}>
@@ -129,7 +129,7 @@ export default function WeeklyReportCard({ report, onOpenBeforeAfter, onDismiss 
             <rect x="3" y="5" width="18" height="14" rx="2" />
             <line x1="12" y1="5" x2="12" y2="19" />
           </svg>
-          <span style={{ fontSize: 13.5, fontWeight: 600, color: '#1f1f1f', letterSpacing: -0.2 }}>
+          <span style={{ fontSize: 14, fontWeight: 600, color: '#1f1f1f', letterSpacing: -0.2 }}>
             7일 전 vs 지금 비교
           </span>
         </div>
@@ -157,7 +157,7 @@ function ChangeChip({ change, positive }) {
       border: `1px solid ${color}28`,
     }}>
       <span style={{ fontSize: 11, color: 'rgba(0,0,0,0.55)', fontWeight: 500 }}>{change.label}</span>
-      <span style={{ fontSize: 13, color, fontWeight: 700, letterSpacing: -0.2 }}>{value}</span>
+      <span style={{ fontSize: 13, color, fontWeight: 600, letterSpacing: -0.2 }}>{value}</span>
     </div>
   );
 }

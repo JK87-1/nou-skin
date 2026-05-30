@@ -52,7 +52,7 @@ export default function TroubleBreakdownCard({ breakdown }) {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
         <div style={{
-          fontSize: 13, fontWeight: 700, color: 'var(--text-primary)',
+          fontSize: 13, fontWeight: 600, color: 'var(--text-primary)',
           letterSpacing: -0.2,
         }}>트러블 종류별 분류</div>
         <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>총 {total}개</div>
@@ -73,7 +73,7 @@ export default function TroubleBreakdownCard({ breakdown }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 110, flexShrink: 0 }}>
                 <span style={{ fontSize: 13 }}>{t.emoji}</span>
                 <span style={{
-                  fontSize: 12.5, fontWeight: 600, color: 'var(--text-primary)',
+                  fontSize: 13, fontWeight: 600, color: 'var(--text-primary)',
                   letterSpacing: -0.1,
                 }}>{t.label}</span>
               </div>
@@ -93,7 +93,7 @@ export default function TroubleBreakdownCard({ breakdown }) {
 
               {/* Count */}
               <div style={{
-                fontSize: 13, fontWeight: 700,
+                fontSize: 13, fontWeight: 600,
                 color: isZero ? 'var(--text-muted)' : 'var(--text-primary)',
                 minWidth: 26, textAlign: 'right',
               }}>{count}</div>

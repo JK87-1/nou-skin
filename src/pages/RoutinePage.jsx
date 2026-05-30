@@ -51,7 +51,7 @@ export default function RoutinePage() {
       {/* Header */}
       <div style={{ padding: '30px 28px 20px', textAlign: 'center' }}>
         <h1 style={{
-          fontSize: 28, fontWeight: 300, color: 'var(--text-secondary)',
+          fontSize: 24, fontWeight: 300, color: 'var(--text-secondary)',
           fontFamily: "'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif", fontStyle: 'italic',
           marginBottom: 4,
         }}>Daily Ritual</h1>
@@ -78,7 +78,7 @@ export default function RoutinePage() {
           borderRadius: 16, padding: '14px 16px', marginBottom: 20,
         }}>
           <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-            <span style={{ fontSize: 20, flexShrink: 0 }}></span>
+            <span style={{ fontSize: 18, flexShrink: 0 }}></span>
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
               {getContextMessage()}
             </p>
@@ -91,7 +91,7 @@ export default function RoutinePage() {
             <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>
               오늘 진행률
             </span>
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--ingredient-accent)' }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--ingredient-accent)' }}>
               {progress.done}/{progress.total} 완료
             </span>
           </div>
@@ -138,7 +138,7 @@ export default function RoutinePage() {
         {/* 나에게 맞는 성분 섹션 */}
         <div style={{ marginBottom: 20 }}>
           <div style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-secondary)' }}>나에게 맞는 성분</div>
+            <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-secondary)' }}>나에게 맞는 성분</div>
             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
               {latestRecord ? '피부 분석 기반 맞춤 추천' : '기본 추천 성분'}
             </div>
@@ -153,9 +153,9 @@ export default function RoutinePage() {
                   style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
-                    <span style={{ fontSize: 22, flexShrink: 0 }}>{ing.icon}</span>
+                    <span style={{ fontSize: 24, flexShrink: 0 }}>{ing.icon}</span>
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--ingredient-accent)' }}>{ing.nameKo}</div>
+                      <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--ingredient-accent)' }}>{ing.nameKo}</div>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{ing.name}</div>
                     </div>
                     {ing.score != null && (
@@ -213,7 +213,7 @@ export default function RoutinePage() {
 
         {/* Weekly Completion Dots */}
         <div className="card" style={{ padding: '16px 18px' }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 14 }}>주간 루틴 현황</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 14 }}>주간 루틴 현황</div>
           <div style={{ display: 'flex', justifyContent: 'space-around' }}>
             {weekly.map((day) => (
               <div key={day.date} style={{ textAlign: 'center' }}>

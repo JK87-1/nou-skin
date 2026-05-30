@@ -45,7 +45,7 @@ export default function TrendCard({ accent = '#6598ef', changes = null, animatio
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <div>
-          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>이번 주 추세</div>
+          <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>이번 주 추세</div>
           <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>최근 7번 측정 흐름</div>
         </div>
         <MetricToggle metric={metric} setMetric={setMetric} accent={accent} />
@@ -120,7 +120,7 @@ function DeltaDisplay({ value, unit, inverse, accent }) {
   if (value == null) {
     return (
       <div>
-        <div style={{ fontSize: 32, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'Outfit, sans-serif', lineHeight: 1 }}>
+        <div style={{ fontSize: 40, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'Outfit, sans-serif', lineHeight: 1 }}>
           첫 측정
         </div>
         <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>비교할 이전 기록이 아직 없어요</div>
@@ -144,7 +144,7 @@ function DeltaDisplay({ value, unit, inverse, accent }) {
     <div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
         <span style={{
-          fontSize: 32, fontWeight: 700, color,
+          fontSize: 40, fontWeight: 600, color,
           fontFamily: 'Outfit, sans-serif', lineHeight: 1,
           letterSpacing: -0.5,
         }}>{sign}{abs}</span>
@@ -228,7 +228,7 @@ function BaselineLine({ totalChanges, metric, meta, accent }) {
         첫 측정{period > 0 ? ` (${period}일 전)` : ''}보다
       </div>
       <div style={{
-        fontSize: 13, fontWeight: 700,
+        fontSize: 13, fontWeight: 600,
         color: value === 0 ? 'var(--text-muted)' : (good ? accent : 'var(--text-secondary)'),
         fontFamily: 'Outfit, sans-serif',
       }}>
@@ -242,7 +242,7 @@ function EmptyHint() {
   return (
     <div style={{ padding: '14px 4px 4px' }}>
       <div style={{
-        fontSize: 28, fontWeight: 700, color: 'var(--text-primary)',
+        fontSize: 24, fontWeight: 600, color: 'var(--text-primary)',
         fontFamily: 'Outfit, sans-serif', lineHeight: 1, letterSpacing: -0.5,
       }}>첫 측정</div>
       <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 8, lineHeight: 1.55 }}>

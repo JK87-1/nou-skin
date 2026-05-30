@@ -67,7 +67,7 @@ export function ScoreRing({ score, size = 110, label = '종합점수' }) {
         />
       </svg>
       <div style={{ textAlign: 'center', zIndex: 1 }}>
-        <div style={{ fontSize: size * 0.26, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1 }}>
+        <div style={{ fontSize: size * 0.26, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', lineHeight: 1 }}>
           <AnimatedNumber target={score} />
         </div>
         <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{label}</div>
@@ -96,7 +96,7 @@ export function MetricBar({ label, value, unit = '%', color, icon, description, 
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
         <span onClick={onClick} style={{ fontSize: 14, color: 'var(--text-secondary)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6, cursor: onClick ? 'pointer' : 'default' }}>{icon} {label}</span>
-        <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+        <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
           {diff != null && diff !== 0 && (
             <span style={{
               fontSize: 10, fontWeight: 600, padding: '2px 6px', borderRadius: 8,
@@ -140,7 +140,7 @@ function DetailAccordion({ title, children, onToggle }) {
         width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0,
       }}>
-        <span style={{ fontSize: 15, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>{title}</span>
+        <span style={{ fontSize: 16, fontWeight: 600, color: 'rgba(0,0,0,0.8)' }}>{title}</span>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.3)" strokeWidth="2" strokeLinecap="round"
           style={{ transition: 'transform 0.3s ease', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}>
           <path d="M6 9l6 6 6-6" />
@@ -192,7 +192,7 @@ export function DetailPage({ metricKey, value, onBack }) {
         <div style={{ padding: '10px 15px 0' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {metricIconMap[metricKey]}
-            <h1 style={{ fontSize: 20, fontWeight: 700, color: 'rgba(0,0,0,0.8)', margin: 0 }}>
+            <h1 style={{ fontSize: 18, fontWeight: 600, color: 'rgba(0,0,0,0.8)', margin: 0 }}>
               {data.title}
             </h1>
           </div>
@@ -204,7 +204,7 @@ export function DetailPage({ metricKey, value, onBack }) {
       <div style={{ padding: '20px 16px' }}>
         {/* 1. Score Ranges — 가장 먼저 */}
         <div className="card">
-          <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 14, color: 'rgba(0,0,0,0.8)' }}>결과 해석</div>
+          <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 14, color: 'rgba(0,0,0,0.8)' }}>결과 해석</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             {data.ranges.map((r, i) => (
               <div key={i} style={{

@@ -62,13 +62,13 @@ export default function ProductRegisteredModal({ product, totalCount, onClose })
 
         {/* Headline */}
         <div style={{
-          fontSize: 20, fontWeight: 700, color: '#1A1A1A',
+          fontSize: 18, fontWeight: 600, color: '#1A1A1A',
           letterSpacing: -0.4, marginBottom: 6,
         }}>
           케어에 등록 완료!
         </div>
         <div style={{
-          fontSize: 12.5, color: '#6B7F99',
+          fontSize: 13, color: '#6B7F99',
           marginBottom: 20, letterSpacing: -0.1,
         }}>
           {typeof totalCount === 'number' ? `지금 ${totalCount}개 등록됨` : '제품이 케어에 추가됐어요'}
@@ -110,10 +110,10 @@ export default function ProductRegisteredModal({ product, totalCount, onClose })
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
               {product.brand && (
-                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent-primary)' }}>{product.brand}</span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent-primary)' }}>{product.brand}</span>
               )}
               <span style={{
-                fontSize: 10.5, padding: '1px 6px', borderRadius: 5,
+                fontSize: 11, padding: '1px 6px', borderRadius: 5,
                 background: `${cat.color}22`, color: '#374E66', fontWeight: 600, letterSpacing: 0.2,
               }}>{product.category}</span>
             </div>
@@ -123,7 +123,7 @@ export default function ProductRegisteredModal({ product, totalCount, onClose })
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             }}>{product.name}</div>
             {product.timeSlot && (
-              <div style={{ fontSize: 10.5, color: '#6B7F99', marginTop: 3 }}>
+              <div style={{ fontSize: 11, color: '#6B7F99', marginTop: 3 }}>
                 {product.timeSlot === 'morning' ? '아침 전용' : product.timeSlot === 'night' ? '저녁 전용' : '아침·저녁'}
               </div>
             )}
@@ -137,7 +137,7 @@ export default function ProductRegisteredModal({ product, totalCount, onClose })
             width: '100%', padding: '14px',
             background: 'linear-gradient(135deg, var(--accent-primary), #8ac4fe)',
             border: 'none', borderRadius: 14,
-            color: '#fff', fontSize: 15, fontWeight: 700,
+            color: '#fff', fontSize: 16, fontWeight: 600,
             cursor: 'pointer', fontFamily: 'inherit',
             boxShadow: '0 6px 18px rgba(var(--accent-rgb),0.35)',
             letterSpacing: -0.2,

@@ -179,7 +179,7 @@ function ChangeIndicator({ diff, unit = '점', inverse = false, size = 'normal' 
   const arrow = improved ? '↑' : '↓';
   const fs = size === 'small' ? 10 : 12;
   return (
-    <span style={{ fontSize: fs, fontWeight: 700, color }}>
+    <span style={{ fontSize: fs, fontWeight: 600, color }}>
       {arrow}{Math.abs(diff)}{unit}
     </span>
   );
@@ -325,11 +325,11 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
                 {/* Stats row */}
                 <div style={{ display: 'flex', flex: 1, justifyContent: 'space-around', textAlign: 'center' }}>
                   <div>
-                    <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{records.length}</div>
+                    <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 600, color: 'var(--text-primary)' }}>{records.length}</div>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>기록</div>
                   </div>
                   <div>
-                    <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{avgScore}</div>
+                    <div style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 600, color: 'var(--text-primary)' }}>{avgScore}</div>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>평균점수</div>
                   </div>
                 </div>
@@ -454,12 +454,12 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
                   <div style={{
                     width: 44, height: 44, borderRadius: 12,
                     background: 'transparent',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24,
                   }}><ChartIcon size={26} /></div>
                   <div>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>총 변화</div>
                     <div style={{
-                      fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-display)',
+                      fontSize: 24, fontWeight: 600, fontFamily: 'var(--font-display)',
                       color: overallDiff >= 0 ? '#4ade80' : '#f0a050',
                     }}>{overallDiff > 0 ? '+' : ''}{overallDiff}점</div>
                   </div>
@@ -474,12 +474,12 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
                   <div style={{
                     width: 44, height: 44, borderRadius: 12,
                     background: 'transparent',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24,
                   }}><ClockIcon size={26} /></div>
                   <div>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>피부나이</div>
                     <div style={{
-                      fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-display)',
+                      fontSize: 24, fontWeight: 600, fontFamily: 'var(--font-display)',
                       color: skinAgeDiff <= 0 ? '#4ade80' : '#f0a050',
                     }}>{skinAgeDiff > 0 ? '+' : ''}{skinAgeDiff}세</div>
                   </div>
@@ -515,7 +515,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
                 <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 12 }}>측정 기록</div>
                 {records.length === 0 ? (
                   <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
-                    <div style={{ fontSize: 32, marginBottom: 8 }}></div>
+                    <div style={{ fontSize: 40, marginBottom: 8 }}></div>
                     <div style={{ fontSize: 13 }}>아직 기록이 없어요</div>
                   </div>
                 ) : (
@@ -542,7 +542,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
                       }}>
                         {/* Date */}
                         <div style={{ textAlign: 'center', minWidth: 36 }}>
-                          <div style={{ fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', lineHeight: 1 }}>{dayNum}</div>
+                          <div style={{ fontSize: 24, fontWeight: 600, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', lineHeight: 1 }}>{dayNum}</div>
                           <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{monthLabel}</div>
                         </div>
 
@@ -564,10 +564,10 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
                         {/* Score info */}
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>종합 {r.overallScore}점</span>
+                            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>종합 {r.overallScore}점</span>
                             {diff !== 0 && (
                               <span style={{
-                                fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 8,
+                                fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 8,
                                 background: diff > 0 ? 'rgba(74,222,128,0.15)' : 'rgba(240,160,80,0.15)',
                                 color: diff > 0 ? '#4ade80' : '#f0a050',
                               }}>{diff > 0 ? '+' : ''}{diff}</span>
@@ -598,7 +598,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
                           <div style={{
                             position: 'absolute', inset: 0,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-secondary)',
+                            fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-display)', color: 'var(--text-secondary)',
                           }}>{r.overallScore}</div>
                         </div>
                       </div>
@@ -613,7 +613,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
               if (!firstRecord || !lastRecord || records.length < 2) {
                 return (
                   <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
-                    <div style={{ fontSize: 32, marginBottom: 8 }}></div>
+                    <div style={{ fontSize: 40, marginBottom: 8 }}></div>
                     <div style={{ fontSize: 13 }}>2회 이상 측정하면 비교 분석을 볼 수 있어요</div>
                   </div>
                 );
@@ -633,7 +633,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
                         background: 'var(--bg-card-hover)', borderRadius: 10, padding: '6px 14px',
                       }}>{formatShortDate(firstRecord.date)}</div>
                     </div>
-                    <div style={{ fontSize: 20, color: 'var(--text-dim)' }}>→</div>
+                    <div style={{ fontSize: 18, color: 'var(--text-dim)' }}>→</div>
                     <div style={{ textAlign: 'center' }}>
                       <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>현재</div>
                       <div style={{
@@ -662,7 +662,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
                         <div style={{
                           position: 'absolute', inset: 0,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 24, fontWeight: 800, fontFamily: 'var(--font-display)', color: 'var(--text-secondary)',
+                          fontSize: 24, fontWeight: 600, fontFamily: 'var(--font-display)', color: 'var(--text-secondary)',
                         }}>{firstRecord.overallScore}</div>
                       </div>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>시작</div>
@@ -671,7 +671,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
                     {/* Diff */}
                     <div style={{ textAlign: 'center' }}>
                       <div style={{
-                        fontSize: 24, fontWeight: 900, fontFamily: 'var(--font-display)',
+                        fontSize: 24, fontWeight: 600, fontFamily: 'var(--font-display)',
                         color: overallDiff >= 0 ? '#4ade80' : '#f0a050',
                       }}>{overallDiff > 0 ? '+' : ''}{overallDiff}</div>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>점 {overallDiff >= 0 ? '상승' : '변화'}</div>
@@ -690,7 +690,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
                         <div style={{
                           position: 'absolute', inset: 0,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 24, fontWeight: 800, fontFamily: 'var(--font-display)', color: 'var(--text-primary)',
+                          fontSize: 24, fontWeight: 600, fontFamily: 'var(--font-display)', color: 'var(--text-primary)',
                         }}>{lastRecord.overallScore}</div>
                       </div>
                       <div style={{ fontSize: 11, color: '#a8c8f8', fontWeight: 600 }}>현재</div>
@@ -716,10 +716,10 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
                             <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', flex: 1 }}>{m.label}</span>
                             <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{firstVal}</span>
                             <span style={{ fontSize: 12, color: 'var(--text-dim)', margin: '0 4px' }}>→</span>
-                            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{lastVal}</span>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{lastVal}</span>
                             {diff !== 0 && (
                               <span style={{
-                                fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 8, marginLeft: 6,
+                                fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 8, marginLeft: 6,
                                 background: improved ? 'rgba(74,222,128,0.15)' : 'rgba(240,160,80,0.15)',
                                 color: improved ? '#4ade80' : '#f0a050',
                               }}>{improved ? '↑' : '↓'}{diff > 0 ? '+' : ''}{diff}</span>
@@ -881,7 +881,7 @@ function PhotoGallery({ records, thumbs, onMeasure, onSelectRecord, onThumbsChan
 
       <div className="card" style={{ padding: '16px 12px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: -0.3 }}>Album</div>
+        <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: -0.3 }}>Album</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div onClick={onMeasure} style={{
             width: 34, height: 34, borderRadius: '50%', cursor: 'pointer',
@@ -1235,7 +1235,7 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
             </div>
             {/* 스킨 레벨 배지 */}
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 14px', borderRadius: 20, background: C.badgeBg, marginBottom: 14 }}>
-              <span style={{ fontSize: 10.5, fontWeight: 500, letterSpacing: 0.3, color: C.badgeText }}>스킨 레벨 · {level}</span>
+              <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: 0.3, color: C.badgeText }}>스킨 레벨 · {level}</span>
             </div>
             {/* 태그 */}
             <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 6 }}>
@@ -1280,7 +1280,7 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
                     <span style={{ fontSize: 13, fontWeight: 500, letterSpacing: -0.2, color: C.main }}>
                       {isFirst ? '기준선' : '지난 측정에서 달라진 점'}
                     </span>
-                    <span style={{ fontSize: 10.5, letterSpacing: 0.3, color: C.sub }}>
+                    <span style={{ fontSize: 11, letterSpacing: 0.3, color: C.sub }}>
                       {isFirst ? '첫 측정' : `${daysSincePrev}일 전`}
                     </span>
                   </div>
@@ -1300,7 +1300,7 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
                             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8, opacity: 0.5 }}>
                               {m.icon}
                             </div>
-                            <div style={{ fontSize: 28, fontWeight: 500, letterSpacing: -1, color: C.main, lineHeight: 1 }}>
+                            <div style={{ fontSize: 24, fontWeight: 500, letterSpacing: -1, color: C.main, lineHeight: 1 }}>
                               {m.value ?? '—'}
                             </div>
                             <div style={{
@@ -1409,7 +1409,7 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
                     <span style={{ fontSize: 13, fontWeight: 500, letterSpacing: -0.2, color: C.main }}>컨디션 브리핑</span>
                     <div style={{ marginLeft: 'auto', padding: '4px 10px', borderRadius: 8, background: cGrade.bg, border: `1px solid ${cGrade.border}`, display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: cGrade.color, fontFamily: 'var(--font-display)' }}>{cGrade.letter}</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: cGrade.color, fontFamily: 'var(--font-display)' }}>{cGrade.letter}</span>
                       <span style={{ fontSize: 10, fontWeight: 500, color: cGrade.color }}>{cScore}점</span>
                     </div>
                   </div>
@@ -1446,7 +1446,7 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
             <div style={{ ...cardStyle, padding: '14px 6px 2px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 14, paddingRight: 14, marginBottom: 4 }}>
                 <span style={{ fontSize: 13, fontWeight: 500, letterSpacing: -0.2, color: C.main }}>컨디션 지표</span>
-                <span style={{ fontSize: 10.5, letterSpacing: 0.3, color: C.sub }}>5가지</span>
+                <span style={{ fontSize: 11, letterSpacing: 0.3, color: C.sub }}>5가지</span>
               </div>
               {conditionMetrics.map((m, i) => (
                 <MetricBar key={m.label} label={m.label} value={record[m.key]} unit={m.unit || ''} color={m.color} icon={m.icon} delay={i * 80} />
@@ -1457,7 +1457,7 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
             <div style={{ ...cardStyle, padding: '14px 6px 2px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 14, paddingRight: 14, marginBottom: 4 }}>
                 <span style={{ fontSize: 13, fontWeight: 500, letterSpacing: -0.2, color: C.main }}>노화 지표</span>
-                <span style={{ fontSize: 10.5, letterSpacing: 0.3, color: C.sub }}>5가지</span>
+                <span style={{ fontSize: 11, letterSpacing: 0.3, color: C.sub }}>5가지</span>
               </div>
               {agingMetrics.map((m, i) => (
                 <MetricBar key={m.label} label={m.label} value={record[m.key]} unit="" color={m.color} icon={m.icon} delay={i * 80} />
@@ -1483,7 +1483,7 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
               background: '#fff', borderRadius: 20, padding: '28px 24px',
               width: 280, textAlign: 'center',
             }}>
-              <div style={{ fontSize: 15, fontWeight: 600, color: C.main, marginBottom: 8 }}>이 기록을 삭제할까요?</div>
+              <div style={{ fontSize: 16, fontWeight: 600, color: C.main, marginBottom: 8 }}>이 기록을 삭제할까요?</div>
               <div style={{ fontSize: 12, color: C.sub, marginBottom: 20 }}>삭제된 기록은 복구할 수 없습니다.</div>
               <div style={{ display: 'flex', gap: 10 }}>
                 <button onClick={() => setShowConfirm(false)} style={{
@@ -1970,7 +1970,7 @@ function RoutineChecklist() {
                   <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 2,
                     color: day.isSelected ? '#fff' : day.isToday ? 'var(--day-today-accent)' : 'var(--text-muted)',
                   }}>{day.dayLabel}</div>
-                  <div style={{ fontSize: 15, fontWeight: 700,
+                  <div style={{ fontSize: 16, fontWeight: 600,
                     color: day.isSelected ? '#fff' : day.isToday ? 'var(--day-today-accent)' : 'var(--text-primary)',
                   }}>{new Date(day.date + 'T12:00:00').getDate()}</div>
                   {day.isToday && !day.isSelected && <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--day-today-accent)', margin: '4px auto 0' }} />}
@@ -2010,11 +2010,11 @@ function RoutineChecklist() {
               strokeDasharray={`${(pct / 100) * 119.38} 119.38`} strokeLinecap="round" transform="rotate(-90 22 22)"
               style={{ transition: 'stroke-dasharray 0.5s ease' }} />
           </svg>
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--text-primary)' }}>{pct}%</div>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 600, color: 'var(--text-primary)' }}>{pct}%</div>
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{mode === 'morning' ? '모닝' : mode === 'day' ? '데이' : '나이트'} 케어 달성률</div>
-          <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{totalDone} / {totalItems} 완료</div>
+          <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>{totalDone} / {totalItems} 완료</div>
         </div>
       </div>
 
@@ -2034,7 +2034,7 @@ function RoutineChecklist() {
               border: allChecked ? '1px solid rgba(var(--accent-rgb),0.4)' : 'none',
               borderRadius: 14,
               color: allChecked ? '#3D7CA8' : '#fff',
-              fontSize: 14, fontWeight: 700, letterSpacing: -0.2,
+              fontSize: 14, fontWeight: 600, letterSpacing: -0.2,
               cursor: 'pointer', fontFamily: 'inherit',
               boxShadow: allChecked ? 'none' : '0 4px 14px rgba(var(--accent-rgb),0.28)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
@@ -2091,7 +2091,7 @@ function RoutineChecklist() {
                   <div style={{
                     width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
                     background: 'rgba(var(--accent-rgb),0.14)',
-                    color: 'var(--accent-primary)', fontSize: 11, fontWeight: 700,
+                    color: 'var(--accent-primary)', fontSize: 11, fontWeight: 600,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontFamily: 'inherit',
                   }}>{i + 1}</div>
@@ -2161,8 +2161,8 @@ function RoutineChecklist() {
             </div>
             <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 20 }}>{detailItem.icon}</span>
-                <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>{detailItem.name}</span>
+                <span style={{ fontSize: 18 }}>{detailItem.icon}</span>
+                <span style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)' }}>{detailItem.name}</span>
               </div>
               <div onClick={() => setDetailItem(null)} style={{ width: 32, height: 32, borderRadius: '50%', background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -2257,7 +2257,7 @@ function RoutineChecklist() {
               <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(var(--accent-rgb),0.4)' }} />
             </div>
             <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>케어 항목 추가</span>
+              <span style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)' }}>케어 항목 추가</span>
               <div onClick={() => setAddModal(false)} style={{ width: 32, height: 32, borderRadius: '50%', background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </div>
@@ -2417,7 +2417,7 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
         <style>{`@keyframes careSheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
         <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(var(--accent-rgb),0.4)' }} /></div>
         <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>{title}</span>
+          <span style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)' }}>{title}</span>
           <button onClick={closeModal} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: '#ffffff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
@@ -2490,7 +2490,7 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {[{ label: '수분 두기', icon: '', key: 'water' }, { label: '수면 두기', icon: '', key: 'sleep' }, { label: '자외선 두기', icon: '', key: 'sunscreen' }].map(item => (
               <button key={item.key} onClick={() => setModal(item.key)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: '#ffffff', border: 'none', borderRadius: 20, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', textAlign: 'left' }}>
-                <span style={{ fontSize: 20 }}>{item.icon}</span>{item.label}
+                <span style={{ fontSize: 18 }}>{item.icon}</span>{item.label}
               </button>
             ))}
           </div>
@@ -2524,9 +2524,9 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 16 }}>어젯밤 수면 시간</div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 24, marginBottom: 20 }}>
-                <button onClick={()=>setHrs(Math.max(0,hrs-0.5))} style={{ width:44,height:44,borderRadius:'50%',border:'none',background:'rgba(255,255,255,0.4)',fontSize:20,cursor:'pointer',color:'var(--text-primary)',display:'flex',alignItems:'center',justifyContent:'center' }}>−</button>
-                <div style={{ fontSize:32,fontWeight:500,color:'var(--text-primary)' }}>{hrs}<span style={{fontSize:16,color:'var(--text-muted)'}}>h</span></div>
-                <button onClick={()=>setHrs(Math.min(12,hrs+0.5))} style={{ width:44,height:44,borderRadius:'50%',border:'none',background:'rgba(255,255,255,0.4)',fontSize:20,cursor:'pointer',color:'var(--text-primary)',display:'flex',alignItems:'center',justifyContent:'center' }}>+</button>
+                <button onClick={()=>setHrs(Math.max(0,hrs-0.5))} style={{ width:44,height:44,borderRadius:'50%',border:'none',background:'rgba(255,255,255,0.4)',fontSize:18,cursor:'pointer',color:'var(--text-primary)',display:'flex',alignItems:'center',justifyContent:'center' }}>−</button>
+                <div style={{ fontSize:40,fontWeight:500,color:'var(--text-primary)' }}>{hrs}<span style={{fontSize:16,color:'var(--text-muted)'}}>h</span></div>
+                <button onClick={()=>setHrs(Math.min(12,hrs+0.5))} style={{ width:44,height:44,borderRadius:'50%',border:'none',background:'rgba(255,255,255,0.4)',fontSize:18,cursor:'pointer',color:'var(--text-primary)',display:'flex',alignItems:'center',justifyContent:'center' }}>+</button>
               </div>
               <button onClick={()=>{saveHabitLog({sleep_hours:hrs});refreshHabit();showToast();closeModal();}} style={{ width:'100%',padding:14,borderRadius:10,border:'none',background:'var(--accent-primary)',color:'#fff',fontSize:13,fontWeight:500,cursor:'pointer',fontFamily:'inherit' }}>두기</button>
             </div>

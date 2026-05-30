@@ -53,7 +53,7 @@ export default function AiCommentCard({
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: accent, letterSpacing: 0.2 }}>
+          <span style={{ fontSize: 11, fontWeight: 600, color: accent, letterSpacing: 0.2 }}>
             AI 정밀 분석
           </span>
         </div>
@@ -118,7 +118,7 @@ export default function AiCommentCard({
                 animation: 'aiDetailFade 0.22s ease-out',
               }}
             >
-              <div style={{ fontSize: 11, fontWeight: 700, color: accent, marginBottom: 4 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: accent, marginBottom: 4 }}>
                 {parsedDetails[openIdx].label}
               </div>
               <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.6 }}>

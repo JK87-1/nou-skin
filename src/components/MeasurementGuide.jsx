@@ -247,12 +247,12 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
           animation: 'mgSlideUp 500ms ease 200ms both',
         }}>
           <div style={{
-            fontSize: 20, fontWeight: 600, letterSpacing: -0.3, lineHeight: 1.4,
+            fontSize: 18, fontWeight: 600, letterSpacing: -0.3, lineHeight: 1.4,
             color: 'white',
             textShadow: '0 1px 2px rgba(0,0,0,0.05)',
           }}>{copy.headline}</div>
           <div style={{
-            fontSize: 20, fontWeight: 600, letterSpacing: -0.3, lineHeight: 1.4,
+            fontSize: 18, fontWeight: 600, letterSpacing: -0.3, lineHeight: 1.4,
             color: 'white',
             textShadow: '0 1px 2px rgba(0,0,0,0.05)',
           }}>{copy.sub}</div>
@@ -294,7 +294,7 @@ export default function MeasurementGuide({ onStart, onClose, triggerSource }) {
                   }}>{c.icon}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
-                      fontSize: 15, fontWeight: 600, letterSpacing: -0.2, lineHeight: 1.5,
+                      fontSize: 16, fontWeight: 600, letterSpacing: -0.2, lineHeight: 1.5,
                       color: '#333',
                     }}>{c.title}</div>
                     <div style={{

@@ -186,7 +186,7 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
                   textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s ease',
                   WebkitTapHighlightColor: 'transparent',
                 }}>
-                  <div style={{ fontSize: 18, fontWeight: 700, color: itemColor, transition: 'color 0.2s' }}>{t.count}</div>
+                  <div style={{ fontSize: 18, fontWeight: 600, color: itemColor, transition: 'color 0.2s' }}>{t.count}</div>
                   <div style={{ fontSize: 11, marginTop: 4, color: itemColor, fontWeight: active ? 500 : 400, transition: 'color 0.2s' }}>{t.label}</div>
                 </div>
               );
@@ -285,7 +285,7 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
                         </div>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: 2, flexShrink: 0 }}>
-                        <span style={{ fontSize: 20, fontWeight: 700, color: 'rgba(0,0,0,0.8)', letterSpacing: -0.5 }}>{p.record.overallScore ?? '--'}</span>
+                        <span style={{ fontSize: 18, fontWeight: 600, color: 'rgba(0,0,0,0.8)', letterSpacing: -0.5 }}>{p.record.overallScore ?? '--'}</span>
                         <span style={{ fontSize: 10, fontWeight: 500, color: 'rgba(0,0,0,0.25)' }}>점</span>
                         <span style={{ fontSize: 10, fontWeight: 600, minWidth: 20, marginLeft: 2, color: diff != null && diff !== 0 ? (diff > 0 ? 'var(--accent-primary)' : '#e05545') : 'transparent' }}>
                           {diff != null && diff !== 0 ? (diff > 0 ? `+${diff}` : diff) : '\u00A0'}
@@ -310,7 +310,7 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
                         minWidth: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center',
                         background: 'transparent',
                         border: 'none', borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit',
-                        fontSize: 12, fontWeight: n === listPage ? 700 : 400,
+                        fontSize: 12, fontWeight: n === listPage ? 600 : 400,
                         color: n === listPage ? 'var(--accent-primary)' : 'rgba(0,0,0,0.25)',
                         transition: 'all 0.2s',
                       }}>{n}</button>
@@ -389,7 +389,7 @@ function BioEditModal({ bio, onSave, onClose }) {
       }}>
         <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(var(--accent-rgb),0.4)' }} /></div>
         <div style={{ padding: '14px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>자기소개</span>
+          <span style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)' }}>자기소개</span>
           <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: '#ffffff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
@@ -689,7 +689,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
       color: 'var(--text-primary)',
     }}>
       {icon}
-      <span style={{ fontSize: 15, fontWeight: 500, flex: 1 }}>{label}</span>
+      <span style={{ fontSize: 16, fontWeight: 500, flex: 1 }}>{label}</span>
       {right && <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{right}</span>}
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.3)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M9 6l6 6-6 6" />
@@ -995,7 +995,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
           color: 'var(--text-primary)',
         }}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-          <span style={{ fontSize: 15, fontWeight: 500 }}>로그아웃</span>
+          <span style={{ fontSize: 16, fontWeight: 500 }}>로그아웃</span>
         </div>
 
         {/* 정보 블록 */}
@@ -1072,9 +1072,9 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                   );
                   continue;
                 }
-                if (line.startsWith('## ')) { elements.push(<h2 key={key} style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', margin: '18px 0 8px' }}>{line.slice(3)}</h2>); i++; continue; }
+                if (line.startsWith('## ')) { elements.push(<h2 key={key} style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', margin: '18px 0 8px' }}>{line.slice(3)}</h2>); i++; continue; }
                 if (line.startsWith('# ') && !line.startsWith('## ')) { i++; continue; }
-                if (line.startsWith('- ')) { const bp = line.slice(2).split(/(\*\*[^*]+\*\*)/g); elements.push(<div key={key} style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '3px 0', paddingLeft: 14, lineHeight: 1.6 }}>• {bp.map((p, j) => p.startsWith('**') && p.endsWith('**') ? <strong key={j} style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{p.slice(2, -2)}</strong> : p)}</div>); i++; continue; }
+                if (line.startsWith('- ')) { const bp = line.slice(2).split(/(\*\*[^*]+\*\*)/g); elements.push(<div key={key} style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '3px 0', paddingLeft: 14, lineHeight: 1.6 }}>• {bp.map((p, j) => p.startsWith('**') && p.endsWith('**') ? <strong key={j} style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{p.slice(2, -2)}</strong> : p)}</div>); i++; continue; }
                 if (/^\d+\. /.test(line)) { elements.push(<div key={key} style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '3px 0', paddingLeft: 14, lineHeight: 1.6 }}>{line}</div>); i++; continue; }
                 if (line === '') { elements.push(<div key={key} style={{ height: 6 }} />); i++; continue; }
                 const parts = line.split(/(\*\*[^*]+\*\*)/g);
@@ -1082,7 +1082,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
                   <p key={key} style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.75, margin: 0 }}>
                     {parts.map((p, j) =>
                       p.startsWith('**') && p.endsWith('**')
-                        ? <strong key={j} style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{p.slice(2, -2)}</strong>
+                        ? <strong key={j} style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{p.slice(2, -2)}</strong>
                         : p
                     )}
                   </p>
@@ -1206,7 +1206,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               }}>
                 {profile.profileImage
                   ? <img src={profile.profileImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : <span style={{ fontSize: 32, fontWeight: 500, color: 'var(--text-muted)', letterSpacing: -0.6 }}>{(profile.nickname || '?')[0].toUpperCase()}</span>
+                  : <span style={{ fontSize: 40, fontWeight: 500, color: 'var(--text-muted)', letterSpacing: -0.6 }}>{(profile.nickname || '?')[0].toUpperCase()}</span>
                 }
               </div>
               <div onClick={() => profilePhotoRef.current?.click()} style={{
@@ -2204,7 +2204,7 @@ function JourneyStat({ value, unit, label, hasDivider }) {
       )}
       <div style={{
         fontFamily: 'inherit',
-        fontSize: 28, fontWeight: 400, color: '#ADEBB3',
+        fontSize: 24, fontWeight: 400, color: '#ADEBB3',
         lineHeight: 1, marginBottom: 6,
       }}>
         {value}{unit && <span style={{ fontSize: 14, color: 'var(--text-muted)' }}>{unit}</span>}

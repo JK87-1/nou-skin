@@ -255,7 +255,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
               {profile.profileImage ? (
                 <img src={profile.profileImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
-                <span style={{ fontSize: 28, fontWeight: 700, color: '#fff' }}>
+                <span style={{ fontSize: 24, fontWeight: 600, color: '#fff' }}>
                   {(profile.nickname || '사용자').charAt(0)}
                 </span>
               )}
@@ -265,7 +265,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
               position: 'absolute', bottom: -4, right: -4,
               width: 22, height: 22, borderRadius: '50%',
               background: 'linear-gradient(135deg, #6598ef, #FFA500)',
-              color: '#fff', fontSize: 10, fontWeight: 700,
+              color: '#fff', fontSize: 10, fontWeight: 600,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               border: 'none',
             }}>{earnedCount}</div>
@@ -282,7 +282,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
                 onKeyDown={(e) => { if (e.key === 'Enter') saveName(); }}
                 maxLength={12}
                 style={{
-                  fontSize: 22, fontWeight: 700, color: 'var(--text-primary)',
+                  fontSize: 24, fontWeight: 600, color: 'var(--text-primary)',
                   background: 'var(--item-bg)', border: 'none',
                   borderRadius: 10, padding: '2px 10px', width: 180,
                   outline: 'none', fontFamily: 'inherit', textAlign: 'center',
@@ -291,7 +291,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
             ) : (
               <span
                 onClick={startNameEdit}
-                style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', cursor: 'pointer' }}
+                style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', cursor: 'pointer' }}
               >
                 {profile.nickname || '사용자'}
               </span>
@@ -340,7 +340,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
                 flex: 1, textAlign: 'center', cursor: s.onClick ? 'pointer' : 'default',
                 borderRight: i < arr.length - 1 ? '1px solid var(--progress-track)' : 'none',
               }}>
-                <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)' }}>{s.value}</div>
+                <div style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)' }}>{s.value}</div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{s.label}</div>
               </div>
             ))}
@@ -386,12 +386,12 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
                   animation: 'brFadeInUp 0.5s ease 0.15s both',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-                    <span style={{ fontSize: 28, display: 'inline-flex' }}><PastelIcon emoji={g.icon} size={28} /></span>
+                    <span style={{ fontSize: 24, display: 'inline-flex' }}><PastelIcon emoji={g.icon} size={28} /></span>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{g.name}</div>
                       <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{g.desc}</div>
                     </div>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: '#6598ef' }}>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: '#6598ef' }}>
                       {g.current}/{g.target}
                     </span>
                   </div>
@@ -462,7 +462,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
                   }}
                 >
                   <div style={{
-                    fontSize: 32, marginBottom: 8, display: 'flex', justifyContent: 'center',
+                    fontSize: 40, marginBottom: 8, display: 'flex', justifyContent: 'center',
                     filter: badge.earned ? 'none' : 'grayscale(1) opacity(0.4)',
                   }}><PastelIcon emoji={badge.icon} size={36} /></div>
                   <div style={{
@@ -542,7 +542,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
                   {/* Info */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{t.name}</span>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{t.name}</span>
                       {isActive && (
                         <span style={{
                           fontSize: 10, fontWeight: 600, color: t.accent,
@@ -584,7 +584,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
           {/* Loading */}
           {rankLoading && (
             <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)', fontSize: 13 }}>
-              <div style={{ fontSize: 28, marginBottom: 12, animation: 'brBadgeShine 1s ease infinite' }}><CrownIcon size={28} /></div>
+              <div style={{ fontSize: 24, marginBottom: 12, animation: 'brBadgeShine 1s ease infinite' }}><CrownIcon size={28} /></div>
               랭킹을 불러오는 중...
             </div>
           )}
@@ -592,7 +592,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
           {/* Error */}
           {rankError && !rankLoading && (
             <div style={{ textAlign: 'center', padding: '40px 0' }}>
-              <div style={{ fontSize: 28, marginBottom: 12 }}></div>
+              <div style={{ fontSize: 24, marginBottom: 12 }}></div>
               <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>랭킹을 불러올 수 없습니다</div>
               <button onClick={loadRanking} style={{
                 padding: '8px 24px', borderRadius: 12, border: `1px solid ${activeTheme.accent}4d`,
@@ -605,7 +605,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
           {/* Ranking Content */}
           {!rankLoading && !rankError && ranking.length === 0 && (
             <div style={{ textAlign: 'center', padding: '40px 0' }}>
-              <div style={{ fontSize: 28, marginBottom: 12 }}></div>
+              <div style={{ fontSize: 24, marginBottom: 12 }}></div>
               <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>아직 랭킹 데이터가 없어요</div>
               <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 4 }}>피부 측정을 하면 랭킹에 참여할 수 있어요!</div>
             </div>
@@ -646,7 +646,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
                 <div style={{
                   width: 28, height: 28, borderRadius: 9,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 12, fontWeight: 700, flexShrink: 0,
+                  fontSize: 12, fontWeight: 600, flexShrink: 0,
                   background: user.isMe
                     ? 'var(--btn-primary-bg)' : 'var(--bg-card)',
                   color: user.isMe ? '#fff' : 'var(--text-dim)',
@@ -656,7 +656,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span style={{
-                      fontSize: 14, fontWeight: user.isMe ? 700 : 500,
+                      fontSize: 14, fontWeight: user.isMe ? 600 : 500,
                       color: user.isMe ? 'var(--text-primary)' : 'var(--text-secondary)',
                     }}>{user.nickname}</span>
                     {user.isMe && (
@@ -671,7 +671,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
 
                 {/* Score */}
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 18, fontWeight: 700, color: user.isMe ? activeTheme.accent : 'var(--text-primary)' }}>
+                  <div style={{ fontSize: 18, fontWeight: 600, color: user.isMe ? activeTheme.accent : 'var(--text-primary)' }}>
                     {user.score}
                   </div>
                   <ChangeIndicator change={user.change} />
@@ -701,7 +701,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
                     flex: 1, textAlign: 'center', padding: '12px 6px',
                     background: 'var(--bg-card)', borderRadius: 14,
                   }}>
-                    <div style={{ fontSize: 20, fontWeight: 700, color: s.color, lineHeight: 1 }}>{s.value}</div>
+                    <div style={{ fontSize: 18, fontWeight: 600, color: s.color, lineHeight: 1 }}>{s.value}</div>
                     <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 6 }}>{s.label}</div>
                   </div>
                 ))}
@@ -779,7 +779,7 @@ function PodiumCard({ user, medal, isFirst, accent = '#6598ef' }) {
         ? '1px solid rgba(251,191,36,0.2)'
         : '1px solid var(--border-light)',
     }}>
-      <div style={{ fontSize: isFirst ? 28 : 22, marginBottom: 6 }}>{medal}</div>
+      <div style={{ fontSize: isFirst ? 24 : 24, marginBottom: 6 }}>{medal}</div>
       <div style={{
         width: isFirst ? 44 : 36, height: isFirst ? 44 : 36, borderRadius: isFirst ? 14 : 12,
         background: user.isMe ? `${accent}26` : 'var(--bg-card-hover)',
@@ -791,7 +791,7 @@ function PodiumCard({ user, medal, isFirst, accent = '#6598ef' }) {
         {user.isMe && user.nickname ? user.nickname.charAt(0) : ''}
       </div>
       <div style={{
-        fontSize: isFirst ? 13 : 12, fontWeight: user.isMe ? 700 : 500,
+        fontSize: isFirst ? 13 : 12, fontWeight: user.isMe ? 600 : 500,
         color: user.isMe ? 'var(--text-primary)' : 'var(--text-secondary)', marginBottom: 2,
         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
       }}>
@@ -799,7 +799,7 @@ function PodiumCard({ user, medal, isFirst, accent = '#6598ef' }) {
         {user.isMe && <span style={{ fontSize: 10, color: accent, marginLeft: 3 }}>나</span>}
       </div>
       <div style={{
-        fontSize: isFirst ? 22 : 18, fontWeight: 700,
+        fontSize: isFirst ? 24 : 18, fontWeight: 600,
         color: isFirst ? '#F0B870' : (user.isMe ? accent : 'var(--text-primary)'),
       }}>{user.score}</div>
       <ChangeIndicator change={user.change} />
@@ -861,10 +861,10 @@ function TitleSelectionSheet({ currentLevel, totalXP, activeTheme, selectedTitle
         <div style={{ padding: '8px 24px 14px', borderBottom: '1px solid var(--border-separator)', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>칭호 선택</div>
+              <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>칭호 선택</div>
               <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>달성한 칭호 중 프로필에 표시할 칭호를 선택하세요</div>
             </div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: activeTheme.accent, fontFamily: "var(--font-display)" }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: activeTheme.accent, fontFamily: "var(--font-display)" }}>
               {earnedCount}/{LEVEL_TITLES.length}
             </div>
           </div>
@@ -896,7 +896,7 @@ function TitleSelectionSheet({ currentLevel, totalXP, activeTheme, selectedTitle
                   width: 24, height: 24, borderRadius: 7, flexShrink: 0,
                   background: isSelected ? `linear-gradient(135deg, ${activeTheme.accent}, ${activeTheme.sub})` : 'rgba(255,255,255,0.05)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 10, fontWeight: 700, color: isSelected ? '#000' : 'var(--text-muted)',
+                  fontSize: 10, fontWeight: 600, color: isSelected ? '#000' : 'var(--text-muted)',
                   fontFamily: "var(--font-display)",
                 }}>{title.level}</div>
 
@@ -906,7 +906,7 @@ function TitleSelectionSheet({ currentLevel, totalXP, activeTheme, selectedTitle
                 {/* Name */}
                 <div style={{ flex: 1 }}>
                   <span style={{
-                    fontSize: 13, fontWeight: isSelected ? 700 : 500,
+                    fontSize: 13, fontWeight: isSelected ? 600 : 500,
                     color: earned ? 'var(--text-primary)' : 'var(--text-dim)',
                   }}>{title.title}</span>
                 </div>
@@ -914,7 +914,7 @@ function TitleSelectionSheet({ currentLevel, totalXP, activeTheme, selectedTitle
                 {/* Status */}
                 {isSelected && (
                   <div style={{
-                    fontSize: 10, fontWeight: 700, color: activeTheme.accent,
+                    fontSize: 10, fontWeight: 600, color: activeTheme.accent,
                     background: `${activeTheme.accent}15`, padding: '3px 8px', borderRadius: 6,
                   }}>사용 중</div>
                 )}
@@ -972,7 +972,7 @@ function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#6598ef' 
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0,
         }}>
           <div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>뱃지 컬렉션</div>
+            <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>뱃지 컬렉션</div>
             <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 3 }}>
               {earnedCount} / {totalCount} 획득
             </div>
@@ -1062,7 +1062,7 @@ function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#6598ef' 
                         <div style={{
                           width: 44, height: 44, borderRadius: 14,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 22, margin: '0 auto',
+                          fontSize: 24, margin: '0 auto',
                           background: badge.earned
                             ? `linear-gradient(135deg, ${cat.color}18, ${cat.color}08)`
                             : 'rgba(255,255,255,0.02)',
@@ -1132,7 +1132,7 @@ function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#6598ef' 
                   <div style={{
                     width: 52, height: 52, borderRadius: 16,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 28, flexShrink: 0,
+                    fontSize: 24, flexShrink: 0,
                     background: detailBadge.earned
                       ? `linear-gradient(135deg, ${badgeCatColor}18, ${badgeCatColor}08)`
                       : 'rgba(255,255,255,0.02)',
@@ -1141,7 +1141,7 @@ function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#6598ef' 
                   }}>{detailBadge.icon}</div>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                      <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{detailBadge.name}</span>
+                      <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>{detailBadge.name}</span>
                       {detailBadge.earned && (
                         <span style={{
                           fontSize: 10, fontWeight: 600, color: '#34d399',
@@ -1220,7 +1220,7 @@ export function BadgeCelebration({ badge, onClose, accent = '#6598ef' }) {
           animation: 'brScaleUp 0.4s ease both',
         }}
       >
-        <div style={{ fontSize: 48, marginBottom: 12, display: 'flex', justifyContent: 'center' }}><PastelIcon emoji={badge.icon} size={48} /></div>
+        <div style={{ fontSize: 40, marginBottom: 12, display: 'flex', justifyContent: 'center' }}><PastelIcon emoji={badge.icon} size={48} /></div>
         <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 6 }}>
            새 뱃지 획득!
         </div>
@@ -1234,7 +1234,7 @@ export function BadgeCelebration({ badge, onClose, accent = '#6598ef' }) {
           display: 'inline-block', padding: '4px 14px', borderRadius: 10,
           background: 'rgba(251,191,36,0.1)', marginBottom: 20,
         }}>
-          <span style={{ fontSize: 14, fontWeight: 700, color: '#F0B870' }}>+100 P</span>
+          <span style={{ fontSize: 14, fontWeight: 600, color: '#F0B870' }}>+100 P</span>
         </div>
         <br />
         <button
@@ -1242,7 +1242,7 @@ export function BadgeCelebration({ badge, onClose, accent = '#6598ef' }) {
           style={{
             padding: '12px 48px', borderRadius: 16, border: 'none',
             background: 'var(--btn-primary-bg)',
-            color: '#fff', fontSize: 15, fontWeight: 600,
+            color: '#fff', fontSize: 16, fontWeight: 600,
             cursor: 'pointer', fontFamily: 'inherit',
           }}
         >확인</button>

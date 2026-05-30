@@ -17,7 +17,7 @@ export function RoutinePlaceholder() {
         </svg>
       </div>
       <h2 style={{
-        fontSize: 20, fontWeight: 600, color: '#2d2520',
+        fontSize: 18, fontWeight: 600, color: '#2d2520',
         fontFamily: "'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif",
         marginBottom: 8,
       }}>루틴</h2>
@@ -50,7 +50,7 @@ export function MyPlaceholder() {
         </svg>
       </div>
       <h2 style={{
-        fontSize: 20, fontWeight: 600, color: '#2d2520',
+        fontSize: 18, fontWeight: 600, color: '#2d2520',
         fontFamily: "'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif",
         marginBottom: 8,
       }}>마이페이지</h2>
