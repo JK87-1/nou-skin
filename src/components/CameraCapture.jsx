@@ -220,6 +220,9 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
   const lastDetectRef = useRef(0);
   const landmarksRef = useRef(null);
   const flashRef = useRef(null);
+  // 카메라 시작 직후 해상도 램프업(1~2초) 동안 줌이 튀는 걸 숨기기 위해
+  // 비디오 해상도가 안정될 때까지 추적 → 안정되면 프리뷰를 페이드인.
+  const vidStableRef = useRef({ w: 0, count: 0, fired: false });
 
   // Status: use BOTH state (for React UI) and ref (for RAF loop drawing)
   const statusRef = useRef('initializing');
@@ -240,6 +243,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
   const [conditions, setConditions] = useState({ face: false, position: false, distance: false, light: false });
   const [hasLandmarks, setHasLandmarks] = useState(false);
   const [mediapipeReady, setMediapipeReady] = useState(false);
+  const [videoReady, setVideoReady] = useState(false); // 해상도 안정 후 true → 프리뷰 페이드인
   const [cameraError, setCameraError] = useState(null); // null | 'insecure' | 'denied' | 'unavailable'
   const [cameraReady, setCameraReady] = useState(false);
   const [activeZoneIdx, setActiveZoneIdx] = useState(-1);
@@ -592,6 +596,14 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
       const vidW = video.videoWidth || 640;
       const vidH = video.videoHeight || 480;
 
+      // 해상도가 몇 프레임 연속 동일하면(=램프업 끝) 프리뷰를 띄움
+      const vs = vidStableRef.current;
+      if (!vs.fired && video.videoWidth > 0) {
+        if (video.videoWidth === vs.w) vs.count++;
+        else { vs.w = video.videoWidth; vs.count = 0; }
+        if (vs.count >= 4) { vs.fired = true; setVideoReady(true); }
+      }
+
       const now = performance.now();
       if (landmarkerRef.current && now - lastDetectRef.current > 66) {
         lastDetectRef.current = now;
@@ -662,14 +674,28 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
     setStatus('capturing');
     video.pause();
 
+    // 프리뷰는 풀스크린 object-fit:cover라 비디오 가운데만 잘려 보임.
+    // 저장본도 화면에 보이던 영역만 똑같이 잘라 WYSIWYG를 맞춤 (전체 프레임을 담으면
+    // 얼굴이 작게 저장돼 앨범 그리드에서 작아 보이는 문제 발생).
+    const vidW = video.videoWidth;
+    const vidH = video.videoHeight;
+    const rect = video.getBoundingClientRect();
+    const dispW = rect.width || window.innerWidth;
+    const dispH = rect.height || window.innerHeight;
+    const coverScale = Math.max(dispW / vidW, dispH / vidH);
+    const cropW = Math.min(vidW, dispW / coverScale);
+    const cropH = Math.min(vidH, dispH / coverScale);
+    const sx = (vidW - cropW) / 2;
+    const sy = (vidH - cropH) / 2;
+
     const captureCanvas = document.createElement('canvas');
-    captureCanvas.width = video.videoWidth;
-    captureCanvas.height = video.videoHeight;
+    captureCanvas.width = Math.round(cropW);
+    captureCanvas.height = Math.round(cropH);
     const capCtx = captureCanvas.getContext('2d');
     // Mirror the capture to match selfie view
-    capCtx.translate(video.videoWidth, 0);
+    capCtx.translate(captureCanvas.width, 0);
     capCtx.scale(-1, 1);
-    capCtx.drawImage(video, 0, 0);
+    capCtx.drawImage(video, sx, sy, cropW, cropH, 0, 0, captureCanvas.width, captureCanvas.height);
     const dataUrl = captureCanvas.toDataURL('image/jpeg', 0.98);
 
     if (flashRef.current) {
@@ -770,6 +796,8 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
           style={{
             width: '100%', height: '100%', objectFit: 'cover',
             transform: 'scaleX(-1)',
+            opacity: videoReady ? 1 : 0,
+            transition: 'opacity 0.45s ease',
           }}
         />
 
