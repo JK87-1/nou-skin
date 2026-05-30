@@ -237,6 +237,7 @@ select:focus-visible {
   --card-sm-pad: 10px 12px;
   --card-alert-bg: var(--context-bg);
   --card-alert-pad: 16px;
+  --card-weather-bg: rgba(120,189,253,0.06); /* 날씨 패널 — 블루 틴트, 카드와 동일 투명도 계열(다크) */
   --segment-radius: var(--radius-pill);
   --segment-item-radius: var(--radius-pill);
   --float-pill-bg: rgba(30,30,40,0.9);
@@ -330,6 +331,7 @@ select:focus-visible {
   --card-nested-bg: #F1F3F5;
   --card-sm-bg: rgba(255,255,255,0.7);
   --card-alert-bg: var(--context-bg);
+  --card-weather-bg: rgba(214,232,252,0.7); /* 날씨 패널 — 옅은 스카이 블루, 카드와 동일 투명도 0.7 */
   --segment-radius: 14px;
   --segment-item-radius: var(--radius-sm);
   --float-pill-bg: #FFFFFF;
