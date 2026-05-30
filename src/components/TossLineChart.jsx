@@ -16,7 +16,7 @@
 
 import { useState, useRef } from 'react';
 
-const POSITIVE = 'var(--accent-primary)'; // 토스 블루 톤
+const POSITIVE = '#6598ef'; // 토스 블루 톤 (hex 필수 — 그라데이션 id·adjustColor가 hex 파싱)
 const NEGATIVE = '#e05545'; // 토스 빨강
 
 // hex 색상을 밝게/어둡게 조절 (amount: -1~1, 양수=밝게, 음수=어둡게)
@@ -221,14 +221,14 @@ export default function TossLineChart({
 
       {/* Area fill — 라인 아래 부드러운 그라데이션 */}
       <defs>
-        <linearGradient id={`area-fill-${strokeColor.replace('#','')}`} x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={`area-fill-${strokeColor.replace(/[^a-z0-9]/gi,'')}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={strokeColor} stopOpacity="0.5" />
           <stop offset="100%" stopColor={strokeColor} stopOpacity="0.02" />
         </linearGradient>
       </defs>
       <path
         d={`${path} L${pts[pts.length - 1].x.toFixed(2)},${H - PAD_Y_BOT} L${pts[0].x.toFixed(2)},${H - PAD_Y_BOT} Z`}
-        fill={`url(#area-fill-${strokeColor.replace('#','')})`}
+        fill={`url(#area-fill-${strokeColor.replace(/[^a-z0-9]/gi,'')})`}
         style={{ animation: 'tossAreaFade 0.8s ease-out 0.6s both' }}
       />
 
