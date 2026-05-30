@@ -228,6 +228,7 @@ select:focus-visible {
   --card-border-radius: var(--card-radius);
   /* Card system (배경·그림자·패딩 — 곡률은 --card-*-radius / 다크 기본) */
   --card-bg: rgba(255,255,255,0.05);
+  --card-blur: none;
   --card-shadow: 0 2px 8px rgba(0,0,0,0.3); /* 다크: 탭바 세기에 맞춘 아래방향 */
   --card-pad: 20px;
   --card-nested-bg: rgba(255,255,255,0.03);
@@ -322,11 +323,12 @@ select:focus-visible {
   --chip-text: var(--text-secondary);
   --card-backdrop: blur(16px);
   --card-border-radius: var(--card-radius);
-  /* Card system — Sky Glass 라이트 (흰 80%, 블러X, soft shadow) */
-  --card-bg: rgba(255,255,255,0.8);
-  --card-shadow: 0 2px 8px rgba(0,0,0,0.03); /* 메인 탭바 그림자 세기에 맞춤 */
+  /* Card system — Sky Glass 라이트 (흰 70%, 블러 12px, soft shadow 0.01) */
+  --card-bg: rgba(255,255,255,0.7);
+  --card-blur: blur(12px);
+  --card-shadow: 0 2px 8px rgba(0,0,0,0.01);
   --card-nested-bg: #F1F3F5;
-  --card-sm-bg: rgba(255,255,255,0.8);
+  --card-sm-bg: rgba(255,255,255,0.7);
   --card-alert-bg: var(--context-bg);
   --segment-radius: 14px;
   --segment-item-radius: var(--radius-sm);
@@ -640,8 +642,8 @@ select:focus-visible {
   padding: var(--card-pad);
   box-shadow: var(--card-shadow);
   margin-bottom: 14px;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  backdrop-filter: var(--card-blur);
+  -webkit-backdrop-filter: var(--card-blur);
 }
 /* 중첩 카드 — 카드 안에 든 박스 (그림자 없음) */
 .card-nested,
@@ -657,6 +659,8 @@ select:focus-visible {
   border: none;
   border-radius: var(--card-sm-radius);
   padding: var(--card-sm-pad);
+  backdrop-filter: var(--card-blur);
+  -webkit-backdrop-filter: var(--card-blur);
 }
 /* 알림 카드 — 시맨틱 틴트 */
 .card-alert {
@@ -1752,10 +1756,10 @@ select:focus-visible {
 
 /* Global glass effect for light mode */
 [data-theme="light"] [style*="--bg-card"] {
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  backdrop-filter: var(--card-blur);
+  -webkit-backdrop-filter: var(--card-blur);
   border: none;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.01);
 }
 
 /* Section icon: 40x40 rounded square with tinted bg */

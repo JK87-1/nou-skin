@@ -6,7 +6,7 @@ import { AnimatedNumber } from '../components/UIComponents';
 
 const glass = {
   background: 'var(--card-bg)',
-  backdropFilter: 'none', WebkitBackdropFilter: 'none',
+  backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)',
   border: 'none',
   boxShadow: 'var(--card-shadow)',
   borderRadius: 'var(--card-radius)',
@@ -396,6 +396,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
             {recordCount === 0 ? (
               <div role="button" aria-label="첫 측정 시작" onClick={handleMeasure} style={{
                 background: 'var(--card-bg)',
+                backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)',
                 borderRadius: 'var(--card-radius)',
                 boxShadow: 'var(--card-shadow)',
                 padding: '32px 16px', textAlign: 'center', cursor: 'pointer',
@@ -427,7 +428,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                     const prevVal = prev?.[m.key] ?? null;
                     const diff = val !== null && prevVal !== null ? val - prevVal : null;
                     return (
-                      <div key={m.key} style={{ background: 'var(--card-sm-bg)', borderRadius: 'var(--card-sm-radius)', padding: '8px 6px', textAlign: 'center' }}>
+                      <div key={m.key} style={{ background: 'var(--card-sm-bg)', backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)', borderRadius: 'var(--card-sm-radius)', padding: '8px 6px', textAlign: 'center' }}>
                         <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{m.label}</div>
                         <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)', marginTop: 2 }}>{val != null ? <AnimatedNumber target={val} duration={600} /> : '—'}</div>
                         <div style={{ fontSize: 10, fontWeight: 500, marginTop: 1, color: diff === null ? 'var(--text-muted)' : diff > 0 ? 'var(--accent-primary)' : diff < 0 ? '#e05545' : 'var(--text-muted)' }}>
