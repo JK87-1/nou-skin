@@ -955,8 +955,9 @@ export default function App() {
     return () => window.removeEventListener('lua:face-coach-open', handler);
   }, []);
 
-  // 제품 목록 백업 복구 — 콘솔에서 window.luaRestoreProducts() 호출로 실행
-  // (deleteProduct 사고 등으로 제품만 사라졌을 때, 다른 데이터는 건드리지 않고 제품·체크만 복원)
+  // 제품 목록 백업 복구 — 콘솔(window.luaRestoreProducts) 또는 URL(?restore_products=1)로 실행.
+  // 모바일에선 콘솔 접근 어려워서 URL 쿼리 트리거 + 화면 배너 결과 표시.
+  const [restoreBanner, setRestoreBanner] = useState(null);
   useEffect(() => {
     if (typeof window === 'undefined') return;
     window.luaRestoreProducts = async () => {
@@ -964,13 +965,34 @@ export default function App() {
       const result = await restoreKeysFromAutoBackup(keys);
       if (result.restored) {
         const when = result.timestamp ? new Date(result.timestamp).toLocaleString('ko-KR') : '시점 미상';
-        console.log(`✅ 제품 목록 복원 완료 (백업 시점: ${when}). 키: ${result.restoredKeys.join(', ')}`);
-        console.log('페이지를 새로고침하면 복원된 제품이 보입니다.');
+        console.log(`✅ 제품 복원 완료 (백업: ${when})`);
         return result;
       }
-      console.warn('❌ 백업을 찾지 못했어요. IndexedDB에 백업이 없거나 빈 백업입니다.');
+      console.warn('❌ 백업을 찾지 못했어요.');
       return result;
     };
+
+    // URL 트리거: https://luaskin.co/?restore_products=1
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('restore_products') !== '1') return;
+    (async () => {
+      setRestoreBanner({ type: 'loading', message: '백업에서 제품 목록 복구 중…' });
+      try {
+        const result = await restoreKeysFromAutoBackup(['nou_tracker_products', 'nou_tracker_checks']);
+        if (result.restored) {
+          const when = result.timestamp ? new Date(result.timestamp).toLocaleString('ko-KR') : '시점 미상';
+          const cnt = (() => {
+            try { return JSON.parse(localStorage.getItem('nou_tracker_products') || '[]').length; } catch { return 0; }
+          })();
+          setRestoreBanner({ type: 'success', message: `복구 완료 · 제품 ${cnt}개\n백업 시점: ${when}` });
+        } else {
+          setRestoreBanner({ type: 'error', message: '복구할 백업이 없어요.\n사고 전에 백업이 만들어지지 않았거나, 이 브라우저에 백업이 없는 상태입니다.' });
+        }
+      } catch (e) {
+        setRestoreBanner({ type: 'error', message: '복구 실패: ' + (e?.message || e) });
+      }
+      try { window.history.replaceState({}, '', window.location.pathname); } catch {}
+    })();
   }, []);
 
   return (
@@ -980,6 +1002,39 @@ export default function App() {
       <style>{`@keyframes landingPearlReveal { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }`}</style>
       {/* 약관 모달은 MyPage > 설정 > 정보에서 자율적으로 (김준 결정) */}
       {showSplash && <SplashScreen exiting={splashExiting} onAnimationEnd={() => setShowSplash(false)} />}
+
+      {/* 데이터 복구 배너 — URL ?restore_products=1 트리거 시 표시 */}
+      {restoreBanner && (
+        <div style={{
+          position: 'fixed', top: 'calc(env(safe-area-inset-top, 0px) + 12px)', left: 12, right: 12,
+          zIndex: 99999,
+          background: restoreBanner.type === 'success' ? 'rgba(34,139,80,0.96)' :
+                      restoreBanner.type === 'error' ? 'rgba(200,70,70,0.96)' :
+                      'rgba(40,60,110,0.96)',
+          color: '#fff', borderRadius: 14, padding: '14px 16px',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
+          fontSize: 13.5, lineHeight: 1.55, fontWeight: 500,
+          whiteSpace: 'pre-line',
+          display: 'flex', flexDirection: 'column', gap: 10,
+        }}>
+          <div>{restoreBanner.message}</div>
+          {restoreBanner.type !== 'loading' && (
+            <div style={{ display: 'flex', gap: 8 }}>
+              {restoreBanner.type === 'success' && (
+                <button onClick={() => window.location.reload()} style={{
+                  flex: 1, padding: '10px 14px', borderRadius: 10, border: 'none',
+                  background: '#fff', color: '#1a5e3a', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit',
+                }}>새로고침해서 확인</button>
+              )}
+              <button onClick={() => setRestoreBanner(null)} style={{
+                flex: restoreBanner.type === 'success' ? '0 0 auto' : 1,
+                padding: '10px 14px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.35)',
+                background: 'transparent', color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit',
+              }}>닫기</button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 정밀 측정 모드 — paywall → capture → result 통합 컨테이너 */}
       <PrecisionMode open={precisionOpen} onClose={() => setPrecisionOpen(false)} />
