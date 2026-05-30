@@ -1025,7 +1025,7 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
 
   // ── 컬러 시스템 ──
   const C = {
-    main: '#042C53', sub: '#185FA5', accent: '#1E90E8',
+    main: '#1A1A1A', sub: '#185FA5', accent: '#1E90E8',
     positive: '#1976D2', negative: '#A32D2D',
     gradTop: '#DCEEFB', gradMid: '#EAF4FB',
     cardBg: '#FFFFFF', outerBg: '#F5FAFD',
@@ -2252,7 +2252,7 @@ function RoutineChecklist() {
       {/* Routine Detail Modal */}
       {detailItem && createPortal(
         <>
-          <div onClick={() => { setDetailItem(null); setShowNewTagInputDetail(false); setNewTagNameDetail(''); }} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,44,83,0.18)', backdropFilter: 'none', WebkitBackdropFilter: 'none' }} />
+          <div onClick={() => { setDetailItem(null); setShowNewTagInputDetail(false); setNewTagNameDetail(''); }} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.18)', backdropFilter: 'none', WebkitBackdropFilter: 'none' }} />
           <div style={{
             position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201,
             background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none',
@@ -2399,7 +2399,7 @@ function RoutineChecklist() {
       {/* Add Routine Modal */}
       {addModal && createPortal(
         <>
-          <div onClick={() => { setAddModal(false); setShowNewTagInput(false); setNewTagName(''); }} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,44,83,0.18)', backdropFilter: 'none', WebkitBackdropFilter: 'none' }} />
+          <div onClick={() => { setAddModal(false); setShowNewTagInput(false); setNewTagName(''); }} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.18)', backdropFilter: 'none', WebkitBackdropFilter: 'none' }} />
           <div style={{
             position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201,
             background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none',
@@ -2614,7 +2614,7 @@ function CareEmbed({ onOpenConsult, onMeasure, onAddProduct }) {
   const closeModal = () => setModal(null);
   const ModalWrap = ({ title, children }) => createPortal(
     <>
-      <div onClick={closeModal} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,44,83,0.18)', backdropFilter: 'none', WebkitBackdropFilter: 'none' }} />
+      <div onClick={closeModal} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.18)', backdropFilter: 'none', WebkitBackdropFilter: 'none' }} />
       <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201, background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none', border: 'none', borderRadius: '20px 20px 0 0', boxShadow: '0 -8px 28px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.4)', paddingBottom: 'calc(env(safe-area-inset-bottom,0px) + 16px)', maxWidth: 430, margin: '0 auto', animation: 'careSheetUp 280ms cubic-bezier(0.32,0.72,0,1) forwards' }}>
         <style>{`@keyframes careSheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
         <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 0' }}><div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(var(--accent-rgb),0.4)' }} /></div>

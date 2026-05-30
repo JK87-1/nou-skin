@@ -284,7 +284,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
       ctx.roundRect(-boxW / 2, -boxH / 2, boxW, boxH, rad);
       ctx.fill();
       // Text
-      ctx.fillStyle = '#042C53';
+      ctx.fillStyle = '#1A1A1A';
       ctx.fillText(label, 0, 0.5);
       ctx.restore();
     };
@@ -655,7 +655,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
             zIndex: 10,
           }}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#042C53" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
         </button>
 
         {/* Status chip */}
@@ -665,7 +665,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
             position: 'absolute', top: 'calc(56px + env(safe-area-inset-top, 0px))',
             left: '50%', transform: 'translateX(-50%)',
             padding: '6px 11px',
-            background: 'rgba(4, 44, 83, 0.78)',
+            background: 'rgba(0,0,0, 0.78)',
             borderRadius: 14,
             display: 'flex', alignItems: 'center', gap: 6,
             zIndex: 10,
@@ -691,7 +691,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
             position: 'absolute', top: 'calc(12px + env(safe-area-inset-top, 0px))', right: 12,
             padding: '7px 12px', borderRadius: 16,
             background: 'rgba(255,255,255,0.92)', border: 'none',
-            color: '#042C53', fontSize: 11, fontWeight: 500, cursor: 'pointer',
+            color: '#1A1A1A', fontSize: 11, fontWeight: 500, cursor: 'pointer',
             zIndex: 10, fontFamily: 'inherit',
           }}
         >

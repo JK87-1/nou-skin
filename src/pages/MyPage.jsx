@@ -379,7 +379,7 @@ function BioEditModal({ bio, onSave, onClose }) {
   const [text, setText] = useState(bio);
   return (
     <>
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,44,83,0.18)', backdropFilter: 'none', WebkitBackdropFilter: 'none' }} />
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.18)', backdropFilter: 'none', WebkitBackdropFilter: 'none' }} />
       <div style={{
         position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 201,
         background: '#ffffff', backdropFilter: 'none', WebkitBackdropFilter: 'none',

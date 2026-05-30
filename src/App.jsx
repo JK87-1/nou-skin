@@ -962,7 +962,7 @@ export default function App() {
             <div style={{ width: 64, height: 64, borderRadius: '50%', margin: '0 auto 16px', background: 'rgba(var(--accent-rgb),0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#6598ef" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 9v4" /><path d="M12 17h.01" /><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /></svg>
             </div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: '#042C53', marginBottom: 8 }}>AI 분석에 실패했어요</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: '#1A1A1A', marginBottom: 8 }}>AI 분석에 실패했어요</div>
             <div style={{ fontSize: 13.5, color: '#374E66', lineHeight: 1.6, marginBottom: 22, wordBreak: 'keep-all' }}>네트워크가 잠시 불안정했던 것 같아요. 정확한 측정을 위해 다시 측정해주세요.</div>
             <button onClick={() => { setAiFailedOpen(false); setStage('camera'); }} style={{ width: '100%', padding: 14, background: 'linear-gradient(135deg, var(--accent-primary), #85b0f5)', border: 'none', borderRadius: 14, color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>다시 측정하기</button>
             <button onClick={() => { setAiFailedOpen(false); goToLanding(); }} style={{ width: '100%', padding: '12px 0 2px', background: 'none', border: 'none', color: '#8095ad', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', marginTop: 6 }}>홈으로</button>
@@ -1560,12 +1560,12 @@ export default function App() {
           <div style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             padding: '6px 0',
-            borderBottom: isLast ? 'none' : '0.5px solid rgba(4, 44, 83, 0.08)',
+            borderBottom: isLast ? 'none' : '0.5px solid rgba(0,0,0, 0.08)',
           }}>
             <span style={{ color: '#185FA5', fontSize: 11, fontWeight: 400, letterSpacing: 0.2 }}>{label}</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               {icon}
-              <span style={{ color: '#042C53', fontSize: 11, fontWeight: 500 }}>{value}</span>
+              <span style={{ color: '#1A1A1A', fontSize: 11, fontWeight: 500 }}>{value}</span>
             </div>
           </div>
         );
@@ -1592,7 +1592,7 @@ export default function App() {
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
             zIndex: 10,
           }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#042C53" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M5 12l6-6"/><path d="M5 12l6 6"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M5 12l6-6"/><path d="M5 12l6 6"/></svg>
           </button>
 
           {/* Status chip */}
@@ -1877,7 +1877,7 @@ export default function App() {
           <div style={{ padding: '0 16px 16px' }}>
             <div ref={sigCardRef} role="region" aria-label="피부 측정 결과 시그니처 카드" style={{
               borderRadius: 16,
-              boxShadow: '0 4px 16px rgba(4, 44, 83, 0.1)',
+              boxShadow: '0 4px 16px rgba(0,0,0, 0.1)',
               overflow: 'hidden',
               aspectRatio: '4 / 5',
               position: 'relative',
@@ -1899,7 +1899,7 @@ export default function App() {
                 position: 'absolute', top: 0, left: 0, right: 0, zIndex: 2,
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                 padding: '14px 16px',
-                background: 'linear-gradient(180deg, rgba(4, 44, 83, 0.35) 0%, transparent 100%)',
+                background: 'linear-gradient(180deg, rgba(0,0,0, 0.35) 0%, transparent 100%)',
               }}>
                 <span style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.85)' }}>{sigDate}</span>
                 <img src="/luastar.svg" alt="LUA" style={{ width: 20, height: 20, opacity: 0.8, filter: 'brightness(0) invert(1)' }} />
@@ -1908,7 +1908,7 @@ export default function App() {
               {/* 시그니처 핫존 (하단 그라데이션 + 정보) */}
               <div style={{
                 position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 2,
-                background: 'linear-gradient(180deg, transparent 0%, rgba(4, 44, 83, 0.7) 80%)',
+                background: 'linear-gradient(180deg, transparent 0%, rgba(0,0,0, 0.7) 80%)',
                 padding: '60px 14px 16px',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end',
               }}>
@@ -2168,7 +2168,7 @@ export default function App() {
                   margin: '0 16px 10px',
                   background: 'rgba(255,255,255,0.5)',
                   borderRadius: 14, padding: '14px 16px',
-                  boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)',
+                  boxShadow: '0 1px 4px rgba(0,0,0, 0.04)',
                   display: 'flex', gap: 10, alignItems: 'center',
                   minHeight: 48,
                   animation: 'fadeUp 0.3s ease-out',
@@ -2647,8 +2647,8 @@ export default function App() {
               <button onClick={reset} style={{
                 width: '100%', padding: 12, borderRadius: 12, fontFamily: 'inherit',
                 background: '#FFFFFF', border: 'none',
-                color: '#042C53', fontSize: 13, fontWeight: 500, cursor: 'pointer',
-                boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)',
+                color: '#1A1A1A', fontSize: 13, fontWeight: 500, cursor: 'pointer',
+                boxShadow: '0 1px 4px rgba(0,0,0, 0.04)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
               }}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M19.933 13.041a8 8 0 11-9.925-8.788c3.899-1 7.935 1.007 9.425 4.747"/><path d="M20 4v5h-5"/></svg>

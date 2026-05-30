@@ -965,7 +965,7 @@ export default function LuaChatSheet({ open, onClose, initialContext, onNavigate
       {/* Scrim */}
       <div onClick={handleClose} style={{
         position: 'fixed', top: 'calc(-1 * env(safe-area-inset-top, 50px))', left: 0, right: 0, bottom: 0, zIndex: 200,
-        background: 'rgba(4,44,83,0.12)',
+        background: 'rgba(0,0,0,0.12)',
         backdropFilter: 'none', WebkitBackdropFilter: 'none',
         opacity: closing ? 0 : 1, transition: 'opacity 200ms',
       }} />
