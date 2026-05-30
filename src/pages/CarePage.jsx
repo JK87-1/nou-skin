@@ -30,7 +30,7 @@ import AiInsightCard from '../components/AiInsightCard';
 import BeforeAfterSlider from '../components/BeforeAfterSlider';
 import DailyMission from '../components/DailyMission';
 import TossLineChart from '../components/TossLineChart';
-import { getProducts, getProductsForMode, getTrackerChecks, toggleTrackerCheck, getTrackerProgress, bulkToggleCheck, deleteProduct } from '../storage/TrackerStorage';
+import { getProducts, getProductsForMode, getTrackerChecks, toggleTrackerCheck, getTrackerProgress, bulkToggleCheck, deleteProduct, hideProductFromCareMode, getCareHiddenIdsForMode } from '../storage/TrackerStorage';
 import SwipeableRow from '../components/SwipeableRow';
 import { getAllProductThumbs } from '../storage/ImageStore';
 import { hapticLight, hapticSelection, hapticMedium } from '../utils/haptics';
@@ -1592,38 +1592,40 @@ function RoutineChecklist() {
 
   // (thumb 백그라운드 보강은 RoutineTracker(화장대) 마운트 시에만 처리 — 그쪽에서 IDB에 저장하면 케어도 자동 반영)
 
-  // 케어 row 삭제 — 두 storage 모두 안전하게 처리 (type 매칭 오류로 누락되는 케이스 방지)
+  // 케어 row 삭제 — 현재 mode(모닝/데이/나이트)에서만 사라지게. 제품 자체·다른 mode는 보존.
+  // 김준 대표 요구사항(2026-05-31): "케어-모닝에서 swipe 삭제하면 케어-모닝에만 사라져야 함.
+  // 다른 mode와 '제품' 탭의 등록 제품은 그대로 유지."
   const handleSwipeDelete = (item) => {
-    // 안전망: item·id 검증 — falsy id로는 절대 삭제 호출 금지 (전체 제품 사라지는 버그 방지)
     if (!item || !item.id) {
       console.warn('[CarePage.handleSwipeDelete] 잘못된 item으로 호출되어 무시:', item);
       return;
     }
-    // 1) TrackerStorage products에서 시도 (단, type=product인 경우만 — 커스텀 루틴은 제품 아님)
+    const currentMode = mode; // 현재 화면의 mode (morning|day|night)
+
+    // 1) 제품(type=product)이면 → '제품' 탭에는 남기고, 현재 mode의 케어 화면에서만 숨김
     if (item.type === 'product' || !item.type) {
-      try { deleteProduct(item.id); } catch (e) { console.warn('[CarePage] deleteProduct failed:', e); }
+      try { hideProductFromCareMode(item.id, currentMode); }
+      catch (e) { console.warn('[CarePage] hideProductFromCareMode failed:', e); }
     }
-    // 2) myRoutines에서도 같은 id 모두 제거 (mode 무관 — 다른 mode에 남아있어도 클린업)
+    // 2) myRoutines(추천·커스텀 루틴) → 현재 mode 항목만 제거 (다른 mode 보존)
     try {
       const raw = JSON.parse(localStorage.getItem('lua_my_routines') || '[]');
-      const cleaned = raw.filter(r => r.id !== item.id);
+      const cleaned = raw.filter(r => !(r.id === item.id && r.mode === currentMode));
       if (cleaned.length !== raw.length) {
         localStorage.setItem('lua_my_routines', JSON.stringify(cleaned));
         setMyRoutines(cleaned);
       }
     } catch {}
-    // 3) manual order에서도 제거
+    // 3) manual order → 현재 mode 배열에서만 해당 id 제거 (다른 mode 순서 보존)
     try {
       const orderMap = JSON.parse(localStorage.getItem('lua_care_manual_order') || '{}');
-      let changed = false;
-      Object.keys(orderMap).forEach(m => {
-        const before = orderMap[m]?.length || 0;
-        if (Array.isArray(orderMap[m])) {
-          orderMap[m] = orderMap[m].filter(id => id !== item.id);
-          if (orderMap[m].length !== before) changed = true;
+      if (Array.isArray(orderMap[currentMode])) {
+        const before = orderMap[currentMode].length;
+        orderMap[currentMode] = orderMap[currentMode].filter(id => id !== item.id);
+        if (orderMap[currentMode].length !== before) {
+          localStorage.setItem('lua_care_manual_order', JSON.stringify(orderMap));
         }
-      });
-      if (changed) localStorage.setItem('lua_care_manual_order', JSON.stringify(orderMap));
+      }
     } catch {}
     forceTick(t => t + 1);
   };
@@ -1771,16 +1773,20 @@ function RoutineChecklist() {
     setMyRoutines(updated);
   };
 
+  // 현재 mode에서 사용자가 swipe로 숨긴 제품 id 집합 — 제품 탭과 다른 mode에는 영향 없음.
+  const hiddenForMode = getCareHiddenIdsForMode(mode);
   const allItemsRaw = [
     ...myRoutines.filter(r => r.mode === mode),
-    ...products.map(p => ({
-      id: p.id,
-      name: `${p.brand} ${p.name}`,
-      icon: '',
-      type: 'product',
-      category: p.category,
-      imageThumb: p.imageThumb || thumbMap.get(String(p.id)) || null,
-    })),
+    ...products
+      .filter(p => !hiddenForMode.has(p.id))
+      .map(p => ({
+        id: p.id,
+        name: `${p.brand} ${p.name}`,
+        icon: '',
+        type: 'product',
+        category: p.category,
+        imageThumb: p.imageThumb || thumbMap.get(String(p.id)) || null,
+      })),
   ];
 
   // ===== 자동 표준 정렬 (스킨케어 순서) =====

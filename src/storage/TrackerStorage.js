@@ -18,6 +18,7 @@ function emitProductsChanged() {
 
 const PRODUCTS_KEY = 'nou_tracker_products';
 const CHECKS_KEY = 'nou_tracker_checks';     // 호환성: 오늘 체크만 빠르게 (기존 사용처 유지)
+const CARE_HIDDEN_KEY = 'lua_care_hidden_by_mode'; // mode별 케어 화면에서만 숨길 제품 id 집합 ({morning:[ids], day:[ids], night:[ids]})
 const HISTORY_KEY = 'nou_tracker_history';   // 일자별 집계(완료/부분)
 const DAILY_CHECKS_KEY = 'nou_tracker_daily'; // 일자별 개별 제품 체크 — 과거 날짜 수정용
 const MAX_PRODUCTS = 30;
@@ -220,6 +221,59 @@ export function deleteProduct(id) {
   deleteProductThumb(id);
   emitProductsChanged();
   return products;
+}
+
+// ===== mode별 케어 화면 숨김 (제품 자체는 그대로, 케어 노출만 mode별 제어) =====
+
+function readHiddenMap() {
+  try {
+    const raw = localStorage.getItem(CARE_HIDDEN_KEY);
+    const obj = raw ? JSON.parse(raw) : {};
+    return (obj && typeof obj === 'object') ? obj : {};
+  } catch { return {}; }
+}
+
+function writeHiddenMap(map) {
+  try { localStorage.setItem(CARE_HIDDEN_KEY, JSON.stringify(map)); } catch {}
+}
+
+/**
+ * 케어 화면에서 특정 mode에 숨겨진 제품 id 집합을 반환 (Set).
+ * 제품 탭과 다른 mode에는 영향 없음.
+ */
+export function getCareHiddenIdsForMode(mode) {
+  if (!mode) return new Set();
+  const map = readHiddenMap();
+  return new Set(Array.isArray(map[mode]) ? map[mode] : []);
+}
+
+/**
+ * 케어 mode에서만 제품 숨김 (swipe 삭제 시 사용).
+ * 제품 자체는 보존되어 '제품' 탭과 다른 mode에는 그대로 노출.
+ */
+export function hideProductFromCareMode(productId, mode) {
+  if (!productId || !mode) return;
+  const map = readHiddenMap();
+  const arr = Array.isArray(map[mode]) ? map[mode] : [];
+  if (!arr.includes(productId)) arr.push(productId);
+  map[mode] = arr;
+  writeHiddenMap(map);
+  emitProductsChanged();
+}
+
+/**
+ * 케어 mode 숨김 해제 (제품 재추가 시 사용).
+ */
+export function unhideProductFromCareMode(productId, mode) {
+  if (!productId || !mode) return;
+  const map = readHiddenMap();
+  if (!Array.isArray(map[mode])) return;
+  const before = map[mode].length;
+  map[mode] = map[mode].filter(x => x !== productId);
+  if (map[mode].length !== before) {
+    writeHiddenMap(map);
+    emitProductsChanged();
+  }
 }
 
 export function getProductCount() {
