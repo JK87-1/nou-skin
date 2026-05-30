@@ -160,8 +160,8 @@ export default function DiaryMockup() {
             onClick={() => { setScreen(t.id); if (t.id === "history") setHistoryMode("insight"); }}
             style={{
               flex: 1, padding: '7px 6px', borderRadius: 8,
-              border: screen === t.id ? '1.5px solid rgba(240,144,112,0.4)' : '1.5px solid rgba(255,255,255,0.1)',
-              background: screen === t.id ? 'rgba(240,144,112,0.15)' : 'transparent',
+              border: screen === t.id ? '1.5px solid rgba(var(--accent-rgb),0.4)' : '1.5px solid rgba(255,255,255,0.1)',
+              background: screen === t.id ? 'rgba(var(--accent-rgb),0.15)' : 'transparent',
               color: screen === t.id ? '#6598ef' : '#666',
               fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
             }}
@@ -191,7 +191,7 @@ export default function DiaryMockup() {
             }}>
               <button style={{
                 width: 42, height: 42, borderRadius: '50%',
-                background: 'rgba(240,144,112,0.9)', border: 'none', cursor: 'pointer',
+                background: 'rgba(var(--accent-rgb),0.9)', border: 'none', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 boxShadow: 'none',
               }}>
@@ -199,7 +199,7 @@ export default function DiaryMockup() {
               </button>
               <button style={{
                 width: 42, height: 42, borderRadius: '50%',
-                background: 'rgba(240,144,112,0.9)', border: 'none', cursor: 'pointer',
+                background: 'rgba(var(--accent-rgb),0.9)', border: 'none', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 boxShadow: 'none',
               }}>
@@ -434,11 +434,11 @@ export default function DiaryMockup() {
                       {[1, 2, 3, 4, 5].map(n => (
                         <div key={n} onClick={() => setStressVal(n)} style={{
                           width: 30, height: 30, borderRadius: 10,
-                          background: n <= stressVal ? 'rgba(240,144,112,0.12)' : 'var(--bg-input)',
+                          background: n <= stressVal ? 'rgba(var(--accent-rgb),0.12)' : 'var(--bg-input)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           fontSize: 12, fontWeight: 600, cursor: 'pointer',
                           color: n <= stressVal ? 'var(--accent-primary)' : 'var(--text-dim)',
-                          border: n === stressVal ? '1.5px solid rgba(240,144,112,0.3)' : '1.5px solid transparent',
+                          border: n === stressVal ? '1.5px solid rgba(var(--accent-rgb),0.3)' : '1.5px solid transparent',
                           transition: 'all 0.15s',
                         }}>{n}</div>
                       ))}
@@ -534,7 +534,7 @@ export default function DiaryMockup() {
             {/* ── CTA buttons (App.jsx 동일) ── */}
             <button style={{
               width: '100%', padding: '14px 0', borderRadius: 'var(--btn-radius)', border: 'none',
-              background: 'linear-gradient(135deg, rgba(240,144,112,0.12), rgba(240,144,112,0.12))',
+              background: 'linear-gradient(135deg, rgba(var(--accent-rgb),0.12), rgba(var(--accent-rgb),0.12))',
               backdropFilter: 'var(--card-backdrop)',
               color: '#ADEBB3', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
               marginBottom: 14, boxShadow: 'none',
@@ -621,8 +621,8 @@ export default function DiaryMockup() {
                   ].map((d, i) => (
                     <div key={i} style={{
                       padding: '5px 10px', borderRadius: 8,
-                      background: d.status === "good" ? 'rgba(52,211,153,0.08)' : d.status === "partial" ? 'rgba(240,144,112,0.08)' : 'var(--bg-input)',
-                      border: `1px solid ${d.status === "good" ? 'rgba(52,211,153,0.15)' : d.status === "partial" ? 'rgba(240,144,112,0.15)' : 'var(--border-light)'}`,
+                      background: d.status === "good" ? 'rgba(52,211,153,0.08)' : d.status === "partial" ? 'rgba(var(--accent-rgb),0.08)' : 'var(--bg-input)',
+                      border: `1px solid ${d.status === "good" ? 'rgba(52,211,153,0.15)' : d.status === "partial" ? 'rgba(var(--accent-rgb),0.15)' : 'var(--border-light)'}`,
                       display: 'flex', alignItems: 'center', gap: 4,
                     }}>
                       <span style={{ fontSize: 12 }}>{d.icon}</span>
@@ -648,7 +648,7 @@ export default function DiaryMockup() {
                   ].map(m => (
                     <button key={m.id} onClick={() => setActiveMetric(m.id)} style={{
                       padding: '5px 12px', borderRadius: 10, border: 'none',
-                      background: activeMetric === m.id ? 'rgba(240,144,112,0.15)' : 'var(--bg-input)',
+                      background: activeMetric === m.id ? 'rgba(var(--accent-rgb),0.15)' : 'var(--bg-input)',
                       color: activeMetric === m.id ? 'var(--accent-primary)' : 'var(--text-dim)',
                       fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
                     }}>{m.label}</button>
@@ -692,7 +692,7 @@ export default function DiaryMockup() {
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                             <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{c.factor}</span>
                             {c.source === "auto" && <span style={{ fontSize: 10, color: '#34d399', background: 'rgba(52,211,153,0.1)', padding: '1px 5px', borderRadius: 4, fontWeight: 600 }}>자동</span>}
-                            {c.source === "manual" && <span style={{ fontSize: 10, color: 'var(--accent-primary)', background: 'rgba(240,144,112,0.1)', padding: '1px 5px', borderRadius: 4, fontWeight: 600 }}>수동</span>}
+                            {c.source === "manual" && <span style={{ fontSize: 10, color: 'var(--accent-primary)', background: 'rgba(var(--accent-rgb),0.1)', padding: '1px 5px', borderRadius: 4, fontWeight: 600 }}>수동</span>}
                           </div>
                         </div>
                         {hasEnoughData ? (
@@ -718,7 +718,7 @@ export default function DiaryMockup() {
 
               {/* AI 종합 분석 */}
               <div className="glass-card" style={{
-                background: 'linear-gradient(135deg, rgba(240,144,112,0.08), rgba(240,144,112,0.03))',
+                background: 'linear-gradient(135deg, rgba(var(--accent-rgb),0.08), rgba(var(--accent-rgb),0.03))',
                 border: 'none',
                 animation: 'breatheIn 0.6s ease 0.3s both',
               }}>

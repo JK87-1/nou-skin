@@ -196,7 +196,7 @@ export default function BeforeAfterSlider() {
         {/* AFTER label */}
         <div style={{
           position: 'absolute', top: 12, right: 12,
-          background: 'rgba(240,144,112,0.75)', backdropFilter: 'none',
+          background: 'rgba(var(--accent-rgb),0.75)', backdropFilter: 'none',
           WebkitBackdropFilter: 'none',
           borderRadius: 8, padding: '4px 10px',
           zIndex: 5, pointerEvents: 'none',

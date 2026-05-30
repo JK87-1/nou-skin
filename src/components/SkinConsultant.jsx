@@ -77,7 +77,7 @@ function MatchScoreRing({ score }) {
   return (
     <div style={{ position: 'relative', width: 40, height: 40, flexShrink: 0 }}>
       <svg width="40" height="40" viewBox="0 0 40 40" style={{ transform: 'rotate(-90deg)' }}>
-        <circle cx="20" cy="20" r={r} fill="none" stroke="rgba(240,144,112,0.12)" strokeWidth={stroke} />
+        <circle cx="20" cy="20" r={r} fill="none" stroke="rgba(101,152,239,0.12)" strokeWidth={stroke} />
         <circle cx="20" cy="20" r={r} fill="none" stroke="#ADEBB3" strokeWidth={stroke}
           strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
           style={{ transition: 'stroke-dashoffset 0.8s ease-out' }} />
@@ -108,7 +108,7 @@ function ProductItem({ product, matchScore, delay = 0 }) {
       {/* Product icon placeholder */}
       <div style={{
         width: 44, height: 44, borderRadius: 10, flexShrink: 0,
-        background: 'linear-gradient(135deg, rgba(240,144,112,0.15), rgba(240,144,112,0.15))',
+        background: 'linear-gradient(135deg, rgba(var(--accent-rgb),0.15), rgba(var(--accent-rgb),0.15))',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 18,
       }}>
@@ -131,7 +131,7 @@ function ProductItem({ product, matchScore, delay = 0 }) {
           {product.tags?.slice(0, 2).map((tag, ti) => (
             <span key={ti} style={{
               fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 8,
-              background: 'rgba(240,144,112,0.15)', color: '#6598ef',
+              background: 'rgba(var(--accent-rgb),0.15)', color: '#6598ef',
             }}>{tag}</span>
           ))}
           <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{product.volume}</span>
@@ -1031,8 +1031,8 @@ export default function SkinConsultant({ result, onClose, isTab = false }) {
               onClick={() => albumInputRef.current?.click()}
               style={{
                 width: 72, height: 72, borderRadius: 12,
-                border: '2px dashed rgba(240,144,112,0.4)',
-                background: 'rgba(240,144,112,0.08)',
+                border: '2px dashed rgba(var(--accent-rgb),0.4)',
+                background: 'rgba(var(--accent-rgb),0.08)',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 cursor: 'pointer', gap: 2, flexShrink: 0,
               }}

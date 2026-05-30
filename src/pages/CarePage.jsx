@@ -387,7 +387,7 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
                       ) : (
                         <div style={{
                           width: '100%', height: '100%',
-                          background: 'linear-gradient(135deg, rgba(240,144,112,0.06), rgba(240,144,112,0.1))',
+                          background: 'linear-gradient(135deg, rgba(var(--accent-rgb),0.06), rgba(var(--accent-rgb),0.1))',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                         }}>
                           <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>No Photo</span>
@@ -582,7 +582,7 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
                         </div>
 
                         {/* Divider */}
-                        <div style={{ width: 1.5, height: 36, background: 'rgba(240,144,112,0.25)', borderRadius: 1, flexShrink: 0 }} />
+                        <div style={{ width: 1.5, height: 36, background: 'rgba(var(--accent-rgb),0.25)', borderRadius: 1, flexShrink: 0 }} />
 
                         {/* Thumbnail */}
                         <div style={{
@@ -673,7 +673,7 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
                       <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>현재</div>
                       <div style={{
                         fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)',
-                        background: 'rgba(240,144,112,0.12)', border: 'none',
+                        background: 'rgba(var(--accent-rgb),0.12)', border: 'none',
                         borderRadius: 10, padding: '6px 14px',
                       }}>{formatShortDate(lastRecord.date)}</div>
                     </div>
@@ -716,7 +716,7 @@ export default function CarePage({ onBack, onMeasure, onOpenConsult, onAddProduc
                     <div style={{ textAlign: 'center' }}>
                       <div style={{ position: 'relative', width: 80, height: 80, margin: '0 auto 6px' }}>
                         <svg width="80" height="80" viewBox="0 0 80 80">
-                          <circle cx="40" cy="40" r={bigR} fill="none" stroke="rgba(240,144,112,0.12)" strokeWidth="5" />
+                          <circle cx="40" cy="40" r={bigR} fill="none" stroke="rgba(101,152,239,0.12)" strokeWidth="5" />
                           <circle cx="40" cy="40" r={bigR} fill="none" stroke="#a8c8f8" strokeWidth="5"
                             strokeDasharray={`${(lastRecord.overallScore / 100) * bigCirc} ${bigCirc}`}
                             strokeLinecap="round" transform="rotate(-90 40 40)"
@@ -920,7 +920,7 @@ function PhotoGallery({ records, thumbs, onMeasure, onSelectRecord, onThumbsChan
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div onClick={onMeasure} style={{
             width: 34, height: 34, borderRadius: '50%', cursor: 'pointer',
-            background: 'rgba(240,144,112,0.1)', border: 'none',
+            background: 'rgba(var(--accent-rgb),0.1)', border: 'none',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">

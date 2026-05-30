@@ -248,7 +248,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
             <input ref={photoInputRef} type="file" accept="image/*" onChange={handlePhotoSelect} style={{ display: 'none' }} />
             <div style={{
               width: 80, height: 80, borderRadius: 24,
-              background: `linear-gradient(135deg, #FFD4B8, #6598ef)`,
+              background: `linear-gradient(135deg, #85b0f5, #6598ef)`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               overflow: 'hidden', margin: '0 auto',
             }}>
@@ -634,10 +634,10 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
                   display: 'flex', alignItems: 'center', gap: 12,
                   padding: '14px 16px', marginBottom: 6, borderRadius: 16,
                   background: user.isMe
-                    ? 'linear-gradient(135deg, rgba(240,144,112,0.1), rgba(240,144,112,0.05))'
+                    ? 'linear-gradient(135deg, rgba(var(--accent-rgb),0.1), rgba(var(--accent-rgb),0.05))'
                     : 'rgba(255,255,255,0.02)',
                   border: user.isMe
-                    ? '1px solid rgba(240,144,112,0.25)'
+                    ? '1px solid rgba(var(--accent-rgb),0.25)'
                     : '1px solid var(--border-separator)',
                   animation: `brFadeInUp 0.4s ease-out ${(i + 3) * 0.06}s both`,
                 }}
@@ -683,7 +683,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
           {/* My Ranking Analysis */}
           {myRank && (
             <div style={{
-              background: 'linear-gradient(135deg, rgba(240,144,112,0.08), rgba(240,144,112,0.04))',
+              background: 'linear-gradient(135deg, rgba(var(--accent-rgb),0.08), rgba(var(--accent-rgb),0.04))',
               borderRadius: 20, border: 'none',
               padding: 18, marginTop: 16,
               animation: 'brFadeInUp 0.5s ease 0.4s both',
@@ -743,7 +743,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
       {toast && (
         <div style={{
           position: 'fixed', top: 80, left: '50%', transform: 'translateX(-50%)',
-          background: 'rgba(240,144,112,0.9)', color: '#fff',
+          background: 'rgba(var(--accent-rgb),0.9)', color: '#fff',
           padding: '10px 24px', borderRadius: 20, fontSize: 13, fontWeight: 500,
           zIndex: 999, animation: 'brFadeInDown 0.3s ease-out both',
         }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><CheckIcon size={13} /></span> {toast}</div>
@@ -1124,7 +1124,7 @@ function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#6598ef' 
             return (
               <div style={{
                 marginTop: 16, padding: 16, borderRadius: 18,
-                background: 'linear-gradient(135deg, rgba(240,144,112,0.06), rgba(240,144,112,0.03))',
+                background: 'linear-gradient(135deg, rgba(var(--accent-rgb),0.06), rgba(var(--accent-rgb),0.03))',
                 border: 'none',
                 animation: 'brFadeInUp 0.3s ease both',
               }}>

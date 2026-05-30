@@ -2194,7 +2194,7 @@ function JourneyStat({ value, unit, label, hasDivider }) {
       {hasDivider && (
         <div style={{
           position: 'absolute', left: 0, top: '15%', height: '70%',
-          width: 1, background: 'rgba(240,144,112,0.1)',
+          width: 1, background: 'rgba(var(--accent-rgb),0.1)',
         }} />
       )}
       <div style={{
@@ -2333,7 +2333,7 @@ function ReminderItem({ enabled, time, onToggle, onTimeChange, profile, tipEnabl
           width: 36, height: 36, borderRadius: 12,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 16, flexShrink: 0,
-          background: 'rgba(240,144,112,0.08)',
+          background: 'rgba(var(--accent-rgb),0.08)',
         }}></div>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>진단 리마인더</div>
@@ -2465,7 +2465,7 @@ function BeautyTipItem({ enabled, time, onToggle, onTimeChange, profile, reminde
           width: 36, height: 36, borderRadius: 12,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 16, flexShrink: 0,
-          background: 'rgba(240,144,112,0.08)',
+          background: 'rgba(var(--accent-rgb),0.08)',
         }}></div>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-secondary)' }}>뷰티 팁 알림</div>
