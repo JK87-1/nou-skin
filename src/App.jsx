@@ -17,7 +17,7 @@ import BaselineCompleteModal from './components/BaselineCompleteModal';
 import CameraCapture from './components/CameraCapture';
 import { saveRecord, updateRecord, getRecords, deleteRecord, getNextMeasurementInfo, getChanges, generateShareText, getLatestRecord, hasTodayRecord, saveThumbnail, saveComparisonPhoto, getTodayRecords, getStableSkinAge, findRecentPrimaryRecord, getWeeklyReport } from './storage/SkinStorage';
 import { migrateFromLocalStorage } from './storage/PhotoDB';
-import { createAutoBackup, verifyDataIntegrity, restoreFromAutoBackup, startPeriodicBackup, getBackupInfo } from './storage/AutoBackup';
+import { createAutoBackup, verifyDataIntegrity, restoreFromAutoBackup, restoreKeysFromAutoBackup, startPeriodicBackup, getBackupInfo } from './storage/AutoBackup';
 import CarePage from './pages/CarePage';
 import TabBar from './components/TabBar';
 import MyPage from './pages/MyPage';
@@ -953,6 +953,24 @@ export default function App() {
     };
     window.addEventListener('lua:face-coach-open', handler);
     return () => window.removeEventListener('lua:face-coach-open', handler);
+  }, []);
+
+  // 제품 목록 백업 복구 — 콘솔에서 window.luaRestoreProducts() 호출로 실행
+  // (deleteProduct 사고 등으로 제품만 사라졌을 때, 다른 데이터는 건드리지 않고 제품·체크만 복원)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.luaRestoreProducts = async () => {
+      const keys = ['nou_tracker_products', 'nou_tracker_checks'];
+      const result = await restoreKeysFromAutoBackup(keys);
+      if (result.restored) {
+        const when = result.timestamp ? new Date(result.timestamp).toLocaleString('ko-KR') : '시점 미상';
+        console.log(`✅ 제품 목록 복원 완료 (백업 시점: ${when}). 키: ${result.restoredKeys.join(', ')}`);
+        console.log('페이지를 새로고침하면 복원된 제품이 보입니다.');
+        return result;
+      }
+      console.warn('❌ 백업을 찾지 못했어요. IndexedDB에 백업이 없거나 빈 백업입니다.');
+      return result;
+    };
   }, []);
 
   return (

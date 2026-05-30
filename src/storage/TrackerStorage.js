@@ -193,7 +193,23 @@ export function dedupeProductsByName() {
 }
 
 export function deleteProduct(id) {
-  const products = getProducts().filter(p => p.id !== id);
+  // 안전망 1: falsy id로는 절대 삭제하지 않음 (한 번에 모든 제품 사라지는 버그 방지)
+  if (!id) {
+    console.warn('[TrackerStorage.deleteProduct] falsy id로 호출되어 무시:', id);
+    return getProducts();
+  }
+  const before = getProducts();
+  const products = before.filter(p => p.id !== id);
+  // 안전망 2: id 하나로 모든 제품이 사라지는 호출은 비정상 — 거부
+  // (filter 후 0개인데 before는 2개 이상이었다면 = 모든 product의 id가 동일했다 = 데이터 손상)
+  if (before.length > 1 && products.length === 0) {
+    console.error('[TrackerStorage.deleteProduct] 한 번의 호출로 모든 제품이 삭제되려 해 거부됨', { id, beforeCount: before.length });
+    return before;
+  }
+  // 변화가 없으면 (id 매칭 없음) 그냥 반환
+  if (products.length === before.length) {
+    return before;
+  }
   localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
   // 체크에서도 제거
   const checks = getTrackerChecks();

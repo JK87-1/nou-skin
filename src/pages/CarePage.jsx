@@ -1594,8 +1594,15 @@ function RoutineChecklist() {
 
   // 케어 row 삭제 — 두 storage 모두 안전하게 처리 (type 매칭 오류로 누락되는 케이스 방지)
   const handleSwipeDelete = (item) => {
-    // 1) TrackerStorage products에서 시도
-    try { deleteProduct(item.id); } catch {}
+    // 안전망: item·id 검증 — falsy id로는 절대 삭제 호출 금지 (전체 제품 사라지는 버그 방지)
+    if (!item || !item.id) {
+      console.warn('[CarePage.handleSwipeDelete] 잘못된 item으로 호출되어 무시:', item);
+      return;
+    }
+    // 1) TrackerStorage products에서 시도 (단, type=product인 경우만 — 커스텀 루틴은 제품 아님)
+    if (item.type === 'product' || !item.type) {
+      try { deleteProduct(item.id); } catch (e) { console.warn('[CarePage] deleteProduct failed:', e); }
+    }
     // 2) myRoutines에서도 같은 id 모두 제거 (mode 무관 — 다른 mode에 남아있어도 클린업)
     try {
       const raw = JSON.parse(localStorage.getItem('lua_my_routines') || '[]');

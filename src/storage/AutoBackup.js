@@ -137,6 +137,51 @@ export async function restoreFromAutoBackup() {
 }
 
 /**
+ * 특정 키만 백업에서 복원 (선택적 복구)
+ *
+ * 사용 예: deleteProduct 사고로 제품 목록만 사라졌을 때
+ *   restoreKeysFromAutoBackup(['nou_tracker_products', 'nou_tracker_checks'])
+ *
+ * 다른 데이터(측정 기록·루틴 체크 등)는 건드리지 않음.
+ *
+ * @param {string[]} keys 복원할 localStorage 키 목록
+ * @returns {Promise<{restored: boolean, restoredKeys: string[], timestamp: number|null}>}
+ */
+export async function restoreKeysFromAutoBackup(keys) {
+  try {
+    if (!Array.isArray(keys) || keys.length === 0) {
+      return { restored: false, restoredKeys: [], timestamp: null };
+    }
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const req = tx.objectStore(STORE_NAME).get('latest');
+
+    const backup = await new Promise((resolve) => {
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => resolve(null);
+    });
+
+    if (!backup || !backup.data) return { restored: false, restoredKeys: [], timestamp: null };
+
+    const restoredKeys = [];
+    for (const key of keys) {
+      if (backup.data[key] != null) {
+        try {
+          localStorage.setItem(key, backup.data[key]);
+          restoredKeys.push(key);
+        } catch (e) {
+          console.warn(`AutoBackup: failed to restore key "${key}"`, e);
+        }
+      }
+    }
+    return { restored: restoredKeys.length > 0, restoredKeys, timestamp: backup.timestamp || null };
+  } catch (e) {
+    console.warn('AutoBackup: restoreKeys failed', e);
+    return { restored: false, restoredKeys: [], timestamp: null };
+  }
+}
+
+/**
  * 백업 타임스탬프 조회
  * @returns {Promise<number|null>} 밀리초 타임스탬프 또는 null
  */
