@@ -5,11 +5,11 @@ import TossLineChart from '../components/TossLineChart';
 import { AnimatedNumber } from '../components/UIComponents';
 
 const glass = {
-  background: 'rgba(255,255,255,0.5)',
+  background: 'var(--card-bg)',
   backdropFilter: 'none', WebkitBackdropFilter: 'none',
   border: 'none',
-  boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
-  borderRadius: 20,
+  boxShadow: 'var(--card-shadow)',
+  borderRadius: 'var(--card-radius)',
 };
 
 const ALL_METRICS = [
@@ -319,7 +319,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
       <div style={{ padding: '30px 16px 4px' }} />
 
       {/* ② 점수 변화 — 최상단 */}
-          <div style={{ margin: '0 12px 12px', background: 'rgba(255,255,255,0.2)', borderRadius: 18, padding: 14 }}>
+          <div className="card" style={{ margin: '0 12px 12px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
               <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>내 피부 흐름</span>
               <div style={{ display: 'flex', gap: 6 }}>
@@ -395,8 +395,9 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
           <div style={{ margin: '0 12px 12px' }}>
             {recordCount === 0 ? (
               <div role="button" aria-label="첫 측정 시작" onClick={handleMeasure} style={{
-                background: 'rgba(255,255,255,0.2)',
-                borderRadius: 20,
+                background: 'var(--card-bg)',
+                borderRadius: 'var(--card-radius)',
+                boxShadow: 'var(--card-shadow)',
                 padding: '32px 16px', textAlign: 'center', cursor: 'pointer',
               }}>
                 <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 8 }}>첫 측정을 해볼까요?</div>
@@ -426,7 +427,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                     const prevVal = prev?.[m.key] ?? null;
                     const diff = val !== null && prevVal !== null ? val - prevVal : null;
                     return (
-                      <div key={m.key} style={{ background: 'rgba(255,255,255,0.6)', borderRadius: 10, padding: '8px 6px', textAlign: 'center' }}>
+                      <div key={m.key} style={{ background: 'var(--card-sm-bg)', borderRadius: 'var(--card-sm-radius)', padding: '8px 6px', textAlign: 'center' }}>
                         <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{m.label}</div>
                         <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)', marginTop: 2 }}>{val != null ? <AnimatedNumber target={val} duration={600} /> : '—'}</div>
                         <div style={{ fontSize: 10, fontWeight: 500, marginTop: 1, color: diff === null ? 'var(--text-muted)' : diff > 0 ? 'var(--accent-primary)' : diff < 0 ? '#e05545' : 'var(--text-muted)' }}>
@@ -441,7 +442,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
           </div>
 
           {/* ⑤ 영향 요인 차트 */}
-          <div style={{ margin: '0 12px 12px', background: 'rgba(255,255,255,0.2)', borderRadius: 18, padding: 14 }}>
+          <div className="card" style={{ margin: '0 12px 12px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
               <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>영향 요인</span>
               <div ref={dropdownRef} style={{ position: 'relative' }}>
@@ -517,7 +518,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
           </div>
 
           {/* ⑥ lua의 발견 */}
-          <div style={{ margin: '0 12px 12px', background: 'rgba(255,255,255,0.2)', borderRadius: 18, padding: 14 }}>
+          <div className="card" style={{ margin: '0 12px 12px' }}>
             <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10 }}>인사이트</div>
             {(() => {
               const discoveries = getDiscoveries(records, getProducts());
