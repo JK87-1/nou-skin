@@ -1060,11 +1060,11 @@ function ProductBrandNameInputs({
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
                     <span style={{ fontSize: 12, fontWeight: 700, color: accent }}>{s.brand}</span>
                     <span style={{
-                      fontSize: 9.5, padding: '1px 5px', borderRadius: 4,
+                      fontSize: 10.5, padding: '1px 5px', borderRadius: 4,
                       background: 'rgba(var(--accent-rgb),0.14)', color: 'var(--accent-primary)', fontWeight: 600,
                     }}>{s.category}</span>
                     {s.source === 'gpt' && (
-                      <span style={{ fontSize: 9, color: 'var(--text-muted)', marginLeft: 'auto' }}>AI 검색</span>
+                      <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 'auto' }}>AI 검색</span>
                     )}
                   </div>
                   <div style={{
@@ -1205,7 +1205,7 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, accent }) {
               )}
               <div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{product.brand}</div>
-                <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)' }}>{product.name}</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{product.name}</div>
                 <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
                   <span style={{ fontSize: 10, fontWeight: 600, color: cat.color, background: `${cat.color}15`, borderRadius: 6, padding: '2px 7px' }}>{product.category}</span>
                   <span style={{ fontSize: 10, color: 'var(--text-dim)' }}>
@@ -1885,7 +1885,7 @@ export default function RoutineTracker({ themeColors, onBack }) {
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <span style={{
-                          fontSize: 17, fontWeight: 700, color: 'var(--text-primary)',
+                          fontSize: 16, fontWeight: 700, color: 'var(--text-primary)',
                           letterSpacing: -0.3,
                         }}>당신의 피부에 맞는 루틴</span>
                         <span style={{

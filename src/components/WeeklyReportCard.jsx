@@ -102,7 +102,7 @@ export default function WeeklyReportCard({ report, onOpenBeforeAfter, onDismiss 
 
       {/* 메인 헤드라인 */}
       <div style={{
-        fontSize: 17, fontWeight: 700,
+        fontSize: 16, fontWeight: 700,
         color: '#1f1f1f', letterSpacing: -0.3,
         lineHeight: 1.4, marginBottom: 10,
       }}>

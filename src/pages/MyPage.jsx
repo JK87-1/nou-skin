@@ -1201,7 +1201,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               }}>
                 {profile.profileImage
                   ? <img src={profile.profileImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : <span style={{ fontSize: 34, fontWeight: 500, color: 'var(--text-muted)', letterSpacing: -0.6 }}>{(profile.nickname || '?')[0].toUpperCase()}</span>
+                  : <span style={{ fontSize: 32, fontWeight: 500, color: 'var(--text-muted)', letterSpacing: -0.6 }}>{(profile.nickname || '?')[0].toUpperCase()}</span>
                 }
               </div>
               <div onClick={() => profilePhotoRef.current?.click()} style={{
@@ -2001,7 +2001,7 @@ function GoalSettingModal({ onClose, showToast }) {
                       left: `calc(${current}% - ${current * 14 / 100}px + 7px)`,
                       top: -8,
                       transform: 'translateX(-50%)',
-                      fontSize: 9, fontWeight: 500, color: 'rgba(var(--accent-rgb),0.5)',
+                      fontSize: 10, fontWeight: 500, color: 'rgba(var(--accent-rgb),0.5)',
                       whiteSpace: 'nowrap',
                     }}>{current}</div>
                     {/* Range input (thumb on top) */}
@@ -2332,7 +2332,7 @@ function ReminderItem({ enabled, time, onToggle, onTimeChange, profile, tipEnabl
         <div style={{
           width: 36, height: 36, borderRadius: 12,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 17, flexShrink: 0,
+          fontSize: 16, flexShrink: 0,
           background: 'rgba(240,144,112,0.08)',
         }}></div>
         <div style={{ flex: 1 }}>
@@ -2464,7 +2464,7 @@ function BeautyTipItem({ enabled, time, onToggle, onTimeChange, profile, reminde
         <div style={{
           width: 36, height: 36, borderRadius: 12,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 17, flexShrink: 0,
+          fontSize: 16, flexShrink: 0,
           background: 'rgba(240,144,112,0.08)',
         }}></div>
         <div style={{ flex: 1 }}>
@@ -2586,7 +2586,7 @@ function DarkModeItem({ enabled, onToggle }) {
       <div style={{
         width: 36, height: 36, borderRadius: 12,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 17, flexShrink: 0,
+        fontSize: 16, flexShrink: 0,
         background: 'var(--bg-card-hover)',
       }}><MoonIcon size={17} /></div>
       <div style={{ flex: 1 }}>

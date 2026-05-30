@@ -306,7 +306,7 @@ export default function DailyMission() {
               {new Date(day.date).getDate()}
             </div>
             {day.completed && !day.isToday && (
-              <div style={{ fontSize: 8, color: 'var(--accent-success)', marginTop: 2 }}>&#10003;</div>
+              <div style={{ fontSize: 10, color: 'var(--accent-success)', marginTop: 2 }}>&#10003;</div>
             )}
             {day.isToday && (
               <div style={{

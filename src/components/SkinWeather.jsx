@@ -500,7 +500,7 @@ export default function SkinWeather({ skinResult }) {
                     <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 600, width: 28 }}>{day.max}°</span>
                   </div>
                   <span style={{
-                    fontSize: 9, fontWeight: 600, color: '#fff',
+                    fontSize: 10, fontWeight: 600, color: '#fff',
                     background: `${ht.color}30`, padding: '2px 6px', borderRadius: 6,
                     flexShrink: 0,
                   }}>{ht.label}</span>
@@ -532,7 +532,7 @@ export default function SkinWeather({ skinResult }) {
             }}>
               <div style={{ fontSize: 18, marginBottom: 4, display: 'flex', justifyContent: 'center' }}>{kp.icon}</div>
               <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 2 }}>{kp.label}</div>
-              <div style={{ fontSize: 9, color: 'var(--text-dim)', lineHeight: 1.4 }}>{kp.desc}</div>
+              <div style={{ fontSize: 10, color: 'var(--text-dim)', lineHeight: 1.4 }}>{kp.desc}</div>
             </div>
           ))}
         </div>

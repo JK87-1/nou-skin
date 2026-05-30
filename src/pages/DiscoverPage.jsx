@@ -416,7 +416,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                   {daysSince !== null && prev && <span>이전 측정 → {daysSince > 7 ? `${Math.floor(daysSince/7)}주 전` : `${daysSince}일 전`}</span>}
                 </div>
                 {/* 헤드라인 */}
-                <div style={{ fontSize: 17, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.3, lineHeight: 1.35, marginTop: 8 }}>
+                <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.3, lineHeight: 1.35, marginTop: 8 }}>
                   {headline}
                 </div>
                 {/* 4분할 */}
@@ -427,9 +427,9 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                     const diff = val !== null && prevVal !== null ? val - prevVal : null;
                     return (
                       <div key={m.key} style={{ background: 'rgba(255,255,255,0.6)', borderRadius: 10, padding: '8px 6px', textAlign: 'center' }}>
-                        <div style={{ fontSize: 9, color: 'var(--text-muted)' }}>{m.label}</div>
+                        <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{m.label}</div>
                         <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)', marginTop: 2 }}>{val != null ? <AnimatedNumber target={val} duration={600} /> : '—'}</div>
-                        <div style={{ fontSize: 9, fontWeight: 500, marginTop: 1, color: diff === null ? 'var(--text-muted)' : diff > 0 ? 'var(--accent-primary)' : diff < 0 ? '#e05545' : 'var(--text-muted)' }}>
+                        <div style={{ fontSize: 10, fontWeight: 500, marginTop: 1, color: diff === null ? 'var(--text-muted)' : diff > 0 ? 'var(--accent-primary)' : diff < 0 ? '#e05545' : 'var(--text-muted)' }}>
                           {diff === null ? '기준선' : diff > 0 ? <>+<AnimatedNumber target={diff} duration={800} /></> : diff < 0 ? <>-<AnimatedNumber target={Math.abs(diff)} duration={800} /></> : '0'}
                         </div>
                       </div>
@@ -490,7 +490,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 11.5, fontWeight: 500, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</div>
-                        <div style={{ fontSize: 8.5, color: 'var(--text-muted)', marginTop: 2 }}>{f.type === 'habit' ? '습관' : '화장품'}{f.samples ? ` · ${f.samples}회` : ''}</div>
+                        <div style={{ fontSize: 10.5, color: 'var(--text-muted)', marginTop: 2 }}>{f.type === 'habit' ? '습관' : '화장품'}{f.samples ? ` · ${f.samples}회` : ''}</div>
                         <div style={{ marginTop: 5, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.25)', position: 'relative' }}>
                           <div style={{ position: 'absolute', left: '50%', top: -2, width: 1, height: 8, background: 'rgba(255,255,255,0.4)' }} />
                           {f.impact > 0 ? (
@@ -542,7 +542,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                   </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 11.5, color: 'var(--text-primary)', lineHeight: 1.5 }}>{d.text}</div>
-                    <span style={{ display: 'inline-block', marginTop: 5, fontSize: 9, fontWeight: 500, padding: '2px 7px', borderRadius: 8, background: 'rgba(var(--accent-rgb),0.15)', color: 'var(--accent-primary)' }}>{d.tag}</span>
+                    <span style={{ display: 'inline-block', marginTop: 5, fontSize: 10, fontWeight: 500, padding: '2px 7px', borderRadius: 8, background: 'rgba(var(--accent-rgb),0.15)', color: 'var(--accent-primary)' }}>{d.tag}</span>
                   </div>
                 </div>
               ));

@@ -462,7 +462,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
                   }}
                 >
                   <div style={{
-                    fontSize: 36, marginBottom: 8, display: 'flex', justifyContent: 'center',
+                    fontSize: 32, marginBottom: 8, display: 'flex', justifyContent: 'center',
                     filter: badge.earned ? 'none' : 'grayscale(1) opacity(0.4)',
                   }}><PastelIcon emoji={badge.icon} size={36} /></div>
                   <div style={{
@@ -661,7 +661,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
                     }}>{user.nickname}</span>
                     {user.isMe && (
                       <span style={{
-                        fontSize: 9, fontWeight: 600, color: activeTheme.accent,
+                        fontSize: 10, fontWeight: 600, color: activeTheme.accent,
                         background: `${activeTheme.accent}1f`, padding: '1px 6px', borderRadius: 4,
                       }}>나</span>
                     )}
@@ -796,7 +796,7 @@ function PodiumCard({ user, medal, isFirst, accent = '#81E4BD' }) {
         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
       }}>
         {user.nickname}
-        {user.isMe && <span style={{ fontSize: 9, color: accent, marginLeft: 3 }}>나</span>}
+        {user.isMe && <span style={{ fontSize: 10, color: accent, marginLeft: 3 }}>나</span>}
       </div>
       <div style={{
         fontSize: isFirst ? 22 : 18, fontWeight: 700,
@@ -896,7 +896,7 @@ function TitleSelectionSheet({ currentLevel, totalXP, activeTheme, selectedTitle
                   width: 24, height: 24, borderRadius: 7, flexShrink: 0,
                   background: isSelected ? `linear-gradient(135deg, ${activeTheme.accent}, ${activeTheme.sub})` : 'rgba(255,255,255,0.05)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 9, fontWeight: 700, color: isSelected ? '#000' : 'var(--text-muted)',
+                  fontSize: 10, fontWeight: 700, color: isSelected ? '#000' : 'var(--text-muted)',
                   fontFamily: "var(--font-display)",
                 }}>{title.level}</div>
 
@@ -914,7 +914,7 @@ function TitleSelectionSheet({ currentLevel, totalXP, activeTheme, selectedTitle
                 {/* Status */}
                 {isSelected && (
                   <div style={{
-                    fontSize: 8, fontWeight: 700, color: activeTheme.accent,
+                    fontSize: 10, fontWeight: 700, color: activeTheme.accent,
                     background: `${activeTheme.accent}15`, padding: '3px 8px', borderRadius: 6,
                   }}>사용 중</div>
                 )}
@@ -972,7 +972,7 @@ function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#81E4BD' 
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0,
         }}>
           <div>
-            <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)' }}>뱃지 컬렉션</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>뱃지 컬렉션</div>
             <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 3 }}>
               {earnedCount} / {totalCount} 획득
             </div>
@@ -1102,7 +1102,7 @@ function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#81E4BD' 
                         </div>
                       )}
                       {!badge.earned && badge.progress === 0 && (
-                        <div style={{ fontSize: 8, color: '#444458', marginTop: 3 }}><LockIcon size={8} /></div>
+                        <div style={{ fontSize: 10, color: '#444458', marginTop: 3 }}><LockIcon size={8} /></div>
                       )}
                     </div>
                   );
@@ -1144,7 +1144,7 @@ function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#81E4BD' 
                       <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{detailBadge.name}</span>
                       {detailBadge.earned && (
                         <span style={{
-                          fontSize: 9, fontWeight: 600, color: '#34d399',
+                          fontSize: 10, fontWeight: 600, color: '#34d399',
                           background: 'rgba(52,211,153,0.1)', padding: '2px 6px', borderRadius: 4,
                         }}>획득</span>
                       )}

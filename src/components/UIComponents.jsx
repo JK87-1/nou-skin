@@ -99,7 +99,7 @@ export function MetricBar({ label, value, unit = '%', color, icon, description, 
         <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
           {diff != null && diff !== 0 && (
             <span style={{
-              fontSize: 9, fontWeight: 600, padding: '2px 6px', borderRadius: 8,
+              fontSize: 10, fontWeight: 600, padding: '2px 6px', borderRadius: 8,
               background: diff > 0 ? 'rgba(144,196,248,0.15)' : 'rgba(216,168,240,0.15)',
               color: diff > 0 ? '#70B0F0' : '#C090E0',
             }}>{diff > 0 ? '↑' : '↓'}{Math.abs(Math.round(diff))}</span>

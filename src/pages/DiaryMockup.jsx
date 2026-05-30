@@ -275,8 +275,8 @@ export default function DiaryMockup() {
                   boxShadow: 'none',
                 }}>
                   <span style={{ fontSize: 24, fontWeight: 650, color: accentColor, lineHeight: 1, fontFamily: 'var(--font-display)' }}>33</span>
-                  <span style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 500, marginTop: 2 }}>피부나이</span>
-                  <span style={{ fontSize: 8, color: '#34d399', fontWeight: 600, marginTop: 1 }}>측정값</span>
+                  <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 500, marginTop: 2 }}>피부나이</span>
+                  <span style={{ fontSize: 10, color: '#34d399', fontWeight: 600, marginTop: 1 }}>측정값</span>
                 </div>
                 {/* Overall Score card with gauge */}
                 <div style={{
@@ -300,8 +300,8 @@ export default function DiaryMockup() {
                       strokeLinecap="round" />
                   </svg>
                   <span style={{ fontSize: 24, fontWeight: 650, color: accentColor, lineHeight: 1, fontFamily: 'var(--font-display)', zIndex: 1 }}>78</span>
-                  <span style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 500, marginTop: 1, zIndex: 1 }}>종합</span>
-                  <span style={{ fontSize: 8, fontWeight: 700, color: '#4ecb71', zIndex: 1 }}>+3</span>
+                  <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 500, marginTop: 1, zIndex: 1 }}>종합</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: '#4ecb71', zIndex: 1 }}>+3</span>
                 </div>
               </div>
             </div>
@@ -399,7 +399,7 @@ export default function DiaryMockup() {
                         fontSize: 11, color: '#34d399', display: 'flex', alignItems: 'center', gap: 4,
                       }}>
                         {tag.icon} {tag.label}
-                        <span style={{ fontSize: 8, color: 'var(--text-dim)' }}>자동</span>
+                        <span style={{ fontSize: 10, color: 'var(--text-dim)' }}>자동</span>
                       </div>
                     ))}
                   </div>
@@ -627,7 +627,7 @@ export default function DiaryMockup() {
                     }}>
                       <span style={{ fontSize: 12 }}>{d.icon}</span>
                       <span style={{ fontSize: 11, fontWeight: 500, color: d.status === "good" ? '#34d399' : d.status === "partial" ? 'var(--accent-primary)' : 'var(--text-dim)' }}>{d.count}일</span>
-                      {d.status === "good" && <span style={{ fontSize: 8, color: '#34d399', fontWeight: 600 }}>자동</span>}
+                      {d.status === "good" && <span style={{ fontSize: 10, color: '#34d399', fontWeight: 600 }}>자동</span>}
                     </div>
                   ))}
                 </div>
@@ -637,7 +637,7 @@ export default function DiaryMockup() {
               <div className="glass-card" style={{ animation: 'breatheIn 0.6s ease 0.1s both' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                   <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>피부 변화 추이</span>
-                  <span style={{ fontSize: 9, color: 'var(--text-dim)' }}> 음주 · --- 제품 시작</span>
+                  <span style={{ fontSize: 10, color: 'var(--text-dim)' }}> 음주 · --- 제품 시작</span>
                 </div>
                 <div style={{ display: 'flex', gap: 4, marginBottom: 12 }}>
                   {[
@@ -660,8 +660,8 @@ export default function DiaryMockup() {
                     <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                       <div style={{ width: 8, height: 8, borderRadius: 2, background: p.color, border: `1px dashed ${p.color}` }} />
                       <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{p.name.slice(0, 8)}</span>
-                      {!p.endDay && <span style={{ fontSize: 8, color: '#34d399', fontWeight: 600 }}>사용 중</span>}
-                      {p.endDay && <span style={{ fontSize: 8, color: '#f87171', fontWeight: 600 }}>중단</span>}
+                      {!p.endDay && <span style={{ fontSize: 10, color: '#34d399', fontWeight: 600 }}>사용 중</span>}
+                      {p.endDay && <span style={{ fontSize: 10, color: '#f87171', fontWeight: 600 }}>중단</span>}
                     </div>
                   ))}
                 </div>
@@ -691,8 +691,8 @@ export default function DiaryMockup() {
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                             <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{c.factor}</span>
-                            {c.source === "auto" && <span style={{ fontSize: 8, color: '#34d399', background: 'rgba(52,211,153,0.1)', padding: '1px 5px', borderRadius: 4, fontWeight: 600 }}>자동</span>}
-                            {c.source === "manual" && <span style={{ fontSize: 8, color: 'var(--accent-primary)', background: 'rgba(240,144,112,0.1)', padding: '1px 5px', borderRadius: 4, fontWeight: 600 }}>수동</span>}
+                            {c.source === "auto" && <span style={{ fontSize: 10, color: '#34d399', background: 'rgba(52,211,153,0.1)', padding: '1px 5px', borderRadius: 4, fontWeight: 600 }}>자동</span>}
+                            {c.source === "manual" && <span style={{ fontSize: 10, color: 'var(--accent-primary)', background: 'rgba(240,144,112,0.1)', padding: '1px 5px', borderRadius: 4, fontWeight: 600 }}>수동</span>}
                           </div>
                         </div>
                         {hasEnoughData ? (

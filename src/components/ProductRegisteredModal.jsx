@@ -62,7 +62,7 @@ export default function ProductRegisteredModal({ product, totalCount, onClose })
 
         {/* Headline */}
         <div style={{
-          fontSize: 21, fontWeight: 700, color: '#042C53',
+          fontSize: 20, fontWeight: 700, color: '#042C53',
           letterSpacing: -0.4, marginBottom: 6,
         }}>
           케어에 등록 완료!
@@ -113,7 +113,7 @@ export default function ProductRegisteredModal({ product, totalCount, onClose })
                 <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent-primary)' }}>{product.brand}</span>
               )}
               <span style={{
-                fontSize: 9.5, padding: '1px 6px', borderRadius: 5,
+                fontSize: 10.5, padding: '1px 6px', borderRadius: 5,
                 background: `${cat.color}22`, color: '#374E66', fontWeight: 600, letterSpacing: 0.2,
               }}>{product.category}</span>
             </div>

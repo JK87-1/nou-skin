@@ -151,7 +151,7 @@ function CameraErrorScreen({ reason, onFallback, onClose, onRetry, colorMode }) 
         width: 80, height: 80, borderRadius: 24, marginBottom: 24,
         background: 'var(--context-bg)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 36,
+        fontSize: 32,
       }}>
         {isInsecure ? <LockIcon size={36} /> : isDenied ? '' : <CameraIcon size={36} />}
       </div>

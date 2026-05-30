@@ -13,7 +13,7 @@ function renderMarkdown(text) {
       return <h2 key={key} style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: '18px 0 8px' }}>{line.slice(3)}</h2>;
     }
     if (line.startsWith('# ')) {
-      return <h1 key={key} style={{ fontSize: 19, fontWeight: 800, color: 'var(--text-primary)', margin: '8px 0 14px' }}>{line.slice(2)}</h1>;
+      return <h1 key={key} style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)', margin: '8px 0 14px' }}>{line.slice(2)}</h1>;
     }
     if (line.startsWith('|')) {
       return <div key={key} style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--text-secondary)', whiteSpace: 'pre', lineHeight: 1.6 }}>{line}</div>;
@@ -80,7 +80,7 @@ export default function ConsentModal({ onAccept }) {
     }}>
       <header style={{ padding: '24px 20px 14px', borderBottom: '1px solid var(--border, rgba(0,0,0,0.08))' }}>
         <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent-primary)', letterSpacing: 0.4, marginBottom: 4 }}>BETA</div>
-        <h1 style={{ fontSize: 19, fontWeight: 800, color: 'var(--text-primary)', margin: 0, lineHeight: 1.3 }}>
+        <h1 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-primary)', margin: 0, lineHeight: 1.3 }}>
           {SERVICE_NAME}을(를) 시작하기 전<br />아래 사항에 동의해주세요
         </h1>
       </header>
