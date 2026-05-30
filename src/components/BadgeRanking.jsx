@@ -694,7 +694,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
               <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
                 {[
                   { value: `${myRank.rank}위`, label: '현재 순위', color: activeTheme.accent },
-                  { value: myRank.change > 0 ? `▲${myRank.change}` : myRank.change < 0 ? `▼${Math.abs(myRank.change)}` : '-', label: '지난주 대비', color: myRank.change > 0 ? '#34d399' : myRank.change < 0 ? '#f87171' : 'var(--text-dim)' },
+                  { value: myRank.change > 0 ? `▲${myRank.change}` : myRank.change < 0 ? `▼${Math.abs(myRank.change)}` : '-', label: '지난주 대비', color: myRank.change > 0 ? '#6598ef' : myRank.change < 0 ? '#f87171' : 'var(--text-dim)' },
                   { value: `${Math.round((myRank.rank / ranking.length) * 100)}%`, label: '상위', color: activeTheme.accent },
                 ].map((s, i) => (
                   <div key={i} style={{
@@ -808,7 +808,7 @@ function PodiumCard({ user, medal, isFirst, accent = '#6598ef' }) {
 }
 
 function ChangeIndicator({ change }) {
-  if (change > 0) return <span style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: '#34d399' }}>▲{change}</span>;
+  if (change > 0) return <span style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: '#6598ef' }}>▲{change}</span>;
   if (change < 0) return <span style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: '#f87171' }}>▼{Math.abs(change)}</span>;
   return <span style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-dim)' }}>-</span>;
 }
@@ -919,7 +919,7 @@ function TitleSelectionSheet({ currentLevel, totalXP, activeTheme, selectedTitle
                   }}>사용 중</div>
                 )}
                 {earned && !isSelected && (
-                  <span style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: '#34d399' }}></span>
+                  <span style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: '#6598ef' }}></span>
                 )}
               </div>
             );
@@ -1073,7 +1073,7 @@ function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#6598ef' 
                           <div style={{
                             position: 'absolute', bottom: -2, right: -2,
                             width: 14, height: 14, borderRadius: 5,
-                            background: 'linear-gradient(135deg, #34d399, #22c55e)',
+                            background: 'linear-gradient(135deg, #6598ef, #6598ef)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             border: 'none',
                           }}>
@@ -1144,7 +1144,7 @@ function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#6598ef' 
                       <span style={{ fontSize: 16, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)' }}>{detailBadge.name}</span>
                       {detailBadge.earned && (
                         <span style={{
-                          fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: '#34d399',
+                          fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: '#6598ef',
                           background: 'rgba(52,211,153,0.1)', padding: '2px 6px', borderRadius: 4,
                         }}>획득</span>
                       )}

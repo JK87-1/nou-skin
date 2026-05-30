@@ -221,7 +221,7 @@ export default function BeforeAfterSlider() {
               <div style={{ textAlign: 'center' }}>
                 <div style={{
                   fontSize: 16, lineHeight: 1.3, fontWeight: 500, fontFamily: 'Outfit, sans-serif',
-                  color: ageDiff <= 0 ? '#4ade80' : '#f0a050',
+                  color: ageDiff <= 0 ? '#6598ef' : '#f0a050',
                 }}>{ageDiff > 0 ? '+' : ''}{ageDiff}세</div>
                 <div style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: 'rgba(255,255,255,0.7)', marginTop: 1 }}>피부나이</div>
               </div>
@@ -230,7 +230,7 @@ export default function BeforeAfterSlider() {
               <div style={{ textAlign: 'center' }}>
                 <div style={{
                   fontSize: 16, lineHeight: 1.3, fontWeight: 500, fontFamily: 'Outfit, sans-serif',
-                  color: scoreDiff >= 0 ? '#4ade80' : '#f0a050',
+                  color: scoreDiff >= 0 ? '#6598ef' : '#f0a050',
                 }}>{scoreDiff > 0 ? '+' : ''}{scoreDiff}점</div>
                 <div style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: 'rgba(255,255,255,0.7)', marginTop: 1 }}>종합점수</div>
               </div>

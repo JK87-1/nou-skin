@@ -2257,7 +2257,7 @@ function SettingsMenuItem({ icon, label, desc, right, onTap }) {
       {right === 'badge-new' && (
         <span style={{
           padding: '3px 10px', borderRadius: 10, fontSize: 11, lineHeight: 1.3, fontWeight: 500,
-          background: 'rgba(74,222,128,0.12)', color: '#4ade80',
+          background: 'rgba(74,222,128,0.12)', color: '#6598ef',
         }}>NEW</span>
       )}
     </div>

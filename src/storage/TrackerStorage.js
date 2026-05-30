@@ -32,7 +32,7 @@ export const TRACKER_CATEGORIES = {
   '에센스':   { emoji: '', color: '#81E4BD' },
   '크림':     { emoji: '', color: '#E06888' },
   '선크림':   { emoji: '', color: '#F0B870' },
-  '마스크팩': { emoji: '', color: '#34d399' },
+  '마스크팩': { emoji: '', color: '#6598ef' },
   '기타':     { emoji: '', color: '#8888a0' },
 };
 

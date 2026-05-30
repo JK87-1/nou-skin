@@ -139,9 +139,9 @@
   --text-on-dark-disabled: rgba(255,255,255,0.4);
 
   /* 의미·링크 색 */
-  --text-link: #1E90E8;
-  --text-positive: #1976D2;
-  --text-negative: #A32D2D;
+  --text-link: var(--accent-primary);
+  --text-positive: var(--accent-primary); /* 양수=액션색 #6598ef */
+  --text-negative: #e05545;               /* 음수=기존 빨강 */
 
   /* Font family (display는 테마별로 --font-display가 재정의됨) */
   --font-body: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif;

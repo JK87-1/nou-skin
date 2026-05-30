@@ -46,7 +46,7 @@ export default function GoalProgressCard({ onTap }) {
           width: `${Math.min(100, overall)}%`,
           height: '100%', borderRadius: 3,
           background: isCompleted
-            ? 'linear-gradient(90deg, #34d399, #10b981)'
+            ? 'linear-gradient(90deg, #6598ef, #6598ef)'
             : 'var(--progress-fill)',
           transition: 'width 0.6s ease',
         }} />

@@ -149,7 +149,7 @@ function TrendGraph({ data, color = '#a8c8f8', height = 160, metricKey = 'skinAg
       const diff = last - first;
       const improving = inverse ? diff < 0 : diff > 0;
       if (Math.abs(diff) >= 1) {
-        ctx.fillStyle = improving ? '#4ade80' : '#f44336';
+        ctx.fillStyle = improving ? '#6598ef' : '#f44336';
         ctx.font = 'bold 11px sans-serif';
         ctx.textAlign = 'left';
         const arrow = improving ? '▲' : '▼';
@@ -175,7 +175,7 @@ function TrendGraph({ data, color = '#a8c8f8', height = 160, metricKey = 'skinAg
 function ChangeIndicator({ diff, unit = '점', inverse = false, size = 'normal' }) {
   if (diff === 0 || diff === undefined) return <span style={{ fontSize: size === 'small' ? 10 : 12, color: 'var(--text-muted)' }}>—</span>;
   const improved = inverse ? diff < 0 : diff > 0;
-  const color = improved ? '#4ade80' : '#f44336';
+  const color = improved ? '#6598ef' : '#f44336';
   const arrow = improved ? '↑' : '↓';
   const fs = size === 'small' ? 10 : 12;
   return (
@@ -460,7 +460,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
                     <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 2 }}>총 변화</div>
                     <div style={{
                       fontSize: 24, lineHeight: 1.3, fontWeight: 500, fontFamily: 'var(--font-display)',
-                      color: overallDiff >= 0 ? '#4ade80' : '#f0a050',
+                      color: overallDiff >= 0 ? '#6598ef' : '#f0a050',
                     }}>{overallDiff > 0 ? '+' : ''}{overallDiff}점</div>
                   </div>
                 </div>
@@ -480,7 +480,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
                     <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 2 }}>피부나이</div>
                     <div style={{
                       fontSize: 24, lineHeight: 1.3, fontWeight: 500, fontFamily: 'var(--font-display)',
-                      color: skinAgeDiff <= 0 ? '#4ade80' : '#f0a050',
+                      color: skinAgeDiff <= 0 ? '#6598ef' : '#f0a050',
                     }}>{skinAgeDiff > 0 ? '+' : ''}{skinAgeDiff}세</div>
                   </div>
                 </div>
@@ -494,7 +494,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
                 {improvementPct !== null && Number(improvementPct) !== 0 && (
                   <span style={{
                     fontSize: 12, lineHeight: 1.5, fontWeight: 500,
-                    color: Number(improvementPct) > 0 ? '#4ade80' : '#f0a050',
+                    color: Number(improvementPct) > 0 ? '#6598ef' : '#f0a050',
                   }}>
                     {Number(improvementPct) > 0 ? '▲' : '▼'} {Math.abs(Number(improvementPct))}% {Number(improvementPct) > 0 ? '개선' : '변화'}
                   </span>
@@ -569,7 +569,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
                               <span style={{
                                 fontSize: 10, lineHeight: 1.3, fontWeight: 500, padding: '1px 6px', borderRadius: 8,
                                 background: diff > 0 ? 'rgba(74,222,128,0.15)' : 'rgba(240,160,80,0.15)',
-                                color: diff > 0 ? '#4ade80' : '#f0a050',
+                                color: diff > 0 ? '#6598ef' : '#f0a050',
                               }}>{diff > 0 ? '+' : ''}{diff}</span>
                             )}
                             {diff > 0 && (
@@ -672,7 +672,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
                     <div style={{ textAlign: 'center' }}>
                       <div style={{
                         fontSize: 24, lineHeight: 1.3, fontWeight: 500, fontFamily: 'var(--font-display)',
-                        color: overallDiff >= 0 ? '#4ade80' : '#f0a050',
+                        color: overallDiff >= 0 ? '#6598ef' : '#f0a050',
                       }}>{overallDiff > 0 ? '+' : ''}{overallDiff}</div>
                       <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)' }}>점 {overallDiff >= 0 ? '상승' : '변화'}</div>
                     </div>
@@ -721,7 +721,7 @@ export default function HistoryPage({ onBack, onMeasure, onOpenConsult, onAddPro
                               <span style={{
                                 fontSize: 10, lineHeight: 1.3, fontWeight: 500, padding: '1px 6px', borderRadius: 8, marginLeft: 6,
                                 background: improved ? 'rgba(74,222,128,0.15)' : 'rgba(240,160,80,0.15)',
-                                color: improved ? '#4ade80' : '#f0a050',
+                                color: improved ? '#6598ef' : '#f0a050',
                               }}>{improved ? '↑' : '↓'}{diff > 0 ? '+' : ''}{diff}</span>
                             )}
                           </div>
@@ -992,7 +992,7 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
   // ── 컬러 시스템 ──
   const C = {
     main: '#1A1A1A', sub: '#185FA5', accent: '#1E90E8',
-    positive: '#1976D2', negative: '#A32D2D',
+    positive: '#1976D2', negative: '#e05545',
     gradTop: '#DCEEFB', gradMid: '#EAF4FB',
     cardBg: '#FFFFFF', outerBg: '#F5FAFD',
     badgeBg: 'rgba(30,144,232,0.1)', badgeText: '#1976D2',
@@ -1492,7 +1492,7 @@ export function RecordDetailModal({ record, thumbnail, onClose, onDelete }) {
                 }}>아니오</button>
                 <button onClick={() => { onDelete(record.id || record.date); setShowConfirm(false); }} style={{
                   flex: 1, padding: '12px 0', borderRadius: 12, border: 'none',
-                  background: '#A32D2D', color: '#fff', fontSize: 14, lineHeight: 1.5, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+                  background: '#e05545', color: '#fff', fontSize: 14, lineHeight: 1.5, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
                 }}>삭제</button>
               </div>
             </div>

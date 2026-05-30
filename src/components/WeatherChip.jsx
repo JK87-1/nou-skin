@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { getWeatherData, saveWeatherData, isStale, getUserLocation, saveUserLocation } from '../storage/WeatherStorage';
 
 function uvColor(val) {
-  if (val <= 2) return '#34d399';
+  if (val <= 2) return '#6598ef';
   if (val <= 5) return '#F0B870';
   if (val <= 7) return '#f97316';
   return '#ef4444';
@@ -11,13 +11,13 @@ function uvColor(val) {
 function humidityColor(val) {
   if (val < 30) return '#f59e0b';
   if (val < 40) return '#F0B870';
-  if (val <= 60) return '#34d399';
+  if (val <= 60) return '#6598ef';
   if (val <= 70) return '#38bdf8';
   return '#ADEBB3';
 }
 
 function airColor(val) {
-  if (val <= 30) return '#34d399';
+  if (val <= 30) return '#6598ef';
   if (val <= 50) return '#ADEBB3';
   if (val <= 80) return '#F0B870';
   return '#ef4444';

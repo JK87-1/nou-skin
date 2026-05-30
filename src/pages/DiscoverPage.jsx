@@ -502,7 +502,7 @@ export default function DiscoverPage({ onMeasure, onOpenConsult }) {
                           )}
                         </div>
                       </div>
-                      <span style={{ minWidth: 36, textAlign: 'right', fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: f.impact > 0 ? '#1976D2' : f.impact < 0 ? (confidence === '낮음' ? '#888' : '#A32D2D') : 'var(--text-muted)' }}>
+                      <span style={{ minWidth: 36, textAlign: 'right', fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: f.impact > 0 ? '#1976D2' : f.impact < 0 ? (confidence === '낮음' ? '#888' : '#e05545') : 'var(--text-muted)' }}>
                         {f.impact > 0 ? `+${f.impact}점` : `${f.impact}점`}
                       </span>
                     </div>

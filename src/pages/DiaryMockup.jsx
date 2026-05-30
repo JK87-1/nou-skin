@@ -33,7 +33,7 @@ const CONDITIONS = RECORDS.map((_, i) => ({
 
 const PRODUCTS = [
   { id: 1, name: "시카플라스트 밤 B5+", brand: "라로슈포제", startDay: 1, endDay: null, color: "#6598ef" },
-  { id: 2, name: "스네일 뮤신 에센스", brand: "코스알엑스", startDay: 35, endDay: null, color: "#34d399" },
+  { id: 2, name: "스네일 뮤신 에센스", brand: "코스알엑스", startDay: 35, endDay: null, color: "#6598ef" },
   { id: 3, name: "그린티 세럼", brand: "이니스프리", startDay: 10, endDay: 34, color: "#F0B870" },
 ];
 
@@ -276,7 +276,7 @@ export default function DiaryMockup() {
                 }}>
                   <span style={{ fontSize: 24, fontWeight: 500, color: accentColor, lineHeight: 1.3, fontFamily: 'var(--font-display)' }}>33</span>
                   <span style={{ fontSize: 10, lineHeight: 1.3, color: 'var(--text-muted)', fontWeight: 500, marginTop: 2 }}>피부나이</span>
-                  <span style={{ fontSize: 10, lineHeight: 1.3, color: '#34d399', fontWeight: 500, marginTop: 1 }}>측정값</span>
+                  <span style={{ fontSize: 10, lineHeight: 1.3, color: '#6598ef', fontWeight: 500, marginTop: 1 }}>측정값</span>
                 </div>
                 {/* Overall Score card with gauge */}
                 <div style={{
@@ -290,7 +290,7 @@ export default function DiaryMockup() {
                   <svg width={62} height={62} style={{ transform: 'rotate(-90deg)', position: 'absolute' }}>
                     <defs>
                       <linearGradient id="miniGauge" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#34d399" />
+                        <stop offset="0%" stopColor="#6598ef" />
                         <stop offset="100%" stopColor={accentColor} />
                       </linearGradient>
                     </defs>
@@ -311,7 +311,7 @@ export default function DiaryMockup() {
               <button style={{
                 flex: 1, padding: '12px 0', borderRadius: 'var(--btn-radius)', border: 'none',
                 fontSize: 14, lineHeight: 1.5, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
-                background: 'rgba(74,222,128,0.15)', color: '#4ade80',
+                background: 'rgba(74,222,128,0.15)', color: '#6598ef',
               }}><span style={{ display: 'inline-flex', verticalAlign: 'middle' }}><CheckIcon size={14} /></span> 저장 완료</button>
               <button style={{
                 padding: '12px 20px', borderRadius: 'var(--btn-radius)', fontFamily: 'inherit',
@@ -363,7 +363,7 @@ export default function DiaryMockup() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{ fontSize: 16, lineHeight: 1.3, fontWeight: 500 }}>{conditionSaved ? <CheckIcon size={16} /> : <MemoIcon size={16} />}</span>
                   <div>
-                    <div style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: conditionSaved ? '#34d399' : 'var(--text-primary)' }}>
+                    <div style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: conditionSaved ? '#6598ef' : 'var(--text-primary)' }}>
                       {conditionSaved ? "오늘 컨디션 기록 완료" : "오늘 컨디션도 기록할래요?"}
                     </div>
                     <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-dim)', marginTop: 2 }}>
@@ -396,7 +396,7 @@ export default function DiaryMockup() {
                       <div key={i} style={{
                         padding: '4px 10px', borderRadius: 8,
                         background: 'rgba(52,211,153,0.08)', border: 'none',
-                        fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: '#34d399', display: 'flex', alignItems: 'center', gap: 4,
+                        fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: '#6598ef', display: 'flex', alignItems: 'center', gap: 4,
                       }}>
                         {tag.icon} {tag.label}
                         <span style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-dim)' }}>자동</span>
@@ -419,7 +419,7 @@ export default function DiaryMockup() {
                         <button key={i} onClick={() => setAlcoholVal(i)} style={{
                           padding: '6px 12px', borderRadius: 10, border: 'none',
                           background: alcoholVal === i ? (i === 0 ? 'rgba(52,211,153,0.12)' : 'rgba(248,113,113,0.12)') : 'var(--bg-input)',
-                          color: alcoholVal === i ? (i === 0 ? '#34d399' : '#f87171') : 'var(--text-dim)',
+                          color: alcoholVal === i ? (i === 0 ? '#6598ef' : '#f87171') : 'var(--text-dim)',
                           fontSize: 11, lineHeight: 1.3, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
                         }}>{opt}</button>
                       ))}
@@ -466,7 +466,7 @@ export default function DiaryMockup() {
                   ))}
                   <span style={{
                     padding: '4px 10px', borderRadius: 20,
-                    background: 'rgba(52,211,153,0.1)', fontSize: 11, lineHeight: 1.3, color: '#34d399', fontWeight: 500,
+                    background: 'rgba(52,211,153,0.1)', fontSize: 11, lineHeight: 1.3, color: '#6598ef', fontWeight: 500,
                   }}>+ 자동 4개</span>
                 </div>
               )}
@@ -626,8 +626,8 @@ export default function DiaryMockup() {
                       display: 'flex', alignItems: 'center', gap: 4,
                     }}>
                       <span style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500 }}>{d.icon}</span>
-                      <span style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: d.status === "good" ? '#34d399' : d.status === "partial" ? 'var(--accent-primary)' : 'var(--text-dim)' }}>{d.count}일</span>
-                      {d.status === "good" && <span style={{ fontSize: 10, lineHeight: 1.3, color: '#34d399', fontWeight: 500 }}>자동</span>}
+                      <span style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: d.status === "good" ? '#6598ef' : d.status === "partial" ? 'var(--accent-primary)' : 'var(--text-dim)' }}>{d.count}일</span>
+                      {d.status === "good" && <span style={{ fontSize: 10, lineHeight: 1.3, color: '#6598ef', fontWeight: 500 }}>자동</span>}
                     </div>
                   ))}
                 </div>
@@ -660,7 +660,7 @@ export default function DiaryMockup() {
                     <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                       <div style={{ width: 8, height: 8, borderRadius: 2, background: p.color, border: `1px dashed ${p.color}` }} />
                       <span style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)' }}>{p.name.slice(0, 8)}</span>
-                      {!p.endDay && <span style={{ fontSize: 10, lineHeight: 1.3, color: '#34d399', fontWeight: 500 }}>사용 중</span>}
+                      {!p.endDay && <span style={{ fontSize: 10, lineHeight: 1.3, color: '#6598ef', fontWeight: 500 }}>사용 중</span>}
                       {p.endDay && <span style={{ fontSize: 10, lineHeight: 1.3, color: '#f87171', fontWeight: 500 }}>중단</span>}
                     </div>
                   ))}
@@ -691,19 +691,19 @@ export default function DiaryMockup() {
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                             <span style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)' }}>{c.factor}</span>
-                            {c.source === "auto" && <span style={{ fontSize: 10, lineHeight: 1.3, color: '#34d399', background: 'rgba(52,211,153,0.1)', padding: '1px 5px', borderRadius: 4, fontWeight: 500 }}>자동</span>}
+                            {c.source === "auto" && <span style={{ fontSize: 10, lineHeight: 1.3, color: '#6598ef', background: 'rgba(52,211,153,0.1)', padding: '1px 5px', borderRadius: 4, fontWeight: 500 }}>자동</span>}
                             {c.source === "manual" && <span style={{ fontSize: 10, lineHeight: 1.3, color: 'var(--accent-primary)', background: 'rgba(var(--accent-rgb),0.1)', padding: '1px 5px', borderRadius: 4, fontWeight: 500 }}>수동</span>}
                           </div>
                         </div>
                         {hasEnoughData ? (
-                          <span style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, fontFamily: 'var(--font-display)', color: c.dir === "+" ? '#34d399' : '#f87171' }}>
+                          <span style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, fontFamily: 'var(--font-display)', color: c.dir === "+" ? '#6598ef' : '#f87171' }}>
                             {c.dir}{Math.round(c.corr * 100)}%
                           </span>
                         ) : (
                           <span style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-dim)' }}>{c.dataCount}/{c.minRequired}일</span>
                         )}
                       </div>
-                      <Bar value={hasEnoughData ? c.corr : c.dataCount / (c.minRequired || 14)} max={1} color={hasEnoughData ? (c.dir === "+" ? '#34d399' : '#f87171') : 'var(--text-dim)'} h={3} />
+                      <Bar value={hasEnoughData ? c.corr : c.dataCount / (c.minRequired || 14)} max={1} color={hasEnoughData ? (c.dir === "+" ? '#6598ef' : '#f87171') : 'var(--text-dim)'} h={3} />
                       <div style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)', marginTop: 8, lineHeight: 1.3 }}>
                         {hasEnoughData ? c.insight : `데이터 수집 중... ${c.minRequired - c.dataCount}일 더 기록하면 분석이 시작돼요`}
                       </div>
@@ -729,9 +729,9 @@ export default function DiaryMockup() {
                 <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-muted)', lineHeight: 1.5 }}>
                   60일간의 데이터를 종합하면, <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>루틴 완료율</span>과 <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>습도</span>가 자동 수집 데이터 중 가장 높은 상관관계를 보여요.
                   <br /><br />
-                  최근 15일간 수동 기록 결과, <span style={{ color: '#34d399', fontWeight: 600 }}>수면 시간</span>이 가장 강한 양의 상관관계(+72%)를 보여요. 다만 아직 15일분이라 더 쌓이면 정확도가 올라가요.
+                  최근 15일간 수동 기록 결과, <span style={{ color: '#6598ef', fontWeight: 600 }}>수면 시간</span>이 가장 강한 양의 상관관계(+72%)를 보여요. 다만 아직 15일분이라 더 쌓이면 정확도가 올라가요.
                   <br /><br />
-                  <span style={{ color: '#34d399', fontWeight: 600 }}>코스알엑스 에센스</span> 사용 시작(35일째) 이후 수분이 상승 중이지만, 같은 기간 습도도 올라갔기 때문에 제품 단독 효과는 확정하기 어려워요.
+                  <span style={{ color: '#6598ef', fontWeight: 600 }}>코스알엑스 에센스</span> 사용 시작(35일째) 이후 수분이 상승 중이지만, 같은 기간 습도도 올라갔기 때문에 제품 단독 효과는 확정하기 어려워요.
                 </div>
                 <div style={{
                   marginTop: 14, padding: '12px 14px', borderRadius: 12,

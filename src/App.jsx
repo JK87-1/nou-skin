@@ -1260,9 +1260,9 @@ export default function App() {
             // 날씨
             if (cardKey === 'weather') {
               const _w = getWeatherData();
-              const humInfo = (v) => { if (v < 30) return { color: '#f59e0b', label: '매우낮음' }; if (v < 40) return { color: '#F0B870', label: '낮음' }; if (v <= 60) return { color: '#34d399', label: '적정' }; if (v <= 70) return { color: '#38bdf8', label: '높음' }; return { color: '#ADEBB3', label: '매우높음' }; };
-              const airInfo = (v) => { if (v <= 30) return { color: '#34d399', label: '좋음' }; if (v <= 50) return { color: '#ADEBB3', label: '보통' }; if (v <= 80) return { color: '#F0B870', label: '나쁨' }; return { color: '#ef4444', label: '매우나쁨' }; };
-              const uvInfo = (v) => { if (v <= 2) return { color: '#34d399', label: '낮음' }; if (v <= 5) return { color: '#F0B870', label: '보통' }; if (v <= 7) return { color: '#f97316', label: '높음' }; return { color: '#ef4444', label: '매우높음' }; };
+              const humInfo = (v) => { if (v < 30) return { color: '#f59e0b', label: '매우낮음' }; if (v < 40) return { color: '#F0B870', label: '낮음' }; if (v <= 60) return { color: '#6598ef', label: '적정' }; if (v <= 70) return { color: '#38bdf8', label: '높음' }; return { color: '#ADEBB3', label: '매우높음' }; };
+              const airInfo = (v) => { if (v <= 30) return { color: '#6598ef', label: '좋음' }; if (v <= 50) return { color: '#ADEBB3', label: '보통' }; if (v <= 80) return { color: '#F0B870', label: '나쁨' }; return { color: '#ef4444', label: '매우나쁨' }; };
+              const uvInfo = (v) => { if (v <= 2) return { color: '#6598ef', label: '낮음' }; if (v <= 5) return { color: '#F0B870', label: '보통' }; if (v <= 7) return { color: '#f97316', label: '높음' }; return { color: '#ef4444', label: '매우높음' }; };
               const cb = { flex: 1, borderRadius: 16, padding: '14px 12px', background: '#ffffff' };
               return (
                 <div key={cardKey} onClick={() => setWeatherSheet(true)} style={{
@@ -1553,7 +1553,7 @@ export default function App() {
 
         const checkIcon = <svg width="12" height="12" viewBox="0 0 24 24" fill="#1976D2"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.707 8.707l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 111.414-1.414L11 13.586l4.293-4.293a1 1 0 111.414 1.414z"/></svg>;
         const modIcon = <svg width="12" height="12" viewBox="0 0 24 24" fill="#999"><path d="M12 1.67L1.21 21.5h21.57L12 1.67zm1 14.83h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>;
-        const warnIcon = <svg width="12" height="12" viewBox="0 0 24 24" fill="#A32D2D"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>;
+        const warnIcon = <svg width="12" height="12" viewBox="0 0 24 24" fill="#e05545"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>;
         const statusIcon = (s) => s === 'good' ? checkIcon : s === 'moderate' ? modIcon : warnIcon;
 
         const QualityRow = ({ label, value, icon, isLast }) => (
@@ -1604,7 +1604,7 @@ export default function App() {
           }}>
             {allGood
               ? <svg width="10" height="10" viewBox="0 0 24 24" fill="#58aefe"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.707 8.707l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 111.414-1.414L11 13.586l4.293-4.293a1 1 0 111.414 1.414z"/></svg>
-              : <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#A32D2D' }} />
+              : <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#e05545' }} />
             }
             <span style={{ color: '#fff', fontSize: 10, lineHeight: 1.3, fontWeight: 500 }}>
               {allGood ? '촬영 품질 검토 완료' : '일부 항목을 확인해주세요'}
@@ -1635,7 +1635,7 @@ export default function App() {
                   <span style={{ color: 'rgba(255,255,255,0.92)', fontSize: 10, lineHeight: 1.3, fontWeight: 500 }}>{label}</span>
                   {s === 'good' ? <svg width="10" height="10" viewBox="0 0 24 24" fill="#58aefe"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.707 8.707l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 111.414-1.414L11 13.586l4.293-4.293a1 1 0 111.414 1.414z"/></svg>
                    : s === 'moderate' ? <svg width="10" height="10" viewBox="0 0 24 24" fill="#999"><path d="M12 1.67L1.21 21.5h21.57L12 1.67zm1 14.83h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
-                   : <svg width="10" height="10" viewBox="0 0 24 24" fill="#A32D2D"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>}
+                   : <svg width="10" height="10" viewBox="0 0 24 24" fill="#e05545"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>}
                   <span style={{
                     fontSize: 10, lineHeight: 1.3, fontWeight: 500,
                     color: s === 'good' ? 'rgba(88,174,254,0.9)' : s === 'moderate' ? 'rgba(255,255,255,0.4)' : 'rgba(163,45,45,0.9)',
@@ -2825,7 +2825,7 @@ export default function App() {
                       padding: '6px 0', fontSize: 13, lineHeight: 1.5, fontWeight: 500,
                     }}>
                       <span style={{ color: 'var(--text-secondary)' }}>{m.icon} {m.label}</span>
-                      <span style={{ color: '#34d399', fontWeight: 600 }}>
+                      <span style={{ color: '#6598ef', fontWeight: 600 }}>
                         {m.startValue} → {m.currentValue}
                       </span>
                     </div>
