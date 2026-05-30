@@ -2074,24 +2074,33 @@ function RoutineChecklist() {
         </div>
       </div>
 
-      {/* Morning / Day / Night Toggle */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+      {/* Morning / Day / Night Toggle — 제품페이지 섹션 탭과 동일한 세그먼트 컨트롤 */}
+      <div style={{
+        display: 'flex', gap: 4, padding: 4, marginBottom: 16,
+        background: 'rgba(255,255,255,0.4)',
+        border: 'none',
+        borderRadius: 14,
+      }}>
         {[
-          { key: 'morning', label: ' 모닝' },
-          { key: 'day', label: ' 데이' },
-          { key: 'night', label: ' 나이트' },
-        ].map(m => (
-          <button key={m.key} onClick={() => setMode(m.key)} style={{
-            flex: 1, padding: '12px 0', borderRadius: 18, cursor: 'pointer',
-            fontFamily: 'inherit', fontSize: 13, lineHeight: 1.5, fontWeight: 500, textAlign: 'center',
-            background: mode === m.key ? 'rgba(255,255,255,0.4)' : 'transparent',
-            color: mode === m.key ? 'var(--text-primary)' : 'var(--text-muted)',
-            backdropFilter: mode === m.key ? 'blur(14px)' : 'none', WebkitBackdropFilter: mode === m.key ? 'blur(14px)' : 'none',
-            border: 'none',
-            boxShadow: mode === m.key ? '0 2px 12px rgba(0,0,0,0.05)' : 'none',
-            transition: 'all 0.2s',
-          }}>{m.label}</button>
-        ))}
+          { key: 'morning', label: '모닝' },
+          { key: 'day', label: '데이' },
+          { key: 'night', label: '나이트' },
+        ].map(m => {
+          const active = mode === m.key;
+          return (
+            <button key={m.key} onClick={() => setMode(m.key)} style={{
+              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              padding: '10px 0', borderRadius: 11, cursor: 'pointer',
+              fontFamily: 'inherit', fontSize: 14, lineHeight: 1.5, letterSpacing: -0.2,
+              fontWeight: active ? 600 : 500,
+              background: active ? 'rgba(255,255,255,0.85)' : 'transparent',
+              boxShadow: active ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
+              color: active ? 'var(--accent-primary)' : 'var(--text-secondary)',
+              border: 'none',
+              transition: 'background 0.18s ease, color 0.18s ease',
+            }}>{m.label}</button>
+          );
+        })}
       </div>
 
       {/* Progress + 일괄 체크·정렬 controls */}
