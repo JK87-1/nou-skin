@@ -8,11 +8,11 @@ import { getRecords, getTimeSeries, getTotalChanges } from '../storage/SkinStora
  * - TOSS 스타일: 둥근 카드, 큰 typography, subtle shadow, 탭 인터랙션
  *
  * props
- *  - accent: theme accent color (string, e.g. '#FF8C42')
+ *  - accent: theme accent color (string, e.g. '#6598ef')
  *  - changes: 결과 페이지에서 이미 계산한 getChanges() 결과 (재계산 회피)
  *  - animationDelay: 진입 애니메이션 stagger (CSS animation delay 문자열, e.g. '0.85s')
  */
-export default function TrendCard({ accent = '#FF8C42', changes = null, animationDelay = '0.85s' }) {
+export default function TrendCard({ accent = '#6598ef', changes = null, animationDelay = '0.85s' }) {
   const [metric, setMetric] = useState('conditionScore'); // 'conditionScore' | 'skinAge'
 
   const records = useMemo(() => getRecords().filter((r) => !r.differentPerson), []);

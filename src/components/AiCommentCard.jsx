@@ -19,7 +19,7 @@ import { useState } from 'react';
 export default function AiCommentCard({
   aiNotes,
   aiDetails,
-  accent = '#FF8C42',
+  accent = '#6598ef',
   analysisMode,
   makeupDetected,
   animationDelay = '0.85s',

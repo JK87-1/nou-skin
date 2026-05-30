@@ -210,19 +210,19 @@ select:focus-visible {
   --consult-bg: linear-gradient(180deg, #08080c 0%, #0c0c10 100%);
 
   /* Structural variables (dark defaults) */
-  --btn-radius: 50px;
+  --btn-radius: var(--radius-pill);
   --btn-primary-bg: linear-gradient(135deg, #6598ef, #85b0f5);
   --btn-primary-shadow: 0 4px 20px rgba(90,176,232,0.35), inset 0 1px 1px rgba(255,255,255,0.05);
   --btn-secondary-bg: var(--bg-card);
   --btn-secondary-border: none;
-  --chip-radius: 20px;
+  --chip-radius: var(--radius-xl);
   --chip-bg: transparent;
   --chip-border: none;
   --chip-text: var(--accent-primary);
   --card-backdrop: blur(16px);
   --card-border-radius: var(--radius-3xl);
-  --segment-radius: 50px;
-  --segment-item-radius: 50px;
+  --segment-radius: var(--radius-pill);
+  --segment-item-radius: var(--radius-pill);
   --float-pill-bg: rgba(30,30,40,0.9);
   --float-pill-backdrop: blur(12px);
   --modal-bg: rgba(20,20,30,0.95);
@@ -296,19 +296,19 @@ select:focus-visible {
   --consult-bg: transparent;
 
   /* Structural variables — Sky glass style */
-  --btn-radius: 16px;
+  --btn-radius: var(--radius-lg);
   --btn-primary-bg: var(--accent-primary);
   --btn-primary-shadow: 0 2px 8px rgba(0,0,0,0.06);
   --btn-secondary-bg: rgba(255,255,255,0.4);
   --btn-secondary-border: none;
-  --chip-radius: 10px;
+  --chip-radius: var(--radius-sm);
   --chip-bg: rgba(255,255,255,0.3);
   --chip-border: none;
   --chip-text: var(--text-secondary);
   --card-backdrop: blur(16px);
   --card-border-radius: var(--radius-xl);
   --segment-radius: 14px;
-  --segment-item-radius: 10px;
+  --segment-item-radius: var(--radius-sm);
   --float-pill-bg: #FFFFFF;
   --float-pill-backdrop: none;
   --modal-bg: #FFFFFF;
