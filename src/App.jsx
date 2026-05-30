@@ -1989,8 +1989,8 @@ export default function App() {
                       {/* 등급 + 베스트/관리필요 통합 카드 */}
                       <div style={{
                         display: 'flex', alignItems: 'center', gap: 12,
-                        padding: '10px 12px', borderRadius: 12,
-                        background: 'rgba(255,255,255,0.55)',
+                        padding: '10px 12px', borderRadius: 'var(--card-sm-radius)',
+                        background: 'var(--card-sm-bg)',
                         marginBottom: 10,
                       }}>
                         {/* 등급 */}
@@ -2078,10 +2078,11 @@ export default function App() {
             return (
               <div style={{
                 margin: '0 16px 10px',
-                background: 'rgba(255,255,255,0.5)',
+                background: 'var(--card-bg)',
                 border: 'none',
-                borderRadius: 14, padding: '14px 16px',
-                boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)',
+                borderRadius: 'var(--card-radius)', padding: '14px 16px',
+                boxShadow: 'var(--card-shadow)',
+                backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                   <div style={{
@@ -2192,9 +2193,10 @@ export default function App() {
             return (
               <div style={{
                 margin: '0 16px 10px',
-                background: 'rgba(255,255,255,0.5)',
-                borderRadius: 14, padding: '14px 16px',
-                boxShadow: '0 1px 4px rgba(4, 44, 83, 0.04)',
+                background: 'var(--card-bg)',
+                borderRadius: 'var(--card-radius)', padding: '14px 16px',
+                boxShadow: 'var(--card-shadow)',
+                backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)',
                 animation: 'fadeUp 0.3s ease-out',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
@@ -2253,7 +2255,7 @@ export default function App() {
                     const pct = getPercentile(m.detail, m.value, pctAge);
                     return (
                     <div key={m.detail} onClick={() => openDetail(m.detail)} style={{
-                      background: 'rgba(255,255,255,0.45)', borderRadius: 12, padding: '12px 10px',
+                      background: 'var(--card-sm-bg)', borderRadius: 'var(--card-sm-radius)', padding: '12px 10px',
                       cursor: 'pointer', transition: 'background 0.2s',
                       display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
                     }}>
@@ -2405,8 +2407,8 @@ export default function App() {
                         if (products.length === 0) return null;
                         return (
                           <div key={cat} style={{
-                            marginBottom: 10, borderRadius: 12,
-                            background: 'rgba(255,255,255,0.7)',
+                            marginBottom: 10, borderRadius: 'var(--card-sm-radius)',
+                            background: 'var(--card-sm-bg)',
                             overflow: 'hidden',
                           }}>
                             <div style={{
@@ -2480,8 +2482,8 @@ export default function App() {
                           const catMeta = TREATMENT_CATEGORIES[cat];
                           return (
                             <div key={cat} style={{
-                              marginBottom: 10, borderRadius: 12,
-                              background: 'rgba(255,255,255,0.7)',
+                              marginBottom: 10, borderRadius: 'var(--card-sm-radius)',
+                              background: 'var(--card-sm-bg)',
                               overflow: 'hidden',
                             }}>
                               <div style={{
@@ -2590,8 +2592,8 @@ export default function App() {
                 )}
                 {result?.analysisMode === 'cv_only' && (
                   <div style={{
-                    marginTop: 8, padding: '10px 12px', borderRadius: 12,
-                    background: 'rgba(255,255,255,0.7)',
+                    marginTop: 8, padding: '10px 12px', borderRadius: 'var(--card-sm-radius)',
+                    background: 'var(--card-sm-bg)',
                   }}>
                     <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent-primary)', marginBottom: 2 }}>AI 정밀 분석이 일시 지연됐어요</div>
                     <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.35)', lineHeight: 1.5 }}>네트워크 또는 분석 서버 일시 지연으로 기본 분석(CV)으로 처리됐어요. 잠시 후 다시 측정하면 보통 정상 복귀됩니다.</div>

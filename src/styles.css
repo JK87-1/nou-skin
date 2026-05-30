@@ -2026,9 +2026,11 @@ select:focus-visible {
 /* ===== Result Page — Section Patterns ===== */
 .result-section {
   margin: 0 16px 10px;
-  background: rgba(255,255,255,0.5);
-  border-radius: 14px;
-  box-shadow: 0 1px 4px rgba(4, 44, 83, 0.04);
+  background: var(--card-bg);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  backdrop-filter: var(--card-blur);
+  -webkit-backdrop-filter: var(--card-blur);
   overflow: hidden;
 }
 .result-section-toggle {
