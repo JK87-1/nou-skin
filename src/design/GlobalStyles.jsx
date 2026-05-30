@@ -1,4 +1,4 @@
-import { COLORS, ANIMATION } from './tokens';
+import { ANIMATION } from './tokens';
 
 export default function GlobalStyles() {
   return (

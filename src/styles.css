@@ -71,6 +71,11 @@
   --radius-pill: 50px;
   --radius-full: 9999px;
 
+  /* Card radius tiers (큰 24 / 중첩 20 / 소형 12) */
+  --card-radius: var(--radius-2xl);
+  --card-nested-radius: var(--radius-xl);
+  --card-sm-radius: var(--radius-md);
+
   /* Type scale (font-size) */
   --text-2xs: 10px;
   --text-xs: 11px;
@@ -210,7 +215,7 @@ select:focus-visible {
   --consult-bg: linear-gradient(180deg, #08080c 0%, #0c0c10 100%);
 
   /* Structural variables (dark defaults) */
-  --btn-radius: var(--radius-pill);
+  --btn-radius: var(--radius-md);
   --btn-primary-bg: linear-gradient(135deg, #6598ef, #85b0f5);
   --btn-primary-shadow: 0 4px 20px rgba(90,176,232,0.35), inset 0 1px 1px rgba(255,255,255,0.05);
   --btn-secondary-bg: var(--bg-card);
@@ -220,7 +225,7 @@ select:focus-visible {
   --chip-border: none;
   --chip-text: var(--accent-primary);
   --card-backdrop: blur(16px);
-  --card-border-radius: var(--radius-3xl);
+  --card-border-radius: var(--card-radius);
   --segment-radius: var(--radius-pill);
   --segment-item-radius: var(--radius-pill);
   --float-pill-bg: rgba(30,30,40,0.9);
@@ -296,7 +301,7 @@ select:focus-visible {
   --consult-bg: transparent;
 
   /* Structural variables — Sky glass style */
-  --btn-radius: var(--radius-lg);
+  --btn-radius: var(--radius-md);
   --btn-primary-bg: var(--accent-primary);
   --btn-primary-shadow: 0 2px 8px rgba(0,0,0,0.06);
   --btn-secondary-bg: rgba(255,255,255,0.4);
@@ -306,7 +311,7 @@ select:focus-visible {
   --chip-border: none;
   --chip-text: var(--text-secondary);
   --card-backdrop: blur(16px);
-  --card-border-radius: var(--radius-xl);
+  --card-border-radius: var(--card-radius);
   --segment-radius: 14px;
   --segment-item-radius: var(--radius-sm);
   --float-pill-bg: #FFFFFF;
@@ -612,7 +617,7 @@ select:focus-visible {
 .card {
   background: var(--bg-card);
   border: none;
-  border-radius: var(--radius-xl);
+  border-radius: var(--card-radius);
   padding: 22px;
   box-shadow: var(--shadow-card);
   margin-bottom: 15px;
@@ -691,7 +696,7 @@ select:focus-visible {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   border: none;
-  border-radius: var(--radius-3xl);
+  border-radius: var(--card-radius);
   padding: 18px;
   margin-bottom: 14px;
   box-shadow: var(--shadow-elevated);
@@ -945,7 +950,7 @@ select:focus-visible {
   overflow: hidden;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  border-radius: var(--radius-sm);
+  border-radius: var(--card-sm-radius);
   aspect-ratio: 5 / 6;
 }
 .photo-cell img {
@@ -1724,7 +1729,7 @@ select:focus-visible {
   -webkit-backdrop-filter: blur(14px);
   border: none;
   box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-  border-radius: 18px;
+  border-radius: var(--card-radius);
 }
 [data-theme="light"] .glass-card {
   background: rgba(255,255,255,0.42);
@@ -1732,7 +1737,7 @@ select:focus-visible {
   -webkit-backdrop-filter: blur(14px);
   border: none;
   box-shadow: 0 2px 12px rgba(0,0,0,0.05);
-  border-radius: 18px;
+  border-radius: var(--card-radius);
   padding: 24px;
   margin: 0 0 12px;
 }
@@ -1740,7 +1745,7 @@ select:focus-visible {
 /* Card-flat: nested glass card */
 [data-theme="light"] .card-flat {
   background: #F5F5F5;
-  border-radius: var(--radius-lg);
+  border-radius: var(--card-nested-radius);
   padding: 16px 18px;
 }
 
@@ -1804,7 +1809,7 @@ select:focus-visible {
 [data-theme="light"] .btn-primary {
   background: var(--accent-primary);
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
 }
 [data-theme="light"] .btn-primary::after { display: none; }
 [data-theme="light"] .btn-primary:active {

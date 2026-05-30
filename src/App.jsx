@@ -1017,7 +1017,7 @@ export default function App() {
                 }}
                 style={{
                   flex: 1, padding: 13, borderRadius: 14, border: 'none',
-                  background: 'linear-gradient(135deg, #81E4BD, #81E4BD)',
+                  background: 'linear-gradient(135deg, #6598ef, #6598ef)',
                   color: '#fff', fontSize: 14, fontWeight: 700,
                   cursor: 'pointer', fontFamily: 'inherit',
                   boxShadow: 'none',

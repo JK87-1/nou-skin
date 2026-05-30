@@ -1623,7 +1623,7 @@ function SettingsModal({ profile, update, onClose, showToast, colorMode, setColo
               <div style={{ textAlign: 'center', padding: '20px 0' }}>
                 <div style={{
                   width: 32, height: 32, border: 'none',
-                  borderTopColor: '#81E4BD', borderRadius: '50%',
+                  borderTopColor: '#6598ef', borderRadius: '50%',
                   animation: 'spin 0.8s linear infinite',
                   margin: '0 auto 12px',
                 }} />

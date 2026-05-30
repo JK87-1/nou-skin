@@ -248,7 +248,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
             <input ref={photoInputRef} type="file" accept="image/*" onChange={handlePhotoSelect} style={{ display: 'none' }} />
             <div style={{
               width: 80, height: 80, borderRadius: 24,
-              background: `linear-gradient(135deg, #FFD4B8, #81E4BD)`,
+              background: `linear-gradient(135deg, #FFD4B8, #6598ef)`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               overflow: 'hidden', margin: '0 auto',
             }}>
@@ -264,7 +264,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
             <div style={{
               position: 'absolute', bottom: -4, right: -4,
               width: 22, height: 22, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #81E4BD, #FFA500)',
+              background: 'linear-gradient(135deg, #6598ef, #FFA500)',
               color: '#fff', fontSize: 10, fontWeight: 700,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               border: 'none',
@@ -303,7 +303,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
             <button
               onClick={(e) => { e.stopPropagation(); setShowTitleModal(true); }}
               style={{
-                fontSize: 11, fontWeight: 600, color: '#81E4BD',
+                fontSize: 11, fontWeight: 600, color: '#6598ef',
                 background: 'rgba(124,92,252,0.08)', padding: '4px 12px', borderRadius: 8,
                 border: 'none', cursor: 'pointer', fontFamily: 'inherit',
                 display: 'inline-flex', alignItems: 'center', gap: 4,
@@ -323,7 +323,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
             <div style={{ height: 6, background: 'var(--progress-track)', borderRadius: 3, overflow: 'hidden' }}>
               <div style={{
                 width: `${levelProgress}%`, height: '100%', borderRadius: 3,
-                background: 'linear-gradient(90deg, #81E4BD, #81E4BD)',
+                background: 'linear-gradient(90deg, #6598ef, #6598ef)',
                 transition: 'width 1s ease-out',
               }} />
             </div>
@@ -391,14 +391,14 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
                       <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{g.name}</div>
                       <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{g.desc}</div>
                     </div>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: '#81E4BD' }}>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: '#6598ef' }}>
                       {g.current}/{g.target}
                     </span>
                   </div>
                   <div style={{ height: 6, background: 'var(--progress-track)', borderRadius: 3, overflow: 'hidden' }}>
                     <div style={{
                       width: `${g.progress * 100}%`, height: '100%', borderRadius: 3,
-                      background: 'linear-gradient(90deg, #81E4BD, #81E4BD)',
+                      background: 'linear-gradient(90deg, #6598ef, #6598ef)',
                     }} />
                   </div>
                 </div>
@@ -418,7 +418,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
                     padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600,
                     whiteSpace: 'nowrap', flexShrink: 0, cursor: 'pointer', fontFamily: 'inherit',
                     background: active ? 'rgba(124,92,252,0.08)' : 'var(--tag-bg)',
-                    color: active ? '#81E4BD' : '#4E5968',
+                    color: active ? '#6598ef' : '#4E5968',
                     border: 'none', transition: 'all 0.25s',
                   }}>
                     {cat.subtitle || cat.label}
@@ -477,7 +477,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
                         <div style={{ height: 4, background: 'var(--progress-track)', borderRadius: 2, overflow: 'hidden' }}>
                           <div style={{
                             width: `${badge.progress * 100}%`, height: '100%', borderRadius: 2,
-                            background: 'linear-gradient(90deg, #81E4BD, #81E4BD)',
+                            background: 'linear-gradient(90deg, #6598ef, #6598ef)',
                           }} />
                         </div>
                       </div>
@@ -766,7 +766,7 @@ export default function BadgeRanking({ onNewBadge, onSettingsClick, colorMode, o
 }
 
 // ===== Podium Card =====
-function PodiumCard({ user, medal, isFirst, accent = '#81E4BD' }) {
+function PodiumCard({ user, medal, isFirst, accent = '#6598ef' }) {
   return (
     <div style={{
       flex: 1, maxWidth: isFirst ? 130 : 110,
@@ -932,7 +932,7 @@ function TitleSelectionSheet({ currentLevel, totalXP, activeTheme, selectedTitle
 }
 
 // ===== Badge Collection Modal =====
-function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#81E4BD' }) {
+function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#6598ef' }) {
   const [modalCat, setModalCat] = useState('all');
   const [detailBadge, setDetailBadge] = useState(null);
 
@@ -1196,7 +1196,7 @@ function BadgeCollectionModal({ allBadges, onShare, onClose, accent = '#81E4BD' 
 }
 
 // ===== Badge Celebration Popup =====
-export function BadgeCelebration({ badge, onClose, accent = '#81E4BD' }) {
+export function BadgeCelebration({ badge, onClose, accent = '#6598ef' }) {
   if (!badge) return null;
 
   return createPortal(
