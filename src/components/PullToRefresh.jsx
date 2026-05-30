@@ -186,7 +186,7 @@ function LuaStarIndicator({ progress, reached, refreshing }) {
         width: '100%', height: '100%',
         backfaceVisibility: 'hidden',
         transform: 'rotateY(180deg)',
-        background: 'rgba(0,0,0,0.1)',
+        background: 'rgba(0,0,0,0.08)',
         borderRadius: '50%',
       }}>
         <img src="/luastar-ptr.svg" alt="" style={{ width: '100%', height: '100%', opacity: 0.15 }} />

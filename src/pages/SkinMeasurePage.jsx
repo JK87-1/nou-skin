@@ -57,7 +57,7 @@ export default function SkinMeasurePage({ onClose, onCapture, colorMode }) {
                 <ellipse cx="50%" cy="42%" rx="34%" ry="28%" fill="black" />
               </mask>
             </defs>
-            <rect width="100%" height="100%" fill="rgba(0,0,0,0.5)" mask="url(#oval-mask)" />
+            <rect width="100%" height="100%" fill="rgba(0,0,0,0.55)" mask="url(#oval-mask)" />
             <ellipse
               cx="50%" cy="42%" rx="34%" ry="28%"
               fill="none"
@@ -91,8 +91,8 @@ export default function SkinMeasurePage({ onClose, onCapture, colorMode }) {
               borderRadius: 10,
               background: zone.color,
               color: '#fff',
-              fontSize: 12,
-              fontWeight: 600,
+              fontSize: 12, lineHeight: 1.5,
+              fontWeight: 500,
               fontFamily: '"Pretendard Variable", Pretendard, -apple-system, system-ui, sans-serif',
               boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
               animation: 'skinMeasureZoneFadeIn 0.5s ease-out both',
@@ -124,9 +124,9 @@ export default function SkinMeasurePage({ onClose, onCapture, colorMode }) {
             left: 16,
             width: 40, height: 40, borderRadius: '50%',
             background: 'rgba(255,255,255,0.85)', border: 'none',
-            color: '#191F28', fontSize: 20, cursor: 'pointer',
+            color: 'var(--text-primary)', fontSize: 18, lineHeight: 1.3, fontWeight: 500, cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
             zIndex: 10,
           }}
         >
@@ -142,8 +142,8 @@ export default function SkinMeasurePage({ onClose, onCapture, colorMode }) {
             right: 16,
             padding: '8px 14px', borderRadius: 10,
             background: 'rgba(255,255,255,0.85)', border: 'none',
-            color: '#191F28', fontSize: 12, fontWeight: 600, cursor: 'pointer',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+            color: 'var(--text-primary)', fontSize: 12, lineHeight: 1.5, fontWeight: 500, cursor: 'pointer',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
             zIndex: 10,
           }}
         >
@@ -159,8 +159,8 @@ export default function SkinMeasurePage({ onClose, onCapture, colorMode }) {
       }}>
         {/* 상태 텍스트 */}
         <p style={{
-          color: colorMode === 'light' ? '#191F28' : '#e0e0e0',
-          fontSize: 15, fontWeight: 600, textAlign: 'center',
+          color: colorMode === 'light' ? '#1A1A1A' : '#e0e0e0',
+          fontSize: 16, lineHeight: 1.3, fontWeight: 500, textAlign: 'center',
           margin: 0, minHeight: 20,
         }}>
           얼굴을 화면에 맞춰주세요
@@ -185,12 +185,12 @@ export default function SkinMeasurePage({ onClose, onCapture, colorMode }) {
                 transition: 'all 0.3s',
               }}>
                 {ok && (
-                  <span style={{ color: '#fff', fontSize: 12, fontWeight: 700 }}>&#10003;</span>
+                  <span style={{ color: '#fff', fontSize: 12, lineHeight: 1.5, fontWeight: 500 }}>&#10003;</span>
                 )}
               </div>
               <span style={{
                 color: ok ? '#FF8C42' : (colorMode === 'light' ? '#999' : '#666'),
-                fontSize: 10, fontWeight: 600,
+                fontSize: 10, lineHeight: 1.3, fontWeight: 500,
               }}>
                 {label}
               </span>
@@ -213,7 +213,7 @@ export default function SkinMeasurePage({ onClose, onCapture, colorMode }) {
         >
           <div style={{
             width: 56, height: 56, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.3)',
+            background: 'rgba(255,255,255,0.2)',
           }} />
         </button>
       </div>

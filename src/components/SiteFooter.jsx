@@ -8,13 +8,13 @@ import { COMPANY_INFO, DPO_INFO } from '../legal/legalContent';
 export default function SiteFooter() {
   const [expanded, setExpanded] = useState(false);
 
-  const c = 'rgba(0,0,0,0.25)';
+  const c = 'rgba(0,0,0,0.15)';
 
   return (
     <div style={{
       padding: '0 28px calc(80px + env(safe-area-inset-bottom, 0px))',
       marginTop: 44,
-      fontSize: 12, color: c, lineHeight: 1.8,
+      fontSize: 12, fontWeight: 500, color: c, lineHeight: 1.5,
     }}>
       © 2026 {COMPANY_INFO.name} · v1.0.2<br />
       본 서비스는 의료 행위가 아닙니다.<br />
@@ -22,7 +22,7 @@ export default function SiteFooter() {
         onClick={() => setExpanded(v => !v)}
         style={{
           background: 'none', border: 'none', padding: 0, marginTop: 2,
-          fontSize: 12, color: c, cursor: 'pointer',
+          fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: c, cursor: 'pointer',
           display: 'inline-flex', alignItems: 'center', gap: 3,
           fontFamily: 'inherit',
         }}

@@ -247,7 +247,7 @@ export default function SoftCloverIcon({
       <div style={{
         position:      "absolute",
         inset:         0,
-        background:    "linear-gradient(148deg, rgba(255,255,255,.38) 0%, rgba(255,255,255,.05) 42%, transparent 100%)",
+        background:    "linear-gradient(148deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,.05) 42%, transparent 100%)",
         pointerEvents: "none",
       }} />
       {svgEl}

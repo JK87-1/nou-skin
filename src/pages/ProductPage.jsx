@@ -117,7 +117,7 @@ function SheetOverlay({ onClose, children }) {
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
       style={{
         position: 'fixed', inset: 0, zIndex: 9999,
-        background: 'rgba(0,0,0,0.5)', backdropFilter: 'none',
+        background: 'rgba(0,0,0,0.55)', backdropFilter: 'none',
         display: 'flex', alignItems: 'flex-end',
         animation: 'fadeIn 0.2s ease',
       }}
@@ -156,8 +156,8 @@ function CategorySelector({ value, onChange, accent }) {
             borderRadius: 12, padding: '10px 4px', cursor: 'pointer',
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
           }}>
-            <span style={{ fontSize: 18 }}>{cat.emoji}</span>
-            <span style={{ fontSize: 11, fontWeight: active ? 600 : 400, color: active ? cat.color : 'var(--tag-color)' }}>{key}</span>
+            <span style={{ fontSize: 18, lineHeight: 1.3, fontWeight: 500 }}>{cat.emoji}</span>
+            <span style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, fontWeight: active ? 600 : 400, color: active ? cat.color : 'var(--tag-color)' }}>{key}</span>
           </button>
         );
       })}
@@ -183,7 +183,7 @@ function TimeSlotSelector({ value, onChange, accent }) {
             border: active ? `1.5px solid ${accent}` : 'var(--item-border)',
             background: active ? `${accent}18` : 'transparent',
             color: active ? accent : 'var(--tag-color)',
-            fontSize: 13, fontWeight: active ? 600 : 400,
+            fontSize: 13, lineHeight: 1.5, fontWeight: 500, fontWeight: active ? 600 : 400,
           }}>{o.label}</button>
         );
       })}
@@ -198,7 +198,7 @@ function AddProductSheet({ onClose, onPhoto, onManual, accent }) {
     <SheetOverlay onClose={onClose}>
       <div style={{ background: 'var(--sheet-bg)', padding: '24px 20px 40px' }}>
         <SheetHandle />
-        <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 20 }}>제품 등록</div>
+        <div style={{ fontSize: 18, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 20 }}>제품 등록</div>
         {[
           { emoji: '', label: '사진으로 등록', desc: 'AI가 제품명과 성분을 자동 인식해요', action: onPhoto },
           { emoji: '', label: '직접 입력', desc: '제품 정보를 수동으로 입력해요', action: onManual },
@@ -209,12 +209,12 @@ function AddProductSheet({ onClose, onPhoto, onManual, accent }) {
             background: 'var(--item-bg)',
             border: 'var(--item-border)',
           }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, fontSize: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${accent}15` }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, fontSize: 18, lineHeight: 1.3, fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${accent}15` }}>
               {opt.emoji}
             </div>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{opt.label}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{opt.desc}</div>
+              <div style={{ fontSize: 16, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)' }}>{opt.label}</div>
+              <div style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-muted)', marginTop: 2 }}>{opt.desc}</div>
             </div>
           </div>
         ))}
@@ -367,8 +367,8 @@ function PhotoRegistrationFlow({ onClose, onSave, saving, accent }) {
         {/* 촬영 단계 */}
         {step === 'capture' && (
           <>
-            <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 8 }}>제품 사진 촬영</div>
-            <p style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 18 }}>
+            <div style={{ fontSize: 18, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 8 }}>제품 사진 촬영</div>
+            <p style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 18 }}>
               아래 가이드대로 촬영하면 인식 정확도가 올라가요
             </p>
 
@@ -392,11 +392,11 @@ function PhotoRegistrationFlow({ onClose, onSave, saving, accent }) {
                     width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
                     background: `${accent}18`, color: accent,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 11, fontWeight: 700,
+                    fontSize: 11, lineHeight: 1.3, fontWeight: 500,
                   }}>{i + 1}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>{g.title}</div>
-                    <div style={{ fontSize: 11.5, color: 'var(--text-muted)', letterSpacing: -0.1 }}>{g.desc}</div>
+                    <div style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 2 }}>{g.title}</div>
+                    <div style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-muted)', letterSpacing: -0.1 }}>{g.desc}</div>
                   </div>
                 </div>
               ))}
@@ -414,7 +414,7 @@ function PhotoRegistrationFlow({ onClose, onSave, saving, accent }) {
                   border: btn.primary ? 'none' : 'var(--item-border)',
                   background: btn.primary ? accent : 'var(--item-bg)',
                   color: btn.primary ? '#fff' : 'var(--text-primary)',
-                  fontSize: 15, fontWeight: 600,
+                  fontSize: 16, lineHeight: 1.3, fontWeight: 500,
                 }}>{btn.label}</button>
               ))}
             </div>
@@ -427,7 +427,7 @@ function PhotoRegistrationFlow({ onClose, onSave, saving, accent }) {
             {imageThumb && (
               <img src={imageThumb} alt="" style={{ width: 80, height: 80, borderRadius: 16, objectFit: 'cover', marginBottom: 16 }} />
             )}
-            <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>
+            <div style={{ fontSize: 16, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 8 }}>
               AI가 제품을 분석중이에요...
             </div>
             <div style={{
@@ -437,7 +437,7 @@ function PhotoRegistrationFlow({ onClose, onSave, saving, accent }) {
             }} />
             <button onClick={() => { setLoading(false); setError('인식을 취소했어요. 정보를 직접 입력해주세요.'); setStep('confirm'); }} style={{
               padding: '8px 20px', borderRadius: 10, border: 'var(--item-border)',
-              background: 'transparent', color: 'var(--tag-color)', fontSize: 13, cursor: 'pointer',
+              background: 'transparent', color: 'var(--tag-color)', fontSize: 13, lineHeight: 1.5, fontWeight: 500, cursor: 'pointer',
             }}>직접 입력하기</button>
             <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           </div>
@@ -446,10 +446,10 @@ function PhotoRegistrationFlow({ onClose, onSave, saving, accent }) {
         {/* 확인/수정 */}
         {step === 'confirm' && (
           <>
-            <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 16 }}>제품 정보 확인</div>
+            <div style={{ fontSize: 18, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 16 }}>제품 정보 확인</div>
 
             {error && (
-              <div style={{ fontSize: 12, color: '#F0B870', background: 'rgba(251,191,36,0.1)', borderRadius: 10, padding: '10px 14px', marginBottom: 16 }}>
+              <div style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: '#F0B870', background: 'rgba(251,191,36,0.1)', borderRadius: 10, padding: '10px 14px', marginBottom: 16 }}>
                 {error}
               </div>
             )}
@@ -463,11 +463,11 @@ function PhotoRegistrationFlow({ onClose, onSave, saving, accent }) {
             {/* 성분 태그 (AI가 추출한 경우) */}
             {form.ingredients.length > 0 && (
               <div style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tag-color)', marginBottom: 6 }}>인식된 성분</div>
+                <div style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--tag-color)', marginBottom: 6 }}>인식된 성분</div>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                   {form.ingredients.map((ing, i) => (
                     <span key={i} style={{
-                      fontSize: 11, color: accent, background: `${accent}12`,
+                      fontSize: 11, lineHeight: 1.3, color: accent, background: `${accent}12`,
                       borderRadius: 8, padding: '4px 10px', fontWeight: 500,
                     }}>{ing}</span>
                   ))}
@@ -490,12 +490,12 @@ function PhotoRegistrationFlow({ onClose, onSave, saving, accent }) {
             />
 
             <div style={{ marginBottom: 14 }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tag-color)', marginBottom: 6 }}>카테고리 <span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)', marginLeft: 4 }}>자동 매칭</span></div>
+              <div style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--tag-color)', marginBottom: 6 }}>카테고리 <span style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', marginLeft: 4 }}>자동 매칭</span></div>
               <CategorySelector value={form.category} onChange={v => { categoryTouchedRef.current = true; setForm(p => ({ ...p, category: v })); }} accent={accent} />
             </div>
 
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tag-color)', marginBottom: 6 }}>사용 시간대</div>
+              <div style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--tag-color)', marginBottom: 6 }}>사용 시간대</div>
               <TimeSlotSelector value={form.timeSlot} onChange={v => setForm(p => ({ ...p, timeSlot: v }))} accent={accent} />
             </div>
 
@@ -503,7 +503,7 @@ function PhotoRegistrationFlow({ onClose, onSave, saving, accent }) {
               <button type="button" onClick={handleRetake} disabled={saving} style={{
                 flex: '0 0 38%', padding: '14px 0', borderRadius: 14,
                 border: 'var(--item-border)', background: 'transparent',
-                color: 'var(--tag-color)', fontSize: 14, fontWeight: 600,
+                color: 'var(--tag-color)', fontSize: 14, lineHeight: 1.5, fontWeight: 500,
                 cursor: saving ? 'default' : 'pointer',
               }}>다시 촬영</button>
               <button type="button" onClick={handleSave} disabled={!form.brand.trim() || !form.name.trim() || saving} style={{
@@ -511,7 +511,7 @@ function PhotoRegistrationFlow({ onClose, onSave, saving, accent }) {
                 cursor: (form.brand.trim() && form.name.trim() && !saving) ? 'pointer' : 'default',
                 background: (!form.brand.trim() || !form.name.trim() || saving) ? ('var(--text-disabled)') : accent,
                 color: (!form.brand.trim() || !form.name.trim() || saving) ? ('var(--text-dim)') : '#fff',
-                fontSize: 15, fontWeight: 700, position: 'relative', zIndex: 1,
+                fontSize: 16, lineHeight: 1.3, fontWeight: 500, position: 'relative', zIndex: 1,
               }}>{saving ? '제품 이미지 검색 중...' : '등록하기'}</button>
             </div>
           </>
@@ -889,13 +889,13 @@ function ProductBrandNameInputs({
   return (
     <>
       {helpText && (
-        <div style={{ fontSize: 11.5, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 16, letterSpacing: -0.1 }}>
+        <div style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 16, letterSpacing: -0.1 }}>
           {helpText}
         </div>
       )}
       {fields.map(f => (
         <div key={f.key} style={{ marginBottom: 14 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tag-color)', marginBottom: 6 }}>{f.label}</div>
+          <div style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--tag-color)', marginBottom: 6 }}>{f.label}</div>
           <input
             type="text"
             autoComplete="off"
@@ -905,7 +905,7 @@ function ProductBrandNameInputs({
             onBlur={() => setTimeout(() => setActiveField(null), 200)}
             placeholder={f.placeholder}
             style={{
-              width: '100%', padding: '12px 14px', borderRadius: 12, fontSize: 16,
+              width: '100%', padding: '12px 14px', borderRadius: 12, fontSize: 16, lineHeight: 1.3, fontWeight: 500,
               border: 'var(--item-border)',
               background: 'var(--item-bg)',
               color: 'var(--text-primary)',
@@ -934,20 +934,20 @@ function ProductBrandNameInputs({
                 }}>
                   <div style={{
                     width: 52, height: 52, borderRadius: 10, flexShrink: 0,
-                    background: 'linear-gradient(90deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.05) 100%)',
+                    background: 'linear-gradient(90deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.05) 100%)',
                     backgroundSize: '200% 100%',
                     animation: `shimmer 1.2s ease-in-out infinite ${k * 0.08}s`,
                   }} />
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
                     <div style={{
                       width: '40%', height: 11, borderRadius: 4,
-                      background: 'linear-gradient(90deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.05) 100%)',
+                      background: 'linear-gradient(90deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.05) 100%)',
                       backgroundSize: '200% 100%',
                       animation: `shimmer 1.2s ease-in-out infinite ${k * 0.08}s`,
                     }} />
                     <div style={{
                       width: '78%', height: 13, borderRadius: 4,
-                      background: 'linear-gradient(90deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.05) 100%)',
+                      background: 'linear-gradient(90deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.05) 100%)',
                       backgroundSize: '200% 100%',
                       animation: `shimmer 1.2s ease-in-out infinite ${k * 0.08 + 0.04}s`,
                     }} />
@@ -956,7 +956,7 @@ function ProductBrandNameInputs({
               ))
             )}
             {searchError && !searchLoading && (
-              <div style={{ padding: '12px 16px', fontSize: 12, color: 'var(--text-muted)' }}>{searchError}</div>
+              <div style={{ padding: '12px 16px', fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-muted)' }}>{searchError}</div>
             )}
             {suggestions.map((s, i) => (
               <button
@@ -1001,22 +1001,22 @@ function ProductBrandNameInputs({
                 {/* 텍스트 */}
                 <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: accent }}>{s.brand}</span>
+                    <span style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: accent }}>{s.brand}</span>
                     <span style={{
-                      fontSize: 10.5, padding: '1px 5px', borderRadius: 4,
-                      background: 'rgba(var(--accent-rgb),0.14)', color: 'var(--accent-primary)', fontWeight: 600,
+                      fontSize: 11, lineHeight: 1.3, padding: '1px 5px', borderRadius: 4,
+                      background: 'rgba(var(--accent-rgb),0.14)', color: 'var(--accent-primary)', fontWeight: 500,
                     }}>{s.category}</span>
                     {s.source === 'gpt' && (
-                      <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 'auto' }}>AI 검색</span>
+                      <span style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', marginLeft: 'auto' }}>AI 검색</span>
                     )}
                   </div>
                   <div style={{
-                    fontSize: 13.5, color: 'var(--text-primary)', letterSpacing: -0.1,
+                    fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.1,
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   }}>{s.name}</div>
                   {(s.volume || (s.ingredients && s.ingredients.length > 0)) && (
                     <div style={{
-                      fontSize: 10.5, color: 'var(--text-muted)',
+                      fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)',
                       overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                     }}>
                       {s.volume && <span>{s.volume}</span>}
@@ -1078,7 +1078,7 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
     <SheetOverlay onClose={onClose}>
       <div style={{ background: 'var(--sheet-bg)', padding: '24px 20px calc(40px + env(safe-area-inset-bottom, 0px))' }}>
         <SheetHandle />
-        <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 6 }}>제품 직접 입력</div>
+        <div style={{ fontSize: 18, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 6 }}>제품 직접 입력</div>
 
         <ProductBrandNameInputs
           brand={form.brand}
@@ -1090,12 +1090,12 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
         />
 
         <div style={{ marginBottom: 14 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tag-color)', marginBottom: 6 }}>카테고리 <span style={{ fontSize: 10, fontWeight: 400, color: 'var(--text-muted)', marginLeft: 4 }}>자동 매칭</span></div>
+          <div style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--tag-color)', marginBottom: 6 }}>카테고리 <span style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', marginLeft: 4 }}>자동 매칭</span></div>
           <CategorySelector value={form.category} onChange={v => { categoryTouchedRef.current = true; setForm(p => ({ ...p, category: v })); }} accent={accent} />
         </div>
 
         <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tag-color)', marginBottom: 6 }}>사용 시간대</div>
+          <div style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--tag-color)', marginBottom: 6 }}>사용 시간대</div>
           <TimeSlotSelector value={form.timeSlot} onChange={v => setForm(p => ({ ...p, timeSlot: v }))} accent={accent} />
         </div>
 
@@ -1104,7 +1104,7 @@ function ManualRegistrationForm({ onClose, onSave, saving, accent }) {
           cursor: canSave ? 'pointer' : 'default',
           background: canSave ? accent : ('var(--text-disabled)'),
           color: canSave ? '#fff' : ('var(--text-dim)'),
-          fontSize: 15, fontWeight: 700, position: 'relative', zIndex: 1,
+          fontSize: 16, lineHeight: 1.3, fontWeight: 500, position: 'relative', zIndex: 1,
         }}>{saving ? '제품 이미지 검색 중...' : '등록하기'}</button>
       </div>
     </SheetOverlay>
@@ -1208,13 +1208,13 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
                       style={{
                         transition: 'transform 0.15s ease',
                         transform: filled ? 'scale(1.05)' : 'scale(1)',
-                        filter: filled ? 'drop-shadow(0 1px 2px rgba(120,189,253,0.4))' : 'drop-shadow(0 0.5px 0.5px rgba(0,0,0,0.1))',
+                        filter: filled ? 'drop-shadow(0 1px 2px rgba(120,189,253,0.4))' : 'drop-shadow(0 0.5px 0.5px rgba(0,0,0,0.08))',
                       }}
                     >
                       <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                       <path
                         d="M8.243 7.34l-6.38 .925l-.113 .023a1 1 0 0 0 -.44 1.684l4.622 4.499l-1.09 6.355l-.013 .11a1 1 0 0 0 1.464 .944l5.706 -3l5.693 3l.1 .046a1 1 0 0 0 1.352 -1.1l-1.091 -6.355l4.624 -4.5l.078 -.085a1 1 0 0 0 -.633 -1.62l-6.38 -.926l-2.852 -5.78a1 1 0 0 0 -1.794 0l-2.853 5.78z"
-                        fill={filled ? '#78bdfd' : 'rgba(0,0,0,0.1)'}
+                        fill={filled ? '#78bdfd' : 'rgba(0,0,0,0.08)'}
                         stroke="none"
                       />
                     </svg>
@@ -1252,20 +1252,20 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
               {product.imageThumb ? (
                 <img src={product.imageThumb} alt="" style={{ width: 56, height: 56, borderRadius: 14, objectFit: 'cover' }} />
               ) : (
-                <div style={{ width: 56, height: 56, borderRadius: 14, background: `${cat.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>
+                <div style={{ width: 56, height: 56, borderRadius: 14, background: `${cat.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, lineHeight: 1.3, fontWeight: 500 }}>
                   {cat.emoji}
                 </div>
               )}
               <div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{product.brand}</div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{product.name}</div>
+                <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)' }}>{product.brand}</div>
+                <div style={{ fontSize: 16, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)' }}>{product.name}</div>
                 <div style={{ display: 'flex', gap: 6, marginTop: 4, alignItems: 'center' }}>
-                  <span style={{ fontSize: 10, fontWeight: 600, color: cat.color, background: `${cat.color}15`, borderRadius: 6, padding: '2px 7px', lineHeight: 1 }}>{product.category}</span>
-                  <span style={{ fontSize: 10, color: 'var(--text-dim)', lineHeight: 1 }}>
+                  <span style={{ fontSize: 10, fontWeight: 500, color: cat.color, background: `${cat.color}15`, borderRadius: 6, padding: '2px 7px', lineHeight: 1.3 }}>{product.category}</span>
+                  <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-dim)', lineHeight: 1.3 }}>
                     {product.timeSlot === 'both' ? '아침·저녁' : product.timeSlot === 'morning' ? '아침' : '저녁'}
                   </span>
                 </div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+                <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', marginTop: 4 }}>
                   사용 {days}일째 · {product.startDate} 시작
                 </div>
               </div>
@@ -1332,7 +1332,7 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
                   background: 'rgba(0,0,0,0.02)', borderRadius: 14,
                 }}>
                   {/* 요약 */}
-                  <div style={{ fontSize: 12, color: 'var(--text-primary)', lineHeight: 1.55, marginBottom: 10 }}>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.5, marginBottom: 10 }}>
                     {summary}
                   </div>
                   {/* 효과 메트릭 아이콘 */}
@@ -1347,7 +1347,7 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
                           background: `${m.color}14`,
                         }}>
                           {m.icon(13)}
-                          <span style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-primary)' }}>{m.label}</span>
+                          <span style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)' }}>{m.label}</span>
                         </div>
                       );
                     })}
@@ -1357,7 +1357,7 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                       {displayIngs.map((ing, i) => (
                         <span key={i} style={{
-                          fontSize: 10, color: 'var(--text-muted)', background: 'rgba(0,0,0,0.04)',
+                          fontSize: 10, lineHeight: 1.3, color: 'var(--text-muted)', background: 'rgba(0,0,0,0.04)',
                           borderRadius: 6, padding: '3px 8px', fontWeight: 500,
                         }}>{ing}</span>
                       ))}
@@ -1374,7 +1374,7 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
                 background: 'rgba(0,0,0,0.02)', borderRadius: 12,
                 padding: '10px 14px',
               }}>
-                <div style={{ fontSize: 11, fontWeight: 600, color: '#d0d0d0', marginBottom: 4 }}>memo</div>
+                <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: '#d0d0d0', marginBottom: 4 }}>memo</div>
                 <textarea
                   value={memo}
                   onChange={(e) => { setMemo(e.target.value); setMemoSaved(false); }}
@@ -1390,14 +1390,14 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
                     width: '100%', minHeight: memo ? 48 : 22, padding: 0,
                     borderRadius: 0, border: 'none',
                     background: 'transparent',
-                    fontSize: 13, color: 'var(--text-primary)',
+                    fontSize: 13, fontWeight: 500, color: 'var(--text-primary)',
                     fontFamily: 'inherit', resize: 'none', outline: 'none',
                     lineHeight: 1.5,
                   }}
                 />
               </div>
               {memoSaved && (
-                <div style={{ fontSize: 11, color: accent, marginTop: 4 }}>저장됨</div>
+                <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: accent, marginTop: 4 }}>저장됨</div>
               )}
             </div>
 
@@ -1433,7 +1433,7 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
                   }}>
                     {active ? f.filled : f.outline}
                     <span style={{
-                      fontSize: 10, fontWeight: active ? 600 : 400,
+                      fontSize: 10, lineHeight: 1.3, fontWeight: 500, fontWeight: active ? 600 : 400,
                       color: active ? 'var(--text-primary)' : '#d0d0d0',
                     }}>{f.label}</span>
                   </button>
@@ -1455,21 +1455,21 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
                   width: '100%', maxWidth: 280, textAlign: 'center',
                   boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
                 }}>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>제품 삭제</div>
-                  <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 20 }}>
+                  <div style={{ fontSize: 16, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 8 }}>제품 삭제</div>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 20 }}>
                     {product.name}을(를)<br />삭제할까요?
                   </div>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button onClick={() => setConfirmDelete(false)} style={{
                       flex: 1, padding: '12px 0', borderRadius: 12,
                       border: 'none', background: '#fff',
-                      fontSize: 14, fontWeight: 600, color: 'var(--text-muted)',
+                      fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-muted)',
                       cursor: 'pointer', fontFamily: 'inherit',
                     }}>취소</button>
                     <button onClick={() => onDelete(product.id)} style={{
                       flex: 1, padding: '12px 0', borderRadius: 12,
                       border: 'none', background: '#333',
-                      fontSize: 14, fontWeight: 600, color: '#fff',
+                      fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: '#fff',
                       cursor: 'pointer', fontFamily: 'inherit',
                     }}>삭제</button>
                   </div>
@@ -1479,19 +1479,19 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
           </>
         ) : (
           <>
-            <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 20 }}>제품 정보 수정</div>
+            <div style={{ fontSize: 18, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)', textAlign: 'center', marginBottom: 20 }}>제품 정보 수정</div>
 
             {[
               { label: '브랜드', key: 'brand' },
               { label: '제품명', key: 'name' },
             ].map(f => (
               <div key={f.key} style={{ marginBottom: 14 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tag-color)', marginBottom: 6 }}>{f.label}</div>
+                <div style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--tag-color)', marginBottom: 6 }}>{f.label}</div>
                 <input
                   type="text" autoComplete="off" value={form[f.key]}
                   onChange={e => setForm(prev => ({ ...prev, [f.key]: e.target.value }))}
                   style={{
-                    width: '100%', padding: '12px 14px', borderRadius: 12, fontSize: 16,
+                    width: '100%', padding: '12px 14px', borderRadius: 12, fontSize: 16, lineHeight: 1.3, fontWeight: 500,
                     border: 'var(--item-border)',
                     background: 'var(--item-bg)',
                     color: 'var(--text-primary)',
@@ -1502,12 +1502,12 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
             ))}
 
             <div style={{ marginBottom: 14 }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tag-color)', marginBottom: 6 }}>카테고리</div>
+              <div style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--tag-color)', marginBottom: 6 }}>카테고리</div>
               <CategorySelector value={form.category} onChange={v => setForm(p => ({ ...p, category: v }))} accent={accent} />
             </div>
 
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tag-color)', marginBottom: 6 }}>사용 시간대</div>
+              <div style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--tag-color)', marginBottom: 6 }}>사용 시간대</div>
               <TimeSlotSelector value={form.timeSlot} onChange={v => setForm(p => ({ ...p, timeSlot: v }))} accent={accent} />
             </div>
 
@@ -1516,13 +1516,13 @@ function ProductDetailSheet({ product, onClose, onDelete, onEdit, onToggleFavori
                 flex: 1, padding: '14px 0', borderRadius: 14,
                 border: 'var(--item-border)',
                 background: 'transparent', color: 'var(--tag-color)',
-                fontSize: 15, fontWeight: 600, cursor: 'pointer',
+                fontSize: 16, lineHeight: 1.3, fontWeight: 500, cursor: 'pointer',
               }}>취소</button>
               <button onClick={handleSaveEdit} disabled={!form.brand.trim() || !form.name.trim()} style={{
                 flex: 1, padding: '14px 0', borderRadius: 14, border: 'none',
                 background: (form.brand.trim() && form.name.trim()) ? accent : ('var(--text-disabled)'),
                 color: (form.brand.trim() && form.name.trim()) ? '#fff' : ('var(--text-dim)'),
-                fontSize: 15, fontWeight: 700, cursor: 'pointer',
+                fontSize: 16, lineHeight: 1.3, fontWeight: 500, cursor: 'pointer',
               }}>저장</button>
             </div>
           </>
@@ -1872,8 +1872,8 @@ export default function ProductPage({ themeColors, onBack }) {
           background: 'rgba(31,31,31,0.86)', color: '#fff',
           backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
           borderRadius: 16, padding: '8px 14px',
-          fontSize: 12, fontWeight: 500, letterSpacing: -0.1,
-          boxShadow: '0 2px 12px rgba(0,0,0,0.1)', zIndex: 950,
+          fontSize: 12, lineHeight: 1.5, fontWeight: 500, letterSpacing: -0.1,
+          boxShadow: '0 2px 12px rgba(0,0,0,0.08)', zIndex: 950,
           display: 'flex', alignItems: 'center', gap: 8,
           animation: 'breatheIn 0.25s ease both',
         }}>
@@ -1895,7 +1895,7 @@ export default function ProductPage({ themeColors, onBack }) {
       {/* Section Tabs */}
       <div style={{
         display: 'flex', gap: 4, padding: 4, margin: '20px 20px 16px',
-        background: 'rgba(255,255,255,0.35)',
+        background: 'rgba(255,255,255,0.4)',
         border: 'none',
         borderRadius: 14,
       }}>
@@ -1905,10 +1905,10 @@ export default function ProductPage({ themeColors, onBack }) {
             <button key={s.key} onClick={() => setSection(s.key)} style={{
               flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
               padding: '10px 0', borderRadius: 11, cursor: 'pointer',
-              fontFamily: 'inherit', fontSize: 13.5, letterSpacing: -0.2,
-              fontWeight: active ? 700 : 500,
+              fontFamily: 'inherit', fontSize: 14, lineHeight: 1.5, fontWeight: 500, letterSpacing: -0.2,
+              fontWeight: active ? 600 : 500,
               background: active ? 'rgba(255,255,255,0.85)' : 'transparent',
-              boxShadow: active ? '0 1px 4px rgba(0,0,0,0.06)' : 'none',
+              boxShadow: active ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
               color: active ? 'var(--accent-primary)' : 'var(--text-secondary)',
               border: 'none',
               transition: 'background 0.18s ease, color 0.18s ease',
@@ -1929,17 +1929,17 @@ export default function ProductPage({ themeColors, onBack }) {
           }}>
             {/* 헤더 — 배경 영역 안 */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>등록된 제품</span>
+              <span style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)' }}>등록된 제품</span>
               <span style={{
-                fontSize: 10.5, fontWeight: 600, color: 'var(--accent-primary)',
+                fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--accent-primary)',
                 background: 'rgba(var(--accent-rgb),0.14)',
                 borderRadius: 8, padding: '2px 7px',
               }}>{products.length}</span>
             </div>
             {products.length === 0 ? (
               <div style={{ padding: '32px 16px', textAlign: 'center' }}>
-                <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>등록된 제품이 없어요</div>
-                <div style={{ fontSize: 11, color: 'var(--text-dim)' }}>'제품 등록' 버튼으로 추가해보세요</div>
+                <div style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 4 }}>등록된 제품이 없어요</div>
+                <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-dim)' }}>'제품 등록' 버튼으로 추가해보세요</div>
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, padding: '0 0 0' }}>
@@ -1990,13 +1990,13 @@ export default function ProductPage({ themeColors, onBack }) {
                         }}
                       />
                     ) : (
-                      <div style={{ width: 44, height: 44, borderRadius: 12, marginBottom: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, background: 'rgba(var(--accent-rgb),0.08)' }}>
+                      <div style={{ width: 44, height: 44, borderRadius: 12, marginBottom: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, lineHeight: 1.3, fontWeight: 500, background: 'rgba(var(--accent-rgb),0.08)' }}>
                         {cat.emoji}
                       </div>
                     )}
-                    <div style={{ fontSize: 11, color: '#c0c8d0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.brand}</div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginTop: 2, lineHeight: 1.4, minHeight: '2.8em', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', wordBreak: 'keep-all' }}>{p.name}</div>
-                    <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 'auto', paddingTop: 8 }}>
+                    <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: '#c0c8d0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.brand}</div>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', marginTop: 2, lineHeight: 1.5, minHeight: '2.8em', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', wordBreak: 'keep-all' }}>{p.name}</div>
+                    <div style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', marginTop: 'auto', paddingTop: 8 }}>
                       {p.category} · {days}일째
                     </div>
                   </div>
@@ -2014,14 +2014,14 @@ export default function ProductPage({ themeColors, onBack }) {
                 padding: '13px 24px', marginTop: 10, cursor: 'pointer',
                 background: 'var(--accent-primary)', borderRadius: 14,
                 border: 'none',
-                boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
+                boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
               }}
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round">
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
-              <span style={{ fontSize: 14, fontWeight: 700, color: '#fff', letterSpacing: -0.2 }}>제품 등록</span>
+              <span style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: '#fff', letterSpacing: -0.2 }}>제품 등록</span>
             </div>
           </div>
 
@@ -2036,7 +2036,7 @@ export default function ProductPage({ themeColors, onBack }) {
                     background: 'linear-gradient(135deg, var(--accent-primary) 0%, #8ac4fe 100%)',
                     border: 'none', borderRadius: 18,
                     cursor: 'pointer', fontFamily: 'inherit',
-                    boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9,
                     color: '#fff',
                   }}
@@ -2045,7 +2045,7 @@ export default function ProductPage({ themeColors, onBack }) {
                     <path d="M10.5 2l1.67 4.83l4.83 1.67l-4.83 1.67l-1.67 4.83l-1.67 -4.83l-4.83 -1.67l4.83 -1.67l1.67 -4.83z" />
                     <path d="M17.5 13l1 2.5l2.5 1l-2.5 1l-1 2.5l-1 -2.5l-2.5 -1l2.5 -1l1 -2.5z" />
                   </svg>
-                  <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: -0.2 }}>피부에 맞는 루틴 생성하기</span>
+                  <span style={{ fontSize: 16, lineHeight: 1.3, fontWeight: 500, letterSpacing: -0.2 }}>피부에 맞는 루틴 생성하기</span>
                 </button>
               ) : (
                 <div style={{ animation: 'fadeUp 0.35s ease-out' }}>
@@ -2063,23 +2063,23 @@ export default function ProductPage({ themeColors, onBack }) {
         <div style={{ padding: '20px 20px 0', animation: 'fadeUp 0.3s ease-out' }}>
           <div style={{ marginBottom: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>제품별 효과 분석</span>
-              <span style={{ fontSize: 10, fontWeight: 600, color: accent, background: `${accent}15`, borderRadius: 8, padding: '3px 8px' }}>데이터 기반</span>
+              <span style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)' }}>제품별 효과 분석</span>
+              <span style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: accent, background: `${accent}15`, borderRadius: 8, padding: '3px 8px' }}>데이터 기반</span>
             </div>
-            <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '4px 0 0' }}>
+            <p style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-muted)', margin: '4px 0 0' }}>
               피부 측정 데이터와 제품 사용 기간을 교차 분석한 결과입니다
             </p>
           </div>
 
           {products.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '40px 0' }}>
-              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>등록된 제품이 없어요</div>
-              <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>제품을 등록하면 피부 변화와의 상관관계를 분석해드려요</div>
+              <div style={{ fontSize: 16, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 4 }}>등록된 제품이 없어요</div>
+              <div style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-muted)' }}>제품을 등록하면 피부 변화와의 상관관계를 분석해드려요</div>
             </div>
           ) : analyses.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '40px 0' }}>
-              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>분석에 필요한 데이터가 부족해요</div>
-              <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>피부 측정을 2회 이상 하면 분석이 시작돼요</div>
+              <div style={{ fontSize: 16, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 4 }}>분석에 필요한 데이터가 부족해요</div>
+              <div style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-muted)' }}>피부 측정을 2회 이상 하면 분석이 시작돼요</div>
             </div>
           ) : (
             analyses.map((a, idx) => {
@@ -2088,12 +2088,12 @@ export default function ProductPage({ themeColors, onBack }) {
               return (
                 <div key={a.productId} className="card" style={{ padding: 20, marginBottom: 16, animation: `breatheIn 0.5s ease ${idx * 0.15}s both` }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-                    <div style={{ width: 40, height: 40, borderRadius: 12, background: `${cat.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>{cat.emoji}</div>
+                    <div style={{ width: 40, height: 40, borderRadius: 12, background: `${cat.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, lineHeight: 1.3, fontWeight: 500 }}>{cat.emoji}</div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{a.productName}</div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{a.brand}</div>
+                      <div style={{ fontSize: 16, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)' }}>{a.productName}</div>
+                      <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)' }}>{a.brand}</div>
                     </div>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: accent, background: `${accent}15`, borderRadius: 10, padding: '4px 10px' }}>{a.days}일</span>
+                    <span style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: accent, background: `${accent}15`, borderRadius: 10, padding: '4px 10px' }}>{a.days}일</span>
                   </div>
 
                   {a.chart && (
@@ -2111,8 +2111,8 @@ export default function ProductPage({ themeColors, onBack }) {
                             background: m.improved ? 'rgba(var(--accent-rgb),0.1)' : 'rgba(239,68,68,0.1)',
                             border: `1px solid ${m.improved ? 'rgba(var(--accent-rgb),0.2)' : 'rgba(239,68,68,0.2)'}`,
                           }}>
-                            <span style={{ fontSize: 12, color: 'var(--tag-color)' }}>{m.label}</span>
-                            <span style={{ fontSize: 14, fontWeight: 700, color: m.improved ? '#85b0f5' : '#ef4444' }}>
+                            <span style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--tag-color)' }}>{m.label}</span>
+                            <span style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: m.improved ? '#85b0f5' : '#ef4444' }}>
                               {m.improved ? '↑' : '↓'}{m.diff}
                             </span>
                           </div>
@@ -2120,7 +2120,7 @@ export default function ProductPage({ themeColors, onBack }) {
                       </div>
 
                       <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 14 }}>
-                        <span style={{ fontSize: 11, fontWeight: 500, color: confColor, background: `${confColor}15`, borderRadius: 8, padding: '3px 10px' }}>
+                        <span style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: confColor, background: `${confColor}15`, borderRadius: 8, padding: '3px 10px' }}>
                           신뢰도: {a.confidence}
                         </span>
                       </div>
@@ -2135,8 +2135,8 @@ export default function ProductPage({ themeColors, onBack }) {
                             background: 'var(--item-bg)',
                             border: 'var(--item-border)',
                           }}>
-                            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 4 }}>{box.label}</div>
-                            <div style={{ fontSize: 22, fontWeight: 700, color: bi === 1 ? accent : ('var(--text-secondary)'), fontFamily: 'var(--font-display)' }}>{box.value}</div>
+                            <div style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 4 }}>{box.label}</div>
+                            <div style={{ fontSize: 24, lineHeight: 1.3, fontWeight: 500, color: bi === 1 ? accent : ('var(--text-secondary)'), fontFamily: 'var(--font-display)' }}>{box.value}</div>
                           </div>
                         ))}
                       </div>
@@ -2149,8 +2149,8 @@ export default function ProductPage({ themeColors, onBack }) {
                     border: 'var(--context-border)',
                   }}>
                     <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                      <span style={{ fontSize: 18, flexShrink: 0 }}></span>
-                      <p style={{ fontSize: 13, lineHeight: 1.6, margin: 0, color: 'var(--text-secondary)' }}>{a.insight}</p>
+                      <span style={{ fontSize: 18, lineHeight: 1.3, fontWeight: 500, flexShrink: 0 }}></span>
+                      <p style={{ fontSize: 13, fontWeight: 500, lineHeight: 1.5, margin: 0, color: 'var(--text-secondary)' }}>{a.insight}</p>
                     </div>
                   </div>
                 </div>
@@ -2212,8 +2212,8 @@ export default function ProductPage({ themeColors, onBack }) {
           transform: 'translateX(-50%)',
           background: '#1F2937', color: '#fff',
           padding: '12px 18px', borderRadius: 22,
-          fontSize: 13.5, fontWeight: 600, letterSpacing: -0.2,
-          boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
+          fontSize: 14, lineHeight: 1.5, fontWeight: 500, letterSpacing: -0.2,
+          boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
           zIndex: 10500, pointerEvents: 'none', maxWidth: '86vw', textAlign: 'center',
           animation: 'dedupeRise 220ms ease-out',
         }}>

@@ -35,7 +35,7 @@ function ProductRow({ product, priority }) {
     }}>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
-          fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.3,
+          fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.5,
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         }}>
           {product.brand && <span style={{ color: 'var(--text-muted)' }}>{product.brand} </span>}
@@ -43,7 +43,7 @@ function ProductRow({ product, priority }) {
         </div>
       </div>
       <span style={{
-        fontSize: 10, fontWeight: 600,
+        fontSize: 10, lineHeight: 1.3, fontWeight: 500,
         color: isOccasional ? 'var(--text-muted)' : 'var(--accent-primary)',
         background: isOccasional ? 'rgba(0,0,0,0.05)' : 'rgba(var(--accent-rgb),0.12)',
         borderRadius: 8, padding: '2px 8px',
@@ -61,14 +61,14 @@ function StepBlock({ stepDef, order }) {
         marginBottom: 4,
       }}>
         <span style={{
-          fontSize: 12, fontWeight: 700, color: 'var(--accent-primary)',
+          fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--accent-primary)',
           flexShrink: 0,
         }}>{order}</span>
         <span style={{
-          fontSize: 14, fontWeight: 700, color: 'var(--text-primary)',
+          fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)',
         }}>{stepDef.label}</span>
         <span style={{ flex: 1 }} />
-        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{stepDef.products.length}개</span>
+        <span style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)' }}>{stepDef.products.length}개</span>
       </div>
       <div style={{ marginLeft: 20, borderLeft: '1px solid rgba(var(--accent-rgb),0.15)', paddingLeft: 12 }}>
         {stepDef.products.map(p => (
@@ -86,15 +86,15 @@ function RoutineColumn({ title, subtitle, steps, totalProducts, hideHeader = fal
       {!hideHeader ? (
         <div style={{ padding: '0 4px', marginBottom: 12 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: -0.2 }}>{title}</span>
-            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{totalProducts}개</span>
+            <span style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)', letterSpacing: -0.2 }}>{title}</span>
+            <span style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)' }}>{totalProducts}개</span>
           </div>
           {subtitle && (
-            <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.5 }}>{subtitle}</div>
+            <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.5 }}>{subtitle}</div>
           )}
         </div>
       ) : subtitle ? (
-        <div style={{ padding: '0 4px', marginBottom: 10, fontSize: 11.5, color: 'var(--text-muted)', lineHeight: 1.5 }}>{subtitle}</div>
+        <div style={{ padding: '0 4px', marginBottom: 10, fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', lineHeight: 1.5 }}>{subtitle}</div>
       ) : null}
       {steps.map((s, i) => <StepBlock key={s.step} stepDef={s} order={i + 1} />)}
     </div>
@@ -134,10 +134,10 @@ export default function CareRecommendation({ products: productsProp, refreshKey 
         boxShadow: 'var(--card-shadow)',
       }}>
         <div style={{ marginBottom: 10 }}><IconBottle size={30} /></div>
-        <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
+        <div style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 4 }}>
           먼저 화장품을 등록해주세요
         </div>
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>
+        <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', lineHeight: 1.5 }}>
           위 '제품 등록' 버튼으로 화장품을 추가하면<br />피부 데이터에 맞춰 루틴을 짜드릴게요.
         </div>
       </div>
@@ -155,10 +155,10 @@ export default function CareRecommendation({ products: productsProp, refreshKey 
         boxShadow: 'var(--card-shadow)',
       }}>
         <div style={{ marginBottom: 8 }}><IconSearch size={28} /></div>
-        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
+        <div style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 4 }}>
           제품 카테고리를 확인해주세요
         </div>
-        <div style={{ fontSize: 11.5, color: 'var(--text-muted)', lineHeight: 1.6 }}>
+        <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', lineHeight: 1.5 }}>
           등록 제품의 카테고리(클렌저·토너·세럼 등)가 명확해야<br />루틴 순서대로 정렬할 수 있어요.
         </div>
       </div>
@@ -172,22 +172,22 @@ export default function CareRecommendation({ products: productsProp, refreshKey 
         <div style={{ padding: '0 4px', marginBottom: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
             <div style={{
-              fontSize: 14, fontWeight: 600, color: 'var(--text-primary)',
+              fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)',
               letterSpacing: -0.2,
             }}>
               당신의 피부에 맞는 루틴
             </div>
             <span style={{
-              fontSize: 10, fontWeight: 600, color: 'var(--accent-primary)',
+              fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: 'var(--accent-primary)',
               background: 'rgba(var(--accent-rgb),0.18)', borderRadius: 8,
               padding: '3px 8px', letterSpacing: -0.1,
             }}>표준 정렬</span>
           </div>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.55 }}>
+          <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', lineHeight: 1.5 }}>
             등록한 화장품을 표준 순서대로 정리했어요.
             {result?.overallScore != null && ` 종합 ${result.overallScore}점 기준 매칭도 높은 순.`}
           </div>
-          <div style={{ fontSize: 11.5, color: 'var(--accent-primary)', lineHeight: 1.55, marginTop: 6, fontWeight: 500 }}>
+          <div style={{ fontSize: 12, color: 'var(--accent-primary)', lineHeight: 1.5, marginTop: 6, fontWeight: 500 }}>
             내 피부 별 맞춤 추천은 상담으로 진행해보세요.
           </div>
         </div>
@@ -257,8 +257,8 @@ export default function CareRecommendation({ products: productsProp, refreshKey 
           }}>
             <span style={{ flexShrink: 0, lineHeight: 1.1, display: 'flex' }}>{pick.icon}</span>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 3 }}>{pick.title}</div>
-              <div style={{ fontSize: 11.5, color: 'var(--text-secondary)', lineHeight: 1.55 }}>{pick.advice}</div>
+              <div style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 3 }}>{pick.title}</div>
+              <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{pick.advice}</div>
             </div>
           </div>
         );
@@ -317,7 +317,7 @@ function RoutineTabs({ morningSteps, nightSteps, morningStats, nightStats }) {
       {/* 세그먼트 탭 — 글래스 카드 안에 두 칸. 활성 탭은 흰색 pill로 강조 */}
       <div style={{
         display: 'flex', gap: 4, padding: 4, marginBottom: 16,
-        background: 'rgba(255,255,255,0.35)',
+        background: 'rgba(255,255,255,0.4)',
         backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
         border: 'none',
         borderRadius: 14,
@@ -334,16 +334,16 @@ function RoutineTabs({ morningSteps, nightSteps, morningStats, nightStats }) {
                 padding: '10px 0', borderRadius: 11, cursor: 'pointer',
                 border: 'none',
                 background: active ? 'rgba(255,255,255,0.85)' : 'transparent',
-                boxShadow: active ? '0 1px 4px rgba(0,0,0,0.06)' : 'none',
+                boxShadow: active ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
                 color: active ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                fontSize: 13.5, fontWeight: active ? 700 : 500,
+                fontSize: 14, lineHeight: 1.5, fontWeight: 500, fontWeight: active ? 600 : 500,
                 letterSpacing: -0.2,
                 transition: 'background 0.18s ease, color 0.18s ease',
               }}
             >
               <span>{t.label}</span>
               <span style={{
-                fontSize: 10.5, fontWeight: 600,
+                fontSize: 11, lineHeight: 1.3, fontWeight: 500,
                 color: active ? 'var(--accent-primary)' : 'var(--text-muted)',
                 background: active ? 'rgba(var(--accent-rgb),0.14)' : 'rgba(0,0,0,0.05)',
                 borderRadius: 8, padding: '2px 7px',

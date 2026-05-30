@@ -100,6 +100,49 @@
   --fw-bold: 700;
   --fw-extrabold: 800;
 
+  /* ===== 텍스트 시스템 v1.0 (시맨틱 — 신규 UI는 이걸 사용) ===== */
+  /* 폰트 크기 9종 */
+  --text-display: 40px;    /* 시그니처 점수·히어로 숫자 */
+  --text-display-lg: 64px; /* 큰 숫자 필요시만 */
+  --text-h1: 24px;         /* 페이지 헤드라인 */
+  --text-h2: 18px;         /* 섹션·카드 제목 */
+  --text-h3: 16px;         /* 서브 헤딩 */
+  --text-body: 14px;       /* 본문 강조 */
+  --text-body-sm: 13px;    /* 본문 일반 */
+  --text-caption: 12px;    /* 보조·버튼 */
+  --text-footnote: 11px;   /* 메타·작은 라벨 */
+  --text-micro: 10px;      /* 매거진 라벨·워터마크 */
+
+  /* 폰트 두께 4종 (700+ 금지) */
+  --weight-light: 300;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  /* 흰색 투명도 5단계 (어두운 배경/사진 위) */
+  --white-92: rgba(255,255,255,0.92);
+  --white-85: rgba(255,255,255,0.85);
+  --white-70: rgba(255,255,255,0.7);
+  --white-40: rgba(255,255,255,0.4);
+  --white-20: rgba(255,255,255,0.2);
+
+  /* 검정 투명도 5단계 (구분선·오버레이) */
+  --ink-08: rgba(0,0,0,0.08);
+  --ink-15: rgba(0,0,0,0.15);
+  --ink-40: rgba(0,0,0,0.4);
+  --ink-55: rgba(0,0,0,0.55);
+  --ink-78: rgba(0,0,0,0.78);
+
+  /* 어두운 배경 위 텍스트 3종 */
+  --text-on-dark: #FFFFFF;
+  --text-on-dark-soft: rgba(255,255,255,0.7);
+  --text-on-dark-disabled: rgba(255,255,255,0.4);
+
+  /* 의미·링크 색 */
+  --text-link: #1E90E8;
+  --text-positive: #1976D2;
+  --text-negative: #A32D2D;
+
   /* Font family (display는 테마별로 --font-display가 재정의됨) */
   --font-body: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif;
 }
@@ -181,7 +224,7 @@ select:focus-visible {
   --bg-card-solid: #111118;
   --bg-elevated: rgba(255,255,255,0.04);
   --bg-modal: rgba(20,20,30,0.95);
-  --bg-modal-overlay: rgba(0,0,0,0.6);
+  --bg-modal-overlay: rgba(0,0,0,0.55);
   --bg-input: rgba(255,255,255,0.06);
   --bg-photo-stage: #08080c;
   /* Borders */
@@ -201,7 +244,7 @@ select:focus-visible {
   --tab-bg: rgba(8,8,14,0.88);
   --tab-border: rgba(255,255,255,0.06);
   --tab-inactive: #444458;
-  --tab-shadow: 0 -1px 20px rgba(var(--accent-rgb),0.06), 0 8px 32px rgba(0,0,0,0.6);
+  --tab-shadow: 0 -1px 20px rgba(var(--accent-rgb),0.06), 0 8px 32px rgba(0,0,0,0.55);
   /* Misc */
   --bar-track: rgba(255,255,255,0.06);
   --glass-inset: inset 0 1px 1px rgba(255,255,255,0.05);
@@ -211,7 +254,7 @@ select:focus-visible {
   --accent-rgb: 101,152,239; /* --accent-primary as RGB triplet for rgba(var(--accent-rgb), a) */
   --accent-secondary: #a8c8f8;
   --accent-gradient: linear-gradient(135deg, #6598ef, #85b0f5);
-  --text-disabled: rgba(255,255,255,0.15);
+  --text-disabled: rgba(255,255,255,0.2);
   --consult-bg: linear-gradient(180deg, #08080c 0%, #0c0c10 100%);
 
   /* Structural variables (dark defaults) */
@@ -229,7 +272,7 @@ select:focus-visible {
   /* Card system (배경·그림자·패딩 — 곡률은 --card-*-radius / 다크 기본) */
   --card-bg: rgba(255,255,255,0.05);
   --card-blur: none;
-  --card-shadow: 0 2px 8px rgba(0,0,0,0.3); /* 다크: 탭바 세기에 맞춘 아래방향 */
+  --card-shadow: 0 2px 8px rgba(0,0,0,0.4); /* 다크: 탭바 세기에 맞춘 아래방향 */
   --card-pad: 20px;
   --card-nested-bg: rgba(255,255,255,0.03);
   --card-nested-pad: 16px;
@@ -248,7 +291,7 @@ select:focus-visible {
 
   /* Sheet / Modal */
   --sheet-bg: #1a1a24;
-  --sheet-handle: rgba(255,255,255,0.15);
+  --sheet-handle: rgba(255,255,255,0.2);
   /* Progress */
   --progress-track: rgba(255,255,255,0.06);
   --progress-fill: linear-gradient(90deg, #85b0f5, #6598ef, #a8c8f8);
@@ -280,23 +323,23 @@ select:focus-visible {
   /* Surfaces — Sky glassmorphism */
   --bg-primary: transparent;
   --bg-secondary: transparent;
-  --bg-card: rgba(255,255,255,0.5);
-  --bg-card-hover: rgba(255,255,255,0.5);
-  --bg-card-solid: rgba(255,255,255,0.5);
-  --bg-elevated: rgba(255,255,255,0.5);
+  --bg-card: rgba(255,255,255,0.4);
+  --bg-card-hover: rgba(255,255,255,0.4);
+  --bg-card-solid: rgba(255,255,255,0.4);
+  --bg-elevated: rgba(255,255,255,0.4);
   --bg-modal: #FFFFFF;
   --bg-modal-overlay: rgba(0,0,0,0.4);
-  --bg-input: rgba(255,255,255,0.5);
+  --bg-input: rgba(255,255,255,0.4);
   /* Borders — no glass */
   --border-subtle: transparent;
   --border-light: transparent;
   --border-separator: transparent;
-  /* Text — Toss palette */
-  --text-primary: #191F28;
-  --text-secondary: #4E5968;
-  --text-muted: #8B95A1;
-  --text-dim: #B0B8C1;
-  --text-disabled: #D1D6DB;
+  /* Text — 텍스트 시스템 v1.0 블랙 계열(중립) */
+  --text-primary: #1A1A1A;            /* 메인 (니어 블랙) */
+  --text-secondary: rgba(0,0,0,0.55);  /* 보조·라벨 */
+  --text-muted: rgba(0,0,0,0.4);     /* tertiary — 비활성·메타 */
+  --text-dim: rgba(0,0,0,0.4);       /* 더 흐림 */
+  --text-disabled: rgba(0,0,0,0.15);  /* 비활성 */
   /* Shadows — subtle black 0.03 */
   --shadow-card: 0 2px 8px rgba(0,0,0,0.03);
   --shadow-elevated: 0 2px 8px rgba(0,0,0,0.03);
@@ -304,10 +347,10 @@ select:focus-visible {
   /* Tab bar */
   --tab-bg: #ffffff;
   --tab-border: transparent;
-  --tab-inactive: rgba(0,0,0,0.3);
+  --tab-inactive: rgba(0,0,0,0.4);
   --tab-shadow: 0 -2px 8px rgba(0,0,0,0.03);
   /* Misc */
-  --bar-track: rgba(255,255,255,0.35);
+  --bar-track: rgba(255,255,255,0.4);
   --glass-inset: none;
   --glass-accent-inset: none;
   --consult-bg: transparent;
@@ -315,11 +358,11 @@ select:focus-visible {
   /* Structural variables — Sky glass style */
   --btn-radius: var(--radius-md);
   --btn-primary-bg: var(--accent-primary);
-  --btn-primary-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  --btn-primary-shadow: 0 2px 8px rgba(0,0,0,0.08);
   --btn-secondary-bg: rgba(255,255,255,0.4);
   --btn-secondary-border: none;
   --chip-radius: var(--radius-sm);
-  --chip-bg: rgba(255,255,255,0.3);
+  --chip-bg: rgba(255,255,255,0.2);
   --chip-border: none;
   --chip-text: var(--text-secondary);
   --card-backdrop: blur(16px);
@@ -419,7 +462,7 @@ select:focus-visible {
 .orb-hint-text {
   height: 30px;
   line-height: 30px;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: var(--fw-semibold);
   color: var(--accent-primary);
   text-align: center;
@@ -560,7 +603,7 @@ select:focus-visible {
   padding: 16px;
   border-radius: var(--radius-md);
   font-size: 16px;
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-semibold);
   cursor: pointer;
   width: 100%;
   box-shadow: 0 4px 20px rgba(167, 139, 250, 0.35);
@@ -574,7 +617,7 @@ select:focus-visible {
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
 }
 .btn-primary:active {
   transform: scale(0.98);
@@ -587,8 +630,8 @@ select:focus-visible {
   border: none;
   padding: 14px;
   border-radius: var(--radius-md);
-  font-size: 15px;
-  font-weight: var(--fw-bold);
+  font-size: 16px;
+  font-weight: var(--fw-semibold);
   cursor: pointer;
   width: 100%;
   font-family: inherit;
@@ -630,7 +673,7 @@ select:focus-visible {
   transition: background 0.2s;
 }
 .btn-back:active {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255,255,255,0.2);
 }
 
 /* Cards */
@@ -694,6 +737,18 @@ select:focus-visible {
 .font-display {
   font-family: 'Outfit', sans-serif;
 }
+
+/* ===== 타이포 프리셋 — 크기+두께+기본색 한 세트 (색은 인라인으로 오버라이드 가능) ===== */
+.t-micro     { font-size: var(--text-micro);      font-weight: var(--weight-medium);  color: var(--text-muted);     line-height: 1.3; } /* 10/500/muted/1.3 */
+.t-footnote  { font-size: var(--text-footnote);   font-weight: var(--weight-medium);  color: var(--text-muted);     line-height: 1.3; } /* 11/500/muted/1.3 */
+.t-caption   { font-size: var(--text-caption);    font-weight: var(--weight-medium);  color: var(--text-secondary); line-height: 1.5; } /* 12/500/secondary/1.5 */
+.t-body-sm   { font-size: var(--text-body-sm);    font-weight: var(--weight-medium);  color: var(--text-primary);   line-height: 1.5; } /* 13/500/primary/1.5 */
+.t-body      { font-size: var(--text-body);       font-weight: var(--weight-medium);  color: var(--text-primary);   line-height: 1.5; } /* 14/500/primary/1.5 */
+.t-h3        { font-size: var(--text-h3);         font-weight: var(--weight-medium);  color: var(--text-primary);   line-height: 1.3; } /* 16/500/primary/1.3 */
+.t-h2        { font-size: var(--text-h2);         font-weight: var(--weight-medium);  color: var(--text-primary);   line-height: 1.3; } /* 18/500/primary/1.3 */
+.t-h1        { font-size: var(--text-h1);         font-weight: var(--weight-medium);  color: var(--text-primary);   line-height: 1.3; } /* 24/500/primary/1.3 */
+.t-display   { font-size: var(--text-display);    font-weight: var(--weight-regular); color: var(--text-primary);   line-height: 1.1; } /* 40/400/primary/1.1 */
+.t-display-lg{ font-size: var(--text-display-lg); font-weight: var(--weight-regular); color: var(--text-primary);   line-height: 1.1; } /* 64/400/primary/1.1 */
 
 /* Gradient Header */
 .gradient-header {
@@ -996,7 +1051,7 @@ select:focus-visible {
   left: 0;
   right: 0;
   height: 25%;
-  background: linear-gradient(to top, rgba(0,0,0,0.3) 0%, transparent 100%);
+  background: linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 100%);
   pointer-events: none;
   border-radius: 0 0 10px 10px;
 }
@@ -1015,7 +1070,7 @@ select:focus-visible {
   bottom: 7px;
   right: 7px;
   font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: var(--fw-medium);
   color: #fff;
   line-height: 1;
@@ -1258,7 +1313,7 @@ select:focus-visible {
 }
 .month-label {
   font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: var(--fw-regular);
   color: var(--text-primary);
   letter-spacing: 1px;
@@ -1378,7 +1433,7 @@ select:focus-visible {
 }
 .trend-val {
   font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: var(--fw-regular);
   color: var(--accent-primary);
   line-height: 1;
@@ -1545,7 +1600,7 @@ select:focus-visible {
   letter-spacing: -0.1px;
 }
 .consult-bubble strong {
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-semibold);
   color: inherit;
 }
 .consult-bubble.user {
@@ -1655,7 +1710,7 @@ select:focus-visible {
   height: 24px;
   border-radius: 50%;
   border: none;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0,0,0,0.55);
   color: #fff;
   font-size: 14px;
   display: flex;
@@ -1787,7 +1842,7 @@ select:focus-visible {
 
 /* Segment control: glass style */
 [data-theme="light"] .segment-control {
-  background: rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.2);
   border: none;
   border-radius: 14px;
   padding: 4px;
@@ -1800,27 +1855,27 @@ select:focus-visible {
   border: none;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
 }
 [data-theme="light"] .segment-btn.active {
-  background: rgba(255,255,255,0.5);
+  background: rgba(255,255,255,0.4);
   color: #191F28;
   font-weight: var(--fw-semibold);
   border: none;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.3);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.2);
 }
 
 /* Button primary: flat solid */
 [data-theme="light"] .btn-primary {
   background: var(--accent-primary);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   border-radius: var(--radius-md);
 }
 [data-theme="light"] .btn-primary::after { display: none; }
 [data-theme="light"] .btn-primary:active {
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 }
 
 /* Button secondary: glass fill */
@@ -1832,17 +1887,17 @@ select:focus-visible {
   -webkit-backdrop-filter: none;
 }
 [data-theme="light"] .btn-secondary:active {
-  background: rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.7);
 }
 
 /* Button ghost: glass fill */
 [data-theme="light"] .btn-ghost {
   border: none;
-  background: rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.2);
   color: #4E5968;
 }
 [data-theme="light"] .btn-ghost:active {
-  background: rgba(255,255,255,0.5);
+  background: rgba(255,255,255,0.4);
 }
 
 /* Tags: glass fill */
@@ -1850,7 +1905,7 @@ select:focus-visible {
   border-radius: var(--radius-xs);
 }
 [data-theme="light"] .tag-secondary {
-  background: rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.2);
   color: #4E5968;
 }
 
@@ -1868,7 +1923,7 @@ select:focus-visible {
   color: #4E5968;
 }
 [data-theme="light"] .consult-chip:active {
-  background: rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.7);
   border: none;
 }
 [data-theme="light"] .consult-bubble.ai {
@@ -1891,7 +1946,7 @@ select:focus-visible {
   border-radius: 20px 4px 20px 20px;
 }
 [data-theme="light"] .consult-typing {
-  background: rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.2);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   border: none;
@@ -1916,7 +1971,7 @@ select:focus-visible {
 
 /* Trend bar */
 [data-theme="light"] .trend-bar {
-  background: rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.2);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   border: none;
@@ -1946,7 +2001,7 @@ select:focus-visible {
   background: rgba(255,255,255,0.4);
 }
 [data-theme="light"] .history-divider {
-  background: rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.2);
 }
 
 /* ===== Goal Slider — LUA style ===== */
@@ -2012,7 +2067,7 @@ select:focus-visible {
   --chip-text: #c080d0;
 }
 [data-skin="pink"] .tab-bar {
-  background: rgba(255,255,255,0.95);
+  background: rgba(255,255,255,0.92);
 }
 [data-skin="pink"] .lua-goal-slider::-webkit-slider-thumb {
   border-color: #e9a8f0;
@@ -2048,11 +2103,11 @@ select:focus-visible {
 .result-section-title {
   font-size: 14px;
   font-weight: var(--fw-semibold);
-  color: rgba(0,0,0,0.8);
+  color: rgba(0,0,0,0.78);
 }
 .result-section-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 15%, rgba(255,255,255,0.3) 85%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 15%, rgba(255,255,255,0.2) 85%, transparent 100%);
   margin: 0 16px;
 }
 .result-section-body {

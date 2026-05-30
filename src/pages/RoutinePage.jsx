@@ -51,11 +51,11 @@ export default function RoutinePage() {
       {/* Header */}
       <div style={{ padding: '30px 28px 20px', textAlign: 'center' }}>
         <h1 style={{
-          fontSize: 28, fontWeight: 300, color: 'var(--text-secondary)',
+          fontSize: 24, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-secondary)',
           fontFamily: "'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif", fontStyle: 'italic',
           marginBottom: 4,
         }}>Daily Ritual</h1>
-        <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>오늘의 피부 루틴</p>
+        <p style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-muted)' }}>오늘의 피부 루틴</p>
       </div>
 
       <div style={{ padding: '0 20px' }}>
@@ -78,8 +78,8 @@ export default function RoutinePage() {
           borderRadius: 16, padding: '14px 16px', marginBottom: 20,
         }}>
           <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-            <span style={{ fontSize: 20, flexShrink: 0 }}></span>
-            <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
+            <span style={{ fontSize: 18, lineHeight: 1.3, fontWeight: 500, flexShrink: 0 }}></span>
+            <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
               {getContextMessage()}
             </p>
           </div>
@@ -88,10 +88,10 @@ export default function RoutinePage() {
         {/* Progress Bar */}
         <div style={{ marginBottom: 20 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>
+            <span style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-secondary)' }}>
               오늘 진행률
             </span>
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--ingredient-accent)' }}>
+            <span style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 500, color: 'var(--ingredient-accent)' }}>
               {progress.done}/{progress.total} 완료
             </span>
           </div>
@@ -138,8 +138,8 @@ export default function RoutinePage() {
         {/* 나에게 맞는 성분 섹션 */}
         <div style={{ marginBottom: 20 }}>
           <div style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-secondary)' }}>나에게 맞는 성분</div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+            <div style={{ fontSize: 16, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-secondary)' }}>나에게 맞는 성분</div>
+            <div style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-muted)', marginTop: 2 }}>
               {latestRecord ? '피부 분석 기반 맞춤 추천' : '기본 추천 성분'}
             </div>
           </div>
@@ -153,15 +153,15 @@ export default function RoutinePage() {
                   style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
-                    <span style={{ fontSize: 22, flexShrink: 0 }}>{ing.icon}</span>
+                    <span style={{ fontSize: 24, lineHeight: 1.3, fontWeight: 500, flexShrink: 0 }}>{ing.icon}</span>
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--ingredient-accent)' }}>{ing.nameKo}</div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{ing.name}</div>
+                      <div style={{ fontSize: 16, lineHeight: 1.3, fontWeight: 500, color: 'var(--ingredient-accent)' }}>{ing.nameKo}</div>
+                      <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)' }}>{ing.name}</div>
                     </div>
                     {ing.score != null && (
                       <span style={{
                         flexShrink: 0, marginLeft: 'auto', marginRight: 8,
-                        fontSize: 10, fontWeight: 600, color: 'var(--ingredient-accent)',
+                        fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: 'var(--ingredient-accent)',
                         background: 'var(--context-bg)', borderRadius: 20,
                         padding: '3px 8px',
                       }}>{ing.reason}</span>
@@ -179,12 +179,12 @@ export default function RoutinePage() {
                   transition: 'max-height 0.3s ease, margin-top 0.3s ease',
                   marginTop: isOpen ? 12 : 0,
                 }}>
-                  <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7, margin: '0 0 10px' }}>{ing.desc}</p>
+                  <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', lineHeight: 1.5, margin: '0 0 10px' }}>{ing.desc}</p>
                   <div style={{
                     display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8,
                   }}>
                     <span style={{
-                      fontSize: 11, color: 'var(--text-muted)', background: 'var(--tag-bg)',
+                      fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', background: 'var(--tag-bg)',
                       borderRadius: 8, padding: '4px 10px',
                     }}>추천 농도: {ing.concentration}</span>
                   </div>
@@ -192,8 +192,8 @@ export default function RoutinePage() {
                     background: 'var(--context-bg)', borderRadius: 10,
                     padding: '10px 12px', border: 'var(--context-border)',
                   }}>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--ingredient-accent)', marginBottom: 4 }}>사용 팁</div>
-                    <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6, margin: 0 }}>{ing.tip}</p>
+                    <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--ingredient-accent)', marginBottom: 4 }}>사용 팁</div>
+                    <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>{ing.tip}</p>
                   </div>
                 </div>
               </div>
@@ -204,7 +204,7 @@ export default function RoutinePage() {
             <div style={{
               textAlign: 'center', padding: '12px 0 4px',
             }}>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>
+              <p style={{ fontSize: 12, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 8 }}>
                 피부 진단을 하면 나에게 딱 맞는 성분을 추천받을 수 있어요!
               </p>
             </div>
@@ -213,7 +213,7 @@ export default function RoutinePage() {
 
         {/* Weekly Completion Dots */}
         <div className="card" style={{ padding: '16px 18px' }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 14 }}>주간 루틴 현황</div>
+          <div style={{ fontSize: 14, lineHeight: 1.5, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 14 }}>주간 루틴 현황</div>
           <div style={{ display: 'flex', justifyContent: 'space-around' }}>
             {weekly.map((day) => (
               <div key={day.date} style={{ textAlign: 'center' }}>
@@ -236,7 +236,7 @@ export default function RoutinePage() {
                   ) : null}
                 </div>
                 <span style={{
-                  fontSize: 10, fontWeight: day.isToday ? 600 : 400,
+                  fontSize: 10, lineHeight: 1.3, fontWeight: 500, fontWeight: day.isToday ? 600 : 400,
                   color: day.isToday ? 'var(--ingredient-accent)' : 'var(--text-muted)',
                 }}>{day.dayLabel}</span>
               </div>

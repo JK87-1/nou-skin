@@ -55,7 +55,7 @@ export default function PersonaPicker({ open, activeId, onSelect, onClose, ancho
           width: 'min(280px, calc(100% - 28px))',
           background: '#ffffff',
           borderRadius: 24,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.14), 0 1px 2px rgba(0,0,0,0.04)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.15), 0 1px 2px rgba(0,0,0,0.04)',
           zIndex: 320,
           overflow: 'hidden',
           padding: '3px 0',
@@ -79,13 +79,13 @@ export default function PersonaPicker({ open, activeId, onSelect, onClose, ancho
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{
                   display: 'flex', alignItems: 'baseline', gap: 6,
-                  fontSize: 16, color: '#1F1F1F', letterSpacing: -0.2,
+                  fontSize: 16, lineHeight: 1.3, fontWeight: 500, color: '#1F1F1F', letterSpacing: -0.2,
                 }}>
                   <span style={{ fontWeight: 500 }}>{p.label}</span>
                 </div>
                 <div style={{
                   marginTop: 3,
-                  fontSize: 13, color: '#5F6368', letterSpacing: -0.1, lineHeight: 1.45,
+                  fontSize: 13, fontWeight: 500, color: '#5F6368', letterSpacing: -0.1, lineHeight: 1.5,
                 }}>
                   {p.tagline}
                 </div>

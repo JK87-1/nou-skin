@@ -45,8 +45,8 @@ export default function TrendCard({ accent = '#6598ef', changes = null, animatio
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <div>
-          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>이번 주 추세</div>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>최근 7번 측정 흐름</div>
+          <div style={{ fontSize: 16, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-primary)' }}>이번 주 추세</div>
+          <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', marginTop: 1 }}>최근 7번 측정 흐름</div>
         </div>
         <MetricToggle metric={metric} setMetric={setMetric} accent={accent} />
       </div>
@@ -102,7 +102,7 @@ function MetricToggle({ metric, setMetric, accent }) {
             onClick={() => setMetric(it.key)}
             style={{
               padding: '6px 12px', borderRadius: 999,
-              fontSize: 11, fontWeight: 600,
+              fontSize: 11, lineHeight: 1.3, fontWeight: 500,
               background: on ? accent : 'transparent',
               color: on ? '#fff' : 'var(--text-muted)',
               border: 'none', cursor: 'pointer',
@@ -120,10 +120,10 @@ function DeltaDisplay({ value, unit, inverse, accent }) {
   if (value == null) {
     return (
       <div>
-        <div style={{ fontSize: 32, fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'Outfit, sans-serif', lineHeight: 1 }}>
+        <div style={{ fontSize: 40, fontWeight: 400, color: 'var(--text-primary)', fontFamily: 'Outfit, sans-serif', lineHeight: 1.1 }}>
           첫 측정
         </div>
-        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>비교할 이전 기록이 아직 없어요</div>
+        <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', marginTop: 6 }}>비교할 이전 기록이 아직 없어요</div>
       </div>
     );
   }
@@ -144,13 +144,13 @@ function DeltaDisplay({ value, unit, inverse, accent }) {
     <div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
         <span style={{
-          fontSize: 32, fontWeight: 700, color,
-          fontFamily: 'Outfit, sans-serif', lineHeight: 1,
+          fontSize: 40, fontWeight: 400, color,
+          fontFamily: 'Outfit, sans-serif', lineHeight: 1.1,
           letterSpacing: -0.5,
         }}>{sign}{abs}</span>
-        <span style={{ fontSize: 14, color: 'var(--text-muted)', fontWeight: 500 }}>{unit}</span>
+        <span style={{ fontSize: 14, lineHeight: 1.5, color: 'var(--text-muted)', fontWeight: 500 }}>{unit}</span>
       </div>
-      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>{subtleLabel}</div>
+      <div style={{ fontSize: 11, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted)', marginTop: 6 }}>{subtleLabel}</div>
     </div>
   );
 }
@@ -181,14 +181,14 @@ function BarChart({ series, inverse, accent, max }) {
   return (
     <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} preserveAspectRatio="xMidYMid meet">
       {/* baseline */}
-      <line x1={0} x2={W} y1={H - padBottom} y2={H - padBottom} stroke="rgba(0,0,0,0.06)" strokeWidth="1" />
+      <line x1={0} x2={W} y1={H - padBottom} y2={H - padBottom} stroke="rgba(0,0,0,0.08)" strokeWidth="1" />
       {series.map((s, i) => {
         const x = i * colW + colW / 2 - barW / 2;
         const norm = (s.value - yMin) / yRange; // 0..1
         const h = Math.max(3, norm * chartH);
         const y = H - padBottom - h;
         const isLast = i === n - 1;
-        const fill = isLast ? accent : 'rgba(0,0,0,0.14)';
+        const fill = isLast ? accent : 'rgba(0,0,0,0.15)';
         const dow = DOW[new Date(s.date + 'T00:00:00').getDay()] || '';
         return (
           <g key={s.date + i}>
@@ -224,11 +224,11 @@ function BaselineLine({ totalChanges, metric, meta, accent }) {
       background: 'rgba(0,0,0,0.025)',
       display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
     }}>
-      <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+      <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
         첫 측정{period > 0 ? ` (${period}일 전)` : ''}보다
       </div>
       <div style={{
-        fontSize: 13, fontWeight: 700,
+        fontSize: 13, lineHeight: 1.5, fontWeight: 500,
         color: value === 0 ? 'var(--text-muted)' : (good ? accent : 'var(--text-secondary)'),
         fontFamily: 'Outfit, sans-serif',
       }}>
@@ -242,10 +242,10 @@ function EmptyHint() {
   return (
     <div style={{ padding: '14px 4px 4px' }}>
       <div style={{
-        fontSize: 28, fontWeight: 700, color: 'var(--text-primary)',
-        fontFamily: 'Outfit, sans-serif', lineHeight: 1, letterSpacing: -0.5,
+        fontSize: 24, fontWeight: 500, color: 'var(--text-primary)',
+        fontFamily: 'Outfit, sans-serif', lineHeight: 1.3, letterSpacing: -0.5,
       }}>첫 측정</div>
-      <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 8, lineHeight: 1.55 }}>
+      <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginTop: 8, lineHeight: 1.5 }}>
         다음 측정부터 변화 흐름이 보여요.<br />
         하루 한 번씩 짧게 기록해주세요.
       </div>

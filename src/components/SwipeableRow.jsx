@@ -206,7 +206,7 @@ export default function SwipeableRow({
           aria-label="삭제"
           style={{
             width: '100%', height: '100%', border: 'none', background: 'transparent',
-            color: '#fff', fontSize: 13, fontWeight: 700, letterSpacing: -0.2,
+            color: '#fff', fontSize: 13, lineHeight: 1.5, fontWeight: 500, letterSpacing: -0.2,
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
             cursor: 'pointer', fontFamily: 'inherit',
             transform: translateX < -4 ? 'scale(1)' : 'scale(0.9)',
@@ -234,7 +234,7 @@ export default function SwipeableRow({
           willChange: 'transform',
           // 드래그 중 미세 lift
           boxShadow: isDragging && Math.abs(translateX) > 12
-            ? '0 4px 18px rgba(0,0,0,0.06)'
+            ? '0 4px 18px rgba(0,0,0,0.08)'
             : 'none',
         }}
       >

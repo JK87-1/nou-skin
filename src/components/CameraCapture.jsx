@@ -151,24 +151,24 @@ function CameraErrorScreen({ reason, onFallback, onClose, onRetry, colorMode }) 
         width: 80, height: 80, borderRadius: 24, marginBottom: 24,
         background: 'var(--context-bg)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 32,
+        fontSize: 40, lineHeight: 1.1, fontWeight: 400,
       }}>
         {isInsecure ? <LockIcon size={36} /> : isDenied ? '' : <CameraIcon size={36} />}
       </div>
 
-      <h2 style={{ color: 'var(--text-primary)', fontSize: 20, fontWeight: 700, marginBottom: 8 }}>
+      <h2 style={{ color: 'var(--text-primary)', fontSize: 18, lineHeight: 1.3, fontWeight: 500, marginBottom: 8 }}>
         {isInsecure ? '보안 연결이 필요합니다' :
          isDenied ? '카메라 권한이 거부되었습니다' :
          '카메라를 사용할 수 없습니다'}
       </h2>
 
-      <div style={{ color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.6, marginBottom: 24, maxWidth: 320, textAlign: 'left' }}>
+      <div style={{ color: 'var(--text-muted)', fontSize: 14, fontWeight: 500, lineHeight: 1.5, marginBottom: 24, maxWidth: 320, textAlign: 'left' }}>
         {isInsecure ? (
           <p style={{ margin: 0, textAlign: 'center' }}>모바일에서 카메라를 사용하려면 HTTPS 연결이 필요합니다.<br />앨범에서 사진을 선택해주세요.</p>
         ) : isDenied ? (
           <>
             <p style={{ margin: '0 0 12px', textAlign: 'center' }}>브라우저 설정에서 카메라 권한을 허용한 후 [다시 시도]를 눌러주세요.</p>
-            <div style={{ fontSize: 12, color: 'var(--text-dim)', lineHeight: 1.7, padding: '10px 14px', background: 'var(--context-bg)', borderRadius: 10 }}>
+            <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-dim)', lineHeight: 1.5, padding: '10px 14px', background: 'var(--context-bg)', borderRadius: 10 }}>
               <div><strong style={{ color: 'var(--text-secondary)' }}>iPhone Safari</strong>: 주소창 좌측 「ⓐⓐ」 → 웹사이트 설정 → 카메라 → 허용</div>
               <div style={{ marginTop: 4 }}><strong style={{ color: 'var(--text-secondary)' }}>Android Chrome</strong>: 주소창 좌측  → 권한 → 카메라 허용</div>
               <div style={{ marginTop: 4 }}><strong style={{ color: 'var(--text-secondary)' }}>PC 브라우저</strong>: 주소창 좌측 자물쇠/카메라 아이콘 → 허용</div>
@@ -182,7 +182,7 @@ function CameraErrorScreen({ reason, onFallback, onClose, onRetry, colorMode }) 
       <button onClick={onFallback} style={{
         width: '100%', maxWidth: 300, padding: 16, borderRadius: 12, border: 'none',
         background: 'var(--accent-primary)',
-        color: '#fff', fontSize: 16, fontWeight: 700, cursor: 'pointer', marginBottom: 12,
+        color: '#fff', fontSize: 16, lineHeight: 1.3, fontWeight: 500, cursor: 'pointer', marginBottom: 12,
       }}>
         앨범에서 사진 선택
       </button>
@@ -192,7 +192,7 @@ function CameraErrorScreen({ reason, onFallback, onClose, onRetry, colorMode }) 
           width: '100%', maxWidth: 300, padding: 14, borderRadius: 12,
           background: 'var(--bg-secondary)',
           border: 'var(--item-border)',
-          color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600, cursor: 'pointer', marginBottom: 12,
+          color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.5, fontWeight: 500, cursor: 'pointer', marginBottom: 12,
         }}>
           다시 시도
         </button>
@@ -201,7 +201,7 @@ function CameraErrorScreen({ reason, onFallback, onClose, onRetry, colorMode }) 
       <button onClick={onClose} style={{
         background: 'none', border: 'none',
         color: 'var(--text-dim)',
-        fontSize: 14, cursor: 'pointer', padding: '8px 16px',
+        fontSize: 14, lineHeight: 1.5, fontWeight: 500, cursor: 'pointer', padding: '8px 16px',
       }}>
         돌아가기
       </button>
@@ -301,8 +301,8 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
     ctx.save();
     const vignette = ctx.createRadialGradient(cx, cy, Math.min(rx, ry) * 0.5, cx, cy, Math.max(W, H) * 0.7);
     vignette.addColorStop(0, 'rgba(0,0,0,0)');
-    vignette.addColorStop(0.6, 'rgba(0,0,0,0.1)');
-    vignette.addColorStop(1, 'rgba(0,0,0,0.3)');
+    vignette.addColorStop(0.6, 'rgba(0,0,0,0.08)');
+    vignette.addColorStop(1, 'rgba(0,0,0,0.4)');
     ctx.fillStyle = vignette;
     ctx.fillRect(0, 0, W, H);
     ctx.restore();
@@ -318,7 +318,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
     if (scanComplete && !scanStopped) setScanStopped(true);
     if (!scanComplete && scanStopped) setScanStopped(false);
     ctx.save();
-    ctx.strokeStyle = scanComplete ? 'rgba(255, 255, 255, 0.6)' : 'rgba(30, 144, 232, 0.55)';
+    ctx.strokeStyle = scanComplete ? 'rgba(255,255,255,0.7)' : 'rgba(30, 144, 232, 0.55)';
     ctx.lineWidth = 2.5;
     ctx.setLineDash(scanComplete ? [3, 4] : [2, 5]);
     // faceline.svg path (viewBox 302x437) — 얼굴 윤곽선
@@ -337,7 +337,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
     const mL = cx - rx - pad, mR = cx + rx + pad;
     const mT = cy - ry - pad, mB = cy + ry + pad;
     ctx.save();
-    ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)';
     ctx.lineWidth = 1.2;
     ctx.lineCap = 'round';
     ctx.beginPath(); ctx.moveTo(mL, mT + markerLen); ctx.lineTo(mL, mT); ctx.lineTo(mL + markerLen, mT); ctx.stroke();
@@ -409,11 +409,11 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
         ctx.textBaseline = 'middle';
         const tw = ctx.measureText(zone.label).width;
         const bw = tw + 20, bh = 20;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
         ctx.beginPath();
         ctx.roundRect(-bw / 2, -bh / 2, bw, bh, bh / 2);
         ctx.fill();
-        ctx.fillStyle = '#042C53';
+        ctx.fillStyle = '#1A1A1A';
         ctx.fillText(zone.label, 0, 0.5);
         ctx.restore();
       }
@@ -799,7 +799,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
             <div style={{
               position: 'absolute', left: 0, right: 0,
               height: 60,
-              background: 'linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.25) 50%, rgba(255,255,255,0) 100%)',
+              background: 'linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%)',
               animation: 'luaScan 3s ease-in-out infinite',
               pointerEvents: 'none',
             }} />
@@ -829,7 +829,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
             zIndex: 10,
           }}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#042C53" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
         </button>
 
         {/* Status chip */}
@@ -839,7 +839,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
             position: 'absolute', top: 'calc(56px + env(safe-area-inset-top, 0px))',
             left: '50%', transform: 'translateX(-50%)',
             padding: '6px 11px',
-            background: 'rgba(0, 0, 0, 0.78)',
+            background: 'rgba(0,0,0,0.78)',
             borderRadius: 14,
             display: 'flex', alignItems: 'center', gap: 6,
             zIndex: 10,
@@ -850,7 +850,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
           ) : (
             <div style={{ width: 5, height: 5, borderRadius: '50%', background: hasLandmarks ? '#58aefe' : 'rgba(255,255,255,0.4)' }} />
           )}
-          <span style={{ color: '#fff', fontSize: 10, fontWeight: 500, whiteSpace: 'nowrap' }}>
+          <span style={{ color: '#fff', fontSize: 10, lineHeight: 1.3, fontWeight: 500, whiteSpace: 'nowrap' }}>
             {!hasLandmarks ? '타원 안에 얼굴을 맞춰주세요' :
              isCapturing ? '결과 정리 중' :
              autoCapture && autoCountdown != null ? '자세 유지해주세요' :
@@ -867,7 +867,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
             position: 'absolute', top: 'calc(12px + env(safe-area-inset-top, 0px))', right: 12,
             padding: '7px 12px', borderRadius: 16,
             background: 'rgba(255,255,255,0.92)', border: 'none',
-            color: '#042C53', fontSize: 11, fontWeight: 500, cursor: 'pointer',
+            color: 'var(--text-primary)', fontSize: 11, lineHeight: 1.3, fontWeight: 500, cursor: 'pointer',
             zIndex: 10, fontFamily: 'inherit',
           }}
         >
@@ -895,9 +895,9 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
           <div
             key={autoCountdown}
             style={{
-              fontSize: 120, fontWeight: 700, color: '#fff',
+              fontSize: 64, lineHeight: 1.1, fontWeight: 400, color: '#fff',
               fontFamily: 'var(--font-display), Pretendard, sans-serif',
-              textShadow: '0 2px 12px rgba(0,0,0,0.3)',
+              textShadow: '0 2px 12px rgba(0,0,0,0.4)',
               animation: 'countdownPop 0.45s cubic-bezier(0.34,1.56,0.64,1) both',
             }}
           >{autoCountdown}</div>
@@ -928,8 +928,8 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
                 transition: 'all 0.3s',
               }} />
               <span style={{
-                color: conditions[key] ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)',
-                fontSize: 10, fontWeight: 500, transition: 'color 0.3s',
+                color: conditions[key] ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.2)',
+                fontSize: 10, lineHeight: 1.3, fontWeight: 500, transition: 'color 0.3s',
               }}>{label}</span>
             </div>
           ))}
@@ -942,7 +942,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
           style={{
             width: 64, height: 64, borderRadius: '50%',
             background: 'transparent',
-            border: `2px solid ${canCapture ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.15)'}`,
+            border: `2px solid ${canCapture ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.2)'}`,
             cursor: canCapture && !isCapturing ? 'pointer' : 'default',
             transition: 'all 0.3s',
             opacity: isCapturing ? 0.5 : 1,
@@ -952,7 +952,7 @@ export default function CameraCapture({ onCapture, onClose, onFallback, colorMod
         >
           <div style={{
             width: 52, height: 52, borderRadius: '50%',
-            background: canCapture ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.08)',
+            background: canCapture ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.08)',
             transition: 'all 0.3s',
           }} />
         </button>

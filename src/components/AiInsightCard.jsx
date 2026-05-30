@@ -92,12 +92,12 @@ export default function AiInsightCard({ onOpenChat, greeting, dateInfo }) {
     }}>
       {/* 본문 영역 */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: '#58aefe', fontFamily: "'Pretendard Variable', Pretendard, sans-serif", flexShrink: 0, lineHeight: 1.8 }}>lua</span>
+        <span style={{ fontSize: 13, fontWeight: 500, color: '#58aefe', fontFamily: "'Pretendard Variable', Pretendard, sans-serif", flexShrink: 0, lineHeight: 1.5 }}>lua</span>
         {/* 본문 */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          {greeting && <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #191F28)', letterSpacing: -0.3, lineHeight: 1.8, marginBottom: 0 }}>{greeting}</div>}
+          {greeting && <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary, #1A1A1A)', letterSpacing: -0.3, lineHeight: 1.5, marginBottom: 0 }}>{greeting}</div>}
           {/* 인사이트 본문 */}
-          <div style={{ fontSize: 13, color: 'var(--text-primary, #191F28)', lineHeight: 1.8 }}>
+          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary, #1A1A1A)', lineHeight: 1.5 }}>
             {(() => {
               const match = insight.match(/^([^.!?]+[.!?])\s*(.*)$/);
               if (match && match[2]) return <>{match[1]}<br/>{match[2]}</>;
@@ -107,7 +107,7 @@ export default function AiInsightCard({ onOpenChat, greeting, dateInfo }) {
           {/* 하단: sub + 시간/버튼 */}
           <div style={{ display: 'flex', alignItems: 'center', marginTop: 6 }}>
             {sub ? (
-              <div style={{ fontSize: 12, color: '#4a9ec7', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
+              <div style={{ fontSize: 12, lineHeight: 1.5, color: '#4a9ec7', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
                   <circle cx="12" cy="12" r="10" fill="#d0eaf8" />
                   <text x="12" y="16.5" textAnchor="middle" fontSize="14" fontWeight="700" fill="#5aaad8" fontFamily="inherit">!</text>
@@ -117,12 +117,12 @@ export default function AiInsightCard({ onOpenChat, greeting, dateInfo }) {
             ) : <span />}
             <span style={{ flex: 1 }} />
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 9, whiteSpace: 'nowrap' }}>
-              <span style={{ fontSize: 10, color: 'var(--text-muted, #8B95A1)' }}>{getTimeLabel()}</span>
+              <span style={{ fontSize: 10, lineHeight: 1.3, fontWeight: 500, color: 'var(--text-muted, #8C8C8C)' }}>{getTimeLabel()}</span>
               <button onClick={(e) => { e.stopPropagation(); setLiked(false); setRefreshKey(k => k + 1); }} style={{
                 border: 'none', background: 'transparent', cursor: 'pointer', padding: 0,
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #8B95A1)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.4">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #8C8C8C)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.4">
                   <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
                 </svg>
               </button>
@@ -130,7 +130,7 @@ export default function AiInsightCard({ onOpenChat, greeting, dateInfo }) {
                 border: 'none', background: 'transparent', cursor: 'pointer', padding: 0,
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <svg width="17" height="17" viewBox="0 0 24 24" fill={liked ? '#FF8A9B' : 'none'} stroke={liked ? '#FF8A9B' : 'var(--text-muted, #8B95A1)'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity={liked ? 1 : 0.4}>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill={liked ? '#FF8A9B' : 'none'} stroke={liked ? '#FF8A9B' : 'var(--text-muted, #8C8C8C)'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity={liked ? 1 : 0.4}>
                   <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
                 </svg>
               </button>

@@ -31,7 +31,7 @@ export default function HomeInsightCard({ onOpenChat, insightCollapsed, setInsig
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         cursor: 'pointer',
       }}>
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #8B95A1)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" opacity="0.4"><path d="M6 9l6 6 6-6"/></svg>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #8C8C8C)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" opacity="0.4"><path d="M6 9l6 6 6-6"/></svg>
       </div>
       <AiInsightCard
         onOpenChat={onOpenChat}
