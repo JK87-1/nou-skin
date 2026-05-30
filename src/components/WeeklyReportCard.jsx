@@ -41,12 +41,12 @@ export default function WeeklyReportCard({ report, onOpenBeforeAfter, onDismiss 
       style={{
         margin: '8px 16px 14px',
         padding: '16px 18px',
-        background: 'rgba(255,255,255,0.6)',
-        backdropFilter: 'blur(18px)',
-        WebkitBackdropFilter: 'blur(18px)',
+        background: 'var(--card-bg)',
+        backdropFilter: 'var(--card-blur)',
+        WebkitBackdropFilter: 'var(--card-blur)',
         border: 'none',
-        borderRadius: 22,
-        boxShadow: '0 4px 16px rgba(var(--accent-rgb),0.10)',
+        borderRadius: 'var(--card-radius)',
+        boxShadow: 'var(--card-shadow)',
         cursor: 'pointer',
         position: 'relative',
         animation: closing

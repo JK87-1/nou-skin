@@ -611,10 +611,10 @@ export default function DailyMission() {
 
       {/* === 3-7. AI SKIN COACH === */}
       <div style={{
-        background: 'rgba(255,255,255,0.42)',
-        backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-        borderRadius: 18, border: 'none', padding: 16,
-        boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+        background: 'var(--card-bg)',
+        backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)',
+        borderRadius: 'var(--card-radius)', border: 'none', padding: 16,
+        boxShadow: 'var(--card-shadow)',
         ...fadeUp(0.5),
       }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>

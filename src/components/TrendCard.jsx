@@ -33,12 +33,12 @@ export default function TrendCard({ accent = '#6598ef', changes = null, animatio
   return (
     <div
       style={{
-        background: 'rgba(255,255,255,0.42)',
-        backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+        background: 'var(--card-bg)',
+        backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)',
         border: 'none',
-        borderRadius: 18,
+        borderRadius: 'var(--card-radius)',
         padding: 20,
-        boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+        boxShadow: 'var(--card-shadow)',
         animation: `fadeUp 0.5s ease-out ${animationDelay} both`,
       }}
     >

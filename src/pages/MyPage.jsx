@@ -272,7 +272,8 @@ export default function MyPage({ colorMode, setColorMode, colorSkin, setColorSki
                   return (
                     <div key={p.record.id || p.date} role="button" aria-label={`${shortDate} 측정 결과 ${p.record.overallScore ?? ''}점`} onClick={() => onViewRecord?.(p.record, p.thumb)} style={{
                       display: 'flex', alignItems: 'center', gap: 10,
-                      background: 'rgba(255,255,255,0.2)', borderRadius: 10, padding: '6px 8px',
+                      background: 'var(--card-sm-bg)', backdropFilter: 'var(--card-blur)', WebkitBackdropFilter: 'var(--card-blur)',
+                      borderRadius: 'var(--card-sm-radius)', padding: '6px 8px',
                       cursor: 'pointer',
                     }}>
                       <div style={{ width: 56, height: 56, borderRadius: 10, overflow: 'hidden', flexShrink: 0 }}>
