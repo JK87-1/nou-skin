@@ -34,6 +34,7 @@ import { getPercentile, getSkinAgePercentile, bucketLabel } from './engine/SkinP
 import { getRecommendedTreatments, TREATMENT_CATEGORIES } from './data/TreatmentData';
 import { syncSkinDataToServer } from './utils/pushNotification';
 import PrecisionMode from './components/PrecisionMode';
+import FaceCoachMode from './components/FaceCoachMode';
 import { getProfile, saveProfile, getDeviceId } from './storage/ProfileStorage';
 import GoalProgressCard from './components/GoalProgressCard';
 import SkinWeather from './components/SkinWeather';
@@ -62,6 +63,9 @@ export default function App() {
   const [image, setImage] = useState(null);
   // 정밀 측정 모드 — 메인 UI 진입점은 미배치 (사용자 요청). window.luaPrecision() 또는 'lua:precision-open' 이벤트로만 진입.
   const [precisionOpen, setPrecisionOpen] = useState(false);
+  // 얼굴 분석·스타일링 + 케어 시각화 모드 — window.luaFaceCoach() / 'lua:face-coach-open' 이벤트로 진입.
+  const [faceCoachOpen, setFaceCoachOpen] = useState(false);
+  const [faceCoachInitialMode, setFaceCoachInitialMode] = useState(null);
   const [b64, setB64] = useState(null);
   const [result, setResult] = useState(null);
   const [progress, setProgress] = useState(0);
@@ -941,6 +945,16 @@ export default function App() {
     return () => window.removeEventListener('lua:precision-open', handler);
   }, []);
 
+  // 얼굴 분석·스타일링 모드 글로벌 진입점
+  useEffect(() => {
+    const handler = (e) => {
+      setFaceCoachInitialMode(e?.detail?.mode || null);
+      setFaceCoachOpen(true);
+    };
+    window.addEventListener('lua:face-coach-open', handler);
+    return () => window.removeEventListener('lua:face-coach-open', handler);
+  }, []);
+
   return (
     <PullToRefresh onRefresh={() => setRefreshKey(k => k + 1)}>
     <div className="app-container">
@@ -951,6 +965,9 @@ export default function App() {
 
       {/* 정밀 측정 모드 — paywall → capture → result 통합 컨테이너 */}
       <PrecisionMode open={precisionOpen} onClose={() => setPrecisionOpen(false)} />
+
+      {/* 얼굴 분석·스타일링 + 케어 시각화 — select → intro → capture → analyzing → result */}
+      <FaceCoachMode open={faceCoachOpen} initialMode={faceCoachInitialMode} onClose={() => { setFaceCoachOpen(false); setFaceCoachInitialMode(null); }} />
 
       {/* 표준 측정 가이드 modal — 정확도 향상 핵심 */}
       {measureGuideOpen && (
